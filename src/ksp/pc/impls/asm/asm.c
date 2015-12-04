@@ -421,8 +421,7 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
   for (i=0; i<osm->n_local_true; i++) {
     ierr = KSPSetUp(osm->ksp[i]);CHKERRQ(ierr);
     if (osm->ksp[i]->reason == KSP_DIVERGED_PCSETUP_FAILED) {
-      PC subpc=osm->ksp[i]->pc;
-      pc->failedreason = (PCFailedReason)subpc->failedreason;
+      pc->failedreason = PC_SUBPC_ERROR;
     }
   }
   PetscFunctionReturn(0);

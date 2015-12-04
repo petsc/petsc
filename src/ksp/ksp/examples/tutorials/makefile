@@ -899,6 +899,11 @@ runex10_zeropivot_2:
 	   if (${DIFF} output/ex10_zeropivot.out ex10.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_zeropivot_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10.tmp
+runex10_zeropivot_3:
+	-@${MPIEXEC} -n 3 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_converged_reason -ksp_pc_type bjacobi -ksp_sub_ksp_converged_reason > ex10.tmp 2>&1; \
+	   if (${DIFF} output/ex10_zeropivot_3.out ex10.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_zeropivot_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10.tmp
 
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \

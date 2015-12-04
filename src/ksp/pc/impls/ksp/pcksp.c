@@ -41,8 +41,7 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   if (jac->ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
-    PC subpc=jac->ksp->pc;
-    pc->failedreason = (PCFailedReason)subpc->failedreason;
+    pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
 }
