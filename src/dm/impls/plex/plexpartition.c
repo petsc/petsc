@@ -1520,7 +1520,7 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
   MPI_Comm        comm;
   PetscMPIInt     rank;
   PetscSF         sfPoint;
-  DMLabel         lblRoots;
+  DMLabel         lblRoots, lblLeaves;
   IS              rankIS, pointIS;
   const PetscInt *ranks;
   PetscInt        numRanks, r;
@@ -1530,6 +1530,21 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  /* Pull point contributions from remote leaves into local roots */
+  ierr = DMLabelGather(label, sfPoint, &lblLeaves);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(lblLeaves, &rankIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
+  ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+  for (r = 0; r < numRanks; ++r) {
+    const PetscInt remoteRank = ranks[r];
+    if (remoteRank == rank) continue;
+    ierr = DMLabelGetStratumIS(lblLeaves, remoteRank, &pointIS);CHKERRQ(ierr);
+    ierr = DMLabelInsertIS(label, pointIS, remoteRank);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
+  ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&lblLeaves);CHKERRQ(ierr);
   /* Push point contributions from roots into remote leaves */
   ierr = DMLabelDistribute(label, sfPoint, &lblRoots);CHKERRQ(ierr);
   ierr = DMLabelGetValueIS(lblRoots, &rankIS);CHKERRQ(ierr);
