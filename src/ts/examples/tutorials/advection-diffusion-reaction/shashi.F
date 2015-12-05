@@ -87,6 +87,7 @@
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
 
+      big  = 2.88
       big  = PETSC_INFINITY
       zero = 0.0
       i2  = 26
@@ -123,6 +124,9 @@
       call VecDuplicate(x,lb,ierr)
       call VecDuplicate(x,ub,ierr)
       call VecSet(lb,zero,ierr)
+!      call VecGetArrayF90(lb,xx,ierr)
+!      call ShashiLowerBound(xx)
+!      call VecRestoreArrayF90(lb,xx,ierr)
       call VecSet(ub,big,ierr)
       call SNESVISetVariableBounds(snes,lb,ub,ierr)
 
@@ -251,7 +255,17 @@
       return
       end
 
+            subroutine ShashiLowerBound(an_r)
+!        implicit PetscScalar (a-h,o-z)
+        implicit none
+        PetscScalar an_r(26)
+        PetscInt i
 
+        do i=2,26
+           an_r(i) = 1000.0/6.023D+23
+        enddo
+        return
+        end
 
             subroutine ShashiInitialGuess(an_r)
 !        implicit PetscScalar (a-h,o-z)
@@ -288,6 +302,8 @@
         h_init = 128799.7267952987
         p_init = 0.1
         temp = 1500
+
+
       an_r( 1) =     1.66000D-24
       an_r( 2) =     1.66030D-22
       an_r( 3) =     5.00000D-01
@@ -315,6 +331,12 @@
       an_r(25) =     1.66030D-24
       an_r(26) =     1.66030D-24
 
+      an_r = 0
+      an_r( 3) =     .5
+      an_r( 6) =     1.88000
+      an_r(14) =     1.
+
+      
 #if defined(solution)
       an_r( 1 ) =      3.802208D-33
       an_r( 2 ) =      1.298287D-29
