@@ -33,7 +33,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_SUCCEEDED);CHKERRQ(ierr);
   ierr = SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetDefaultMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
   ierr = SNESGetObjective(snes,&objective,NULL);CHKERRQ(ierr);
 

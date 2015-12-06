@@ -23,6 +23,8 @@ struct _LineSearchOps {
   PetscErrorCode (*snesfunc)(SNES,Vec,Vec);
 };
 
+#define MAXSNESLSMONITORS 5
+
 struct _p_LineSearch {
   PETSCHEADER(struct _LineSearchOps);
 
@@ -64,8 +66,11 @@ struct _p_LineSearch {
   void *               precheckctx;
   void *               postcheckctx;
 
-  PetscViewer          monitor;
-
+  PetscViewer         monitor;
+  PetscErrorCode      (*monitorftns[MAXSNESLSMONITORS])(SNESLineSearch,void*);      /* monitor routine */
+  PetscErrorCode      (*monitordestroy[MAXSNESLSMONITORS])(void**);                 /* monitor context destroy routine */
+  void                *monitorcontext[MAXSNESLSMONITORS];                           /* monitor context */
+  PetscInt            numbermonitors;                                             /* number of monitors */
 };
 
 #endif

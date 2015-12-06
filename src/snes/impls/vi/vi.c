@@ -460,7 +460,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 
   /* clear composed functions */
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSet_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSetMonitor_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSetDefaultMonitor_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

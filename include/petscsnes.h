@@ -591,8 +591,13 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetNorms(SNESLineSearch, PetscReal, Pe
 PETSC_EXTERN PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch, PetscBool);
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetMonitor(SNESLineSearch, PetscBool);
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetMonitor(SNESLineSearch, PetscViewer*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitor(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch,PetscErrorCode(*)(SNESLineSearch,void*),void *,PetscErrorCode (*)(void**));
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorCancel(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorUpdate(SNESLineSearch,void*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetDefaultMonitor(SNESLineSearch,PetscViewer);
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch,PetscViewer*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSolutionUpdate(SNESLineSearch,void*);
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchAppendOptionsPrefix(SNESLineSearch, const char prefix[]);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetOptionsPrefix(SNESLineSearch, const char *prefix[]);
