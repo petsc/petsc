@@ -563,7 +563,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
 
       sctx.rs = rs;
       sctx.pv = rtmp[i];
-      ierr    = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
+      ierr    = MatPivotCheck(B,A,info,&sctx,i);CHKERRQ(ierr);
       if (sctx.newshift) break; /* break for-loop */
       rtmp[i] = sctx.pv; /* sctx.pv might be updated in the case of MAT_SHIFT_INBLOCKS */
 
@@ -712,7 +712,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,MatFactorInfo *info
 
       sctx.rs = rs;
       sctx.pv = pv[diag];
-      ierr    = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
+      ierr    = MatPivotCheck(B,A,info,&sctx,i);CHKERRQ(ierr);
       if (sctx.newshift) break;
       pv[diag] = sctx.pv;
     }
@@ -901,7 +901,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorIn
 
       sctx.rs = rs;
       sctx.pv = pv[nbdiag];
-      ierr    = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
+      ierr    = MatPivotCheck(B,A,info,&sctx,i);CHKERRQ(ierr);
       if (sctx.newshift) break;
       pv[nbdiag] = sctx.pv;
     }
@@ -2190,7 +2190,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
       /* MatPivotCheck() */
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr    = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
+      ierr    = MatPivotCheck(B,A,info,&sctx,i);CHKERRQ(ierr);
       if (sctx.newshift) break;
       dk = sctx.pv;
 
@@ -2340,7 +2340,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,MatFactorInfo
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr    = MatPivotCheck(A,info,&sctx,k);CHKERRQ(ierr);
+      ierr    = MatPivotCheck(B,A,info,&sctx,k);CHKERRQ(ierr);
       if (sctx.newshift) break;
       dk = sctx.pv;
 

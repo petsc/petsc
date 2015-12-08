@@ -10,7 +10,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_LU"
-PetscErrorCode  PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
+PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -23,7 +23,7 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseOrdering_LU"
-PetscErrorCode  PCFactorSetReuseOrdering_LU(PC pc,PetscBool flag)
+PetscErrorCode PCFactorSetReuseOrdering_LU(PC pc,PetscBool flag)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -34,7 +34,7 @@ PetscErrorCode  PCFactorSetReuseOrdering_LU(PC pc,PetscBool flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseFill_LU"
-PetscErrorCode  PCFactorSetReuseFill_LU(PC pc,PetscBool flag)
+PetscErrorCode PCFactorSetReuseFill_LU(PC pc,PetscBool flag)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -90,7 +90,6 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_LU"
 static PetscErrorCode PCSetUp_LU(PC pc)

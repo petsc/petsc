@@ -2,13 +2,14 @@
 #include <../src/ksp/pc/impls/factor/icc/icc.h>   /*I "petscpc.h" I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSetup_ICC"
-static PetscErrorCode PCSetup_ICC(PC pc)
+#define __FUNCT__ "PCSetUp_ICC"
+static PetscErrorCode PCSetUp_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   IS             perm,cperm;
   PetscErrorCode ierr;
   MatInfo        info;
+  Mat            F;
 
   PetscFunctionBegin;
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
@@ -30,16 +31,15 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   ierr = ISDestroy(&cperm);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
 
-  if (((PC_Factor*)icc)->info.errortype) { /* FactorSymbolic() fails */
-    MatFactorInfo factinfo=((PC_Factor*)icc)->info;
-    pc->failedreason = (PCFailedReason)factinfo.errortype;
+  F = ((PC_Factor*)icc)->fact;
+  if (F->errortype) { /* FactorSymbolic() fails */
+    pc->failedreason = (PCFailedReason)F->errortype;
     PetscFunctionReturn(0);
   }
  
   ierr = MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
-  if (((PC_Factor*)icc)->info.errortype) { /* FactorNumeric() fails */
-    MatFactorInfo factinfo=((PC_Factor*)icc)->info;
-    pc->failedreason = (PCFailedReason)factinfo.errortype;
+  if (F->errortype) { /* FactorNumeric() fails */
+    pc->failedreason = (PCFailedReason)F->errortype;
   }
   PetscFunctionReturn(0);
 }
@@ -222,7 +222,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   pc->data                     = (void*)icc;
   pc->ops->apply               = PCApply_ICC;
   pc->ops->applytranspose      = PCApply_ICC;
-  pc->ops->setup               = PCSetup_ICC;
+  pc->ops->setup               = PCSetUp_ICC;
   pc->ops->reset               = PCReset_ICC;
   pc->ops->destroy             = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;

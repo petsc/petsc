@@ -74,7 +74,6 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Cholesky"
 static PetscErrorCode PCSetUp_Cholesky(PC pc)

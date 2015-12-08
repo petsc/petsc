@@ -676,7 +676,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_none"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal      _zero = info->zeropivot;
   PetscErrorCode ierr;
@@ -686,7 +686,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,MatFactorInfo *inf
   if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     if (!mat->erroriffailure) {
       ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
-      info->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      fact->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);
@@ -694,7 +694,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,MatFactorInfo *inf
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscErrorCode ierr;
 
@@ -706,7 +706,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,MatFactorInfo *info,Fac
   } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS){
     ierr = MatPivotCheck_inblocks(mat,info,sctx,row);CHKERRQ(ierr);
   } else {
-    ierr = MatPivotCheck_none(mat,info,sctx,row);CHKERRQ(ierr);
+    ierr = MatPivotCheck_none(fact,mat,info,sctx,row);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
