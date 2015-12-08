@@ -1016,7 +1016,7 @@ PetscErrorCode MatFactorMKL_PARDISOInitialize_Private(Mat A, MatFactorType ftype
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorSymbolic_AIJMKL_PARDISO_Private"
-PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_MKL_PARDISO *mat_mkl_pardiso = (Mat_MKL_PARDISO*)F->spptr;
   PetscErrorCode  ierr;
@@ -1068,7 +1068,7 @@ PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F,Mat A,MatFactorInf
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMKL_PARDISO"
-PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -1079,7 +1079,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,MatFacto
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_AIJMKL_PARDISO"
-PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 

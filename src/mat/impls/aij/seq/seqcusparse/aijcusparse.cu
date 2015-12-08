@@ -14,13 +14,13 @@
 
 const char *const MatCUSPARSEStorageFormats[] = {"CSR","ELL","HYB","MatCUSPARSEStorageFormat","MAT_CUSPARSE_",0};
 
-static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,MatFactorInfo*);
-static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,MatFactorInfo*);
-static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJCUSPARSE(Mat,Mat,MatFactorInfo*);
+static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,const MatFactorInfo*);
+static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,const MatFactorInfo*);
+static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJCUSPARSE(Mat,Mat,const MatFactorInfo*);
 
-static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,IS,MatFactorInfo*);
-static PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,IS,MatFactorInfo*);
-static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat,Mat,MatFactorInfo*);
+static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,IS,const MatFactorInfo*);
+static PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,IS,const MatFactorInfo*);
+static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat,Mat,const MatFactorInfo*);
 
 static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat,Vec,Vec);
 static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
@@ -210,7 +210,7 @@ static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOp
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJCUSPARSE"
-static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -222,7 +222,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,I
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJCUSPARSE"
-static PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+static PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -234,7 +234,7 @@ static PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS
 
 #undef __FUNCT__
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJCUSPARSE"
-static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS perm,MatFactorInfo *info)
+static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -246,7 +246,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS perm,Ma
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJCUSPARSE"
-static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS perm,MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -681,7 +681,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEICCAnalysisAndCopyToGPU(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJCUSPARSE"
-static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,MatFactorInfo *info)
+static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
   IS             isrow = b->row,iscol = b->col;
@@ -708,7 +708,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,MatFactorInf
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJCUSPARSE"
-static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
   IS             ip = b->row;

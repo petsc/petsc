@@ -684,7 +684,7 @@ PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpa
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMKL_CPARDISO"
-PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_MKL_CPARDISO *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->spptr;
   PetscErrorCode  ierr;

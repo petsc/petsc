@@ -144,7 +144,7 @@ PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_Matlab"
-PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   size_t         len;
@@ -186,7 +186,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_Matlab"
-PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");

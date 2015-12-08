@@ -711,7 +711,7 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactor_Elemental"
-static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,MatFactorInfo *info)
+static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
@@ -728,7 +728,7 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,MatFactorInfo *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_Elemental"
-static PetscErrorCode  MatLUFactorNumeric_Elemental(Mat F,Mat A,MatFactorInfo *info)
+static PetscErrorCode  MatLUFactorNumeric_Elemental(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -740,7 +740,7 @@ static PetscErrorCode  MatLUFactorNumeric_Elemental(Mat F,Mat A,MatFactorInfo *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_Elemental"
-static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   /* F is create and allocated by MatGetFactor_elemental_petsc(), skip this routine. */
@@ -749,7 +749,7 @@ static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,MatFa
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactor_Elemental"
-static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   El::DistMatrix<PetscElemScalar,El::MC,El::STAR> d;
@@ -763,7 +763,7 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,MatFactorInfo *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_Elemental"
-static PetscErrorCode MatCholeskyFactorNumeric_Elemental(Mat F,Mat A,MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactorNumeric_Elemental(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -775,7 +775,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_Elemental(Mat F,Mat A,MatFactorIn
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_Elemental"
-static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   /* F is create and allocated by MatGetFactor_elemental_petsc(), skip this routine. */

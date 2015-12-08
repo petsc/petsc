@@ -239,7 +239,7 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_LUSOL"
-PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a;
   Mat_LUSOL      *lusol = (Mat_LUSOL*)F->spptr;
@@ -338,7 +338,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_LUSOL"
-PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactorInfo *info)
 {
   /************************************************************************/
   /* Input                                                                */

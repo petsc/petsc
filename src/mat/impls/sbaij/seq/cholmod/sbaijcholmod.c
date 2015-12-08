@@ -313,7 +313,7 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat F,Vec B,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_CHOLMOD"
-static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,MatFactorInfo *info)
+static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
   cholmod_sparse cholA;
@@ -336,7 +336,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,MatFactorInfo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_CHOLMOD"
-PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
   PetscErrorCode ierr;

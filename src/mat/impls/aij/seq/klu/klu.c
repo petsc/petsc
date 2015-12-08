@@ -165,7 +165,7 @@ static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_KLU"
-static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,MatFactorInfo *info)
+static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_KLU        *lu = (Mat_KLU*)(F)->spptr;
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
@@ -191,7 +191,7 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_KLU"
-static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
   Mat_KLU       *lu = (Mat_KLU*)(F->spptr);
