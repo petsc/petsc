@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = 'c96c30324036a8cd7f4eb474306cbae5fb74efcd'
+    self.gitcommit = 'be726724fa9250a351d62a6d872d6734c8b68d86'
     self.giturls   = ['https://bitbucket.org/caidao22/pkg-revolve.git']
     self.download  = ['none']
     self.functions = ['revolve_action']
