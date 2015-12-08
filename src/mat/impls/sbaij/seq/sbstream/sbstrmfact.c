@@ -634,7 +634,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqsbaij_sbstrm(Mat A,const MatSolverPa
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_sbstrm"
-PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscInt       bs = A->rmap->bs;
   PetscErrorCode ierr;
@@ -657,7 +657,7 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,MatFactorInfo *info)
 /*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatICCFactorSymbolic_sbstrm"
-PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscInt ierr;
 
@@ -670,7 +670,7 @@ PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,MatFactorInfo *in
 /*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_sbstrm"
-PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscInt ierr;
 
