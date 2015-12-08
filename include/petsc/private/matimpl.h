@@ -401,6 +401,7 @@ struct _p_Mat {
   PetscReal              checksymmetrytol;
   Mat_Redundant          *redundant;        /* used by MatCreateRedundantMatrix() */
   PetscBool              erroriffailure;    /* Generate an error if detected (for example a zero pivot) instead of returning */
+  MatFactorError         errortype;         /* type of error */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);

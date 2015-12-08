@@ -7,6 +7,7 @@
 
 #include <../src/ksp/pc/impls/factor/lu/lu.h>  /*I "petscpc.h" I*/
 
+
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_LU"
 PetscErrorCode  PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
@@ -89,6 +90,7 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_LU"
 static PetscErrorCode PCSetUp_LU(PC pc)
@@ -109,15 +111,15 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->col);CHKERRQ(ierr);
     }
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-    if (((PC_Factor*)dir)->info.errortype) { /* Factor() fails */
-      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
-      pc->failedreason = (PCFailedReason)factinfo.errortype;
+    if (pc->pmat->errortype) { /* Factor() fails */
+      pc->failedreason = (PCFailedReason)pc->pmat->errortype;
       PetscFunctionReturn(0);
     }
 
     ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
     MatInfo info;
+    Mat     F;
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       if (dir->nonzerosalongdiagonal) {
@@ -154,17 +156,17 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
-    if (((PC_Factor*)dir)->info.errortype) { /* FactorSymbolic() fails */
-      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
-      pc->failedreason = (PCFailedReason)factinfo.errortype;
+    F = ((PC_Factor*)dir)->fact;
+    if (F->errortype) { /* FactorSymbolic() fails */
+      pc->failedreason = (PCFailedReason)F->errortype;
       PetscFunctionReturn(0);
     }
 
     ierr = MatLUFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-    if (((PC_Factor*)dir)->info.errortype) { /* FactorNumeric() fails */
-      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
-      pc->failedreason = (PCFailedReason)factinfo.errortype;
+    if (F->errortype) { /* FactorNumeric() fails */
+      pc->failedreason = (PCFailedReason)F->errortype;
     }
+
   }
   PetscFunctionReturn(0);
 }

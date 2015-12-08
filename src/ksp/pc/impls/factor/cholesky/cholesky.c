@@ -74,7 +74,7 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
+#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Cholesky"
 static PetscErrorCode PCSetUp_Cholesky(PC pc)
@@ -98,15 +98,15 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     }
     if (dir->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-    if (((PC_Factor*)dir)->info.errortype) { /* Factor() fails */
-      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
-      pc->failedreason = (PCFailedReason)factinfo.errortype;
+    if (pc->pmat->errortype) { /* Factor() fails */
+      pc->failedreason = (PCFailedReason)pc->pmat->errortype;
       PetscFunctionReturn(0);
     }
 
     ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
     MatInfo info;
+    Mat     F;
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       /* check if dir->row == dir->col */
@@ -151,16 +151,15 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
-    if (((PC_Factor*)dir)->info.errortype) { /* FactorSymbolic() fails */
-      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
-      pc->failedreason = (PCFailedReason)factinfo.errortype;
+    F = ((PC_Factor*)dir)->fact;
+    if (F->errortype) { /* FactorSymbolic() fails */
+      pc->failedreason = (PCFailedReason)F->errortype;
       PetscFunctionReturn(0);
     }
 
     ierr = MatCholeskyFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-    if (((PC_Factor*)dir)->info.errortype) { /* FactorNumeric() fails */
-      MatFactorInfo factinfo=((PC_Factor*)dir)->info;
-      pc->failedreason = (PCFailedReason)factinfo.errortype;
+    if (F->errortype) { /* FactorNumeric() fails */
+      pc->failedreason = (PCFailedReason)F->errortype;
     }
   }
   PetscFunctionReturn(0);
