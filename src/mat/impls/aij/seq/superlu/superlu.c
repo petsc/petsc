@@ -56,14 +56,14 @@ typedef struct {
 } Mat_SuperLU;
 
 extern PetscErrorCode MatFactorInfo_SuperLU(Mat,PetscViewer);
-extern PetscErrorCode MatLUFactorNumeric_SuperLU(Mat,Mat,MatFactorInfo*);
+extern PetscErrorCode MatLUFactorNumeric_SuperLU(Mat,Mat,const MatFactorInfo*);
 extern PetscErrorCode MatDestroy_SuperLU(Mat);
 extern PetscErrorCode MatView_SuperLU(Mat,PetscViewer);
 extern PetscErrorCode MatAssemblyEnd_SuperLU(Mat,MatAssemblyType);
 extern PetscErrorCode MatSolve_SuperLU(Mat,Vec,Vec);
 extern PetscErrorCode MatMatSolve_SuperLU(Mat,Mat,Mat);
 extern PetscErrorCode MatSolveTranspose_SuperLU(Mat,Vec,Vec);
-extern PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat,Mat,IS,IS,MatFactorInfo*);
+extern PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat,Mat,IS,IS,const MatFactorInfo*);
 extern PetscErrorCode MatDuplicate_SuperLU(Mat, MatDuplicateOption, Mat*);
 
 /*
@@ -112,7 +112,7 @@ PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU"
-PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)F->spptr;
   Mat_SeqAIJ     *aa;
@@ -476,7 +476,7 @@ PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU"
-PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SuperLU *lu = (Mat_SuperLU*)(F->spptr);
 

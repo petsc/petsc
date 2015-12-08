@@ -16,7 +16,7 @@ extern PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,Pe
 /*
    This is not much faster than MatLUFactorNumeric_SeqBAIJ_N() but the solve is faster at least sometimes
 */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat             C =B;
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
@@ -126,7 +126,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,MatFact
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_N"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C     =B;
   Mat_SeqBAIJ    *a    =(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
@@ -254,7 +254,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ_ilu0"
-PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
 
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b;
@@ -319,7 +319,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact,Mat A,IS isrow,IS isco
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ"
-PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
   IS                 isicol;
@@ -534,7 +534,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,Mat
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ_inplace"
-PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b;
   IS             isicol;

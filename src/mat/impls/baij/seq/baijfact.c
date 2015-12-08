@@ -7,7 +7,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C     =B;
   Mat_SeqBAIJ    *a    =(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
@@ -124,7 +124,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C =B;
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
@@ -240,7 +240,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,MatFacto
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_inplace"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C     = B;
   Mat_SeqBAIJ    *a    = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
@@ -333,7 +333,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B,Mat A,MatFactorInfo *i
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   PetscErrorCode ierr;
@@ -433,7 +433,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C,Mat A,
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_1"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat             C     =B;
   Mat_SeqBAIJ     *a    =(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
@@ -598,7 +598,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_1_inplace"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a    = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   IS             isrow = b->row,isicol = b->icol;
@@ -671,7 +671,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,MatFactorInfo *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqbaij_petsc"
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,const MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
   PetscErrorCode ierr;
@@ -701,7 +701,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype
 /* ----------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactor_SeqBAIJ"
-PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   Mat            C;
@@ -722,7 +722,7 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqBAIJ_N"
-PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data;
@@ -851,7 +851,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,MatFactorInfo *inf
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering"
-PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)C->data;
@@ -977,7 +977,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,Ma
 #include <../src/mat/utils/freespace.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatICCFactorSymbolic_SeqBAIJ"
-PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
@@ -1204,7 +1204,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,MatFactorInfo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqBAIJ"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
@@ -1518,7 +1518,7 @@ static PetscErrorCode MatBlockAbs_private(PetscInt nbs,PetscInt bs2,PetscScalar 
 /*
      This needs to be renamed and called by the regular MatILUFactor_SeqBAIJ when drop tolerance is used
 */
-PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
   Mat            B = *fact;
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b;

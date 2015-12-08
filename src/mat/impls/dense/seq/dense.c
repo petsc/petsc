@@ -221,11 +221,11 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
 }
 
 
-extern PetscErrorCode MatLUFactor_SeqDense(Mat,IS,IS,MatFactorInfo*);
+extern PetscErrorCode MatLUFactor_SeqDense(Mat,IS,IS,const MatFactorInfo*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqDense"
-PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,MatFactorInfo *info_dummy)
+PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorInfo *info_dummy)
 {
   MatFactorInfo  info;
   PetscErrorCode ierr;
@@ -461,7 +461,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
    rather than put it in the Mat->row slot.*/
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactor_SeqDense"
-PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
+PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,const MatFactorInfo *minfo)
 {
 #if defined(PETSC_MISSING_LAPACK_GETRF)
   PetscFunctionBegin;
@@ -498,7 +498,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactor_SeqDense"
-PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
+PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *factinfo)
 {
 #if defined(PETSC_MISSING_LAPACK_POTRF)
   PetscFunctionBegin;
@@ -529,7 +529,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqDense"
-PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,MatFactorInfo *info_dummy)
+PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorInfo *info_dummy)
 {
   PetscErrorCode ierr;
   MatFactorInfo  info;
@@ -544,7 +544,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,MatFactorInfo *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   fact->assembled                  = PETSC_TRUE;
@@ -555,7 +555,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,MatFacto
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqDense"
-PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   fact->preallocated         = PETSC_TRUE;

@@ -8238,8 +8238,8 @@ and then performs the factorization
 \begin{tabbing}
   MatCholeskyFactorSymbolic(Mat factor,Mat matrix,IS perm,const MatFactorInfo *info);\\
   MatLUFactorSymbolic(Mat factor,Mat matrix,IS rowperm,IS colperm,const MatFactorInfo *info);\\
-  MatCholeskyFactorNumeric(Mat factor,Mat matrix,MatFactorInfo);\\
-  MatLUFactorNumeric(Mat factor,Mat matrix,MatFactorInfo *info);
+  MatCholeskyFactorNumeric(Mat factor,Mat matrix,,const MatFactorInfo);\\
+  MatLUFactorNumeric(Mat factor,Mat matrix,,const MatFactorInfo *info);
 \end{tabbing}
 In this case, the contents of the matrix \trl{result} is undefined between
 the symbolic and numeric factorization stages.

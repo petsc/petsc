@@ -1139,7 +1139,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorNumeric_MUMPS"
-PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps =(Mat_MUMPS*)(F)->spptr;
   PetscErrorCode ierr;
@@ -1357,7 +1357,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorSymbolic_MUMPS_ReportIfError"
-PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,MatFactorInfo *info,Mat_MUMPS *mumps)
+PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactorInfo *info,Mat_MUMPS *mumps)
 {
   PetscErrorCode ierr;
 
@@ -1384,7 +1384,7 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,MatFactorInfo *
 /* Note Petsc r(=c) permutation is used when mumps->id.ICNTL(7)==1 with centralized assembled matrix input; otherwise r and c are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
-PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode ierr;
@@ -1465,7 +1465,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_BAIJMUMPS"
-PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode ierr;
@@ -1526,7 +1526,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo
 /* Note the Petsc r permutation and factor info are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MUMPS"
-PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode ierr;

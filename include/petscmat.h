@@ -1038,16 +1038,16 @@ typedef struct {
 } MatFactorInfo;
 
 PETSC_EXTERN PetscErrorCode MatFactorInfoInitialize(MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatCholeskyFactor(Mat,IS,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatCholeskyFactorSymbolic(Mat,Mat,IS,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatCholeskyFactorNumeric(Mat,Mat,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatLUFactor(Mat,IS,IS,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatILUFactor(Mat,IS,IS,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatLUFactorSymbolic(Mat,Mat,IS,IS,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatILUFactorSymbolic(Mat,Mat,IS,IS,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatICCFactorSymbolic(Mat,Mat,IS,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatICCFactor(Mat,IS,MatFactorInfo*);
-PETSC_EXTERN PetscErrorCode MatLUFactorNumeric(Mat,Mat,MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatCholeskyFactor(Mat,IS,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatCholeskyFactorSymbolic(Mat,Mat,IS,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatCholeskyFactorNumeric(Mat,Mat,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatLUFactor(Mat,IS,IS,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatILUFactor(Mat,IS,IS,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatLUFactorSymbolic(Mat,Mat,IS,IS,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatILUFactorSymbolic(Mat,Mat,IS,IS,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatICCFactorSymbolic(Mat,Mat,IS,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatICCFactor(Mat,IS,const MatFactorInfo*);
+PETSC_EXTERN PetscErrorCode MatLUFactorNumeric(Mat,Mat,const MatFactorInfo*);
 PETSC_EXTERN PetscErrorCode MatGetInertia(Mat,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatSolve(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatForwardSolve(Mat,Vec,Vec);

@@ -124,7 +124,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_inplace"
-PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   IS                 isicol;
@@ -277,7 +277,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ"
-PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   IS                 isicol;
@@ -453,7 +453,7 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat             C     =B;
   Mat_SeqAIJ      *a    =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)C->data;
@@ -624,7 +624,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_inplace"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat             C     =B;
   Mat_SeqAIJ      *a    =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)C->data;
@@ -780,7 +780,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,MatFactorInfo *info
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_InplaceWithPerm"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ      *a    =(Mat_SeqAIJ*)A->data;
   IS              isrow = a->row,isicol = a->icol;
@@ -950,7 +950,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorIn
 /* ----------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactor_SeqAIJ"
-PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   Mat            C;
@@ -1627,7 +1627,7 @@ extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,Pet
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ_ilu0"
-PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b;
   PetscErrorCode ierr;
@@ -1705,7 +1705,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ"
-PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   IS                 isicol;
@@ -1883,7 +1883,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,MatF
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ_inplace"
-PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   IS                 isicol;
@@ -2079,7 +2079,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
-PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C = B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
@@ -2235,7 +2235,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ_inplace"
-PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C = B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
@@ -2408,7 +2408,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,MatFactorInfo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
-PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
@@ -2612,7 +2612,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,MatFactorInfo 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ_inplace"
-PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
@@ -2816,7 +2816,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,MatFac
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJ"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
@@ -2989,7 +2989,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,MatFactor
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJ_inplace"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
@@ -3261,7 +3261,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 /*
     This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer separate functions in the matrix function table for dt factors
 */
-PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
   Mat            B = *fact;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b;
@@ -3510,7 +3510,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
     This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer separate functions in the matrix function table for dt factors
 */
 
-PetscErrorCode  MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode  MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -3529,7 +3529,7 @@ PetscErrorCode  MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS row,IS col,MatFa
     This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer separate functions in the matrix function table for dt factors
 */
 
-PetscErrorCode  MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,MatFactorInfo *info)
+PetscErrorCode  MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,const MatFactorInfo *info)
 {
   Mat            C     =fact;
   Mat_SeqAIJ     *a    =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)C->data;

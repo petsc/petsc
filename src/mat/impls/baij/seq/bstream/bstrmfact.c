@@ -187,7 +187,7 @@ PetscErrorCode MatFactorGetSolverPackage_bstrm(Mat A,const MatSolverPackage *typ
 /*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_bstrm"
-PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
 {
   /* Mat_SeqBSTRM     *bstrm = (Mat_SeqBSTRM*) F->spptr; */
   PetscInt       bs = A->rmap->bs;
@@ -219,7 +219,7 @@ PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,MatFactorInfo *info)
 /*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_bstrm"
-PetscErrorCode MatILUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscInt ierr;
 
@@ -231,7 +231,7 @@ PetscErrorCode MatILUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,MatFactorInfo *i
 /*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_bstrm"
-PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscInt ierr;
 

@@ -803,7 +803,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorNumeric_MKL_PARDISO"
-PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_MKL_PARDISO *mat_mkl_pardiso=(Mat_MKL_PARDISO*)(F)->spptr;
   PetscErrorCode  ierr;

@@ -5,7 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ_Bas"
-PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ   *b;
@@ -104,7 +104,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,MatFactorI
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ_Bas"
-PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C = B;
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)C->data;
