@@ -54,7 +54,8 @@
 #define DMCreateMatrix_pforest                _append_pforest(DMCreateMatrix)
 #define DMProjectFunctionLocal_pforest        _append_pforest(DMProjectFunctionLocal)
 #define DMProjectFunctionLabelLocal_pforest   _append_pforest(DMProjectFunctionLabelLocal)
-#define DMCreateDefaulSection_pforest         _append_pforest(DMCreateDefaultSection)
+#define DMCreateDefaultSection_pforest        _append_pforest(DMCreateDefaultSection)
+#define DMCreateDefaultConstraints_pforest    _append_pforest(DMCreateDefaultConstraints)
 #define DMComputeL2Diff_pforest               _append_pforest(DMComputeL2Diff)
 
 static PetscErrorCode DMConvert_pforest_plex(DM,DMType,DM*);
@@ -2169,6 +2170,23 @@ static PetscErrorCode DMCreateDefaultSection_pforest(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMCreateDefaultConstraints_pforest)
+static PetscErrorCode DMCreateDefaultConstraints_pforest(DM dm)
+{
+  DM                plex;
+  Mat               mat;
+  PetscSection      section;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(plex,&section,&mat);CHKERRQ(ierr);
+  ierr = DMSetDefaultConstraints(dm,section,mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMInitialize_pforest)
 static PetscErrorCode DMInitialize_pforest(DM dm)
 {
@@ -2183,6 +2201,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
   dm->ops->projectfunctionlabellocal = DMProjectFunctionLabelLocal_pforest;
   dm->ops->createdefaultsection      = DMCreateDefaultSection_pforest;
+  dm->ops->createdefaultconstraints  = DMCreateDefaultConstraints_pforest;
   dm->ops->computel2diff             = DMComputeL2Diff_pforest;
   PetscFunctionReturn(0);
 }
