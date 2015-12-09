@@ -343,12 +343,18 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMGetNumLabels(base,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
         PetscBool  isDepth;
+        DMLabel    label, labelNew;
+        PetscInt   defVal;
         const char *name;
 
         ierr = DMGetLabelName(base, l, &name);CHKERRQ(ierr);
+        ierr = DMGetLabelByNum(base, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
         ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
+        ierr = DMGetLabel(dm,name,&labelNew);CHKERRQ(ierr);
+        ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
+        ierr = DMLabelSetDefaultValue(labelNew,defVal);CHKERRQ(ierr);
       }
     }
   }
@@ -386,12 +392,18 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
         PetscBool  isDepth;
+        DMLabel    label, labelNew;
+        PetscInt   defVal;
         const char *name;
 
         ierr = DMGetLabelName(adaptFrom, l, &name);CHKERRQ(ierr);
+        ierr = DMGetLabelByNum(adaptFrom, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
         ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
+        ierr = DMGetLabel(dm,name,&labelNew);CHKERRQ(ierr);
+        ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
+        ierr = DMLabelSetDefaultValue(labelNew,defVal);CHKERRQ(ierr);
       }
     }
   }
@@ -1252,7 +1264,6 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   ierr = PetscMalloc1(numClosureIndices,&closureIndices);CHKERRQ(ierr);
   {
     PetscInt count = 0, offset = 0;
-    numClosureIndices = 0;
     if (dofPerDim[P4EST_DIM] > 0) {
       closureIndices[count++] = offset;
     }
@@ -1415,10 +1426,12 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
         while (overlap < 0 && coarseCount < numCoarseQuads) {
           quadCoarse = &coarseQuads[coarseCount];
           PetscStackCallP4estReturn(overlap,p4est_quadrant_disjoint,(quadCoarse,quad));
-          coarseCount++;
+          if (overlap < 0) {
+            coarseCount++;
+          }
         }
         if (overlap != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"did not find overlapping coarse quad");
-        if (quadCoarse->level < quad->level || (quadCoarse->level == quad->level && !transferIdent)) { /* the "coarse" mesh is finer than the fine mesh at the point: continue */
+        if (quadCoarse->level > quad->level || (quadCoarse->level == quad->level && !transferIdent)) { /* the "coarse" mesh is finer than the fine mesh at the point: continue */
           continue;
         }
         if (quadCoarse->level == quad->level) { /* same quad present in coarse and fine mesh */
@@ -1443,7 +1456,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
           PetscInt j;
           for (j = 0; j < P4EST_DIM; j++) { /* get the coordinates of cell boundaries in each direction */
             coarseBound[1][j] = coarseBound[0][j] + P4EST_QUADRANT_LEN(quadCoarse->level);
-            fineBound[1][j]   = fineBound[0][j]   + P4EST_QUADRANT_LEN(quadCoarse->level);
+            fineBound[1][j]   = fineBound[0][j]   + P4EST_QUADRANT_LEN(quad->level);
           }
           for (j = 0; j < numClosureIndices; j++) {
             PetscInt k = closureIndices[j];
@@ -1567,7 +1580,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
       PetscInt pStartC, pEndC;
       PetscInt numRoots;
       PetscInt numLeaves;
-      PetscInt *leaves;
+      PetscInt *leaves, *remoteOffsets;
       PetscInt d;
       PetscSFNode *iremote;
       PetscSF  pointTransferSF;
@@ -1599,7 +1612,6 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
       ierr = PetscSectionCreate(PETSC_COMM_SELF,&leafSection);CHKERRQ(ierr);
       ierr = PetscSectionCreate(PETSC_COMM_SELF,&rootSection);CHKERRQ(ierr);
       ierr = PetscSectionSetChart(rootSection,pStartC,pEndC);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(leafSection,pStartF,pEndF);CHKERRQ(ierr);
       for (d = 0; d <= P4EST_DIM; d++) {
         PetscInt startC, endC, startF, endF, e;
 
@@ -1608,13 +1620,10 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
         for (e = startC; e < endC; e++) {
           ierr = PetscSectionSetDof(rootSection,e,dofPerDim[d]);CHKERRQ(ierr);
         }
-        for (e = startF; e < endF; e++) {
-          ierr = PetscSectionSetDof(leafSection,e,dofPerDim[d]);CHKERRQ(ierr);
-        }
       }
       ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
-      ierr = PetscSectionSetUp(leafSection);CHKERRQ(ierr);
-      ierr = PetscSFCreateSectionSF(pointTransferSF,rootSection,NULL,leafSection,sf);CHKERRQ(ierr);
+      ierr = PetscSFDistributeSection(pointTransferSF,rootSection,&remoteOffsets,leafSection);CHKERRQ(ierr);
+      ierr = PetscSFCreateSectionSF(pointTransferSF,rootSection,remoteOffsets,leafSection,sf);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&pointTransferSF);CHKERRQ(ierr);
@@ -1632,7 +1641,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DPPforestGetTransferSF"
+#define __FUNCT__ "DMPforestGetTransferSF"
 static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofPerDim[], PetscSF *sfAtoB, PetscSF *sfBtoA)
 {
   PetscErrorCode    ierr;
@@ -1816,39 +1825,85 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
     }
     next = next->next;
   }
+  pforest->labelsFinalized = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPforestLabelsFinalize"
-static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex, PetscBool recurse)
+static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 {
-  DM             adapt;
-  PetscBool      labelsFinalized = PETSC_TRUE;
-  PetscErrorCode ierr;
+  DM_Forest_pforest *pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  DM                adapt;
+  PetscBool         labelsFinalized = PETSC_TRUE;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetFineDM(dm,&adapt);CHKERRQ(ierr);
+  if (pforest->labelsFinalized) PetscFunctionReturn(0);
+  ierr = DMGetCoarseDM(dm,&adapt);CHKERRQ(ierr);
   if (adapt) {
     ierr = DMPforestGetLabelsFinalized(adapt,&labelsFinalized);CHKERRQ(ierr);
   }
   if (!adapt || !labelsFinalized) {
-    ierr = DMGetCoarseDM(dm,&adapt);CHKERRQ(ierr);
+    ierr = DMGetFineDM(dm,&adapt);CHKERRQ(ierr);
     if (adapt) {
       ierr = DMPforestGetLabelsFinalized(adapt,&labelsFinalized);CHKERRQ(ierr);
     }
   }
-  if (adapt) {
-    if (!labelsFinalized && recurse) {
-      DM adaptPlex;
+  if (adapt && labelsFinalized) {
+    PetscInt    dofPerDim[4]={1, 1, 1, 1};
+    PetscSF     transferForward, transferBackward;
+    PetscInt    pStart, pEnd, pStartA, pEndA;
+    PetscInt    *values, *adaptValues;
+    DMLabelLink next = adapt->labels->next;
+    DM          adaptPlex;
 
-      ierr = DMPforestGetPlex(adapt,&adaptPlex);CHKERRQ(ierr);
-      ierr = DMPforestLabelsFinalize(adapt,adaptPlex,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMPforestGetPlex(adapt,&adaptPlex);CHKERRQ(ierr);
+    ierr = DMPforestGetTransferSF(adapt,dm,dofPerDim,&transferForward,&transferBackward);CHKERRQ(ierr);
+    ierr = DMPlexGetChart(plex,&pStart,&pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetChart(adaptPlex,&pStartA,&pEndA);CHKERRQ(ierr);
+    ierr = PetscMalloc2(pEnd-pStart,&values,pEndA-pStartA,&adaptValues);CHKERRQ(ierr);
+    while (next) {
+      DMLabel adaptLabel = next->label;
+      const char *name = adaptLabel->name;
+      PetscBool isDepth;
+      PetscInt  p;
+
+      ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
+      if (!isDepth) {
+        DMLabel label;
+
+        /* label was created earlier */
+        ierr = DMGetLabel(dm,name,&label);CHKERRQ(ierr);
+
+        for (p = pStartA; p < pEndA; p++) {
+          ierr = DMLabelGetValue(adaptLabel,p,&adaptValues[p]);CHKERRQ(ierr);
+        }
+
+        if (transferForward) {
+          ierr = PetscSFBcastBegin(transferForward,MPIU_INT,adaptValues,values);CHKERRQ(ierr);
+        }
+        if (transferBackward) {
+          ierr = PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX);CHKERRQ(ierr);
+        }
+        if (transferForward) {
+          ierr = PetscSFBcastEnd(transferForward,MPIU_INT,adaptValues,values);CHKERRQ(ierr);
+        }
+        if (transferBackward) {
+          ierr = PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX);CHKERRQ(ierr);
+        }
+
+        for (p = pStart; p < pEnd; p++) {
+          ierr = DMLabelSetValue(label,p,values[p]);CHKERRQ(ierr);
+        }
+
+      }
+      next = next->next;
     }
-    /* TODO: transfer labels from a fine/coarse mesh */
-#if 0
-    ierr = DMPforestLabelsTransfer(adapt,dm);CHKERRQ(ierr);
-#endif
+    ierr = PetscFree2(values,adaptValues);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&transferForward);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&transferBackward);CHKERRQ(ierr);
+    pforest->labelsFinalized = PETSC_TRUE;
   }
   else {
     /* Initialize labels from the base dm */
@@ -1889,6 +1944,9 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   if (!pforest->plex) {
     ierr = DMCreate(comm,&newPlex);CHKERRQ(ierr);
     ierr = DMSetType(newPlex,DMPLEX);CHKERRQ(ierr);
+    ierr = PetscFree(newPlex->labels);CHKERRQ(ierr); /* share labels */
+    dm->labels->refct++;
+    newPlex->labels = dm->labels;
     ierr = DMForestGetAdjacencyDimension(dm,&adjDim);CHKERRQ(ierr);
     ierr = DMForestGetAdjacencyCodimension(dm,&adjCodim);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
@@ -1971,7 +2029,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (remotes);
 
     /* copy labels, boundary */
-    ierr = DMPforestLabelsFinalize(dm,newPlex,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPforestLabelsFinalize(dm,newPlex);CHKERRQ(ierr);
     ierr = DMCopyBoundary(dm,newPlex);CHKERRQ(ierr);
   }
   newPlex = pforest->plex;
