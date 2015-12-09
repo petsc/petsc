@@ -82,6 +82,11 @@ struct _p_Tao {
     Mat gradient_norm;
     Vec gradient_norm_tmp;
     Vec sep_objective;
+    Vec sep_weights_v;
+    PetscInt sep_weights_n;
+    PetscInt *sep_weights_rows;
+    PetscInt *sep_weights_cols;
+    PetscReal *sep_weights_w;
     Vec constraints;
     Vec constraints_equality;
     Vec constraints_inequality;
