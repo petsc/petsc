@@ -1034,7 +1034,6 @@ typedef struct {
   PetscReal     zeropivot;      /* pivot is called zero if less than this */
   PetscReal     shifttype;      /* type of shift added to matrix factor to prevent zero pivots */
   PetscReal     shiftamount;     /* how large the shift is */
-  MatFactorError errortype;      /* type of error */
 } MatFactorInfo;
 
 PETSC_EXTERN PetscErrorCode MatFactorInfoInitialize(MatFactorInfo*);
