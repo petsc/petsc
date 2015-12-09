@@ -28,6 +28,7 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   (*label)->refct          = 1;
   (*label)->state          = -1;
   (*label)->numStrata      = 0;
+  (*label)->defaultValue   = -1;
   (*label)->stratumValues  = NULL;
   (*label)->arrayValid     = NULL;
   (*label)->stratumSizes   = NULL;
@@ -312,8 +313,9 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   ierr = PetscNew(labelnew);CHKERRQ(ierr);
   ierr = PetscStrallocpy(label->name, &(*labelnew)->name);CHKERRQ(ierr);
 
-  (*labelnew)->refct      = 1;
-  (*labelnew)->numStrata  = label->numStrata;
+  (*labelnew)->refct        = 1;
+  (*labelnew)->numStrata    = label->numStrata;
+  (*labelnew)->defaultValue = label->defaultValue;
   if (label->numStrata) {
     ierr = PetscMalloc1(label->numStrata, &(*labelnew)->stratumValues);CHKERRQ(ierr);
     ierr = PetscMalloc1(label->numStrata, &(*labelnew)->stratumSizes);CHKERRQ(ierr);
@@ -491,9 +493,55 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelGetDefaultValue"
+/*
+  DMLabelGetDefaultValue - Get the default value returned by DMLabelGetValue() if a point has not been explicitly given a value.
+  When a label is created, it is initialized to -1.
+
+  Input parameter:
+. label - a DMLabel object
+
+  Output parameter:
+. defaultValue - the default value
+
+  Level: beginner
+
+.seealso: DMLabelSetDefaultValue(), DMLabelGetValue(), DMLabelSetValue()
+*/
+PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
+{
+  PetscFunctionBegin;
+  *defaultValue = label->defaultValue;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelSetDefaultValue"
+/*
+  DMLabelSetDefaultValue - Set the default value returned by DMLabelGetValue() if a point has not been explicitly given a value.
+  When a label is created, it is initialized to -1.
+
+  Input parameter:
+. label - a DMLabel object
+
+  Output parameter:
+. defaultValue - the default value
+
+  Level: beginner
+
+.seealso: DMLabelGetDefaultValue(), DMLabelGetValue(), DMLabelSetValue()
+*/
+PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
+{
+  PetscFunctionBegin;
+  label->defaultValue = defaultValue;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelGetValue"
 /*@
-  DMLabelGetValue - Return the value a label assigns to a point, or -1
+  DMLabelGetValue - Return the value a label assigns to a point, or the label's default value (which is initially -1, and can be changed with DMLabelSetDefaultValue())
 
   Input Parameters:
 + label - the DMLabel
@@ -504,7 +552,7 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelSetValue(), DMLabelClearValue()
+.seealso: DMLabelCreate(), DMLabelSetValue(), DMLabelClearValue(), DMLabelGetDefaultValue(), DMLabelSetDefaultValue()
 @*/
 PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 {
@@ -513,7 +561,7 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 
   PetscFunctionBegin;
   PetscValidPointer(value, 3);
-  *value = -1;
+  *value = label->defaultValue;
   for (v = 0; v < label->numStrata; ++v) {
     if (label->arrayValid[v]) {
       PetscInt i;
@@ -539,7 +587,7 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelSetValue"
 /*@
-  DMLabelSetValue - Set the value a label assigns to a point
+  DMLabelSetValue - Set the value a label assigns to a point.  If the value is the same as the label's default value (which is initially -1, and can be changed with DMLabelSetDefaultValue() to somethingg different), then this function will do nothing.
 
   Input Parameters:
 + label - the DMLabel
@@ -548,7 +596,7 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelClearValue()
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelClearValue(), DMLabelGetDefaultValue(), DMLabelSetDefaultValue()
 @*/
 PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 {
@@ -558,6 +606,7 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 
   PetscFunctionBegin;
   /* Find, or add, label value */
+  if (value == label->defaultValue) PetscFunctionReturn(0);
   for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) break;
   }
@@ -828,6 +877,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscInt      *remoteOffsets, *rootStrata, *rootIdx, *leafStrata, *strataIdx;
   char          *name;
   PetscInt       nameSize;
+  PetscInt       bcastbuf[2];
   size_t         len = 0;
   PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
@@ -847,8 +897,13 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   ierr = DMLabelCreate(name, labelNew);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
   /* Bcast numStrata */
-  if (!rank) (*labelNew)->numStrata = label->numStrata;
-  ierr = MPI_Bcast(&(*labelNew)->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  if (!rank) {
+    bcastbuf[0] = label->numStrata;
+    bcastbuf[1] = label->defaultValue;
+  }
+  ierr = MPI_Bcast(bcastbuf, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  (*labelNew)->numStrata    = bcastbuf[0];
+  (*labelNew)->defaultValue = bcastbuf[1];
   /* Bcast stratumValues */
   ierr = PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->stratumValues);CHKERRQ(ierr);
   if (!rank) {ierr = PetscMemcpy((*labelNew)->stratumValues, label->stratumValues, label->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}

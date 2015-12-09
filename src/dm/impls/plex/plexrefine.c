@@ -6249,6 +6249,7 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
     PetscBool       isDepth;
     IS              valueIS;
     const PetscInt *values;
+    PetscInt        defVal;
     PetscInt        numValues, val;
 
     ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
@@ -6257,6 +6258,8 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
     ierr = DMCreateLabel(rdm, lname);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
     ierr = DMGetLabel(rdm, lname, &labelNew);CHKERRQ(ierr);
+    ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
+    ierr = DMLabelSetDefaultValue(labelNew,defVal);CHKERRQ(ierr);
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
     ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
