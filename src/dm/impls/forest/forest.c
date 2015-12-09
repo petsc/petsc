@@ -708,6 +708,16 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsOb
   if (flg) {
     ierr = DMForestSetCellWeightFactor(dm,weightsFactor);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsInt("-dm_refine","equivalent to -dm_forest_set_minimum_refinement and -dm_forest_set_initial_refinement with the same value",NULL,minRefinement,&minRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMinimumRefinement(dm,minRefinement);CHKERRQ(ierr);
+    ierr = DMForestSetInitialRefinement(dm,minRefinement);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-dm_refine_hierarchy","equivalent to -dm_forest_set_minimum_refinement 0 and -dm_forest_set_initial_refinement",NULL,initRefinement,&initRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMinimumRefinement(dm,0);CHKERRQ(ierr);
+    ierr = DMForestSetInitialRefinement(dm,initRefinement);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
