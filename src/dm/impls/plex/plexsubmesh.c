@@ -425,6 +425,8 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
     ierr = DMCreateLabel(dmNew, lname);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
     ierr = DMGetLabel(dmNew, lname, &newlabel);CHKERRQ(ierr);
+    ierr = DMLabelGetDefaultValue(label,&val);CHKERRQ(ierr);
+    ierr = DMLabelSetDefaultValue(newlabel,val);CHKERRQ(ierr);
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
     ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
