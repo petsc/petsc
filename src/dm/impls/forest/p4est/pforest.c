@@ -1,3 +1,4 @@
+#include <petsc/private/dmimpl.h>
 #include <petsc/private/dmforestimpl.h>
 #include <petsc/private/dmpleximpl.h>
 #include <petsc/private/dmlabelimpl.h>
@@ -977,6 +978,9 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   ierr = PetscObjectReference((PetscObject)dmA->defaultSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&dmB->defaultSF);CHKERRQ(ierr);
   dmB->defaultSF = dmA->defaultSF;
+  dmA->boundary->refct++;
+  ierr = DMBoundaryDestroy(&(dmB->boundary));CHKERRQ(ierr);
+  dmB->boundary = dmA->boundary;
   PetscFunctionReturn(0);
 }
 
@@ -2034,9 +2038,8 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (leaves);
     sc_array_destroy (remotes);
 
-    /* copy labels, boundary */
+    /* copy labels */
     ierr = DMPforestLabelsFinalize(dm,newPlex);CHKERRQ(ierr);
-    ierr = DMCopyBoundary(dm,newPlex);CHKERRQ(ierr);
   }
   newPlex = pforest->plex;
   if (plex) {

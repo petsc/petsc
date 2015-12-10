@@ -1107,7 +1107,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
   PetscFunctionBegin;
   /* Handle boundary conditions */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) dm), NULL, "Boundary condition options", "");CHKERRQ(ierr);
-  for (b = dm->boundary; b; b = b->next) {
+  for (b = dm->boundary->next; b; b = b->next) {
     char      optname[1024];
     PetscInt  ids[1024], len = 1024, i;
     PetscBool flg;

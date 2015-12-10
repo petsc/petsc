@@ -148,6 +148,14 @@ struct _n_Boundary {
   DMBoundary  next;
 };
 
+struct _n_DMBoundaryLinkList {
+  PetscInt   refct;
+  DMBoundary next;
+};
+
+typedef struct _n_DMBoundaryLinkList *DMBoundaryLinkList;
+
+PETSC_EXTERN PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList*);
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
@@ -205,7 +213,7 @@ struct _p_DM {
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscDS                 prob;
-  DMBoundary              boundary;          /* List of boundary conditions */
+  DMBoundaryLinkList      boundary;          /* List of boundary conditions */
   /* Output structures */
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */

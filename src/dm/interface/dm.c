@@ -71,8 +71,10 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->outputSequenceVal = 0.0;
   ierr = DMSetVecType(v,VECSTANDARD);CHKERRQ(ierr);
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
-  ierr = PetscCalloc1(1,&(v->labels));CHKERRQ(ierr);
+  ierr = PetscNew(&(v->labels));CHKERRQ(ierr);
   v->labels->refct = 1;
+  ierr = PetscNew(&(v->boundary));CHKERRQ(ierr);
+  v->boundary->refct = 1;
   *dm = v;
   PetscFunctionReturn(0);
 }
@@ -503,7 +505,7 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode BoundaryDestroy(DMBoundary *boundary);
+PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList *boundary);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDestroy"
@@ -629,7 +631,7 @@ PetscErrorCode  DMDestroy(DM *dm)
     }
     ierr = PetscFree((*dm)->labels);CHKERRQ(ierr);
   }
-  ierr = BoundaryDestroy(&(*dm)->boundary);CHKERRQ(ierr);
+  ierr = DMBoundaryDestroy(&(*dm)->boundary);CHKERRQ(ierr);
 
   ierr = PetscObjectDestroy(&(*dm)->dmksp);CHKERRQ(ierr);
   ierr = PetscObjectDestroy(&(*dm)->dmsnes);CHKERRQ(ierr);
@@ -5393,14 +5395,16 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 /*=== DMBoundary code ===*/
 
 #undef __FUNCT__
-#define __FUNCT__ "BoundaryDuplicate"
-static PetscErrorCode BoundaryDuplicate(DMBoundary bd, DMBoundary *boundary)
+#define __FUNCT__ "DMBoundaryDuplicate"
+static PetscErrorCode DMBoundaryDuplicate(DMBoundaryLinkList bd, DMBoundaryLinkList *boundary)
 {
-  DMBoundary     b = bd, b2, bold = NULL;
+  DMBoundary     b = bd->next, b2, bold = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *boundary = NULL;
+  ierr = PetscNew(boundary);CHKERRQ(ierr);
+  (*boundary)->refct = 1;
+  (*boundary)->next = NULL;
   for (; b; b = b->next, bold = b2) {
     ierr = PetscNew(&b2);CHKERRQ(ierr);
     ierr = PetscStrallocpy(b->name, (char **) &b2->name);CHKERRQ(ierr);
@@ -5417,23 +5421,26 @@ static PetscErrorCode BoundaryDuplicate(DMBoundary bd, DMBoundary *boundary)
     b2->numids    = b->numids;
     b2->ctx       = b->ctx;
     b2->next      = NULL;
-    if (!*boundary) *boundary   = b2;
+    if (!(*boundary)->next) (*boundary)->next   = b2;
     if (bold)        bold->next = b2;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "BoundaryDestroy"
-static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
+#define __FUNCT__ "DMBoundaryDestroy"
+PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList *boundary)
 {
   DMBoundary     b, next;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!boundary) PetscFunctionReturn(0);
-  b = *boundary;
-  *boundary = NULL;
+  if (--((*boundary)->refct)) {
+    *boundary = NULL;
+    PetscFunctionReturn(0);
+  }
+  b = (*boundary)->next;
   for (; b; b = next) {
     next = b->next;
     ierr = PetscFree(b->comps);CHKERRQ(ierr);
@@ -5442,6 +5449,7 @@ static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
     ierr = PetscFree(b->labelname);CHKERRQ(ierr);
     ierr = PetscFree(b);CHKERRQ(ierr);
   }
+  ierr = PetscFree(*boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5453,8 +5461,9 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = BoundaryDuplicate(dm->boundary, &dmNew->boundary);CHKERRQ(ierr);
-  for (b = dmNew->boundary; b; b = b->next) {
+  ierr = DMBoundaryDestroy(&dmNew->boundary);CHKERRQ(ierr);
+  ierr = DMBoundaryDuplicate(dm->boundary, &dmNew->boundary);CHKERRQ(ierr);
+  for (b = dmNew->boundary->next; b; b = b->next) {
     if (b->labelname) {
       ierr = DMGetLabel(dmNew, b->labelname, &b->label);CHKERRQ(ierr);
       if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
@@ -5507,14 +5516,14 @@ PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], co
     ierr = DMGetLabel(dm, b->labelname, &b->label);CHKERRQ(ierr);
     if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
   }
-  b->essential   = isEssential;
-  b->field       = field;
-  b->numcomps    = numcomps;
-  b->func        = bcFunc;
-  b->numids      = numids;
-  b->ctx         = ctx;
-  b->next        = dm->boundary;
-  dm->boundary   = b;
+  b->essential       = isEssential;
+  b->field           = field;
+  b->numcomps        = numcomps;
+  b->func            = bcFunc;
+  b->numids          = numids;
+  b->ctx             = ctx;
+  b->next            = dm->boundary->next;
+  dm->boundary->next = b;
   PetscFunctionReturn(0);
 }
 
@@ -5535,7 +5544,7 @@ PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], co
 @*/
 PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 {
-  DMBoundary b = dm->boundary;
+  DMBoundary b = dm->boundary->next;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -5576,7 +5585,7 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 @*/
 PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
-  DMBoundary b    = dm->boundary;
+  DMBoundary b    = dm->boundary->next;
   PetscInt   n    = 0;
 
   PetscFunctionBegin;
@@ -5634,7 +5643,7 @@ PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const c
 #define __FUNCT__ "DMIsBoundaryPoint"
 PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 {
-  DMBoundary     b    = dm->boundary;
+  DMBoundary     b    = dm->boundary->next;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
