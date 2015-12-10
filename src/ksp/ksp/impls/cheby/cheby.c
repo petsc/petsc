@@ -424,6 +424,8 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
           ierr = KSPGetIterationNumber(cheb->kspest,&its);CHKERRQ(ierr);
           if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
             ierr = PetscInfo(ksp,"Eigen estimator KSP_DIVERGED_PCSETUP_FAILED\n");CHKERRQ(ierr);
+            ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+            ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
           } else {
             SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Eigen estimator failed: %s at iteration %D",KSPConvergedReasons[reason],its);
           }

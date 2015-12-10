@@ -13,10 +13,17 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
   PC_MG_Levels   *mgc,*mglevels = *mglevelsin;
   PetscErrorCode ierr;
   PetscInt       cycles = (mglevels->level == 1) ? 1 : (PetscInt) mglevels->cycles;
+  PC             subpc;
+  PCFailedReason pcreason;
 
   PetscFunctionBegin;
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSolve(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);  /* pre-smooth */
+  ierr = KSPGetPC(mglevels->smoothd,&subpc);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(subpc,&pcreason);CHKERRQ(ierr); 
+  if (pcreason) {
+    pc->failedreason = PC_SUBPC_ERROR;
+  }
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   if (mglevels->level) {  /* not the coarsest grid */
     if (mglevels->eventresidual) {ierr = PetscLogEventBegin(mglevels->eventresidual,0,0,0,0);CHKERRQ(ierr);}

@@ -1563,6 +1563,8 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
   } else SETERRQ(PetscObjectComm((PetscObject)matin),PETSC_ERR_SUP,"Parallel SOR not supported");
 
   ierr = VecDestroy(&bb1);CHKERRQ(ierr);
+
+  matin->errortype = mat->A->errortype;
   PetscFunctionReturn(0);
 }
 
