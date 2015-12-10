@@ -771,6 +771,9 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSetUp(mglevels[i]->smoothd);CHKERRQ(ierr);
+    if (mglevels[i]->smoothd->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+      pc->failedreason = PC_SUBPC_ERROR;
+    }
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     if (!mglevels[i]->residual) {
       Mat mat;
@@ -792,12 +795,18 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothu,PETSC_TRUE);CHKERRQ(ierr);
       if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = KSPSetUp(mglevels[i]->smoothu);CHKERRQ(ierr);
+      if (mglevels[i]->smoothu->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+        pc->failedreason = PC_SUBPC_ERROR;
+      }
       if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     }
   }
 
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSetUp(mglevels[0]->smoothd);CHKERRQ(ierr);
+  if (mglevels[0]->smoothd->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    pc->failedreason = PC_SUBPC_ERROR;
+  }
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
 
   /*
