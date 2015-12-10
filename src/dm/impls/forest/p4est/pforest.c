@@ -1697,7 +1697,13 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   while (next) {
     DMLabel baseLabel;
     DMLabel label = next->label;
+    PetscBool isDepth;
 
+    ierr = PetscStrcmp(label->name,"depth",&isDepth);CHKERRQ(ierr);
+    if (isDepth) {
+      next = next->next;
+      continue;
+    }
     ierr = DMGetLabel(base,label->name,&baseLabel);CHKERRQ(ierr);
     ierr = DMLabelCreateIndex(baseLabel,pStart,pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; p++) {
@@ -2119,6 +2125,7 @@ static PetscErrorCode DMCreateCoordinateDM_pforest(DM dm,DM *cdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(plex,cdm);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)*cdm);CHKERRQ(ierr);
