@@ -2073,6 +2073,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 #define __FUNCT__ _pforest_string(DMConvert_pforest_plex)
 static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 {
+  DM_Forest      *forest;
   DM_Forest_pforest *pforest;
   DM             refTree, newPlex;
   PetscInt       adjDim, adjCodim, coordDim;
@@ -2097,7 +2098,8 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   if (!isPforest) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s\n",DMPFOREST,((PetscObject)dm)->type_name);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   if (dim != P4EST_DIM) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Expected DM dimension %d, got %d\n",P4EST_DIM,dim);
-  pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
+  forest = (DM_Forest *) dm->data;
+  pforest = (DM_Forest_pforest *) forest->data;
   if (!pforest->plex) {
     ierr = DMCreate(comm,&newPlex);CHKERRQ(ierr);
     ierr = DMSetType(newPlex,DMPLEX);CHKERRQ(ierr);
@@ -2187,6 +2189,13 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
     /* copy labels */
     ierr = DMPforestLabelsFinalize(dm,newPlex);CHKERRQ(ierr);
+
+    if (forest->setFromOptions) {
+      ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex);CHKERRQ(ierr);
+      ierr = PetscObjectProcessOptionsHandlers((PetscObject) newPlex);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
   }
   newPlex = pforest->plex;
   if (plex) {

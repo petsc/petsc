@@ -635,7 +635,6 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
     KSP       fksp, cksp;
     Vec       fu,   cu;
     PetscInt  levels, l;
-    PetscBool isPlex;
 
     ierr = KSPBuildSolution(ksp, NULL, &du);CHKERRQ(ierr);
     ierr = PetscObjectComposedDataGetInt((PetscObject) ksp, PetscMGLevelId, level, hasLevel);CHKERRQ(ierr);
