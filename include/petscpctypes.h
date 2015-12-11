@@ -297,6 +297,6 @@ PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
 E*/
-typedef enum {PC_FACTOR_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTOR_NUMERIC_ZEROPIVOT,PC_FACTOR_OUTMEMORY,PC_FACTOR_OTHER,PC_SUBPC_ERROR} PCFailedReason;
+typedef enum {PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTOR_NUMERIC_ZEROPIVOT,PC_FACTOR_OUTMEMORY,PC_FACTOR_OTHER,PC_SUBPC_ERROR} PCFailedReason;
 PETSC_EXTERN const char *const PCFailedReasons[];
 #endif
