@@ -626,8 +626,19 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   if (flg) {
     ierr = DMLabelView(ovAdjByRank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  /* Make process SF and invert sender to receiver label */
-  ierr = DMPlexCreateTwoSidedProcessSF(dm, sfPoint, rootSection, rootrank, leafSection, leafrank, NULL, &sfProc);CHKERRQ(ierr);
+  /* Make global process SF and invert sender to receiver label */
+  {
+    /* Build a global process SF */
+    PetscSFNode *remoteProc;
+    ierr = PetscMalloc1(numProcs, &remoteProc);CHKERRQ(ierr);
+    for (p = 0; p < numProcs; ++p) {
+      remoteProc[p].rank  = p;
+      remoteProc[p].index = rank;
+    }
+    ierr = PetscSFCreate(comm, &sfProc);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) sfProc, "Process SF");CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sfProc, numProcs, numProcs, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
   ierr = DMLabelCreate("Overlap label", ovLabel);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelInvert(dm, ovAdjByRank, sfProc, *ovLabel);CHKERRQ(ierr);
   /* Add owned points, except for shared local points */
