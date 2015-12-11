@@ -904,7 +904,10 @@ cdef PetscErrorCode MatMultAdd_Python(
     cdef multAdd = PyMat(mat).multAdd
     if multAdd is None:
         CHKERR( MatMult(mat,x,y) )
-        CHKERR( VecAXPY(y,1.0,v) )
+        if y == v:
+            CHKERR( VecScale(y,2.0) )
+        else:
+            CHKERR( VecAXPY(y,1.0,v) )
         return FunctionEnd()
     if multAdd is None: return UNSUPPORTED(b"multAdd")
     multAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
