@@ -430,6 +430,7 @@ static PetscErrorCode ReCompute(TS ts,TJScheduler *tjsch,PetscInt stepnumbegin,P
 static PetscErrorCode TopLevelStore(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscInt localstepnum,PetscInt laststridesize,PetscBool *done)
 {
   Stack          *stack = &tjsch->stack;
+  DiskStack      *diskstack = &tjsch->diskstack;
   PetscInt       stridenum;
   PetscErrorCode ierr;
 
@@ -443,12 +444,14 @@ static PetscErrorCode TopLevelStore(TS ts,TJScheduler *tjsch,PetscInt stepnum,Pe
     if (tjsch->save_stack) {
       if (localstepnum == tjsch->stride-1 && stepnum < tjsch->total_steps-laststridesize) { /* current step will be saved without going through stack */
         ierr = StackDumpAll(ts,stack,stridenum+1);CHKERRQ(ierr);
+        if (diskstack) diskstack->container[++diskstack->top] = stridenum+1;
         PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
         *done = PETSC_TRUE;
       }
     } else {
       if (!tjsch->recompute && localstepnum == 0 && stepnum < tjsch->total_steps-laststridesize) {
         ierr = DumpSingle(ts,stack,stridenum+1);CHKERRQ(ierr);
+        if (diskstack) diskstack->container[++diskstack->top] = stridenum+1;
         PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump a single point (solution) to file\033[0m\n");
         *done = PETSC_TRUE;
       }
@@ -457,12 +460,14 @@ static PetscErrorCode TopLevelStore(TS ts,TJScheduler *tjsch,PetscInt stepnum,Pe
     if (tjsch->save_stack) {
       if (localstepnum == 0 && stepnum < tjsch->total_steps && stepnum != 0) { /* skip the first stride */
         ierr = StackDumpAll(ts,stack,stridenum);CHKERRQ(ierr);
+        if (diskstack) diskstack->container[++diskstack->top] = stridenum;
         PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump stack to file\033[0m\n");
         *done = PETSC_TRUE;
       }
     } else {
       if (!tjsch->recompute && localstepnum == 1 && stepnum < tjsch->total_steps-laststridesize) {
         ierr = DumpSingle(ts,stack,stridenum+1);CHKERRQ(ierr);
+        if (diskstack) diskstack->container[++diskstack->top] = stridenum+1;
         PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mDump a single point (solution+stages) to file\033[0m\n");
         *done = PETSC_TRUE;
       }
@@ -1064,12 +1069,10 @@ static PetscErrorCode GetTrajTLR(TS ts,TJScheduler *tjsch,PetscInt stepnum)
       PetscPrintf(PETSC_COMM_WORLD,"\x1B[35mSkip the step from %D to %D (already checkpointed)\033[0m\n",stepnum-localstepnum+tjsch->rctx->oldcapo,stepnum-localstepnum+tjsch->rctx->oldcapo+1);
     }
     if (e->stepnum < stepnum) {
-      PetscPrintf(PETSC_COMM_WORLD,"recompute\n");
       tjsch->recompute = PETSC_TRUE;
       ierr = ReCompute(ts,tjsch,e->stepnum,stepnum);CHKERRQ(ierr);
     }
     if (e->stepnum == stepnum) {
-      PetscPrintf(PETSC_COMM_WORLD,"stack pop\n");
       ierr = StackPop(stack,&e);CHKERRQ(ierr);
       ierr = ElementDestroy(stack,e);CHKERRQ(ierr);
     }
@@ -1083,7 +1086,6 @@ static PetscErrorCode GetTrajTLR(TS ts,TJScheduler *tjsch,PetscInt stepnum)
 static PetscErrorCode SetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscReal time,Vec X)
 {
   Stack          *stack = &tjsch->stack;
-  DiskStack      *diskstack = &tjsch->diskstack;
   PetscInt       store,localstepnum,stridenum,laststridesize;
   StackElement   e;
   RevolveCTX     *rctx = tjsch->rctx;
@@ -1114,7 +1116,6 @@ static PetscErrorCode SetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum,Pets
       rctx->capo  = 0;
       rctx->fine  = tjsch->stride;
       tjsch->rctx->reverseonestep = PETSC_FALSE;
-      diskstack->container[++diskstack->top] = stack->solution_only? stridenum+1 : stridenum;
       PetscFunctionReturn(0);
     }
   }
@@ -1138,7 +1139,7 @@ static PetscErrorCode GetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum)
 {
   Stack          *stack = &tjsch->stack;
   DiskStack      *diskstack = &tjsch->diskstack;
-  PetscInt       whattodo,shift;
+  PetscInt       i,whattodo,shift;
   PetscInt       localstepnum,stridenum,restoredstridenum,laststridesize,store;
   PetscReal      stepsize;
   StackElement   e;
@@ -1189,14 +1190,18 @@ static PetscErrorCode GetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum)
         tjsch->skip_trajectory = PETSC_TRUE;
         ierr = ReCompute(ts,tjsch,stridenum*tjsch->stride-1,stridenum*tjsch->stride);CHKERRQ(ierr);
         tjsch->skip_trajectory = PETSC_FALSE;
-        PetscPrintf(PETSC_COMM_WORLD,"finish last step\n");
         if (restoredstridenum < stridenum) {
-          PetscPrintf(PETSC_COMM_WORLD,"clear stack\n");
           /* clear the stack */
+          if (stack->top > -1) {
+            for (i=0;i<=stack->top;i++) {
+              ierr = VecDestroy(&stack->container[i]->X);CHKERRQ(ierr);
+              ierr = PetscFree(stack->container[i]);CHKERRQ(ierr);
+            }
+            stack->top = -1;
+          }
           tjsch->recompute = PETSC_TRUE;
           ierr = ReCompute(ts,tjsch,restoredstridenum*tjsch->stride,stepnum);CHKERRQ(ierr);
         } else { /* stack ready, fast forward revolve status */
-          PetscPrintf(PETSC_COMM_WORLD,"reset revolve\n");
           revolve_reset();
           revolve_create_offline(tjsch->stride,tjsch->max_cps_ram);
           tjsch->rctx->check = 0;
@@ -1224,7 +1229,14 @@ static PetscErrorCode GetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum)
         ierr = StackLoadAll(ts,stack,restoredstridenum);CHKERRQ(ierr);
         if (restoredstridenum < stridenum) {
           /* clear the stack */
-          //
+          if (stack->top > -1) {
+            for (i=0;i<=stack->top;i++) {
+              ierr = VecDestroy(&stack->container[i]->X);CHKERRQ(ierr);
+              ierr = VecDestroyVecs(stack->numY,&stack->container[i]->Y);CHKERRQ(ierr);
+              ierr = PetscFree(stack->container[i]);CHKERRQ(ierr);
+            }
+            stack->top = -1;
+          }
           tjsch->recompute = PETSC_TRUE;
           ierr = ReCompute(ts,tjsch,restoredstridenum*tjsch->stride,stepnum);CHKERRQ(ierr);
         } else { /* stack ready, fast forward revolve status */
@@ -1262,9 +1274,7 @@ static PetscErrorCode GetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum)
         }
       }
     }
-    if ((!tjsch->save_stack && restoredstridenum+1 == stridenum) || (tjsch->save_stack && restoredstridenum == stridenum)) {
-      diskstack->top--;
-    }
+    if (restoredstridenum == stridenum) diskstack->top--;
     PetscFunctionReturn(0);
   }
 
