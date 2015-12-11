@@ -925,10 +925,10 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_FieldSplit"
 static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
 {
-  PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
-  PetscErrorCode    ierr;
-  PC_FieldSplitLink ilink = jac->head;
-  PetscInt          cnt,bs;
+  PC_FieldSplit      *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode     ierr;
+  PC_FieldSplitLink  ilink = jac->head;
+  PetscInt           cnt,bs;
   KSPConvergedReason reason;
 
   PetscFunctionBegin;
@@ -1047,10 +1047,11 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyTranspose_FieldSplit"
 static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
 {
-  PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
-  PetscErrorCode    ierr;
-  PC_FieldSplitLink ilink = jac->head;
-  PetscInt          bs;
+  PC_FieldSplit      *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode     ierr;
+  PC_FieldSplitLink  ilink = jac->head;
+  PetscInt           bs;
+  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
