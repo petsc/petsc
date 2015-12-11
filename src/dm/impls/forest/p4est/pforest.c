@@ -1678,6 +1678,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   DM_Forest         *forest  = (DM_Forest *) dm->data;
   DM_Forest_pforest *pforest = (DM_Forest_pforest *) forest->data;
   PetscInt          cLocalStart, cLocalEnd, cStart, cEnd, fStart, fEnd, eStart, eEnd, vStart, vEnd;
+  PetscInt          cStartBase, cEndBase, fStartBase, fEndBase, vStartBase, vEndBase, eStartBase, eEndBase;
   PetscInt          pStart, pEnd, p;
   DM                base;
   PetscInt          *star = NULL, starSize;
@@ -1690,6 +1691,10 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
   cLocalStart = pforest->cLocalStart;
   cLocalEnd   = pforest->cLocalEnd;
+  ierr = DMPlexGetHeightStratum(base,0,&cStartBase,&cEndBase);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(base,1,&fStartBase,&fEndBase);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(base,1,&eStartBase,&eEndBase);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(base,0,&vStartBase,&vEndBase);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(plex,1,&fStart,&fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(plex,1,&eStart,&eEnd);CHKERRQ(ierr);
@@ -1716,7 +1721,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
       p4est_quadrant_t * ghosts = (p4est_quadrant_t *) pforest->ghost->ghosts.array;
       p4est_tree_t *trees = (p4est_tree_t *) pforest->forest->trees->array;
       p4est_quadrant_t * q;
-      PetscInt t;
+      PetscInt t, val;
 
       ierr = DMPlexGetTransitiveClosure(plex,p,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
       for (s = 0; s < starSize; s++) {
@@ -1725,19 +1730,18 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         if (cStart <= point && point < cEnd) {
           ierr = DMPlexGetTransitiveClosure(plex,point,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
           for (l = 0; l < closureSize; l++) {
-            PetscInt point = star[2*s];
             if (closure[2 * l] == p) {
               c = point;
               break;
             }
           }
-          ierr = DMPlexRestoreTransitiveClosure(plex,point,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+          ierr = DMPlexRestoreTransitiveClosure(plex,point,PETSC_TRUE,NULL,&closure);CHKERRQ(ierr);
           if (l < closureSize) {
             break;
           }
         }
       }
-      ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
+      ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,NULL,&star);CHKERRQ(ierr);
       if (s == starSize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %d in its closure",p);
 
       if (c < cLocalStart) {
@@ -1779,15 +1783,8 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
       }
 
       if (l == 0) { /* cell */
-        PetscBool hasT;
-
-        ierr = DMLabelHasPoint(baseLabel,t,&hasT);CHKERRQ(ierr);
-        if (hasT) {
-          PetscInt val;
-
-          ierr = DMLabelGetValue(baseLabel,t,&val);CHKERRQ(ierr);
-          ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
-        }
+        ierr = DMLabelGetValue(baseLabel,t+cStartBase,&val);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
       }
       else if (l >= 1 && l < 1 + P4EST_FACES) { /* facet */
         p4est_quadrant_t nq;
@@ -1796,41 +1793,191 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         l = PetscFaceToP4estFace[l - 1];
         PetscStackCallP4est(p4est_quadrant_face_neighbor,(q,l,&nq));
         PetscStackCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
-        if (!isInside) {
+        if (isInside) {
           /* this facet is in the interior of a tree, so it inherits the label of the tree */
-          PetscInt val;
-
-          ierr = DMLabelGetValue(baseLabel,t,&val);CHKERRQ(ierr);
+          ierr = DMLabelGetValue(baseLabel,t+cStartBase,&val);CHKERRQ(ierr);
           ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
         }
         else {
-          PetscInt f = pforest->topo->tree_face_to_uniq[P4EST_FACES * t + l], val;
+          PetscInt f = pforest->topo->tree_face_to_uniq[P4EST_FACES * t + l];
 
-          ierr = DMLabelGetValue(baseLabel,f+fStart,&val);CHKERRQ(ierr);
+          ierr = DMLabelGetValue(baseLabel,f+fStartBase,&val);CHKERRQ(ierr);
           ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
         }
       }
-#ifdef P4_TO_P8
+#if defined(P4_TO_P8)
       else if (l >= 1 + P4EST_FACES && l < 1 + P4EST_FACES + P8EST_EDGES) { /* edge */
-        PetscInt e, val;
+        p4est_quadrant_t nq;
+        int              isInside;
 
         l = PetscEdgeToP4estEdge[l - (1 + P4EST_FACES)];
-        e = pforest->topo->conn->tree_to_edge[P8EST_EDGES * t + l];
-        ierr = DMLabelGetValue(baseLabel,e+eStart,&val);CHKERRQ(ierr);
-        ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+        PetscStackCallP4est(p8est_quadrant_edge_neighbor,(q,l,&nq));
+        PetscStackCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
+        if (isInside) {
+          /* this edge is in the interior of a tree, so it inherits the label of the tree */
+          ierr = DMLabelGetValue(baseLabel,t+cStartBase,&val);CHKERRQ(ierr);
+          ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+        }
+        else {
+          int isOutsideFace;
+
+          PetscStackCallP4estReturn(isOutsideFace,p4est_quadrant_is_outside_face,(&nq));
+          if (isOutsideFace) {
+            PetscInt f;
+
+            if (nq.x < 0) {
+              f = 0;
+            }
+            else if (nq.x >= P4EST_ROOT_LEN) {
+              f = 1;
+            }
+            else if (nq.y < 0) {
+              f = 2;
+            }
+            else if (nq.y >= P4EST_ROOT_LEN) {
+              f = 3;
+            }
+            else if (nq.z < 0) {
+              f = 4;
+            }
+            else {
+              f = 5;
+            }
+            f = pforest->topo->tree_face_to_uniq[P4EST_FACES * t + f];
+            ierr = DMLabelGetValue(baseLabel,f+fStartBase,&val);CHKERRQ(ierr);
+            ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+          }
+          else { /* the quadrant edge corresponds to the tree edge */
+            PetscInt e = pforest->topo->conn->tree_to_edge[P8EST_EDGES * t + l];
+
+            ierr = DMLabelGetValue(baseLabel,e+eStartBase,&val);CHKERRQ(ierr);
+            ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+          }
+        }
       }
 #endif
       else { /* vertex */
-        PetscInt v, val;
+        p4est_quadrant_t nq;
+        int              isInside;
 
-#ifdef P4_TO_P8
+#if defined(P4_TO_P8)
         l = PetscVertToP4estVert[l - (1 + P4EST_FACES + P8EST_CHILDREN)];
 #else
         l = PetscVertToP4estVert[l - (1 + P4EST_FACES)];
 #endif
-        v = pforest->topo->conn->tree_to_corner[P4EST_CHILDREN * t + l];
-        ierr = DMLabelGetValue(baseLabel,v+vStart,&val);CHKERRQ(ierr);
-        ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+        PetscStackCallP4est(p4est_quadrant_corner_neighbor,(q,l,&nq));
+        PetscStackCallP4estReturn(isInside,p4est_quadrant_is_inside_root,(&nq));
+        if (isInside) {
+          ierr = DMLabelGetValue(baseLabel,t+cStartBase,&val);CHKERRQ(ierr);
+          ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+        }
+        else {
+          int isOutside;
+
+          PetscStackCallP4estReturn(isOutside,p4est_quadrant_is_outside_face,(&nq));
+          if (isOutside) {
+            PetscInt f = -1;
+
+            if (nq.x < 0) {
+              f = 0;
+            }
+            else if (nq.x >= P4EST_ROOT_LEN) {
+              f = 1;
+            }
+            else if (nq.y < 0) {
+              f = 2;
+            }
+            else if (nq.y >= P4EST_ROOT_LEN) {
+              f = 3;
+            }
+#if defined(P4_TO_P8)
+            else if (nq.z < 0) {
+              f = 4;
+            }
+            else {
+              f = 5;
+            }
+#endif
+            f = pforest->topo->tree_face_to_uniq[P4EST_FACES * t + f];
+            ierr = DMLabelGetValue(baseLabel,f+fStartBase,&val);CHKERRQ(ierr);
+            ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+            continue;
+          }
+#if defined(P4_TO_P8)
+          PetscStackCallP4estReturn(isOutside,p8est_quadrant_is_outside_edge,(&nq));
+          if (isOutside) {
+            /* outside edge */
+            PetscInt e = -1;
+
+            if (nq.x >= 0 && nq.x < P4EST_ROOT_LEN) {
+              if (nq.z < 0) {
+                if (nq.y < 0) {
+                  e = 0;
+                }
+                else {
+                  e = 1;
+                }
+              }
+              else {
+                if (nq.y < 0) {
+                  e = 2;
+                }
+                else {
+                  e = 3;
+                }
+              }
+            }
+            else if (nq.y >= 0 && nq.y < P4EST_ROOT_LEN) {
+              if (nq.z < 0) {
+                if (nq.x < 0) {
+                  e = 4;
+                }
+                else {
+                  e = 5;
+                }
+              }
+              else {
+                if (nq.x < 0) {
+                  e = 6;
+                }
+                else {
+                  e = 7;
+                }
+              }
+            }
+            else {
+              if (nq.y < 0) {
+                if (nq.x < 0) {
+                  e = 8;
+                }
+                else {
+                  e = 9;
+                }
+              }
+              else {
+                if (nq.x < 0) {
+                  e = 10;
+                }
+                else {
+                  e = 11;
+                }
+              }
+            }
+
+            e = pforest->topo->conn->tree_to_edge[P8EST_EDGES * t + e];
+            ierr = DMLabelGetValue(baseLabel,e+eStartBase,&val);CHKERRQ(ierr);
+            ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+            continue;
+          }
+#endif
+          else {
+            /* outside vertex: same corner as quadrant corner */
+            PetscInt v = pforest->topo->conn->tree_to_corner[P4EST_CHILDREN * t + l];
+
+            ierr = DMLabelGetValue(baseLabel,v+vStartBase,&val);CHKERRQ(ierr);
+            ierr = DMLabelSetValue(label,p,val);CHKERRQ(ierr);
+          }
+        }
       }
     }
     next = next->next;
