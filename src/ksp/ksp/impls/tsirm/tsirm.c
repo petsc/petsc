@@ -140,7 +140,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_TSIRM"
-PetscErrorCode KSPSetFromOptions_TSIRM(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_TSIRM(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_TSIRM      *tsirm = (KSP_TSIRM*)ksp->data;
