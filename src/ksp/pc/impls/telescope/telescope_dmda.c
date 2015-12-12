@@ -237,10 +237,9 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,
 
   if (isActiveRank(psubcomm)) {
     ierr = DMDAGetCorners(subdm,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
-
-    Ml = ni - si;
-    Nl = nj - sj;
-    Pl = nk - sk;
+    Ml = ni;
+    Nl = nj;
+    Pl = nk;
   } else {
     Ml = Nl = Pl = 0;
   }
