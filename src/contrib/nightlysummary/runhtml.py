@@ -312,7 +312,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       outfile.write("<td></td>")
       example_problem_num = 0
       write_to_summary = True
-      if match.group(1).startswith("c-exodus-dbg-builder") or match.group(1).startswith("cuda-single"):
+      if match.group(1).startswith("c-exodus-dbg-builder"):
         write_to_summary = False
       for line in open(logfile_examples_full):
         if write_to_summary:
