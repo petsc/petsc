@@ -901,7 +901,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 
   Input Parameters:
 + s - the PetscSection
-- point - the point
+- size - the allocated size
 
   Output Parameter:
 . size - the size of an array which can hold all the dofs

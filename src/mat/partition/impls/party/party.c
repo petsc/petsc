@@ -378,7 +378,7 @@ PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part,PetscBoo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Party"
-PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptions *PetscOptionsObject,MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode        ierr;
   PetscBool             flag;

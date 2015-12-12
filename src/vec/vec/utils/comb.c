@@ -33,7 +33,7 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
 #elif defined(PETSC_HAVE_MPIX_IALLREDUCE)
   ierr = MPIX_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
 #else
-  ierr = MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm);CHKERRQ(ierr);
   *request = MPI_REQUEST_NULL;
 #endif
   PetscFunctionReturn(0);
@@ -72,7 +72,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->async       = PETSC_FALSE;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
-  ierr = PetscOptionsGetBool(NULL,"-splitreduction_async",&(*sr)->async,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-splitreduction_async",&(*sr)->async,NULL);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -239,13 +239,13 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
          to the reduction operations what are sums and what are max
       */
       for (i=0; i<numops; i++) lvalues[numops+i] = reducetype[i];
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_SCALAR,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(lvalues,gvalues,2*numops,MPIU_SCALAR,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
     } else if (max_flg) {     /* Compute max of real and imag parts separately, presumably only the real part is used */
-      ierr = MPI_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
     } else if (min_flg) {
-      ierr = MPI_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
     } else {
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
     }
   }
   sr->state     = STATE_END;

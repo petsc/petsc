@@ -460,7 +460,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   ierr = PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],NULL);CHKERRQ(ierr);
 
   /* use Petsc mat ordering (note: size is for the transpose, and PETSc r = Umfpack perm_c) */
-  ierr = PetscOptionsHasName(NULL,"-pc_factor_mat_ordering_type",&lu->PetscMatOrdering);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_factor_mat_ordering_type","Ordering to do factorization in","MatGetOrdering",&lu->PetscMatOrdering);CHKERRQ(ierr);
   PetscOptionsEnd();
   *F = B;
   PetscFunctionReturn(0);

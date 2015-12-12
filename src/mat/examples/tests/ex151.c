@@ -48,7 +48,7 @@ int main(int argc,char **argv)
 
   ierr        = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
   view_sparse = PETSC_FALSE;
-  ierr        = PetscOptionsGetBool(NULL, "-view_sparse", &view_sparse, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetBool(NULL,NULL, "-view_sparse", &view_sparse, NULL);CHKERRQ(ierr);
   if (!view_sparse) {
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   }

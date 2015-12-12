@@ -292,7 +292,7 @@ PetscErrorCode  PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int por
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Socket"
-static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptions *PetscOptionsObject,PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscInt       def = -1;

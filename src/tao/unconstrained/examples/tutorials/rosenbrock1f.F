@@ -72,10 +72,10 @@
 
 
 ! Check for command line arguments to override defaults
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,           &
-     &                        ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-alpha',            &
-     &                           alpha,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-n',n,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-alpha',alpha,flg,ierr)
 
 !  Allocate vectors for the solution and gradient
       call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)

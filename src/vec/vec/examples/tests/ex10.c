@@ -22,7 +22,7 @@ int main(int argc,char **argv)
 
   if (size != 2) SETERRQ(PETSC_COMM_SELF,1,"Must run with 2 processors");
 
-  ierr = PetscOptionsGetInt(NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
   n    = bs*n;
 
   /* create two vectors */

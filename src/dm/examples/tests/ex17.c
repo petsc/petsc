@@ -18,11 +18,11 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-sw",&s,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-ratio",&ratio,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-sw",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-ratio",&ratio,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
 
   comm_f = PETSC_COMM_WORLD;
   ierr   = DMDASplitComm2d(comm_f,M,M,s,&comm_c);CHKERRQ(ierr);

@@ -96,7 +96,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%D, %D) != Prow (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
   if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%D, %D) != Prow (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
 
-  ierr = PetscOptionsGetBool(NULL,"-matrap",&rap,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matrap",&rap,NULL);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     if (rap) { /* do R=P^T locally, then C=R*A*P */
@@ -135,7 +135,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscLayout         rowmap;
   PetscInt            *owners_co,*coi,*coj;    /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscMPIInt         *len_r,*id_r;    /* array of length of comm->size, store send/recv matrix values */
-  PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,con,j,ap_rmax=0,Crmax,rmax,*aj,*ai,*pi;
+  PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,con,j,ap_rmax=0,Crmax,*aj,*ai,*pi;
   Mat_SeqAIJ          *p_loc,*p_oth,*ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*c_loc,*c_oth;
   PetscScalar         *apv;
   PetscTable          ta;
@@ -190,7 +190,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr); 
 
   /* Initial FreeSpace size is fill*(nnz(A) + nnz(P)) */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ad->i[am]+ao->i[am]+p_loc->i[pm])),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ad->i[am],PetscIntSumTruncate(ao->i[am],p_loc->i[pm]))),&free_space);CHKERRQ(ierr);
   current_space = free_space;
   nspacedouble  = 0;
 
@@ -224,7 +224,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
-      ierr = PetscFreeSpaceGet(apnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(apnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
 
@@ -401,7 +401,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   ierr = MatPreallocateInitialize(comm,pn,pn,dnz,onz);CHKERRQ(ierr);
   ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr); 
-  rmax = 0;
   for (i=0; i<pn; i++) {
     /* add C_loc into Cmpi */
     nzi  = c_loc->i[i+1] - c_loc->i[i];
@@ -422,7 +421,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     /* copy data into free space, then initialize lnk */
     ierr = PetscLLCondensedClean(pN,nzi,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
     ierr = MatPreallocateSet(i+owners[rank],nzi,current_space->array,dnz,onz);CHKERRQ(ierr);
-    if (nzi > rmax) rmax = nzi;
   }
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
@@ -452,7 +450,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* attach the supporting struct to Cmpi for reuse */
   c = (Mat_MPIAIJ*)Cmpi->data;
   c->ptap         = ptap;
-  ptap->rmax      = ap_rmax;
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
 
@@ -637,7 +634,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   Mat_Merge_SeqsToMPI *merge;
   PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,pon,nspacedouble=0,j,ap_rmax=0;
   PetscReal           afill=1.0,afill_tmp;
-  PetscInt            rmax;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -670,7 +666,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   ierr = PetscLLCondensedCreate(pN,pN,&lnk,&lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A) + nnz(P)) -OOM for ex56, np=8k on Intrepid! */
-  ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am]+pi_loc[pm])),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(adi[am],PetscIntSumTruncate(aoi[am],pi_loc[pm]))),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   for (i=0; i<am; i++) {
@@ -699,7 +695,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
 
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
-      ierr = PetscFreeSpaceGet(apnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(apnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
 
@@ -729,7 +725,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   coi[0] = 0;
 
   /* set initial free space to be fill*(nnz(p->B) + nnz(AP)) */
-  nnz           = fill*(poti[pon] + api[am]);
+  nnz           = PetscRealIntMultTruncate(fill,PetscIntSumTruncate(poti[pon],api[am]));
   ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
@@ -747,7 +743,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
 
     /* If free space is not available, double the total space in the list */
     if (current_space->local_remaining<nnz) {
-      ierr = PetscFreeSpaceGet(nnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(nnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
 
@@ -877,7 +873,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   pti[0] = 0;
 
   /* set initial free space to be fill*(nnz(P) + nnz(AP)) */
-  nnz           = fill*(pi_loc[pm] + api[am]);
+  nnz           = PetscRealIntMultTruncate(fill,PetscIntSumTruncate(pi_loc[pm],api[am]));
   ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
@@ -889,7 +885,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
     nextci[k]   = buf_ri_k[k] + (nrows + 1); /* poins to the next i-structure of k-th recved i-structure  */
   }
   ierr = MatPreallocateInitialize(comm,pn,pn,dnz,onz);CHKERRQ(ierr);
-  rmax = 0;
+  
   for (i=0; i<pn; i++) {
     /* add pdt[i,:]*AP into lnk */
     pnz = pdti[i+1] - pdti[i];
@@ -915,7 +911,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nnz) {
-      ierr = PetscFreeSpaceGet(nnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(nnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
     /* copy data into free space, then initialize lnk */
@@ -927,7 +923,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
     current_space->local_remaining -= nnz;
 
     pti[i+1] = pti[i] + nnz;
-    if (nnz > rmax) rmax = nnz;
   }
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
@@ -961,7 +956,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   c->ptap     = ptap;
   ptap->api   = api;
   ptap->apj   = apj;
-  ptap->rmax  = ap_rmax;
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
 
@@ -978,7 +972,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   /* set default scalable */
   ptap->scalable = PETSC_FALSE; /* PETSC_TRUE; */
 
-  ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->options,((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,NULL);CHKERRQ(ierr);
   if (!ptap->scalable) {  /* Do dense axpy */
     ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
   } else {

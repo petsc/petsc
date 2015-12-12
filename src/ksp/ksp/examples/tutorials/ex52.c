@@ -37,8 +37,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
@@ -122,7 +122,7 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = PetscOptionsGetBool(NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ int main(int argc,char **args)
      View the exact solution vector if desired
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-view_exact_sol",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,8 +159,8 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_MUMPS)
   flg_mumps    = PETSC_FALSE;
   flg_mumps_ch = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-use_mumps_lu",&flg_mumps,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-use_mumps_ch",&flg_mumps_ch,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_mumps_lu",&flg_mumps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_mumps_ch",&flg_mumps_ch,NULL);CHKERRQ(ierr);
   if (flg_mumps || flg_mumps_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PetscInt  ival,icntl;
@@ -199,8 +199,8 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
   flg_ilu     = PETSC_FALSE;
   flg_superlu = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-use_superlu_lu",&flg_superlu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-use_superlu_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_superlu_lu",&flg_superlu,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_superlu_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
   if (flg_superlu || flg_ilu) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -237,9 +237,9 @@ int main(int argc,char **args)
   flg     = PETSC_FALSE;
   flg_ilu = PETSC_FALSE;
   flg_ch  = PETSC_FALSE;
-  ierr    = PetscOptionsGetBool(NULL,"-use_petsc_lu",&flg,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetBool(NULL,"-use_petsc_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetBool(NULL,"-use_petsc_ch",&flg_ch,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(NULL,NULL,"-use_petsc_lu",&flg,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(NULL,NULL,"-use_petsc_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(NULL,NULL,"-use_petsc_ch",&flg_ch,NULL);CHKERRQ(ierr);
   if (flg || flg_ilu || flg_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);

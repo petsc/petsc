@@ -4,7 +4,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Network"
-PetscErrorCode  DMSetFromOptions_Network(PetscOptions *PetscOptionsObject,DM dm)
+PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   PetscErrorCode ierr;
 

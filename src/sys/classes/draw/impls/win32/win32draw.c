@@ -767,7 +767,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popup)
   PetscBool       flg  = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
     ierr = PetscDrawSetType(*popup,PETSC_DRAW_WIN32);CHKERRQ(ierr);

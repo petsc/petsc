@@ -1,10 +1,10 @@
  Start of Fortran2003 test program
 
- the base class will succeed by printing out "Base printout" below
+ the base class will succeed by printing out Base printout below
 
  Base printout
 
- the extended class will succeed by printing out "Extended printout" below
+ the extended class will succeed by printing out Extended printout below
 
  Extended printout
 

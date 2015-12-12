@@ -22,22 +22,22 @@ int main(int argc, char * argv[]) {
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,&flg);CHKERRQ(ierr);
   if (!flg) m = 100;
 
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,&flg);CHKERRQ(ierr);
   if (!flg) n = 30;
 
-  ierr = PetscOptionsGetInt(NULL,"-toFirst",&toFirst,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-toFirst",&toFirst,&flg);CHKERRQ(ierr);
   if (!flg) toFirst = 3;
 
-  ierr = PetscOptionsGetInt(NULL,"-toStep",&toStep,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-toStep",&toStep,&flg);CHKERRQ(ierr);
   if (!flg) toStep = 3;
 
-  ierr = PetscOptionsGetInt(NULL,"-fromFirst",&fromFirst,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-fromFirst",&fromFirst,&flg);CHKERRQ(ierr);
   if (!flg) fromFirst = 2;
 
-  ierr = PetscOptionsGetInt(NULL,"-fromStep",&fromStep,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-fromStep",&fromStep,&flg);CHKERRQ(ierr);
   if (!flg) fromStep = 2;
 
   if (n>m) {

@@ -1,9 +1,9 @@
 DM Object:Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
-Max sizes cone: 3 support: 7
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 3 support: 7
 [0]: 30 ----> 3
 [0]: 30 ----> 29
 [0]: 31 ----> 0
@@ -88,7 +88,7 @@ cap --> base:
 [0]: 49 ----> 19
 [0]: 49 ----> 27
 [0]: 49 ----> 28
-Max sizes cone: 3 support: 7
+[1] Max sizes cone: 3 support: 7
 [1]: 30 ----> 0
 [1]: 30 ----> 1
 [1]: 30 ----> 2
@@ -345,47 +345,47 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (  30) dim  2 offset   0 0 1
+  (  30) dim  2 offset   0 0. 1.
   (  31) dim  2 offset   2 -0.469897 -4.3257e-05
-  (  32) dim  2 offset   4 0 -0.333333
-  (  33) dim  2 offset   6 0 0.333333
-  (  34) dim  2 offset   8 0 -1
+  (  32) dim  2 offset   4 0. -0.333333
+  (  33) dim  2 offset   6 0. 0.333333
+  (  34) dim  2 offset   8 0. -1.
   (  35) dim  2 offset  10 -0.426591 -0.543806
-  (  36) dim  2 offset  12 0.666667 -1
-  (  37) dim  2 offset  14 1.33333 -1
+  (  36) dim  2 offset  12 0.666667 -1.
+  (  37) dim  2 offset  14 1.33333 -1.
   (  38) dim  2 offset  16 1.01667 -0.53219
-  (  39) dim  2 offset  18 0.666667 1
+  (  39) dim  2 offset  18 0.666667 1.
   (  40) dim  2 offset  20 0.679796 0.0425353
-  (  41) dim  2 offset  22 2 -0.333333
+  (  41) dim  2 offset  22 2. -0.333333
   (  42) dim  2 offset  24 1.55199 -0.593653
-  (  43) dim  2 offset  26 2 -1
+  (  43) dim  2 offset  26 2. -1.
   (  44) dim  2 offset  28 0.472626 -0.564598
   (  45) dim  2 offset  30 1.40994 -0.102742
-  (  46) dim  2 offset  32 2 0.333333
+  (  46) dim  2 offset  32 2. 0.333333
   (  47) dim  2 offset  34 1.21795 0.454625
-  (  48) dim  2 offset  36 2 1
-  (  49) dim  2 offset  38 1.33333 1
+  (  48) dim  2 offset  36 2. 1.
+  (  49) dim  2 offset  38 1.33333 1.
 Process 1:
-  (  30) dim  2 offset   0 -0.666667 1
+  (  30) dim  2 offset   0 -0.666667 1.
   (  31) dim  2 offset   2 -0.426084 0.543999
-  (  32) dim  2 offset   4 0 1
-  (  33) dim  2 offset   6 -1.33333 1
+  (  32) dim  2 offset   4 0. 1.
+  (  33) dim  2 offset   6 -1.33333 1.
   (  34) dim  2 offset   8 -0.993855 0.386707
   (  35) dim  2 offset  10 -1.56981 -0.543667
-  (  36) dim  2 offset  12 -1.33333 -1
+  (  36) dim  2 offset  12 -1.33333 -1.
   (  37) dim  2 offset  14 -0.996391 -0.385656
   (  38) dim  2 offset  16 -1.5693 0.544138
-  (  39) dim  2 offset  18 -2 0.333333
-  (  40) dim  2 offset  20 -2 1
-  (  41) dim  2 offset  22 -0.666667 -1
-  (  42) dim  2 offset  24 -2 -1
+  (  39) dim  2 offset  18 -2. 0.333333
+  (  40) dim  2 offset  20 -2. 1.
+  (  41) dim  2 offset  22 -0.666667 -1.
+  (  42) dim  2 offset  24 -2. -1.
   (  43) dim  2 offset  26 -0.469897 -4.3257e-05
-  (  44) dim  2 offset  28 0 -0.333333
-  (  45) dim  2 offset  30 0 0.333333
-  (  46) dim  2 offset  32 0 -1
+  (  44) dim  2 offset  28 0. -0.333333
+  (  45) dim  2 offset  30 0. 0.333333
+  (  46) dim  2 offset  32 0. -1.
   (  47) dim  2 offset  34 -0.426591 -0.543806
   (  48) dim  2 offset  36 -1.51932 0.000651568
-  (  49) dim  2 offset  38 -2 -0.333333
+  (  49) dim  2 offset  38 -2. -0.333333
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order

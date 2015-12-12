@@ -298,7 +298,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range)
   /* compute and cache the sizes of local and ghosted entities */
   dmmoab->nloc = dmmoab->vowned->size();
   dmmoab->nghost = dmmoab->vghost->size();
-  ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -413,7 +413,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm,moab::Range *range)
   *dmmoab->eghost = moab::subtract(*range, *dmmoab->elocal);
   dmmoab->neleloc=dmmoab->elocal->size();
   dmmoab->neleghost=dmmoab->eghost->size();
-  ierr = MPI_Allreduce(&dmmoab->nele, &dmmoab->neleloc, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&dmmoab->nele, &dmmoab->neleloc, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   PetscInfo2(dm, "Created %D local and %D global elements.\n", dmmoab->neleloc, dmmoab->nele);
   PetscFunctionReturn(0);
 }
@@ -983,7 +983,7 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Moab"
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptions *PetscOptionsObject,DM dm)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   PetscErrorCode ierr;
   DM_Moab        *dmmoab = (DM_Moab*)dm->data;
@@ -1037,7 +1037,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     /* compute and cache the sizes of local and ghosted entities */
     dmmoab->nloc = dmmoab->vowned->size();
     dmmoab->nghost = dmmoab->vghost->size();
-    ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   }
 
   {
@@ -1063,7 +1063,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
     dmmoab->neleloc = dmmoab->elocal->size();
     dmmoab->neleghost = dmmoab->eghost->size();
-    ierr = MPI_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   }
 
   bs = dmmoab->bs;
@@ -1092,7 +1092,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
       if(lmax<dmmoab->gsindices[i]) lmax=dmmoab->gsindices[i];
     }
 
-    ierr = MPI_Allreduce(&lmin, &gmin, 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&lmin, &gmin, 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm);CHKERRQ(ierr);
 
     /* set the GID map */
     for (i=0; i<totsize; ++i) {

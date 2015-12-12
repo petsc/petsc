@@ -361,7 +361,7 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
     }
     if (an != A->cmap->rstart+n) isFullCol = PETSC_FALSE;
   }
-  ierr = MPI_Allreduce(&isFullCol,&isFullColGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)iscol));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&isFullCol,&isFullColGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)iscol));CHKERRQ(ierr);
 
   if (isFullColGlobal) {
     PetscInt row;
@@ -394,6 +394,9 @@ static PetscErrorCode MatGetSubMatrix_Nest(Mat A,IS isrow,IS iscol,MatReuse reus
     if (sub != *B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Submatrix was not used before in this call");
     break;
   case MAT_IGNORE_MATRIX:       /* Nothing to do */
+    break;
+  case MAT_INPLACE_MATRIX:       /* Nothing to do */
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX is not supported yet");
     break;
   }
   PetscFunctionReturn(0);

@@ -106,16 +106,16 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetBool(NULL,"-no_output",&no_output,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-no_output",&no_output,NULL);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
 
-  ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_WORLD,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -134,8 +134,8 @@ int main(int argc,char **argv)
   */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   Nx   = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_WORLD,1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
 

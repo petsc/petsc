@@ -38,8 +38,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only\n");
-  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMSetDimension(da,3);CHKERRQ(ierr);
@@ -63,14 +63,14 @@ int main(int argc,char **args)
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   nrhs = 2;
-  ierr = PetscOptionsGetInt(NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = ComputeRHSMatrix(m,nrhs,&RHS);CHKERRQ(ierr);
   ierr = MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
 
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
 
 
-  ierr = PetscOptionsGetBool(NULL,"-inplacelu",&InplaceLU,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-inplacelu",&InplaceLU,NULL);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   if (!InplaceLU) {
     ierr      = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);

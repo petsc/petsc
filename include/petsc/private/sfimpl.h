@@ -11,7 +11,7 @@ struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
   PetscErrorCode (*Destroy)(PetscSF);
   PetscErrorCode (*SetUp)(PetscSF);
-  PetscErrorCode (*SetFromOptions)(PetscOptions*,PetscSF);
+  PetscErrorCode (*SetFromOptions)(PetscOptionItems*,PetscSF);
   PetscErrorCode (*View)(PetscSF,PetscViewer);
   PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
   PetscErrorCode (*BcastBegin)(PetscSF,MPI_Datatype,const void*,void*);

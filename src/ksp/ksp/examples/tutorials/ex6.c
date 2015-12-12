@@ -17,9 +17,9 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &args, NULL, help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-M", &M, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-N", &N, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, "-user_subdomains", &userSubdomains, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-M", &M, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-user_subdomains", &userSubdomains, NULL);CHKERRQ(ierr);
   /* Do parallel decomposition */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);

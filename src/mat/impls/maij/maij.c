@@ -3022,7 +3022,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
   /* Note, aspect ratio of P is the same as the aspect ratio of SeqAIJ inside P */
-  ierr          = PetscFreeSpaceGet((ai[am]/pm)*pn,&free_space);CHKERRQ(ierr);
+  ierr          = PetscFreeSpaceGet(PetscIntMultTruncate(ai[am]/pm,pn),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of C: */
@@ -3072,7 +3072,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
       /* If free space is not available, make more free space */
       /* Double the amount of total space in the list */
       if (current_space->local_remaining<cnzi) {
-        ierr = PetscFreeSpaceGet(cnzi+current_space->total_array_size,&current_space);CHKERRQ(ierr);
+        ierr = PetscFreeSpaceGet(PetscIntSumTruncate(cnzi,current_space->total_array_size),&current_space);CHKERRQ(ierr);
       }
 
       /* Copy data into free space, and zero out denserows */
@@ -3232,7 +3232,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
 
   PetscFunctionBegin;
   /* MatPtAPSymbolic_MPIAIJ_MPIMAIJ() is not implemented yet. Convert PP to mpiaij format */
-  ierr = MatConvert(PP,MATMPIAIJ,MAT_REUSE_MATRIX,&PP);CHKERRQ(ierr);
+  ierr = MatConvert(PP,MATMPIAIJ,MAT_INPLACE_MATRIX,&PP);CHKERRQ(ierr);
   ierr =(*PP->ops->ptapsymbolic)(A,PP,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3300,7 +3300,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,Mat
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
+  if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
   } else {
     *newmat = B;
@@ -3368,7 +3368,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,Mat
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
+  if (reuse == MAT_INPLACE_MATRIX) {
     PetscInt refct = ((PetscObject)A)->refct; /* save ((PetscObject)A)->refct */
     ((PetscObject)A)->refct = 1;
 

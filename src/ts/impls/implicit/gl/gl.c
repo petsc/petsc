@@ -774,7 +774,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   for (i=0; i<n; i++) sum += PetscAbsScalar(PetscSqr(x[i]*w[i]));
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(gl->W,&w);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   ierr = VecGetSize(gl->W,&N);CHKERRQ(ierr);
   *nrm = PetscSqrtReal(gsum/(1.*N));
   PetscFunctionReturn(0);
@@ -1194,7 +1194,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_GL"
-static PetscErrorCode TSSetFromOptions_GL(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_GL(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_GL          *gl        = (TS_GL*)ts->data;
   char           tname[256] = TSGL_IRKS,completef[256] = "rescale-and-modify";
@@ -1264,7 +1264,7 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
     ierr    = PetscViewerASCIIPrintf(viewer,"  type: %s\n",gl->type_name[0] ? gl->type_name : "(not yet set)");CHKERRQ(ierr);
     ierr    = PetscViewerASCIIPrintf(viewer,"Schemes within family (%d):\n",gl->nschemes);CHKERRQ(ierr);
     details = PETSC_FALSE;
-    ierr    = PetscOptionsGetBool(((PetscObject)ts)->prefix,"-ts_gl_view_detailed",&details,NULL);CHKERRQ(ierr);
+    ierr    = PetscOptionsGetBool(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_gl_view_detailed",&details,NULL);CHKERRQ(ierr);
     ierr    = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<gl->nschemes; i++) {
       ierr = TSGLSchemeView(gl->schemes[i],details,viewer);CHKERRQ(ierr);

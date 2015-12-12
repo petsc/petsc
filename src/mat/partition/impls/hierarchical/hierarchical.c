@@ -323,7 +323,7 @@ PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Hierarchical"
-PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptions *PetscOptionsObject,MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
   PetscErrorCode ierr;

@@ -150,7 +150,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetInt(NULL, "-problem", &problem, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-problem", &problem, NULL);CHKERRQ(ierr);
   ierr = VecCreate(comm, &u);CHKERRQ(ierr);
   ierr = VecSetSizes(u, PETSC_DETERMINE, N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);

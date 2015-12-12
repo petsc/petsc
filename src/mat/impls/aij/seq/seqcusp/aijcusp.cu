@@ -78,7 +78,7 @@ PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSP"
-PetscErrorCode MatSetFromOptions_SeqAIJCUSP(PetscOptions *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_SeqAIJCUSP(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   Mat_SeqAIJCUSP       *cuspMat = (Mat_SeqAIJCUSP*)A->spptr;
   PetscErrorCode       ierr;

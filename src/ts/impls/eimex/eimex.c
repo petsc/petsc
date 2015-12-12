@@ -107,7 +107,7 @@ static PetscErrorCode TSStage_EIMEX(TS ts,PetscInt istage)
     ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+    ierr = TSAdaptCheckStage(adapt,ts,ext->ctime,Y,&accept);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -455,7 +455,7 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_EIMEX"
-static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscErrorCode ierr;

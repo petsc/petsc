@@ -176,7 +176,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
       }
       nd_global=0;
     }
-    ierr = MPI_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
   for (i=0;i<n;i++) {
     colors[i] = (ISColoringValue)lcolors[i];
@@ -444,7 +444,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
       ierr = PetscSFBcastBegin(sf,MPIU_INT,dcolors,ocolors);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(sf,MPIU_INT,dcolors,ocolors);CHKERRQ(ierr);
       /* find the maximum color assigned locally and allocate a mask */
-      ierr = MPI_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
       ierr = PetscMalloc1(mcol_global+1,&colorweights);CHKERRQ(ierr);
       /* check for conflicts */
       for (i=0;i<n;i++) {
@@ -540,7 +540,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         }
       }
     }
-    ierr = MPI_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
   if (mo) {
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
@@ -587,7 +587,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
     if (colors[i] > finalcolor) finalcolor=colors[i];
   }
   finalcolor_global=0;
-  ierr = MPI_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   ierr = PetscLogEventBegin(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
@@ -600,7 +600,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_Greedy"
-PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptions *PetscOptionsObject, MatColoring mc)
+PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOptionsObject, MatColoring mc)
 {
   MC_Greedy     *gr = (MC_Greedy *) mc->data;
   PetscErrorCode ierr;

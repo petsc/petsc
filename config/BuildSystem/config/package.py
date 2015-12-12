@@ -31,9 +31,7 @@ class Package(config.base.Configure):
                                  # args database so it keeps track of what the user set vs what the program set
     self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
     self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
-    self.giturls          = []   # list of Git repository URLs to be used for downloads
     self.download         = []   # list of URLs where repository or tarballs may be found
-    self.downloadURLSetByUser = False # user overrode package file by providing download location
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
@@ -110,8 +108,9 @@ class Package(config.base.Configure):
       help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
-    if self.download or self.giturls:
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
+    if self.download:
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename,url>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build'+self.name))
     return
 
   def setNames(self):
@@ -120,7 +119,7 @@ class Package(config.base.Configure):
     package:      The lowercase name
     PACKAGE:      The uppercase name
     downloadname:     Name for download option (usually name)
-    downloadfilename: name for downloaded file (first part of string) (usually downloadname)
+    downloadfilename: name for downloaded file (first part of string) (usually downloadname), this actually seems to be a directory name not a file name
     '''
     import sys
     if hasattr(sys.modules.get(self.__module__), '__file__'):
@@ -264,6 +263,8 @@ class Package(config.base.Configure):
   def getInstallDir(self):
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
+    if not self.packageDir: self.packageDir = self.downLoad()
+    self.updateGitDir()
     if self.publicInstall:
       self.installDir = self.defaultInstallDir
       self.installSudo= self.installDirProvider.installSudo
@@ -448,22 +449,33 @@ class Package(config.base.Configure):
     return ''
 
   def installNeeded(self, mkfile):
-    makefile      = os.path.join(self.packageDir, mkfile)
-    makefileSaved = os.path.join(self.confDir, 'lib','petsc','conf',self.name)
+    makefile       = os.path.join(self.packageDir, mkfile)
+    makefileSaved  = os.path.join(self.confDir, 'lib','petsc','conf','pkg.conf.'+self.package)
+    gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
+    gcommfileSaved = os.path.join(self.confDir,'lib','petsc','conf', 'pkg.gitcommit.'+self.package)
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
-      self.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
+      self.log.write('Have to rebuild '+self.PACKAGE+', '+makefile+' != '+makefileSaved+'\n')
       return 1
-    else:
-      self.log.write('Do not need to rebuild '+self.name+'\n')
-      return 0
+    if os.path.isfile(gcommfile) and (not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(gcommfile))):
+      self.log.write('Have to rebuild '+self.PACKAGE+', '+gcommfile+' != '+gcommfileSaved+'\n')
+      return 1
+    self.log.write('Do not need to rebuild '+self.PACKAGE+'\n')
+    return 0
 
   def postInstall(self, output, mkfile):
     '''Dump package build log into configure.log - also copy package config to prevent unnecessary rebuild'''
-    self.log.write('********Output of running make on '+self.name+' follows *******\n')
+    self.log.write('********Output of running make on '+self.PACKAGE+' follows *******\n')
     self.log.write(output)
-    self.log.write('********End of Output of running make on '+self.name+' *******\n')
-    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'lib','petsc','conf', self.name), timeout=5, log = self.log)
-    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
+    self.log.write('********End of Output of running make on '+self.PACKAGE+' *******\n')
+    makefile       = os.path.join(self.packageDir, mkfile)
+    makefileSaved  = os.path.join(self.confDir, 'lib','petsc','conf','pkg.conf.'+self.package)
+    gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
+    gcommfileSaved = os.path.join(self.confDir,'lib','petsc','conf', 'pkg.gitcommit.'+self.package)
+    import shutil
+    shutil.copyfile(makefile,makefileSaved)
+    if os.path.exists(gcommfile):
+      shutil.copyfile(gcommfile,gcommfileSaved)
+    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.PACKAGE+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
     '''Check is the dir matches something in the excluded directory list'''
@@ -472,27 +484,60 @@ class Package(config.base.Configure):
         return 1
     return 0
 
-  def getDir(self, retry = 1):
+  def updateGitDir(self):
+    '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
+    if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
+      prefetch = 0
+      if self.gitcommit.startswith('origin/'):
+        prefetch = 1
+      else:
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', self.gitcommit+'^{commit}'], cwd=self.packageDir, log = self.log)
+        except:
+          prefetch = 1
+      if prefetch:
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch'], cwd=self.packageDir, log = self.log)
+        except:
+          raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
+                             '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
+      try:
+        gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+        if self.gitcommit != 'HEAD':
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+      except:
+        raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
+                           '.\nPerhaps its a remote branch, if so - use: origin/'+self.gitcommit)
+      # write a commit-tag file
+      fd = open(os.path.join(self.packageDir,'pkg.gitcommit'),'w')
+      fd.write(gitcommit_hash)
+      fd.close()
+    return
+
+  def getDir(self):
     '''Find the directory containing the package'''
     packages = self.externalPackagesDir
     if not os.path.isdir(packages):
       os.makedirs(packages)
       self.framework.actions.addArgument('Framework', 'Directory creation', 'Created the external packages directory: '+packages)
     Dir = None
-    self.logPrint('Looking for '+self.PACKAGE+' in directory starting with '+str(self.downloadfilename))
-    for d in os.listdir(packages):
-      if d.startswith(self.downloadfilename) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
-        self.logPrint('Found a copy of '+self.PACKAGE+' in '+str(d))
-        Dir = d
-        break
-    if Dir is None:
-      self.logPrint('Could not locate an existing copy of '+self.downloadfilename+':')
-      self.logPrint('  '+str(os.listdir(packages)))
-      if retry <= 0:
-        raise RuntimeError('Unable to download '+self.downloadname)
-      self.downLoad()
-      return self.getDir(retry = 0)
-    return os.path.join(packages, Dir)
+    pkgdirs = os.listdir(packages)
+    gitpkg  = 'git.'+self.package
+    self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ' or a directory starting with '+str(self.downloadfilename))
+    if hasattr(self.sourceControl, 'git') and gitpkg in pkgdirs:
+      Dir = gitpkg
+    else:
+      for d in pkgdirs:
+        if d.startswith(self.downloadfilename) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+          Dir = d
+          break
+    if Dir:
+      self.logPrint('Found a copy of '+self.PACKAGE+' in '+str(Dir))
+      return os.path.join(packages, Dir)
+    else:
+      self.logPrint('Could not locate an existing copy of '+self.PACKAGE+':')
+      self.logPrint('  '+str(pkgdirs))
+      return
 
   def gitPreReqCheck(self):
     '''Check for git prerequisites. This is intended to be overwritten by a subclass'''
@@ -517,28 +562,27 @@ class Package(config.base.Configure):
         download_urls.append(url.replace('http://','ftp://'))
     # now attempt to download each url until any one succeeds.
     err =''
-    if not self.downloadURLSetByUser and hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
-      for giturl in self.giturls: # First try to fetch using Git
-        self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
-        try:
-          gitrepo = os.path.join(self.externalPackagesDir, self.downloadfilename)
-          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo], log = self.log)
-          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo, log = self.log)
-          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
-          return
-        except RuntimeError, e:
-          self.logPrint('ERROR: '+str(e))
-          err += str(e)
     for url in download_urls:
+      if url.startswith('git://'):
+        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
+        if not hasattr(self.sourceControl, 'git'):
+          err += 'Git not found - required for url: '+url+'\n'
+          continue
+        elif not self.gitPreReqCheck():
+          err += 'Git prerequisite check failed for url: '+url+'\n'
+          continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
-        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
-        return
+        retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
+        pkgdir = self.getDir()
+        if not pkgdir:
+          raise RuntimeError('Unable to download '+self.PACKAGE)
+        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
+        return pkgdir
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
         err += str(e)
-    raise RuntimeError(err)
+    raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
@@ -666,7 +710,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
-    if not (self.download or self.giturls) and self.argDB.has_key('download-'+self.downloadname.lower()) and self.argDB['download-'+self.downloadname.lower()]:
+    if not self.download and self.argDB.has_key('download-'+self.downloadname.lower()) and self.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
 
@@ -676,7 +720,8 @@ class Package(config.base.Configure):
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
       if isinstance(downloadPackageVal, str):
         self.download = [downloadPackageVal]
-        self.downloadURLSetByUser = True
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-commit']:
+      self.gitcommit = self.argDB['download-'+self.downloadname.lower()+'-commit']
     if not 'with-'+self.package in self.argDB:
       self.argDB['with-'+self.package] = 0
     if 'with-'+self.package+'-dir' in self.argDB or 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:

@@ -194,7 +194,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
   }
   if (lim->ops->setfromoptions) {ierr = (*lim->ops->setfromoptions)(lim);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject) lim);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) lim);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscLimiterViewFromOptions(lim, NULL, "-petsclimiter_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1193,7 +1193,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
   }
   if (fvm->ops->setfromoptions) {ierr = (*fvm->ops->setfromoptions)(fvm);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject) fvm);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscLimiterSetFromOptions(fvm->limiter);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscFVViewFromOptions(fvm, NULL, "-petscfv_view");CHKERRQ(ierr);

@@ -38,7 +38,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
 
   /*   local block count  given */
   if (jac->n_local > 0 && jac->n < 0) {
-    ierr = MPI_Allreduce(&jac->n_local,&jac->n,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&jac->n_local,&jac->n,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     if (jac->l_lens) { /* check that user set these correctly */
       sum = 0;
       for (i=0; i<jac->n_local; i++) {
@@ -159,7 +159,7 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BJacobi"
 
-static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -224,7 +224,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       }
     } else {
       PetscInt n_global;
-      ierr = MPI_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D, first local block number = %D\n",

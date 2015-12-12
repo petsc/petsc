@@ -134,10 +134,18 @@ typedef __float128 PetscReal;
 #define PetscCosComplex(a)           complexlib::cos(a)
 #define PetscAsinComplex(a)          complexlib::asin(a)
 #define PetscAcosComplex(a)          complexlib::acos(a)
+#if defined(PETSC_HAVE_TANCOMPLEX)
 #define PetscTanComplex(a)           complexlib::tan(a)
+#else
+#define PetscTanComplex(a)           PetscSinComplex(a)/PetscCosComplex(a)
+#endif
 #define PetscSinhComplex(a)          complexlib::sinh(a)
 #define PetscCoshComplex(a)          complexlib::cosh(a)
+#if defined(PETSC_HAVE_TANHCOMPLEX)
 #define PetscTanhComplex(a)          complexlib::tanh(a)
+#else
+#define PetscTanhComplex(a)          PetscSinhComplex(a)/PetscCoshComplex(a)
+#endif
 
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef complexlib::complex<float> PetscComplex;
@@ -491,16 +499,18 @@ M*/
 #  define PETSC_MAX_REAL                FLT128_MAX
 #  define PETSC_MIN_REAL                -FLT128_MAX
 #  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
-#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17
-#  define PETSC_SMALL                   1.e-20
+#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17q
+#  define PETSC_SMALL                   1.e-20q
 #endif
 
 #define PETSC_INFINITY                PETSC_MAX_REAL/4.0
 #define PETSC_NINFINITY              -PETSC_INFINITY
 
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
+PETSC_EXTERN PetscErrorCode PetscIsNanReal(PetscReal);
 PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
+PETSC_STATIC_INLINE PetscErrorCode PetscIsNanScalar(PetscScalar v) {return PetscIsNanReal(PetscAbsScalar(v));}
 PETSC_STATIC_INLINE PetscErrorCode PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
 
 /* ----------------------------------------------------------------------------*/

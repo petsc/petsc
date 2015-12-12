@@ -27,11 +27,11 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
 
 
-  ierr = PetscOptionsGetString(NULL,"-fin",fin,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fin",fin,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -fin option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,FILE_MODE_READ,&fdin);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(NULL,"-fout",fout,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fout,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);CHKERRQ(ierr);}
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fout,FILE_MODE_WRITE,&fdout);CHKERRQ(ierr);
 
@@ -42,8 +42,8 @@ int main(int argc,char **args)
 
   ierr  = MatGetSize(A,&size,&size);CHKERRQ(ierr);
   size /= 2;
-  ierr  = PetscOptionsGetInt(NULL,"-start",&start,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-size",&size,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-size",&size,NULL);CHKERRQ(ierr);
 
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol);CHKERRQ(ierr);

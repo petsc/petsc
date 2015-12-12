@@ -149,7 +149,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     else foundProcs[p] = size;
   }
   /* Let the lowest rank process own each point */
-  ierr   = MPI_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
+  ierr   = MPIU_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, globalPoints[p*ctx->dim+0], ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0, ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0);
@@ -795,7 +795,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, void
     }
   }
   ierr = VecRestoreArrayRead(res, &r);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(lnorms, norms, numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(lnorms, norms, numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject) snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
@@ -1798,7 +1798,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
     else {
       cgeomFEM = NULL;
     }
-    ierr = VecRestoreArray(cellGeometryFEM, &cgeomScal);CHKERRQ(ierr);
+    if (cellGeometryFEM) {ierr = VecRestoreArray(cellGeometryFEM, &cgeomScal);CHKERRQ(ierr);}
     /* Loop over domain */
     if (useFEM) {
       /* Add elemVec to locX */
@@ -2346,7 +2346,7 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESCheckFromOptions_Internal"
-PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol, PetscErrorCode (**exactFuncs)(PetscInt, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
 {
   Mat            J, M;
   Vec            r, b;
@@ -2366,7 +2366,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   if (numFields > 1) {
     PetscInt f;
 
-    ierr = DMPlexComputeL2FieldDiff(dm, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2FieldDiff(dm, 0.0, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: [");CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       if (f) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
@@ -2375,7 +2375,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
     }
     ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
   } else {
-    ierr = DMPlexComputeL2Diff(dm, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(dm, 0.0, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
     if (error[0] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error[0]);CHKERRQ(ierr);}
     else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
   }
@@ -2416,7 +2416,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESCheckFromOptions"
-PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;
   Vec            sol;
@@ -2424,7 +2424,7 @@ PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactF
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(snes->hdr.prefix, "-dmsnes_check", &check);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->options,((PetscObject)snes)->prefix, "-dmsnes_check", &check);CHKERRQ(ierr);
   if (!check) PetscFunctionReturn(0);
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);

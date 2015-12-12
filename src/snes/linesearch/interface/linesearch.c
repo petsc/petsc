@@ -745,7 +745,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
     (*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch);CHKERRQ(ierr);
   }
 
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1126,9 +1126,11 @@ PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch linesearch,PetscReal *da
    SNESLineSearchSetDamping - Sets the line search damping paramter.
 
    Input Parameters:
-.  linesearch - linesearch context
-.  damping - The damping parameter
++  linesearch - linesearch context
+-  damping - The damping parameter
 
+   Options Database:
+.   -snes_linesearch_damping
    Level: intermediate
 
    Notes:

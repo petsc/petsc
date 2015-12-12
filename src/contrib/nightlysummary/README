@@ -1,6 +1,0 @@
-This folder contains a summary generator for the PETSc nightly tests.
-
-Usage: $> runhtml.sh LOGDIR OUTFILE
-  LOGDIR  ... Directory where to find the log files
-  OUTFILE ... The output file where the HTML code will be written to. Note that paths in OUTFILE are relative to LOGDIR.
-

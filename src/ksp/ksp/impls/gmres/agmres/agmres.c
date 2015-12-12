@@ -140,8 +140,8 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   ierr = PCGetOperators(ksp->pc, &Amat, &Pmat);CHKERRQ(ierr);
   ierr = KSPSetOperators(kspgmres, Amat, Pmat);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspgmres);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-ksp_view", &flg);CHKERRQ(ierr);
-  if (flag) { ierr = PetscOptionsClearValue("-ksp_view");CHKERRQ(ierr); }
+  ierr = PetscOptionsHasName(ksp->options, "-ksp_view", &flg);CHKERRQ(ierr);
+  if (flag) { ierr = PetscOptionsClearValue(ksp->options,"-ksp_view");CHKERRQ(ierr); }
   ierr = KSPSetType(kspgmres, KSPGMRES);CHKERRQ(ierr);
   ierr = KSPGMRESSetRestart(kspgmres, max_k);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
     agmres->HasShifts = PETSC_TRUE;
   }
   /* Restore KSP view options */
-  if (flg) { ierr = PetscOptionsSetValue("-ksp_view", "");CHKERRQ(ierr); }
+  if (flg) { ierr = PetscOptionsSetValue(ksp->options,"-ksp_view", "");CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -705,7 +705,7 @@ PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_AGMRES"
-PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       neig;

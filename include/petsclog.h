@@ -480,7 +480,7 @@ do {\
   int            PetscPreLoadMax,PetscPreLoadIt;\
   PetscLogStage  _stageNum;\
   PetscErrorCode _3_ierr; \
-  _3_ierr = PetscOptionsGetBool(NULL,"-preload",&PetscPreLoading,NULL);CHKERRQ(_3_ierr);\
+  _3_ierr = PetscOptionsGetBool(NULL,NULL,"-preload",&PetscPreLoading,NULL);CHKERRQ(_3_ierr); \
   PetscPreLoadMax = (int)(PetscPreLoading);\
   PetscPreLoadingUsed = PetscPreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
   for (PetscPreLoadIt=0; PetscPreLoadIt<=PetscPreLoadMax; PetscPreLoadIt++) {\

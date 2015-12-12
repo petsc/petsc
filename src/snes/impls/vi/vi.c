@@ -101,9 +101,9 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   ierr  = VecRestoreArrayRead(snes->xl,&xl);CHKERRQ(ierr);
   ierr  = VecRestoreArrayRead(snes->xu,&xu);CHKERRQ(ierr);
   ierr  = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr  = MPIU_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   fnorm = PetscSqrtReal(fnorm);
 
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
@@ -354,7 +354,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X, PetscReal *f
   ierr   = VecRestoreArrayRead(snes->xl,&xl);CHKERRQ(ierr);
   ierr   = VecRestoreArrayRead(snes->xu,&xu);CHKERRQ(ierr);
   ierr   = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr   = MPI_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr   = MPIU_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   *fnorm = PetscSqrtReal(*fnorm);
   PetscFunctionReturn(0);
 }
@@ -400,8 +400,9 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   if (!snes->ops->computevariablebounds && snes->dm) {
     PetscBool flag;
     ierr = DMHasVariableBounds(snes->dm, &flag);CHKERRQ(ierr);
-
-    snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
+    if (flag) {
+      snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
+    }
   }
   if (!snes->usersetbounds) {
     if (snes->ops->computevariablebounds) {
@@ -528,7 +529,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
   ierr     = VecGetArrayRead(xu,&xxu);CHKERRQ(ierr);
   for (i=0; i<n; i++) cnt += ((xxl[i] != PETSC_NINFINITY) || (xxu[i] != PETSC_INFINITY));
 
-  ierr = MPI_Allreduce(&cnt,&snes->ntruebounds,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&cnt,&snes->ntruebounds,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xl,&xxl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xu,&xxu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -536,7 +537,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_VI"
-PetscErrorCode SNESSetFromOptions_VI(PetscOptions *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_VI(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;

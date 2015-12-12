@@ -407,10 +407,10 @@ PetscErrorCode  PetscDrawBarSetFromOptions(PetscDrawBar bar)
   if (!bar) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
 
-  ierr = PetscOptionsHasName(NULL,"-bar_sort",&set);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)bar)->options,NULL,"-bar_sort",&set);CHKERRQ(ierr);
   if (set) {
     PetscReal tol = bar->sorttolerance;
-    ierr = PetscOptionsGetReal(NULL,"-bar_sort",&tol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(((PetscObject)bar)->options,NULL,"-bar_sort",&tol,NULL);CHKERRQ(ierr);
     ierr = PetscDrawBarSort(bar,PETSC_TRUE,tol);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

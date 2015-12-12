@@ -276,8 +276,7 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorTrueResidualMaxNorm"
 /*@C
-   KSPMonitorTrueResidualMaxNorm - Prints the true residual max norm as well as the preconditioned
-   residual norm at each iteration of an iterative solver.
+   KSPMonitorTrueResidualMaxNorm - Prints the true residual max norm each iteration of an iterative solver.
 
    Collective on KSP
 
@@ -319,7 +318,6 @@ PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm
   ierr = VecNorm(ksp->vec_rhs,NORM_INFINITY,&bnorm);CHKERRQ(ierr);
   ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
   ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
-  /* ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||_inf/||b||_inf %14.12e\n",n,normtype,(double)rnorm,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr); */
   ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -345,7 +343,7 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
   for (i=0; i<n; i++) pwork += (PetscAbsScalar(r[i]) > .20*rmax);
   ierr = VecRestoreArrayRead(resid,&r);CHKERRQ(ierr);
   ierr = VecDestroy(&resid);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
   *per = *per/N;
   PetscFunctionReturn(0);
 }

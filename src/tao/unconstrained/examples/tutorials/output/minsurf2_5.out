@@ -6,33 +6,11 @@ iter =   0, Function value 1.45591, Residual: 1.
 iter =   1, Function value 1.53418, Residual: 0.0182909 
 iter =   2, Function value 1.5314, Residual: 0.0103471 
 iter =   3, Function value 1.52832, Residual: 0.00487195 
-iter =   4, Function value 1.52832, Residual: 0.00334731 
-iter =   5, Function value 1.52771, Residual: 0.00181092 
-iter =   6, Function value 1.52771, Residual: 0.00143288 
-iter =   7, Function value 1.52729, Residual: 0.000716629 
-iter =   8, Function value 1.52729, Residual: 0.000527274 
-iter =   9, Function value 1.52729, Residual: 0.000395262 
-iter =  10, Function value 1.52723, Residual: 0.000286647 
-iter =  11, Function value 1.52723, Residual: 0.00020945 
-iter =  12, Function value 1.52717, Residual: 0.00012415 
-iter =  13, Function value 1.52717, Residual: 7.72889e-05 
-iter =  14, Function value 1.52717, Residual: 6.36814e-05 
-iter =  15, Function value 1.52716, Residual: 3.69815e-05 
-iter =  16, Function value 1.52716, Residual: 2.94264e-05 
-iter =  17, Function value 1.52715, Residual: 1.86748e-05 
-iter =  18, Function value 1.52715, Residual: 1.18484e-05 
-iter =  19, Function value 1.52715, Residual: 9.7748e-06 
-iter =  20, Function value 1.52715, Residual: 5.28319e-06 
-iter =  21, Function value 1.52715, Residual: 3.08932e-06 
-iter =  22, Function value 1.52715, Residual: 2.21337e-06 
-iter =  23, Function value 1.52715, Residual: 1.6567e-06 
-iter =  24, Function value 1.52715, Residual: < 1.0e-6 
 Tao Object: 2 MPI processes
   type: bmrm
-  convergence tolerances: fatol=1e-12,   frtol=1e-12
-  convergence tolerances: gatol=1e-12,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=9.96718e-07
-  Objective value=1.52715
-  total number of iterations=24,                          (max: 2000)
-  total number of function/gradient evaluations=25,      (max: 4000)
-  Solution converged:   estimated f(x)-f(X*) <= fatol
+  convergence tolerances: gatol=1e-12,   steptol=0.,   gttol=0.01
+  Residual in Function/Gradient:=0.00487195
+  Objective value=1.52832
+  total number of iterations=3,                          (max: 2000)
+  total number of function/gradient evaluations=4,      (max: 4000)
+  Solution converged:    ||g(X)||/||g(X0)|| <= gttol

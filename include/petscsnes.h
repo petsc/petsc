@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode SNESGetType(SNES,SNESType*);
 PETSC_EXTERN PetscErrorCode SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRange(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
-PETSC_EXTERN PetscErrorCode SNESMonitorSetRatio(SNES,PetscViewer);
+PETSC_EXTERN PetscErrorCode SNESMonitorRatioSetUp(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESMonitorSolution(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorResidual(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,void *);
@@ -838,6 +838,6 @@ PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #endif

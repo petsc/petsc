@@ -99,7 +99,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
     rows = N;
   }
   /* Set Vec sizes,blocksize,and type if not already set. Block size first so that local sizes will be compatible. */
-  ierr = PetscOptionsGetInt(((PetscObject)vec)->prefix, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,((PetscObject)vec)->prefix, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
   if (flag) {
     ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
   }

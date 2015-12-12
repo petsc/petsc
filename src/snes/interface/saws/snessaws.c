@@ -3,7 +3,6 @@
 
 typedef struct {
   PetscViewer    viewer;
-  PetscReal      rnorm;
 } SNESMonitor_SAWs;
 
 #undef __FUNCT__

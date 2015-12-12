@@ -644,7 +644,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
     }
   }
   ierr = ISRestoreIndices(is,&vals);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
   if (!globalAnyNew) {
     ierr = PetscSectionDestroy(&secNew);CHKERRQ(ierr);
     *sectionNew = NULL;
@@ -653,7 +653,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
   else {
     PetscBool globalCompress;
 
-    ierr = MPI_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
     if (compress) {
       PetscSection secComp;
       PetscInt *valsComp = NULL;

@@ -33,8 +33,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-variant",&user.variant);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-variant",&user.variant);CHKERRQ(ierr);
   h    = 1.0/(n-1);
 
   /* Set up data structures */

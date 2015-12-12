@@ -20,10 +20,11 @@ struct _KSPOps {
                                                           user-provided area.  */
   PetscErrorCode (*solve)(KSP);                        /* actual solver */
   PetscErrorCode (*setup)(KSP);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,KSP);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,KSP);
   PetscErrorCode (*publishoptions)(KSP);
   PetscErrorCode (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
   PetscErrorCode (*computeeigenvalues)(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
+  PetscErrorCode (*computeritz)(KSP,PetscBool,PetscBool,PetscInt*,Vec[],PetscReal*,PetscReal*);
   PetscErrorCode (*destroy)(KSP);
   PetscErrorCode (*view)(KSP,PetscViewer);
   PetscErrorCode (*reset)(KSP);
@@ -51,6 +52,7 @@ struct _p_KSP {
   KSPFischerGuess guess;
   PetscBool       guess_zero,                  /* flag for whether initial guess is 0 */
                   calc_sings,                  /* calculate extreme Singular Values */
+                  calc_ritz,                   /* calculate (harmonic) Ritz pairs */
                   guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
   PCSide          pc_side;                  /* flag for left, right, or symmetric preconditioning */
   PetscInt        normsupporttable[KSP_NORM_MAX][PC_SIDE_MAX]; /* Table of supported norms and pc_side, see KSPSetSupportedNorm() */

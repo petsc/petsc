@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Patch"
-PetscErrorCode DMSetFromOptions_Patch(PetscOptions *PetscOptionsObject,DM dm)
+PetscErrorCode DMSetFromOptions_Patch(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
   PetscErrorCode ierr;

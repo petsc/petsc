@@ -82,7 +82,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   /* Specify default parameters for the problem, check for command-line overrides */
   ierr = PetscStrncpy(user.name,"HS21",8);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-cutername",user.name,24,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-cutername",user.name,24,&flg);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- MAROS Problem %s -----\n",user.name);CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr);
@@ -106,13 +106,13 @@ PetscErrorCode main(int argc,char **argv)
   ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
   /* TODO -- why didn't that work? */
   if (size == 1) {
-    ierr = PetscOptionsSetValue("-pc_factor_mat_solver_package","superlu");CHKERRQ(ierr);
+    ierr = PetscOptionsSetValue(NULL,"-pc_factor_mat_solver_package","superlu");CHKERRQ(ierr);
   } else {
-    ierr = PetscOptionsSetValue("-pc_factor_mat_solver_package","superlu_dist");CHKERRQ(ierr);
+    ierr = PetscOptionsSetValue(NULL,"-pc_factor_mat_solver_package","superlu_dist");CHKERRQ(ierr);
   }
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-  ierr = TaoSetTolerances(tao,1e-12,0,0,0,0);CHKERRQ(ierr);
+  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
 
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 

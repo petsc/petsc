@@ -23,16 +23,16 @@ int main(int argc,char **args)
   PetscViewer    viewer1,viewer2;
   MatFactorInfo  info;
   Vec            x,y,b,ytmp;
-  PetscReal      norm2,norm2_inplace;
+  PetscReal      norm2,norm2_inplace, tol = 100.*PETSC_MACHINE_EPSILON;
   PetscRandom    rdm;
   PetscMPIInt    size;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-lf",&lf,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-lf",&lf,NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,400,0,400,400,&viewer2);CHKERRQ(ierr);
@@ -68,14 +68,14 @@ int main(int argc,char **args)
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
   ierr = MatMult(C,x,b);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-mat_ordering",&matordering);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-mat_ordering",&matordering);CHKERRQ(ierr);
   if (matordering) {
     ierr = MatGetOrdering(C,MATORDERINGRCM,&row,&col);CHKERRQ(ierr);
   } else {
     ierr = MatGetOrdering(C,MATORDERINGNATURAL,&row,&col);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(NULL,"-display_matrices",&MATDSPL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-display_matrices",&MATDSPL);CHKERRQ(ierr);
   if (MATDSPL) {
     printf("original matrix:\n");
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ int main(int argc,char **args)
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
 
-  ierr = PetscOptionsHasName(NULL,"-lu",&LU);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-lu",&LU);CHKERRQ(ierr);
   if (LU) {
     printf("Test LU...\n");
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int main(int argc,char **args)
     ierr = MatSolve(A,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
-    if (PetscAbs(norm2 - norm2_inplace) > 1.e-14) SETERRQ2(PETSC_COMM_SELF,1,"ILU(0) %g and in-place ILU(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
+    if (PetscAbs(norm2 - norm2_inplace) > tol) SETERRQ2(PETSC_COMM_SELF,1,"ILU(0) %g and in-place ILU(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
 
@@ -148,7 +148,7 @@ int main(int argc,char **args)
 
   /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering on aij matrix C */
   if (lf == -1) {
-    ierr = PetscOptionsHasName(NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
     if (TRIANGULAR) {
       printf("Test MatForwardSolve...\n");
       ierr = MatForwardSolve(A,b,ytmp);CHKERRQ(ierr);
@@ -156,7 +156,7 @@ int main(int argc,char **args)
       ierr = MatBackwardSolve(A,ytmp,y);CHKERRQ(ierr);
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (norm2 > 1.e-14) {
+      if (norm2 > tol) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g\n",(double)norm2);CHKERRQ(ierr);
       }
     }
@@ -166,7 +166,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-  if (lf == -1 && norm2 > 1.e-14) {
+  if (lf == -1 && norm2 > tol) {
     PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
   }
 
@@ -181,7 +181,7 @@ int main(int argc,char **args)
     ierr = MatSolve(A,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
-    if (PetscAbs(norm2 - norm2_inplace) > 1.e-14) SETERRQ2(PETSC_COMM_SELF,1,"ICC(0) %g and in-place ICC(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
+    if (PetscAbs(norm2 - norm2_inplace) > tol) SETERRQ2(PETSC_COMM_SELF,1,"ICC(0) %g and in-place ICC(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
 

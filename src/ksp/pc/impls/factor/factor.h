@@ -31,7 +31,7 @@ PETSC_INTERN PetscErrorCode PCFactorSetMatSolverPackage_Factor(PC,const MatSolve
 PETSC_INTERN PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC);
 PETSC_INTERN PetscErrorCode PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
 PETSC_INTERN PetscErrorCode PCFactorSetColumnPivot_Factor(PC,PetscReal);
-PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptions *PetscOptionsObject,PC);
+PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC);
 PETSC_INTERN PetscErrorCode PCView_Factor(PC,PetscViewer);
 
 #endif

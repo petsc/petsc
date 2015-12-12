@@ -9,7 +9,7 @@ SOURCEF	 =
 SOURCEH	 = ../../../include/petsc/mpiuni/mpi.h ../../../include/petsc/mpiuni/mpif.h
 SCRIPTS  = ../../../../bin/petsc-mpiexec.uni
 LIBBASE	 = libpetscsys
-DIRS     = f90-mod
+DIRS     = fsrc f90-mod
 LOCDIR   = src/sys/mpiuni/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

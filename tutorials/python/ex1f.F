@@ -25,8 +25,8 @@
       call PetscPythonInitialize(PETSC_NULL_CHARACTER,                  &
      &     PETSC_NULL_CHARACTER,ierr)
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-N',                &
-     &     N,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                        '-N', N,flg,ierr)
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-draw',            &
      &     draw,flg,ierr)
 

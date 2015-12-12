@@ -326,7 +326,7 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SVD"
-static PetscErrorCode PCSetFromOptions_SVD(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_SVD(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_SVD         *jac = (PC_SVD*)pc->data;

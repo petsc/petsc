@@ -23,7 +23,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 
   periodicity = 0;
 
-  ierr = PetscOptionsGetInt(NULL,"-periodic", &periodicity, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic", &periodicity, NULL);CHKERRQ(ierr);
   if (periodicity==1) {
     bx = DM_BOUNDARY_PERIODIC;
   } else if (periodicity==2) {
@@ -73,7 +73,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     ierr = VecAXPY(coordsf2,-1.0,coordsf);CHKERRQ(ierr);
     ierr = VecNorm(coordsf2,NORM_MAX,&norm);CHKERRQ(ierr);
     /* The fine coordinates are only reproduced in certain cases */
-    if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %g\n",(double)norm);CHKERRQ(ierr);}
+    if (!bx && !by && !bz && norm > PETSC_SQRT_MACHINE_EPSILON) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %g\n",(double)norm);CHKERRQ(ierr);}
     ierr = VecDestroy(&coordsf2);CHKERRQ(ierr);
     ierr = MatDestroy(&interp);CHKERRQ(ierr);
   }
@@ -115,9 +115,9 @@ int main(int argc,char **argv)
   mx   = 2;
   my   = 2;
   mz   = 2;
-  ierr = PetscOptionsGetInt(NULL,"-mx", &mx, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my", &my, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-mz", &mz, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my", &my, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0);CHKERRQ(ierr);
 
   ierr = test1_DAInjection3d(mx,my,mz);CHKERRQ(ierr);
 

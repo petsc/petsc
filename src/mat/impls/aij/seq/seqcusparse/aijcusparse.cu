@@ -26,7 +26,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat,Vec,Vec);
 static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
 static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
 static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
-static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptions *PetscOptionsObject,Mat);
+static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOptionsObject,Mat);
 static PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat,Vec,Vec);
 static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
 static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
@@ -181,7 +181,7 @@ PetscErrorCode MatCUSPARSESetFormat(Mat A,MatCUSPARSEFormatOperation op,MatCUSPA
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSPARSE"
-static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptions *PetscOptionsObject,Mat A)
+static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   PetscErrorCode           ierr;
   MatCUSPARSEStorageFormat format;

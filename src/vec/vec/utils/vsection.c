@@ -116,7 +116,7 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 #undef __FUNCT__
 #define __FUNCT__ "VecSetValuesSection"
 /*@C
-  VecSetValuesSection - Sets all the values associated with a given point, accoridng to the section, in the given Vec
+  VecSetValuesSection - Sets all the values associated with a given point, according to the section, in the given Vec
 
   Not collective
 

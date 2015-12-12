@@ -21,8 +21,8 @@ int main(int argc,char **args)
   PetscScalar    *u,a;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create the sparse matrix
@@ -98,7 +98,7 @@ int main(int argc,char **args)
   /*
      View the product if desired
   */
-  ierr = PetscOptionsHasName(NULL,"-view_product",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-view_product",&flg);CHKERRQ(ierr);
   if (flg) {ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);

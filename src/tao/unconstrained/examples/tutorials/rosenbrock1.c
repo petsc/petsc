@@ -58,8 +58,8 @@ int main(int argc,char **argv)
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0;
   /* Check for command line arguments to override defaults */
-  ierr = PetscOptionsGetInt(NULL,"-n",&user.n,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-alpha",&user.alpha,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg);CHKERRQ(ierr);
 
   /* Allocate vectors for the solution and gradient */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x);CHKERRQ(ierr);

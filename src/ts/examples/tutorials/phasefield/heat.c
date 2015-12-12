@@ -118,7 +118,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
   if (wait) {
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }
@@ -333,7 +333,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr  = PetscDrawLGReset(lg);CHKERRQ(ierr);
 
   xx[0] = 0.0; xx[1] = 1.0; cnt = 2;
-  ierr  = PetscOptionsGetRealArray(NULL,"-zoom",xx,&cnt,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetRealArray(NULL,NULL,"-zoom",xx,&cnt,NULL);CHKERRQ(ierr);
   xs    = xx[0]/hx; xm = (xx[1] - xx[0])/hx;
 
   /*

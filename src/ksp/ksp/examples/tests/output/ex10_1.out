@@ -1,19 +1,18 @@
 m = 1, N=81
-Mat Object: 1 MPI processes
-  type: seqaij
-  rows=36, cols=36
-  total: nonzeros=1200, allocated nonzeros=1200
-  total number of mallocs used during MatSetValues calls =0
-    using I-node routines: found 21 nodes, limit used is 5
 matrix 1 norm = 34.0627
-  0 KSP Residual norm 169.374 
-  1 KSP Residual norm 101.867 
-  2 KSP Residual norm 13.1678 
-  3 KSP Residual norm 3.32993 
-  4 KSP Residual norm 0.567191 
-  5 KSP Residual norm 0.0874276 
-  6 KSP Residual norm 0.00632413 
-  7 KSP Residual norm 0.00013597 
-  8 KSP Residual norm 1.24352e-05 
-  9 KSP Residual norm < 1.e-11
-Norm of error 5.85503e-13 Number of iterations 9
+  0 KSP Residual norm 85.383 
+  1 KSP Residual norm 34.5131 
+  2 KSP Residual norm 19.2208 
+  3 KSP Residual norm 13.3868 
+  4 KSP Residual norm 7.30229 
+  5 KSP Residual norm 5.9648 
+  6 KSP Residual norm 4.30542 
+  7 KSP Residual norm 3.802 
+  8 KSP Residual norm 2.39612 
+  9 KSP Residual norm 1.63953 
+ 10 KSP Residual norm 1.42713 
+ 11 KSP Residual norm 1.19941 
+ 12 KSP Residual norm 0.976343 
+ 13 KSP Residual norm 0.869917 
+ 14 KSP Residual norm 0.443911 
+Norm of residual 8.8499 Number of iterations 14

@@ -23,8 +23,8 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
 
   /* Set up the array */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,M,w,s,NULL,&da);CHKERRQ(ierr);

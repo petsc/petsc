@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsGetString(NULL,"-file",filename,PETSC_MAX_PATH_LEN,&flg);
+  ierr = PetscOptionsGetString(NULL,NULL,"-file",filename,PETSC_MAX_PATH_LEN,&flg);
   if (flg) {
     ierr = MyLoadData(PETSC_COMM_WORLD,filename);CHKERRQ(ierr);
   }

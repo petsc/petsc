@@ -13,7 +13,6 @@ Tao Object: 1 MPI processes
     type: gmres
   total KSP iterations: 13
   Active Set subset type: subvec
-  convergence tolerances: fatol=0.,   frtol=0.
   convergence tolerances: gatol=1e-16,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=1.80227e-09
   convergence tolerances: function minimum=1e-08

@@ -246,6 +246,8 @@
 
       call PetscLogEventEnd(Morning,ierr)
 
+      deallocate(message)
+
       call PetscFinalize(ierr)
 
       end program SchoolDay

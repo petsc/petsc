@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'master'
-    self.giturls          = ['https://github.com/trilinos/trilinos']
-    self.download         = ['none']
+    self.gitcommit        = 'origin/master'
+    self.download         = ['git://https://github.com/trilinos/trilinos']
+    self.downloadfilename = 'trilinos'
     self.includes         = ['TPI.h','Trilinos_version.h']
     self.functions        = ['TPI_Block']   # one of the very few C routines in Trilinos
     self.cxx              = 1
