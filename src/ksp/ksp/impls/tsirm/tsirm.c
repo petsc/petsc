@@ -57,13 +57,15 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscReal      norm = 20;
   PetscInt       i,*ind_row,first_iteration = 1,its = 0,total = 0,col = 0;
   PetscInt       iter_minimization = 0,restart = 30;
+  KSP            ksp_min;  /*KSP for minimization */
+  PC             pc_min;    /*PC for minimization */
   
   PetscFunctionBegin;  
   x = ksp->vec_sol; /* Solution vector        */
   b = ksp->vec_rhs; /* Right-hand side vector */
   
   /* Row indexes (these indexes are global) */
-  ind_row = (PetscInt*)malloc(sizeof(PetscInt)*(tsirm->Iend-tsirm->Istart));
+  ierr = PetscMalloc(tsirm->Iend-tsirm->Istart,&ind_row);CHKERRQ(ierr);
   for (i=0;i<tsirm->Iend-tsirm->Istart;i++) ind_row[i] = i+tsirm->Istart;
   
   /* Inner solver */
@@ -111,14 +113,11 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
       }
       
       /* CGLS or LSQR method to minimize the residuals*/
-      KSP ksp_min;  /*KSP for minimization */
-      PC pc_min;    /*PC for minimization */
         
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_min);CHKERRQ(ierr);
       if (tsirm->cgls) {
         ierr = KSPSetType(ksp_min,KSPCGLS);CHKERRQ(ierr);
-      }
-      else {
+      } else {
         ierr = KSPSetType(ksp_min,KSPLSQR);CHKERRQ(ierr);
       }
       ierr = KSPSetOperators(ksp_min,AS,AS);CHKERRQ(ierr);
@@ -134,7 +133,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
       ierr = MatMult(tsirm->S,tsirm->Alpha,x);CHKERRQ(ierr); /* x = S * Alpha */
     }
   } while (ksp->its<ksp->max_it && !ksp->reason);
-  
+  ierr = PetscFree(ind_row);CHKERRQ(ierr);
   ksp->its = total;
   PetscFunctionReturn(0);
 }

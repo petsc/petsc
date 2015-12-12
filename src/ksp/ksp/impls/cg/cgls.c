@@ -39,7 +39,8 @@ PetscErrorCode KSPSolve_CGLS(KSP ksp)
   KSP_CGLS       *cgls = (KSP_CGLS*)ksp->data;
   Mat            A;
   Vec            x,b,r,p,q,ss;
-  PetscScalar    alpha,beta,gamma,oldgamma,rnorm;
+  PetscScalar    beta;
+  PetscReal      alpha,gamma,oldgamma,rnorm;
   PetscInt       maxiter_ls = 15;
   
   PetscFunctionBegin;
