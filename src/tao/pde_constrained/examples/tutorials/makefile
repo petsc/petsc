@@ -47,7 +47,7 @@ runhyperbolic:
         ${DIFF} output/hyperbolic_1.out hyperbolic_1.tmp || printf '${PWD}\nPossible problem with hyperbolic_1 stdout, diffs above \n=========================================\n';\
         ${RM} -f hyperbolic_1.tmp
 
-TESTEXAMPLES_C            = hyperbolic.PETSc runhyperbolic hyperbolic.rm
-TESTEXAMPLES_C_NOTSINGLE  = elliptic.PETSc runelliptic runelliptic_2 runelliptic elliptic.rm parabolic.PETSc runparabolic parabolic.rm
+TESTEXAMPLES_C            = 
+TESTEXAMPLES_C_NOTSINGLE  = hyperbolic.PETSc runhyperbolic hyperbolic.rm elliptic.PETSc runelliptic runelliptic_2 runelliptic elliptic.rm parabolic.PETSc runparabolic parabolic.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
