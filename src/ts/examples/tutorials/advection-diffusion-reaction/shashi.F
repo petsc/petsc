@@ -55,11 +55,13 @@
       PetscBool   setls
       PetscScalar,pointer :: xx(:)
       PetscScalar zero,big
+      SNESLineSearch ls
       
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
-      external FormFunction, FormJacobian, MyLineSearch
+      external FormFunction, FormJacobian
+      external ShashiPostCheck
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Macro definitions
@@ -128,8 +130,11 @@
 !      call ShashiLowerBound(xx)
 !      call VecRestoreArrayF90(lb,xx,ierr)
       call VecSet(ub,big,ierr)
-      call SNESVISetVariableBounds(snes,lb,ub,ierr)
+!      call SNESVISetVariableBounds(snes,lb,ub,ierr)
 
+      call SNESGetLineSearch(snes,ls,ierr)
+      call SNESLineSearchSetPostCheck(ls,ShashiPostCheck,                 &
+     ,                                PETSC_NULL_OBJECT,ierr)
       call SNESSetType(snes,SNESVINEWTONRSLS,ierr)
 
       call SNESSetFromOptions(snes,ierr)
@@ -139,8 +144,7 @@
       call VecGetArrayF90(x,xx,ierr)
       call ShashiInitialGuess(xx)
       call VecRestoreArrayF90(x,xx,ierr)
-      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      
+
       call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -554,7 +558,8 @@
      ,         - (k_eq(15) * part_p(17))
 
       f_eq(18) = (part_p(13)**2)
-     ,         - (k_eq(16) * part_p(3)*part_p(18)**2)
+     ,     - (k_eq(16) * part_p(3)*part_p(18)**2)
+      print*,f_eq(18),part_p(3),part_p(18),part_p(13),k_eq(16)
 
       f_eq(19) = part_p(19)*part_p(3) - k_eq(17)*part_p(13)*part_p(10)
 
@@ -1140,3 +1145,32 @@
            
         return
         end
+
+      subroutine ShashiPostCheck(ls,X,Y,W,c_Y,c_W,dummy)
+      implicit none
+
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscvec.h90>
+      SNESLineSearch ls
+      PetscErrorCode ierr
+      Vec X,Y,W
+      PetscObject dummy
+      PetscBool c_Y,c_W
+      PetscScalar,pointer :: xx(:)
+      PetscInt i
+      call VecGetArrayF90(W,xx,ierr)
+      do i=1,26
+         if (xx(i) < 0.0) then
+            xx(i) = 0.0
+            c_W = PETSC_TRUE
+         endif
+        if (xx(i) > 3.0) then
+           xx(i) = 3.0
+        endif
+      enddo
+      call VecRestoreArrayF90(W,xx,ierr)
+      return
+      end
+      

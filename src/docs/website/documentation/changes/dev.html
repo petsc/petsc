@@ -162,6 +162,9 @@ PetscOptionsReject(PetscOptions,const char[],const char[]);
         <li>-snes_monitor_solution/residual/solution_update now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
       </ul>
       <h4>SNESLineSearch:</h4>
+      <li>-snes_linesearch_monitor now takes an optional [:filename] arguement, changed SNESLineSearchSet/GetMonitor to SNESLineSearchSet/GetDefaultMonitor</li>
+      <li>Added SNESLineSearchMonitorSet()</li>
+     <li>Partial support for -snes_linesearch_monitor_solution_update</li>
       <h4>TS:</h4>
       <ul>
         <li>TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
