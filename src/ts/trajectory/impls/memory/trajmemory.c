@@ -283,7 +283,7 @@ static PetscErrorCode StackLoadLast(TS ts,Stack *stack,PetscInt id)
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = VecGetSize(Y[0],&size);CHKERRQ(ierr);
   /* VecView writes to file two extra int's for class id and number of rows */
-  off  = -((stack->solution_only?0:stack->numY)*(size*PETSC_BINARY_SCALAR_SIZE+2*PETSC_BINARY_INT_SIZE)-PETSC_BINARY_INT_SIZE-2*PETSC_BINARY_SCALAR_SIZE;
+  off  = -((stack->solution_only?0:stack->numY)+1)*(size*PETSC_BINARY_SCALAR_SIZE+2*PETSC_BINARY_INT_SIZE)-PETSC_BINARY_INT_SIZE-2*PETSC_BINARY_SCALAR_SIZE;
 
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -986,16 +986,23 @@ static PetscErrorCode SetTrajTLR(TS ts,TJScheduler *tjsch,PetscInt stepnum,Petsc
   laststridesize = tjsch->total_steps%tjsch->stride;
   if (!laststridesize) laststridesize = tjsch->stride;
 
-  if (!tjsch->recompute) { /* skip last stride */
+  if (!tjsch->recompute) {
     ierr = TopLevelStore(ts,tjsch,stepnum,localstepnum,laststridesize,&done);CHKERRQ(ierr);
-    /* different starting points for last stride between solutin_only and !solutin_only */
+    /* revolve is needed for the last stride; different starting points for last stride between solutin_only and !solutin_only */
     if (!stack->solution_only && !tjsch->save_stack && stepnum <= tjsch->total_steps-laststridesize) PetscFunctionReturn(0);
     if (stack->solution_only && !tjsch->save_stack && stepnum < tjsch->total_steps-laststridesize) PetscFunctionReturn(0);
   }
-
   if (tjsch->save_stack && done) {
     ierr = InitRevolve(tjsch->stride,tjsch->max_cps_ram,tjsch->rctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
+  }
+  if (laststridesize < tjsch->stride) {
+    if (stack->solution_only && stepnum == tjsch->total_steps-laststridesize && !tjsch->recompute) { /* step tjsch->total_steps-laststridesize-1 is skipped, but the next step is not */
+      ierr = InitRevolve(laststridesize,tjsch->max_cps_ram,tjsch->rctx);CHKERRQ(ierr);
+    }
+    if (!stack->solution_only && stepnum == tjsch->total_steps-laststridesize+1 && !tjsch->recompute) { /* step tjsch->total_steps-laststridesize is skipped, but the next step is not */
+      ierr = InitRevolve(laststridesize,tjsch->max_cps_ram,tjsch->rctx);CHKERRQ(ierr);
+    }
   }
   ierr = ApplyRevolve(tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,localstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1) {
@@ -1003,7 +1010,6 @@ static PetscErrorCode SetTrajTLR(TS ts,TJScheduler *tjsch,PetscInt stepnum,Petsc
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1122,15 +1128,20 @@ static PetscErrorCode SetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum,Pets
   if (!laststridesize) laststridesize = tjsch->stride;
   if (stack->solution_only && localstepnum == 0 && !tjsch->rctx2->reverseonestep) {
     ierr = ApplyRevolve(tjsch->stype,tjsch->rctx2,(tjsch->total_steps+tjsch->stride-1)/tjsch->stride,stridenum,stridenum,PETSC_TRUE,&tjsch->store_stride);CHKERRQ(ierr);
+    if (laststridesize < tjsch->stride && stepnum == tjsch->total_steps-laststridesize) {
+      ierr = InitRevolve(laststridesize,tjsch->max_cps_ram,tjsch->rctx);CHKERRQ(ierr);
+    }
   }
   if (!stack->solution_only && localstepnum == 1 && !tjsch->rctx2->reverseonestep) {
     ierr = ApplyRevolve(tjsch->stype,tjsch->rctx2,(tjsch->total_steps+tjsch->stride-1)/tjsch->stride,stridenum,stridenum,PETSC_TRUE,&tjsch->store_stride);CHKERRQ(ierr);
+    if (laststridesize < tjsch->stride && stepnum == tjsch->total_steps-laststridesize+1) {
+      ierr = InitRevolve(laststridesize,tjsch->max_cps_ram,tjsch->rctx);CHKERRQ(ierr);
+    }
   }
   if (tjsch->store_stride) {
     ierr = TopLevelStore(ts,tjsch,stepnum,localstepnum,laststridesize,&done);CHKERRQ(ierr);
     if (done) {
       ierr = InitRevolve(tjsch->stride,tjsch->max_cps_ram,tjsch->rctx);CHKERRQ(ierr);
-      tjsch->rctx->reverseonestep = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
   }
