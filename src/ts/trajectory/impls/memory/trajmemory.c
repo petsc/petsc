@@ -1115,9 +1115,10 @@ static PetscErrorCode SetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum,Pets
     }
   }
   if (stepnum < tjsch->total_steps-laststridesize) {
-    if (tjsch->save_stack && !tjsch->store_stride && !tjsch->rctx2->reverseonestep) PetscFunctionReturn(0);
-    if (!tjsch->save_stack && !tjsch->rctx2->reverseonestep) PetscFunctionReturn(0);
+    if (tjsch->save_stack && !tjsch->store_stride && !tjsch->rctx2->reverseonestep) PetscFunctionReturn(0); /* store or forward-and-reverse at top level trigger revolve at bottom level */
+    if (!tjsch->save_stack && !tjsch->rctx2->reverseonestep) PetscFunctionReturn(0); /* store operation does not require revolve be called at bottom level */
   }
+  /* Skipping stepnum=0 for !stack->only is enough for TLR. Here we skip the first step for each stride so that the top-level revolve is applied (always at localstepnum=1) ahead of the bottom-level revolve */
   if (!stack->solution_only && localstepnum == 0 && stepnum != tjsch->total_steps && !tjsch->recompute) PetscFunctionReturn(0);
   ierr = ApplyRevolve(tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,localstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1) {
@@ -1162,8 +1163,8 @@ static PetscErrorCode GetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum)
     /* restore the top element in the stack for disk checkpoints */
     restoredstridenum = diskstack->container[diskstack->top];
     if (tjsch->rctx2->reverseonestep) tjsch->rctx2->reverseonestep = PETSC_FALSE;
-    /* second-level revolve must be applied before current step, like the solution_only mode for single-level revolve */
-    if (!tjsch->save_stack) { /* start with restoring a checkpoint */
+    /* top-level revolve must be applied before current step, just like the solution_only mode for single-level revolve */
+    if (!tjsch->save_stack && stack->solution_only) { /* start with restoring a checkpoint */
       tjsch->rctx2->capo = stridenum;
       tjsch->rctx2->oldcapo = tjsch->rctx2->capo;
       shift = 0;
