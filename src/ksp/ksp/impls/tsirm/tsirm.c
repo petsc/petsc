@@ -57,8 +57,8 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscReal      norm = 20;
   PetscInt       i,*ind_row,first_iteration = 1,its = 0,total = 0,col = 0;
   PetscInt       iter_minimization = 0,restart = 30;
-  KSP            ksp_min;  /*KSP for minimization */
-  PC             pc_min;    /*PC for minimization */
+  KSP            ksp_min;  /* KSP for minimization */
+  PC             pc_min;    /* PC for minimization */
   
   PetscFunctionBegin;  
   x = ksp->vec_sol; /* Solution vector        */
