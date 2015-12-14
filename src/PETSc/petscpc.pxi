@@ -67,6 +67,8 @@ cdef extern from * nogil:
     PetscPCGAMGType PCGAMGGEO
     PetscPCGAMGType PCGAMGCLASSICAL
 
+    ctypedef char* PetscPCHYPREType "const char*"
+
     ctypedef enum PetscPCCompositeType "PCCompositeType":
         PC_COMPOSITE_ADDITIVE
         PC_COMPOSITE_MULTIPLICATIVE
@@ -142,6 +144,14 @@ cdef extern from * nogil:
     int PCGAMGSetType(PetscPC,PetscPCGAMGType)
     int PCGAMGSetNlevels(PetscPC,PetscInt)
     int PCGAMGSetNSmooths(PetscPC,PetscInt)
+
+    int PCHYPREGetType(PetscPC,PetscPCHYPREType*)
+    int PCHYPRESetType(PetscPC,PetscPCHYPREType)
+    int PCHYPRESetDiscreteCurl(PetscPC,PetscMat);
+    int PCHYPRESetDiscreteGradient(PetscPC,PetscMat);
+    int PCHYPRESetAlphaPoissonMatrix(PetscPC,PetscMat);
+    int PCHYPRESetBetaPoissonMatrix(PetscPC,PetscMat);
+    int PCHYPRESetEdgeConstantVectors(PetscPC,PetscVec,PetscVec,PetscVec);
 
     int PCFactorGetMatrix(PetscPC,PetscMat*)
     int PCFactorSetZeroPivot(PetscPC,PetscReal)
