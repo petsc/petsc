@@ -282,7 +282,8 @@ static PetscErrorCode StackLoadLast(TS ts,Stack *stack,PetscInt id)
   PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mLoad stack from file\033[0m\n");
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = VecGetSize(Y[0],&size);CHKERRQ(ierr);
-  off  = -((stack->solution_only?0:stack->numY)+1)*(size+1)*PETSC_BINARY_SCALAR_SIZE-PETSC_BINARY_INT_SIZE-2*PETSC_BINARY_SCALAR_SIZE;
+  /* VecView writes to file two extra int's for class id and number of rows */
+  off  = -((stack->solution_only?0:stack->numY)*(size*PETSC_BINARY_SCALAR_SIZE+2*PETSC_BINARY_INT_SIZE)-PETSC_BINARY_INT_SIZE-2*PETSC_BINARY_SCALAR_SIZE;
 
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
