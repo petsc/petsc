@@ -348,10 +348,11 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
 
-    /* Handle specific TS options */
+  /* Handle specific TS options */
   if (ts->ops->setfromoptions) {
     ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
   }
+
   /* TS trajectory must be set after TS, since it may use some TS options above */
   if (ts->trajectory) tflg = PETSC_TRUE;
   else tflg = PETSC_FALSE;
@@ -369,10 +370,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   if (ts->trajectory) {
     ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (snes) {

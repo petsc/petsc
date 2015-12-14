@@ -701,6 +701,6 @@ TESTEXAMPLES_MOAB         = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5    = ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TCHEM        = extchem.PETSc runextchem extchem.rm
 
-TESTEXAMPLES_REVOLVE      = ex20adj.PETSc runex20adj_7 runex20adj_8 runex20adj_9 runex20adj_10 runex20adj_11 runex20adj_12 runex20adj_13 runex20adj_14 runex20adj_15 runex20adj_16 ex20adj.rm
+TESTEXAMPLES_REVOLVE      = ex20adj.PETSc runex20adj_7 runex20adj_8 runex20adj_9 runex20adj_10 runex20adj_11 runex20adj_12 runex20adj_13 runex20adj_14 runex20adj_15 runex20adj_16 runex20adj_17 runex20adj_18 runex20adj_19 runex20adj_20 ex20adj.rm
  
 include ${PETSC_DIR}/lib/petsc/conf/test
