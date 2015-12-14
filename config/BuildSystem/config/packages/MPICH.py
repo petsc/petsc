@@ -25,6 +25,12 @@ class Configure(config.package.GNUPackage):
     help.addArgument('MPI', '-download-mpich-device=<ch3:nemesis or see mpich2 docs>', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     return
 
+  def checkDownload(self):
+    if config.setCompilers.Configure.isCygwin(self.log):
+      if not config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
+        raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
+    return config.package.Package.checkDownload(self)
+
   def formGNUConfigureArgs(self):
     '''MPICH has many specific extra configure arguments'''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
@@ -49,10 +55,7 @@ class Configure(config.package.GNUPackage):
     return installDir
 
   def configure(self):
-    if config.setCompilers.Configure.isCygwin(self.log):
-      if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
-        self.download = self.download_cygwin
-      else:
-        raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
+    if config.setCompilers.Configure.isCygwin(self.log) and config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
+      self.download = self.download_cygwin
     return config.package.Package.configure(self)
 
