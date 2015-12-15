@@ -203,6 +203,7 @@ PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, c
 PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptions*,DM);
+PETSC_EXTERN PetscErrorCode DMPlexLabelComplete_Internal(DM,DMLabel,PetscBool);
 
 #undef __FUNCT__
 #define __FUNCT__ "DihedralInvert"
