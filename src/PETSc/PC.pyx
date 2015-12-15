@@ -299,6 +299,39 @@ cdef class PC(Object):
         cdef PetscInt ival = asInt(smooths)
         CHKERR( PCGAMGSetNSmooths(self.pc, ival) )
 
+    # --- Hypre ---
+
+    def getHYPREType(self):
+        cdef PetscPCHYPREType cval = NULL
+        CHKERR( PCHYPREGetType(self.pc, &cval) )
+        return bytes2str(cval)
+
+    def setHYPREType(self, hypretype):
+        cdef PetscPCHYPREType cval = NULL
+        hypretype = str2bytes(hypretype, &cval)
+        CHKERR( PCHYPRESetType(self.pc, cval) )
+
+    def setHYPREDiscreteCurl(self, Mat mat not None):
+        CHKERR( PCHYPRESetDiscreteCurl(self.pc, mat.mat) )
+
+    def setHYPREDiscreteGradient(self, Mat mat not None):
+        CHKERR( PCHYPRESetDiscreteGradient(self.pc, mat.mat) )
+
+    def setHYPRESetAlphaPoissonMatrix(self, Mat mat not None):
+        CHKERR( PCHYPRESetAlphaPoissonMatrix(self.pc, mat.mat) )
+
+    def setHYPRESetBetaPoissonMatrix(self, Mat mat=None):
+        cdef PetscMat pmat = NULL
+        if mat is not None: pmat = mat.mat
+        CHKERR( PCHYPRESetBetaPoissonMatrix(self.pc, pmat) )
+
+    def setHYPRESetEdgeConstantVectors(self, Vec ozz not None,
+                                       Vec zoz not None, Vec zzo=None):
+        cdef PetscVec zzo_vec = NULL
+        if zzo is not None: zzo_vec = zzo.vec
+        CHKERR( PCHYPRESetEdgeConstantVectors(self.pc, ozz.vec, zoz.vec,
+                                              zzo_vec) )
+
     # --- Factor ---
 
     def setFactorSolverPackage(self, solver):
