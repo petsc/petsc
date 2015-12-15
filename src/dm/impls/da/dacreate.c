@@ -333,6 +333,7 @@ M*/
 
 PETSC_EXTERN PetscErrorCode DMProjectFunctionLocal_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMComputeL2Diff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMComputeL2GradientDiff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [],PetscInt, PetscScalar *, void *), void **, Vec,const PetscReal [], PetscReal *);
 
 
 #undef __FUNCT__
@@ -428,6 +429,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->getdimpoints                = DMGetDimPoints_DA;
   da->ops->projectfunctionlocal        = DMProjectFunctionLocal_DA;
   da->ops->computel2diff               = DMComputeL2Diff_DA;
+  da->ops->computel2gradientdiff       = DMComputeL2GradientDiff_DA;
   PetscFunctionReturn(0);
 }
 

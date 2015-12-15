@@ -314,7 +314,7 @@ int main(int argc, char **argv)
   ierr = DMProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = DMProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2FieldDiff(dm, user.exactFuncs, NULL, u, ferrors);CHKERRQ(ierr);
+  ierr = DMComputeL2FieldDiff(dm, user.exactFuncs, NULL, u, ferrors);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g\n", ferrors[0]);CHKERRQ(ierr);
 #if 0
   if (user.showError) {

@@ -1004,6 +1004,7 @@ extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
 extern PetscErrorCode DMProjectFunctionLocal_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 extern PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 extern PetscErrorCode DMComputeL2Diff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
+extern PetscErrorCode DMComputeL2GradientDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[], const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,const PetscReal [],PetscReal *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexReplace_Static"
@@ -1321,6 +1322,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->projectfunctionlocal            = DMProjectFunctionLocal_Plex;
   dm->ops->projectfunctionlabellocal       = DMProjectFunctionLabelLocal_Plex;
   dm->ops->computel2diff                   = DMComputeL2Diff_Plex;
+  dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
   PetscFunctionReturn(0);
 }
 

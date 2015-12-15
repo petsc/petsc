@@ -1351,26 +1351,8 @@ PetscErrorCode DMComputeL2Diff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAComputeL2GradientDiff"
-/*@C
-  DMDAComputeL2GradientDiff - This function computes the L_2 difference between the gradient of a function u and an FEM interpolant solution grad u_h.
-
-  Input Parameters:
-+ dm    - The DM
-. time  - The time
-. funcs - The gradient functions to evaluate for each field component
-. ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
-. X     - The coefficient vector u_h
-- n     - The vector to project along
-
-  Output Parameter:
-. diff - The diff ||(grad u - grad u_h) . n||_2
-
-  Level: developer
-
-.seealso: DMProjectFunction(), DMComputeL2Diff()
-@*/
-PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
+#define __FUNCT__ "DMComputeL2GradientDiff_DA"
+PetscErrorCode DMComputeL2GradientDiff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt  debug = 0;
   PetscDS    prob;
