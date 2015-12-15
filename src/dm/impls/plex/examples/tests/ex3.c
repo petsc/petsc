@@ -625,7 +625,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeError_Internal"
+#define __FUNCT__ "ComputeError"
 static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *),
                                    PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
                                    void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
