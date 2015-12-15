@@ -331,6 +331,9 @@ static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, P
 .seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType()
 M*/
 
+PETSC_EXTERN PetscErrorCode DMProjectFunctionLocal_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMComputeL2Diff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_DA"
@@ -423,6 +426,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->createdomaindecomposition   = DMCreateDomainDecomposition_DA;
   da->ops->createddscatters            = DMCreateDomainDecompositionScatters_DA;
   da->ops->getdimpoints                = DMGetDimPoints_DA;
+  da->ops->projectfunctionlocal        = DMProjectFunctionLocal_DA;
+  da->ops->computel2diff               = DMComputeL2Diff_DA;
   PetscFunctionReturn(0);
 }
 

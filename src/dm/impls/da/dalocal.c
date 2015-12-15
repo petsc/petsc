@@ -1213,8 +1213,8 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAProjectFunctionLocal"
-PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+#define __FUNCT__ "DMProjectFunctionLocal_DA"
+PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscDS    prob;
   PetscFE         fe;
@@ -1264,59 +1264,8 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (*
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAProjectFunction"
-/*@C
-  DMDAProjectFunction - This projects the given function into the function space provided.
-
-  Input Parameters:
-+ dm      - The DM
-. time    - The time
-. funcs   - The coordinate functions to evaluate
-. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
-- mode    - The insertion mode for values
-
-  Output Parameter:
-. X - vector
-
-  Level: developer
-
-.seealso: DMDAComputeL2Diff()
-@*/
-PetscErrorCode DMDAProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
-{
-  Vec            localX;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMDAProjectFunctionLocal(dm, time, funcs, ctxs, mode, localX);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeL2Diff"
-/*@C
-  DMDAComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
-
-  Input Parameters:
-+ dm    - The DM
-. time  - The time
-. funcs - The functions to evaluate for each field component
-. ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
-- X     - The coefficient vector u_h
-
-  Output Parameter:
-. diff - The diff ||u - u_h||_2
-
-  Level: developer
-
-.seealso: DMDAProjectFunction(), DMDAComputeL2GradientDiff()
-@*/
-PetscErrorCode DMDAComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+#define __FUNCT__ "DMComputeL2Diff_DA"
+PetscErrorCode DMComputeL2Diff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt  debug = 0;
   PetscDS    prob;
@@ -1419,7 +1368,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)
 
   Level: developer
 
-.seealso: DMDAProjectFunction(), DMComputeL2Diff()
+.seealso: DMProjectFunction(), DMComputeL2Diff()
 @*/
 PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
