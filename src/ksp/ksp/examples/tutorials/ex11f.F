@@ -78,7 +78,7 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 #if !defined(PETSC_USE_COMPLEX)
-      write(6,*) "This example requires complex numbers."
+      write(6,*) 'This example requires complex numbers.'
       goto 200
 #endif
 
@@ -88,9 +88,10 @@
       czero  = 0.0
       cone   = PETSC_i
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-sigma1',sigma1,      &
-     &                       flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                         '-sigma1',sigma1,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+     &                        '-n',n,flg,ierr)
       dim    = n*n
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -120,8 +121,8 @@
 !     appropriate processor during matrix assembly).
 !   - Always specify global rows and columns of matrix entries.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-norandom',        &
-     &     flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-norandom',flg,ierr)
       if (flg) then
          use_random = .false.
          sigma2 = 10.0*PETSC_i

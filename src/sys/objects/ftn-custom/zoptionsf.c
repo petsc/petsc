@@ -45,63 +45,69 @@
 
 /* ---------------------------------------------------------------------*/
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertstring_(CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertstring_(PetscOptions *options,CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
   FIXCHAR(file,len,c1);
-  *ierr = PetscOptionsInsertString(c1);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsInsertString(*options,c1);
   FREECHAR(file,c1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertfile_(MPI_Fint *comm,CHAR file PETSC_MIXED_LEN(len),PetscBool *require,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertfile_(MPI_Fint *comm,PetscOptions *options,CHAR file PETSC_MIXED_LEN(len),PetscBool *require,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
   FIXCHAR(file,len,c1);
-  *ierr = PetscOptionsInsertFile(MPI_Comm_f2c(*comm),c1,*require);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsInsertFile(MPI_Comm_f2c(*comm),*options,c1,*require);
   FREECHAR(file,c1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR value PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscoptionssetvalue_(PetscOptions *options,CHAR name PETSC_MIXED_LEN(len1),CHAR value PETSC_MIXED_LEN(len2),
                    PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(name,len1,c1);
   FIXCHAR(value,len2,c2);
-  *ierr = PetscOptionsSetValue(c1,c2);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsSetValue(*options,c1,c2);
   FREECHAR(name,c1);
   FREECHAR(value,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsclear_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscoptionsclear_(PetscOptions *options,PetscErrorCode *ierr)
 {
-  *ierr = PetscOptionsClear();
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsClear(*options);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscoptionsclearvalue_(PetscOptions *options,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
   FIXCHAR(name,len,c1);
-  *ierr = PetscOptionsClearValue(c1);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsClearValue(*options,c1);
   FREECHAR(name,c1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscoptionshasname_(PetscOptions *options,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsHasName(c1,c2,flg);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsHasName(*options,c1,c2,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscoptionsgetint_(PetscOptions *opt,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     PetscInt *ivalue,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char      *c1,*c2;
@@ -109,13 +115,14 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetInt(c1,c2,ivalue,&flag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(opt);
+  *ierr = PetscOptionsGetInt(*opt,c1,c2,ivalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsgetenumprivate_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),const char *const*list,
+PETSC_EXTERN void PETSC_STDCALL petscoptionsgetenumprivate_(PetscOptions *options,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),const char *const*list,
                     PetscEnum *ivalue,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char      *c1,*c2;
@@ -123,13 +130,14 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetenumprivate_(CHAR pre PETSC_MIXED
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetEnum(c1,c2,list,ivalue,&flag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsGetEnum(*options,c1,c2,list,ivalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsgetbool_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscoptionsgetbool_(PetscOptions *options,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     PetscBool  *ivalue,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char      *c1,*c2;
@@ -137,13 +145,14 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetbool_(CHAR pre PETSC_MIXED_LEN(le
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetBool(c1,c2,ivalue,&flag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsGetBool(*options,c1,c2,ivalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscoptionsgetreal_(PetscOptions *options,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     PetscReal *dvalue,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
@@ -151,13 +160,14 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(le
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetReal(c1,c2,dvalue,&flag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsGetReal(*options,c1,c2,dvalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscoptionsgetrealarray_(PetscOptions *options,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                 PetscReal *dvalue,PetscInt *nmax,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char      *c1,*c2;
@@ -165,13 +175,14 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_L
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetRealArray(c1,c2,dvalue,nmax,&flag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsGetRealArray(*options,c1,c2,dvalue,nmax,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscoptionsgetintarray_(PetscOptions *options,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                    PetscInt *dvalue,PetscInt *nmax,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char      *c1,*c2;
@@ -179,13 +190,14 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetintarray_(CHAR pre PETSC_MIXED_LE
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetIntArray(c1,c2,dvalue,nmax,&flag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsGetIntArray(*options,c1,c2,dvalue,nmax,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscoptionsgetstring_(PetscOptions *options,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     CHAR string PETSC_MIXED_LEN(len),PetscBool  *flg,
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len))
 {
@@ -198,7 +210,8 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(
   c3   = string;
   len3 = len - 1;
 
-  *ierr = PetscOptionsGetString(c1,c2,c3,len3,&flag);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsGetString(*options,c1,c2,c3,len3,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
@@ -215,12 +228,13 @@ PETSC_EXTERN void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(l
   FIXRETURNCHAR(PETSC_TRUE,name,len_in);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsview_(PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscoptionsview_(PetscOptions *options,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
 
   PetscPatchDefaultViewers_Fortran(vin,v);
-  *ierr = PetscOptionsView(v);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsView(*options,v);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscobjectviewfromoptions_(PetscObject *obj,PetscObject *bobj,CHAR option PETSC_MIXED_LEN(loption),PetscErrorCode *ierr  PETSC_END_LEN(loption))

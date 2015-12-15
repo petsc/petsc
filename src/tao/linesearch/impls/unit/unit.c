@@ -13,7 +13,7 @@ static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_Unit"
-static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

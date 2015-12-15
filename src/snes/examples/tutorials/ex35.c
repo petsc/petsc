@@ -89,7 +89,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
 
   if (use_ngs) {
     ierr = SNESGetNPC(snes,&psnes);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-static char help[] = "The varaiable-viscosity Stokes Problem in 2d with finite elements.\n\
+static char help[] = "The variable-viscosity Stokes Problem in 2d with finite elements.\n\
 We solve the Stokes problem in a square domain\n\
 and compare against exact solutions from Mirko Velic.\n\n\n";
 
@@ -43,20 +43,20 @@ typedef struct {
   /* Problem definition */
   SolutionType  solType;           /* The type of exact solution */
   PetscBag      bag;               /* Holds problem parameters */
-  PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
 } AppCtx;
 
-static PetscErrorCode zero_scalar(PetscInt dim, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode zero_scalar(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
   return 0;
 }
-static PetscErrorCode one_scalar(PetscInt dim, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode one_scalar(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 1.0;
   return 0;
 }
-static PetscErrorCode zero_vector(PetscInt dim, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 0.0;
@@ -213,11 +213,11 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   PetscReal sigma = 1.0;
   PetscReal Z;
   PetscReal u1,u2,u3,u4,u5,u6;
-  PetscReal sum1,sum2,sum3,sum4,sum5,sum6,sum7;
+  PetscReal sum1,sum2,sum3,sum4,sum5,sum6;
   PetscReal kn,km,x,z;
   PetscReal _C1,_C2,_C3,_C4;
   PetscReal Rp, UU, VV;
-  PetscReal rho,a,b,r,_aa,_bb,AA,BB,Rm,SS;
+  PetscReal a,b,r,_aa,_bb,AA,BB,Rm;
   PetscReal num1,num2,num3,num4,den1;
 
   PetscReal t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
@@ -259,7 +259,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   sum4=0.0;
   sum5=0.0;
   sum6=0.0;
-  sum7=0.0;
+  /*sum7=0.0;*/
 
   /*******************************************/
   /*         calculate the constants         */
@@ -640,7 +640,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t96 = cos(t83);
   u6 = -((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-0.4e1 * BB * B * t71 + 0.4e1 * AA * t74 * kn + t8 * AA * kn - AA * t80) * t84 + (-0.4e1 * AA * t71 * B - t8 * BB * kn - 0.4e1 * t74 * BB * kn - sigma + BB * t80) * t96) / km;
 
-  SS = sin(km*z)*(exp(UU*x)*(_C1*cos(Rm*x)+_C2*sin(Rm*x)) + exp(-VV*x)*(_C3*cos(Rm*x)+_C4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x)));
+  /*SS = sin(km*z)*(exp(UU*x)*(_C1*cos(Rm*x)+_C2*sin(Rm*x)) + exp(-VV*x)*(_C3*cos(Rm*x)+_C4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x)));*/
 
   /* u1 = Vx, u2 = Vz, u3 = txx, u4 = tzx, u5 = pressure, u6 = tzz */
 
@@ -687,7 +687,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "SolKxSolutionVelocity"
-static PetscErrorCode SolKxSolutionVelocity(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
+static PetscErrorCode SolKxSolutionVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
   Parameter     *s = (Parameter *) ctx;
   PetscErrorCode ierr;
@@ -699,7 +699,7 @@ static PetscErrorCode SolKxSolutionVelocity(PetscInt dim, const PetscReal x[], P
 
 #undef __FUNCT__
 #define __FUNCT__ "SolKxSolutionPressure"
-static PetscErrorCode SolKxSolutionPressure(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
+static PetscErrorCode SolKxSolutionPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
 {
   Parameter     *s = (Parameter *) ctx;
   PetscErrorCode ierr;
@@ -793,7 +793,6 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   PetscReal      ZA = etaA, ZB = etaB;
   PetscInt       nz  = m,    nx = n;
   PetscReal      u1, u2, u3, u4, u5, u6, Z, x = pos[0], z = pos[1];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Note that there is no Fourier sum here. */
@@ -2999,7 +2998,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "SolCxSolutionVelocity"
-static PetscErrorCode SolCxSolutionVelocity(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
+static PetscErrorCode SolCxSolutionVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
   Parameter     *s = (Parameter *) ctx;
   PetscErrorCode ierr;
@@ -3011,7 +3010,7 @@ static PetscErrorCode SolCxSolutionVelocity(PetscInt dim, const PetscReal x[], P
 
 #undef __FUNCT__
 #define __FUNCT__ "SolCxSolutionPressure"
-static PetscErrorCode SolCxSolutionPressure(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
+static PetscErrorCode SolCxSolutionPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
 {
   Parameter     *s = (Parameter *) ctx;
   PetscErrorCode ierr;
@@ -3289,7 +3288,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
     DM      dmAux;
-    DMLabel label;
     PetscDS probAux;
 
     ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
@@ -3335,15 +3333,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 #define __FUNCT__ "CreatePressureNullSpace"
 static PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNullSpace *nullSpace)
 {
-  PetscObject      pressure;
-  MatNullSpace     nullSpacePres;
   Vec              vec;
-  PetscErrorCode (*funcs[2])(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, one_scalar};
+  PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, one_scalar};
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(dm, &vec);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
   ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) vec, "Pressure Null Space");CHKERRQ(ierr);
   ierr = VecViewFromOptions(vec, NULL, "-null_space_vec_view");CHKERRQ(ierr);
@@ -3373,7 +3369,7 @@ int main(int argc, char **argv)
   PetscInt         its;                  /* iterations for convergence */
   PetscReal        error = 0.0;          /* L_2 error in the solution */
   PetscReal        ferrors[2];
-  PetscErrorCode (*initialGuess[2])(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
+  PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
   void            *ctxs[2];
   PetscErrorCode   ierr;
 
@@ -3407,29 +3403,29 @@ int main(int argc, char **argv)
   ierr = SNESGetJacobian(snes, NULL, &J, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
 
-  ierr = DMProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", pint);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions(snes, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Initial Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-initial_vec_view");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dm, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2FieldDiff(dm, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
+  ierr = DMPlexComputeL2FieldDiff(dm, 0.0, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", pint);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);
   if (user.showError) {
     Vec r;
 
     ierr = DMGetGlobalVector(dm, &r);CHKERRQ(ierr);
-    ierr = DMProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
     ierr = VecAXPY(r, -1.0, u);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) r, "Solution Error");CHKERRQ(ierr);
     ierr = VecViewFromOptions(r, NULL, "-error_vec_view");CHKERRQ(ierr);

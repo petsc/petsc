@@ -759,7 +759,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
     ierr = (*dm->ops->setfromoptions)(PetscOptionsObject,dm);CHKERRQ(ierr);
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5670,6 +5670,7 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 
   Input Parameters:
 + dm      - The DM
+. time    - The time
 . funcs   - The coordinate functions to evaluate, one per field
 . ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 - mode    - The insertion mode for values
@@ -5678,7 +5679,7 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 . X - vector
 
    Calling sequence of func:
-$    func(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
 
 +  dim - The spatial dimension
 .  x   - The coordinates
@@ -5690,7 +5691,7 @@ $    func(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void 
 
 .seealso: DMComputeL2Diff()
 @*/
-PetscErrorCode DMProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
+PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
   Vec            localX;
   PetscErrorCode ierr;
@@ -5698,7 +5699,7 @@ PetscErrorCode DMProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, const
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLocal(dm, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dm, time, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
@@ -5707,7 +5708,7 @@ PetscErrorCode DMProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, const
 
 #undef __FUNCT__
 #define __FUNCT__ "DMProjectFunctionLocal"
-PetscErrorCode DMProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
 
@@ -5715,13 +5716,13 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscInt, 
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
   if (!dm->ops->projectfunctionlocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFunctionLocal",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->projectfunctionlocal) (dm, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  ierr = (dm->ops->projectfunctionlocal) (dm, time, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMProjectFunctionLabelLocal"
-PetscErrorCode DMProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
 
@@ -5729,7 +5730,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
   if (!dm->ops->projectfunctionlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFunctionLabelLocal",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->projectfunctionlabellocal) (dm, label, numIds, ids, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  ierr = (dm->ops->projectfunctionlabellocal) (dm, time, label, numIds, ids, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5740,6 +5741,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds
 
   Input Parameters:
 + dm    - The DM
+. time  - The time
 . funcs - The functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
 - X     - The coefficient vector u_h
@@ -5751,7 +5753,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds
 
 .seealso: DMProjectFunction(), DMPlexComputeL2FieldDiff(), DMPlexComputeL2GradientDiff()
 @*/
-PetscErrorCode DMComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   PetscErrorCode ierr;
 
@@ -5759,6 +5761,6 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const P
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,4);
   if (!dm->ops->computel2diff) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMComputeL2Diff",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->computel2diff)(dm,funcs,ctxs,X,diff);CHKERRQ(ierr);
+  ierr = (dm->ops->computel2diff)(dm,time,funcs,ctxs,X,diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

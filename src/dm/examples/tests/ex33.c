@@ -30,28 +30,28 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-P",&P,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
   if (pt == 1) bx = DM_BOUNDARY_PERIODIC;
   if (pt == 2) by = DM_BOUNDARY_PERIODIC;
   if (pt == 4) {bx = DM_BOUNDARY_PERIODIC; by = DM_BOUNDARY_PERIODIC;}
 
-  ierr         = PetscOptionsGetInt(NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetInt(NULL,NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
   stencil_type = (DMDAStencilType) st;
 
-  ierr = PetscOptionsHasName(NULL,"-oned",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-twod",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-threed",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-oned",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-twod",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-threed",&flg3);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-binary",&isbinary);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-binary",&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscOptionsHasName(NULL,"-hdf5",&ishdf5);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-hdf5",&ishdf5);CHKERRQ(ierr);
 #endif
-  ierr = PetscOptionsHasName(NULL,"-mpiio",&mpiio);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-mpiio",&mpiio);CHKERRQ(ierr);
   if (flg2) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
   } else if (flg3) {
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = VecSetRandom(global1,rdm);CHKERRQ(ierr);
   if (isbinary) {
     if (mpiio) {
-      ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr);
+      ierr = PetscOptionsSetValue(NULL,"-viewer_binary_mpiio","");CHKERRQ(ierr);
     }
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)

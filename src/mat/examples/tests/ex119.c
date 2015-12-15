@@ -14,8 +14,8 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetString(NULL,"-inputfile",inputfile,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-outputfile",outputfile,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-inputfile",inputfile,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-outputfile",outputfile,256,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,inputfile,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);

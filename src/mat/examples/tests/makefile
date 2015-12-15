@@ -1953,15 +1953,23 @@ runex125:
 	   if (${DIFF} output/ex125.out ex125.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex125, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
+
 runex125_mumps:
 	-@${MPIEXEC} -n 1 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2 > ex125.tmp 2>&1; \
 	   if (${DIFF} output/ex125_mumps.out ex125.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex125_mumps, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
+
 runex125_mumps_2:
 	-@${MPIEXEC} -n 3 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2 > ex125.tmp 2>&1; \
 	   if (${DIFF} output/ex125_mumps.out ex125.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex125_mumps_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex125.tmp
+
+runex125_mkl_pardiso:
+	-@${MPIEXEC} -n 1 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 3 > ex125.tmp 2>&1; \
+	   if (${DIFF} output/ex125_mkl_pardiso.out ex125.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex125_mkl_pardiso, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
 
 runex126f:
@@ -2414,14 +2422,18 @@ runex191:
 	   ${DIFF} output/ex191_1.out ex191.tmp || printf "${PWD}\nPossible problem with ex191, diffs above\n=========================================\n"; \
 	   ${RM} -f ex191.tmp
 
-runex192:
-	  -@${MPIEXEC} -n 1 ./ex192 > ex192.tmp 2>&1; \
-	  ${MPIEXEC} -n 1 ./ex192 -mat_mumps_icntl_19 1 >> ex192.tmp 2>&1; \
-	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve >> ex192.tmp 2>&1; \
-	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -mat_mumps_icntl_19 1 >> ex192.tmp 2>&1; \
-	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -hermitian_solve >> ex192.tmp 2>&1; \
-	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -hermitian_solve -mat_mumps_icntl_19 1 >> ex192.tmp 2>&1; \
-	   ${DIFF} output/ex192.out ex192.tmp || printf "${PWD}\nPossible problem with ex192, diffs above\n=========================================\n"; \
+runex192_mumps:
+	  -@${MPIEXEC} -n 1 ./ex192 -solver 0 > ex192.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -solver 0 >> ex192.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -hermitian_solve -solver 0 >> ex192.tmp 2>&1; \
+	   ${DIFF} output/ex192_mumps.out ex192.tmp || printf "${PWD}\nPossible problem with ex192_mumps, diffs above\n=========================================\n"; \
+	   ${RM} -f ex192.tmp
+
+runex192_mkl_pardiso:
+	  -@${MPIEXEC} -n 1 ./ex192 -solver 1 > ex192.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -solver 1 >> ex192.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex192 -symmetric_solve -hermitian_solve -solver 1 >> ex192.tmp 2>&1; \
+	   ${DIFF} output/ex192_mkl_pardiso.out ex192.tmp || printf "${PWD}\nPossible problem with ex192_mkl_pardiso, diffs above\n=========================================\n"; \
 	   ${RM} -f ex192.tmp
 
 runex193:
@@ -2528,6 +2540,8 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex174.PETSc runex174 runex174_dense runex174_elemental runex174_sbaij \
                                  runex174_2 runex174_2_dense runex174_2_elemental runex174_2_sbaij ex174.rm
 TESTEXAMPLES_MUMPS             = ex125.PETSc runex125_mumps runex125_mumps_2 ex125.rm \
-                                 ex192.PETSc runex192 ex192.rm
+                                 ex192.PETSc runex192_mumps ex192.rm
+TESTEXAMPLES_MKL_PARDISO       = ex125.PETSc runex125_mkl_pardiso ex125.rm \
+                                 ex192.PETSc runex192_mkl_pardiso ex192.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

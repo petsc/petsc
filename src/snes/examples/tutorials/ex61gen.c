@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = VecGetArray(x,&values);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
   if (flg) {
     sprintf(filename,"ex61.random.%d",(int)seed);CHKERRQ(ierr);
   } else {

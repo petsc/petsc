@@ -17,7 +17,7 @@ PetscErrorCode RunTest(void)
 
   PetscFunctionBegin;
 
-  ierr = PetscOptionsGetInt(0,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,0,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(0,"-draw",&draw,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);

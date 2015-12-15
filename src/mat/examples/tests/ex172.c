@@ -15,8 +15,8 @@ int main(int argc,char **args)
   PetscInt       m0,m1,n=128,i;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetBool(NULL,"-different",&different,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-skip",&skip,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-different",&different,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-skip",&skip,NULL);CHKERRQ(ierr);
   /*
      Create matrices
      A = tridiag(1,-2,1) and B = diag(7);

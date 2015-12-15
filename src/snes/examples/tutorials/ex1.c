@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-hard",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
     /*
      Set function evaluation routine and vector.

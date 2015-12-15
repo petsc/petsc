@@ -338,7 +338,7 @@ for a discussion of PETSc include files in Fortran programs.
 
 As shown in Figure~\ref{fig_example1}, the user can input control data
 at run time using the options database. In this example the command
-PetscOptionsGetInt(PETSC\_NULL,"-n",\&n,\&flg); checks whether the user has
+PetscOptionsGetInt(NULL,PETSC\_NULL,"-n",\&n,\&flg); checks whether the user has
 provided a command line option to set the value of \trl{n}, the
 problem dimension.  If so, the variable \trl{n} is set accordingly;
 otherwise, \trl{n} remains unchanged. A complete description of the

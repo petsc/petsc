@@ -19,7 +19,7 @@ struct _SNESOps {
   PetscErrorCode (*setup)(SNES);                                /* routine to set up the nonlinear solver */
   PetscErrorCode (*solve)(SNES);                                /* actual nonlinear solver */
   PetscErrorCode (*view)(SNES,PetscViewer);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,SNES);                       /* sets options from database */
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,SNES);                       /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
   PetscErrorCode (*usercompute)(SNES,void**);
@@ -239,7 +239,7 @@ PETSC_INTERN PetscErrorCode SNESVICheckLocalMin_Private(SNES,Mat,Vec,Vec,PetscRe
 PETSC_INTERN PetscErrorCode SNESReset_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESDestroy_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESView_VI(SNES,PetscViewer);
-PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(PetscOptions*,SNES);
+PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(PetscOptionItems*,SNES);
 PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
@@ -247,7 +247,7 @@ PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
-PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
+PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve, SNES_ObjectiveEval;
 

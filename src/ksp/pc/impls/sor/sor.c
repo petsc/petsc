@@ -59,7 +59,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SOR"
-PetscErrorCode PCSetFromOptions_SOR(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_SOR(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;

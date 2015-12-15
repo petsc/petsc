@@ -234,11 +234,11 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   mfctx->compute_err      = PETSC_FALSE;
   mfctx->jorge            = PETSC_FALSE;
 
-  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_mf_err",&mfctx->error_rel,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_mf_umin",&mfctx->umin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_mf_jorge",&mfctx->jorge,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_mf_compute_err",&mfctx->compute_err,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(((PetscObject)snes)->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_err",&mfctx->error_rel,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_umin",&mfctx->umin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_jorge",&mfctx->jorge,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_compute_err",&mfctx->compute_err,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
     mfctx->compute_err = PETSC_TRUE;
@@ -248,7 +248,7 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
     ierr = SNESDiffParameterCreate_More(snes,x,&mfctx->data);CHKERRQ(ierr);
   } else mfctx->data = 0;
 
-  ierr = PetscOptionsHasName(NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->options,NULL,"-help",&flg);CHKERRQ(ierr);
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (((PetscObject)snes)->prefix) PetscStrcat(p,((PetscObject)snes)->prefix);
   if (flg) {

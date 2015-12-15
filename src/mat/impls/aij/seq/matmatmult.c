@@ -880,7 +880,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   abt->destroy     = (*C)->ops->destroy;
   (*C)->ops->destroy     = MatDestroy_SeqAIJ_MatMatMultTrans;
 
-  ierr = PetscOptionsGetBool(NULL,"-matmattransmult_color",&abt->usecoloring,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)A)->options,NULL,"-matmattransmult_color",&abt->usecoloring,NULL);CHKERRQ(ierr);
   if (abt->usecoloring) {
     /* Create MatTransposeColoring from symbolic C=A*B^T */
     MatTransposeColoring matcoloring;
@@ -1434,7 +1434,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   ierr = PetscMalloc1(csp->nz+1,&den2sp);CHKERRQ(ierr);
 
   brows = c->brows;
-  ierr = PetscOptionsGetInt(NULL,"-matden2sp_brows",&brows,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-matden2sp_brows",&brows,&flg);CHKERRQ(ierr);
   if (flg) c->brows = brows;
   if (brows > 0) {
     ierr = PetscMalloc1(nis+1,&c->lstart);CHKERRQ(ierr);

@@ -72,12 +72,12 @@
 !
 !     Allow user to set the grid dimensions and nonlinearity parameter at run-time
 !
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-mx',user(lmx),    &
-     &     flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(lmy),     &
-     &     flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-param',           &
-     &     user(param),flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
+     &                         '-mx',user(lmx),flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,            &
+     &                        '-my',user(lmy),flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
+     &                        '-param',user(param),flg,ierr)
       if (user(param) .ge. param_max .or.                               &
      &                                user(param) .le. param_min) then
         print*,'Parameter is out of range'
@@ -87,7 +87,8 @@
       else
         dt = .5/user(lmy)
       endif
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-dt',dt,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+     &                         '-dt',dt,flg,ierr)
       N          = int(user(lmx)*user(lmy))
 
 !

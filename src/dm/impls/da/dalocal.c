@@ -1214,7 +1214,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAProjectFunctionLocal"
-PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscDS    prob;
   PetscFE         fe;
@@ -1253,7 +1253,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscInt
       ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp, d, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceApply(sp, d, time, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
         v += numComp;
       }
     }
@@ -1270,6 +1270,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscInt
 
   Input Parameters:
 + dm      - The DM
+. time    - The time
 . funcs   - The coordinate functions to evaluate
 . ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 - mode    - The insertion mode for values
@@ -1281,7 +1282,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscErrorCode (**funcs)(PetscInt
 
 .seealso: DMDAComputeL2Diff()
 @*/
-PetscErrorCode DMDAProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
+PetscErrorCode DMDAProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
   Vec            localX;
   PetscErrorCode ierr;
@@ -1289,7 +1290,7 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, con
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMDAProjectFunctionLocal(dm, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  ierr = DMDAProjectFunctionLocal(dm, time, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
@@ -1303,6 +1304,7 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, con
 
   Input Parameters:
 + dm    - The DM
+. time  - The time
 . funcs - The functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 - X     - The coefficient vector u_h
@@ -1314,7 +1316,7 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscErrorCode (**funcs)(PetscInt, con
 
 .seealso: DMDAProjectFunction(), DMDAComputeL2GradientDiff()
 @*/
-PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+PetscErrorCode DMDAComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt  debug = 0;
   PetscDS    prob;
@@ -1373,7 +1375,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const
             coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
           }
         }
-        ierr = (*funcs[field])(dim, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
+        ierr = (*funcs[field])(dim, time, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
         for (fc = 0; fc < numBasisComps; ++fc) {
           PetscScalar interpolant = 0.0;
 
@@ -1406,6 +1408,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const
 
   Input Parameters:
 + dm    - The DM
+. time  - The time
 . funcs - The gradient functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 . X     - The coefficient vector u_h
@@ -1418,7 +1421,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscErrorCode (**funcs)(PetscInt, const
 
 .seealso: DMDAProjectFunction(), DMComputeL2Diff()
 @*/
-PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscInt, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
+PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt  debug = 0;
   PetscDS    prob;
@@ -1477,7 +1480,7 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscErrorCode (**funcs)(PetscIn
             coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
           }
         }
-        ierr = (*funcs[field])(dim, coords, n, numFields, funcVal, ctx);CHKERRQ(ierr);
+        ierr = (*funcs[field])(dim, time, coords, n, numFields, funcVal, ctx);CHKERRQ(ierr);
         for (fc = 0; fc < Nc; ++fc) {
           PetscScalar interpolant = 0.0;
 

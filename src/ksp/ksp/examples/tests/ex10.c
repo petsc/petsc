@@ -32,7 +32,7 @@ int main(int argc,char **args)
   PetscReal      norm;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -167,8 +167,6 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   ierr = MatConvert(submat,type,MAT_INITIAL_MATRIX,newmat);CHKERRQ(ierr);
   ierr = MatDestroy(&submat);CHKERRQ(ierr);
 
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-  ierr = MatView(*newmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",(double)norm);CHKERRQ(ierr);
 

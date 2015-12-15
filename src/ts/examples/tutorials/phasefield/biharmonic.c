@@ -77,25 +77,25 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char*)0,help);
   ctx.kappa       = 1.0;
-  ierr            = PetscOptionsGetReal(NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
   ctx.degenerate  = PETSC_FALSE;
-  ierr            = PetscOptionsGetBool(NULL,"-degenerate",&ctx.degenerate,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetBool(NULL,NULL,"-degenerate",&ctx.degenerate,NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
-  ierr            = PetscOptionsGetBool(NULL,"-cahn-hillard",&ctx.cahnhillard,NULL);CHKERRQ(ierr);
-  ierr            = PetscOptionsGetBool(NULL,"-vi",&vi,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetBool(NULL,NULL,"-cahn-hillard",&ctx.cahnhillard,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetBool(NULL,NULL,"-vi",&vi,NULL);CHKERRQ(ierr);
   ctx.netforce    = PETSC_FALSE;
-  ierr            = PetscOptionsGetBool(NULL,"-netforce",&ctx.netforce,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetBool(NULL,NULL,"-netforce",&ctx.netforce,NULL);CHKERRQ(ierr);
   ctx.energy      = 1;
-  ierr            = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetInt(NULL,NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol         = 1.0e-8;
-  ierr            = PetscOptionsGetReal(NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetReal(NULL,NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
   ctx.theta       = .001;
   ctx.theta_c     = 1.0;
-  ierr            = PetscOptionsGetReal(NULL,"-theta",&ctx.theta,NULL);CHKERRQ(ierr);
-  ierr            = PetscOptionsGetReal(NULL,"-theta_c",&ctx.theta_c,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetReal(NULL,NULL,"-theta",&ctx.theta,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetReal(NULL,NULL,"-theta_c",&ctx.theta_c,NULL);CHKERRQ(ierr);
   ctx.truncation  = 1;
-  ierr            = PetscOptionsGetInt(NULL,"-truncation",&ctx.truncation,NULL);CHKERRQ(ierr);
-  ierr            = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetInt(NULL,NULL,"-truncation",&ctx.truncation,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsHasName(NULL,NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
   ierr            = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
   ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),800,600);CHKERRQ(ierr);
 
@@ -188,7 +188,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
   if (wait) {
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }
@@ -538,7 +538,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr  = PetscDrawLGReset(lg);CHKERRQ(ierr);
 
   xx[0] = 0.0; xx[1] = 1.0; cnt = 2;
-  ierr  = PetscOptionsGetRealArray(NULL,"-zoom",xx,&cnt,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetRealArray(NULL,NULL,"-zoom",xx,&cnt,NULL);CHKERRQ(ierr);
   xs    = xx[0]/hx; xm = (xx[1] - xx[0])/hx;
 
   /*

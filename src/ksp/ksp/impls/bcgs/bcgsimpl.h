@@ -12,7 +12,7 @@ typedef struct {
   Vec guess;   /* if using right preconditioning with nonzero initial guess must keep that around to "fix" solution */
 } KSP_BCGS;
 
-PETSC_INTERN PetscErrorCode KSPSetFromOptions_BCGS(PetscOptions *PetscOptionsObject,KSP);
+PETSC_INTERN PetscErrorCode KSPSetFromOptions_BCGS(PetscOptionItems *PetscOptionsObject,KSP);
 PETSC_INTERN PetscErrorCode KSPSetUp_BCGS(KSP);
 PETSC_INTERN PetscErrorCode KSPSolve_BCGS(KSP);
 PETSC_INTERN PetscErrorCode KSPBuildSolution_BCGS(KSP,Vec,Vec*);

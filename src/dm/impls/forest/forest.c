@@ -591,7 +591,7 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Forest"
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptions *PetscOptionsObject,DM dm)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Forest                  *forest = (DM_Forest *) dm->data;
   PetscBool                  flg, flg1, flg2, flg3, flg4;

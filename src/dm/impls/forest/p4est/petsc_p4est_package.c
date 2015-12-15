@@ -69,7 +69,7 @@ PetscErrorCode PetscP4estInitialize(void)
   if (PetscP4estInitialized) PetscFunctionReturn(0);
   PetscP4estInitialized = PETSC_TRUE;
   ierr = PetscClassIdRegister("p4est logging",&P4ESTLOGGING_CLASSID);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "p4est", &className);CHKERRQ(ierr);
     if (className) {
@@ -82,9 +82,9 @@ PetscErrorCode PetscP4estInitialize(void)
     PetscBool set;
 
     PetscBeganSc = PETSC_TRUE;
-    ierr = PetscOptionsGetBool(NULL,"-petsc_sc_catch_signals",&psc_catch_signals,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(NULL,"-petsc_sc_print_backtrace",&psc_print_backtrace,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetEnum(NULL,"-petsc_sc_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-petsc_sc_catch_signals",&psc_catch_signals,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-petsc_sc_print_backtrace",&psc_print_backtrace,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetEnum(NULL,NULL,"-petsc_sc_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set);CHKERRQ(ierr);
     if (set) {
       psc_log_threshold = log_threshold_shifted - 1;
     }
@@ -96,7 +96,7 @@ PetscErrorCode PetscP4estInitialize(void)
     int log_threshold_shifted = pp4est_log_threshold + 1;
     PetscBool set;
 
-    ierr = PetscOptionsGetEnum(NULL,"-petsc_p4est_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set);CHKERRQ(ierr);
+    ierr = PetscOptionsGetEnum(NULL,NULL,"-petsc_p4est_log_threshold",SCLogTypes,(PetscEnum*)&log_threshold_shifted,&set);CHKERRQ(ierr);
     if (set) {
       pp4est_log_threshold = log_threshold_shifted - 1;
     }

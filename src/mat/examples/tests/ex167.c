@@ -89,9 +89,9 @@ int main(int argc,char **args)
     jlow = Jlow; jhigh = Jhigh;
   }
   sort_rows = PETSC_FALSE;
-  ierr      = PetscOptionsGetBool(NULL, "-sort_rows", &sort_rows, NULL);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetBool(NULL,NULL, "-sort_rows", &sort_rows, NULL);CHKERRQ(ierr);
   sort_cols = PETSC_FALSE;
-  ierr      = PetscOptionsGetBool(NULL, "-sort_cols", &sort_cols, NULL);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetBool(NULL,NULL, "-sort_cols", &sort_cols, NULL);CHKERRQ(ierr);
   for (l = 0; l < nsub; ++l) {
     ierr = PetscMalloc1(12, &subindices);CHKERRQ(ierr);
     k    = 0;
@@ -120,7 +120,7 @@ int main(int argc,char **args)
 
   show_inversions = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(NULL, "-show_inversions", &show_inversions, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-show_inversions", &show_inversions, NULL);CHKERRQ(ierr);
 
   inversions = 0;
   for (p = 0; p < size; ++p) {

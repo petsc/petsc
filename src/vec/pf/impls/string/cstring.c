@@ -77,7 +77,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
     ierr = PetscStrcpy(tmp,".");CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)pf,&comm);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetBool(((PetscObject)pf)->prefix,"-pf_string_keep_files",&keeptmpfiles,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pf)->options,((PetscObject)pf)->prefix,"-pf_string_keep_files",&keeptmpfiles,NULL);CHKERRQ(ierr);
   if (keeptmpfiles) sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; ke  MIN=%d NOUT=%d petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
   else              sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make  MIN=%d NOUT=%d -f makefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f makefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
 
@@ -101,7 +101,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions_String"
-PetscErrorCode PFSetFromOptions_String(PetscOptions *PetscOptionsObject,PF pf)
+PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
   PetscBool      flag;

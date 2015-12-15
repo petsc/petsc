@@ -278,7 +278,7 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
-static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_Advect *advect;
   PetscErrorCode ierr;
@@ -443,7 +443,7 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
-static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_SW     *sw;
   PetscErrorCode ierr;
@@ -623,7 +623,7 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Euler"
-static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_Euler   *eu;
   PetscErrorCode  ierr;
@@ -1090,7 +1090,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelFunctionalSetFromOptions"
-static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *PetscOptionsObject)
+static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptionItems *PetscOptionsObject)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -1366,7 +1366,7 @@ int main(int argc, char **argv)
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {
-    PetscErrorCode (*physcreate)(DM,Model,Physics,PetscOptions*);
+    PetscErrorCode (*physcreate)(DM,Model,Physics,PetscOptionItems*);
     char             physname[256]  = "advect";
 
     ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);

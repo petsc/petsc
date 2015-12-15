@@ -387,7 +387,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
 
   if (!rank) printf("Setup pipesCase %d\n",pipesCase);
   nnodes = 6;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-npipenodes", &nnodes, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-npipenodes", &nnodes, PETSC_NULL);CHKERRQ(ierr);
 
   /* Set global number of pipes, edges, and junctions */
   /*-------------------------------------------------*/
@@ -398,7 +398,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     v0 --E0--> v1--E1--> v2 --E1-->v3
     ================================  */
     npipes = 3;
-    ierr = PetscOptionsGetInt(PETSC_NULL, "-npipes", &npipes, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-npipes", &npipes, PETSC_NULL);CHKERRQ(ierr);
     wash->nedge   = npipes;
     wash->nvertex = npipes + 1;
     
@@ -588,7 +588,7 @@ int main(int argc,char ** argv)
 
   /* Set global number of pipes, edges, and vertices */
   pipesCase = 2;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-case", &pipesCase, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-case", &pipesCase, PETSC_NULL);CHKERRQ(ierr);
 
   ierr = WashNetworkCreate(PETSC_COMM_WORLD,pipesCase,&wash,&edgelist);CHKERRQ(ierr);
   numEdges    = wash->nedge;

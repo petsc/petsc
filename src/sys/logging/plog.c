@@ -198,9 +198,9 @@ PetscErrorCode  PetscLogInitialize(void)
   if (PetscLogInitializeCalled) PetscFunctionReturn(0);
   PetscLogInitializeCalled = PETSC_TRUE;
 
-  ierr = PetscOptionsHasName(NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
   if (opt) petsc_logActions = PETSC_FALSE;
-  ierr = PetscOptionsHasName(NULL, "-log_exclude_objects", &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-log_exclude_objects", &opt);CHKERRQ(ierr);
   if (opt) petsc_logObjects = PETSC_FALSE;
   if (petsc_logActions) {
     ierr = PetscMalloc1(petsc_maxActions, &petsc_actions);CHKERRQ(ierr);
@@ -1698,7 +1698,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     }
     ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+  ierr = PetscOptionsView(NULL,viewer);CHKERRQ(ierr);
 
   /* Machine and compile information */
 #if defined(PETSC_USE_FORTRAN_KERNELS)

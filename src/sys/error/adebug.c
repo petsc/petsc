@@ -377,7 +377,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     }
   } else {   /* I am the child, continue with user code */
     sleeptime = 10; /* default to sleep waiting for debugger */
-    ierr = PetscOptionsGetReal(NULL,"-debugger_pause",&sleeptime,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-debugger_pause",&sleeptime,NULL);CHKERRQ(ierr);
     if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
     /*
@@ -551,7 +551,7 @@ PetscErrorCode  PetscStopForDebugger(void)
   fflush(stdout); /* ignore error because may already be in error handler */
 
   sleeptime = 25; /* default to sleep waiting for debugger */
-  PetscOptionsGetInt(NULL,"-debugger_pause",&sleeptime,NULL); /* ignore error because may already be in error handler */
+  PetscOptionsGetInt(NULL,NULL,"-debugger_pause",&sleeptime,NULL); /* ignore error because may already be in error handler */
   if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
   /*

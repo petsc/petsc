@@ -98,7 +98,7 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GEO"
-PetscErrorCode PCSetFromOptions_GEO(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_GEO(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
 

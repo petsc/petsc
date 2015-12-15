@@ -5,6 +5,28 @@
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscObjectSetOptions"
+/*@C
+   PetscObjectSetOptions - Sets the options database used by the object
+
+   Input Parameters:
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+-  options - the options database, use NULL for default
+
+   Notes: if this is not called the object will use the default options database
+
+.seealso: PetscOptionsCreate(), PetscOptionsDestroy()
+
+*/
+PetscErrorCode  PetscObjectSetOptions(PetscObject obj,PetscOptions options)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  obj->options = options;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetOptionsPrefix"
 /*
    PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all

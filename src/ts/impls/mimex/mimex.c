@@ -319,7 +319,7 @@ static PetscErrorCode TSDestroy_Mimex(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Mimex"
-static PetscErrorCode TSSetFromOptions_Mimex(PetscOptions *PetscOptionsObject, TS ts)
+static PetscErrorCode TSSetFromOptions_Mimex(PetscOptionItems *PetscOptionsObject, TS ts)
 {
   TS_Mimex      *mimex = (TS_Mimex *) ts->data;
   PetscErrorCode ierr;
