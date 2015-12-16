@@ -739,7 +739,7 @@ int main(int argc,char ** argv)
   /* View solution q and h */
   /* --------------------- */
   viewpipes = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-pipe_view", &viewpipes,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-pipe_view", &viewpipes,NULL);CHKERRQ(ierr);
   if (viewpipes) {
     ierr = PipesView(X,networkdm,wash);CHKERRQ(ierr);
   }
