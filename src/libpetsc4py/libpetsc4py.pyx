@@ -906,7 +906,7 @@ cdef PetscErrorCode MatMultAdd_Python(
 
     if multAdd is None:
         if v == y:
-            VecDuplicate(y, &t)
+            CHKERR( VecDuplicate(y, &t) )
             CHKERR( MatMult(mat,x,t) )
             CHKERR( VecAXPY(y,1.0,t) )
             CHKERR( VecDestroy(&t) )
