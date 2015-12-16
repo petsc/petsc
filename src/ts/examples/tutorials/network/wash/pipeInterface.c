@@ -1,4 +1,4 @@
-#include "../pipe.h"
+#include "pipe.h"
 
 /* Subroutines for Pipe                                  */
 /* -------------------------------------------------------*/

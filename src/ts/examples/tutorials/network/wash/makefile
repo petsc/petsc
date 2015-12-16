@@ -11,7 +11,6 @@ OBJECTS_PIPE = pipeInterface.o pipeImpls.o
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-VPATH = pipe
 pipes1: pipes1.o $(OBJECTS_PIPE) chkopts
 	-${CLINKER} -o pipes1 pipes1.o $(OBJECTS_PIPE) ${PETSC_DM_LIB}
 	${RM} pipes1.o $(OBJECTS_PIPE)
