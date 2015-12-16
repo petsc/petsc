@@ -461,10 +461,25 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
     sum += ctx->range_k_re[k];
   }
 
-  /* attach dm to ksp on sub communicator */
-  if (isActiveRank(sred->psubcomm)) {
-    ierr = KSPSetDM(sred->ksp,ctx->dmrepart);CHKERRQ(ierr);
-    ierr = KSPSetDMActive(sred->ksp,PETSC_FALSE);CHKERRQ(ierr);
+  /* attach repartitioned dm to child ksp */
+  {
+    PetscErrorCode (*dmksp_func)(KSP,Mat,Mat,void*);
+    void           *dmksp_ctx;
+    
+    ierr = DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
+
+    /* attach dm to ksp on sub communicator */
+    if (isActiveRank(sred->psubcomm)) {
+      ierr = KSPSetDM(sred->ksp,ctx->dmrepart);CHKERRQ(ierr);
+      
+      if (!dmksp_func) {
+        ierr = KSPSetDMActive(sred->ksp,PETSC_FALSE);CHKERRQ(ierr);
+      } else {
+        /* sub ksp inherits dmksp_func and context provided by user */
+        ierr = KSPSetComputeOperators(sred->ksp,dmksp_func,dmksp_ctx);CHKERRQ(ierr);
+        ierr = KSPSetDMActive(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -701,8 +716,8 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatCreate_dmda"
-PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
+#define __FUNCT__ "PCTelescopeMatCreate_dmda_dmactivefalse"
+PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
 {
   PetscErrorCode ierr;
   PC_Telescope_DMDACtx *ctx;
@@ -715,7 +730,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: updating the redundant preconditioned operator (DMDA)\n");CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-    subcomm = PetscSubcommChild(sred->psubcomm);
+  subcomm = PetscSubcommChild(sred->psubcomm);
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
 
   ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
@@ -744,6 +759,43 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   ierr = MatDestroy(&Bperm);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&_Blocal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeMatCreate_dmda"
+PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+  PetscErrorCode (*dmksp_func)(KSP,Mat,Mat,void*);
+  void           *dmksp_ctx;
+  
+  PetscFunctionBegin;
+  ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
+  ierr = DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
+  /* We assume that dmksp_func = NULL, is equivalent to dmActive = PetscFalse */
+  if (dmksp_func) {
+    DM  dmrepart;
+    Mat Ak,Bk;
+
+    *A = NULL;
+    if (isActiveRank(sred->psubcomm)) {
+      ierr = KSPGetDM(sred->ksp,&dmrepart);CHKERRQ(ierr);
+      if (reuse == MAT_INITIAL_MATRIX) {
+        ierr = DMCreateMatrix(dmrepart,&Ak);CHKERRQ(ierr);
+        Bk = Ak;
+        *A = Ak;
+      } else if (reuse == MAT_REUSE_MATRIX) {
+        Ak = *A;
+        Bk = *A;
+      }
+      ierr = DMKSPGetComputeOperators(dmrepart,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
+      ierr = dmksp_func(sred->ksp,Ak,Bk,dmksp_ctx);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = PCTelescopeMatCreate_dmda_dmactivefalse(pc,sred,reuse,A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
