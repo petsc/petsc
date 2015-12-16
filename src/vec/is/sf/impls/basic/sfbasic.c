@@ -1015,17 +1015,17 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
     ierr = MPI_Type_size(unit,&typesize);CHKERRQ(ierr);
   }
   for (i=0; i<nrootranks; i++) {
-    PetscMPIInt n          = rootoffset[i+1] - rootoffset[i];
-    const void  *packstart = link->root+rootoffset[i]*typesize;
+    PetscMPIInt n   = rootoffset[i+1] - rootoffset[i];
+    char *packstart = (char *) link->root+rootoffset[i]*typesize;
 
     if (UnpackOp) {
-      (*UnpackOp)(n,link->bs,rootloc+rootoffset[i],rootdata,packstart);
+      (*UnpackOp)(n,link->bs,rootloc+rootoffset[i],rootdata,(const void *)packstart);
     }
     else if (n) {
       PetscInt j, stride = link->bs * typesize;
 
       for (j = 0; j < n; j++) {
-        ierr = MPI_Reduce_local(packstart+j*stride,rootdata+(rootloc[rootoffset[i]+j])*stride,link->bs,unit,op);CHKERRQ(ierr);
+        ierr = MPI_Reduce_local(packstart+j*stride,((char *) rootdata)+(rootloc[rootoffset[i]+j])*stride,link->bs,unit,op);CHKERRQ(ierr);
       }
     }
   }
