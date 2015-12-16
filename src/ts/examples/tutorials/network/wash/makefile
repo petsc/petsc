@@ -10,7 +10,6 @@ OBJECTS_PIPE = pipeInterface.o pipeImpls.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 
 VPATH = pipe
 pipes1: pipes1.o $(OBJECTS_PIPE) chkopts
@@ -65,5 +64,8 @@ runpipes1_9:
 	   if (${DIFF} output/pipes1_9.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_9, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
+
 TESTEXAMPLES_C		       = pipes1.PETSc runpipes1 runpipes1_2 runpipes1_3 runpipes1_4 runpipes1_5 runpipes1_6 \
                                   runpipes1_7 runpipes1_8 runpipes1_9 pipes1.rm
+
+include ${PETSC_DIR}/lib/petsc/conf/test
