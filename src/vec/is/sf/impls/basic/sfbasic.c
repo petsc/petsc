@@ -1021,6 +1021,7 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
     if (UnpackOp) {
       (*UnpackOp)(n,link->bs,rootloc+rootoffset[i],rootdata,(const void *)packstart);
     }
+#if PETSC_HAVE_MPI_REDUCE_LOCAL
     else if (n) {
       PetscInt j, stride = link->bs * typesize;
 
@@ -1028,6 +1029,11 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
         ierr = MPI_Reduce_local(packstart+j*stride,((char *) rootdata)+(rootloc[rootoffset[i]+j])*stride,link->bs,unit,op);CHKERRQ(ierr);
       }
     }
+#else
+    else {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No unpacking reduction operation for this MPI_Op");
+    }
+#endif
   }
   ierr = PetscSFBasicReclaimPack(sf,&link);CHKERRQ(ierr);
   PetscFunctionReturn(0);
