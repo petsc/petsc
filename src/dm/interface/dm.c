@@ -90,6 +90,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 @*/
 PetscErrorCode DMClone(DM dm, DM *newdm)
 {
+  DM             cdm;
   PetscSF        sf;
   Vec            coords;
   void          *ctx;
@@ -110,6 +111,8 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   ierr = DMSetPointSF(*newdm, sf);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  if (cdm) {ierr = DMSetCoordinateDM(*newdm,  cdm);CHKERRQ(ierr);}
   ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
   if (coords) {
     ierr = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);
