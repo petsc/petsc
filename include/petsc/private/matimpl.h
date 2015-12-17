@@ -400,7 +400,8 @@ struct _p_Mat {
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
   Mat_Redundant          *redundant;        /* used by MatCreateRedundantMatrix() */
-  PetscBool              erroriffpe;        /* Generate an error if FPE detected (for example a zero pivot) instead of returning*/  
+  PetscBool              erroriffailure;    /* Generate an error if detected (for example a zero pivot) instead of returning */
+  MatFactorError         errortype;         /* type of error */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
@@ -620,7 +621,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (PetscAbsScalar(sctx->pv) <= _zero){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     /* force |diag| > zeropivot*rs */
     if (!sctx->nshift) sctx->shift_amount = info->shiftamount;
     else sctx->shift_amount *= 2.0;
@@ -640,7 +641,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (PetscRealPart(sctx->pv) <= _zero){
+  if (PetscRealPart(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     /* force matfactor to be diagonally dominant */
     if (sctx->nshift == sctx->nshift_max) {
       sctx->shift_fraction = sctx->shift_hi;
@@ -664,7 +665,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
   PetscReal _zero = info->zeropivot;
 
   PetscFunctionBegin;
-  if (PetscAbsScalar(sctx->pv) <= _zero){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     sctx->pv          += info->shiftamount;
     sctx->shift_amount = 0.0;
     sctx->nshift++;
@@ -675,16 +676,17 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_none"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal      _zero = info->zeropivot;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   sctx->newshift = PETSC_FALSE;
-  if (PetscAbsScalar(sctx->pv) <= _zero) {
-    if (!mat->erroriffpe) {
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
+    if (!mat->erroriffailure) {
       ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
+      fact->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);
@@ -692,7 +694,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,const MatFactorInf
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscErrorCode ierr;
 
@@ -704,7 +706,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
   } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS){
     ierr = MatPivotCheck_inblocks(mat,info,sctx,row);CHKERRQ(ierr);
   } else {
-    ierr = MatPivotCheck_none(mat,info,sctx,row);CHKERRQ(ierr);
+    ierr = MatPivotCheck_none(fact,mat,info,sctx,row);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -414,6 +414,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/kspimpl.h>  
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUpOnBlocks_ASM"
 static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
@@ -425,6 +426,9 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
   PetscFunctionBegin;
   for (i=0; i<osm->n_local_true; i++) {
     ierr = KSPSetUp(osm->ksp[i]);CHKERRQ(ierr);
+    if (osm->ksp[i]->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+      pc->failedreason = PC_SUBPC_ERROR;
+    }
   }
   PetscFunctionReturn(0);
 }

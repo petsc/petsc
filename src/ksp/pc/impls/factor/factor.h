@@ -4,7 +4,8 @@
 #if !defined(__FACTOR_H)
 #define __FACTOR_H
 
-#include <petsc/private/pcimpl.h>                /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>
+#include <petsc/private/matimpl.h>
 
 typedef struct {
   Mat              fact;              /* factored matrix */

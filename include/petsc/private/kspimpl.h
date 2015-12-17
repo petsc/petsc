@@ -62,8 +62,8 @@ struct _p_KSP {
                   divtol;                   /* divergence tolerance */
   PetscReal       rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal       rnorm;                    /* current residual norm */
-  KSPConvergedReason reason;
-  PetscBool          errorifnotconverged;    /* create an error if the KSPSolve() does not converge */
+  KSPConvergedReason    reason;
+  PetscBool             errorifnotconverged; /* create an error if the KSPSolve() does not converge */
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed
                                       the solution and rhs, these are
@@ -304,11 +304,22 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
 #define KSPCheckDot(ksp,beta)           \
   if (PetscIsInfOrNanScalar(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
-  else {\
-    ksp->reason = KSP_DIVERGED_NANORINF;\
-    PetscFunctionReturn(0);\
-  }\
-}
+    else {\
+      PetscErrorCode ierr;\
+      PCFailedReason pcreason;\
+      PetscInt       sendbuf,pcreason_max; \
+      ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      sendbuf = (PetscInt)pcreason; \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      if (pcreason_max) {\
+        ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
+        ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
+      } else {\
+        ksp->reason = KSP_DIVERGED_NANORINF;\
+      }\
+      PetscFunctionReturn(0);\
+    }\
+  }
 
 /*
     Either generate an error or mark as diverged when a real from a norm is Nan or Inf
@@ -316,10 +327,21 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
 #define KSPCheckNorm(ksp,beta)           \
   if (PetscIsInfOrNanReal(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
-  else {\
-    ksp->reason = KSP_DIVERGED_NANORINF;\
-    PetscFunctionReturn(0);\
-  }\
-}
+    else {\
+      PetscErrorCode ierr;\
+      PCFailedReason pcreason;\
+      PetscInt       sendbuf,pcreason_max; \
+      ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      sendbuf = (PetscInt)pcreason; \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      if (pcreason_max) {\
+        ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
+        ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
+      } else {\
+        ksp->reason = KSP_DIVERGED_NANORINF;\
+      }\
+      PetscFunctionReturn(0);\
+    }\
+  }
 
 #endif

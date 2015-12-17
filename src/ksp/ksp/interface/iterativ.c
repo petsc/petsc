@@ -762,8 +762,19 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   if (n <= ksp->chknorm) PetscFunctionReturn(0);
 
   if (PetscIsInfOrNanReal(rnorm)) {
-    ierr    = PetscInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n");CHKERRQ(ierr);
-    *reason = KSP_DIVERGED_NANORINF;
+    PCFailedReason pcreason;
+    PetscInt       sendbuf,pcreason_max;
+    ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+    sendbuf = (PetscInt)pcreason;
+    ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    if (pcreason_max) {
+      *reason = KSP_DIVERGED_PCSETUP_FAILED;
+      ierr    = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
+      ierr    = PetscInfo(ksp,"Linear solver pcsetup fails, declaring divergence \n");CHKERRQ(ierr);
+    } else {
+      *reason = KSP_DIVERGED_NANORINF;
+      ierr    = PetscInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n");CHKERRQ(ierr);
+    }
   } else if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->abstol) {
       ierr    = PetscInfo3(ksp,"Linear solver has converged. Residual norm %14.12e is less than absolute tolerance %14.12e at iteration %D\n",(double)rnorm,(double)ksp->abstol,n);CHKERRQ(ierr);

@@ -149,7 +149,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Make A singular for testing zero-pivot of ilu factorization        */
-  /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_nonzero */
+  /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_type <shift_type> */
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL, "-test_zeropivot", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
@@ -157,15 +157,19 @@ int main(int argc,char **args)
     const PetscInt    *cols;
     const PetscScalar *vals;
     PetscBool         flg1=PETSC_FALSE;
-    PetscScalar       *zeros;
-    row  = 0;
-    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    ierr = PetscCalloc1(ncols+1,&zeros);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(NULL,NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
-    if (flg1) {   /* set entire row as zero */
-      ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
-    } else {   /* only set (row,row) entry as zero */
-      ierr = MatSetValues(A,1,&row,1,&row,zeros,INSERT_VALUES);CHKERRQ(ierr);
+    PetscScalar       *zeros,zero=0.0;
+
+    if (!rank) {
+      row  = 0;
+      ierr = PetscOptionsGetBool(NULL,NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
+      if (flg1) {   /* set entire row as zero */
+        ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+        ierr = PetscCalloc1(ncols+1,&zeros);CHKERRQ(ierr);
+        ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = PetscFree(zeros);CHKERRQ(ierr);
+      } else {   /* only set (row,row) entry as zero */
+        ierr = MatSetValues(A,1,&row,1,&row,&zero,INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -341,10 +345,12 @@ int main(int argc,char **args)
         ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
-        if (norm < 1.e-12) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
-        } else {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+        if (!PetscIsNanScalar(norm)) {
+          if (norm < 1.e-12) {
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
+          } else {
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+          }
         }
       }
     }   /* while (num_rhs--) */
@@ -387,10 +393,12 @@ int main(int argc,char **args)
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-      if (norm < 1.e-12) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
-      } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+      if (!PetscIsNanScalar(norm)) {
+        if (norm < 1.e-12 && !PetscIsNanScalar((PetscScalar)norm)) {
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
+        } else {
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscOptionsGetString(NULL,NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);

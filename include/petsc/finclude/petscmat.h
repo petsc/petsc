@@ -105,7 +105,20 @@
       parameter (MAT_SHIFT_NONZERO=1)
       parameter (MAT_SHIFT_POSITIVE_DEFINITE=2)
       parameter (MAT_SHIFT_INBLOCKS=3)
+!
+!  MatFactorError
+!
+      PetscEnum MAT_FACTOR_NOERROR
+      PetscEnum MAT_FACTOR_STRUCT_ZEROPIVOT
+      PetscEnum MAT_FACTOR_NUMERIC_ZEROPIVOT
+      PetscEnum MAT_FACTOR_OUTMEMORY
+      PetscEnum MAT_FACTOR_OTHER
 
+      parameter (MAT_FACTOR_NOERROR=0)
+      parameter (MAT_FACTOR_STRUCT_ZEROPIVOT=1)
+      parameter (MAT_FACTOR_NUMERIC_ZEROPIVOT=2)
+      parameter (MAT_FACTOR_OUTMEMORY=3)
+      parameter (MAT_FACTOR_OTHER=4)
 !
 !  MatDuplicateOption
 !

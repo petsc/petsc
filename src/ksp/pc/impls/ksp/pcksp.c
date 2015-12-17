@@ -26,6 +26,7 @@ static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/kspimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCApply_KSP"
 static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
@@ -39,6 +40,9 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   ierr      = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
+  if (jac->ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    pc->failedreason = PC_SUBPC_ERROR;
+  }
   PetscFunctionReturn(0);
 }
 

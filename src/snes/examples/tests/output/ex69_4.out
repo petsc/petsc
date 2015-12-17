@@ -1,4 +1,5 @@
 lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
   Linear solve converged due to CONVERGED_RTOL iterations 6
-  Linear solve did not converge due to DIVERGED_NANORINF iterations 0
+  Linear solve did not converge due to DIVERGED_PCSETUP_FAILED iterations 0
+                 PCSETUP_FAILED due to FACTOR_NUMERIC_ZEROPIVOT 
 Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 1

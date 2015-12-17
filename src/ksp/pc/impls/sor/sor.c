@@ -23,6 +23,7 @@ static PetscErrorCode PCDestroy_SOR(PC pc)
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCApply_SOR"
 static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
@@ -35,6 +36,7 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
   ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
+  if (pc->pmat->errortype) pc->failedreason = (PCFailedReason)pc->pmat->errortype; 
   PetscFunctionReturn(0);
 }
 
@@ -52,6 +54,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   if (guesszero) stype = (MatSORType) (stype | SOR_ZERO_INITIAL_GUESS);
   fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
   ierr = MatSOR(pc->pmat,b,jac->omega,stype,fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
+  if (pc->pmat->errortype) pc->failedreason = (PCFailedReason)pc->pmat->errortype; 
   *outits = its;
   *reason = PCRICHARDSON_CONVERGED_ITS;
   PetscFunctionReturn(0);

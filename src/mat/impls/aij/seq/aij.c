@@ -1584,7 +1584,14 @@ PetscErrorCode  MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fsh
   if (omega == 1.0 && PetscRealPart(fshift) <= 0.0) {
     for (i=0; i<m; i++) {
       mdiag[i] = v[diag[i]];
-      if (!PetscAbsScalar(mdiag[i]) && !PetscRealPart(fshift)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+      if (!PetscAbsScalar(mdiag[i])) { /* zero diagonal */
+        if (PetscRealPart(fshift)) {
+          ierr = PetscInfo1(A,"Zero diagonal on row %D\n",i);CHKERRQ(ierr);
+          A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        } else {
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+        }
+      }
       idiag[i] = 1.0/v[diag[i]];
     }
     ierr = PetscLogFlops(m);CHKERRQ(ierr);

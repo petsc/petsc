@@ -183,7 +183,7 @@ PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const 
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
-PETSC_EXTERN PetscErrorCode MatSetErrorIfFPE(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat,PetscBool);
 
 PETSC_EXTERN PetscFunctionList MatList;
 PETSC_EXTERN PetscFunctionList MatColoringList;
@@ -995,6 +995,15 @@ S*/
 typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
 PETSC_EXTERN const char *const MatFactorShiftTypes[];
 PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
+
+/*S
+    MatFactorError - indicates what type of error in matrix factor
+
+    Level: beginner
+
+    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+S*/
+typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY,MAT_FACTOR_OTHER} MatFactorError;
 
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization

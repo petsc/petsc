@@ -248,6 +248,10 @@ runex69_5:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type bjacobi > ex69_5.tmp 2>&1; \
 	   ${DIFF} output/ex69_5.out ex69_5.tmp || printf "${PWD}\nPossible problem with ex69_5, diffs above\n=========================================\n"; \
 	   ${RM} -f ex69_5.tmp
+runex69_5_fieldsplit:
+	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type fieldsplit > ex69_5.tmp 2>&1; \
+	   ${DIFF} output/ex69_5.out ex69_5.tmp || printf "${PWD}\nPossible problem with ex69_5_fieldsplit, diffs above\n=========================================\n"; \
+	   ${RM} -f ex69_5.tmp
 
 runex69_6:
 	-@${MPIEXEC} -n 1 ./ex69 -snes_converged_reason -ksp_converged_reason -error_in_domainmf -snes_mf > ex69_6.tmp 2>&1; \
@@ -265,7 +269,7 @@ runex69_8:
 	   ${RM} -f ex69_8.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc  runex1_3 ex1.rm  ex68.PETSc ex68.rm \
-                                 ex69.PETSc runex69  runex69_2 runex69_3 runex69_4 runex69_5 runex69_6 runex69_7 ex69.rm
+                                 ex69.PETSc runex69  runex69_2 runex69_3 runex69_4 runex69_5 runex69_5_fieldsplit runex69_6 runex69_7 ex69.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_X	       = ex7.PETSc runex7 runex7_2 ex7.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm

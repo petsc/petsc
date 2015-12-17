@@ -290,4 +290,13 @@ typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
+/*E
+    PCFailedReason - indicates type of PC failure
+
+    Level: beginner
+
+    Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
+E*/
+typedef enum {PC_NOERROR,PC_FACTOR_STRUCT_ZEROPIVOT,PC_FACTOR_NUMERIC_ZEROPIVOT,PC_FACTOR_OUTMEMORY,PC_FACTOR_OTHER,PC_SUBPC_ERROR} PCFailedReason;
+PETSC_EXTERN const char *const PCFailedReasons[];
 #endif

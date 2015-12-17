@@ -122,7 +122,7 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
   PetscValidIntPointer(neig,5);
   if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Eigenvalues not requested before KSPSetUp()");
 
-  if (ksp->ops->computeeigenvalues) {
+  if (n && ksp->ops->computeeigenvalues) {
     ierr = (*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
   } else {
     *neig = 0;
@@ -212,11 +212,16 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 {
   PetscErrorCode ierr;
+  PCFailedReason pcreason;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetUpOnBlocks(ksp->pc);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+  if (pcreason) {
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -289,12 +294,13 @@ PetscErrorCode  KSPSetSkipPCSetFromOptions(KSP ksp,PetscBool flag)
 
 .seealso: KSPCreate(), KSPSolve(), KSPDestroy()
 @*/
-PetscErrorCode  KSPSetUp(KSP ksp)
+PetscErrorCode KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
   Mat            A,B;
   Mat            mat,pmat;
   MatNullSpace   nullsp;
+  PCFailedReason pcreason;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -382,6 +388,11 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+  if (pcreason) {
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+  }
+
   ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
   if (nullsp) {
     PetscBool test = PETSC_FALSE;
@@ -416,7 +427,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
+PetscErrorCode KSPReasonView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isAscii;
@@ -436,6 +447,11 @@ PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"Linear %s solve did not converge due to %s iterations %D\n",((PetscObject) ksp)->prefix,KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      }
+      if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+        PCFailedReason reason;
+        ierr = PCGetSetUpFailedReason(ksp->pc,&reason);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"               PCSETUP_FAILED due to %s \n",PCFailedReasons[reason]);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
@@ -529,14 +545,13 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
+PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
   PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
   Mat               mat,pmat;
   MPI_Comm          comm;
-  PetscInt          pcreason;
   MatNullSpace      nullsp;
   Vec               btmp,vec_rhs=0;
 
@@ -577,12 +592,8 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   }
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
-  if (pcreason) {
-    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
-    goto skipsolve;
-  }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+
   VecLocked(ksp->vec_sol,3);
 
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
@@ -634,7 +645,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ksp->vec_rhs = btmp;
   }
   ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
-  ierr            = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
+  } 
+  ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+ 
   ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
   if (nullsp) {
     ksp->vec_rhs = vec_rhs;
@@ -647,7 +662,6 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ksp->totalits += ksp->its;
 
-  skipsolve:
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
@@ -678,6 +692,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   ierr = MatViewFromOptions(mat,(PetscObject)ksp,"-ksp_view_mat");CHKERRQ(ierr);
   ierr = MatViewFromOptions(pmat,(PetscObject)ksp,"-ksp_view_pmat");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ksp->vec_rhs,(PetscObject)ksp,"-ksp_view_rhs");CHKERRQ(ierr);

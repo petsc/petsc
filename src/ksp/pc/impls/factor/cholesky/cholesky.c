@@ -74,7 +74,6 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Cholesky"
 static PetscErrorCode PCSetUp_Cholesky(PC pc)
@@ -86,6 +85,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
 
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (dir->inplace) {
     if (dir->row && dir->col && (dir->row != dir->col)) {
       ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
@@ -97,10 +97,15 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     }
     if (dir->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    if (pc->pmat->errortype) { /* Factor() fails */
+      pc->failedreason = (PCFailedReason)pc->pmat->errortype;
+      PetscFunctionReturn(0);
+    }
 
     ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
     MatInfo info;
+    Mat     F;
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       /* check if dir->row == dir->col */
@@ -145,7 +150,16 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
+    F = ((PC_Factor*)dir)->fact;
+    if (F->errortype) { /* FactorSymbolic() fails */
+      pc->failedreason = (PCFailedReason)F->errortype;
+      PetscFunctionReturn(0);
+    }
+
     ierr = MatCholeskyFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    if (F->errortype) { /* FactorNumeric() fails */
+      pc->failedreason = (PCFailedReason)F->errortype;
+    }
   }
   PetscFunctionReturn(0);
 }

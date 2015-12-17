@@ -53,6 +53,7 @@ struct _p_PC {
   void             *data;
   PetscInt         presolvedone;  /* has PCPreSolve() already been run */
   void             *user;             /* optional user-defined context */
+  PCFailedReason   failedreason;
 };
 
 PETSC_EXTERN PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
