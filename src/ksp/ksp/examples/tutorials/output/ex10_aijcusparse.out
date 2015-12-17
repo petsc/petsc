@@ -4,13 +4,99 @@ Mat Object: 1 MPI processes
   total: nonzeros=2245, allocated nonzeros=2245
   total number of mallocs used during MatSetValues calls =0
     using I-node routines: found 61 nodes, limit used is 5
-  0 KSP Residual norm 1.57265 
-  1 KSP Residual norm 0.282796 
-  2 KSP Residual norm 0.0239145 
-  3 KSP Residual norm 0.00362371 
-  4 KSP Residual norm 0.000187186 
-  5 KSP Residual norm 2.18461e-05 
-  6 KSP Residual norm 3.6162e-06 
+  0 KSP Residual norm 2.0987 
+  1 KSP Residual norm 1.27417 
+  2 KSP Residual norm 1.13374 
+  3 KSP Residual norm 0.752329 
+  4 KSP Residual norm 0.337962 
+  5 KSP Residual norm 0.298488 
+  6 KSP Residual norm 0.245473 
+  7 KSP Residual norm 0.213864 
+  8 KSP Residual norm 0.200599 
+  9 KSP Residual norm 0.177015 
+ 10 KSP Residual norm 0.150167 
+ 11 KSP Residual norm 0.10358 
+ 12 KSP Residual norm 0.0802285 
+ 13 KSP Residual norm 0.0705376 
+ 14 KSP Residual norm 0.0558724 
+ 15 KSP Residual norm 0.0423774 
+ 16 KSP Residual norm 0.0390992 
+ 17 KSP Residual norm 0.0348286 
+ 18 KSP Residual norm 0.0327315 
+ 19 KSP Residual norm 0.0287389 
+ 20 KSP Residual norm 0.027982 
+ 21 KSP Residual norm 0.0241873 
+ 22 KSP Residual norm 0.0214792 
+ 23 KSP Residual norm 0.0207456 
+ 24 KSP Residual norm 0.020415 
+ 25 KSP Residual norm 0.0199683 
+ 26 KSP Residual norm 0.0183199 
+ 27 KSP Residual norm 0.0173488 
+ 28 KSP Residual norm 0.0171484 
+ 29 KSP Residual norm 0.0140208 
+ 30 KSP Residual norm 0.0133624 
+ 31 KSP Residual norm 0.0127888 
+ 32 KSP Residual norm 0.0112046 
+ 33 KSP Residual norm 0.0110154 
+ 34 KSP Residual norm 0.01055 
+ 35 KSP Residual norm 0.0103697 
+ 36 KSP Residual norm 0.0100204 
+ 37 KSP Residual norm 0.00964432 
+ 38 KSP Residual norm 0.00959672 
+ 39 KSP Residual norm 0.00936333 
+ 40 KSP Residual norm 0.0090839 
+ 41 KSP Residual norm 0.00895732 
+ 42 KSP Residual norm 0.00833515 
+ 43 KSP Residual norm 0.00818998 
+ 44 KSP Residual norm 0.00735169 
+ 45 KSP Residual norm 0.00713151 
+ 46 KSP Residual norm 0.00663119 
+ 47 KSP Residual norm 0.00599021 
+ 48 KSP Residual norm 0.00560566 
+ 49 KSP Residual norm 0.00518275 
+ 50 KSP Residual norm 0.00466614 
+ 51 KSP Residual norm 0.00444939 
+ 52 KSP Residual norm 0.00398533 
+ 53 KSP Residual norm 0.00347671 
+ 54 KSP Residual norm 0.00324578 
+ 55 KSP Residual norm 0.0023377 
+ 56 KSP Residual norm 0.0019046 
+ 57 KSP Residual norm 0.00140753 
+ 58 KSP Residual norm 0.00132936 
+ 59 KSP Residual norm 0.00113935 
+ 60 KSP Residual norm 0.00100406 
+ 61 KSP Residual norm 0.000975173 
+ 62 KSP Residual norm 0.000975166 
+ 63 KSP Residual norm 0.000925169 
+ 64 KSP Residual norm 0.000915006 
+ 65 KSP Residual norm 0.00091073 
+ 66 KSP Residual norm 0.000864365 
+ 67 KSP Residual norm 0.000854189 
+ 68 KSP Residual norm 0.000841758 
+ 69 KSP Residual norm 0.00078074 
+ 70 KSP Residual norm 0.000767904 
+ 71 KSP Residual norm 0.000639641 
+ 72 KSP Residual norm 0.000608572 
+ 73 KSP Residual norm 0.000473287 
+ 74 KSP Residual norm 0.000429391 
+ 75 KSP Residual norm 0.000389075 
+ 76 KSP Residual norm 0.000287856 
+ 77 KSP Residual norm 0.000257236 
+ 78 KSP Residual norm 0.000226997 
+ 79 KSP Residual norm 0.000178154 
+ 80 KSP Residual norm 0.000163792 
+ 81 KSP Residual norm 0.000132833 
+ 82 KSP Residual norm 0.000118033 
+ 83 KSP Residual norm 9.31279e-05 
+ 84 KSP Residual norm 7.94234e-05 
+ 85 KSP Residual norm 6.22184e-05 
+ 86 KSP Residual norm 5.08445e-05 
+ 87 KSP Residual norm 3.23649e-05 
+ 88 KSP Residual norm 3.05576e-05 
+ 89 KSP Residual norm 2.46818e-05 
+ 90 KSP Residual norm 2.37025e-05 
+ 91 KSP Residual norm 2.29141e-05 
+ 92 KSP Residual norm 2.03332e-05 
 KSP Object: 1 MPI processes
   type: gmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -20,21 +106,7 @@ KSP Object: 1 MPI processes
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
-  type: ilu
-    ILU: out-of-place factorization
-    0 levels of fill
-    tolerance for zero pivot 2.22045e-14
-    using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
-    matrix ordering: natural
-    factor fill ratio given 1., needed 1.
-      Factored matrix follows:
-        Mat Object:         1 MPI processes
-          type: seqaijcusparse
-          rows=181, cols=181
-          package used to perform factorization: cusparse
-          total: nonzeros=2245, allocated nonzeros=2245
-          total number of mallocs used during MatSetValues calls =0
-            using I-node routines: found 61 nodes, limit used is 5
+  type: none
   linear system matrix = precond matrix:
   Mat Object:   1 MPI processes
     type: seqaijcusparse
@@ -42,5 +114,5 @@ PC Object: 1 MPI processes
     total: nonzeros=2245, allocated nonzeros=2245
     total number of mallocs used during MatSetValues calls =0
       using I-node routines: found 61 nodes, limit used is 5
-Number of iterations =   6
-Residual norm 1.28683e-05
+Number of iterations =  92
+Residual norm 2.03332e-05
