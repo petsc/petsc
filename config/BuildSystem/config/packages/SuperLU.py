@@ -3,8 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_4.3.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.3.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.3-p1.tar.gz']
     self.functions    = ['set_default_options']
     self.includes     = ['slu_ddefs.h']
     self.liblist      = [['libsuperlu_4.3.a']]
