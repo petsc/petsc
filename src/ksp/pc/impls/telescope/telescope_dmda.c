@@ -774,7 +774,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   PetscFunctionBegin;
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   ierr = DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
-  /* We assume that dmksp_func = NULL, is equivalent to dmActive = PetscFalse */
+  /* We assume that dmksp_func = NULL, is equivalent to dmActive = PETSC_FALSE */
   if (dmksp_func) {
     DM  dmrepart;
     Mat Ak,Bk;
@@ -790,8 +790,9 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
         Ak = *A;
         Bk = *A;
       }
-      ierr = DMKSPGetComputeOperators(dmrepart,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
-      ierr = dmksp_func(sred->ksp,Ak,Bk,dmksp_ctx);CHKERRQ(ierr);
+      /* There is no need to assemble the operator now, the sub KSP will call SetComputeOperators() during KSPSetUp() */
+      /*ierr = DMKSPGetComputeOperators(dmrepart,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);*/
+      /*ierr = dmksp_func(sred->ksp,Ak,Bk,dmksp_ctx);CHKERRQ(ierr);*/
     }
   } else {
     ierr = PCTelescopeMatCreate_dmda_dmactivefalse(pc,sred,reuse,A);CHKERRQ(ierr);
