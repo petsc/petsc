@@ -904,9 +904,17 @@ cdef PetscErrorCode MatMultAdd_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultAdd_Python")
     cdef multAdd = PyMat(mat).multAdd
+    cdef PetscVec t = NULL
+
     if multAdd is None:
-        CHKERR( MatMult(mat,x,y) )
-        CHKERR( VecAXPY(y,1.0,v) )
+        if v == y:
+            CHKERR( VecDuplicate(y, &t) )
+            CHKERR( MatMult(mat,x,t) )
+            CHKERR( VecAXPY(y,1.0,t) )
+            CHKERR( VecDestroy(&t) )
+        else:
+            CHKERR( MatMult(mat,x,y) )
+            CHKERR( VecAXPY(y,1.0,v) )
         return FunctionEnd()
     if multAdd is None: return UNSUPPORTED(b"multAdd")
     multAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
