@@ -18,7 +18,7 @@ pf: $(OBJECTS_PF) chkopts
 
 #--------------------------------------------------------------------------
 runpf:
-	-@${MPIEXEC} -n 1 ./pf > pf.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./pf -snes_rtol 1.e-3 > pf.tmp 2>&1;   \
 	   if (${DIFF} output/pf.out pf.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pf, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pf.tmp
