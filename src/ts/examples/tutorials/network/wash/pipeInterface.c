@@ -58,7 +58,7 @@ PetscErrorCode PipeDestroy(Pipe *pipe)
 .  a -
 -  fric -
 */
-PetscErrorCode PipeSetParameters(Pipe pipe,PetscScalar length,PetscInt nnodes,PetscScalar D,PetscScalar a,PetscScalar fric)
+PetscErrorCode PipeSetParameters(Pipe pipe,PetscReal length,PetscInt nnodes,PetscReal D,PetscReal a,PetscReal fric)
 {
   PetscFunctionBegin;
   pipe->length = length;
