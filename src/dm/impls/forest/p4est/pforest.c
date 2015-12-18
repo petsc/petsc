@@ -622,7 +622,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
 
     ierr = DMPlexGetTransitiveClosure(dm,e,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
     for (s = 0; s < starSize; s++) {
-      PetscInt p = star[2*c];
+      PetscInt p = star[2*s];
 
       if (p >= cStart && p < cEnd) {
         /* we want to count every time cell p references e, so we see how many times it comes up in the closure.  This
