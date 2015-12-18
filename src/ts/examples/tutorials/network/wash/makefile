@@ -21,6 +21,7 @@ runpipes1:
 	   if (${DIFF} output/pipes1_1.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
+# parallel runs with '--with-64-bit-indices' fails, likely caused by partitioner packages. 
 runpipes1_2:
 	-@${MPIEXEC} -n 2 ./pipes1 -ts_monitor -snes_converged_reason -case 1 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_1.out pipes1.tmp) then true; \
