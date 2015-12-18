@@ -427,7 +427,7 @@ int main(int argc,char ** argv)
   PetscInt             componentkey[4];
   UserCtx              User;
   PetscLogStage        stage1,stage2;
-  PetscInt             size;
+  PetscMPIInt          size;
 
   PetscInitialize(&argc,&argv,"pfoptions",help);
 

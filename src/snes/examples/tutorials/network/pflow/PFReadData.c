@@ -18,9 +18,9 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   PetscInt       gen_start_line=-1,gen_end_line=-1;
   PetscInt       br_start_line=-1,br_end_line=-1;
   char           line[MAXLINE];
-  PetscInt       loadi=0,geni=0,bri=0,busi=0,i;
-  PetscInt       extbusnum,bustype_i,j;
-  PetscScalar    Pd,Qd;
+  PetscInt       loadi=0,geni=0,bri=0,busi=0,i,j;
+  int            extbusnum,bustype_i;
+  double         Pd,Qd;
   PetscInt       maxbusnum=-1,intbusnum;
 
   PetscFunctionBegin;
@@ -78,10 +78,15 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
     fgets(line,MAXLINE,fp);
 
     if((i >= bus_start_line) && (i < bus_end_line)) {
+      double gl,bl,vm,va,basekV;
+      int    bus_i,ide,area;
       /* Bus data */
       sscanf(line,"%d %d %lf %lf %lf %lf %d %lf %lf %lf",		\
-	     &Bus[busi].bus_i,&Bus[busi].ide,&Pd,&Qd,&Bus[busi].gl,	\
-	     &Bus[busi].bl,&Bus[busi].area,&Bus[busi].vm,&Bus[busi].va,&Bus[busi].basekV);
+	     &bus_i,&ide,&Pd,&Qd,&gl,	\
+	     &bl,&area,&vm,&va,&basekV);
+      Bus[busi].bus_i = bus_i; Bus[busi].ide = ide; Bus[busi].area = area;
+      Bus[busi].gl = gl; Bus[busi].bl = bl;
+      Bus[busi].vm = vm; Bus[busi].va = va; Bus[busi].basekV = basekV;
       Bus[busi].internal_i = busi;
       busext2intmap[Bus[busi].bus_i] = busi;
 
@@ -102,10 +107,14 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 
     /* Read generator data */
     if(i >= gen_start_line && i < gen_end_line) {
-      sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d %lf %lf",&Gen[geni].bus_i, \
-	     &Gen[geni].pg,&Gen[geni].qg,&Gen[geni].qt,&Gen[geni].qb, \
-	     &Gen[geni].vs,&Gen[geni].mbase,&Gen[geni].status,&Gen[geni].pt, \
-	     &Gen[geni].pb);
+      double pg,qg,qt,qb,vs,mbase,pt,pb;
+      int    bus_i,status;
+      sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d %lf %lf",&bus_i, \
+	     &pg,&qg,&qt,&qb, \
+	     &vs,&mbase,&status,&pt,&pb);
+      Gen[geni].bus_i = bus_i; Gen[geni].status = status;
+      Gen[geni].pg = pg; Gen[geni].qg = qg; Gen[geni].qt = qt; Gen[geni].qb = qb;
+      Gen[geni].vs = vs; Gen[geni].mbase = mbase; Gen[geni].pt = pt; Gen[geni].pb = pb;
 
       intbusnum = busext2intmap[Gen[geni].bus_i];
       Gen[geni].internal_i = intbusnum;
@@ -118,10 +127,16 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
     }
     
     if(i >= br_start_line && i < br_end_line) {
-      sscanf(line,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %d",&Branch[bri].fbus,&Branch[bri].tbus, \
-	     &Branch[bri].r,&Branch[bri].x,&Branch[bri].b,		\
-	     &Branch[bri].rateA,&Branch[bri].rateB,&Branch[bri].rateC, \
-	     &Branch[bri].tapratio,&Branch[bri].phaseshift,&Branch[bri].status);
+      double r,x,b,rateA,rateB,rateC,tapratio,phaseshift;
+      int    fbus,tbus,status;
+      sscanf(line,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %d",&fbus,&tbus, \
+	     &r,&x,&b,&rateA,&rateB,&rateC, \
+	     &tapratio,&phaseshift,&status);
+      Branch[bri].fbus = fbus; Branch[bri].tbus = tbus; Branch[bri].status = status;
+      Branch[bri].r = r; Branch[bri].x = x; Branch[bri].b = b;
+      Branch[bri].rateA = rateA; Branch[bri].rateB = rateB; Branch[bri].rateC = rateC;
+      Branch[bri].tapratio = tapratio; Branch[bri].phaseshift = phaseshift;
+
       if(!Branch[bri].tapratio) Branch[bri].tapratio = 1.0;
       Branch[bri].phaseshift *= PETSC_PI/180.0;
 
