@@ -344,7 +344,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
 
 #undef __FUNCT__
 #define __FUNCT__ "WashNetworkCleanUp"
-PetscErrorCode WashNetworkCleanUp(Wash wash,PetscInt *edgelist)
+PetscErrorCode WashNetworkCleanUp(Wash wash,int *edgelist)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -360,13 +360,14 @@ PetscErrorCode WashNetworkCleanUp(Wash wash,PetscInt *edgelist)
 
 #undef __FUNCT__
 #define __FUNCT__ "WashNetworkCreate"
-PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr,PetscInt **elist)
+PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr,int **elist)
 {
   PetscErrorCode ierr;
   PetscInt       nnodes,npipes;
   PetscMPIInt    rank;
   Wash           wash;
-  PetscInt       i,numVertices,numEdges,*edgelist;
+  PetscInt       i,numVertices,numEdges;
+  int            *edgelist;
   Junction       junctions;
   Pipe           pipes;
 
@@ -385,7 +386,9 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   numEdges    = 0; 
   edgelist    = NULL;
 
-  if (!rank) printf("Setup pipesCase %d\n",pipesCase);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Setup pipesCase %D\n",pipesCase);CHKERRQ(ierr);
+  }
   nnodes = 6;
   ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-npipenodes", &nnodes, PETSC_NULL);CHKERRQ(ierr);
 
@@ -555,7 +558,8 @@ int main(int argc,char ** argv)
   Wash              wash;
   Junction          junctions,junction;
   Pipe              pipe,pipes;
-  PetscInt          numEdges,numVertices,*edgelist = NULL,KeyPipe,KeyJunction;
+  PetscInt          numEdges,numVertices,KeyPipe,KeyJunction;
+  int               *edgelist = NULL;
   PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,pipeOffset,key,frombType,tobType;
   PetscInt          vfrom,vto,vkey,fromOffset,toOffset,type,varoffset,pipeoffset;
   PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;
