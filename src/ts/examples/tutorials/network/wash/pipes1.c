@@ -368,8 +368,8 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   Wash           wash;
   PetscInt       i,numVertices,numEdges;
   int            *edgelist;
-  Junction       junctions;
-  Pipe           pipes;
+  Junction       junctions=NULL;
+  Pipe           pipes=NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
