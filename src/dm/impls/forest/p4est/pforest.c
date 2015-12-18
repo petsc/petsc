@@ -1861,7 +1861,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         int              isInside;
 
 #if defined(P4_TO_P8)
-        l = PetscVertToP4estVert[l - (1 + P4EST_FACES + P8EST_CHILDREN)];
+        l = PetscVertToP4estVert[l - (1 + P4EST_FACES + P8EST_EDGES)];
 #else
         l = PetscVertToP4estVert[l - (1 + P4EST_FACES)];
 #endif
