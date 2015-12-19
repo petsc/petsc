@@ -706,6 +706,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscReal       next_time_step;
   PetscBool       accept;
   PetscErrorCode  ierr;
+  SNESConvergedReason snes_reason;
 
   PetscFunctionBegin;
   if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage && (!ts->event || (ts->event && ts->event->status != TSEVENT_PROCESSING))) {
@@ -852,7 +853,11 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     }
 reject_step: continue;
   }
-  if (ark->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
+  if (ark->status != TS_STEP_COMPLETE && !ts->reason){
+    ierr=SNESGetConvergedReason(snes,&snes_reason);CHKERRQ(ierr);
+    if(snes_reason<0) ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+    else ts->reason = TS_DIVERGED_STEP_REJECTED;
+  }
   PetscFunctionReturn(0);
 }
 
