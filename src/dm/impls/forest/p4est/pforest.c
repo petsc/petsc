@@ -1351,7 +1351,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
       ierr = PetscMalloc1(nleaves,&coverQuads);CHKERRQ(ierr);
       ierr = PetscMalloc1(cEndC-cStartC,&coverQuadsSend);CHKERRQ(ierr);
       count = 0;
-      for (t = fltC; t < lltC; t++) { /* unfortunately, we need to pack a send array, since quads are not stored packed in p4est */
+      for (t = fltC; t <= lltC; t++) { /* unfortunately, we need to pack a send array, since quads are not stored packed in p4est */
         p4est_tree_t *tree = &(((p4est_tree_t *) p4estC->trees->array)[t]);
         PetscInt q;
 
@@ -1410,7 +1410,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
       roots[p-pStartF].index = -1;
     }
     cLocalStartF = pforestF->cLocalStart;
-    for (t = fltF; t < lltF; t++) {
+    for (t = fltF; t <= lltF; t++) {
       p4est_tree_t *tree = &(((p4est_tree_t *) p4estF->trees->array)[t]);
       PetscInt numCoarseQuads = treeQuadCounts[t - fltF];
       PetscInt numFineQuads = tree->quadrants.elem_count;
@@ -2035,6 +2035,9 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 
         for (p = pStartA; p < pEndA; p++) {
           ierr = DMLabelGetValue(adaptLabel,p,&adaptValues[p]);CHKERRQ(ierr);
+        }
+        for (p = pStart; p < pEnd; p++) {
+          values[p] = PETSC_MIN_INT;
         }
 
         if (transferForward) {
