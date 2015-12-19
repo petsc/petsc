@@ -36,7 +36,7 @@ int main(int argc,char **args)
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&x);CHKERRQ(ierr);
-  ierr = VecSetValue(x,rank,(PetscScalar)rank,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecSetValue(x,rank,(PetscScalar)(rank+10),INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

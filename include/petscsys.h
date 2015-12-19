@@ -2886,6 +2886,7 @@ PETSC_EXTERN PetscErrorCode PetscProcessPlacementView(PetscViewer);
 typedef struct _n_PetscCommShared* PetscCommShared;
 PETSC_EXTERN PetscErrorCode PetscCommSharedGet(MPI_Comm,PetscCommShared*);
 PETSC_EXTERN PetscErrorCode PetscCommSharedGlobalToLocal(PetscCommShared,PetscMPIInt,PetscMPIInt*);
+PETSC_EXTERN PetscErrorCode PetscCommSharedGetComm(PetscCommShared,MPI_Comm*);
 
 /*S
    PetscSegBuffer - a segmented extendable buffer

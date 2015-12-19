@@ -451,3 +451,27 @@ PetscErrorCode  PetscCommSharedGlobalToLocal(PetscCommShared scomm,PetscMPIInt g
   }
   PetscFunctionReturn(0);
 }
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscCommSharedGetComm"
+/*@C
+    PetscCommSharedGetComm - Returns the MPI communicator that represents all processes with common shared memory
+
+
+    Collective on comm.
+
+    Input Parameter:
+.   scomm - PetscCommShared object obtained with PetscCommSharedGet()
+
+    Output Parameter:
+.   comm - the MPI communicator
+
+    Level: developer
+
+@*/
+PetscErrorCode  PetscCommSharedGetComm(PetscCommShared scomm,MPI_Comm *comm)
+{
+  PetscFunctionBegin;
+  *comm = scomm->scomm;
+  PetscFunctionReturn(0);
+}

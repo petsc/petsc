@@ -277,6 +277,15 @@ typedef struct {
   MPI_Win                window;
   PetscInt               *winstarts;    /* displacements in the processes I am putting to */
 #endif
+  PetscMPIInt            msize,sharedcnt;           /* total to entries that are going to processes with the same shared memory space */
+  PetscBool              *sharedcnts;               /* [nrecv] PETSC_TRUE if receiver is in same shared memory space */
+  PetscScalar            *sharedspace;              /* space each process puts data to be read from other processes */
+  PetscInt               *sharedspaceoffset;        /* [msize] offset into sharedspace for each shared memory partner; -1 (error check) for partners with no data */
+  PetscScalar            **sharedspaces;            /* [msize] space other processes put data to be read from this processes.
+                                                       This is NULL for processes we receive from that are on different shared memory communicators */
+  PetscInt               *sharedspacesoffset;       /* [msize] offset into sharedspaces, that I will read from */
+  MPI_Win                sharedwin;                 /* Window that owns sharedspace */
+  MPI_Win                sharedoffsetwin;           /* Window that owns sharedspaceoffset */
 } VecScatter_MPI_General;
 
 

@@ -47,7 +47,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
         for (i=0; i<to->n; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]   %D length = %D to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);CHKERRQ(ierr);
         }
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote sends (in order by process sent to)\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Now the indices for all remote sends (in order by process sent to)\n",rank);CHKERRQ(ierr);
         for (i=0; i<to->starts[to->n]; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D \n",rank,to->indices[i]);CHKERRQ(ierr);
         }
@@ -59,7 +59,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D length %D from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
         }
 
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote receives (in order by process received from)\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Now the indices for all remote receives (in order by process received from)\n",rank);CHKERRQ(ierr);
         for (i=0; i<from->starts[from->n]; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D \n",rank,from->indices[i]);CHKERRQ(ierr);
         }
@@ -73,6 +73,26 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+
+      ierr = PetscViewerASCIIPrintf(viewer,"Method used to implement the VecScatter: ");CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_ALLTOALLW)  && !defined(PETSC_USE_64BIT_INDICES)
+      if (to->use_alltoallw) {
+        ierr = PetscViewerASCIIPrintf(viewer,"Uses MPI_alltoallw if INSERT_MODE\n");CHKERRQ(ierr);
+      } else 
+#endif
+      if (ctx->packtogether || to->use_alltoallv || to->use_window) {
+        if (to->use_alltoallv) {
+          ierr = PetscViewerASCIIPrintf(viewer,"Uses MPI MPI_alltoallv\n");CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+        } else if (to->use_window) {
+          ierr = PetscViewerASCIIPrintf(viewer,"Uses MPI window\n");CHKERRQ(ierr);
+#endif
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer,"Packs all messages and then sends them\n");CHKERRQ(ierr);
+        }
+      }  else {
+        ierr = PetscViewerASCIIPrintf(viewer,"Packs and sends messages one at a time\n");CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -221,6 +241,11 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     }
   }
 #endif
+  ierr = MPI_Win_free(&to->sharedwin);CHKERRQ(ierr);
+  ierr = MPI_Win_free(&to->sharedoffsetwin);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedcnts);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedspaces);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedspacesoffset);CHKERRQ(ierr);
 
   ierr = PetscFree(to->local.vslots);CHKERRQ(ierr);
   ierr = PetscFree(from->local.vslots);CHKERRQ(ierr);
@@ -2238,7 +2263,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
 PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
-  PetscMPIInt            size,rank,imdex,tag,n;
+  PetscMPIInt            size,rank,mrank,imdex,tag,n;
   PetscInt               *source = NULL,*owners = NULL,nxr;
   PetscInt               *lowner = NULL,*start = NULL,lengthy,lengthx;
   PetscMPIInt            *nprocs = NULL,nrecvs;
@@ -2253,7 +2278,9 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscErrorCode         ierr;
   PetscCommShared        scomm;
   PetscMPIInt            jj;
-
+  MPI_Info               info;
+  MPI_Comm               mscomm;
+  
   PetscFunctionBegin;
   ierr   = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   ierr   = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
@@ -2348,6 +2375,15 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   to->starts[0] = 0;
 
   ierr = PetscCommSharedGet(comm,&scomm);CHKERRQ(ierr);
+  ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(mscomm,&to->msize);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nrecvs,&to->sharedcnts);CHKERRQ(ierr);
+
+    /* Allocate shared memory space for shared memory partner communication */
+  ierr = MPI_Info_create(&info);CHKERRQ(ierr);
+  ierr = MPI_Info_set(info, "alloc_shared_noncontig", "true");CHKERRQ(ierr);
+  ierr = MPI_Win_allocate_shared(to->msize*sizeof(PetscInt),sizeof(PetscInt),info,mscomm,&to->sharedspaceoffset,&to->sharedoffsetwin);CHKERRQ(ierr);
+  for (i=0; i<to->msize; i++) to->sharedspaceoffset[i] = -1; /* mark with -1 for later error checking */
   if (nrecvs) {
     /* move the data into the send scatter */
     base     = owners[rank];
@@ -2360,13 +2396,19 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       for (j=0; j<olengths1[i]; j++) to->indices[to->starts[i] + j] = values[j] - base;
       ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)to->procs[i],&jj);CHKERRQ(ierr);
       if (jj > -1) {
-        PetscPrintf(PETSC_COMM_SELF,"[%d] Sending values shared memory partner %d,global rank %d\n",rank,jj,to->procs[i]);
+        to->sharedspaceoffset[jj] = to->sharedcnt;
+        to->sharedcnt             += olengths1[i];
+        to->sharedcnts[i]          =  PETSC_TRUE;
+        ierr = PetscInfo4(NULL,"[%d] Sending %d values to shared memory partner %d,global rank %d\n",rank,olengths1[i],jj,to->procs[i]);CHKERRQ(ierr);
       }
     }
   }
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
   ierr = PetscFree(onodes1);CHKERRQ(ierr);
   ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
+
+  ierr = MPI_Win_allocate_shared(to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&to->sharedspace,&to->sharedwin);CHKERRQ(ierr);
+  ierr = MPI_Info_free(&info);CHKERRQ(ierr);
 
   /* allocate entire receive scatter context */
   ierr = PetscNewLog(ctx,&from);CHKERRQ(ierr);
@@ -2386,7 +2428,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       from->starts[count]  = start[count] = start[count-1] + nprocs[i];
       ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)i,&jj);CHKERRQ(ierr);
       if (jj > -1) {
-        PetscPrintf(PETSC_COMM_SELF,"[%d] Receiving values shared memory partner %d global rank %d\n",rank,jj,i);
+        ierr = PetscInfo3(NULL,"[%d] Receiving values shared memory partner %d global rank %d\n",rank,jj,i);CHKERRQ(ierr);
       }
     }
   }
@@ -2428,6 +2470,19 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
     from->local.vslots = 0;
     to->local.n        = 0;
     to->local.vslots   = 0;
+  }
+
+  /* Get the shared memory address for all processes we will be copying data from */
+  ierr = PetscCalloc1(to->msize,&to->sharedspaces);CHKERRQ(ierr);
+  ierr = PetscCalloc1(to->msize,&to->sharedspacesoffset);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(mscomm,&mrank);CHKERRQ(ierr);
+  for (jj=0; jj<to->msize; jj++) {
+    MPI_Aint    isize;
+    PetscMPIInt disp_unit;
+    PetscInt    *ptr;
+    ierr = MPI_Win_shared_query(to->sharedwin,jj,&isize,&disp_unit,&to->sharedspaces[jj]);CHKERRQ(ierr);
+    ierr = MPI_Win_shared_query(to->sharedoffsetwin,jj,&isize,&disp_unit,&ptr);CHKERRQ(ierr);
+    to->sharedspacesoffset[jj] = ptr[mrank];
   }
 
   from->local.nonmatching_computed = PETSC_FALSE;
