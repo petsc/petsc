@@ -1538,7 +1538,7 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_on
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetFromOptions_Memory"
-PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptions *PetscOptionsObject,TSTrajectory tj)
+PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscOptionsObject,TSTrajectory tj)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
   PetscErrorCode ierr;

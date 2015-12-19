@@ -274,7 +274,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
 .keywords: TS, set, options, database, type
 .seealso: TSSetFromOptions(), TSSetType()
 */
-static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionsItems *PetscOptionsObject,TSTrajectory tj,TS ts)
+static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,TSTrajectory tj,TS ts)
 {
   PetscBool      opt;
   const char     *defaultType;
