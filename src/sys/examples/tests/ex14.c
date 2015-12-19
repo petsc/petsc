@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscReal   rarray[10];
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetScalar(NULL,"-a",&a,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a));CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"test options",NULL);CHKERRQ(ierr);

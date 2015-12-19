@@ -133,7 +133,8 @@
       ione = 1
       nfour = -4
       itwo = 2
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                         '-par', solver%lambda,flg,ierr)
       if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) then
          if (solver%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
@@ -144,21 +145,22 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !     just get size
-      call DMDACreate2d(PETSC_COMM_WORLD, &
-           DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &
-           DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE, &
-           ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr)
-      call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,   &
-           PETSC_NULL_INTEGER,                               &
-           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
-           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
-           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
-           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
-           PETSC_NULL_INTEGER,ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD,                               &
+     &      DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &
+     &      DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,       &
+     &      ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr)
+      call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,     &
+     &      PETSC_NULL_INTEGER,                                            &
+     &      PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                         &
+     &      PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
+     &      PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                         &
+     &      PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                         &
+     &      PETSC_NULL_INTEGER,ierr)
       N1 = solver%my*solver%mx
       N2 = solver%my
       flg = .false.
-      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-no_constraints',flg,flg,ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                          '-no_constraints',flg,flg,ierr)
       if (flg) then
          N2 = 0
       endif
@@ -336,13 +338,13 @@
       call SNESSolve(mysnes,PETSC_NULL_OBJECT,x,ierr)
 
       ! convert test
-!!$      print *,'[',solver%rank,'] ',N1,' primary global rows, ',N2,' global constraints, ',nloclam,' local constraints'
-!!$      call MatConvert(KKTmat,MATAIJ,MAT_INITIAL_MATRIX,tmat,ierr);CHKERRQ(ierr)
-!!$      if (ierr==0) then
-!!$         call MatDestroy(KKTmat, ierr);CHKERRQ(ierr)
-!!$         KKTmat = tmat
-!!$         print *,'MatConvert Nest-->AIJ worked!!!!!'
-!!$      end if
+!!&      print *,'[',solver%rank,'] ',N1,' primary global rows, ',N2,' global constraints, ',nloclam,' local constraints'
+!!&      call MatConvert(KKTmat,MATAIJ,MAT_INITIAL_MATRIX,tmat,ierr);CHKERRQ(ierr)
+!!&      if (ierr==0) then
+!!&         call MatDestroy(KKTmat, ierr);CHKERRQ(ierr)
+!!&         KKTmat = tmat
+!!&         print *,'MatConvert Nest-->AIJ worked!!!!!'
+!!&      end if
 
       call SNESGetIterationNumber(mysnes,its,ierr)
       if (solver%rank .eq. 0) then

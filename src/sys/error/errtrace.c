@@ -72,9 +72,9 @@ PetscErrorCode  PetscErrorPrintfInitialize()
   ierr = PetscGetDate(date,sizeof(date));CHKERRQ(ierr);
   ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-error_output_stdout",&use_stdout,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-error_output_stdout",&use_stdout,NULL);CHKERRQ(ierr);
   if (use_stdout) PETSC_STDERR = PETSC_STDOUT;
-  ierr = PetscOptionsGetBool(NULL,"-error_output_none",&use_none,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-error_output_none",&use_none,NULL);CHKERRQ(ierr);
   if (use_none) PetscErrorPrintf = PetscErrorPrintfNone;
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -207,9 +207,9 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
         (*PetscErrorPrintf)("destroying unneeded objects.\n");
         PetscMallocGetCurrentUsage(&mem);
         PetscMemoryGetCurrentUsage(&rss);
-        PetscOptionsGetBool(NULL,"-malloc_dump",&flg1,NULL);
-        PetscOptionsGetBool(NULL,"-malloc_log",&flg2,NULL);
-        PetscOptionsHasName(NULL,"-malloc_log_threshold",&flg3);
+        PetscOptionsGetBool(NULL,NULL,"-malloc_dump",&flg1,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-malloc_log",&flg2,NULL);
+        PetscOptionsHasName(NULL,NULL,"-malloc_log_threshold",&flg3);
         if (flg2 || flg3) PetscMallocDumpLog(stdout);
         else {
           (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);

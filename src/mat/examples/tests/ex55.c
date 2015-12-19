@@ -19,12 +19,12 @@ int main(int argc,char **args)
   PetscScalar    value[3];
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg_loadmat);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg_loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-testseqaij",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-testseqaij",&flg);CHKERRQ(ierr);
   if (flg) {
     if (size == 1) {
       type[0] = MATSEQAIJ;
@@ -60,8 +60,8 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   } else { /* Create a baij mat with bs>1  */
     bs   = 2; mbs=8;
-    ierr = PetscOptionsGetInt(NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
     if (bs <= 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," bs must be >1 in this case");
     m    = mbs*bs;
     ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,m,m,d_nz,NULL,o_nz,NULL,&C);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ int main(int argc,char **args)
     if (size == 1) { /* size > 1 is not working yet! */
       j = (i+1)%ntypes;
       /* printf("[%d] i: %d, j: %d\n",rank,i,j); */
-      ierr = MatConvert(A,type[j],MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+      ierr = MatConvert(A,type[j],MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
     }
 
     ierr = MatDestroy(&A);CHKERRQ(ierr);

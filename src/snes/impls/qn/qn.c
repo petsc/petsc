@@ -582,7 +582,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_QN"
-static PetscErrorCode SNESSetFromOptions_QN(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
 
   PetscErrorCode    ierr;

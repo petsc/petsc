@@ -21,7 +21,6 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   Mat         P_loc,P_oth;     /* partial B_seq -- intend to replace B_seq */
   PetscInt    *api,*apj;       /* symbolic i and j arrays of the local product A_loc*B_seq */
   PetscScalar *apv;
-  PetscInt    rmax;            /* max num of nnz in a local row of the matrix product */
   MatReuse    reuse;           /* flag to skip MatGetBrowsOfAoCols_MPIAIJ() and MatMPIAIJGetLocalMat() in 1st call of MatPtAPNumeric_MPIAIJ_MPIAIJ() */
   PetscScalar *apa;            /* tmp array for store a row of A*P used in MatMatMult() */
   Mat         A_loc;           /* used by MatTransposeMatMult(), contains api and apj */
@@ -139,7 +138,7 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 
-PETSC_INTERN PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptions*,Mat);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems*,Mat);
 PETSC_INTERN PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)

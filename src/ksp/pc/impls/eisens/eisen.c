@@ -133,7 +133,7 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Eisenstat"
-static PetscErrorCode PCSetFromOptions_Eisenstat(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Eisenstat(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;

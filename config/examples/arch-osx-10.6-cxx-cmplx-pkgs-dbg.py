@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+# elemental breaks with complex?
+
 configure_options = [
   '--with-cc=gcc',
-  '--with-fc=gfortran', # http://hpc.sourceforge.net/
+  '--with-fc=gfortran', # http://brew.sh/
   '--with-cxx=g++',
 
   '--with-clanguage=cxx',
@@ -23,7 +25,6 @@ configure_options = [
   '--download-hdf5',
   '--download-petsc4py=1',
   '--download-mpi4py=1',
-  # no with-cxx-dialect=C++11 support '--download-elemental=1',
   #'--download-sundials=1',
   #'--download-hypre=1',
   #'--download-suitesparse=1',

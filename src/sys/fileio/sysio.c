@@ -258,7 +258,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if defined(PETSC_USE_REAL___FLOAT128)
-  ierr = PetscOptionsGetBool(NULL,"-binary_read_double",&readdouble,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-binary_read_double",&readdouble,NULL);CHKERRQ(ierr);
   /* If using __float128 precision we still read in doubles from file */
   if (type == PETSC_SCALAR && readdouble) {
     m    = m/2;
@@ -329,6 +329,8 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
    file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
    is used.
 
+   If running with __float128 precision the output is in __float128 unless one uses the -binary_read_double option
+
    The Buffer p should be read-write buffer, and not static data.
    This way, byte-swapping is done in-place, and then the buffer is
    written to the file.
@@ -357,6 +359,12 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   void           *ptmp = p;
 #endif
   char           *fname = NULL;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  PetscBool      writedouble = PETSC_FALSE;
+  double         *ppp;
+  PetscReal      *pv;
+  PetscInt       i;
+#endif
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
@@ -382,6 +390,21 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     ptmp = (void*)fname;
 #endif
   }
+
+#if defined(PETSC_USE_REAL___FLOAT128)
+  ierr = PetscOptionsGetBool(NULL,NULL,"-binary_write_double",&writedouble,NULL);CHKERRQ(ierr);
+  /* If using __float128 precision we still write in doubles to file */
+  if (type == PETSC_SCALAR && writedouble) {
+    m    = m/2;
+    ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
+    pv = (PetscReal*)pp;
+    for (i=0; i<n; i++) {
+      ppp[i] = (double) pv[i];
+    }
+    pp   = (char*)ppp;
+    ptmp = (char*)ppp;
+  }
+#endif
 
   if (type == PETSC_INT)          m *= sizeof(PetscInt);
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
@@ -415,6 +438,11 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   if (type == PETSC_FUNCTION) {
     free(fname);
   }
+#if defined(PETSC_USE_REAL___FLOAT128)
+  if (type == PETSC_SCALAR && writedouble) {
+    ierr = PetscFree(ppp);CHKERRQ(ierr);
+  }
+#endif   
   PetscFunctionReturn(0);
 }
 

@@ -199,6 +199,10 @@
       in the HDF5 file even if if it is of size 1 use PetscViewerHDF5SetBaseDimension2() or -viewer_hdf5_base_dimension2 true</li>
       </ul>
       <h4>SYS:</h4>
+      <ul>
+        <li>PetscOptionsHead() now takes a PetscOptions argument.</li>
+        <li>PetscObjectAddOptionsHandler() now takes an event handler that includes a PetscOptions argument.  PetscObjectProcessOptionsHandlers() requires this as input.</li>
+      </ul>
       <h4>AO:</h4>
       <h4>Fortran:</h4>
      <ul>

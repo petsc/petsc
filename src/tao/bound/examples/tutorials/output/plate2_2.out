@@ -14,16 +14,30 @@ iter =   9, Function value 1.6016, Residual: 0.0359725
 iter =  10, Function value 1.60131, Residual: 0.0252336 
 iter =  11, Function value 1.6012, Residual: 0.0132051 
 iter =  12, Function value 1.60116, Residual: 0.00529782 
+iter =  13, Function value 1.60115, Residual: 0.00382495 
+iter =  14, Function value 1.60115, Residual: 0.00152253 
+iter =  15, Function value 1.60115, Residual: 0.00121917 
+iter =  16, Function value 1.60115, Residual: 0.00101904 
+iter =  17, Function value 1.60115, Residual: 0.000771023 
+iter =  18, Function value 1.60115, Residual: 0.000347821 
+iter =  19, Function value 1.60115, Residual: 0.000181043 
+iter =  20, Function value 1.60115, Residual: 0.000148093 
+iter =  21, Function value 1.60115, Residual: 7.11469e-05 
+iter =  22, Function value 1.60115, Residual: 4.8096e-05 
+iter =  23, Function value 1.60115, Residual: 3.38004e-05 
+iter =  24, Function value 1.60115, Residual: 1.26118e-05 
+iter =  25, Function value 1.60115, Residual: 6.70402e-06 
+iter =  26, Function value 1.60115, Residual: 5.15928e-06 
+iter =  27, Function value 1.60115, Residual: 3.3138e-06 
 Tao Object: 2 MPI processes
   type: blmvm
       Gradient steps: 0
   TaoLineSearch Object:   2 MPI processes
     type: more-thuente
   Active Set subset type: subvec
-  convergence tolerances: fatol=0.0001,   frtol=0.0001
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=0.00529782
-  Objective value=1.60116
-  total number of iterations=12,                          (max: 2000)
-  total number of function/gradient evaluations=15,      (max: 4000)
-  Solution converged:   estimated f(x)-f(X*) <= fatol
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=1e-05
+  Residual in Function/Gradient:=3.3138e-06
+  Objective value=1.60115
+  total number of iterations=27,                          (max: 2000)
+  total number of function/gradient evaluations=32,      (max: 4000)
+  Solution converged:    ||g(X)||/||g(X0)|| <= gttol

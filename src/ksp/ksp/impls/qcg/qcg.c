@@ -340,7 +340,7 @@ static PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_QCG"
-PetscErrorCode KSPSetFromOptions_QCG(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_QCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscReal      delta;

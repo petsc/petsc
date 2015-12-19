@@ -12,6 +12,7 @@
   /* Hessenberg matrix and orthogonalization information. */            \
   PetscScalar *hh_origin;   /* holds hessenburg matrix that has been multiplied by plane rotations (upper tri) */ \
   PetscScalar *hes_origin;  /* holds the original (unmodified) hessenberg matrix which may be used to estimate the Singular Values of the matrix */ \
+  PetscScalar *hes_ritz;    /* holds the last full Hessenberg matrix to compute (harmonic) Ritz pairs */ \
   PetscScalar *cc_origin;   /* holds cosines for rotation matrices */   \
   PetscScalar *ss_origin;   /* holds sines for rotation matrices */     \
   PetscScalar *rs_origin;   /* holds the right-hand-side of the Hessenberg system */ \
@@ -31,6 +32,7 @@
   KSPGMRESCGSRefinementType cgstype;                                    \
                                                                         \
   Vec      *vecs;                                        /* the work vectors */ \
+  Vec      *vecb;                                        /* holds the last full basis vectors of the Krylov subspace to compute (harmonic) Ritz pairs */ \
   PetscInt q_preallocate;    /* 0=don't preallocate space for work vectors */ \
   PetscInt delta_allocate;    /* number of vectors to preallocaate in each block if not preallocated */ \
   PetscInt vv_allocated;      /* number of allocated gmres direction vectors */ \
@@ -42,6 +44,7 @@
                                                                         \
   /* Information for building solution */                               \
   PetscInt    it;              /* Current iteration: inside restart */  \
+  PetscInt    fullcycle;       /* Current number of complete cycle */ \
   PetscScalar *nrs;            /* temp that holds the coefficients of the Krylov vectors that form the minimum residual solution */ \
   Vec         sol_temp;        /* used to hold temporary solution */
 
@@ -51,9 +54,10 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
 PETSC_INTERN PetscErrorCode KSPSetUp_GMRES(KSP);
-PETSC_INTERN PetscErrorCode KSPSetFromOptions_GMRES(PetscOptions *PetscOptionsObject,KSP);
+PETSC_INTERN PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP);
 PETSC_INTERN PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal*,PetscReal*);
 PETSC_INTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
+PETSC_INTERN PetscErrorCode KSPComputeRitz_GMRES(KSP,PetscBool,PetscBool,PetscInt*,Vec[],PetscReal*,PetscReal*);
 PETSC_INTERN PetscErrorCode KSPReset_GMRES(KSP);
 PETSC_INTERN PetscErrorCode KSPDestroy_GMRES(KSP);
 PETSC_INTERN PetscErrorCode KSPGMRESGetNewVectors(KSP,PetscInt);

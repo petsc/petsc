@@ -64,7 +64,7 @@ SNES Object: 6 MPI processes
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+    tolerances:  relative=0.01, absolute=-1., divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object:   6 MPI processes

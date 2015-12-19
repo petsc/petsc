@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['http://www.mpich.org/static/downloads/3.1.3/mpich-3.1.3.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.3.tar.gz']
+    self.download         = ['http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.2.tar.gz']
     self.download_cygwin  = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
     self.downloadfilename = 'mpich'
@@ -27,9 +27,7 @@ class Configure(config.package.GNUPackage):
 
   def checkDownload(self):
     if config.setCompilers.Configure.isCygwin(self.log):
-      if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
-        self.download = self.download_cygwin
-      else:
+      if not config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
     return config.package.Package.checkDownload(self)
 
@@ -55,4 +53,9 @@ class Configure(config.package.GNUPackage):
     installDir = config.package.GNUPackage.Install(self)
     self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
     return installDir
+
+  def configure(self):
+    if config.setCompilers.Configure.isCygwin(self.log) and config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
+      self.download = self.download_cygwin
+    return config.package.Package.configure(self)
 

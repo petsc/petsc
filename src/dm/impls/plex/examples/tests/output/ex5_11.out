@@ -37,9 +37,9 @@ Label 'subpoint_map':
 DM Object:Hybrid Mesh 1 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
-Max sizes cone: 4 support: 8
 orientation is missing
 cap --> base:
+[0] Max sizes cone: 4 support: 8
 [0]: 14 ----> 35
 [0]: 14 ----> 38
 [0]: 15 ----> 37
@@ -300,24 +300,24 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (  14) dim  2 offset   0 -3 3
-  (  15) dim  2 offset   2 -1 3
-  (  16) dim  2 offset   4 1 3
-  (  17) dim  2 offset   6 3 3
-  (  18) dim  2 offset   8 -3 1
-  (  19) dim  2 offset  10 -1 1
-  (  20) dim  2 offset  12 1 1
-  (  21) dim  2 offset  14 3 1
-  (  22) dim  2 offset  16 -3 -1
-  (  23) dim  2 offset  18 -1 -1
-  (  24) dim  2 offset  20 1 -1
-  (  25) dim  2 offset  22 3 -1
-  (  26) dim  2 offset  24 -3 -3
-  (  27) dim  2 offset  26 -1 -3
-  (  28) dim  2 offset  28 1 -3
-  (  29) dim  2 offset  30 3 -3
-  (  30) dim  2 offset  32 1 3
-  (  31) dim  2 offset  34 1 1
-  (  32) dim  2 offset  36 1 -1
-  (  33) dim  2 offset  38 -3 -1
-  (  34) dim  2 offset  40 -1 -1
+  (  14) dim  2 offset   0 -3. 3.
+  (  15) dim  2 offset   2 -1. 3.
+  (  16) dim  2 offset   4 1. 3.
+  (  17) dim  2 offset   6 3. 3.
+  (  18) dim  2 offset   8 -3. 1.
+  (  19) dim  2 offset  10 -1. 1.
+  (  20) dim  2 offset  12 1. 1.
+  (  21) dim  2 offset  14 3. 1.
+  (  22) dim  2 offset  16 -3. -1.
+  (  23) dim  2 offset  18 -1. -1.
+  (  24) dim  2 offset  20 1. -1.
+  (  25) dim  2 offset  22 3. -1.
+  (  26) dim  2 offset  24 -3. -3.
+  (  27) dim  2 offset  26 -1. -3.
+  (  28) dim  2 offset  28 1. -3.
+  (  29) dim  2 offset  30 3. -3.
+  (  30) dim  2 offset  32 1. 3.
+  (  31) dim  2 offset  34 1. 1.
+  (  32) dim  2 offset  36 1. -1.
+  (  33) dim  2 offset  38 -3. -1.
+  (  34) dim  2 offset  40 -1. -1.

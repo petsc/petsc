@@ -1,16 +1,14 @@
   Residual norms for elas_ solve.
-  0 KSP Residual norm 4.5843 
-  1 KSP Residual norm 0.22224 
-  2 KSP Residual norm 0.0317786 
-  3 KSP Residual norm 0.0171986 
-  4 KSP Residual norm 0.0211313 
-  5 KSP Residual norm 0.0242281 
-  6 KSP Residual norm 0.00872213 
-  7 KSP Residual norm 0.00276819 
-  8 KSP Residual norm 0.000560932 
-  9 KSP Residual norm 0.000107467 
- 10 KSP Residual norm 1.86288e-05 
-Linear elas_ solve converged due to CONVERGED_RTOL iterations 10
+  0 KSP Residual norm 4.59981 
+  1 KSP Residual norm 0.210046 
+  2 KSP Residual norm 0.0369896 
+  3 KSP Residual norm 0.0205744 
+  4 KSP Residual norm 0.0150824 
+  5 KSP Residual norm 0.0048473 
+  6 KSP Residual norm 0.000701029 
+  7 KSP Residual norm 0.000136882 
+  8 KSP Residual norm 3.73498e-05 
+Linear elas_ solve converged due to CONVERGED_RTOL iterations 8
 KSP Object:(elas_) 1 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero

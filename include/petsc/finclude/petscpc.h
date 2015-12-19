@@ -125,6 +125,20 @@
       PetscEnum PC_EXOTIC_FACE
       PetscEnum PC_EXOTIC_WIREBASKET
       parameter (PC_EXOTIC_FACE=0,PC_EXOTIC_WIREBASKET=1)
+!
+! PCFailedReason
+!
+      PetscEnum PC_NOERROR
+      PetscEnum PC_FACTOR_STRUCT_ZEROPIVOT
+      PetscEnum PC_FACTOR_NUMERIC_ZEROPIVOT
+      PetscEnum PC_FACTOR_OUTMEMORY
+      PetscEnum PC_SUBPC_ERROR
+
+      parameter (PC_NOERROR=0)
+      parameter (PC_FACTOR_STRUCT_ZEROPIVOT=1)
+      parameter (PC_FACTOR_NUMERIC_ZEROPIVOT=2)
+      parameter (PC_FACTOR_OUTMEMORY=3)
+      parameter (PC_SUBPC_ERROR=4)
 
       external  PCMGRESIDUALDEFAULT
 !

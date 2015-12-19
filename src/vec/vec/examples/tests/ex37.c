@@ -60,7 +60,7 @@ PetscErrorCode test_view(void)
 
   tmp_buf[0] = e;
   tmp_buf[1] = f;
-  ierr       = PetscOptionsGetBool(0,"-explicit_is",&explcit,0);CHKERRQ(ierr);
+  ierr       = PetscOptionsGetBool(NULL,0,"-explicit_is",&explcit,0);CHKERRQ(ierr);
   ierr       = GetISs(tmp_buf,tmp_is);CHKERRQ(ierr);
   ierr       = VecCreateNest(PETSC_COMM_WORLD,2,explcit ? tmp_is : NULL,tmp_buf,&b);CHKERRQ(ierr);
   ierr       = VecDestroy(&e);CHKERRQ(ierr);

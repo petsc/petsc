@@ -71,7 +71,7 @@
      &     PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
 
-      call TaoSetTolerances(tao,1.0d-12,0,0,0,0,ierr)
+      call TaoSetTolerances(tao,0,0,0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetFromOptions(tao,ierr)
@@ -86,8 +86,8 @@
 !      call PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU)
 !      CHKERRQ(ierr)
 
-      call PetscOptionsSetValue('-pc_factor_mat_solver_package',         &
-     &     'superlu',ierr)
+      call PetscOptionsSetValue(PETSC_NULL_OBJECT,                      &
+     &              '-pc_factor_mat_solver_package','superlu',ierr)
       CHKERRQ(ierr)
 
       call PCSetType(pc,PCLU,ierr)
@@ -99,7 +99,7 @@
       call KSPSetFromOptions(ksp,ierr)
       CHKERRQ(ierr)
 
-      call TaoSetTolerances(tao,1.0d-12,0.0d0,0.0d0,0.0d0,0.0d0,ierr)
+      call TaoSetTolerances(tao,0.0d0,0.0d0,0.0d0,ierr)
       CHKERRQ(ierr)
 
       ! Solve
@@ -112,11 +112,11 @@
       CHKERRQ(ierr)
 
 !      if (reason .lt. 0) then
-!         call PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n"!,  &
+!         call PetscPrintf(MPI_COMM_WORLD, 'TAO failed to converge.\n'!,  &
 !     &         ierr)
 !      else
 !         call PetscPrintf(MPI_COMM_WORLD,                            !   &
-!     &         "Optimization terminated with status %D.\n", reason,ierr)
+!     &         'Optimization terminated with status %D.\n', reason,ierr)
 !      end if
 
       ! Finalize Memory

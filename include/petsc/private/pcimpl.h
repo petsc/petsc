@@ -17,7 +17,7 @@ struct _PCOps {
   PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
   PetscErrorCode (*applyBAtranspose)(PC,PetscInt,Vec,Vec,Vec);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,PC);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,PC);
   PetscErrorCode (*presolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*getfactoredmatrix)(PC,Mat*);
@@ -53,6 +53,7 @@ struct _p_PC {
   void             *data;
   PetscInt         presolvedone;  /* has PCPreSolve() already been run */
   void             *user;             /* optional user-defined context */
+  PCFailedReason   failedreason;
 };
 
 PETSC_EXTERN PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;

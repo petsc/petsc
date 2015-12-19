@@ -416,52 +416,52 @@ PETSC_EXTERN void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *
   *__ierr = MatGetInfo(*mat,*flag,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactor_(Mat *mat,IS *row,IS *col, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactor_(Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactor(*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatILUFactor(*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactornumeric_(Mat *fact,Mat *mat, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactornumeric_(Mat *fact,Mat *mat,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactorNumeric(*fact,*mat,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactor_(Mat *mat,IS *perm, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactor_(Mat *mat,IS *perm,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactor(*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactornumeric_(Mat *fact,Mat *mat, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactornumeric_(Mat *fact,Mat *mat,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactorNumeric(*fact,*mat,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatILUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatICCFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row, const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row,const MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatICCFactor(*mat,*row,info);
 }

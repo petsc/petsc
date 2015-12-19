@@ -4,7 +4,8 @@
 #if !defined(__FACTOR_H)
 #define __FACTOR_H
 
-#include <petsc/private/pcimpl.h>                /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>
+#include <petsc/private/matimpl.h>
 
 typedef struct {
   Mat              fact;              /* factored matrix */
@@ -31,7 +32,7 @@ PETSC_INTERN PetscErrorCode PCFactorSetMatSolverPackage_Factor(PC,const MatSolve
 PETSC_INTERN PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC);
 PETSC_INTERN PetscErrorCode PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
 PETSC_INTERN PetscErrorCode PCFactorSetColumnPivot_Factor(PC,PetscReal);
-PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptions *PetscOptionsObject,PC);
+PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC);
 PETSC_INTERN PetscErrorCode PCView_Factor(PC,PetscViewer);
 
 #endif

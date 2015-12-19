@@ -104,7 +104,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectViennaCLSetFromOptions(PetscObject obj)
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin(obj);
 
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
   if (flg) {
     try {
       viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_CPU);
@@ -112,7 +112,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectViennaCLSetFromOptions(PetscObject obj)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
   }
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_gpu",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-viennacl_device_gpu",&flg);CHKERRQ(ierr);
   if (flg) {
     try {
       viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_GPU);
@@ -120,7 +120,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectViennaCLSetFromOptions(PetscObject obj)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
   }
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_accelerator",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-viennacl_device_accelerator",&flg);CHKERRQ(ierr);
   if (flg) {
     try {
       viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_ACCELERATOR);

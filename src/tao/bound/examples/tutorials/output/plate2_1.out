@@ -14,11 +14,10 @@ Tao Object: 1 MPI processes
     type: stcg
   total KSP iterations: 12
   Active Set subset type: subvec
-  convergence tolerances: fatol=1e-12,   frtol=1e-12
   convergence tolerances: gatol=1e-08,   steptol=1e-12,   gttol=0.
   Residual in Function/Gradient:=1.45104e-11
   Objective value=1.50566
   total number of iterations=3,                          (max: 50)
   total number of function/gradient evaluations=14,      (max: 4000)
   total number of Hessian evaluations=3
-  Solution converged:   estimated f(x)-f(X*) <= fatol
+  Solution converged:    ||g(X)|| <= gatol

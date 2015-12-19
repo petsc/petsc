@@ -1046,7 +1046,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
         ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-        ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+        ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,Y[i],&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
       } else {
         Mat J,Jp;
@@ -1406,7 +1406,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RosW"
-static PetscErrorCode TSSetFromOptions_RosW(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;

@@ -209,5 +209,6 @@
 
 #define PetscBuildTwoSidedType PetscEnum
 
+#define PetscOptions PetscFortranAddr
 
 #endif

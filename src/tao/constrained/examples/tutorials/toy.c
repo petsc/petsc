@@ -78,7 +78,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetJacobianEqualityRoutine(tao,user.Ae,user.Ae,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetJacobianInequalityRoutine(tao,user.Ai,user.Ai,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetTolerances(tao,1e-12,0,0,0,0);CHKERRQ(ierr);
+  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
 
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
@@ -86,12 +86,12 @@ PetscErrorCode main(int argc,char **argv)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
   /* TODO -- why didn't that work? */
-  ierr = PetscOptionsSetValue("-pc_factor_mat_solver_package","superlu");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue(NULL,"-pc_factor_mat_solver_package","superlu");CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  ierr = TaoSetTolerances(tao,1e-12,0,0,0,0);CHKERRQ(ierr);
+  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
 
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 

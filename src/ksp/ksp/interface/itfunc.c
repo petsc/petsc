@@ -122,7 +122,7 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
   PetscValidIntPointer(neig,5);
   if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Eigenvalues not requested before KSPSetUp()");
 
-  if (ksp->ops->computeeigenvalues) {
+  if (n && ksp->ops->computeeigenvalues) {
     ierr = (*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
   } else {
     *neig = 0;
@@ -130,6 +130,58 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPComputeRitz"
+/*@
+   KSPComputeRitz - Computes the Ritz or harmonic Ritz pairs associated to the
+   smallest or largest in modulus, for the preconditioned operator.
+   Called after KSPSolve().
+
+   Not Collective
+
+   Input Parameter:
++  ksp   - iterative context obtained from KSPCreate()
+.  ritz  - PETSC_TRUE or PETSC_FALSE for ritz pairs or harmonic Ritz pairs, respectively
+.  small - PETSC_TRUE or PETSC_FALSE for smallest or largest (harmonic) Ritz values, respectively
+.  nrit  - number of (harmonic) Ritz pairs to compute
+
+   Output Parameters:
++  nrit  - actual number of computed (harmonic) Ritz pairs 
+.  S     - multidimensional vector with Ritz vectors
+.  tetar - real part of the Ritz values        
+.  tetai - imaginary part of the Ritz values
+
+   Notes:
+   -For GMRES, the (harmonic) Ritz pairs are computed from the Hessenberg matrix obtained during 
+   the last complete cycle, or obtained at the end of the solution if the method is stopped before 
+   a restart. Then, the number of actual (harmonic) Ritz pairs computed is less or equal to the restart
+   parameter for GMRES if a complete cycle has been performed or less or equal to the number of GMRES 
+   iterations.
+   -Moreover, for real matrices, the (harmonic) Ritz pairs are possibly complex-valued. In such a case,
+   the routine selects the complex (harmonic) Ritz value and its conjugate, and two successive columns of S 
+   are equal to the real and the imaginary parts of the associated vectors. 
+   -the (harmonic) Ritz pairs are given in order of increasing (harmonic) Ritz values in modulus
+   -this is currently not implemented when PETSc is built with complex numbers
+
+   One must call KSPSetComputeRitz() before calling KSPSetUp()
+   in order for this routine to work correctly.
+
+   Level: advanced
+
+.keywords: KSP, compute, ritz, values
+
+.seealso: KSPSetComputeRitz()
+@*/
+PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal tetar[],PetscReal tetai[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (!ksp->calc_ritz) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Ritz pairs not requested before KSPSetUp()");
+  if (ksp->ops->computeritz) {ierr = (*ksp->ops->computeritz)(ksp,ritz,small,nrit,S,tetar,tetai);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUpOnBlocks"
 /*@
@@ -160,11 +212,16 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 {
   PetscErrorCode ierr;
+  PCFailedReason pcreason;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetUpOnBlocks(ksp->pc);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+  if (pcreason) {
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -237,12 +294,13 @@ PetscErrorCode  KSPSetSkipPCSetFromOptions(KSP ksp,PetscBool flag)
 
 .seealso: KSPCreate(), KSPSolve(), KSPDestroy()
 @*/
-PetscErrorCode  KSPSetUp(KSP ksp)
+PetscErrorCode KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
   Mat            A,B;
   Mat            mat,pmat;
   MatNullSpace   nullsp;
+  PCFailedReason pcreason;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -330,10 +388,15 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+  if (pcreason) {
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+  }
+
   ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
   if (nullsp) {
     PetscBool test = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL);CHKERRQ(ierr);
     if (test) {
       ierr = MatNullSpaceTest(nullsp,mat,NULL);CHKERRQ(ierr);
     }
@@ -364,7 +427,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
+PetscErrorCode KSPReasonView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isAscii;
@@ -384,6 +447,11 @@ PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"Linear %s solve did not converge due to %s iterations %D\n",((PetscObject) ksp)->prefix,KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      }
+      if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+        PCFailedReason reason;
+        ierr = PCGetSetUpFailedReason(ksp->pc,&reason);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"               PCSETUP_FAILED due to %s \n",PCFailedReasons[reason]);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
@@ -477,14 +545,13 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
+PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
   PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
   Mat               mat,pmat;
   MPI_Comm          comm;
-  PetscInt          pcreason;
   MatNullSpace      nullsp;
   Vec               btmp,vec_rhs=0;
 
@@ -525,12 +592,8 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   }
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
-  if (pcreason) {
-    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
-    goto skipsolve;
-  }
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+
   VecLocked(ksp->vec_sol,3);
 
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
@@ -582,7 +645,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ksp->vec_rhs = btmp;
   }
   ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
-  ierr            = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  if (ksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    ierr = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
+  } 
+  ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+ 
   ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
   if (nullsp) {
     ksp->vec_rhs = vec_rhs;
@@ -595,7 +662,6 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ksp->totalits += ksp->its;
 
-  skipsolve:
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
@@ -626,6 +692,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   ierr = MatViewFromOptions(mat,(PetscObject)ksp,"-ksp_view_mat");CHKERRQ(ierr);
   ierr = MatViewFromOptions(pmat,(PetscObject)ksp,"-ksp_view_pmat");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ksp->vec_rhs,(PetscObject)ksp,"-ksp_view_rhs");CHKERRQ(ierr);
@@ -633,9 +700,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
   flag3 = PETSC_FALSE;
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigencontours",&flag3,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_plot_eigencontours",&flag3,NULL);CHKERRQ(ierr);
   if (flag1 || flag2 || flag3) {
     PetscInt  nits,n,i,neig;
     PetscReal *r,*c;
@@ -682,7 +749,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   }
 
   flag1 = PETSC_FALSE;
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_singularvalues",&flag1,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_compute_singularvalues",&flag1,NULL);CHKERRQ(ierr);
   if (flag1) {
     PetscInt nits;
 
@@ -700,8 +767,8 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2,NULL);CHKERRQ(ierr);
   if (flag1 || flag2) {
     PetscInt  n,i;
     PetscReal *r,*c;
@@ -737,7 +804,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = PetscFree2(r,c);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat A,B;
     ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
@@ -745,7 +812,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatViewFromOptions(B,(PetscObject)ksp,"-ksp_view_mat_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
@@ -755,7 +822,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = KSPViewFromOptions(ksp,NULL,"-ksp_view");CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Mat       A;
     Vec       t;
@@ -1430,6 +1497,37 @@ PetscErrorCode  KSPSetComputeEigenvalues(KSP ksp,PetscBool flg)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveBool(ksp,flg,2);
   ksp->calc_sings = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetComputeRitz"
+/*@
+   KSPSetComputeRitz - Sets a flag so that the Ritz or harmonic Ritz pairs
+   will be calculated via a Lanczos or Arnoldi process as the linear
+   system is solved.
+
+   Logically Collective on KSP
+
+   Input Parameters:
++  ksp - iterative context obtained from KSPCreate()
+-  flg - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+   Currently this option is only valid for the GMRES method.
+
+   Level: advanced
+
+.keywords: KSP, set, compute, ritz
+
+.seealso: KSPComputeRitz()
+@*/
+PetscErrorCode  KSPSetComputeRitz(KSP ksp, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
+  ksp->calc_ritz = flg;
   PetscFunctionReturn(0);
 }
 

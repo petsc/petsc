@@ -706,9 +706,10 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscReal       next_time_step;
   PetscBool       accept;
   PetscErrorCode  ierr;
+  SNESConvergedReason snes_reason;
 
   PetscFunctionBegin;
-  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
+  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage && (!ts->event || (ts->event && ts->event->status != TSEVENT_PROCESSING))) {
     PetscReal valid_time;
     PetscBool isvalid;
     ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
@@ -784,7 +785,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr          = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
         ierr          = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-        ierr          = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+        ierr          = TSAdaptCheckStage(adapt,ts,ark->stage_time,Y[i],&accept);CHKERRQ(ierr);
         if (!accept) {
           /* We are likely rejecting the step because of solver or function domain problems so we should not attempt to
            * use extrapolation to initialize the solves on the next attempt. */
@@ -852,7 +853,11 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     }
 reject_step: continue;
   }
-  if (ark->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
+  if (ark->status != TS_STEP_COMPLETE && !ts->reason){
+    ierr=SNESGetConvergedReason(snes,&snes_reason);CHKERRQ(ierr);
+    if(snes_reason<0) ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+    else ts->reason = TS_DIVERGED_STEP_REJECTED;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1162,7 +1167,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_ARKIMEX"
-static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;

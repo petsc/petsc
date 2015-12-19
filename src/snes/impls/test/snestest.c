@@ -143,7 +143,7 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Test"
-static PetscErrorCode SNESSetFromOptions_Test(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Test(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_Test      *ls = (SNES_Test*)snes->data;
   PetscErrorCode ierr;
@@ -251,7 +251,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   PetscViewer    viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_check_jacobian_view",&complete_print);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_check_jacobian_view",&complete_print);CHKERRQ(ierr);
   if (A != snes->jacobian_pre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot check Jacobian with alternative preconditioner");
 
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);

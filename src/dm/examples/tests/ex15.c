@@ -19,12 +19,12 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-M",&M1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-stencil_width",&s,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-ratio",&ratio,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-periodic",(PetscBool*)&pt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-ratio",&ratio,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-periodic",(PetscBool*)&pt,NULL);CHKERRQ(ierr);
 
   if (pt) {
     if (dim > 0) bx = DM_BOUNDARY_PERIODIC;

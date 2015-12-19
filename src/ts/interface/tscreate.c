@@ -7,6 +7,10 @@ const char *const TSConvergedReasons_Shifted[] = {
   "CONVERGED_ITERATING",
   "CONVERGED_TIME",
   "CONVERGED_ITS",
+  "CONVERGED_USER",
+  "CONVERGED_EVENT",
+  "CONVERGED_PSEUDO_FATOL",
+  "CONVERGED_PSEUDO_FATOL",
   "TSConvergedReason","TS_",0};
 const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
 

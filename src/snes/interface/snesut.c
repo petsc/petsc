@@ -350,9 +350,9 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
 #endif
-  PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1);CHKERRQ(ierr);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
-    PetscPrintf(PetscObjectComm((PetscObject)snes),"%5d: %20.5g + %20.5gi\n",i,(double)eigr[i],(double)eigi[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"%5d: %20.5g + %20.5gi\n",i,(double)eigr[i],(double)eigi[i]);CHKERRQ(ierr);
   }
   ierr = MatDenseRestoreArray(dJdense,&a);CHKERRQ(ierr);
   ierr = MatDestroy(&dJ);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
   for (i=0; i<n; i++) {
     pwork += (PetscAbsScalar(r[i]) > .20*rmax);
   }
-  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   ierr = VecRestoreArray(resid,&r);CHKERRQ(ierr);
   *per = *per/N;
   PetscFunctionReturn(0);
@@ -433,11 +433,6 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dum
   PetscFunctionReturn(0);
 }
 
-typedef struct {
-  PetscViewer viewer;
-  PetscReal   *history;
-} SNESMonitorRatioContext;
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorRatio"
 /*@C
@@ -454,81 +449,58 @@ typedef struct {
 
    Level: intermediate
 
+   Notes: Insure that SNESMonitorRatio() is called when you set this monitor
 .keywords: SNES, nonlinear, monitor, norm
 
-.seealso: SNESMonitorSet(), SNESMonitorSolution()
+.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorRatio()
 @*/
 PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscInt                len;
   PetscReal               *history;
-  SNESMonitorRatioContext *ctx = (SNESMonitorRatioContext*)dummy;
-
+  PetscViewer             viewer = (PetscViewer) dummy;
+  
   PetscFunctionBegin;
   ierr = SNESGetConvergenceHistory(snes,&history,NULL,&len);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(ctx->viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   if (!its || !history || its > len) {
-    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
   } else {
     PetscReal ratio = fgnorm/history[its-1];
-    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %14.12e \n",its,(double)fgnorm,(double)ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e %14.12e \n",its,(double)fgnorm,(double)ratio);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIISubtractTab(ctx->viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-   If the we set the history monitor space then we must destroy it
-*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorRatioDestroy"
-PetscErrorCode SNESMonitorRatioDestroy(void **ct)
-{
-  PetscErrorCode          ierr;
-  SNESMonitorRatioContext *ctx = *(SNESMonitorRatioContext**)ct;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(ctx->history);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&ctx->viewer);CHKERRQ(ierr);
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSetRatio"
+#define __FUNCT__ "SNESMonitorRatioSetUp"
 /*@C
-   SNESMonitorSetRatio - Sets SNES to use a monitor that prints the
-   ratio of the function norm at each iteration.
+   SNESMonitorRatioSetUp - Insures the SNES object is saving its history since this monitor needs access to it
 
    Collective on SNES
 
    Input Parameters:
 +   snes - the SNES context
--   viewer - ASCII viewer to print output
+-   viewer - the PetscViewer object (ignored)
 
    Level: intermediate
 
 .keywords: SNES, nonlinear, monitor, norm
 
-.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
+.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorRatio()
 @*/
-PetscErrorCode  SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
+PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewer viewer)
 {
   PetscErrorCode          ierr;
-  SNESMonitorRatioContext *ctx;
   PetscReal               *history;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(snes,&ctx);CHKERRQ(ierr);
   ierr = SNESGetConvergenceHistory(snes,&history,NULL,NULL);CHKERRQ(ierr);
   if (!history) {
-    ierr = PetscMalloc1(100,&ctx->history);CHKERRQ(ierr);
-    ierr = SNESSetConvergenceHistory(snes,ctx->history,0,100,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = SNESSetConvergenceHistory(snes,NULL,NULL,100,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ctx->viewer = viewer;
-
-  ierr = SNESMonitorSet(snes,SNESMonitorRatio,ctx,SNESMonitorRatioDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

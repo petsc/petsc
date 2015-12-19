@@ -20,7 +20,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   PetscFunctionBegin;
   if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must call PetscSubcommCreate firt");
   type = psubcomm->type;
-  ierr = PetscOptionsGetEnum(NULL,"-psubcomm_type",PetscSubcommTypes,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-psubcomm_type",PetscSubcommTypes,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
   if (flg && psubcomm->type != type) {
     /* free old structures */
     ierr = PetscCommDestroy(&(psubcomm)->dupparent);CHKERRQ(ierr);
@@ -40,7 +40,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
     }
   }
 
-  ierr = PetscOptionsHasName(NULL, "-psubcomm_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-psubcomm_view", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

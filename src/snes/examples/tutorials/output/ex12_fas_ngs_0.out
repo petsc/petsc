@@ -89,7 +89,7 @@ SNES Object: 1 MPI processes
     SNES Object:    (fas_levels_1_)     1 MPI processes
       type: ngs
       maximum iterations=1, maximum function evaluations=30000
-      tolerances: relative=0, absolute=0, solution=0
+      tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=0
       total number of function evaluations=1
       norm schedule FINALONLY
@@ -111,6 +111,3 @@ SNES Object: 1 MPI processes
     maximum iterations=1
 Number of SNES iterations = 8
 L_2 Error: 0.0252141
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-dm_refinement_limit value: 0.03125

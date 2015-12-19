@@ -1,7 +1,7 @@
 
 #include "petsc/finclude/petscsysdef.h"
 
-      Subroutine PetscOptionsGetEnum(pre,name,FArray,opt,set,ierr)
+      Subroutine PetscOptionsGetEnum(po,pre,name,FArray,opt,set,ierr)
       use,intrinsic :: iso_c_binding
       implicit none
 
@@ -9,6 +9,7 @@
       character(*)                FArray(*)
       PetscEnum                   :: opt
       PetscBool                   :: set
+      PetscOptions                :: po
       PetscErrorCode,intent(out)  :: ierr
 
       Type(C_Ptr),Dimension(:),Pointer :: CArray
@@ -32,7 +33,7 @@
       enddo
 
       CArray = (/(c_loc(list1(i)),i=1,Len),c_loc(nullc)/)
-      call PetscOptionsGetEnumPrivate(pre,name,CArray,opt,set,ierr)
+      call PetscOptionsGetEnumPrivate(po,pre,name,CArray,opt,set,ierr)
       DeAllocate(CArray)
       DeAllocate(list1)
       End Subroutine

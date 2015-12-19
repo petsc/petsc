@@ -3,6 +3,7 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define tsmonitorlgsettransform_             TSMONITORLGSETTRANSFORM
 #define tssetrhsfunction_                    TSSETRHSFUNCTION
 #define tsgetrhsfunction_                    TSGETRHSFUNCTION
 #define tssetrhsjacobian_                    TSSETRHSJACOBIAN
@@ -24,6 +25,7 @@
 #define tssetprestep_                        TSSETPRESTEP
 #define tssetpoststep_                       TSSETPOSTSTEP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define tsmonitorlgsettransform_             tsmonitorlgsettransform
 #define tssetrhsfunction_                    tssetrhsfunction
 #define tsgetrhsfunction_                    tsgetrhsfunction
 #define tssetrhsjacobian_                    tssetrhsjacobian
@@ -112,6 +114,23 @@ static PetscErrorCode ourmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void *ctx)
   void           *mctx = (void*) (PETSC_UINTPTR_T) ((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR_CTX];
   (*(void (PETSC_STDCALL*)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR]))(&ts,&i,&d,&v,mctx,&ierr);
   return 0;
+}
+
+/*
+   Currently does not handle destroy or context
+*/
+static void (PETSC_STDCALL*yourtransform)(void*ctx,Vec*,Vec*,PetscErrorCode*);
+static PetscErrorCode ourtransform(void *ctx,Vec x,Vec *xout)
+{
+  PetscErrorCode ierr = 0;
+  (*yourtransform)(ctx,&x,xout,&ierr);
+  return ierr;
+}
+
+PETSC_EXTERN void PETSC_STDCALL tsmonitorlgsettransform_(TS *ts,void (PETSC_STDCALL*f)(void*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode (PETSC_STDCALL*d)(void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+{
+  *ierr = TSMonitorLGSetTransform(*ts,ourtransform,NULL,NULL);
+  yourtransform = f;
 }
 
 PETSC_EXTERN void PETSC_STDCALL tssetprestep_(TS *ts,PetscErrorCode (PETSC_STDCALL*f)(TS*,PetscErrorCode*),PetscErrorCode *ierr)

@@ -39,7 +39,7 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
-#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#if defined(PETSC_SERIALIZE_FUNCTIONS) && defined(PETSC_SERIALIZE_FUNCTIONS_VIEW)
     const char *fname;
 
     ierr = PetscFPTFind(kdm->ops->computefunction,&fname);CHKERRQ(ierr);

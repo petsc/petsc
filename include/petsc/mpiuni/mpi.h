@@ -140,6 +140,15 @@ typedef size_t MPIUNI_INTPTR;
 typedef unknownuniptr MPIUNI_INTPTR;
 #endif
 
+/* old 32bit MS compiler does not support long long */
+#if defined(PETSC_SIZEOF_LONG_LONG)
+typedef long long MPIUNI_INT64;
+#elif defined(PETSC_HAVE___INT64)
+typedef _int64 MPIUNI_INT64;
+#else
+typedef unknownunint64 MPIUNI_INT64;
+#endif
+
 /*
 
     MPIUNI_TMP is used in the macros below only to stop various C/C++ compilers
@@ -179,7 +188,6 @@ typedef int    MPI_File;
 typedef int    MPI_Info;
 typedef int    MPI_Offset;
 
-
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the MPIUNI_Memcpy's easily */
 #define MPI_Datatype         int
@@ -197,13 +205,13 @@ typedef int    MPI_Offset;
 
 #define MPI_INT              (4 << 16 | sizeof(int))
 #define MPI_LONG             (4 << 16 | sizeof(long))
-#define MPI_LONG_LONG_INT    (4 << 16 | sizeof(long long))
+#define MPI_LONG_LONG_INT    (4 << 16 | sizeof(MPIUNI_INT64))
 #define MPI_SHORT            (4 << 16 | sizeof(short))
 
 #define MPI_UNSIGNED_SHORT   (5 << 16 | sizeof(unsigned short))
 #define MPI_UNSIGNED         (5 << 16 | sizeof(unsigned))
 #define MPI_UNSIGNED_LONG    (5 << 16 | sizeof(unsigned long))
-#define MPI_UNSIGNED_LONG_LONG (5 << 16 | sizeof(unsigned long long))
+#define MPI_UNSIGNED_LONG_LONG (5 << 16 | sizeof(unsigned MPIUNI_INT64))
 
 #define MPI_FLOAT_INT        (10 << 16 | (sizeof(float) + sizeof(int)))
 #define MPI_DOUBLE_INT       (11 << 16 | (sizeof(double) + sizeof(int)))

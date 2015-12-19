@@ -28,12 +28,12 @@ int main(int argc,char **argv)
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
   /* Get local dimensions of matrices */
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   p    = m/2;
-  ierr = PetscOptionsGetInt(NULL,"-p",&p,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
   /* Create matrix A */
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix A\n");CHKERRQ(ierr);
@@ -134,7 +134,10 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix Aher\n");CHKERRQ(ierr);
   ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&Aher);CHKERRQ(ierr);
   ierr = MatAXPY(Aher,1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* Aher = A + A^T */
-  if (!rank) { /* add 100.0 to diagonals of Aher to make it spd */
+  if(!rank) { /* add 100.0 to diagonals of Aher to make it spd */
+
+    /* TODO: Replace this with a call to El::ShiftDiagonal( A, 100. ),
+             or at least pre-allocate the right amount of space */
     PetscInt M,N;
     ierr = MatGetSize(Aher,&M,&N);CHKERRQ(ierr);
     for (i=0; i<M; i++) {

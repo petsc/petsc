@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   prid = size;
-  ierr = PetscOptionsGetInt(NULL,"-prid",&prid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-prid",&prid,NULL);CHKERRQ(ierr);
 
   m    = n = 10*size;
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);

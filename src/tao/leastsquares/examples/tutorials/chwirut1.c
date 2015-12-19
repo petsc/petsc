@@ -70,14 +70,11 @@ int main(int argc,char **argv)
   Tao            tao;                /* Tao solver context */
   PetscInt       i;               /* iteration information */
   PetscReal      hist[100],resid[100];
-  PetscInt       nhist,lits[100];
-  PetscBool      printhistory;
+  PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  printhistory = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-printhistory",&printhistory,0);CHKERRQ(ierr);
   /* Allocate vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f);CHKERRQ(ierr);
@@ -106,12 +103,6 @@ int main(int argc,char **argv)
   ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-  if (printhistory) {
-    ierr = TaoGetConvergenceHistory(tao,0,0,0,0,&nhist);CHKERRQ(ierr);
-    for (i=0;i<nhist;i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%g\t%g\n",(double)hist[i],(double)resid[i]);CHKERRQ(ierr);
-    }
-  }
   ierr = TaoView(tao,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Free TAO data structures */

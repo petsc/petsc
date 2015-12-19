@@ -302,7 +302,7 @@ PetscErrorCode  KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)ITG->ksp)->prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)ITG->ksp)->options,((PetscObject)ITG->ksp)->prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -470,7 +470,7 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
   PetscBool      flg   = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDrawOpenX(PetscObjectComm((PetscObject)draw),NULL,NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
     draw->popup = *popup;
@@ -776,7 +776,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
     }
   }
 
-  ierr = PetscOptionsGetRealArray(NULL,"-draw_size",sizes,&nsizes,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(((PetscObject)draw)->options,NULL,"-draw_size",sizes,&nsizes,&set);CHKERRQ(ierr);
   if (set) {
     if (sizes[0] == 1.0)      w = PETSC_DRAW_FULL_SIZE;
     else if (sizes[0] == .5)  w = PETSC_DRAW_HALF_SIZE;
@@ -805,7 +805,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   /* allow user to set location and size of window */
   xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
-  ierr = PetscOptionsGetIntArray(NULL,"-geometry",xywh,&osize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(((PetscObject)draw)->options,NULL,"-geometry",xywh,&osize,NULL);CHKERRQ(ierr);
 
   x = (int) xywh[0]; y = (int) xywh[1]; w = (int) xywh[2]; h = (int) xywh[3];
 
@@ -882,7 +882,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,"-draw_double_buffer",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,NULL,"-draw_double_buffer",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   }
