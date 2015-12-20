@@ -21,7 +21,6 @@ PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
   PetscInt       i, fbus,tbus;
 
   PetscFunctionBegin;
-  
   for (i=0; i < nbranches; i++) {
     fbus = branch[i].internal_i;
     tbus = branch[i].internal_j;
@@ -84,6 +83,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
     for (j = 0; j < numComps; j++) {
       ierr = DMNetworkGetComponentTypeOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
       if (key == 1) {
+        PetscInt       nconnedges;
+	const PetscInt *connedges;
+
 	bus = (VERTEXDATA)(arr+offsetd);
 	/* Handle reference bus constrained dofs */
 	if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
@@ -99,18 +101,19 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 	  farr[offset] += Vm*Vm*bus->gl/Sbase;
 	  if(bus->ide != PV_BUS) farr[offset+1] += -Vm*Vm*bus->bl/Sbase;
 	}
-	PetscInt nconnedges;
-	const PetscInt *connedges;
 
 	ierr = DMNetworkGetSupportingEdges(networkdm,v,&nconnedges,&connedges);CHKERRQ(ierr);
 	for (i=0; i < nconnedges; i++) {
-	  EDGEDATA branch;
-	  PetscInt keye;
+	  EDGEDATA       branch;
+	  PetscInt       keye;
+          PetscScalar    Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
+          const PetscInt *cone;
+          PetscScalar    Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
+
 	  e = connedges[i];
 	  ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&keye,&offsetd);CHKERRQ(ierr);
 	  branch = (EDGEDATA)(arr+offsetd);
 	  if (!branch->status) continue;
-	  PetscScalar Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
 	  Gff = branch->yff[0];
 	  Bff = branch->yff[1];
 	  Gft = branch->yft[0];
@@ -120,15 +123,12 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 	  Gtt = branch->ytt[0];
 	  Btt = branch->ytt[1];
 
-	  const PetscInt *cone;
 	  ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
 	  vfrom = cone[0];
 	  vto   = cone[1];
 
 	  ierr = DMNetworkGetVariableOffset(networkdm,vfrom,&offsetfrom);CHKERRQ(ierr);
 	  ierr = DMNetworkGetVariableOffset(networkdm,vto,&offsetto);CHKERRQ(ierr);
-
-	  PetscScalar Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
 
 	  thetaf = xarr[offsetfrom];
 	  Vmf     = xarr[offsetfrom+1];
@@ -171,7 +171,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   ierr = DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -221,6 +220,9 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
       ierr = DMNetworkGetVariableGlobalOffset(networkdm,v,&goffset);CHKERRQ(ierr);
       ierr = DMNetworkGetComponentTypeOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
       if (key == 1) {
+        PetscInt       nconnedges;
+	const PetscInt *connedges;
+
 	bus = (VERTEXDATA)(arr+offsetd);
 	if (!ghostvtex) {
 	  /* Handle reference bus constrained dofs */
@@ -245,19 +247,20 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
           ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
 	}
 
-	PetscInt nconnedges;
-	const PetscInt *connedges;
-
 	ierr = DMNetworkGetSupportingEdges(networkdm,v,&nconnedges,&connedges);CHKERRQ(ierr);
 	for (i=0; i < nconnedges; i++) {
-	  EDGEDATA branch;
-	  VERTEXDATA busf,bust;
-	  PetscInt   offsetfd,offsettd,keyf,keyt;
+	  EDGEDATA       branch;
+	  VERTEXDATA     busf,bust;
+	  PetscInt       offsetfd,offsettd,keyf,keyt;
+          PetscScalar    Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
+          const PetscInt *cone;
+          PetscScalar    Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
+
 	  e = connedges[i];
 	  ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&key,&offsetd);CHKERRQ(ierr);
 	  branch = (EDGEDATA)(arr+offsetd);
 	  if (!branch->status) continue;
-	  PetscScalar Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
+	  
 	  Gff = branch->yff[0];
 	  Bff = branch->yff[1];
 	  Gft = branch->yft[0];
@@ -267,7 +270,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	  Gtt = branch->ytt[0];
 	  Btt = branch->ytt[1];
 
-	  const PetscInt *cone;
 	  ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
 	  vfrom = cone[0];
 	  vto   = cone[1];
@@ -279,7 +281,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 
 	  if (goffsetfrom < 0) goffsetfrom = -goffsetfrom - 1; /* Convert to actual global offset for ghost nodes, global offset is -(gstart+1) */
 	  if (goffsetto < 0) goffsetto = -goffsetto - 1;
-	  PetscScalar Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
 
 	  thetaf = xarr[offsetfrom];
 	  Vmf     = xarr[offsetfrom+1];
@@ -317,7 +318,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	  } else {
-	    if(bust->ide != REF_BUS) {
+	    if (bust->ide != REF_BUS) {
 	      row[0] = goffsetto;
 	      col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
 	      /*    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*cos(thetatf) + Btf*sin(thetatf)); */
@@ -354,7 +355,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -369,7 +369,7 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
   PetscBool      ghostvtex;
   Vec            localX;
   PetscScalar    *xarr;
-  PetscInt       key;
+  PetscInt       key,numComps,j,offsetd;
   DMNetworkComponentGenericDataType *arr;
   
   PetscFunctionBegin;
@@ -386,9 +386,7 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghostvtex);CHKERRQ(ierr);
     if (ghostvtex) continue;
-    PetscInt numComps;
-    PetscInt j;
-    PetscInt offsetd;
+   
     ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,v,&numComps);CHKERRQ(ierr);
     for (j=0; j < numComps; j++) {
@@ -417,20 +415,27 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
 #define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
-  PetscErrorCode       ierr;
-  char                 pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
-  PFDATA               pfdata;
-  PetscInt             numEdges=0,numVertices=0;
-  int                  *edges = NULL;
-  PetscInt             i;  
-  DM                   networkdm;
-  PetscInt             componentkey[4];
-  UserCtx              User;
-  PetscLogStage        stage1,stage2;
-  PetscMPIInt          size;
+  PetscErrorCode ierr;
+  char           pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
+  PFDATA         pfdata;
+  PetscInt       numEdges=0,numVertices=0;
+  int            *edges = NULL;
+  PetscInt       i;  
+  DM             networkdm;
+  PetscInt       componentkey[4];
+  UserCtx        User;
+  PetscLogStage  stage1,stage2;
+  PetscMPIInt    size;
+  PetscInt       eStart, eEnd, vStart, vEnd,j;
+  PetscInt       genj,loadj,kk;
+  VERTEXDATA     bus;
+  GEN            gen;
+  LOAD           load;
+  Vec            X,F;
+  Mat            J;
+  SNES           snes;
 
   PetscInitialize(&argc,&argv,"pfoptions",help);
-
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Create an empty network object */
@@ -458,7 +463,7 @@ int main(int argc,char ** argv)
     ierr = GetListofEdges(pfdata.nbranch,pfdata.branch,edges);CHKERRQ(ierr);
   }
   PetscLogStagePop();
-  MPI_Barrier(PETSC_COMM_WORLD);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
   PetscLogStagePush(stage2);
   /* Set number of nodes/edges */
@@ -472,8 +477,8 @@ int main(int argc,char ** argv)
     ierr = PetscFree(edges);CHKERRQ(ierr);
   }
   /* Add network components */
-  PetscInt eStart, eEnd, vStart, vEnd,j;
-  PetscInt genj=0,loadj=0;
+  
+  genj=0; loadj=0;
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   for (i = eStart; i < eEnd; i++) {
     ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&pfdata.branch[i-eStart]);CHKERRQ(ierr);
@@ -531,10 +536,6 @@ int main(int argc,char ** argv)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Line %d ---- %d\n",rank,numComponents,edge->internal_i,edge->internal_j);CHKERRQ(ierr);
   }    
 
-  VERTEXDATA bus;
-  GEN        gen;
-  LOAD       load;
-  PetscInt   kk;
   for (i = vStart; i < vEnd; i++) {
     ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,i,&numComponents);CHKERRQ(ierr);
@@ -556,17 +557,14 @@ int main(int argc,char ** argv)
   /* Broadcast Sbase to all processors */
   ierr = MPI_Bcast(&User.Sbase,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  Vec X,F;
   ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-  Mat J;
   ierr = DMCreateMatrix(networkdm,&J);CHKERRQ(ierr);
   ierr = MatSetOption(J,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = SetInitialValues(networkdm,X,&User);CHKERRQ(ierr);
 
-  SNES snes;
   /* HOOK UP SOLVER */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
