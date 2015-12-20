@@ -21,28 +21,29 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   PetscInt       loadi=0,geni=0,bri=0,busi=0,i,j;
   int            extbusnum,bustype_i;
   double         Pd,Qd;
-  PetscInt       maxbusnum=-1,intbusnum;
+  PetscInt       maxbusnum=-1,intbusnum,*busext2intmap,genj,loadj;
+  GEN            newgen;
+  LOAD           newload;
 
   PetscFunctionBegin;
-
   fp = fopen(filename,"r");
   /* Check for valid file */
   if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open Matpower data file %s",filename);
   pf->nload=0;
   while(fgets(line,MAXLINE,fp)) {
-    if(strstr(line,"mpc.bus"))    bus_start_line = line_counter+1; /* Bus data starts from next line */
-    if(strstr(line,"mpc.gen") && gen_start_line == -1)    gen_start_line = line_counter+1; /* Generator data starts from next line */
-    if(strstr(line,"mpc.branch")) br_start_line = line_counter+1; /* Branch data starts from next line */
-    if(strstr(line,"];")) {
+    if (strstr(line,"mpc.bus"))    bus_start_line = line_counter+1; /* Bus data starts from next line */
+    if (strstr(line,"mpc.gen") && gen_start_line == -1)    gen_start_line = line_counter+1; /* Generator data starts from next line */
+    if (strstr(line,"mpc.branch")) br_start_line = line_counter+1; /* Branch data starts from next line */
+    if (strstr(line,"];")) {
       if (bus_start_line != -1 && bus_end_line == -1) bus_end_line = line_counter;
       if (gen_start_line != -1 && gen_end_line == -1) gen_end_line = line_counter;
       if (br_start_line  != -1 && br_end_line == -1) br_end_line = line_counter;
     }
 
     /* Count the number of pq loads */
-    if(bus_start_line != -1 && line_counter >= bus_start_line && bus_end_line == -1) {
+    if (bus_start_line != -1 && line_counter >= bus_start_line && bus_end_line == -1) {
       sscanf(line,"%d %d %lf %lf",&extbusnum,&bustype_i,&Pd,&Qd);
-      if(!((Pd == 0.0) && (Qd == 0.0))) pf->nload++;
+      if (!((Pd == 0.0) && (Qd == 0.0))) pf->nload++;
       if (extbusnum > maxbusnum) maxbusnum = extbusnum;
     }
     line_counter++;
@@ -68,16 +69,15 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   /* Setting pf->sbase to 100 */
   pf->sbase = 100.0;
 
-  PetscInt *busext2intmap;
   ierr = PetscMalloc1(maxbusnum+1,&busext2intmap);CHKERRQ(ierr);
-  for(i=0; i < maxbusnum+1; i++) busext2intmap[i] = -1;
+  for (i=0; i < maxbusnum+1; i++) busext2intmap[i] = -1;
 
   fp = fopen(filename,"r");
   /* Reading data */
-  for(i=0;i<line_counter;i++) {
+  for (i=0;i<line_counter;i++) {
     fgets(line,MAXLINE,fp);
 
-    if((i >= bus_start_line) && (i < bus_end_line)) {
+    if ((i >= bus_start_line) && (i < bus_end_line)) {
       double gl,bl,vm,va,basekV;
       int    bus_i,ide,area;
       /* Bus data */
@@ -90,7 +90,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
       Bus[busi].internal_i = busi;
       busext2intmap[Bus[busi].bus_i] = busi;
 
-      if(!((Pd == 0.0) && (Qd == 0.0))) {
+      if (!((Pd == 0.0) && (Qd == 0.0))) {
 	Load[loadi].bus_i = Bus[busi].bus_i;
 	Load[loadi].status = 1;
 	Load[loadi].pl = Pd;
@@ -106,7 +106,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
     }
 
     /* Read generator data */
-    if(i >= gen_start_line && i < gen_end_line) {
+    if (i >= gen_start_line && i < gen_end_line) {
       double pg,qg,qt,qb,vs,mbase,pt,pb;
       int    bus_i,status;
       sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d %lf %lf",&bus_i, \
@@ -126,9 +126,10 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
       geni++;
     }
     
-    if(i >= br_start_line && i < br_end_line) {
-      double r,x,b,rateA,rateB,rateC,tapratio,phaseshift;
-      int    fbus,tbus,status;
+    if (i >= br_start_line && i < br_end_line) {
+      PetscScalar R,X,Bc,B,G,Zm,tap,shift,tap2,tapr,tapi;
+      double      r,x,b,rateA,rateB,rateC,tapratio,phaseshift;
+      int         fbus,tbus,status;
       sscanf(line,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %d",&fbus,&tbus, \
 	     &r,&x,&b,&rateA,&rateB,&rateC, \
 	     &tapratio,&phaseshift,&status);
@@ -147,7 +148,6 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
       Branch[bri].internal_j = intbusnum;
 
       /* Compute self and transfer admittances */
-      PetscScalar R,X,Bc,B,G,Zm,tap,shift,tap2,tapr,tapi;
       R = Branch[bri].r;
       X = Branch[bri].x;
       Bc = Branch[bri].b;
@@ -180,9 +180,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   fclose(fp);
   
   /* Reorder the generator data structure according to bus numbers */
-  GEN  newgen;
-  LOAD newload;
-  PetscInt genj=0,loadj=0;
+  genj=0; loadj=0;
   ierr = PetscMalloc(pf->ngen*sizeof(struct _p_GEN),&newgen);CHKERRQ(ierr);
   ierr = PetscMalloc(pf->nload*sizeof(struct _p_LOAD),&newload);CHKERRQ(ierr);
   for (i = 0; i < pf->nbus; i++) {
