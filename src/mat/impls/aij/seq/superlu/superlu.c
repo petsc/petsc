@@ -166,17 +166,17 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:cgssvx",cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
     PetscStackCall("SuperLU:zgssvx",zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:sgssvx",sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
     PetscStackCall("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
@@ -189,17 +189,17 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:cgsisx",cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
     PetscStackCall("SuperLU:zgsisx",zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:sgsisx",sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
     PetscStackCall("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
@@ -357,17 +357,17 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:cgssvx",cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
     PetscStackCall("SuperLU:zgssvx",zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:sgssvx",sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
     PetscStackCall("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
@@ -379,17 +379,17 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:cgsisx",cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
     PetscStackCall("SuperLU:zgsisx",zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:sgsisx",sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
     PetscStackCall("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
