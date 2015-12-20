@@ -290,9 +290,6 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
   ierr = PetscOptionsFList("-tstrajectory_type","TSTrajectory method"," TSTrajectorySetType",TSTrajectoryList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrcmp(typeName,TSTRAJECTORYMEMORY,&flg);
-    //if (flg) { /* ts_max_steps determines memory allocated */
-    //  ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
-    //}
     ierr = TSTrajectorySetType(tj,ts,typeName);CHKERRQ(ierr);
   } else {
     ierr = TSTrajectorySetType(tj,ts,defaultType);CHKERRQ(ierr);

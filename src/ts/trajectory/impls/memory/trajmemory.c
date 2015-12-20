@@ -265,6 +265,7 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *stack,PetscInt id)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_REVOLVE
 #undef __FUNCT__
 #define __FUNCT__ "StackLoadLast"
 static PetscErrorCode StackLoadLast(TS ts,Stack *stack,PetscInt id)
@@ -273,7 +274,9 @@ static PetscErrorCode StackLoadLast(TS ts,Stack *stack,PetscInt id)
   PetscInt       size;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
+#if defined(PETSC_HAVE_MPIIO)
   PetscBool      usempiio;
+#endif
   int            fd;
   off_t          off,offset;
   PetscErrorCode ierr;
@@ -287,21 +290,25 @@ static PetscErrorCode StackLoadLast(TS ts,Stack *stack,PetscInt id)
 
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetUseMPIIO(viewer,&usempiio);
   if (usempiio) {
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,(MPI_File*)&fd);CHKERRQ(ierr);
     ierr = PetscBinarySynchronizedSeek(PETSC_COMM_WORLD,fd,off,PETSC_BINARY_SEEK_END,&offset);CHKERRQ(ierr);
   } else {
+#endif
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
     ierr = PetscBinarySeek(fd,off,PETSC_BINARY_SEEK_END,&offset);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
   }
-
+#endif
   /* load the last step into TS */
   ierr = ReadFromDisk(&ts->total_steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,ts->ptime_prev-ts->ptime);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DumpSingle"
