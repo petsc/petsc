@@ -689,11 +689,13 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         conn->tree_to_face[P4EST_FACES * (p - cStart) + PetscFaceToP4estFace[i]] = (int8_t) PetscFaceToP4estFace[i];
       }
       else {
+        const PetscInt N = P4EST_CHILDREN / 2;
+
         conn->tree_to_tree[P4EST_FACES * (p - cStart) + PetscFaceToP4estFace[i]] = supp[1 - s] - cStart;
         myFace[s] = PetscFaceToP4estFace[i];
         /* get the orientation of cell p in p4est-type closure to facet f, by composing the p4est-closure to
          * petsc-closure permutation and the petsc-closure to facet orientation */
-        myOrnt[s] = DihedralCompose((P4EST_CHILDREN/2),P4estFaceToPetscOrnt[myFace[s]],orient);
+        myOrnt[s] = DihedralCompose(N,orient,P4estFaceToPetscOrnt[myFace[s]]);
       }
     }
     if (numSupp == 2) {
@@ -701,10 +703,11 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         PetscInt p = supp[s];
         PetscInt orntAtoB;
         PetscInt p4estOrient;
+        const PetscInt N = P4EST_CHILDREN / 2;
 
         /* composing the forward permutation with the other cell's inverse permutation gives the self-to-neighbor
          * permutation of this cell-facet's cone */
-        orntAtoB = DihedralCompose((P4EST_CHILDREN/2),myOrnt[s],DihedralInvert((P4EST_CHILDREN/2),myOrnt[1-s]));
+        orntAtoB = DihedralCompose(N,DihedralInvert(N,myOrnt[1-s]),myOrnt[s]);
 
         /* convert cone-description permutation (i.e., edges around facet) to cap-description permutation (i.e.,
          * vertices around facet) */
@@ -712,7 +715,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         p4estOrient = orntAtoB < 0 ? -(orntAtoB + 1) : orntAtoB;
 #else
         {
-          PetscInt firstVert = orntAtoB < 0 ? ((-orntAtoB) % (P4EST_CHILDREN/2)): orntAtoB;
+          PetscInt firstVert = orntAtoB < 0 ? ((-orntAtoB) % N): orntAtoB;
           PetscInt p4estFirstVert = firstVert < 2 ? firstVert : (firstVert ^ 1);
 
                                                                                            /* swap bits */
@@ -750,7 +753,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
             PetscInt totalOrient;
 
             /* compose p4est-closure to petsc-closure permutation and petsc-closure to edge orientation */
-            totalOrient = DihedralCompose(2,P4estEdgeToPetscOrnt[p4estEdge],cellOrnt);
+            totalOrient = DihedralCompose(2,cellOrnt,P4estEdgeToPetscOrnt[p4estEdge]);
             /* p4est orientations are positive: -2 => 1, -1 => 0 */
             totalOrient = (totalOrient < 0) ? -(totalOrient + 1) : totalOrient;
             conn->edge_to_tree[off] = (p4est_locidx_t) (p - cStart);
