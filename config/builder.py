@@ -410,6 +410,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                # tensor
                                                                {'num': 'tensor_plex_2d', 'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine_hierarchy 2'},
                                                                {'num': 'tensor_p4est_2d', 'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine_hierarchy 2 -dm_plex_convert_type p4est'},
+                                                               {'num': 'tensor_plex_3d', 'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine_hierarchy 1 -dim 3'},
+                                                               {'num': 'tensor_p4est_3d', 'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine_hierarchy 1 -dim 3 -dm_plex_convert_type p8est'},
                                                                ],
                         'src/snes/examples/tutorials/ex33':   [{'numProcs': 1, 'args': '-snes_converged_reason -snes_monitor_short'}],
                         'src/snes/examples/tutorials/ex36':   [# 2D serial P2/P1 tests 0-1
