@@ -14,7 +14,7 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
   PipeField      *x;
   PetscInt       i,start,n;
   Vec            local;
-  const PetscScalar *coords,c=pipe->R/(GRAV*pipe->A);
+  PetscScalar    *coords,c=pipe->R/(GRAV*pipe->A);
 
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(pipe->da, &cda);CHKERRQ(ierr);
@@ -36,7 +36,7 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
 /* Function evalutions for PIPE    */
 /*-------------------------------- */
 /* consider using a one-sided higher order fd derivative at boundary. */
-static inline PetscReal dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
+PETSC_STATIC_INLINE PetscReal dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
 {
   if (i == 0) {
     return (x[i+1].q - x[i].q) / dx;
@@ -47,7 +47,7 @@ static inline PetscReal dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx
   }
 }
 
-static inline PetscReal dhdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
+PETSC_STATIC_INLINE PetscReal dhdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
 {
   if (i == 0) {
     return (x[i+1].h - x[i].h) / dx;
