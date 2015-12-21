@@ -25,7 +25,7 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
   
   for (i = start; i < start + n; i++) {
     x[i].q = Q0;
-    x[i].h = H0 - c * Q0 * fabs(Q0) * coords[i];
+    x[i].h = H0 - c * Q0 * PetscAbsScalar(Q0) * coords[i];
   }
 
   ierr = DMDAVecRestoreArray(pipe->da, pipe->x, &x);CHKERRQ(ierr);
@@ -36,7 +36,7 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
 /* Function evalutions for PIPE    */
 /*-------------------------------- */
 /* consider using a one-sided higher order fd derivative at boundary. */
-PETSC_STATIC_INLINE PetscReal dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
+PETSC_STATIC_INLINE PetscScalar dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
 {
   if (i == 0) {
     return (x[i+1].q - x[i].q) / dx;
@@ -47,7 +47,7 @@ PETSC_STATIC_INLINE PetscReal dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscR
   }
 }
 
-PETSC_STATIC_INLINE PetscReal dhdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
+PETSC_STATIC_INLINE PetscScalar dhdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
 {
   if (i == 0) {
     return (x[i+1].h - x[i].h) / dx;
@@ -77,7 +77,7 @@ PetscErrorCode PipeIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,PipeField 
     } else {
       qavg = (x[i+1].q + x[i-1].q)/2.0; /* ok for single pipe with DM_BOUNDARY_GHOSTED, but mem corrupt for pipes! */
     }
-    f[i].q = xdot[i].q + GRAV * pipe->A * dhdx(x, i, ilast, dx) + pipe->R * qavg * fabs(qavg);
+    f[i].q = xdot[i].q + GRAV * pipe->A * dhdx(x, i, ilast, dx) + pipe->R * qavg * PetscAbsScalar(qavg);
     f[i].h = xdot[i].h + c * dqdx(x, i, ilast, dx);
   }
 

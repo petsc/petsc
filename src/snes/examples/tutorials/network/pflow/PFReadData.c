@@ -138,7 +138,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
       Branch[bri].rateA = rateA; Branch[bri].rateB = rateB; Branch[bri].rateC = rateC;
       Branch[bri].tapratio = tapratio; Branch[bri].phaseshift = phaseshift;
 
-      if(!Branch[bri].tapratio) Branch[bri].tapratio = 1.0;
+      if(Branch[bri].tapratio == 0.0) Branch[bri].tapratio = 1.0;
       Branch[bri].phaseshift *= PETSC_PI/180.0;
 
       intbusnum = busext2intmap[Branch[bri].fbus];
