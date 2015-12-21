@@ -71,7 +71,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
     PetscInt    i,j,offsetd,key;
     PetscScalar Vm;
     PetscScalar Sbase=User->Sbase;
-    VERTEXDATA  bus;
+    VERTEXDATA  bus=NULL;
     GEN         gen;
     LOAD        load;
     PetscBool   ghostvtex;
@@ -160,7 +160,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 	}
       }
     }
-    if (bus->ide == PV_BUS) {
+    if (bus && bus->ide == PV_BUS) {
       farr[offset+1] = xarr[offset+1] - bus->vm;
     }
   }

@@ -17,50 +17,50 @@ pipes1: pipes1.o $(OBJECTS_PIPE) chkopts
 
 #--------------------------------------
 runpipes1:
-	-@${MPIEXEC} -n 1 ./pipes1 -ts_monitor -snes_converged_reason -case 1 -ts_max_steps 1 -nox > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 1 -ts_max_steps 1 -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_1.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 # parallel runs with '--with-64-bit-indices' fails, likely caused by partitioner packages. 
 runpipes1_2:
-	-@${MPIEXEC} -n 2 ./pipes1 -ts_monitor -snes_converged_reason -case 1 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 1 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_1.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 runpipes1_3:
-	-@${MPIEXEC} -n 4 ./pipes1 -ts_monitor -snes_converged_reason -case 1 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 4 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 1 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_1.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 
 runpipes1_4:
-	-@${MPIEXEC} -n 1 ./pipes1 -ts_monitor -snes_converged_reason -case 0 -ts_max_steps 1 -nox > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 0 -ts_max_steps 1 -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_4.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 runpipes1_5:
-	-@${MPIEXEC} -n 2 ./pipes1 -ts_monitor -snes_converged_reason -case 0 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 0 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_4.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 runpipes1_6:
-	-@${MPIEXEC} -n 4 ./pipes1 -ts_monitor -snes_converged_reason -case 0 -ts_max_steps 1 -nox -petscpartitioner_type simple > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 4 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 0 -ts_max_steps 1 -nox -petscpartitioner_type simple > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_4.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_6, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 
 runpipes1_7:
-	-@${MPIEXEC} -n 1 ./pipes1 -ts_monitor -snes_converged_reason -case 2 -ts_max_steps 1 -nox > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 2 -ts_max_steps 1 -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_7.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_7, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 runpipes1_8:
-	-@${MPIEXEC} -n 2 ./pipes1 -ts_monitor -snes_converged_reason -case 2 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 2 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_7.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_8, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 runpipes1_9:
-	-@${MPIEXEC} -n 4 ./pipes1 -ts_monitor -snes_converged_reason -case 2 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
+	-@${MPIEXEC} -n 4 ./pipes1 -ts_monitor -snes_rtol 1.e-4 -snes_converged_reason -case 2 -ts_max_steps 1 -petscpartitioner_type simple -nox > pipes1.tmp 2>&1;\
 	   if (${DIFF} output/pipes1_7.out pipes1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pipes1_9, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
