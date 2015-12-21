@@ -240,7 +240,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
           row[0] = goffset; row[1] = goffset+1;
           col[0] = goffset; col[1] = goffset+1;
           values[0] = values[1] = values[2] = values[3] = 0.0;
-          if(bus->ide != PV_BUS) {
+          if (bus->ide != PV_BUS) {
             values[1] = 2*Vm*bus->gl/Sbase;
             values[3] = -2*Vm*bus->bl/Sbase;
           }
@@ -427,10 +427,7 @@ int main(int argc,char ** argv)
   PetscLogStage  stage1,stage2;
   PetscMPIInt    size;
   PetscInt       eStart, eEnd, vStart, vEnd,j;
-  PetscInt       genj,loadj,kk;
-  VERTEXDATA     bus;
-  GEN            gen;
-  LOAD           load;
+  PetscInt       genj,loadj;
   Vec            X,F;
   Mat            J;
   SNES           snes;
@@ -526,8 +523,12 @@ int main(int argc,char ** argv)
 #if 0
   PetscInt numComponents;
   EDGEDATA edge;
-  PetscInt offset,key;
+  PetscInt offset,key,kk;
   DMNetworkComponentGenericDataType *arr;
+  VERTEXDATA     bus;
+  GEN            gen;
+  LOAD           load;
+   
   for (i = eStart; i < eEnd; i++) {
     ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
     ierr = DMNetworkGetComponentTypeOffset(networkdm,i,0,&key,&offset);CHKERRQ(ierr);
