@@ -2102,10 +2102,10 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
   PetscSection      section, globalSection, sectionAux;
   PetscFECellGeom  *cgeom = NULL;
   PetscScalar      *cgeomScal;
-  PetscScalar      *elemMat, *u, *u_t, *a = NULL;
+  PetscScalar      *elemMat, *elemMatP, *u, *u_t, *a = NULL;
   PetscInt          dim, Nf, f, fieldI, fieldJ, numCells, c;
   PetscInt          totDim, totDimBd, totDimAux, numBd, bd;
-  PetscBool         isShell;
+  PetscBool         isShell, hasPrec;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -2116,6 +2116,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscDSGetTotalBdDimension(prob, &totDimBd);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
@@ -2128,7 +2129,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
   }
   ierr = DMPlexInsertBoundaryValues(dm, X, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,numCells*totDim*totDim,&elemMat);CHKERRQ(ierr);
+  ierr = PetscMalloc4(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,numCells*totDim*totDim,&elemMat,hasPrec ? numCells*totDim*totDim : 0, &elemMatP);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
   ierr = DMPlexSNESGetGeometryFEM(dm, &cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(cellgeom, &cgeomScal);CHKERRQ(ierr);
@@ -2166,6 +2167,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     }
   }
   ierr = PetscMemzero(elemMat, numCells*totDim*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
+  if (hasPrec) {ierr = PetscMemzero(elemMatP, numCells*totDim*totDim * sizeof(PetscScalar));CHKERRQ(ierr);}
   for (fieldI = 0; fieldI < Nf; ++fieldI) {
     PetscFE  fe;
     PetscInt numQuadPoints, Nb;
@@ -2187,13 +2189,24 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     Nr        = numCells % (numBatches*batchSize);
     offset    = numCells - Nr;
     for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
-      ierr = PetscFEIntegrateJacobian(fe, prob, fieldI, fieldJ, Ne, cgeom, u, u_t, probAux, a, elemMat);CHKERRQ(ierr);
-      ierr = PetscFEIntegrateJacobian(fe, prob, fieldI, fieldJ, Nr, &cgeom[offset], &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateJacobian(fe, prob, PETSC_FALSE, fieldI, fieldJ, Ne, cgeom, u, u_t, probAux, a, elemMat);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateJacobian(fe, prob, PETSC_FALSE, fieldI, fieldJ, Nr, &cgeom[offset], &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
+      if (hasPrec) {
+        ierr = PetscFEIntegrateJacobian(fe, prob, PETSC_TRUE, fieldI, fieldJ, Ne, cgeom, u, u_t, probAux, a, elemMatP);CHKERRQ(ierr);
+        ierr = PetscFEIntegrateJacobian(fe, prob, PETSC_TRUE, fieldI, fieldJ, Nr, &cgeom[offset], &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], &elemMatP[offset*totDim*totDim]);CHKERRQ(ierr);
+      }
     }
   }
   for (c = cStart; c < cEnd; ++c) {
-    if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(c, name, totDim, totDim, &elemMat[(c-cStart)*totDim*totDim]);CHKERRQ(ierr);}
-    ierr = DMPlexMatSetClosure(dm, section, globalSection, JacP, c, &elemMat[(c-cStart)*totDim*totDim], ADD_VALUES);CHKERRQ(ierr);
+    if (hasPrec) {
+      if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(c, name, totDim, totDim, &elemMat[(c-cStart)*totDim*totDim]);CHKERRQ(ierr);}
+      ierr = DMPlexMatSetClosure(dm, section, globalSection, Jac, c, &elemMat[(c-cStart)*totDim*totDim], ADD_VALUES);CHKERRQ(ierr);
+      if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(c, name, totDim, totDim, &elemMatP[(c-cStart)*totDim*totDim]);CHKERRQ(ierr);}
+      ierr = DMPlexMatSetClosure(dm, section, globalSection, JacP, c, &elemMatP[(c-cStart)*totDim*totDim], ADD_VALUES);CHKERRQ(ierr);
+    } else {
+      if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(c, name, totDim, totDim, &elemMat[(c-cStart)*totDim*totDim]);CHKERRQ(ierr);}
+      ierr = DMPlexMatSetClosure(dm, section, globalSection, JacP, c, &elemMat[(c-cStart)*totDim*totDim], ADD_VALUES);CHKERRQ(ierr);
+    }
   }
   if (sizeof(PetscFECellGeom) % sizeof(PetscScalar)) {
     ierr = PetscFree(cgeom);CHKERRQ(ierr);
@@ -2202,7 +2215,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     cgeom = NULL;
   }
   ierr = VecRestoreArray(cellgeom, &cgeomScal);CHKERRQ(ierr);
-  ierr = PetscFree3(u,u_t,elemMat);CHKERRQ(ierr);
+  ierr = PetscFree4(u,u_t,elemMat,elemMatP);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscFree(a);CHKERRQ(ierr);}
   ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
