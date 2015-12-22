@@ -1,5 +1,6 @@
 
 #include <petsc/private/pcimpl.h>
+#include <petsc/private/dmimpl.h>
 #include <petscksp.h>           /*I "petscksp.h" I*/
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -419,6 +420,9 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
 
     ierr = DMDAGetInfo(ctx->dmrepart,NULL,NULL,NULL,NULL,&ctx->Mp_re,&ctx->Np_re,&ctx->Pp_re,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = DMDAGetOwnershipRanges(ctx->dmrepart,&_range_i_re,&_range_j_re,&_range_k_re);CHKERRQ(ierr);
+
+    ctx->dmrepart->ops->creatematrix = dm->ops->creatematrix;
+    ctx->dmrepart->ops->createdomaindecomposition = dm->ops->createdomaindecomposition;
   }
 
   /* generate ranges for repartitioned dm */
