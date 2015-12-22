@@ -453,8 +453,13 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  lu->options.Trans = TRANS;
+  if (A->errortype) {
+    ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
+    ierr = VecSetInf(x);CHKERRQ(ierr); 
+    PetscFunctionReturn(0);
+  }
 
+  lu->options.Trans = TRANS;
   ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -467,8 +472,13 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  lu->options.Trans = NOTRANS;
+  if (A->errortype) {
+    ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
+    ierr = VecSetInf(x);CHKERRQ(ierr); 
+    PetscFunctionReturn(0);
+  }
 
+  lu->options.Trans = NOTRANS;
   ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
