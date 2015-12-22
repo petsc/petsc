@@ -1,5 +1,4 @@
 Setup pipesCase 2
 0 TS dt 0.1 time 0.
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 1 TS dt 0.1 time 0.1
 CONVERGED_ITS at time 0.1 after 1 steps
