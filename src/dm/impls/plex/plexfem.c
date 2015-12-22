@@ -1479,44 +1479,26 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
   if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(0, name, rTotDim, cTotDim, elemMat);CHKERRQ(ierr);}
   /* Preallocate matrix */
   {
-    PetscHashJK ht;
-    PetscLayout rLayout;
-    PetscInt   *dnz, *onz, *cellCIndices, *cellFIndices;
-    PetscInt    locRows, rStart, rEnd, cell, r;
+    Mat          preallocator;
+    PetscScalar *vals;
+    PetscInt    *cellCIndices, *cellFIndices;
+    PetscInt     locRows, locCols, cell;
 
-    ierr = MatGetLocalSize(In, &locRows, NULL);CHKERRQ(ierr);
-    ierr = PetscLayoutCreate(PetscObjectComm((PetscObject) In), &rLayout);CHKERRQ(ierr);
-    ierr = PetscLayoutSetLocalSize(rLayout, locRows);CHKERRQ(ierr);
-    ierr = PetscLayoutSetBlockSize(rLayout, 1);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(rLayout);CHKERRQ(ierr);
-    ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(&rLayout);CHKERRQ(ierr);
-    ierr = PetscCalloc4(locRows,&dnz,locRows,&onz,cTotDim,&cellCIndices,rTotDim,&cellFIndices);CHKERRQ(ierr);
-    ierr = PetscHashJKCreate(&ht);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(In, &locRows, &locCols);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject) In), &preallocator);CHKERRQ(ierr);
+    ierr = MatSetType(preallocator, MATPREALLOCATOR);CHKERRQ(ierr);
+    ierr = MatSetSizes(preallocator, locRows, locCols, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+    ierr = PetscCalloc3(rTotDim*cTotDim, &vals,cTotDim,&cellCIndices,rTotDim,&cellFIndices);CHKERRQ(ierr);
     for (cell = cStart; cell < cEnd; ++cell) {
       ierr = DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, cell, cellCIndices, cellFIndices);CHKERRQ(ierr);
-      for (r = 0; r < rTotDim; ++r) {
-        PetscHashJKKey  key;
-        PetscHashJKIter missing, iter;
-
-        key.j = cellFIndices[r];
-        if (key.j < 0) continue;
-        for (c = 0; c < cTotDim; ++c) {
-          key.k = cellCIndices[c];
-          if (key.k < 0) continue;
-          ierr = PetscHashJKPut(ht, key, &missing, &iter);CHKERRQ(ierr);
-          if (missing) {
-            ierr = PetscHashJKSet(ht, iter, 1);CHKERRQ(ierr);
-            if ((key.k >= rStart) && (key.k < rEnd)) ++dnz[key.j-rStart];
-            else                                     ++onz[key.j-rStart];
-          }
-        }
-      }
+      ierr = MatSetValues(preallocator, rTotDim, cellFIndices, cTotDim, cellCIndices, vals, INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = PetscHashJKDestroy(&ht);CHKERRQ(ierr);
-    ierr = MatXAIJSetPreallocation(In, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
-    ierr = MatSetOption(In, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscFree4(dnz,onz,cellCIndices,cellFIndices);CHKERRQ(ierr);
+    ierr = PetscFree3(vals,cellCIndices,cellFIndices);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(preallocator, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(preallocator, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatPreallocatorPreallocate(preallocator, PETSC_TRUE, In);CHKERRQ(ierr);
+    ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
   }
   /* Fill matrix */
   ierr = MatZeroEntries(In);CHKERRQ(ierr);
