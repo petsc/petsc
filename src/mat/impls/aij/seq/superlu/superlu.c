@@ -209,19 +209,39 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   if (!sinfo || sinfo == lu->A.ncol+1) {
     if (lu->options.PivotGrowth) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);CHKERRQ(ierr);
     }
     if (lu->options.ConditionNumber) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);CHKERRQ(ierr);
     }
-  } else if (sinfo > 0) {
-    if (lu->lwork == -1) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", sinfo - lu->A.ncol);
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
+  } else if (sinfo > 0) { 
+    if (A->erroriffailure) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
+    } else {
+      if (sinfo <= lu->A.ncol) {
+        if (lu->options.ILU_FillTol == 0.0) {
+          F->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        }
+        ierr = PetscInfo2(F,"Number of zero pivots %D, ILU_FillTol %g\n",sinfo,lu->options.ILU_FillTol);CHKERRQ(ierr);
+      } else if (sinfo == lu->A.ncol + 1) {
+        /* 
+         U is nonsingular, but RCOND is less than machine
+ 		      precision, meaning that the matrix is singular to
+ 		      working precision. Nevertheless, the solution and
+ 		      error bounds are computed because there are a number
+ 		      of situations where the computed solution can be more
+ 		      accurate than the value of RCOND would suggest.
+         */
+        ierr = PetscInfo1(F,"Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %D",sinfo);CHKERRQ(ierr);
+      } else { /* sinfo > lu->A.ncol + 1 */
+        F->errortype = MAT_FACTOR_OUTMEMORY;
+        ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %D\n",sinfo);CHKERRQ(ierr);
+      }
+    }
   } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo);
 
   if (lu->options.PrintStat) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n");CHKERRQ(ierr);
     PetscStackCall("SuperLU:StatPrint",StatPrint(&lu->stat));
     Lstore = (SCformat*) lu->L.Store;
     Ustore = (NCformat*) lu->U.Store;
