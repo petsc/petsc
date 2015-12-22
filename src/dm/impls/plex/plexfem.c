@@ -1538,6 +1538,8 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
 @*/
 PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *user)
 {
+  DM_Plex       *mesh = (DM_Plex *) dmf->data;
+  const char    *name = "Interpolator";
   PetscDS        prob;
   PetscSection   fsection, csection, globalFSection, globalCSection;
   PetscHashJK    ht;
@@ -1723,8 +1725,8 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices);CHKERRQ(ierr);CHKERRQ(ierr);
           /* Transform points from real space to coarse reference space */
           ierr = DMPlexComputeCellGeometryFEM(dmc, coarseCells[ccell], NULL, v0c, Jc, invJc, &detJc);CHKERRQ(ierr);
+          for (d = 0; d < dim; ++d) pVReal[d] = PetscRealPart(pV[ccell*dim+d]);
           CoordinatesRealToRef(dim, dim, v0c, invJc, pVReal, x);
-          for (d = 0; d < dim; ++d) pV[ccell*dim+d] = pVReal[d];
 
           if (id == PETSCFE_CLASSID) {
             PetscFE    fe = (PetscFE) obj;
@@ -1745,6 +1747,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
             }
           }
           /* Update interpolator */
+          if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(cell, name, Nc, numCIndices, elemMat);CHKERRQ(ierr);}
           ierr = MatSetValues(In, Nc, &findices[i*Nc], numCIndices, cindices, elemMat, INSERT_VALUES);CHKERRQ(ierr);
           ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices);CHKERRQ(ierr);CHKERRQ(ierr);
         }
