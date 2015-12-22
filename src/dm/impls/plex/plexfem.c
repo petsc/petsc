@@ -1775,7 +1775,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   IS             fis, cis;
   PetscSection   fsection, fglobalSection, csection, cglobalSection;
   PetscInt      *cmap, *cellCIndices, *cellFIndices, *cindices, *findices;
-  PetscInt       cTotDim, fTotDim = 0, Nf, f, field, cStart, cEnd, cEndInterior, c, dim, d, startC, offsetC, offsetF, m;
+  PetscInt       cTotDim, fTotDim = 0, Nf, f, field, cStart, cEnd, cEndInterior, c, dim, d, startC, endC, offsetC, offsetF, m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1885,7 +1885,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 
   ierr = DMGetGlobalVector(dmf, &fv);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmc, &cv);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(cv, &startC, NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(cv, &startC, &endC);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(cglobalSection, &m);CHKERRQ(ierr);
   ierr = PetscMalloc2(cTotDim,&cellCIndices,fTotDim,&cellFIndices);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&cindices);CHKERRQ(ierr);
@@ -1894,7 +1894,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   for (c = cStart; c < cEnd; ++c) {
     ierr = DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, c, cellCIndices, cellFIndices);CHKERRQ(ierr);
     for (d = 0; d < cTotDim; ++d) {
-      if (cellCIndices[d] < 0) continue;
+      if ((cellCIndices[d] < startC) || (cellCIndices[d] >= endC)) continue;
       if ((findices[cellCIndices[d]-startC] >= 0) && (findices[cellCIndices[d]-startC] != cellFIndices[cmap[d]])) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Coarse dof %d maps to both %d and %d", cindices[cellCIndices[d]-startC], findices[cellCIndices[d]-startC], cellFIndices[cmap[d]]);
       cindices[cellCIndices[d]-startC] = cellCIndices[d];
       findices[cellCIndices[d]-startC] = cellFIndices[cmap[d]];
