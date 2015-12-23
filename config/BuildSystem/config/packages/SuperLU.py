@@ -74,19 +74,3 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.postInstall(output+err,'make.inc')
     return self.installDir
-
-  def consistencyChecks(self):
-    config.package.Package.consistencyChecks(self)
-    if self.argDB['with-'+self.package]:
-      if not self.blasLapack.checkForRoutine('slamch'):
-        raise RuntimeError('SuperLU requires the LAPACK routine slamch()')
-      self.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
-
-      if not self.blasLapack.checkForRoutine('dlamch'):
-        raise RuntimeError('SuperLU requires the LAPACK routine dlamch()')
-      self.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
-
-      if not self.blasLapack.checkForRoutine('xerbla'):
-        raise RuntimeError('SuperLU requires the BLAS routine xerbla()')
-      self.log.write('Found xerbla() in BLAS library as needed by SuperLU\n')
-    return
