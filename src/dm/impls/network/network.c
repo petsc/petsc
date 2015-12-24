@@ -260,15 +260,15 @@ PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 @*/
 PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,void* compvalue)
 {
-  DM_Network     *network = (DM_Network*)dm->data;
-  DMNetworkComponent component=network->component[componentkey];
-  DMNetworkComponentHeader header=&network->header[p];
-  DMNetworkComponentValue  cvalue=&network->cvalue[p];
-  PetscErrorCode         ierr;
+  DM_Network               *network = (DM_Network*)dm->data;
+  DMNetworkComponent       *component = &network->component[componentkey];
+  DMNetworkComponentHeader header = &network->header[p];
+  DMNetworkComponentValue  cvalue = &network->cvalue[p];
+  PetscErrorCode           ierr;
   
   PetscFunctionBegin;
-  header->size[header->ndata] = component.size;
-  ierr = PetscSectionAddDof(network->DataSection,p,component.size);CHKERRQ(ierr);
+  header->size[header->ndata] = component->size;
+  ierr = PetscSectionAddDof(network->DataSection,p,component->size);CHKERRQ(ierr);
   header->key[header->ndata] = componentkey;
   if (header->ndata != 0) header->offset[header->ndata] = header->offset[header->ndata-1] + header->size[header->ndata-1]; 
 
