@@ -417,7 +417,7 @@ int main(int argc,char ** argv)
 {
   PetscErrorCode ierr;
   char           pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
-  PFDATA         pfdata;
+  PFDATA         *pfdata;
   PetscInt       numEdges=0,numVertices=0;
   int            *edges = NULL;
   PetscInt       i;  
@@ -450,14 +450,15 @@ int main(int argc,char ** argv)
     /*    READ DATA */
     /* Only rank 0 reads the data */
     ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
-    ierr = PFReadMatPowerData(&pfdata,pfdata_file);CHKERRQ(ierr);
-    User.Sbase = pfdata.sbase;
+    ierr = PetscNew(&pfdata);CHKERRQ(ierr);
+    ierr = PFReadMatPowerData(pfdata,pfdata_file);CHKERRQ(ierr);
+    User.Sbase = pfdata->sbase;
 
-    numEdges = pfdata.nbranch;
-    numVertices = pfdata.nbus;
+    numEdges = pfdata->nbranch;
+    numVertices = pfdata->nbus;
 
     ierr = PetscMalloc(2*numEdges*sizeof(int),&edges);CHKERRQ(ierr);
-    ierr = GetListofEdges(pfdata.nbranch,pfdata.branch,edges);CHKERRQ(ierr);
+    ierr = GetListofEdges(pfdata->nbranch,pfdata->branch,edges);CHKERRQ(ierr);
   }
   PetscLogStagePop();
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -478,19 +479,19 @@ int main(int argc,char ** argv)
   genj=0; loadj=0;
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   for (i = eStart; i < eEnd; i++) {
-    ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&pfdata.branch[i-eStart]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&pfdata->branch[i-eStart]);CHKERRQ(ierr);
   }
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
   for (i = vStart; i < vEnd; i++) {
-    ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&pfdata.bus[i-vStart]);CHKERRQ(ierr);
-    if (pfdata.bus[i-vStart].ngen) {
-      for (j = 0; j < pfdata.bus[i-vStart].ngen; j++) {
-	ierr = DMNetworkAddComponent(networkdm,i,componentkey[2],&pfdata.gen[genj++]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&pfdata->bus[i-vStart]);CHKERRQ(ierr);
+    if (pfdata->bus[i-vStart].ngen) {
+      for (j = 0; j < pfdata->bus[i-vStart].ngen; j++) {
+	ierr = DMNetworkAddComponent(networkdm,i,componentkey[2],&pfdata->gen[genj++]);CHKERRQ(ierr);
       }
     }
-    if (pfdata.bus[i-vStart].nload) {
-      for (j=0; j < pfdata.bus[i-vStart].nload; j++) {
-	ierr = DMNetworkAddComponent(networkdm,i,componentkey[3],&pfdata.load[loadj++]);CHKERRQ(ierr);
+    if (pfdata->bus[i-vStart].nload) {
+      for (j=0; j < pfdata->bus[i-vStart].nload; j++) {
+	ierr = DMNetworkAddComponent(networkdm,i,componentkey[3],&pfdata->load[loadj++]);CHKERRQ(ierr);
       }
     }
     /* Add number of variables */
@@ -500,10 +501,11 @@ int main(int argc,char ** argv)
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
 
   if (!rank) {
-    ierr = PetscFree(pfdata.bus);CHKERRQ(ierr);
-    ierr = PetscFree(pfdata.gen);CHKERRQ(ierr);
-    ierr = PetscFree(pfdata.branch);CHKERRQ(ierr);
-    ierr = PetscFree(pfdata.load);CHKERRQ(ierr);
+    ierr = PetscFree(pfdata->bus);CHKERRQ(ierr);
+    ierr = PetscFree(pfdata->gen);CHKERRQ(ierr);
+    ierr = PetscFree(pfdata->branch);CHKERRQ(ierr);
+    ierr = PetscFree(pfdata->load);CHKERRQ(ierr);
+    ierr = PetscFree(pfdata);CHKERRQ(ierr);
   }
 
 
