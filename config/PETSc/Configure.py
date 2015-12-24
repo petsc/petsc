@@ -720,6 +720,15 @@ prepend-path PATH %s
       self.addDefine('DEPRECATED(why)', ' ')
     self.popLanguage()
 
+  def configureAlign(self):
+    '''Check if __attribute(align) is supported'''
+    self.pushLanguage(self.languages.clanguage)
+    if self.checkCompile("""struct mystruct {int myint;} __attribute((aligned(16)));""", ''):
+      self.addDefine('ATTRIBUTEALIGNED(size)', '__attribute((aligned (size)))')
+    else:
+      self.addDefine('ATTRIBUTEALIGNED(size)', ' ')
+    self.popLanguage()
+
   def configureExpect(self):
     '''Sees if the __builtin_expect directive is supported'''
     self.pushLanguage(self.languages.clanguage)
@@ -990,6 +999,7 @@ prepend-path PATH %s
     self.executeTest(self.configureDeprecated)
     self.executeTest(self.configureIsatty)
     self.executeTest(self.configureExpect);
+    self.executeTest(self.configureAlign);
     self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)

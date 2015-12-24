@@ -13,17 +13,17 @@ struct _p_DMNetworkComponentHeader {
   PetscInt size[MAX_DATA_AT_POINT];
   PetscInt key[MAX_DATA_AT_POINT];
   PetscInt offset[MAX_DATA_AT_POINT];
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_DMNetworkComponentValue *DMNetworkComponentValue;
 struct _p_DMNetworkComponentValue {
   void* data[MAX_DATA_AT_POINT];
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct {
   char name[20];
   PetscInt size;
-}DMNetworkComponent;
+}DMNetworkComponent PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct {
   PetscInt                          refct;  /* reference count */
