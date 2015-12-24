@@ -373,7 +373,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(1,&wash);CHKERRQ(ierr);
+  ierr = PetscCalloc1(1,&wash);CHKERRQ(ierr);
   wash->comm = comm;
   *wash_ptr  = wash;
   wash->Q0   = 0.477432; /* copied from initial soluiton */
