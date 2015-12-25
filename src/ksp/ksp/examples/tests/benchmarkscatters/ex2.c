@@ -18,8 +18,9 @@ int main(int argc,char **args)
   PetscMPIInt     lrank,rank,size,i;
   Vec             x,y;
   VecScatter      vscat;
-  IS              is;
+  IS              isstride,isblock;
   PetscViewer     singleton;
+  PetscInt        indices[] = {0,1,2};
   
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -35,16 +36,19 @@ int main(int argc,char **args)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&x);CHKERRQ(ierr);
-  ierr = VecSetValue(x,rank,(PetscScalar)(rank+10),INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&x);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(x,2);CHKERRQ(ierr);
+  ierr = VecSetValue(x,2*rank,(PetscScalar)(2*rank+10),INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecSetValue(x,2*rank+1,(PetscScalar)(2*rank+1+10),INSERT_VALUES);CHKERRQ(ierr);  
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   
-  ierr = VecCreateSeq(PETSC_COMM_SELF,3,&y);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,3,0,1,&is);CHKERRQ(ierr);
-  ierr = ISToGeneral(is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(x,is,y,is,&vscat);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,6,&y);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(y,2);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,6,0,1,&isstride);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,2,3,indices,PETSC_COPY_VALUES,&isblock);CHKERRQ(ierr);  
+  ierr = VecScatterCreate(x,isblock,y,isstride,&vscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
@@ -52,7 +56,8 @@ int main(int argc,char **args)
   ierr = VecView(y,singleton);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&singleton);CHKERRQ(ierr);
   
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = ISDestroy(&isstride);CHKERRQ(ierr);
+  ierr = ISDestroy(&isblock);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   PetscFinalize();

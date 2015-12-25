@@ -34,6 +34,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = MPI_Reduce(&itmp,&alldata,1,MPIU_INT,MPI_SUM,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIPrintf(viewer,"VecScatter statistics\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Blocksize %D\n",to->bs);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number sends %D\n",nsend_max);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number receives %D\n",nrecv_max);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data sent %D\n",(int)(lensend_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
@@ -41,6 +42,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %D\n",(int)(alldata*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
 
     } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  VecScatter Blocksize %D\n",to->bs);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %D; Number to self = %D\n",rank,to->n,to->local.n);CHKERRQ(ierr);
       if (to->n) {
@@ -246,6 +248,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   ierr = PetscFree(to->sharedcnts);CHKERRQ(ierr);
   ierr = PetscFree(to->sharedspaces);CHKERRQ(ierr);
   ierr = PetscFree(to->sharedspacesoffset);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedspacerindices);CHKERRQ(ierr);
 
   ierr = PetscFree(to->local.vslots);CHKERRQ(ierr);
   ierr = PetscFree(from->local.vslots);CHKERRQ(ierr);
@@ -2420,6 +2423,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 
   /* move data into receive scatter */
   ierr = PetscMalloc2(size,&lowner,nsends+1,&start);CHKERRQ(ierr);
+  ierr = PetscCalloc1(to->msize,&to->sharedspacerindices);CHKERRQ(ierr);
   count = 0; from->starts[0] = start[0] = 0;
   for (i=0; i<size; i++) {
     if (nprocs[i]) {
@@ -2428,6 +2432,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       from->starts[count]  = start[count] = start[count-1] + nprocs[i];
       ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)i,&jj);CHKERRQ(ierr);
       if (jj > -1) {
+        to->sharedspacerindices[jj] = count - 1; /* record in list of all neighbors the location of shared neighbors */
         ierr = PetscInfo3(NULL,"[%d] Receiving values shared memory partner %d global rank %d\n",rank,jj,i);CHKERRQ(ierr);
       }
     }
