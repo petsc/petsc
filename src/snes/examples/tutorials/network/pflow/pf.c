@@ -138,11 +138,11 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 	  thetatf = thetat - thetaf;
 
 	  if (vfrom == v) {
-	    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*PetscCosReal(thetaft) + Bft*PetscSinReal(thetaft));
-	    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*PetscCosReal(thetaft) + Gft*PetscSinReal(thetaft));
+	    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft));
+	    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft));
 	  } else {
-	    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*PetscCosReal(thetatf) + Btf*PetscSinReal(thetatf));
-	    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosReal(thetatf) + Gtf*PetscSinReal(thetatf));
+	    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf));
+	    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
 	  }
 	}
       } else if (key == 2) {
@@ -296,24 +296,24 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 
 	  if (vfrom == v) {
 	    if (busf->ide != REF_BUS) {
-	      /*    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*PetscCosReal(thetaft) + Bft*PetscSinReal(thetaft));  */
+	      /*    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft));  */
 	      row[0]  = goffsetfrom;
 	      col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
-	      values[0] =  Vmf*Vmt*(Gft*-PetscSinReal(thetaft) + Bft*PetscCosReal(thetaft)); /* df_dthetaf */    
-	      values[1] =  2.0*Gff*Vmf + Vmt*(Gft*PetscCosReal(thetaft) + Bft*PetscSinReal(thetaft)); /* df_dVmf */
-	      values[2] =  Vmf*Vmt*(Gft*PetscSinReal(thetaft) + Bft*-PetscCosReal(thetaft)); /* df_dthetat */
-	      values[3] =  Vmf*(Gft*PetscCosReal(thetaft) + Bft*PetscSinReal(thetaft)); /* df_dVmt */
+	      values[0] =  Vmf*Vmt*(Gft*-PetscSinScalar(thetaft) + Bft*PetscCosScalar(thetaft)); /* df_dthetaf */    
+	      values[1] =  2.0*Gff*Vmf + Vmt*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft)); /* df_dVmf */
+	      values[2] =  Vmf*Vmt*(Gft*PetscSinScalar(thetaft) + Bft*-PetscCosScalar(thetaft)); /* df_dthetat */
+	      values[3] =  Vmf*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft)); /* df_dVmt */
 	      
 	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	    if (busf->ide != PV_BUS && busf->ide != REF_BUS) {
 	      row[0] = goffsetfrom+1;
 	      col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
-	      /*    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*PetscCosReal(thetaft) + Gft*PetscSinReal(thetaft)); */
-	      values[0] =  Vmf*Vmt*(Bft*PetscSinReal(thetaft) + Gft*PetscCosReal(thetaft));
-	      values[1] =  -2.0*Bff*Vmf + Vmt*(-Bft*PetscCosReal(thetaft) + Gft*PetscSinReal(thetaft));
-	      values[2] =  Vmf*Vmt*(-Bft*PetscSinReal(thetaft) + Gft*-PetscCosReal(thetaft));
-	      values[3] =  Vmf*(-Bft*PetscCosReal(thetaft) + Gft*PetscSinReal(thetaft));
+	      /*    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft)); */
+	      values[0] =  Vmf*Vmt*(Bft*PetscSinScalar(thetaft) + Gft*PetscCosScalar(thetaft));
+	      values[1] =  -2.0*Bff*Vmf + Vmt*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft));
+	      values[2] =  Vmf*Vmt*(-Bft*PetscSinScalar(thetaft) + Gft*-PetscCosScalar(thetaft));
+	      values[3] =  Vmf*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft));
 	      
 	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
@@ -321,22 +321,22 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	    if (bust->ide != REF_BUS) {
 	      row[0] = goffsetto;
 	      col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
-	      /*    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*PetscCosReal(thetatf) + Btf*PetscSinReal(thetatf)); */
-	      values[0] =  Vmt*Vmf*(Gtf*-PetscSinReal(thetatf) + Btf*PetscCosReal(thetaft)); /* df_dthetat */
-	      values[1] =  2.0*Gtt*Vmt + Vmf*(Gtf*PetscCosReal(thetatf) + Btf*PetscSinReal(thetatf)); /* df_dVmt */
-	      values[2] =  Vmt*Vmf*(Gtf*PetscSinReal(thetatf) + Btf*-PetscCosReal(thetatf)); /* df_dthetaf */
-	      values[3] =  Vmt*(Gtf*PetscCosReal(thetatf) + Btf*PetscSinReal(thetatf)); /* df_dVmf */
+	      /*    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); */
+	      values[0] =  Vmt*Vmf*(Gtf*-PetscSinScalar(thetatf) + Btf*PetscCosScalar(thetaft)); /* df_dthetat */
+	      values[1] =  2.0*Gtt*Vmt + Vmf*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); /* df_dVmt */
+	      values[2] =  Vmt*Vmf*(Gtf*PetscSinScalar(thetatf) + Btf*-PetscCosScalar(thetatf)); /* df_dthetaf */
+	      values[3] =  Vmt*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); /* df_dVmf */
 	      
 	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	    if (bust->ide != PV_BUS && bust->ide != REF_BUS) {
 	      row[0] = goffsetto+1;
 	      col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
-	      /*    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosReal(thetatf) + Gtf*PetscSinReal(thetatf)); */
-	      values[0] =  Vmt*Vmf*(Btf*PetscSinReal(thetatf) + Gtf*PetscCosReal(thetatf));
-	      values[1] =  -2.0*Btt*Vmt + Vmf*(-Btf*PetscCosReal(thetatf) + Gtf*PetscSinReal(thetatf));
-	      values[2] =  Vmt*Vmf*(-Btf*PetscSinReal(thetatf) + Gtf*-PetscCosReal(thetatf));
-	      values[3] =  Vmt*(-Btf*PetscCosReal(thetatf) + Gtf*PetscSinReal(thetatf));
+	      /*    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf)); */
+	      values[0] =  Vmt*Vmf*(Btf*PetscSinScalar(thetatf) + Gtf*PetscCosScalar(thetatf));
+	      values[1] =  -2.0*Btt*Vmt + Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
+	      values[2] =  Vmt*Vmf*(-Btf*PetscSinScalar(thetatf) + Gtf*-PetscCosScalar(thetatf));
+	      values[3] =  Vmt*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
 	      
 	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }

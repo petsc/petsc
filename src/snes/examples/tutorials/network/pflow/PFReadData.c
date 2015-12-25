@@ -159,8 +159,8 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
       tap = Branch[bri].tapratio;
       shift = Branch[bri].phaseshift;
       tap2 = tap*tap;
-      tapr = tap*PetscCosReal(shift);
-      tapi = tap*PetscSinReal(shift);
+      tapr = tap*PetscCosScalar(shift);
+      tapi = tap*PetscSinScalar(shift);
 
       Branch[bri].yff[0] = G/tap2; 
       Branch[bri].yff[1] = (B+Bc/2.0)/tap2;
