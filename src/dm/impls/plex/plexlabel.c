@@ -892,6 +892,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
   ierr = PetscSFDistributeSection(sf, rootSection, &remoteOffsets, leafSection);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(sf, rootSection, remoteOffsets, leafSection, &labelSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
 
   /* Send the strata for each point over the derived SF */
   ierr = PetscSectionGetStorageSize(leafSection, &size);CHKERRQ(ierr);
