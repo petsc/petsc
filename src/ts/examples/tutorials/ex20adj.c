@@ -272,9 +272,6 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&user.ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&user.steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n ode solution \n");CHKERRQ(ierr);
-  ierr = VecView(user.x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
