@@ -5728,6 +5728,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
 
   PetscFunctionBegin;
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+  if (!numFields) PetscFunctionReturn(0);
   /* FE and FV boundary conditions are handled slightly differently */
   ierr = PetscMalloc1(numFields, &isFE);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {

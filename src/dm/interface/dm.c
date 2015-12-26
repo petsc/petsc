@@ -3115,7 +3115,7 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
   PetscValidPointer(section, 2);
   if (!dm->defaultSection && dm->ops->createdefaultsection) {
     ierr = (*dm->ops->createdefaultsection)(dm);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject) dm->defaultSection, NULL, "-dm_petscsection_view");CHKERRQ(ierr);
+    if (dm->defaultSection) {ierr = PetscObjectViewFromOptions((PetscObject) dm->defaultSection, NULL, "-dm_petscsection_view");CHKERRQ(ierr);}
   }
   *section = dm->defaultSection;
   PetscFunctionReturn(0);

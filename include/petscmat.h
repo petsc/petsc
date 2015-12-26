@@ -87,6 +87,7 @@ typedef const char* MatType;
 #define MATSUBMATRIX       "submatrix"
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
+#define MATPREALLOCATOR    "preallocator"
 
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type.
@@ -1795,5 +1796,7 @@ PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscInt,PetscInt*,IS**);
+
+PETSC_EXTERN PetscErrorCode MatPreallocatorPreallocate(Mat,PetscBool,Mat);
 
 #endif
