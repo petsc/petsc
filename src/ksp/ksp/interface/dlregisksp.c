@@ -10,6 +10,8 @@ const char *const        PCCompositeTypes[]   = {"ADDITIVE","MULTIPLICATIVE","SY
 const char *const        PCPARMSGlobalTypes[] = {"RAS","SCHUR","BJ","PCPARMSGlobalType","PC_PARMS_",0};
 const char *const        PCPARMSLocalTypes[]  = {"ILU0","ILUK","ILUT","ARMS","PCPARMSLocalType","PC_PARMS_",0};
 
+const char *const        PCFailedReasons[]    = {"FACTOR_NOERROR","FACTOR_STRUCT_ZEROPIVOT","FACTOR_NUMERIC_ZEROPIVOT","FACTOR_OUTMEMORY","FACTOR_OTHER","SUBPC_ERROR",0};
+
 static PetscBool PCPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "PCFinalizePackage"

@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 #else
   PetscInt  digits       = 28;
 #endif
-  const PetscReal epsilon      = 10.*PETSC_MACHINE_EPSILON;
+  const PetscReal epsilon      = 2500.*PETSC_MACHINE_EPSILON;
   const PetscReal bounds[28]   =
     {
       0.0, 1.0,
@@ -169,8 +169,13 @@ int main(int argc, char **argv)
   for (f = 0; f < 14; ++f) {
     PetscReal integral;
 
+    /* These can only be integrated accuractely using MPFR */
+    if ((f == 6) || (f == 7) || (f == 9) || (f == 11)) continue;
+#ifdef PETSC_USE_REAL_SINGLE
+    if (f == 8) continue;
+#endif
     ierr = PetscDTTanhSinhIntegrate(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, &integral);CHKERRQ(ierr);
-    if (PetscAbsReal(integral - analytic[f]) > epsilon || PetscIsInfOrNanScalar(integral - analytic[f])) {
+    if (PetscAbsReal(integral - analytic[f]) > PetscMax(epsilon, PetscPowRealInt(10.0, -digits)) || PetscIsInfOrNanScalar(integral - analytic[f])) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f+1, (double)integral, (double) PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);
     }
   }
@@ -179,7 +184,7 @@ int main(int argc, char **argv)
     PetscReal integral;
 
     ierr = PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, &integral);CHKERRQ(ierr);
-    if (PetscAbsReal(integral - analytic[f]) > epsilon) {
+    if (PetscAbsReal(integral - analytic[f]) > PetscPowRealInt(10.0, -digits)) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f+1, (double)integral, (double)PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);
     }
   }

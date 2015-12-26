@@ -49,6 +49,7 @@ typedef struct {
   SuperLUStat_t     stat;
   Mat               A_dup;
   PetscScalar       *rhs_dup;
+  GlobalLU_t        Glu;
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
   PetscBool CleanUpSuperLU;
@@ -165,21 +166,21 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:cgssvx",cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
     PetscStackCall("SuperLU:zgssvx",zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:sgssvx",sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
     PetscStackCall("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu,&lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #endif
   } else if (F->factortype == MAT_FACTOR_ILU) {
@@ -188,39 +189,59 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:cgsisx",cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
     PetscStackCall("SuperLU:zgsisx",zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:sgsisx",sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #else
     PetscStackCall("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &sinfo));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &sinfo));
 #endif
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   if (!sinfo || sinfo == lu->A.ncol+1) {
     if (lu->options.PivotGrowth) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);CHKERRQ(ierr);
     }
     if (lu->options.ConditionNumber) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);CHKERRQ(ierr);
     }
-  } else if (sinfo > 0) {
-    if (lu->lwork == -1) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", sinfo - lu->A.ncol);
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
+  } else if (sinfo > 0) { 
+    if (A->erroriffailure) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
+    } else {
+      if (sinfo <= lu->A.ncol) {
+        if (lu->options.ILU_FillTol == 0.0) {
+          F->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        }
+        ierr = PetscInfo2(F,"Number of zero pivots %D, ILU_FillTol %g\n",sinfo,lu->options.ILU_FillTol);CHKERRQ(ierr);
+      } else if (sinfo == lu->A.ncol + 1) {
+        /* 
+         U is nonsingular, but RCOND is less than machine
+ 		      precision, meaning that the matrix is singular to
+ 		      working precision. Nevertheless, the solution and
+ 		      error bounds are computed because there are a number
+ 		      of situations where the computed solution can be more
+ 		      accurate than the value of RCOND would suggest.
+         */
+        ierr = PetscInfo1(F,"Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %D",sinfo);CHKERRQ(ierr);
+      } else { /* sinfo > lu->A.ncol + 1 */
+        F->errortype = MAT_FACTOR_OUTMEMORY;
+        ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %D\n",sinfo);CHKERRQ(ierr);
+      }
+    }
   } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo);
 
   if (lu->options.PrintStat) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n");CHKERRQ(ierr);
     PetscStackCall("SuperLU:StatPrint",StatPrint(&lu->stat));
     Lstore = (SCformat*) lu->L.Store;
     Ustore = (NCformat*) lu->U.Store;
@@ -356,21 +377,21 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:cgssvx",cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
     PetscStackCall("SuperLU:zgssvx",zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:sgssvx",sgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
     PetscStackCall("SuperLU:dgssvx",dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu,&lu->mem_usage, &lu->stat, &info));
 #endif
 #endif
   } else if (A->factortype == MAT_FACTOR_ILU) {
@@ -378,21 +399,21 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:cgsisx",cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
     PetscStackCall("SuperLU:zgsisx",zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     PetscStackCall("SuperLU:sgsisx",sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #else
     PetscStackCall("SuperLU:dgsisx",dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
                                      &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
-                                     &lu->mem_usage, &lu->stat, &info));
+                                     &lu->Glu, &lu->mem_usage, &lu->stat, &info));
 #endif
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
@@ -432,8 +453,13 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  lu->options.Trans = TRANS;
+  if (A->errortype) {
+    ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
+    ierr = VecSetInf(x);CHKERRQ(ierr); 
+    PetscFunctionReturn(0);
+  }
 
+  lu->options.Trans = TRANS;
   ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -446,8 +472,13 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  lu->options.Trans = NOTRANS;
+  if (A->errortype) {
+    ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
+    ierr = VecSetInf(x);CHKERRQ(ierr); 
+    PetscFunctionReturn(0);
+  }
 
+  lu->options.Trans = NOTRANS;
   ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

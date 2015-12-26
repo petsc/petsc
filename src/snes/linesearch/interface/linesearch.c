@@ -7,6 +7,154 @@ PetscClassId  SNESLINESEARCH_CLASSID;
 PetscLogEvent SNESLineSearch_Apply;
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchMonitorCancel"
+/*@
+   SNESLineSearchMonitorCancel - Clears all the monitor functions for a SNESLineSearch object.
+
+   Logically Collective on SNESLineSearch
+
+   Input Parameters:
+.  ls - the SNESLineSearch context
+
+   Options Database Key:
+.  -snes_linesearch_monitor_cancel - cancels all monitors that have been hardwired
+    into a code by calls to SNESLineSearchMonitorSet(), but does not cancel those
+    set via the options database
+
+   Notes:
+   There is no way to clear one specific monitor from a SNESLineSearch object.
+
+   This does not clear the monitor set with SNESLineSearchSetDefaultMonitor() use SNESLineSearchSetDefaultMonitor(ls,NULL) to cancel 
+   that one.
+
+   Level: intermediate
+
+.keywords: SNESLineSearch, nonlinear, set, monitor
+
+.seealso: SNESLineSearchMonitorDefault(), SNESLineSearchMonitorSet()
+@*/
+PetscErrorCode  SNESLineSearchMonitorCancel(SNESLineSearch ls)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ls,SNESLINESEARCH_CLASSID,1);
+  for (i=0; i<ls->numbermonitors; i++) {
+    if (ls->monitordestroy[i]) {
+      ierr = (*ls->monitordestroy[i])(&ls->monitorcontext[i]);CHKERRQ(ierr);
+    }
+  }
+  ls->numbermonitors = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchMonitor"
+/*@
+   SNESLineSearchMonitor - runs the user provided monitor routines, if they exist
+
+   Collective on SNES
+
+   Input Parameters:
+.  ls - the linesearch object
+
+   Notes:
+   This routine is called by the SNES implementations.
+   It does not typically need to be called by the user.
+
+   Level: developer
+
+.seealso: SNESLineSearchMonitorSet()
+@*/
+PetscErrorCode  SNESLineSearchMonitor(SNESLineSearch ls)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n = ls->numbermonitors;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+    ierr = (*ls->monitorftns[i])(ls,ls->monitorcontext[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchMonitorSet"
+/*@C
+   SNESLineSearchMonitorSet - Sets an ADDITIONAL function that is to be used at every
+   iteration of the nonlinear solver to display the iteration's
+   progress.
+
+   Logically Collective on SNESLineSearch
+
+   Input Parameters:
++  ls - the SNESLineSearch context
+.  f - the monitor function
+.  mctx - [optional] user-defined context for private data for the
+          monitor routine (use NULL if no context is desired)
+-  monitordestroy - [optional] routine that frees monitor context
+          (may be NULL)
+
+   Notes:
+   Several different monitoring routines may be set by calling
+   SNESLineSearchMonitorSet() multiple times; all will be called in the
+   order in which they were set.
+
+   Fortran notes: Only a single monitor function can be set for each SNESLineSearch object
+
+   Level: intermediate
+
+.keywords: SNESLineSearch, nonlinear, set, monitor
+
+.seealso: SNESLineSearchMonitorDefault(), SNESLineSearchMonitorCancel()
+@*/
+PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(SNESLineSearch,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ls,SNESLINESEARCH_CLASSID,1);
+  if (ls->numbermonitors >= MAXSNESLSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
+  ls->monitorftns[ls->numbermonitors]          = f;
+  ls->monitordestroy[ls->numbermonitors]   = monitordestroy;
+  ls->monitorcontext[ls->numbermonitors++] = (void*)mctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchMonitorSolutionUpdate"
+/*@C
+   SNESLineSearchMonitorSolutionUpdate - Monitors each update a new function value the linesearch tries
+
+   Collective on SNESLineSearch
+
+   Input Parameters:
++  ls - the SNES linesearch object
+-  dummy - the context for the monitor, in this case it is an ASCII PetscViewer
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, default, monitor, norm
+
+.seealso: SNESMonitorSet(), SNESMonitorSolution()
+@*/
+PetscErrorCode  SNESLineSearchMonitorSolutionUpdate(SNESLineSearch ls,void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer = (PetscViewer) dummy;
+  Vec            Y,W,G;
+
+  PetscFunctionBegin;
+  ierr = SNESLineSearchGetVecs(ls,NULL,NULL,&Y,&W,&G);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"LineSearch attempted update to solution \n");CHKERRQ(ierr);
+  ierr = VecView(Y,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"LineSearch attempted new solution \n");CHKERRQ(ierr);
+  ierr = VecView(W,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"LineSearch attempted updated function value\n");CHKERRQ(ierr);
+  ierr = VecView(G,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate"
 /*@
    SNESLineSearchCreate - Creates the line search context.
@@ -511,7 +659,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 
    Options Database Keys:
 + -snes_linesearch_type - basic, bt, l2, cp, nleqerr, shell
-. -snes_linesearch_monitor - Print progress of line searches
+. -snes_linesearch_monitor [:filename] - Print progress of line searches
 . -snes_linesearch_damping - The linesearch damping parameter
 . -snes_linesearch_norms   - Turn on/off the linesearch norms
 . -snes_linesearch_keeplambda - Keep the previous search length as the initial guess
@@ -594,45 +742,47 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
   ierr = SNESLineSearchReset(*linesearch);CHKERRQ(ierr);
   if ((*linesearch)->ops->destroy) (*linesearch)->ops->destroy(*linesearch);
   ierr = PetscViewerDestroy(&(*linesearch)->monitor);CHKERRQ(ierr);
+  ierr = SNESLineSearchMonitorCancel((*linesearch));CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetMonitor"
+#define __FUNCT__ "SNESLineSearchSetDefaultMonitor"
 /*@
-   SNESLineSearchSetMonitor - Turns on/off printing useful information and debugging output about the line search.
+   SNESLineSearchSetDefaultMonitor - Turns on/off printing useful information and debugging output about the line search.
 
    Input Parameters:
-+  snes - nonlinear context obtained from SNESCreate()
--  flg - PETSC_TRUE to monitor the line search
++  linesearch - the linesearch object
+-  viewer - an ASCII PetscViewer or NULL to turn off monitor
 
-   Logically Collective on SNES
+   Logically Collective on SNESLineSearch
 
    Options Database:
-.   -snes_linesearch_monitor - enables the monitor
+.   -snes_linesearch_monitor [:filename] - enables the monitor
 
    Level: intermediate
 
-.seealso: SNESLineSearchGetMonitor(), PetscViewer
+   Developer Note: This monitor is implemented differently than the other SNESLineSearchMonitors that are set with 
+     SNESLineSearchMonitorSet() since it is called in many locations of the line search routines.
+
+.seealso: SNESLineSearchGetDefaultMonitor(), PetscViewer
 @*/
-PetscErrorCode  SNESLineSearchSetMonitor(SNESLineSearch linesearch, PetscBool flg)
+PetscErrorCode  SNESLineSearchSetDefaultMonitor(SNESLineSearch linesearch, PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (flg && !linesearch->monitor) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)linesearch),"stdout",&linesearch->monitor);CHKERRQ(ierr);
-  } else if (!flg && linesearch->monitor) {
-    ierr = PetscViewerDestroy(&linesearch->monitor);CHKERRQ(ierr);
-  }
+  if (viewer) {ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);}
+  ierr = PetscViewerDestroy(&linesearch->monitor);CHKERRQ(ierr);
+  linesearch->monitor = viewer;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetMonitor"
+#define __FUNCT__ "SNESLineSearchGetDefaultMonitor"
 /*@
-   SNESLineSearchGetMonitor - Gets the PetscViewer instance for the line search monitor.
+   SNESLineSearchGetDefaultMonitor - Gets the PetscViewer instance for the line search monitor.
 
    Input Parameter:
 .  linesearch - linesearch context
@@ -647,15 +797,59 @@ PetscErrorCode  SNESLineSearchSetMonitor(SNESLineSearch linesearch, PetscBool fl
 
    Level: intermediate
 
-.seealso: SNESLineSearchSetMonitor(), PetscViewer
+.seealso: SNESLineSearchSetDefaultMonitor(), PetscViewer
 @*/
-PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer *monitor)
+PetscErrorCode  SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, PetscViewer *monitor)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
   if (monitor) {
     PetscValidPointer(monitor, 2);
     *monitor = linesearch->monitor;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchMonitorSetFromOptions"
+/*@C
+   SNESLineSearchMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
+
+   Collective on SNESLineSearch
+
+   Input Parameters:
++  ls - LineSearch object you wish to monitor
+.  name - the monitor type one is seeking
+.  help - message indicating what monitoring is done
+.  manual - manual page for the monitor
+.  monitor - the monitor function
+-  monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the SNESLineSearch or PetscViewer objects
+
+   Level: developer
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(SNESLineSearch,void*),PetscErrorCode (*monitorsetup)(SNESLineSearch,PetscViewer))
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ls),((PetscObject)ls)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerSetFormat(viewer,format);CHKERRQ(ierr);
+    if (monitorsetup) {
+      ierr = (*monitorsetup)(ls,viewer);CHKERRQ(ierr);
+    }
+    ierr = SNESLineSearchMonitorSet(ls,monitor,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -678,7 +872,8 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 . -snes_linesearch_atol - Absolute tolerance for iterative line searches
 . -snes_linesearch_ltol - Change in lambda tolerance for iterative line searches
 . -snes_linesearch_max_it - The number of iterations for iterative line searches
-. -snes_linesearch_monitor - Print progress of line searches
+. -snes_linesearch_monitor [:filename] - Print progress of line searches
+. -snes_linesearch_monitor_solution_update [viewer:filename:format] - view each update tried by line search routine
 . -snes_linesearch_damping - The linesearch damping parameter
 . -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
 . -snes_linesearch_precheck_picard - Use precheck that speeds up convergence of picard method
@@ -692,10 +887,11 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 @*/
 PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
 {
-  PetscErrorCode ierr;
-  const char     *deft = SNESLINESEARCHBASIC;
-  char           type[256];
-  PetscBool      flg, set;
+  PetscErrorCode    ierr;
+  const char        *deft = SNESLINESEARCHBASIC;
+  char              type[256];
+  PetscBool         flg, set;
+  PetscViewer       viewer;
 
   PetscFunctionBegin;
   ierr = SNESLineSearchRegisterAll();CHKERRQ(ierr);
@@ -709,9 +905,13 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
     ierr = SNESLineSearchSetType(linesearch,deft);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsBool("-snes_linesearch_monitor","Print progress of line searches","SNESSNESLineSearchSetMonitor",linesearch->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set) {ierr = SNESLineSearchSetMonitor(linesearch,flg);CHKERRQ(ierr);}
-
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)linesearch),((PetscObject)linesearch)->prefix,"-snes_linesearch_monitor",&viewer,NULL,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = SNESLineSearchSetDefaultMonitor(linesearch,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  ierr = SNESLineSearchMonitorSetFromOptions(linesearch,"-snes_linesearch_monitor_solution_update","View correction at each iteration","SNESLineSearchMonitorSolutionUpdate",SNESLineSearchMonitorSolutionUpdate,NULL);CHKERRQ(ierr);
+  
   /* tolerances */
   ierr = PetscOptionsReal("-snes_linesearch_minlambda","Minimum step length","SNESLineSearchSetTolerances",linesearch->steptol,&linesearch->steptol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_linesearch_maxstep","Maximum step size","SNESLineSearchSetTolerances",linesearch->maxstep,&linesearch->maxstep,NULL);CHKERRQ(ierr);
@@ -762,7 +962,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
 
    Level: intermediate
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchMonitor()
+.seealso: SNESLineSearchCreate()
 @*/
 PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 {
@@ -1126,9 +1326,11 @@ PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch linesearch,PetscReal *da
    SNESLineSearchSetDamping - Sets the line search damping paramter.
 
    Input Parameters:
-.  linesearch - linesearch context
-.  damping - The damping parameter
++  linesearch - linesearch context
+-  damping - The damping parameter
 
+   Options Database:
+.   -snes_linesearch_damping
    Level: intermediate
 
    Notes:

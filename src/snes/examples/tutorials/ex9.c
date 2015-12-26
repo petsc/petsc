@@ -26,7 +26,7 @@ Use finite difference evaluation of Jacobian by coloring, instead of analytical:
   ./ex9 -snes_fd_color
 
 Graphical:
-  ./ex9 -snes_monitor_solution -draw_pause 1 -da_refine 2
+  ./ex9 -snes_monitor_solution draw -draw_pause 1 -da_refine 2
 
 Convergence evidence:
   for M in 1 2 3 4 5; do mpiexec -n 4 ./ex9 -da_refine $M; done

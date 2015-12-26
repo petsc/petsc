@@ -98,6 +98,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   char           *tdata;
   MPI_Request    *sendreqs,barrier;
   PetscSegBuffer segrank,segdata;
+  PetscBool      barrier_started;
 
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
@@ -113,6 +114,9 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
 
   nrecvs  = 0;
   barrier = MPI_REQUEST_NULL;
+  /* MPICH-3.2 sometimes does not create a request in some "optimized" cases.  This is arguably a standard violation,
+   * but we need to work around it. */
+  barrier_started = PETSC_FALSE;
   for (done=0; !done; ) {
     PetscMPIInt flag;
     MPI_Status  status;
@@ -126,7 +130,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
       ierr      = MPI_Recv(buf,count,dtype,status.MPI_SOURCE,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       nrecvs++;
     }
-    if (barrier == MPI_REQUEST_NULL) {
+    if (!barrier_started) {
       PetscMPIInt sent,nsends;
       ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
       ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
@@ -136,6 +140,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
 #elif defined(PETSC_HAVE_MPIX_IBARRIER)
         ierr = MPIX_Ibarrier(comm,&barrier);CHKERRQ(ierr);
 #endif
+        barrier_started = PETSC_TRUE;
         ierr = PetscFree(sendreqs);CHKERRQ(ierr);
       }
     } else {
@@ -373,6 +378,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
   char           *tdata;
   MPI_Request    *sendreqs,*usendreqs,*req,barrier;
   PetscSegBuffer segrank,segdata,segreq;
+  PetscBool      barrier_started;
 
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
@@ -403,6 +409,9 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
 
   nrecvs  = 0;
   barrier = MPI_REQUEST_NULL;
+  /* MPICH-3.2 sometimes does not create a request in some "optimized" cases.  This is arguably a standard violation,
+   * but we need to work around it. */
+  barrier_started = PETSC_FALSE;
   for (done=0; !done; ) {
     PetscMPIInt flag;
     MPI_Status  status;
@@ -419,7 +428,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
       ierr = (*recv)(comm,tags,status.MPI_SOURCE,buf,req,ctx);CHKERRQ(ierr);
       nrecvs++;
     }
-    if (barrier == MPI_REQUEST_NULL) {
+    if (!barrier_started) {
       PetscMPIInt sent,nsends;
       ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
       ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
@@ -429,6 +438,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
 #elif defined(PETSC_HAVE_MPIX_IBARRIER)
         ierr = MPIX_Ibarrier(comm,&barrier);CHKERRQ(ierr);
 #endif
+        barrier_started = PETSC_TRUE;
       }
     } else {
       ierr = MPI_Test(&barrier,&done,MPI_STATUS_IGNORE);CHKERRQ(ierr);

@@ -28,6 +28,7 @@ class Configure(config.base.Configure):
     self.elemental      = framework.require('config.packages.elemental', self)
     self.x              = framework.require('config.packages.X', self)
     self.fortrancpp     = framework.require('PETSc.options.fortranCPP', self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     return
 
   def configureRegression(self):
@@ -41,6 +42,8 @@ class Configure(config.base.Configure):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
+      if self.libraryOptions.useInfo:
+        jobs.append('C_Info')
       if not self.scalartypes.precision == 'single':
         jobs.append('C_NotSingle')
       if hasattr(self.compilers, 'CXX'):

@@ -21,6 +21,17 @@ class Configure(config.package.GNUPackage):
 
   def configureLibrary(self):
     ''' Just assume the downloaded library will work'''
+    if self.framework.clArgDB.has_key('with-ctetgen'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen; only --download-ctetgen')
+    if self.framework.clArgDB.has_key('with-ctetgen-dir'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen-dir; only --download-ctetgen')
+    if self.framework.clArgDB.has_key('with-ctetgen-include'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen-include; only --download-ctetgen')
+    if self.framework.clArgDB.has_key('with-ctetgen-lib'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen-lib; only --download-ctetgen')
+    if self.framework.clArgDB.has_key('with-ctetgen-shared'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen-shared')
+
     self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]
     self.lib     = [os.path.join(self.installDir,'lib','libctetgen.a')]

@@ -119,7 +119,7 @@ static PetscErrorCode ourmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void *ctx)
 /*
    Currently does not handle destroy or context
 */
-static void (*yourtransform)(void*ctx,Vec*,Vec*,PetscErrorCode*);
+static void (PETSC_STDCALL*yourtransform)(void*ctx,Vec*,Vec*,PetscErrorCode*);
 static PetscErrorCode ourtransform(void *ctx,Vec x,Vec *xout)
 {
   PetscErrorCode ierr = 0;

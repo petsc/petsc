@@ -360,7 +360,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 #endif
   char           *fname = NULL;
 #if defined(PETSC_USE_REAL___FLOAT128)
-  PetscBool      writedouble;
+  PetscBool      writedouble = PETSC_FALSE;
   double         *ppp;
   PetscReal      *pv;
   PetscInt       i;

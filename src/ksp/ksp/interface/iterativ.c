@@ -276,8 +276,7 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorTrueResidualMaxNorm"
 /*@C
-   KSPMonitorTrueResidualMaxNorm - Prints the true residual max norm as well as the preconditioned
-   residual norm at each iteration of an iterative solver.
+   KSPMonitorTrueResidualMaxNorm - Prints the true residual max norm each iteration of an iterative solver.
 
    Collective on KSP
 
@@ -319,7 +318,6 @@ PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm
   ierr = VecNorm(ksp->vec_rhs,NORM_INFINITY,&bnorm);CHKERRQ(ierr);
   ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
   ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
-  /* ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||_inf/||b||_inf %14.12e\n",n,normtype,(double)rnorm,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr); */
   ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -764,8 +762,19 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   if (n <= ksp->chknorm) PetscFunctionReturn(0);
 
   if (PetscIsInfOrNanReal(rnorm)) {
-    ierr    = PetscInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n");CHKERRQ(ierr);
-    *reason = KSP_DIVERGED_NANORINF;
+    PCFailedReason pcreason;
+    PetscInt       sendbuf,pcreason_max;
+    ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
+    sendbuf = (PetscInt)pcreason;
+    ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    if (pcreason_max) {
+      *reason = KSP_DIVERGED_PCSETUP_FAILED;
+      ierr    = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);
+      ierr    = PetscInfo(ksp,"Linear solver pcsetup fails, declaring divergence \n");CHKERRQ(ierr);
+    } else {
+      *reason = KSP_DIVERGED_NANORINF;
+      ierr    = PetscInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n");CHKERRQ(ierr);
+    }
   } else if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->abstol) {
       ierr    = PetscInfo3(ksp,"Linear solver has converged. Residual norm %14.12e is less than absolute tolerance %14.12e at iteration %D\n",(double)rnorm,(double)ksp->abstol,n);CHKERRQ(ierr);

@@ -1060,17 +1060,26 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 /* Swap dm with the contents of dmNew
    - Swap the DM_Plex structure
    - Swap the coordinates
+   - Swap the point PetscSF
 */
 static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
 {
   DM              coordDMA, coordDMB;
   Vec             coordsA,  coordsB;
+  PetscSF         sfA,      sfB;
   void            *tmp;
   DMLabelLinkList listTmp;
   DMLabel         depthTmp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetPointSF(dmA, &sfA);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dmB, &sfB);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) sfA);CHKERRQ(ierr);
+  ierr = DMSetPointSF(dmA, sfB);CHKERRQ(ierr);
+  ierr = DMSetPointSF(dmB, sfA);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject) sfA);CHKERRQ(ierr);
+
   ierr = DMGetCoordinateDM(dmA, &coordDMA);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmB, &coordDMB);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) coordDMA);CHKERRQ(ierr);
@@ -1150,6 +1159,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptio
   ierr = PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMView", PETSC_FALSE, &mesh->useHashLocation, NULL);CHKERRQ(ierr);
   /* Projection behavior */
   ierr = PetscOptionsInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

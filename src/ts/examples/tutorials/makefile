@@ -58,10 +58,6 @@ ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_TS_LIB}
 	${RM} ex9.o
 
-ex9_sa: ex9_sa.o  chkopts
-	-${CLINKER} -o ex9_sa ex9_sa.o  ${PETSC_TS_LIB}
-	${RM} ex9_sa.o
-
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_TS_LIB}
 	${RM} ex10.o
@@ -341,9 +337,6 @@ runex9_3:
 	-@${MPIEXEC} -n 3 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 > ex9_3.tmp 2>&1; \
 	   ${DIFF} output/ex9_3.out ex9_3.tmp || printf "${PWD}\nPossible problem with ex9_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9_3.tmp
-
-runex9_sa:
-	-@${MPIEXEC} -n 1 ./ex9_sa -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 
 
 clean_files:
 	-@${RM} *.bin; \

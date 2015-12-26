@@ -87,7 +87,7 @@ runjbearing2_2:
 	${RM} -f jbearing2_2.tmp
 
 runjbearing2_3:
-	-@${MPIEXEC} -n 2 ./jbearing2 -tao_smonitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gttol 1.e-5 > jbearing2_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./jbearing2 -tao_smonitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4 > jbearing2_3.tmp 2>&1;\
 	${DIFF} output/jbearing2_3.out jbearing2_3.tmp || printf '${PWD}\nPossible problem with jbearing2_3 stdout, diffs above \n=========================================\n';\
 	${RM} -f jbearing2_3.tmp
 
