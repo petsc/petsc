@@ -18,7 +18,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
 
   PetscPreLoadBegin(preload,"Load system");
 
@@ -102,7 +102,7 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer, "%s", petsccompilerflagsinfo);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "%s", petsclinkerinfo);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "%s\n", PETSC_MPICC_SHOW);CHKERRQ(ierr);
-  ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+  ierr = PetscOptionsView(NULL,viewer);CHKERRQ(ierr);
   ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "----------------------------------------------------\n");CHKERRQ(ierr);
 

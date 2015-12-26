@@ -377,7 +377,7 @@ PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
   ierr = MPI_Attr_get(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(comm,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
 
-  ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,&scomm,&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,scomm,&flg);CHKERRQ(ierr);
   if (flg) PetscFunctionReturn(0);
 
   ierr        = PetscNew(scomm);CHKERRQ(ierr);
