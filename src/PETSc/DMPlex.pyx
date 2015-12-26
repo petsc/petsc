@@ -524,6 +524,15 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = dmOverlap
         return sf
 
+    def distributeField(self, SF sf not None, Section sec not None, Vec vec not None):
+        cdef Section newsec = Section()
+        cdef Vec newvec = Vec()
+        CHKERR( DMPlexDistributeField(self.dm, sf.sf, sec.sec, vec.vec, 
+                                      newsec.sec, newvec.vec))
+        PetscINCREF(newsec.obj)
+        PetscINCREF(newvec.obj)
+        return (newsec, newvec)
+
     def createCoarsePointIS(self):
         cdef IS fpoint = IS()
         CHKERR( DMPlexCreateCoarsePointIS(self.dm, &fpoint.iset) )
