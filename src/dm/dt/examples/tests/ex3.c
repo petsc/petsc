@@ -6,7 +6,7 @@ static char help[] = "Tests quadrature.\n\n";
 #define __FUNCT__ "func1"
 static void func1(PetscReal x, PetscReal *val)
 {
-  *val = x*log(1+x);
+  *val = x*PetscLogReal(1+x);
 }
 
 #undef __FUNCT__
