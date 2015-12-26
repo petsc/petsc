@@ -118,9 +118,14 @@ int main(int argc, char **argv)
 #elif PETSC_SCALAR_SIZE == 64
   PetscInt  digits       = 14;
 #else
-  PetscInt  digits       = 28;
+  PetscInt  digits       = 14;
 #endif
+  /* for some reason in __float128 precision it cannot get more accuracy for some of the integrals */
+#if defined(PETSC_USE_REAL___FLOAT128)
+  const PetscReal epsilon      = 2.2204460492503131e-16;
+#else
   const PetscReal epsilon      = 2500.*PETSC_MACHINE_EPSILON;
+#endif
   const PetscReal bounds[28]   =
     {
       0.0, 1.0,
