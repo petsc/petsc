@@ -93,18 +93,15 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       }
     } else {
       /* this version packs and sends one at a time */
-      PetscInt sharedcnt = 0;
+      for (i=0; i<to->msize; i++) {
+        if (to->sharedspaceoffset[i] != -1) {
+          /* Pack the send data into the shared memory buffer */
+          PETSCMAP1(Pack)(to->sharedspacestarts[i+1]-to->sharedspacestarts[i],to->sharedspaceindices + to->sharedspacestarts[i],xv,to->sharedspace + bs*to->sharedspacestarts[i],bs);
+        }
+      }
       for (i=0; i<nsends; i++) {
         PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
         ierr = MPI_Start_isend(sstarts[i+1]-sstarts[i],swaits+i);CHKERRQ(ierr);
-        if (to->sharedcnts[i]) {
-          PetscMPIInt rank;
-          ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-          printf("[%d] found shared memory partner %d %d\n",rank,i,to->procs[i]);
-          /* Pack the send data into the shared memory buffer */
-          PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,to->sharedspace + bs*sharedcnt,bs);
-          sharedcnt += sstarts[i+1]-sstarts[i];
-        }
       }
     }
 
@@ -180,16 +177,6 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     MPI_Barrier(PETSC_COMM_WORLD);
     PetscMPIInt i;
     /* unpack one at a time */
-    /* handle processes that share the same shared memory communicator */
-    for (i=0; i<to->msize; i++) {
-      if (to->sharedspacesoffset[i] > -1) {
-        PetscMPIInt rank;
-        ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-        printf("[%d] getting from shared memory partner %d %g\n",rank,i,to->sharedspaces[i][to->sharedspacesoffset[i]]);
-        imdex = to->sharedspacerindices[i];
-        ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],&to->sharedspaces[i][to->sharedspacesoffset[i]],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);
-      }
-    }
     count = nrecvs;
     while (count) {
       if (ctx->reproduce) {
@@ -201,6 +188,15 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
       /* unpack receives into our local space */
       ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);
       count--;
+    }
+    /* handle processes that share the same shared memory communicator */
+    for (i=0; i<to->msize; i++) {
+      if (from->sharedspacesoffset[i] > -1) {
+        PetscMPIInt rank;
+        ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+        printf("[%d] getting from shared memory partner %d %g\n",rank,i,from->sharedspaces[i][from->sharedspacesoffset[i]]);
+        ierr = PETSCMAP1(UnPack)(from->sharedspacestarts[i+1] - from->sharedspacestarts[i],&from->sharedspaces[i][from->sharedspacesoffset[i]],from->sharedspaceindices + from->sharedspacestarts[i],yv,addv,bs);CHKERRQ(ierr);
+      }
     }
   }
   if (from->use_readyreceiver) {

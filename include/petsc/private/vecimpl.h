@@ -283,7 +283,8 @@ typedef struct {
   PetscInt               *sharedspaceoffset;        /* [msize] offset into sharedspace for each shared memory partner; -1 (error check) for partners with no data */
   PetscScalar            **sharedspaces;            /* [msize] space other processes put data to be read from this processes. */
   PetscInt               *sharedspacesoffset;       /* [msize] offset into sharedspaces, that I will read from */
-  PetscInt               *sharedspacerindices;      /* [msize] for each shared memory partner this maps to the rindices of that partner */
+  PetscInt               *sharedspacestarts;        /* [msize+1] for each shared memory partner this maps to the part of sharedspaceindices of that partner */
+  PetscInt               *sharedspaceindices;       /* [] for each shared memory partner contains indices where values are to be copied to */
   MPI_Win                sharedwin;                 /* Window that owns sharedspace */
   MPI_Win                sharedoffsetwin;           /* Window that owns sharedspaceoffset */
 } VecScatter_MPI_General;
