@@ -24,11 +24,11 @@ runpf:
 	   ${RM} -f pf.tmp
 
 runpf_2:
-	-@${MPIEXEC} -n 3 ./pf > pf.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./pf -snes_rtol 1.e-3 > pf.tmp 2>&1;   \
 	   if (${DIFF} output/pf.out pf.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pf_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pf.tmp
 
-TESTEXAMPLES_C		       =  pf.PETSc runpf pf.rm
+TESTEXAMPLES_C		       =  pf.PETSc runpf runpf_2 pf.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

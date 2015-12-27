@@ -65,7 +65,7 @@ runpipes1_9:
 	   else printf "${PWD}\nPossible problem with pipes1_9, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pipes1.tmp
 
-TESTEXAMPLES_C		       = pipes1.PETSc runpipes1 runpipes1_4  \
-                                  runpipes1_7 pipes1.rm
+TESTEXAMPLES_C		       = pipes1.PETSc runpipes1 runpipes1_2 runpipes1_3 runpipes1_4  \
+                                 runpipes1_5 runpipes1_6 runpipes1_7 runpipes1_8 runpipes1_9 pipes1.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
