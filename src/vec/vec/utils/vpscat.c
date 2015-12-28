@@ -2437,7 +2437,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscMalloc4((ny-nprocslocal)*bs,&from->values,ny-nprocslocal,&from->indices,nsends+1,&from->starts,from->n,&from->procs);CHKERRQ(ierr);
   ctx->fromdata = (void*)from;
 
-  ierr  = PetscMalloc(to->msize+1,&from->sharedspacestarts);CHKERRQ(ierr);  
+  ierr  = PetscMalloc1(to->msize+1,&from->sharedspacestarts);CHKERRQ(ierr);  
   /* move data into receive scatter */
   ierr = PetscMalloc2(size,&lowner,nsends+1,&start);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,&lsharedowner,nsends+1,&sharedstart);CHKERRQ(ierr);
@@ -2452,7 +2452,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       ierr = PetscCommSharedGlobalToLocal(scomm,i,&jj);CHKERRQ(ierr);
       if (jj > -1) {
         from->sharedspacestarts[jj] = sharedstart[jj] = sharedslots;
-        from->sharedspacestarts[jj+1] = from->sharedspacestarts[jj] + nprocs[i];
+        from->sharedspacestarts[jj+1] = sharedstart[jj+1] = from->sharedspacestarts[jj] + nprocs[i];
         sharedslots += nprocs[i];
         lsharedowner[i] = jj;
       }
@@ -2467,13 +2467,14 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   }
 
   /* copy over appropriate parts of inidy[] into from->sharedspaceindices */
-  ierr = PetscMalloc(sharedslots,&from->sharedspaceindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(sharedslots,&from->sharedspaceindices);CHKERRQ(ierr);
   for (i=0; i<nx; i++) {
     if (owner[i] != rank && lsharedowner[owner[i]] > -1) {
+      if (sharedstart[lsharedowner[owner[i]]] > sharedslots) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"won");
       from->sharedspaceindices[sharedstart[lsharedowner[owner[i]]]++] = bs*inidy[i];
     }
   }
-  
+
   ierr = PetscFree2(lowner,start);CHKERRQ(ierr);
   ierr = PetscFree2(lsharedowner,sharedstart);CHKERRQ(ierr);  
   ierr = PetscFree2(nprocs,owner);CHKERRQ(ierr);
