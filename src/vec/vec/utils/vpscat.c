@@ -2379,10 +2379,10 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 
   /* allocate entire send scatter context */
   ierr  = PetscNewLog(ctx,&to);CHKERRQ(ierr);
-  to->n = nrecvs;
+  to->n = nrecvs-nrecvshared;
 
-  ierr  = PetscMalloc1(nrecvs,&to->requests);CHKERRQ(ierr);
-  ierr  = PetscMalloc4(bs*slen,&to->values,slen,&to->indices,nrecvs+1,&to->starts,nrecvs,&to->procs);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(nrecvs-nrecvshared,&to->requests);CHKERRQ(ierr);
+  ierr  = PetscMalloc4(bs*(slen-slenshared),&to->values,slen-slenshared,&to->indices,nrecvs-nrecvshared+1,&to->starts,nrecvs-nrecvshared,&to->procs);CHKERRQ(ierr);
   ierr  = PetscMalloc2(PetscMax(to->n,nsends),&to->sstatus,PetscMax(to->n,nsends),&to->rstatus);CHKERRQ(ierr);
 
   ierr  = PetscMalloc2(slenshared,&to->sharedspaceindices,to->msize+1,&to->sharedspacestarts);CHKERRQ(ierr);
@@ -2404,13 +2404,10 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
     /* move the data into the send scatter */
     base     = owners[rank];
     rsvalues = rvalues;
+    to->n    = 0;
     for (i=0; i<nrecvs; i++) {
-      to->starts[i+1] = to->starts[i] + olengths1[i];
-      to->procs[i]    = onodes1[i];
       values = rsvalues;
-      rsvalues += olengths1[i];
-      for (j=0; j<olengths1[i]; j++) to->indices[to->starts[i] + j] = values[j] - base;
-      ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)to->procs[i],&jj);CHKERRQ(ierr);
+      ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)onodes1[i],&jj);CHKERRQ(ierr);
       if (jj > -1) {
         to->sharedspacestarts[jj]   = to->sharedcnt;
         to->sharedspacestarts[jj+1] = to->sharedcnt + olengths1[i];
@@ -2418,8 +2415,14 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
         to->sharedspaceoffset[jj] = to->sharedcnt;
         to->sharedcnt             += olengths1[i];
         to->sharedcnts[i]          =  PETSC_TRUE;
-        ierr = PetscInfo4(NULL,"[%d] Sending %d values to shared memory partner %d,global rank %d\n",rank,olengths1[i],jj,to->procs[i]);CHKERRQ(ierr);
+        ierr = PetscInfo4(NULL,"[%d] Sending %d values to shared memory partner %d,global rank %d\n",rank,olengths1[i],jj,onodes1[i]);CHKERRQ(ierr);
+      } else {
+        to->starts[to->n+1] = to->starts[to->n] + olengths1[i];
+        to->procs[to->n]    = onodes1[i];
+        for (j=0; j<olengths1[i]; j++) to->indices[to->starts[to->n] + j] = values[j] - base;
+        to->n++;
       }
+      rsvalues += olengths1[i];
     }
   }
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
@@ -2431,6 +2434,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 
   /* allocate entire receive scatter context */
   ierr = PetscNewLog(ctx,&from);CHKERRQ(ierr);
+  /* we don't actually know the correct value for from->n at this point so we use the upper bound */
   from->n = nsends;
 
   ierr = PetscMalloc1(nsends,&from->requests);CHKERRQ(ierr);
@@ -2445,22 +2449,25 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   sharedslots = 0;
   for (i=0; i<size; i++) {
     lsharedowner[i] = -1;
+    lowner[i]       = -1;
     if (nprocs[i]) {
-      lowner[i]            = count++;
-      from->procs[count-1]  = i;
-      from->starts[count] = start[count] = start[count-1] + nprocs[i];
       ierr = PetscCommSharedGlobalToLocal(scomm,i,&jj);CHKERRQ(ierr);
       if (jj > -1) {
         from->sharedspacestarts[jj] = sharedstart[jj] = sharedslots;
         from->sharedspacestarts[jj+1] = sharedstart[jj+1] = from->sharedspacestarts[jj] + nprocs[i];
         sharedslots += nprocs[i];
         lsharedowner[i] = jj;
+      } else {
+        lowner[i]            = count++;
+        from->procs[count-1]  = i;
+        from->starts[count] = start[count] = start[count-1] + nprocs[i];
       }
     }
   }
+  from->n = count;
 
   for (i=0; i<nx; i++) {
-    if (owner[i] != rank) {
+    if (owner[i] != rank && lowner[owner[i]] > -1) {
       from->indices[start[lowner[owner[i]]]++] = bs*inidy[i];
       if (bs*inidy[i] >= lengthy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
     }
