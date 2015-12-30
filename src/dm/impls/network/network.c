@@ -127,7 +127,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
-  ierr = PetscMalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
+  ierr = PetscCalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
   for (i = network->pStart; i < network->pEnd; i++) {
     network->header[i].ndata = 0;
     ndata = network->header[i].ndata;
@@ -341,16 +341,20 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 @*/
 PetscErrorCode DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
 {
-  PetscErrorCode ierr;
-  PetscInt       offsetp;
+  PetscErrorCode           ierr;
+  PetscInt                 offsetp;
   DMNetworkComponentHeader header;
-  DM_Network     *network = (DM_Network*)dm->data;
+  DM_Network               *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
+  if (network->dataheadersize*sizeof(DMNetworkComponentGenericDataType) % sizeof(PetscScalar)) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Network dataheadersize %D is not divisible by sizeof(PetscScalar) %D",network->dataheadersize,(PetscInt)sizeof(PetscScalar));
   ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
+  if (offsetp*sizeof(DMNetworkComponentGenericDataType) % sizeof(PetscScalar)) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Offsetp %D is not divisible by sizeof(PetscScalar) %D",offsetp,(PetscInt)sizeof(PetscScalar));
   header = (DMNetworkComponentHeader)(network->componentdataarray+offsetp);
   *compkey = header->key[compnum];
+  if (header->offset[compnum]*sizeof(DMNetworkComponentGenericDataType) % sizeof(PetscScalar)) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"header offset[compnum]  %D is not divisible by sizeof(PetscScalar) %D",header->offset[compnum],(PetscInt)sizeof(PetscScalar));
   *offset  = offsetp+network->dataheadersize+header->offset[compnum];
+  if (*offset*sizeof(DMNetworkComponentGenericDataType) % sizeof(PetscScalar)) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Offset %D is not divisible by sizeof(PetscScalar) %D",*offset,(PetscInt)sizeof(PetscScalar));
   PetscFunctionReturn(0);
 }
 

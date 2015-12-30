@@ -552,13 +552,13 @@ int main(int argc,char ** argv)
 	ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d Gen pg = %f qg = %f\n",rank,gen->pg,gen->qg);CHKERRQ(ierr);
       } else if (key == 3) {
 	load = (LOAD)(arr+offset);
-	ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d Load pd = %f qd = %f\n",rank,load->pl,load->ql);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d Load pl = %f ql = %f\n",rank,load->pl,load->ql);CHKERRQ(ierr);
       }
     }
   }  
 #endif  
   /* Broadcast Sbase to all processors */
-  ierr = MPI_Bcast(&User.Sbase,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&User.Sbase,1,MPIU_REAL,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);

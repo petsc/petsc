@@ -56,10 +56,10 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"nb = %d, ngen = %d, nload = %d, nbranch = %d\n",pf->nbus,pf->ngen,pf->nload,pf->nbranch);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(pf->nbus*sizeof(struct _p_VERTEXDATA),&pf->bus);CHKERRQ(ierr);
-  ierr = PetscMalloc(pf->ngen*sizeof(struct _p_GEN),&pf->gen);CHKERRQ(ierr);
-  ierr = PetscMalloc(pf->nload*sizeof(struct _p_LOAD),&pf->load);CHKERRQ(ierr);
-  ierr = PetscMalloc(pf->nbranch*sizeof(struct _p_EDGEDATA),&pf->branch);CHKERRQ(ierr);
+  ierr = PetscCalloc1(pf->nbus,&pf->bus);CHKERRQ(ierr);
+  ierr = PetscCalloc1(pf->ngen,&pf->gen);CHKERRQ(ierr);
+  ierr = PetscCalloc1(pf->nload,&pf->load);CHKERRQ(ierr);
+  ierr = PetscCalloc1(pf->nbranch,&pf->branch);CHKERRQ(ierr);
   Bus = pf->bus; Gen = pf->gen; Load = pf->load; Branch = pf->branch;
 
   for(i=0; i < pf->nbus; i++) {
