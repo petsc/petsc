@@ -2992,12 +2992,16 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
 
   PetscFunctionBegin;
   /* Application of PSI^T or PHI^T (depending on applytranspose, see comment above) */
-  if (applytranspose) {
-    ierr = MatMultTranspose(pcbddc->coarse_phi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
-    if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcbddc->coarse_phi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
+  if (!pcbddc->benign_apply_coarse_only) {
+    if (applytranspose) {
+      ierr = MatMultTranspose(pcbddc->coarse_phi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
+      if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcbddc->coarse_phi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
+    } else {
+      ierr = MatMultTranspose(pcbddc->coarse_psi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
+      if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcbddc->coarse_psi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
+    }
   } else {
-    ierr = MatMultTranspose(pcbddc->coarse_psi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
-    if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcbddc->coarse_psi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
+    ierr = VecSet(pcbddc->vec1_P,zero);CHKERRQ(ierr);
   }
 
   /* add p0 to the last value of vec1_P holding the coarse dof relative to p0 */
@@ -3040,30 +3044,37 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   }
 
   /* Local solution on R nodes */
-  if (pcis->n) { /* in/out pcbddc->vec1_B,pcbddc->vec1_D */
+  if (pcis->n && !pcbddc->benign_apply_coarse_only) {
     ierr = PCBDDCSolveSubstructureCorrection(pc,pcis->vec1_B,pcis->vec1_D,applytranspose);CHKERRQ(ierr);
   }
-
   /* communications from coarse sol to local primal nodes */
   ierr = PCBDDCScatterCoarseDataBegin(pc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = PCBDDCScatterCoarseDataEnd(pc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
-  /* Sum contributions from two levels */
-  if (applytranspose) {
-    ierr = MatMultAdd(pcbddc->coarse_psi_B,pcbddc->vec1_P,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
-    if (pcbddc->switch_static) { ierr = MatMultAdd(pcbddc->coarse_psi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
-  } else {
-    ierr = MatMultAdd(pcbddc->coarse_phi_B,pcbddc->vec1_P,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
-    if (pcbddc->switch_static) { ierr = MatMultAdd(pcbddc->coarse_phi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
-  }
-  /* store p0 */
-  if (pcbddc->benign_n) {
-    PetscScalar *array;
-    PetscInt    j;
+  /* Sum contributions from the two levels */
+  if (!pcbddc->benign_apply_coarse_only) {
+    if (applytranspose) {
+      ierr = MatMultAdd(pcbddc->coarse_psi_B,pcbddc->vec1_P,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
+      if (pcbddc->switch_static) { ierr = MatMultAdd(pcbddc->coarse_psi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
+    } else {
+      ierr = MatMultAdd(pcbddc->coarse_phi_B,pcbddc->vec1_P,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
+      if (pcbddc->switch_static) { ierr = MatMultAdd(pcbddc->coarse_phi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
+    }
+    /* store p0 */
+    if (pcbddc->benign_n) {
+      PetscScalar *array;
+      PetscInt    j;
 
-    ierr = VecGetArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
-    for (j=0;j<pcbddc->benign_n;j++) pcbddc->benign_p0[j] = array[pcbddc->local_primal_size-pcbddc->benign_n+j];
-    ierr = VecRestoreArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+      ierr = VecGetArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+      for (j=0;j<pcbddc->benign_n;j++) pcbddc->benign_p0[j] = array[pcbddc->local_primal_size-pcbddc->benign_n+j];
+      ierr = VecRestoreArray(pcbddc->vec1_P,&array);CHKERRQ(ierr);
+    }
+  } else { /* expand the coarse solution */
+    if (applytranspose) {
+      ierr = MatMult(pcbddc->coarse_psi_B,pcbddc->vec1_P,pcis->vec1_B);CHKERRQ(ierr);
+    } else {
+      ierr = MatMult(pcbddc->coarse_phi_B,pcbddc->vec1_P,pcis->vec1_B);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

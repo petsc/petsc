@@ -1148,10 +1148,11 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       }
       ierr = MPI_Allreduce(&iszero_l,&benign_correction_is_zero,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     }
-    if (!benign_correction_is_zero) {
-      ierr = VecSet(pcis->vec1_global,0.);CHKERRQ(ierr);
+    if (!benign_correction_is_zero) { /* use the coarse solver only */
       ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
+      pcbddc->benign_apply_coarse_only = PETSC_TRUE;
       ierr = PCApply_BDDC(pc,pcis->vec1_global,pcbddc->benign_vec);CHKERRQ(ierr);
+      pcbddc->benign_apply_coarse_only = PETSC_FALSE;
       ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PCBDDCBenignGetOrSetP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
     }
@@ -1683,10 +1684,12 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = PCBDDCScalingRestriction(pc,z,pcis->vec1_B);CHKERRQ(ierr);
   } else {
-    if (pcbddc->switch_static) {
-      ierr = VecSet(pcis->vec1_D,zero);CHKERRQ(ierr);
+    if (!pcbddc->benign_apply_coarse_only) {
+      if (pcbddc->switch_static) {
+        ierr = VecSet(pcis->vec1_D,zero);CHKERRQ(ierr);
+      }
+      ierr = PCBDDCScalingRestriction(pc,r,pcis->vec1_B);CHKERRQ(ierr);
     }
-    ierr = PCBDDCScalingRestriction(pc,r,pcis->vec1_B);CHKERRQ(ierr);
   }
 
   /* Apply interface preconditioner
