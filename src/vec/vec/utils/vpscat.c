@@ -2425,6 +2425,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       rsvalues += olengths1[i];
     }
   }
+  printf("[%d] shared space offset %d %d %d\n",rank,to->sharedspaceoffset[0],to->sharedspaceoffset[1],to->sharedspaceoffset[2]);
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
   ierr = PetscFree(onodes1);CHKERRQ(ierr);
   ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
@@ -2527,6 +2528,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
     ierr = MPI_Win_shared_query(to->sharedwin,jj,&isize,&disp_unit,&from->sharedspaces[jj]);CHKERRQ(ierr);
     ierr = MPI_Win_shared_query(to->sharedoffsetwin,jj,&isize,&disp_unit,&ptr);CHKERRQ(ierr);
     from->sharedspacesoffset[jj] = ptr[mrank];
+    printf("[%d] jj %d mrank %d %d ptr[mrank]\n",rank,jj,mrank,ptr[mrank]);
   }
 
   from->local.nonmatching_computed = PETSC_FALSE;

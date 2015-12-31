@@ -96,6 +96,9 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       for (i=0; i<to->msize; i++) {
         if (to->sharedspaceoffset[i] != -1) {
           /* Pack the send data into the shared memory buffer */
+                 PetscMPIInt rank;
+        ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+        printf("[%d] i %d to->sharedspacestarts[i] %d dount %d first %d %g\n",rank,i,to->sharedspacestarts[i],to->sharedspacestarts[i+1]-to->sharedspacestarts[i],to->sharedspaceindices[to->sharedspacestarts[i]],xv[to->sharedspaceindices[to->sharedspacestarts[i]]]);
           PETSCMAP1(Pack)(to->sharedspacestarts[i+1]-to->sharedspacestarts[i],to->sharedspaceindices + to->sharedspacestarts[i],xv,to->sharedspace + bs*to->sharedspacestarts[i],bs);
         }
       }
@@ -194,8 +197,8 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
       if (from->sharedspacesoffset[i] > -1) {
         PetscMPIInt rank;
         ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-        printf("[%d] getting from shared memory partner %d %g\n",rank,i,from->sharedspaces[i][from->sharedspacesoffset[i]]);
-        ierr = PETSCMAP1(UnPack)(from->sharedspacestarts[i+1] - from->sharedspacestarts[i],&from->sharedspaces[i][from->sharedspacesoffset[i]],from->sharedspaceindices + from->sharedspacestarts[i],yv,addv,bs);CHKERRQ(ierr);
+        printf("[%d] getting from shared memory partner %d %d %g\n",rank,i,from->sharedspacesoffset[i],from->sharedspaces[i][bs*from->sharedspacesoffset[i]]);
+        ierr = PETSCMAP1(UnPack)(from->sharedspacestarts[i+1] - from->sharedspacestarts[i],&from->sharedspaces[i][bs*from->sharedspacesoffset[i]],from->sharedspaceindices + from->sharedspacestarts[i],yv,addv,bs);CHKERRQ(ierr);
       }
     }
   }
