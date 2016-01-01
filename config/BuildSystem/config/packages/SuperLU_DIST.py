@@ -97,17 +97,3 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.postInstall(output+err,'make.inc')
     return self.installDir
-
-  def consistencyChecks(self):
-    config.package.Package.consistencyChecks(self)
-    if self.argDB['with-'+self.package]:
-      if not self.blasLapack.checkForRoutine('slamch'):
-        raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()')
-      self.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
-      if not self.blasLapack.checkForRoutine('dlamch'):
-        raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()')
-      self.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
-      if not self.blasLapack.checkForRoutine('xerbla'):
-        raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()')
-      self.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
-    return
