@@ -7155,7 +7155,7 @@ $      Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
 $
 $          or
 $
-$           PetscInt, pointer :: ia(:),ja()
+$           PetscInt, pointer :: ia(:),ja(:)
 $    call  MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
 $      Acess the ith and jth entries via ia(i) and ja(j)
 
@@ -7474,7 +7474,7 @@ M*/
     accessed with MatDenseGetArrayF90().
 
     Synopsis:
-    MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
 
     Not collective
 
@@ -7487,7 +7487,7 @@ M*/
 
     Example of Usage:
 .vb
-       PetscScalar, pointer xx_v(:)
+       PetscScalar, pointer xx_v(:,:)
        ....
        call MatDenseGetArrayF90(x,xx_v,ierr)
        a = xx_v(3)
@@ -7505,7 +7505,7 @@ M*/
     MatSeqAIJGetArrayF90 - Accesses a matrix array from Fortran90.
 
     Synopsis:
-    MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
+    MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Not collective
 
@@ -7518,7 +7518,7 @@ M*/
 
     Example of Usage:
 .vb
-      PetscScalar, pointer xx_v(:,:)
+      PetscScalar, pointer xx_v(:)
       ....
       call MatSeqAIJGetArrayF90(x,xx_v,ierr)
       a = xx_v(3)
