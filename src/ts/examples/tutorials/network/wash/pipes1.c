@@ -468,7 +468,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
 
       /* Add network components */
       /*------------------------*/
-      ierr = PetscMalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
+      ierr = PetscCalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
       /* vertex */
       for (i=0; i<numVertices; i++) {
         junctions[i].id = i;
