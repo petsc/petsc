@@ -8,6 +8,8 @@ class Configure(config.package.GNUPackage):
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.3.tar.gz']
     self.download_cygwin  = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
+    self.download_osx     = ['http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.2.tar.gz']
     self.downloadfilename = 'mpich'
     self.skippackagewithoptions = 1
     self.isMPI = 1
@@ -57,5 +59,10 @@ class Configure(config.package.GNUPackage):
   def configure(self):
     if config.setCompilers.Configure.isCygwin(self.log) and config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
       self.download = self.download_cygwin
+    elif self.setCompilers.isDarwin(self.log):
+      (output, error, status) = config.base.Configure.executeShellCommand('uname -r')
+      ver = tuple(map(int,output.split('.')))
+      if ver >= (15,0,0): # ElCapitan/10.11
+        self.download = self.download_osx
     return config.package.Package.configure(self)
 
