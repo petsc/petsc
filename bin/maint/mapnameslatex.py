@@ -19,7 +19,7 @@ tokens = (
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
     'LOR', 'LAND', 'LNOT',
-    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL',
+    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL','BEGIN{VERBATIM}','END{VERBATIM}',
 
     # Assignment (=, *=, /=, %=, +=, -=, <<=, >>=, &=, ^=, |=)
     'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
@@ -69,6 +69,8 @@ t_HREF             = r'\\href\{'
 t_FINDEX           = r'\\findex\{'
 t_SINDEX           = r'\\sindex\{'
 t_TRL              = r'\\trl\{'
+t_BVERB            = r'\\begin\{verbatim\}'
+t_EVERB            = r'\\end\{verbatim\}'
 t_PLUS             = r'\+'
 t_MINUS            = r'-'
 t_TIMES            = r'\*'
@@ -166,7 +168,7 @@ lexer = lex.lex(optimize=1)
 if __name__ == "__main__":
 
     #
-    # use Use LOC as PETSC_DIR [for reading/writing relavent files]
+    # use Use LOC as PETSC_DIR [for reading/writing relevant files]
     #
     try:
         PETSC_DIR = sys.argv[1]
@@ -229,8 +231,9 @@ if __name__ == "__main__":
     lines = sys.stdin.read()
     lex.input(lines)
 
-    text    = ''
-    bracket = 0
+    text     = ''
+    bracket  = 0
+    vbracket = 0
     while 1:
         token = lex.token()       # Get a token
         if not token: break        # No more tokens
@@ -238,18 +241,25 @@ if __name__ == "__main__":
 	    print text
 	    text = ''
 	else:
+	    value = token.value
+            # verbatim environment disables bracket count
+	    if value == '\\begin{verbatim}':
+                vbracket = vbracket + 1;
             # \href cannot be used in many places in Latex
-	    if token.value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{']:
+	    if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0:
 		bracket = bracket + 1;
-            if bracket == 0:
+            if bracket == 0 and vbracket == 0:
 		value = token.value
 		if mappedstring.has_key(value):
                     mvalue = mappedstring[value].replace('_','\\_')
 		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
 		value = token.value
-	    if token.value[0] == '}' and bracket:
+	    if token.value[0] == '}' and bracket and vbracket == 0:
 		bracket = bracket - 1;
+            if value == '\\end{verbatim}' and vbracket:
+	        vbracket = vbracket - 1;
+
 	    text = text+value
 
 
