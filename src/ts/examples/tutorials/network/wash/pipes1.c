@@ -284,7 +284,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   /* set idx1 and idx2 */
-  ierr = PetscMalloc4(nidx,&idx1,nidx,&idx2,nidx,&idx1_h,nidx,&idx2_h);CHKERRQ(ierr);
+  ierr = PetscCalloc4(nidx,&idx1,nidx,&idx2,nidx,&idx1_h,nidx,&idx2_h);CHKERRQ(ierr);
   
   ierr = DMNetworkGetComponentDataArray(networkdm,&nwarr);CHKERRQ(ierr); 
   ierr = DMNetworkGetEdgeRange(networkdm,&Start, &End);CHKERRQ(ierr);
@@ -412,14 +412,14 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
-      ierr = PetscMalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
+      ierr = PetscCalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
       for (i=0; i<numEdges; i++) {
         edgelist[2*i] = i; edgelist[2*i+1] = i+1;
       }
 
       /* Add network components */
       /*------------------------*/
-      ierr = PetscMalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
+      ierr = PetscCalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
       /* vertex */
       for (i=0; i<numVertices; i++) {
         junctions[i].id = i;
@@ -461,7 +461,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
-      ierr = PetscMalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
+      ierr = PetscCalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
       edgelist[0] = 0; edgelist[1] = 3;  /* edge[0] */
       edgelist[2] = 3; edgelist[3] = 1;  /* edge[1] */
       edgelist[4] = 3; edgelist[5] = 2;  /* edge[2] */
@@ -507,14 +507,14 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
-      ierr = PetscMalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
+      ierr = PetscCalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
       edgelist[0] = 0; edgelist[1] = 3;  /* edge[0] */
       edgelist[2] = 3; edgelist[3] = 1;  /* edge[1] */
       edgelist[4] = 2; edgelist[5] = 3;  /* edge[2] */
 
       /* Add network components */
       /*------------------------*/
-      ierr = PetscMalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
+      ierr = PetscCalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
       /* vertex */
       for (i=0; i<numVertices; i++) {
         junctions[i].id = i;
