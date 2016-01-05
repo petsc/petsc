@@ -100,8 +100,8 @@ class Configure(config.base.Configure):
                 ejobs.append('MOAB_HDF5')
       else:
         for i in self.framework.packages:
-          if i.name.upper() == 'FFTW':
-            jobs.append('FFTW_COMPLEX')
+          if i.name.upper() in ['FFTW','SUPERLU_DIST']:
+            jobs.append(i.name.upper()+ '_COMPLEX')
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return
