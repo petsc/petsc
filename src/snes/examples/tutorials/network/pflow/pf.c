@@ -558,7 +558,7 @@ int main(int argc,char ** argv)
   }  
 #endif  
   /* Broadcast Sbase to all processors */
-  ierr = MPI_Bcast(&User.Sbase,1,MPIU_REAL,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&User.Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);

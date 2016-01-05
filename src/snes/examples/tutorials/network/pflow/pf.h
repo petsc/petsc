@@ -123,10 +123,10 @@ typedef struct{
   PetscScalar sbase; /* System base MVA */
   PetscInt    nbus,ngen,nbranch,nload; /* # of buses,gens,branches, and loads (includes elements which are
                                           out of service */
-  VERTEXDATA bus;
-  LOAD load;
-  GEN gen;
-  EDGEDATA branch;
+  VERTEXDATA  bus;
+  LOAD        load;
+  GEN         gen;
+  EDGEDATA    branch;
 }PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
