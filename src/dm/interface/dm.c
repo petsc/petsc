@@ -120,6 +120,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
     if (pEnd >= 0) {
       ierr = DMClone(dm->coordinateDM, &ncdm);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(*newdm, ncdm);CHKERRQ(ierr);
+      ierr = DMSetDefaultSection(ncdm, cs);CHKERRQ(ierr);
       ierr = DMDestroy(&ncdm);CHKERRQ(ierr);
     }
   }
