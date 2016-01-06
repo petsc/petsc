@@ -1,4 +1,4 @@
-ALL:PF
+ALL:pf
 CFLAGS	         = 
 FFLAGS	         = 
 CPPFLAGS         = 
