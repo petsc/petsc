@@ -24,7 +24,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
                 ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c
 
-EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
+EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -751,6 +751,10 @@ ex194: ex194.o chkopts
 ex195: ex195.o chkopts
 	-${CLINKER} -o ex195 ex195.o ${PETSC_MAT_LIB}
 	${RM} ex195.o
+
+ex196f90: ex196f90.o chkopts
+	-${CLINKER} -o ex196f90 ex196f90.o ${PETSC_MAT_LIB}
+	${RM} ex196f90.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
