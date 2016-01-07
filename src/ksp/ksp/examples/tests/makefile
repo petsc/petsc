@@ -1011,4 +1011,5 @@ TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
 TESTEXAMPLES_CUDA_DATAFILESPATH = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 runex43_6 runex43_7 runex43_8 ex43.rm
 TESTEXAMPLES_SUITESPARSE       = ex32.PETSc runex32_cholmod runex32_cholmod_seqsbaij ex32.rm
 TESTEXAMPLES_CHOMBO            =
+TESTEXAMPLES_SUPERLU_DIST_COMPLEX = ex17.PETSc runex17_superlu_dist runex17_superlu_dist_2 ex17.rm
 include ${PETSC_DIR}/lib/petsc/conf/test
