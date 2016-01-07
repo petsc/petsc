@@ -1,8 +1,8 @@
-commit 0ff88f59bf0f1009d458591baa95932bf9e185d0
+commit value of this commit
 
                 Time     Min to Max Range   Proportion of KSP
-VecScatterBegin 2.62e-03   - 33.3 %  29.2 %   4.21e+00 %
-VecScatterEnd   9.44e-03   - 78.6 % 116.2 %   1.52e+01 %
-~/petsc/src/ksp/ksp/examples/tests/benchmarkscatters (barry/utilize-hwloc) arch-opt-mpich
->>> (2.62e-03 + 2.62e-03)/(9.87e-04+1.00e-03)
-2.637141419224962
+VecScatterBegin 1.13e-03   - 35.5 %  23.9 %   2.79e+00 %
+VecScatterEnd   2.34e-03   - 32.4 %  45.7 %   5.78e+00 %
+
+>>> (2.62e-03+9.44e-03)/(1.13e-03 + 2.34e-03)
+3.4755043227665712

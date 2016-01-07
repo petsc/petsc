@@ -2445,7 +2445,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr  = PetscMalloc1(to->msize+1,&from->sharedspacestarts);CHKERRQ(ierr);  
   /* move data into receive scatter */
   ierr = PetscMalloc2(size,&lowner,nsends+1,&start);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,&lsharedowner,nsends+1,&sharedstart);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&lsharedowner,to->msize+1,&sharedstart);CHKERRQ(ierr);
   count = 0; from->starts[0] = start[0] = 0;
   sharedslots = 0;
   for (i=0; i<size; i++) {
