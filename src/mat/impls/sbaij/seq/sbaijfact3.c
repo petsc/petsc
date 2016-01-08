@@ -153,7 +153,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C,Mat A,const MatFactorIn
     /* invert diagonal block */
     diag = ba+k*9;
     ierr = PetscMemcpy(diag,dk,9*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
+    PetscBool wouldcrash;
+    //C
+    ierr = PetscKernel_A_gets_inverse_A_3(diag,shift,A->erroriffailure,&wouldcrash);CHKERRQ(ierr);
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

@@ -11,10 +11,11 @@
 
 */
 #include <petscsys.h>
+//#include <petsc/private/matimpl.h> 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_3"
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscReal shift)
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscReal shift,PetscBool crash,PetscBool *wouldcrash)
 {
   PetscInt  i__2,i__3,kp1,j,k,l,ll,i,ipvt[3],kb,k3;
   PetscInt  k4,j3;
@@ -24,6 +25,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
 /*     gaussian elimination with partial pivoting */
 
   PetscFunctionBegin;
+  *wouldcrash = PETSC_FALSE;
   shift = .333*shift*(1.e-12 + PetscAbsScalar(a[0]) + PetscAbsScalar(a[4]) + PetscAbsScalar(a[8]));
   /* Parameter adjustments */
   a -= 4;
@@ -84,7 +86,13 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
     }
   }
   ipvt[2] = 3;
-  if (a[12] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",2);
+  if (a[12] == 0.0) {
+    PetscErrorCode ierr;
+    if (!crash) {
+      ierr = PetscInfo1(NULL,"Zero pivot, row %D\n",2);CHKERRQ(ierr);
+      *wouldcrash = PETSC_TRUE;
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",2);
+  }
 
   /*
        Now form the inverse

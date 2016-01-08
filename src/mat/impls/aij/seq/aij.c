@@ -2983,7 +2983,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
     for (i=0; i<mbs; i++) {
       ij[0] = 3*i; ij[1] = 3*i + 1; ij[2] = 3*i + 2;
       ierr  = MatGetValues(A,3,ij,3,ij,diag);CHKERRQ(ierr);
-      ierr  = PetscKernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
+      PetscBool wouldcrash;
+      ierr  = PetscKernel_A_gets_inverse_A_3(diag,shift,A->erroriffailure,&wouldcrash);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_transpose_A_3(diag);CHKERRQ(ierr);
       diag += 9;
     }

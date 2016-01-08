@@ -63,7 +63,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       mdiag[0] = odiag[0]; mdiag[1] = odiag[1]; mdiag[2] = odiag[2]; mdiag[3] = odiag[3];
       mdiag[4] = odiag[4]; mdiag[5] = odiag[5]; mdiag[6] = odiag[6]; mdiag[7] = odiag[7];
       mdiag[8] = odiag[8];
-      ierr     = PetscKernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
+      PetscBool wouldcrash;
+      ierr     = PetscKernel_A_gets_inverse_A_3(diag,shift,A->erroriffailure,&wouldcrash);CHKERRQ(ierr);
       diag    += 9;
       mdiag   += 9;
     }

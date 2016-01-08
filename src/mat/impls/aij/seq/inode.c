@@ -2759,6 +2759,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   PetscErrorCode    ierr;
   PetscInt          n,m = a->inode.node_count,cnt = 0,i,j,row,i1,i2;
   PetscInt          sz,k,ipvt[5];
+  PetscBool         wouldcrash=PETSC_FALSE;
   const PetscInt    *sizes = a->inode.size,*idx,*diag = a->diag,*ii = a->i;
 
   PetscFunctionBegin;
@@ -2799,7 +2800,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         ierr = PetscKernel_A_gets_inverse_A_2(ibdiag+cnt,shift);CHKERRQ(ierr);
         break;
       case 3:
-        ierr = PetscKernel_A_gets_inverse_A_3(ibdiag+cnt,shift);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_3(ibdiag+cnt,shift,A->erroriffailure,&wouldcrash);CHKERRQ(ierr);
         break;
       case 4:
         ierr = PetscKernel_A_gets_inverse_A_4(ibdiag+cnt,shift);CHKERRQ(ierr);
@@ -2810,6 +2811,10 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       default:
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
+      if (wouldcrash) {
+        A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      }
+
       cnt += sizes[i]*sizes[i];
       row += sizes[i];
     }

@@ -22,7 +22,7 @@
 extern PetscErrorCode PetscLINPACKgefa(MatScalar*,PetscInt,PetscInt*);
 extern PetscErrorCode PetscLINPACKgedi(MatScalar*,PetscInt,PetscInt*,MatScalar*);
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar*,PetscReal);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar*,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar*,PetscReal,PetscBool,PetscBool*);
 
 #define PetscKernel_A_gets_inverse_A_4_nopivot(mat) 0; \
   { \
