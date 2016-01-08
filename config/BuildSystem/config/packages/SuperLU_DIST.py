@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'v4.3'
+    self.gitcommit        = 'v4.3-p1'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-superlu_dist.git',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.3.tar.gz']
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.3-p1.tar.gz']
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
     self.liblist          = [['libsuperlu_dist_4.3.a']]
