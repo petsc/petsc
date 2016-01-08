@@ -1229,6 +1229,9 @@ class CMakePackage(Package):
 
     if self.installNeeded(conffile):
 
+      if not self.cmake.found:
+        raise RuntimeError('CMake not found, needed to build '+self.PACKAGE+'. Rerun configure with --download-cmake.')
+
       # effectively, this is 'make clean'
       folder = os.path.join(self.packageDir, 'build')
       if os.path.isdir(folder):
