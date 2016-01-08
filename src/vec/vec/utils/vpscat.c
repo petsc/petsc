@@ -243,10 +243,17 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     }
   }
 #endif
-  ierr = MPI_Win_free(&to->sharedwin);CHKERRQ(ierr);
-  ierr = MPI_Win_free(&to->sharedoffsetwin);CHKERRQ(ierr);
+  printf("win %p %d\n",&to->sharedwin,to->sharedwin);
+  if (to->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&to->sharedwin);CHKERRQ(ierr);}
+  if (to->sharedoffsetwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&to->sharedoffsetwin);CHKERRQ(ierr);}
+  if (from->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&from->sharedwin);CHKERRQ(ierr);}
+  if (from->sharedoffsetwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&from->sharedoffsetwin);CHKERRQ(ierr);}
   ierr = PetscFree(to->sharedcnts);CHKERRQ(ierr);
-  ierr = PetscFree2(to->sharedspaceindices,to->sharedspacestarts);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedspaces);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedspaceindices);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedspacestarts);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedspacesoffset);CHKERRQ(ierr);
+  ierr = PetscFree(from->sharedcnts);CHKERRQ(ierr);
   ierr = PetscFree(from->sharedspaceindices);CHKERRQ(ierr);
   ierr = PetscFree(from->sharedspaces);CHKERRQ(ierr);
   ierr = PetscFree(from->sharedspacesoffset);CHKERRQ(ierr);
@@ -322,7 +329,11 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 
   /* allocate entire send scatter context */
   ierr = PetscNewLog(out,&out_to);CHKERRQ(ierr);
+  out_to->sharedwin       = MPI_WIN_NULL;
+  out_to->sharedoffsetwin = MPI_WIN_NULL;
   ierr = PetscNewLog(out,&out_from);CHKERRQ(ierr);
+  out_from->sharedwin       = MPI_WIN_NULL;
+  out_from->sharedoffsetwin = MPI_WIN_NULL;
 
   ny                = in_to->starts[in_to->n];
   out_to->n         = in_to->n;
@@ -453,7 +464,11 @@ PetscErrorCode VecScatterCopy_PtoP_AllToAll(VecScatter in,VecScatter out)
 
   /* allocate entire send scatter context */
   ierr = PetscNewLog(out,&out_to);CHKERRQ(ierr);
+  out_to->sharedwin       = MPI_WIN_NULL;
+  out_to->sharedoffsetwin = MPI_WIN_NULL;
   ierr = PetscNewLog(out,&out_from);CHKERRQ(ierr);
+  out_from->sharedwin       = MPI_WIN_NULL;
+  out_from->sharedoffsetwin = MPI_WIN_NULL;
 
   ny                = in_to->starts[in_to->n];
   out_to->n         = in_to->n;
@@ -2204,6 +2219,8 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
 
   /* allocate entire send scatter context */
   ierr  = PetscNewLog(ctx,&to);CHKERRQ(ierr);
+  to->sharedwin       = MPI_WIN_NULL;
+  to->sharedoffsetwin = MPI_WIN_NULL;
   to->n = nsends;
   for (n = 0, sendSize = 0; n < to->n; n++) sendSize += sendSizes[n];
 
@@ -2222,6 +2239,8 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
 
   /* allocate entire receive scatter context */
   ierr    = PetscNewLog(ctx,&from);CHKERRQ(ierr);
+  from->sharedwin       = MPI_WIN_NULL;
+  from->sharedoffsetwin = MPI_WIN_NULL;
   from->n = nrecvs;
   for (n = 0, recvSize = 0; n < from->n; n++) recvSize += recvSizes[n];
 
@@ -2379,6 +2398,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 
   /* allocate entire send scatter context */
   ierr  = PetscNewLog(ctx,&to);CHKERRQ(ierr);
+  to->sharedwin       = MPI_WIN_NULL;
+  to->sharedoffsetwin = MPI_WIN_NULL;
   to->n = nrecvs-nrecvshared;
 
   ierr  = PetscMalloc1(nrecvs-nrecvshared,&to->requests);CHKERRQ(ierr);
@@ -2387,7 +2408,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 
   ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(mscomm,&to->msize);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(slenshared,&to->sharedspaceindices,to->msize+1,&to->sharedspacestarts);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(slenshared,&to->sharedspaceindices);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(to->msize+1,&to->sharedspacestarts);CHKERRQ(ierr);
 
   ctx->todata   = (void*)to;
   to->starts[0] = 0;
@@ -2431,10 +2453,14 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
 
   ierr = MPI_Win_allocate_shared(to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&to->sharedspace,&to->sharedwin);CHKERRQ(ierr);
+  printf("win out %p %d\n",&to->sharedwin,to->sharedwin);
+  if (to->sharedwin == MPI_WIN_NULL) SETERRQ(PETSC_COMM_SELF,100,"what the");
   ierr = MPI_Info_free(&info);CHKERRQ(ierr);
 
   /* allocate entire receive scatter context */
   ierr = PetscNewLog(ctx,&from);CHKERRQ(ierr);
+  from->sharedwin       = MPI_WIN_NULL;
+  from->sharedoffsetwin = MPI_WIN_NULL;
   /* we don't actually know the correct value for from->n at this point so we use the upper bound */
   from->n = nsends;
 
