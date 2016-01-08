@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.includes  = ['revolve_c.h']
     self.liblist   = [['librevolve.a']]
     self.cxx       = 1
+    self.hastests  = 1
     # revolve include files are in the lib directory
     return
 
