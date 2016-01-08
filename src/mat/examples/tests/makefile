@@ -753,7 +753,7 @@ ex195: ex195.o chkopts
 	${RM} ex195.o
 
 ex196f90: ex196f90.o chkopts
-	-${CLINKER} -o ex196f90 ex196f90.o ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex196f90 ex196f90.o ${PETSC_MAT_LIB}
 	${RM} ex196f90.o
 
 #-----------------------------------------------------------------------------
