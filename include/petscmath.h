@@ -584,7 +584,7 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal po
 #ifndef PETSC_HAVE_LOG2
 PETSC_STATIC_INLINE PetscReal PetscLog2Real(PetscReal n)
 {
-  return PetscLogReal(n)/PetscLogReal(2);
+  return PetscLogReal(n)/PetscLogReal(2.0);
 }
 #endif
 #endif
