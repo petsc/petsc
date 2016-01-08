@@ -19,7 +19,7 @@ typedef struct _StackElement {
 #ifdef PETSC_HAVE_REVOLVE
 typedef struct _RevolveCTX {
   PetscBool reverseonestep;
-  PetscInt  where;
+  bool      where;
   PetscInt  snaps_in;
   PetscInt  stepsleft;
   PetscInt  check;
