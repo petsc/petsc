@@ -7,7 +7,7 @@
 
 /* Logging support */
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
-PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
 
@@ -185,17 +185,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   /* Handle generic TS options */
-  if (ts->trajectory) tflg = PETSC_TRUE;
-  else tflg = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ts_save_trajectory","Save the solution at each timestep","TSSetSaveTrajectory",tflg,&tflg,NULL);CHKERRQ(ierr);
-  if (tflg) {ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);}
-  if (ts->adjoint_solve) tflg = PETSC_TRUE;
-  else tflg = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ts_adjoint_solve","Solve the adjoint problem immediately after solving the forward problem","",tflg,&tflg,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-    ts->adjoint_solve = tflg;
-  }
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
@@ -428,24 +417,39 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
 
-    /* Handle specific TS options */
+  /* Handle specific TS options */
   if (ts->ops->setfromoptions) {
     ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
+  }
+
+  /* TS trajectory must be set after TS, since it may use some TS options above */
+  if (ts->trajectory) tflg = PETSC_TRUE;
+  else tflg = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_save_trajectory","Save the solution at each timestep","TSSetSaveTrajectory",tflg,&tflg,NULL);CHKERRQ(ierr);
+  if (tflg) {
+    ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+  }
+  if (ts->adjoint_solve) tflg = PETSC_TRUE;
+  else tflg = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_adjoint_solve","Solve the adjoint problem immediately after solving the forward problem","",tflg,&tflg,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+    ts->adjoint_solve = tflg;
+  }
+  if (ts->trajectory) {
+    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ts);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  if (ts->trajectory) {
-    ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
-  }
-
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (snes) {
     if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   }
+
   PetscFunctionReturn(0);
 }
 
@@ -459,6 +463,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
    Input Parameters:
 .  ts - the TS context obtained from TSCreate()
 
+Note: This routine should be called after all TS options have been set
 
    Level: intermediate
 
@@ -474,8 +479,7 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->trajectory) {
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
-    ierr = TSTrajectorySetType(ts->trajectory,TSTRAJECTORYBASIC);CHKERRQ(ierr);
-    ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
+    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3320,6 +3324,7 @@ PetscErrorCode  TSStep(TS ts)
 
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
+  ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
@@ -3378,10 +3383,10 @@ PetscErrorCode  TSAdjointStep(TS ts)
   ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts, "-ts_view_solution");CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
   if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->adjointstep)(ts);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
 
   ts->time_step_prev = ts->ptime - ts->ptime_prev;
   ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
@@ -3479,6 +3484,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   }
   ierr = TSSetUp(ts);CHKERRQ(ierr);
+  ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
   /* reset time step and iteration counters */
   ts->steps             = 0;
   ts->ksp_its           = 0;
@@ -3571,6 +3577,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
+
   /* reset time step and iteration counters */
   ts->steps             = 0;
   ts->ksp_its           = 0;

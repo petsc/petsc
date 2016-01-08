@@ -55,10 +55,13 @@ struct _TSTrajectoryOps {
   PetscErrorCode (*destroy)(TSTrajectory);
   PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
   PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal*);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TSTrajectory);
+  PetscErrorCode (*setup)(TSTrajectory,TS);
 };
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
+  PetscInt setupcalled;             /* true if setup has been called */
   void *data;
 };
 
@@ -298,7 +301,7 @@ PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
 PETSC_EXTERN PetscErrorCode TSAdjointEventMonitor(TS);
 PETSC_EXTERN PetscErrorCode TSEventMonitorInitialize(TS);
 
-PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+PETSC_EXTERN PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of step */
               TS_STEP_PENDING,    /* vec_sol advanced, but step has not been accepted yet */
@@ -323,5 +326,6 @@ struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
 
+PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, Disk_Write, Disk_Read;
 
 #endif

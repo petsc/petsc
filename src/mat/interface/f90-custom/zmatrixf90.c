@@ -6,7 +6,7 @@
 #define matdensegetarrayf90_       MATDENSEGETARRAYF90
 #define matdenserestorearrayf90_        MATDENSERESTOREARRAYF90
 #define matseqaijgetarrayf90_       MATSEQAIJGETARRAYF90
-#define matseqaijrestorearrayf90_        MATSEQDENSERESTOREARRAYF90
+#define matseqaijrestorearrayf90_  MATSEQAIJRESTOREARRAYF90
 #define matgetghostsf90_           MATGETGHOSTSF90
 #define matgetrowijf90_            MATGETROWIJF90
 #define matrestorerowijf90_        MATRESTOREROWIJF90

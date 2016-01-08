@@ -126,6 +126,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
   }
   ierr = PetscSFCreateRemoteOffsets(sf, section, section, &remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(sf, section, remoteOffsets, section, &sfDof);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   if (debug) {
     ierr = PetscPrintf(comm, "Dof SF for Preallocation:\n");CHKERRQ(ierr);
     ierr = PetscSFView(sfDof, NULL);CHKERRQ(ierr);
@@ -238,6 +239,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
   /* Create adj SF based on dof SF */
   ierr = PetscSFCreateRemoteOffsets(sfDof, rootSectionAdj, leafSectionAdj, &remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(sfDof, rootSectionAdj, remoteOffsets, leafSectionAdj, &sfAdj);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   if (debug) {
     ierr = PetscPrintf(comm, "Adjacency SF for Preallocation:\n");CHKERRQ(ierr);
     ierr = PetscSFView(sfAdj, NULL);CHKERRQ(ierr);

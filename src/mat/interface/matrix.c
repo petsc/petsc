@@ -7151,14 +7151,15 @@ PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
 $           PetscInt ia(1), ja(1)
 $           PetscOffset iia, jja
 $      call MatGetRowIJ(mat,shift,symmetric,inodecompressed,n,ia,iia,ja,jja,done,ierr)
+$      Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
 $
 $          or
 $
-$           PetscScalar, pointer :: xx_v(:)
+$           PetscInt, pointer :: ia(:),ja(:)
 $    call  MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
+$      Acess the ith and jth entries via ia(i) and ja(j)
 
 
-       Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatSeqAIJGetArray()
 @*/
@@ -7473,7 +7474,7 @@ M*/
     accessed with MatDenseGetArrayF90().
 
     Synopsis:
-    MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
 
     Not collective
 
@@ -7486,7 +7487,7 @@ M*/
 
     Example of Usage:
 .vb
-       PetscScalar, pointer xx_v(:)
+       PetscScalar, pointer xx_v(:,:)
        ....
        call MatDenseGetArrayF90(x,xx_v,ierr)
        a = xx_v(3)
@@ -7504,7 +7505,7 @@ M*/
     MatSeqAIJGetArrayF90 - Accesses a matrix array from Fortran90.
 
     Synopsis:
-    MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
+    MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Not collective
 
@@ -7517,7 +7518,7 @@ M*/
 
     Example of Usage:
 .vb
-      PetscScalar, pointer xx_v(:,:)
+      PetscScalar, pointer xx_v(:)
       ....
       call MatSeqAIJGetArrayF90(x,xx_v,ierr)
       a = xx_v(3)

@@ -30,6 +30,7 @@ configure_options = [
   '--download-spai=1',
   '--download-moab=1',
   '--download-saws',
+  '--download-revolve=1',
   ]
 
 if __name__ == '__main__':

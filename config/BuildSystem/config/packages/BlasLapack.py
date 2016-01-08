@@ -370,7 +370,7 @@ class Configure(config.package.Package):
         import glob
         blib = glob.glob('/usr/lib/libblas.*')
         if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
-          raise RuntimeError('Incomplete BLAS install; Perhaps blas package is installed - but blas-dev/blas-devel is required?')
+          raise RuntimeError('Incomplete system BLAS install detected. Perhaps you need to install blas-dev or blas-devel package - that contains /usr/lib/libblas.so using apt or yum or equivalent package manager?')
         if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') : pkg = 'fblaslapack'
         else: pkg = 'f2cblaslapack'
         raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
@@ -379,7 +379,7 @@ class Configure(config.package.Package):
         import glob
         llib = glob.glob('/usr/lib/liblapack.*')
         if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
-          raise RuntimeError('Incomplete LAPACK install; Perhaps lapack package is installed - but lapack-dev/lapack-devel is required?')
+          raise RuntimeError('Incomplete system LAPACK install detected. Perhaps you need to install lapack-dev or lapack-devel package - that contains /usr/lib/liblapack.so using apt or yum or equivalent package manager?')
         if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') : pkg = 'fblaslapack'
         else: pkg = 'f2cblaslapack'
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')

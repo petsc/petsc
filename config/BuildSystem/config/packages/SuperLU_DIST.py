@@ -3,12 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'v4.2'
+    self.gitcommit        = 'v4.3'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-superlu_dist.git',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.2.tar.gz']
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.3.tar.gz']
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
-    self.liblist          = [['libsuperlu_dist_4.2.a']]
+    self.liblist          = [['libsuperlu_dist_4.3.a']]
     # SuperLU_Dist does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.downloadonWindows= 1
@@ -45,7 +45,7 @@ class Configure(config.package.Package):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_4.2.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_4.3.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('INCS         = '+self.headers.toString(self.mpi.include)+' '+self.headers.toString(self.parmetis.include)+' '+self.headers.toString(self.metis.include)+'\n')
@@ -92,22 +92,8 @@ class Configure(config.package.Package):
 
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean && '+self.make.make+' lib LAAUX="smach.o dmach.o" && '+self.installSudo+'cp -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean && '+self.make.make+' lib && '+self.installSudo+'cp -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.postInstall(output+err,'make.inc')
     return self.installDir
-
-  def consistencyChecks(self):
-    config.package.Package.consistencyChecks(self)
-    if self.argDB['with-'+self.package]:
-      if not self.blasLapack.checkForRoutine('slamch'):
-        raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()')
-      self.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
-      if not self.blasLapack.checkForRoutine('dlamch'):
-        raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()')
-      self.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
-      if not self.blasLapack.checkForRoutine('xerbla'):
-        raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()')
-      self.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
-    return

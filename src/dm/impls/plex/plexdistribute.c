@@ -843,6 +843,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
   ierr = VecGetArray(originalVec, &originalValues);CHKERRQ(ierr);
   ierr = VecGetArray(newVec, &newValues);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(fieldSF, MPIU_SCALAR, originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(fieldSF, MPIU_SCALAR, originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
@@ -889,6 +890,7 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
 
   ierr = ISGetIndices(originalIS, &originalValues);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(fieldSF, MPIU_INT, (PetscInt *) originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(fieldSF, MPIU_INT, (PetscInt *) originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
@@ -936,6 +938,7 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
   ierr = PetscMalloc(fieldSize * dataSize, newData);CHKERRQ(ierr);
 
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
@@ -979,6 +982,7 @@ PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobal
   }
   /* Communicate and renumber cones */
   ierr = PetscSFCreateSectionSF(migrationSF, originalConeSection, remoteOffsets, newConeSection, &coneSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
   if (original) {
     PetscInt numCones;
@@ -1201,6 +1205,7 @@ PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGl
     ierr = PetscSectionSetChart(newParentSection,pStart,pEnd);CHKERRQ(ierr);
     ierr = PetscSFDistributeSection(migrationSF, origParentSection, &remoteOffsetsParents, newParentSection);CHKERRQ(ierr);
     ierr = PetscSFCreateSectionSF(migrationSF, origParentSection, remoteOffsetsParents, newParentSection, &parentSF);CHKERRQ(ierr);
+    ierr = PetscFree(remoteOffsetsParents);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(newParentSection,&newParentSize);CHKERRQ(ierr);
     ierr = PetscMalloc2(newParentSize,&newParents,newParentSize,&newChildIDs);CHKERRQ(ierr);
     if (original) {

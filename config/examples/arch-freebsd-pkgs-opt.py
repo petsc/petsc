@@ -24,6 +24,7 @@ configure_options = [
   '--download-chaco=1',
   '--download-spai=1',
   '--download-concurrencykit=1',
+  '--download-revolve=1',
   ]
 
 if __name__ == '__main__':
