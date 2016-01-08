@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
     self.compilers      = framework.require('config.compilers', self)
     self.mpi            = framework.require('config.packages.MPI', self)
     self.elemental      = framework.require('config.packages.elemental', self)
+    self.superlu_dist   = framework.require('config.packages.SuperLU_DIST', self)
     self.x              = framework.require('config.packages.X', self)
     self.fortrancpp     = framework.require('PETSc.options.fortranCPP', self)
     self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
