@@ -464,7 +464,7 @@ PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode TSViewFromOptions(TS A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
-
+PETSC_STATIC_INLINE PetscErrorCode TJViewFromOptions(TSTrajectory A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 #define TS_FILE_CLASSID 1211225
 

@@ -449,7 +449,7 @@ static PetscErrorCode ReCompute(TS ts,TJScheduler *tjsch,PetscInt stepnumbegin,P
   ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
   ts->steps = stepnumbegin; /* global step number */
-  for (i=ts->steps;i<stepnumend;i++) { /* assume fixed step size */
+  for (i=stepnumbegin;i<stepnumend;i++) { /* assume fixed step size */
     if (stack->solution_only && !tjsch->skip_trajectory) { /* revolve online need this */
       ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
@@ -467,6 +467,7 @@ static PetscErrorCode ReCompute(TS ts,TJScheduler *tjsch,PetscInt stepnumbegin,P
   }
   ierr = TSGetTimeStep(ts,&stepsize);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,-stepsize);CHKERRQ(ierr);
+  ts->trajectory->recomps += stepnumend-stepnumbegin; /* access TSTrajectory through ts object */
   ts->steps = adjsteps;
   ts->total_steps = stepnumend;
   PetscFunctionReturn(0);

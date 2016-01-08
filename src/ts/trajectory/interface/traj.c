@@ -75,7 +75,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 -   viewer - visualization context
 
     Options Database Key:
-.   -ts_view - calls TSView() at end of TSStep()
+.   -tstrajectory_view - calls TSTrajectoryView() at end of TSAdjointStep()
 
     Notes:
     The available visualization contexts include
@@ -100,7 +100,7 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tj,TS_CLASSID,1);
+  PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)tj),&viewer);CHKERRQ(ierr);
   }
@@ -110,6 +110,7 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  total number of recomputations for adjoint calculation=%D\n",tj->recomps);CHKERRQ(ierr);
     if (tj->ops->view) {
       ierr = (*tj->ops->view)(tj,viewer);CHKERRQ(ierr);
     }
@@ -372,5 +373,6 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
   }
 
   tj->setupcalled = PETSC_TRUE;
+  tj->recomps     = 0;
   PetscFunctionReturn(0);
 }
