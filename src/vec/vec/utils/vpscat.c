@@ -73,6 +73,17 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
         }
       }
 
+     for (i=0; i<to->msize; i++) {
+        if (to->sharedspaceoffset && to->sharedspaceoffset[i] != -1) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Via shared memory to local memory partner %d count %d first %d\n",rank,i,to->sharedspacestarts[i+1]-to->sharedspacestarts[i],to->sharedspaceindices[to->sharedspacestarts[i]]);
+        }
+      }
+     for (i=0; i<from->msize; i++) {
+        if (from->sharedspacesoffset && from->sharedspacesoffset[i] != -1) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Via shared memory from local memory partner %d count %d first %d\n",rank,i,from->sharedspacestarts[i+1]-from->sharedspacestarts[i],from->sharedspaceindices[to->sharedspacestarts[i]]);
+        }
+      }
+
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
 
@@ -243,7 +254,6 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     }
   }
 #endif
-  printf("win %p %d\n",&to->sharedwin,to->sharedwin);
   if (to->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&to->sharedwin);CHKERRQ(ierr);}
   if (to->sharedoffsetwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&to->sharedoffsetwin);CHKERRQ(ierr);}
   if (from->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&from->sharedwin);CHKERRQ(ierr);}
@@ -2452,8 +2462,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscFree(onodes1);CHKERRQ(ierr);
   ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
 
-  ierr = MPI_Win_allocate_shared(to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&to->sharedspace,&to->sharedwin);CHKERRQ(ierr);
-  printf("win out %p %d\n",&to->sharedwin,to->sharedwin);
+  ierr = MPI_Win_allocate_shared(bs*to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&to->sharedspace,&to->sharedwin);CHKERRQ(ierr);
   if (to->sharedwin == MPI_WIN_NULL) SETERRQ(PETSC_COMM_SELF,100,"what the");
   ierr = MPI_Info_free(&info);CHKERRQ(ierr);
 
@@ -2461,6 +2470,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscNewLog(ctx,&from);CHKERRQ(ierr);
   from->sharedwin       = MPI_WIN_NULL;
   from->sharedoffsetwin = MPI_WIN_NULL;
+  from->msize           = to->msize;
   /* we don't actually know the correct value for from->n at this point so we use the upper bound */
   from->n = nsends;
 
@@ -2570,6 +2580,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   to->bs     = bs;
 
   ierr = VecScatterCreateCommon_PtoS(from,to,ctx);CHKERRQ(ierr);
+  VecScatterView(ctx,PETSC_VIEWER_STDOUT_WORLD);
   PetscFunctionReturn(0);
 }
 
@@ -2885,6 +2896,7 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   waits              = to->rev_requests;
   to->rev_requests   = to->requests;
   to->requests       = waits;
+    VecScatterView(ctx,PETSC_VIEWER_STDOUT_WORLD);
   PetscFunctionReturn(0);
 }
 
@@ -3056,6 +3068,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
+    VecScatterView(ctx,PETSC_VIEWER_STDOUT_WORLD);
   PetscFunctionReturn(0);
 }
 

@@ -429,12 +429,16 @@ PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
 @*/
 PetscErrorCode  PetscCommSharedGlobalToLocal(PetscCommShared scomm,PetscMPIInt grank,PetscMPIInt *lrank)
 {
-  PetscMPIInt      low,high,t,i;
+  PetscMPIInt    low,high,t,i;
+  PetscBool      flg = PETSC_FALSE;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *lrank = -1;
   if (grank < scomm->ranks[0]) PetscFunctionReturn(0);
   if (grank > scomm->ranks[scomm->size-1]) PetscFunctionReturn(0);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-noshared",&flg,NULL);CHKERRQ(ierr);
+  if (flg) PetscFunctionReturn(0);
   low  = 0;
   high = scomm->size;
   while (high-low > 5) {
