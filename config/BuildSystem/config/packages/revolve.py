@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = 'f6b53533d72c71cbdf1a68ea2166edb59a01ce0b'
+    self.gitcommit = 'c8ab46128e20c11658181dd80afd1c756ccc81fe'
     self.download  = ['git://https://bitbucket.org/caidao22/pkg-revolve.git']
-    self.functions = ['revolve_action']
+    self.functions = ['revolve_create_offline']
     self.includes  = ['revolve_c.h']
     self.liblist   = [['librevolve.a']]
     self.cxx       = 1
