@@ -281,6 +281,11 @@ cdef class DMPlex(DM):
         PetscINCREF(iset.obj)
         return iset
 
+    def createPointNumbering(self):
+        cdef IS iset = IS()
+        CHKERR( DMPlexCreatePointNumbering(self.dm, &iset.iset) )
+        return iset
+
     def getNumLabels(self):
         cdef PetscInt nLabels = 0
         CHKERR( DMPlexGetNumLabels(self.dm, &nLabels) )
