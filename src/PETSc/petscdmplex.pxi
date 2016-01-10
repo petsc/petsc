@@ -68,6 +68,7 @@ cdef extern from * nogil:
     int DMPlexRemoveLabel(PetscDM,const_char[],PetscDMLabel*)
     int DMPlexGetCellNumbering(PetscDM,PetscIS*)
     int DMPlexGetVertexNumbering(PetscDM,PetscIS*)
+    int DMPlexCreatePointNumbering(PetscDM,PetscIS*)
 
     int DMPlexGetDepth(PetscDM,PetscInt*)
     #int DMPlexGetDepthLabel(PetscDM,PetscDMLabel*)
