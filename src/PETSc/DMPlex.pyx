@@ -281,6 +281,11 @@ cdef class DMPlex(DM):
         PetscINCREF(iset.obj)
         return iset
 
+    def createPointNumbering(self):
+        cdef IS iset = IS()
+        CHKERR( DMPlexCreatePointNumbering(self.dm, &iset.iset) )
+        return iset
+
     def getNumLabels(self):
         cdef PetscInt nLabels = 0
         CHKERR( DMPlexGetNumLabels(self.dm, &nLabels) )
@@ -523,6 +528,23 @@ cdef class DMPlex(DM):
                                         &sf.sf, &dmOverlap) )
         PetscCLEAR(self.obj); self.dm = dmOverlap
         return sf
+
+    def distributeField(self, SF sf not None,
+                        Section sec not None, Vec vec not None,
+                        Section newsec=None, Vec newvec=None):
+        cdef MPI_Comm ccomm = MPI_COMM_NULL
+        if newsec is None: newsec = Section()
+        if newvec is None: newvec = Vec()
+        if newsec.sec == NULL:
+            CHKERR( PetscObjectGetComm(<PetscObject>sec.sec, &ccomm) )
+            CHKERR( PetscSectionCreate(ccomm, &newsec.sec) )
+        if newvec.vec == NULL:
+            CHKERR( PetscObjectGetComm(<PetscObject>vec.vec, &ccomm) )
+            CHKERR( VecCreate(ccomm, &newvec.vec) )
+        CHKERR( DMPlexDistributeField(self.dm, sf.sf,
+                                      sec.sec, vec.vec,
+                                      newsec.sec, newvec.vec))
+        return (newsec, newvec)
 
     def createCoarsePointIS(self):
         cdef IS fpoint = IS()

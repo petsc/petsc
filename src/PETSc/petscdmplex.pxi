@@ -68,6 +68,7 @@ cdef extern from * nogil:
     int DMPlexRemoveLabel(PetscDM,const_char[],PetscDMLabel*)
     int DMPlexGetCellNumbering(PetscDM,PetscIS*)
     int DMPlexGetVertexNumbering(PetscDM,PetscIS*)
+    int DMPlexCreatePointNumbering(PetscDM,PetscIS*)
 
     int DMPlexGetDepth(PetscDM,PetscInt*)
     #int DMPlexGetDepthLabel(PetscDM,PetscDMLabel*)
@@ -115,7 +116,7 @@ cdef extern from * nogil:
     int DMPlexDistribute(PetscDM,PetscInt,PetscSF*,PetscDM*)
     int DMPlexDistributeOverlap(PetscDM,PetscInt,PetscSF*,PetscDM*)
     int DMPlexGetPartitioner(PetscDM,PetscPartitioner*)
-    #int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,Vec,PetscSection,Vec)
+    int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,PetscVec,PetscSection,PetscVec)
     #int DMPlexDistributeData(PetscDM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**)
 
     int DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscDMLabel,PetscIS*)
