@@ -758,7 +758,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
   switch (s) {
   case 1: GammaInv[0] = 1./GammaInv[0]; break;
   case 2: ierr = PetscKernel_A_gets_inverse_A_2(GammaInv,0);CHKERRQ(ierr); break;
-  case 3: ierr = PetscKernel_A_gets_inverse_A_3(GammaInv,0,PETSC_TRUE,NULL);CHKERRQ(ierr); break;
+  case 3: ierr = PetscKernel_A_gets_inverse_A_3(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   case 4: ierr = PetscKernel_A_gets_inverse_A_4(GammaInv,0);CHKERRQ(ierr); break;
   case 5: {
     PetscInt  ipvt5[5];
@@ -863,7 +863,7 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
   rhs[0]  = one - b3;
   rhs[1]  = one/three - a3*a3*b3;
   rhs[2]  = one/four - a3*a3*a3*b3;
-  ierr    = PetscKernel_A_gets_inverse_A_3(&M[0][0],0,PETSC_TRUE,NULL);CHKERRQ(ierr);
+  ierr    = PetscKernel_A_gets_inverse_A_3(&M[0][0],0,PETSC_FALSE,NULL);CHKERRQ(ierr);
   b1      = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
   b2      = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
   b4      = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
@@ -876,7 +876,7 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
   M[1][0]      = a4*a4*beta32beta2p-a3*a3*beta4jbetajp; M[1][1] = a2*a2*beta4jbetajp; M[1][2] = -a2*a2*beta32beta2p;
   M[2][0]      = b4*beta43*a3*a3-p43;                   M[2][1] = -b4*beta43*a2*a2;   M[2][2] = 0;
   rhs[0]       = one/two - gamma; rhs[1] = 0; rhs[2] = -a2*a2*p32;
-  ierr         = PetscKernel_A_gets_inverse_A_3(&M[0][0],0,PETSC_TRUE,NULL);CHKERRQ(ierr);
+  ierr         = PetscKernel_A_gets_inverse_A_3(&M[0][0],0,PETSC_FALSE,NULL);CHKERRQ(ierr);
   beta2p       = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
   beta3p       = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
   beta4p       = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
