@@ -613,7 +613,8 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   ierr = ISGetIndices(a, &aindices);CHKERRQ(ierr);
   ierr = PetscMalloc1(alen, &cindices);CHKERRQ(ierr);
   if (!drop) gtoltype = IS_GTOLM_MASK;
-  ISGlobalToLocalMappingApply(ltog,gtoltype,alen,aindices,&clen,cindices);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(ltog,gtoltype,alen,aindices,&clen,cindices);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   if (clen != alen) {
     cindices2 = cindices;
     ierr      = PetscMalloc1(clen, &cindices);CHKERRQ(ierr);
