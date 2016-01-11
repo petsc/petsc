@@ -384,6 +384,23 @@ runex17:
 	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex17_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex17_1.tmp
+runex17_2:
+	-@${MPIEXEC} -n 3 ./ex17 -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor_short -p 5 -norandom -ksp_type gmres \
+	   -pc_type jacobi -ksp_max_it 15 > ex17_1.tmp 2>&1; \
+	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex17_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex17_1.tmp
+runex17_superlu_dist:
+	-@${MPIEXEC} -n 1 ./ex17 -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex17_1.tmp 2>&1; \
+	   if (${DIFF} output/ex17_superlu_dist.out ex17_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex17_superlu_dist, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex17_1.tmp
+runex17_superlu_dist_2:
+	-@${MPIEXEC} -n 3 ./ex17 -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex17_1.tmp 2>&1; \
+	   if (${DIFF} output/ex17_superlu_dist.out ex17_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex17_superlu_dist_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex17_1.tmp
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex18:
 	-@${MPIEXEC} -n 1 ./ex18 -ksp_gmres_cgs_refinement_type refine_always -f  ${DATAFILESPATH}/matrices/arco1
@@ -978,7 +995,7 @@ TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc run
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
-TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
+TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 runex17_2 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
                                  ex25.PETSc runex25 ex25.rm ex27.PETSc runex27 ex25.rm \
@@ -994,4 +1011,5 @@ TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
 TESTEXAMPLES_CUDA_DATAFILESPATH = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 runex43_6 runex43_7 runex43_8 ex43.rm
 TESTEXAMPLES_SUITESPARSE       = ex32.PETSc runex32_cholmod runex32_cholmod_seqsbaij ex32.rm
 TESTEXAMPLES_CHOMBO            =
+TESTEXAMPLES_SUPERLU_DIST_COMPLEX = ex17.PETSc runex17_superlu_dist runex17_superlu_dist_2 ex17.rm
 include ${PETSC_DIR}/lib/petsc/conf/test
