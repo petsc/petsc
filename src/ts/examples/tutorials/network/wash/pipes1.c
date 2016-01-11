@@ -397,7 +397,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   case 0:
     /* pipeCase 0: */
     /* =============================
-    v0 --E0--> v1--E1--> v2 --E1-->v3
+    v0 --E0--> v1--E1--> v2 --E2-->v3
     ================================  */
     npipes = 3;
     ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-npipes", &npipes, PETSC_NULL);CHKERRQ(ierr);
