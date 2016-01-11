@@ -169,5 +169,23 @@ cdef class Sys:
         cdef PetscBool tval = PETSC_FALSE
         if flag: tval = PETSC_TRUE
         CHKERR( PetscInfoAllow(tval, NULL) )
-    
+
+    @classmethod
+    def registerCitation(cls, citation):
+        if not citation: raise ValueError("empty citation")
+        cdef const_char *cit = NULL
+        citation = str2bytes(citation, &cit)
+        cdef PetscBool set = get_citation(citation)
+        CHKERR( PetscCitationsRegister(cit, &set) )
+        set_citation(citation, <bint>set)
+
+cdef dict citations_registry = { }
+
+cdef PetscBool get_citation(object citation):
+    cdef bint is_set = citations_registry.get(citation)
+    return PETSC_TRUE if is_set else PETSC_FALSE
+
+cdef set_citation(object citation, bint is_set):
+    citations_registry[citation] = is_set
+
 # --------------------------------------------------------------------
