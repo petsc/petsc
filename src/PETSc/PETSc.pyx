@@ -448,5 +448,7 @@ def _finalize():
     class_registry.clear()
     global event_registry
     event_registry.clear()
+    global citations_registry
+    citations_registry.clear()
 
 # --------------------------------------------------------------------
