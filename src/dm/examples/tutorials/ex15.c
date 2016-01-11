@@ -10,10 +10,6 @@ static char help[] = "Tests VecView() functionality with DMDA objects when using
 #define DMDA_J 4
 #define DMDA_K 6
 
-#define DMDA_I 3
-#define DMDA_J 2
-#define DMDA_K 2
-
 const PetscReal dmda_i_val[] = { 1.10, 2.3006, 2.32444, 3.44006, 66.9009 };
 const PetscReal dmda_j_val[] = { 0.0, 0.25, 0.5, 0.75 };
 const PetscReal dmda_k_val[] = { 0.0, 1.1, 2.2, 3.3, 4.4, 5.5 };
@@ -198,7 +194,7 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio)
   if (!usempiio) { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",PETSC_FUNCTION_NAME);CHKERRQ(ierr); }
   else { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s [using mpi-io]\n",PETSC_FUNCTION_NAME);CHKERRQ(ierr); }
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,DMDA_I,DMDA_J,DMDA_K,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                        1,1,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
+                        3,2,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
 

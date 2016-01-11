@@ -92,13 +92,18 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
         ierr = MPI_Startall_isend(to->starts[to->n],nsends,swaits);CHKERRQ(ierr);
       }
     } else {
-      /* this version packs and sends one at a time */
-      for (i=0; i<to->msize; i++) {
-        if (to->sharedspaceoffset && to->sharedspaceoffset[i] != -1) {
-          /* Pack the send data into the shared memory buffer */
-          PETSCMAP1(Pack)(to->sharedspacestarts[i+1]-to->sharedspacestarts[i],to->sharedspaceindices + to->sharedspacestarts[i],xv,to->sharedspace + bs*to->sharedspacestarts[i],bs);
+      if (to->sharedspace) {
+        /* Pack the send data into my shared memory buffer  --- this is the normal forward scatter */
+        PETSCMAP1(Pack)(to->sharedcnt,to->sharedspaceindices,xv,to->sharedspace,bs);
+      } else {
+        /* Pack the send data into receivers shared memory buffer -- this is the normal backward scatter */
+        for (i=0; i<to->msize; i++) {
+          if (to->sharedspacesoffset && to->sharedspacesoffset[i] > -1) {
+            PETSCMAP1(Pack)(to->sharedspacestarts[i+1] - to->sharedspacestarts[i],to->sharedspaceindices + to->sharedspacestarts[i],xv,&to->sharedspaces[i][bs*to->sharedspacesoffset[i]],bs);
+          }
         }
       }
+      /* this version packs and sends one at a time */
       for (i=0; i<nsends; i++) {
         PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
         ierr = MPI_Start_isend(sstarts[i+1]-sstarts[i],swaits+i);CHKERRQ(ierr);
@@ -190,9 +195,15 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
       count--;
     }
     /* handle processes that share the same shared memory communicator */
-    for (i=0; i<from->msize; i++) {
-      if (from->sharedspacesoffset && from->sharedspacesoffset[i] > -1) {
-        ierr = PETSCMAP1(UnPack)(from->sharedspacestarts[i+1] - from->sharedspacestarts[i],&from->sharedspaces[i][bs*from->sharedspacesoffset[i]],from->sharedspaceindices + from->sharedspacestarts[i],yv,addv,bs);CHKERRQ(ierr);
+    if (from->sharedspace) {
+      /* unpack the data from my shared memory buffer  --- this is the normal backward scatter */
+      PETSCMAP1(UnPack)(from->sharedcnt,from->sharedspace,from->sharedspaceindices,yv,addv,bs);
+    } else {
+      /* unpack the data from each of my sending partners shared memory buffers --- this is the normal forward scatter */ 
+      for (i=0; i<from->msize; i++) {
+        if (from->sharedspacesoffset && from->sharedspacesoffset[i] > -1) {
+          ierr = PETSCMAP1(UnPack)(from->sharedspacestarts[i+1] - from->sharedspacestarts[i],&from->sharedspaces[i][bs*from->sharedspacesoffset[i]],from->sharedspaceindices + from->sharedspacestarts[i],yv,addv,bs);CHKERRQ(ierr);
+        }
       }
     }
   }

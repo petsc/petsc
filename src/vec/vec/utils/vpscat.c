@@ -74,13 +74,13 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       }
 
      for (i=0; i<to->msize; i++) {
-        if (to->sharedspaceoffset && to->sharedspaceoffset[i] != -1) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Via shared memory to local memory partner %d count %d first %d\n",rank,i,to->sharedspacestarts[i+1]-to->sharedspacestarts[i],to->sharedspaceindices[to->sharedspacestarts[i]]);
+       if (to->sharedspacestarts[i+1] > to->sharedspacestarts[i]) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Via shared memory to local memory partner %d count %d\n",rank,i,to->sharedspacestarts[i+1]-to->sharedspacestarts[i]);CHKERRQ(ierr);
         }
       }
      for (i=0; i<from->msize; i++) {
-        if (from->sharedspacesoffset && from->sharedspacesoffset[i] != -1) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Via shared memory from local memory partner %d count %d first %d\n",rank,i,from->sharedspacestarts[i+1]-from->sharedspacestarts[i],from->sharedspaceindices[to->sharedspacestarts[i]]);
+       if (from->sharedspacestarts[i+1] > from->sharedspacestarts[i]) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Via shared memory from local memory partner %d count %\n",rank,i,from->sharedspacestarts[i+1]-from->sharedspacestarts[i]);CHKERRQ(ierr);
         }
       }
 
@@ -2419,7 +2419,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(mscomm,&to->msize);CHKERRQ(ierr);
   ierr  = PetscMalloc1(slenshared,&to->sharedspaceindices);CHKERRQ(ierr);
-  ierr  = PetscMalloc1(to->msize+1,&to->sharedspacestarts);CHKERRQ(ierr);
+  ierr  = PetscCalloc1(to->msize+1,&to->sharedspacestarts);CHKERRQ(ierr);
 
   ctx->todata   = (void*)to;
   to->starts[0] = 0;
@@ -2444,7 +2444,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
         printf("[%d] jj %d msize %d\n",rank,jj,to->msize);
         to->sharedspacestarts[jj]   = to->sharedcnt;
         to->sharedspacestarts[jj+1] = to->sharedcnt + olengths1[i];
-        for (j=0; j<olengths1[i]; j++) to->sharedspaceindices[to->sharedspacestarts[jj] + j] = values[j] - base;
+        for (j=0; j<olengths1[i]; j++) to->sharedspaceindices[to->sharedcnt + j] = values[j] - base;
         to->sharedspaceoffset[jj] = to->sharedcnt;
         to->sharedcnt             += olengths1[i];
         to->sharedcnts[i]          =  PETSC_TRUE;
@@ -2478,7 +2478,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscMalloc4((ny-nprocslocal)*bs,&from->values,ny-nprocslocal,&from->indices,nsends+1,&from->starts,from->n,&from->procs);CHKERRQ(ierr);
   ctx->fromdata = (void*)from;
 
-  ierr  = PetscMalloc1(to->msize+1,&from->sharedspacestarts);CHKERRQ(ierr);  
+  ierr  = PetscCalloc1(to->msize+1,&from->sharedspacestarts);CHKERRQ(ierr);  
   /* move data into receive scatter */
   ierr = PetscMalloc2(size,&lowner,nsends+1,&start);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,&lsharedowner,to->msize+1,&sharedstart);CHKERRQ(ierr);
@@ -2580,7 +2580,6 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   to->bs     = bs;
 
   ierr = VecScatterCreateCommon_PtoS(from,to,ctx);CHKERRQ(ierr);
-  VecScatterView(ctx,PETSC_VIEWER_STDOUT_WORLD);
   PetscFunctionReturn(0);
 }
 
@@ -2896,7 +2895,6 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   waits              = to->rev_requests;
   to->rev_requests   = to->requests;
   to->requests       = waits;
-    VecScatterView(ctx,PETSC_VIEWER_STDOUT_WORLD);
   PetscFunctionReturn(0);
 }
 
@@ -3068,7 +3066,6 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
-    VecScatterView(ctx,PETSC_VIEWER_STDOUT_WORLD);
   PetscFunctionReturn(0);
 }
 
