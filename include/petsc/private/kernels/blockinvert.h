@@ -21,7 +21,7 @@
 
 extern PetscErrorCode PetscLINPACKgefa(MatScalar*,PetscInt,PetscInt*);
 extern PetscErrorCode PetscLINPACKgedi(MatScalar*,PetscInt,PetscInt*,MatScalar*);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar*,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar*,PetscReal,PetscBool,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar*,PetscReal,PetscBool,PetscBool*);
 
 #define PetscKernel_A_gets_inverse_A_4_nopivot(mat) 0; \
@@ -98,14 +98,14 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar*,PetscReal,
     mat[10] += mat[11] * mat[14] * di; \
   }
 
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4(MatScalar*,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4(MatScalar*,PetscReal,PetscBool,PetscBool*);
 # if defined(PETSC_HAVE_SSE)
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(MatScalar*);
 # endif
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar*,PetscInt*,MatScalar*,PetscReal);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar*,PetscReal);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar*,PetscReal);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar*,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar*,PetscInt*,MatScalar*,PetscReal,PetscBool,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar*,PetscReal,PetscBool,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar*,PetscReal,PetscBool,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar*,PetscReal,PetscBool,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*,MatScalar*,PetscReal);
 
 /*

@@ -11,7 +11,6 @@
 
 */
 #include <petscsys.h>
-//#include <petsc/private/matimpl.h> 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_3"
@@ -22,7 +21,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
   MatScalar *aa,*ax,*ay,work[9],stmp;
   MatReal   tmp,max;
 
-/*     gaussian elimination with partial pivoting */
+  /* gaussian elimination with partial pivoting */
 
   PetscFunctionBegin;
   *zeropivotdetected = PETSC_FALSE;
@@ -34,7 +33,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
     kp1 = k + 1;
     k3  = 3*k;
     k4  = k3 + k;
-/*        find l = pivot index */
+    /* find l = pivot index */
 
     i__2 = 4 - k;
     aa   = &a[k4];
@@ -54,7 +53,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
         a[l + k3] = shift;
       }
     }
-/*           interchange if necessary */
+    /* interchange if necessary */
 
     if (l != k) {
       stmp      = a[l + k3];
@@ -62,14 +61,14 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
       a[k4]     = stmp;
     }
 
-/*           compute multipliers */
+    /* compute multipliers */
 
     stmp = -1. / a[k4];
     i__2 = 3 - k;
     aa   = &a[1 + k4];
     for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 
-/*           row elimination with column indexing */
+    /* row elimination with column indexing */
 
     ax = &a[k4+1];
     for (j = kp1; j <= 3; ++j) {
@@ -95,10 +94,10 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
   }
 
   /*
-       Now form the inverse
+   Now form the inverse
   */
 
-  /*     compute inverse(u) */
+  /* compute inverse(u) */
 
   for (k = 1; k <= 3; ++k) {
     k3    = 3*k;
@@ -120,7 +119,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
     }
   }
 
-  /*    form inverse(u)*inverse(l) */
+  /* form inverse(u)*inverse(l) */
 
   for (kb = 1; kb <= 2; ++kb) {
     k   = 3 - kb;

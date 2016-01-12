@@ -50,7 +50,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag    = v + 4*diag_offset[i];
       diag[0]  = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
       mdiag[0] = odiag[0]; mdiag[1] = odiag[1]; mdiag[2] = odiag[2]; mdiag[3] = odiag[3];
-      ierr     = PetscKernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+      ierr     = PetscKernel_A_gets_inverse_A_2(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       diag    += 4;
       mdiag   += 4;
     }
@@ -75,7 +76,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag  = v + 16*diag_offset[i];
       ierr   = PetscMemcpy(diag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr   = PetscMemcpy(mdiag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr   = PetscKernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+      ierr   = PetscKernel_A_gets_inverse_A_4(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       diag  += 16;
       mdiag += 16;
     }
@@ -85,7 +87,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag  = v + 25*diag_offset[i];
       ierr   = PetscMemcpy(diag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr   = PetscMemcpy(mdiag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr   = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
+      ierr   = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       diag  += 25;
       mdiag += 25;
     }
@@ -95,7 +98,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag  = v + 36*diag_offset[i];
       ierr   = PetscMemcpy(diag,odiag,36*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr   = PetscMemcpy(mdiag,odiag,36*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr   = PetscKernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
+      ierr   = PetscKernel_A_gets_inverse_A_6(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       diag  += 36;
       mdiag += 36;
     }
@@ -105,7 +109,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag  = v + 49*diag_offset[i];
       ierr   = PetscMemcpy(diag,odiag,49*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr   = PetscMemcpy(mdiag,odiag,49*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr   = PetscKernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
+      ierr   = PetscKernel_A_gets_inverse_A_7(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       diag  += 49;
       mdiag += 49;
     }

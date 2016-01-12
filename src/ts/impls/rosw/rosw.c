@@ -757,16 +757,16 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
 
   switch (s) {
   case 1: GammaInv[0] = 1./GammaInv[0]; break;
-  case 2: ierr = PetscKernel_A_gets_inverse_A_2(GammaInv,0);CHKERRQ(ierr); break;
+  case 2: ierr = PetscKernel_A_gets_inverse_A_2(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   case 3: ierr = PetscKernel_A_gets_inverse_A_3(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
-  case 4: ierr = PetscKernel_A_gets_inverse_A_4(GammaInv,0);CHKERRQ(ierr); break;
+  case 4: ierr = PetscKernel_A_gets_inverse_A_4(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   case 5: {
     PetscInt  ipvt5[5];
     MatScalar work5[5*5];
-    ierr = PetscKernel_A_gets_inverse_A_5(GammaInv,ipvt5,work5,0);CHKERRQ(ierr); break;
+    ierr = PetscKernel_A_gets_inverse_A_5(GammaInv,ipvt5,work5,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   }
-  case 6: ierr = PetscKernel_A_gets_inverse_A_6(GammaInv,0);CHKERRQ(ierr); break;
-  case 7: ierr = PetscKernel_A_gets_inverse_A_7(GammaInv,0);CHKERRQ(ierr); break;
+  case 6: ierr = PetscKernel_A_gets_inverse_A_6(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
+  case 7: ierr = PetscKernel_A_gets_inverse_A_7(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for %D stages",s);
   }
   for (i=0; i<s*s; i++) t->GammaInv[i] = PetscRealPart(GammaInv[i]);

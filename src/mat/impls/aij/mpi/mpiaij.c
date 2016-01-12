@@ -2461,6 +2461,7 @@ PetscErrorCode  MatInvertBlockDiagonal_MPIAIJ(Mat A,const PetscScalar **values)
 
   PetscFunctionBegin;
   ierr = MatInvertBlockDiagonal(a->A,values);CHKERRQ(ierr);
+  A->errortype = a->A->errortype;
   PetscFunctionReturn(0);
 }
 

@@ -2975,7 +2975,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
     for (i=0; i<mbs; i++) {
       ij[0] = 2*i; ij[1] = 2*i + 1;
       ierr  = MatGetValues(A,2,ij,2,ij,diag);CHKERRQ(ierr);
-      ierr  = PetscKernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+      ierr  = PetscKernel_A_gets_inverse_A_2(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       ierr  = PetscKernel_A_gets_transpose_A_2(diag);CHKERRQ(ierr);
       diag += 4;
     }
@@ -2985,6 +2986,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       ij[0] = 3*i; ij[1] = 3*i + 1; ij[2] = 3*i + 2;
       ierr  = MatGetValues(A,3,ij,3,ij,diag);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_inverse_A_3(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+       if (zeropivotdetected) break;
       ierr  = PetscKernel_A_gets_transpose_A_3(diag);CHKERRQ(ierr);
       diag += 9;
     }
@@ -2993,7 +2995,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
     for (i=0; i<mbs; i++) {
       ij[0] = 4*i; ij[1] = 4*i + 1; ij[2] = 4*i + 2; ij[3] = 4*i + 3;
       ierr  = MatGetValues(A,4,ij,4,ij,diag);CHKERRQ(ierr);
-      ierr  = PetscKernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+      ierr  = PetscKernel_A_gets_inverse_A_4(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       ierr  = PetscKernel_A_gets_transpose_A_4(diag);CHKERRQ(ierr);
       diag += 16;
     }
@@ -3002,7 +3005,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
     for (i=0; i<mbs; i++) {
       ij[0] = 5*i; ij[1] = 5*i + 1; ij[2] = 5*i + 2; ij[3] = 5*i + 3; ij[4] = 5*i + 4;
       ierr  = MatGetValues(A,5,ij,5,ij,diag);CHKERRQ(ierr);
-      ierr  = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
+      ierr  = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       ierr  = PetscKernel_A_gets_transpose_A_5(diag);CHKERRQ(ierr);
       diag += 25;
     }
@@ -3011,7 +3015,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
     for (i=0; i<mbs; i++) {
       ij[0] = 6*i; ij[1] = 6*i + 1; ij[2] = 6*i + 2; ij[3] = 6*i + 3; ij[4] = 6*i + 4; ij[5] = 6*i + 5;
       ierr  = MatGetValues(A,6,ij,6,ij,diag);CHKERRQ(ierr);
-      ierr  = PetscKernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
+      ierr  = PetscKernel_A_gets_inverse_A_6(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       ierr  = PetscKernel_A_gets_transpose_A_6(diag);CHKERRQ(ierr);
       diag += 36;
     }
@@ -3020,7 +3025,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
     for (i=0; i<mbs; i++) {
       ij[0] = 7*i; ij[1] = 7*i + 1; ij[2] = 7*i + 2; ij[3] = 7*i + 3; ij[4] = 7*i + 4; ij[5] = 7*i + 5; ij[5] = 7*i + 6;
       ierr  = MatGetValues(A,7,ij,7,ij,diag);CHKERRQ(ierr);
-      ierr  = PetscKernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
+      ierr  = PetscKernel_A_gets_inverse_A_7(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       ierr  = PetscKernel_A_gets_transpose_A_7(diag);CHKERRQ(ierr);
       diag += 49;
     }
@@ -3039,6 +3045,9 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
     ierr = PetscFree3(v_work,v_pivots,IJ);CHKERRQ(ierr);
   }
   a->ibdiagvalid = PETSC_TRUE;
+  if (zeropivotdetected) {
+    A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+  }
   PetscFunctionReturn(0);
 }
 

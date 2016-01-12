@@ -143,6 +143,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       flg;
   PetscReal      shift = info->shiftamount;
+  PetscBool      zeropivotdetected;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -221,9 +222,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     /* ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
-    PetscBool zeropivotdetected;
-    //B
     ierr = PetscKernel_A_gets_inverse_A_3(pv,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
     pj = b->j + bdiag[i+1] + 1;
