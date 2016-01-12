@@ -10,7 +10,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
-PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
+PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;
@@ -65,6 +65,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       mdiag[4] = odiag[4]; mdiag[5] = odiag[5]; mdiag[6] = odiag[6]; mdiag[7] = odiag[7];
       mdiag[8] = odiag[8];
       ierr     = PetscKernel_A_gets_inverse_A_3(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) break;
       diag    += 9;
       mdiag   += 9;
     }
@@ -122,6 +123,9 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
     ierr = PetscFree2(v_work,v_pivots);CHKERRQ(ierr);
   }
   a->idiagvalid = PETSC_TRUE;
+  if (zeropivotdetected) {
+    A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+  }
   PetscFunctionReturn(0);
 }
 

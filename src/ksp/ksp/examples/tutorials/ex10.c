@@ -173,6 +173,9 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (!rank && flg1) {
+      ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    }
   }
 
   /* Check whether A is symmetric */
