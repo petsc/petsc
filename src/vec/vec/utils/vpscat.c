@@ -474,7 +474,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   ierr = MPI_Info_free(&info);CHKERRQ(ierr);
 
   /* copy the to parts for the shared memory copies between processes */
-  out_from->sharedcnt = out_to->sharedcnt;
+  out_from->sharedcnt = in_from->sharedcnt;
   out_from->msize     = in_from->msize;
   ierr = PetscMalloc1(out_from->msize+1,&out_from->sharedspacestarts);CHKERRQ(ierr);
   ierr = PetscMemcpy(out_from->sharedspacestarts,in_from->sharedspacestarts,(out_from->msize+1)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -2594,6 +2594,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
     ierr = MPI_Win_shared_query(sharedoffsetwin,jj,&isize,&disp_unit,&ptr);CHKERRQ(ierr);
     from->sharedspacesoffset[jj] = ptr[mrank];
   }
+  ierr = MPI_Win_free(&sharedoffsetwin);CHKERRQ(ierr);
 
   from->local.nonmatching_computed = PETSC_FALSE;
   from->local.n_nonmatching        = 0;
