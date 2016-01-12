@@ -106,7 +106,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar*,PetscInt*,
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar*,PetscReal,PetscBool,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar*,PetscReal,PetscBool,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar*,PetscReal,PetscBool,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*,MatScalar*,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*,MatScalar*,PetscReal,PetscBool,PetscBool*);
 
 /*
     A = inv(A)    A_gets_inverse_A

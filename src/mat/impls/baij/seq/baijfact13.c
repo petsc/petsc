@@ -106,8 +106,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
     }
     /* invert diagonal block */
     w    = ba + 9*diag_offset[i];
-    //C
     ierr = PetscKernel_A_gets_inverse_A_3(w,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -260,6 +260,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
   MatScalar      p5,p6,p7,p8,p9,x5,x6,x7,x8,x9;
   MatScalar      *ba   = b->a,*aa = a->a;
   PetscReal      shift = info->shiftamount;
+  PetscBool      zeropivotdetected;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(9*(n+1),&rtmp);CHKERRQ(ierr);
@@ -339,9 +340,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
     }
     /* invert diagonal block */
     w    = ba + 9*diag_offset[i];
-    PetscBool zeropivotdetected;
-    //C
     ierr = PetscKernel_A_gets_inverse_A_3(w,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -371,6 +371,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       flg;
   PetscReal      shift = info->shiftamount;
+  PetscBool      zeropivotdetected;
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */
@@ -446,9 +447,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     /* ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
-    PetscBool zeropivotdetected;
-    //B
     ierr = PetscKernel_A_gets_inverse_A_3(pv,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+     if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
