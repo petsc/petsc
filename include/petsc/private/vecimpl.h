@@ -278,7 +278,6 @@ typedef struct {
   PetscInt               *winstarts;    /* displacements in the processes I am putting to */
 #endif
   PetscMPIInt            msize,sharedcnt;           /* total to entries that are going to processes with the same shared memory space */
-  PetscBool              *sharedcnts;               /* [nrecv] PETSC_TRUE if receiver is in same shared memory space */
   PetscScalar            *sharedspace;              /* space each process puts data to be read from other processes; allocated by MPI */
   PetscScalar            **sharedspaces;            /* [msize] space other processes put data to be read from this processes. */
   PetscInt               *sharedspacesoffset;       /* [msize] offset into sharedspaces, that I will read from */

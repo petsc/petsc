@@ -452,7 +452,6 @@ PetscErrorCode  PetscCommSharedGlobalToLocal(PetscCommShared scomm,PetscMPIInt g
       *lrank = i;
       int rank;
       MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-      printf("[%d] jj %d\n",rank,*lrank);
       PetscFunctionReturn(0);
     }
   }
