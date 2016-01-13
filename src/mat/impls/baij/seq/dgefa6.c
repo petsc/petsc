@@ -23,6 +23,8 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar *a,PetscRea
   /* gaussian elimination with partial pivoting */
 
   PetscFunctionBegin;
+  if (zeropivotdetected) *zeropivotdetected = PETSC_FALSE;
+
   shift = .25*shift*(1.e-12 + PetscAbsScalar(a[0]) + PetscAbsScalar(a[7]) + PetscAbsScalar(a[14]) + PetscAbsScalar(a[21]) + PetscAbsScalar(a[28]) + PetscAbsScalar(a[35]));
   /* Parameter adjustments */
   a -= 7;
