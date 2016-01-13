@@ -253,11 +253,11 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
       } else {
         d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
       }
+      fcg->ned = ksp->its-1;
     }
     ++i;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  if (eigs) fcg->ned = ksp->its-1;
   PetscFunctionReturn(0);
 }
 

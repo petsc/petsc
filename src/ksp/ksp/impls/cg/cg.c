@@ -248,6 +248,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     }
     ksp->rnorm = dp;
     CHKERRQ(ierr);KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
+    if (eigs) cg->ned = ksp->its;
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
@@ -274,7 +275,6 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  if (eigs) cg->ned = ksp->its;
   PetscFunctionReturn(0);
 }
 
