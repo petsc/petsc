@@ -1,3 +1,5 @@
+#requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
+
 ALL:pf
 CFLAGS	         = 
 FFLAGS	         = 
