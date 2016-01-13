@@ -2260,7 +2260,7 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
 .vb
       character *20 string
       integer   flg, ierr
-      call PetscOptionsGetString(NULL_CHARACTER,'-s',string,flg,ierr)
+      call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
 .ve
 
    Notes: if the option is given but no string is provided then an empty string is returned and set is given the value of PETSC_TRUE
