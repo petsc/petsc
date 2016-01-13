@@ -1612,6 +1612,11 @@ if (dlclose(handle)) {
       for ev in envVarChecklist:
         if ev in os.environ:
           self.argDB[ev] = os.environ[ev]
+
+    # abort if FCFLAGS and FFLAGS both set, but to different values
+    if self.argDB.has_key('FFLAGS') and self.argDB.has_key('FCFLAGS'):
+      if self.argDB['FCFLAGS'] != self.argDB['FFLAGS']:
+        raise RuntimeError('FCFLAGS and FFLAGS are both set, but with different values (FCFLAGS=%s, FFLAGS=%s)'%(self.argDB['FCFLAGS'],self.argDB['FFLAGS']))
     return
 
   def checkIntoShared(self,symbol,lib):
