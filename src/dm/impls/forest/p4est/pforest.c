@@ -1631,6 +1631,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
       ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
       ierr = PetscSFDistributeSection(pointTransferSF,rootSection,&remoteOffsets,leafSection);CHKERRQ(ierr);
       ierr = PetscSFCreateSectionSF(pointTransferSF,rootSection,remoteOffsets,leafSection,sf);CHKERRQ(ierr);
+      ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&pointTransferSF);CHKERRQ(ierr);
