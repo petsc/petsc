@@ -146,7 +146,12 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 
 .seealso: DMProjectFunction(), DMComputeL2Diff()
 @*/
-PetscErrorCode DMPlexProjectField(DM dm, Vec U, void (**funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode mode, Vec X)
+PetscErrorCode DMPlexProjectField(DM dm, Vec U,
+                                  void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                 PetscReal, const PetscReal[], PetscScalar[]),
+                                  InsertMode mode, Vec X)
 {
   Vec            localX, localU;
   PetscErrorCode ierr;

@@ -457,18 +457,24 @@ PetscErrorCode DMProjectFunctionLocal_Plex(DM dm, PetscReal time, PetscErrorCode
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFieldLocal"
-PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode mode, Vec localX)
+PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU,
+                                       void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                      PetscReal, const PetscReal[], PetscScalar[]),
+                                       InsertMode mode, Vec localX)
 {
-  DM                dmAux;
-  PetscDS           prob, probAux = NULL;
-  Vec               A;
-  PetscSection      section, sectionAux = NULL;
-  PetscDualSpace   *sp;
-  PetscInt         *Ncf;
-  PetscScalar      *values, *u, *u_x, *a, *a_x;
-  PetscReal        *x, *v0, *J, *invJ, detJ;
-  PetscInt          Nf, dim, spDim, totDim, numValues, cStart, cEnd, cEndInterior, c, f, d, v, comp, maxHeight;
-  PetscErrorCode    ierr;
+  DM              dmAux;
+  PetscDS         prob, probAux = NULL;
+  Vec             A;
+  PetscSection    section, sectionAux = NULL;
+  PetscDualSpace *sp;
+  PetscInt       *Ncf;
+  PetscScalar    *values, *u, *u_x, *a, *a_x;
+  PetscReal      *x, *v0, *J, *invJ, detJ;
+  PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
+  PetscInt        Nf, NfAux = 0, dim, spDim, totDim, numValues, cStart, cEnd, cEndInterior, c, f, d, v, comp, maxHeight;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetMaxProjectionHeight(dm,&maxHeight);CHKERRQ(ierr);
@@ -480,13 +486,18 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
   ierr = PetscMalloc2(Nf, &sp, Nf, &Ncf);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetEvaluationArrays(prob, &u, NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, NULL);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(dmAux, &sectionAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
   }
   ierr = DMPlexInsertBoundaryValues(dm, localU, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -534,7 +545,7 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
             CoordinatesRefToReal(dim, dim, v0, J, &points[q*dim], x);
             ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, coefficients,    NULL, u, u_x, NULL);CHKERRQ(ierr);
             ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, coefficientsAux, NULL, a, a_x, NULL);CHKERRQ(ierr);
-            (*funcs[f])(u, NULL, u_x, a, NULL, a_x, x, &values[v]);
+            (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, NULL, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &values[v]);
           }
         } else {
           for (comp = 0; comp < Ncf[f]; ++comp) values[v+comp] = 0.0;
