@@ -561,7 +561,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSchurComplement_Basic"
 /* Developer Notes: This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
-'PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatSchurComplementAinvType ainvtype, MatReuse preuse,Mat *newpmat)
+PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatSchurComplementAinvType ainvtype, MatReuse preuse,Mat *newpmat)
 {
   PetscErrorCode ierr;
   Mat            A=0,Ap=0,B=0,C=0,D=0;
