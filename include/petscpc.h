@@ -101,6 +101,8 @@ PETSC_EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]
 PETSC_EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 PETSC_EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(PC,Vec,Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetApplySymmetricLeft(PC,PetscErrorCode (*)(PC,Vec,Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetApplySymmetricRight(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyBA(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyTranspose(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetSetUp(PC,PetscErrorCode (*)(PC));
