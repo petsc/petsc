@@ -17,7 +17,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
   PetscInt       *diag_offset,i,bs = A->rmap->bs,mbs = a->mbs,ipvt[5],bs2 = bs*bs,*v_pivots;
   MatScalar      *v    = a->a,*odiag,*diag,*mdiag,work[25],*v_work;
   PetscReal      shift = 0.0;
-  PetscBool      allowzeropivot,zeropivotdetected;
+  PetscBool      allowzeropivot,zeropivotdetected=PETSC_FALSE;
 
   PetscFunctionBegin;
   allowzeropivot = PetscNot(A->erroriffailure);

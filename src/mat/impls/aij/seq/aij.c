@@ -2949,7 +2949,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
   PetscInt       i,bs = PetscAbs(A->rmap->bs),mbs = A->rmap->n/bs,ipvt[5],bs2 = bs*bs,*v_pivots,ij[7],*IJ,j;
   MatScalar      *diag,work[25],*v_work;
   PetscReal      shift = 0.0;
-  PetscBool      allowzeropivot,zeropivotdetected;
+  PetscBool      allowzeropivot,zeropivotdetected=PETSC_FALSE;
 
   PetscFunctionBegin;
   allowzeropivot = PetscNot(A->erroriffailure);
