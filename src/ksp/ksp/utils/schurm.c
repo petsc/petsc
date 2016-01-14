@@ -561,7 +561,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSchurComplement_Basic"
 /* Developer Notes: This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
-PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatSchurComplementAinvType ainvtype, MatReuse preuse,Mat *newpmat)
+'PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatSchurComplementAinvType ainvtype, MatReuse preuse,Mat *newpmat)
 {
   PetscErrorCode ierr;
   Mat            A=0,Ap=0,B=0,C=0,D=0;
@@ -641,8 +641,8 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     before forming inv(diag(A00)).
 
     Sometimes users would like to provide problem-specific data in the Schur complement, usually only for special row
-    and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
-    "MatNestGetSubMat_C" to their function.  If their function needs to fall back to the default implementation, it
+    and column index sets.  In that case, the user should call PetscObjectComposeFunction() on the *S matrix and pass mreuse of MAT_REUSE_MATRIX to set
+    "MatGetSchurComplement_C" to their function.  If their function needs to fall back to the default implementation, it
     should call MatGetSchurComplement_Basic().
 
     Level: advanced
