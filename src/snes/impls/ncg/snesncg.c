@@ -463,15 +463,18 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   Level: beginner
 
   Options Database:
-+   -snes_ncg_type <fr, prp, dy, hs, cd> - Choice of conjugate-gradient update parameter.
++   -snes_ncg_type <fr, prp, dy, hs, cd> - Choice of conjugate-gradient update parameter, default is prp.
 .   -snes_linesearch_type <cp,l2,basic> - Line search type.
 -   -snes_ncg_monitor - Print relevant information about the ncg iteration.
 
-Notes: This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
-gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
-chooses the initial search direction as F(x) for the initial guess x.
+   Notes: This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
+          gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
+          chooses the initial search direction as F(x) for the initial guess x.
 
-The default type is PRP.
+   References:
+
+    Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
+   SIAM Review, 57(4), 2015
 
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESNQN

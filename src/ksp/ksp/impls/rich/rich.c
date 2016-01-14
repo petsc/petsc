@@ -269,9 +269,9 @@ static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool se
     Supports only left preconditioning
 
   References:
-  "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
+  L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
    Differential Equations, with an Application to the Stresses in a Masonry Dam",
-  L. F. Richardson, Philosophical Transactions of the Royal Society of London. Series A,
+  Philosophical Transactions of the Royal Society of London. Series A,
   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911), pp. 307-357.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,

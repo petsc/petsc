@@ -536,10 +536,16 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType r
    The N-GMRES method combines m previous solutions into a minimum-residual solution by solving a small linearized
    optimization problem at each iteration.
 
+   Very similar to the SNESANDERSON algorithm.
+
    References:
 
-   "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", C. W. Oosterlee and T. Washio,
+   C. W. Oosterlee and T. Washio, "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", 
    SIAM Journal on Scientific Computing, 21(5), 2000.
+
+   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
+   SIAM Review, 57(4), 2015
+
 
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/

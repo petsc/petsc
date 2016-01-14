@@ -90,6 +90,13 @@ PetscErrorCode SNESDestroy_ASPIN(SNES snes)
 
    Level: intermediate
 
+   References:
+
+   X.-C. Cai and D. E. Keyes, "Nonlinearly preconditioned inexact {Newton} algorithms",  SIAM J. Sci. Comput., 24, 2002.
+
+   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+   SIAM Review, 57(4), 2015
+
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNASM, SNESGetNPC(), SNESGetNPCSide()
 
 M*/

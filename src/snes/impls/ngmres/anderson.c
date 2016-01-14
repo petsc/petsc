@@ -190,7 +190,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
 }
 
 /*MC
-  SNESAnderson - Anderson Mixing method.
+  SNESANDERSON - Anderson Mixing method.
 
    Level: beginner
 
@@ -207,10 +207,16 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
    The Anderson Mixing method combines m previous solutions into a minimum-residual solution by solving a small linearized
    optimization problem at each iteration.
 
+   Very similar to the SNESNGMRES algorithm.
+
    References:
 
     "D. G. Anderson. Iterative procedures for nonlinear integral equations.
     J. Assoc. Comput. Mach., 12:547-560, 1965."
+
+   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers", 
+   SIAM Review, 57(4), 2015
+
 
 .seealso: SNESNGMRES, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/

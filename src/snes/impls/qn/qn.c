@@ -818,6 +818,8 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
       Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
 
+      Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
+       SIAM Review, 57(4), 2015
 
       Level: beginner
 
