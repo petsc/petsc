@@ -751,6 +751,8 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
           size = int(f.read())
           f.close()
           os.remove(filename)
+        else:
+          size = -4
       except:
         size = -1
         self.framework.logPrint('Error checking attribute(aligned)')
