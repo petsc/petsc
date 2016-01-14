@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   /* Prescribe a Dirichlet condition on u on the boundary
        Label "marker" is made by the mesh creation routine */
   bcField[0] = 0;
-  ierr = DMPlexGetStratumIS(dm, "marker", 1, &bcPointIS[0]);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(dm, "marker", 1, &bcPointIS[0]);CHKERRQ(ierr);
   /* Create a PetscSection with this data layout */
   ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcField, NULL, bcPointIS, NULL, &section);CHKERRQ(ierr);
   ierr = ISDestroy(&bcPointIS[0]);CHKERRQ(ierr);

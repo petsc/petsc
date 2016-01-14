@@ -374,8 +374,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (user->bcType == NEUMANN) {
     DMLabel label;
 
-    ierr = DMPlexCreateLabel(*dm, "boundary");CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
+    ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
@@ -386,12 +386,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     while (cdm) {
       PetscBool hasBdLabel;
 
-      ierr = DMPlexHasLabel(cdm, "marker", &hasBdLabel);CHKERRQ(ierr);
+      ierr = DMHasLabel(cdm, "marker", &hasBdLabel);CHKERRQ(ierr);
       if (!hasBdLabel) {
         DMLabel label;
 
-        ierr = DMPlexCreateLabel(cdm, "marker");CHKERRQ(ierr);
-        ierr = DMPlexGetLabel(cdm, "marker", &label);CHKERRQ(ierr);
+        ierr = DMCreateLabel(cdm, "marker");CHKERRQ(ierr);
+        ierr = DMGetLabel(cdm, "marker", &label);CHKERRQ(ierr);
         ierr = DMPlexMarkBoundaryFaces(cdm, label);CHKERRQ(ierr);
         ierr = DMPlexLabelComplete(cdm, label);CHKERRQ(ierr);
       }

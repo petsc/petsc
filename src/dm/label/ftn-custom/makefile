@@ -3,12 +3,12 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zplex.c zplexcreate.c zplexdistribute.c zplexinterpolate.c zplexsubmesh.c zplexexodusii.c zplexgmsh.c zplexfluent.c
+SOURCEC  = zdmlabel.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscdm
-LOCDIR   = src/dm/impls/plex/ftn-custom/
+LOCDIR   = src/dm/label/ftn-custom/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

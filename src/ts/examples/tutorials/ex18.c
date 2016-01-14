@@ -695,13 +695,13 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
     user->initialGuess[1] = user->exactFuncs[1];
   }
   /* Set BC */
-  ierr = DMPlexGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   if (label) {
     const PetscInt id = 1;
 
     ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   }
-  ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
