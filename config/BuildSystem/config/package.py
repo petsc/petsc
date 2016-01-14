@@ -467,10 +467,13 @@ class Package(config.base.Configure):
     self.log.write('********Output of running make on '+self.PACKAGE+' follows *******\n')
     self.log.write(output)
     self.log.write('********End of Output of running make on '+self.PACKAGE+' *******\n')
+    subconfDir = os.path.join(self.confDir, 'lib', 'petsc', 'conf')
+    if not os.path.isdir(subconfDir):
+      os.makedirs(subconfDir)
     makefile       = os.path.join(self.packageDir, mkfile)
-    makefileSaved  = os.path.join(self.confDir, 'lib','petsc','conf','pkg.conf.'+self.package)
+    makefileSaved  = os.path.join(subconfDir, 'pkg.conf.'+self.package)
     gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
-    gcommfileSaved = os.path.join(self.confDir,'lib','petsc','conf', 'pkg.gitcommit.'+self.package)
+    gcommfileSaved = os.path.join(subconfDir, 'pkg.gitcommit.'+self.package)
     import shutil
     shutil.copyfile(makefile,makefileSaved)
     if os.path.exists(gcommfile):
@@ -1225,6 +1228,9 @@ class CMakePackage(Package):
     fd.close()
 
     if self.installNeeded(conffile):
+
+      if not self.cmake.found:
+        raise RuntimeError('CMake not found, needed to build '+self.PACKAGE+'. Rerun configure with --download-cmake.')
 
       # effectively, this is 'make clean'
       folder = os.path.join(self.packageDir, 'build')
