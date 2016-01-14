@@ -864,7 +864,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
   MatScalar      *ba = b->a,*aa,*ap;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr,dk[4],uik[4];
   PetscReal      shift = info->shiftamount;
-  PetscBool      zeropivotdetected;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
   /* initialization */
@@ -985,7 +985,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
     /* invert diagonal block */
     diag = ba+k*4;
     ierr = PetscMemcpy(diag,dk,4*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A_2(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+    allowzeropivot = PetscNot(A->erroriffailure);
+    ierr = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
@@ -1037,7 +1038,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
   MatScalar      *ba = b->a,*aa,*ap,dk[8],uik[8];
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   PetscReal      shift = info->shiftamount;
-  PetscBool      zeropivotdetected;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
   /* initialization */
@@ -1124,7 +1125,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
     /* invert diagonal block */
     diag = ba+k*4;
     ierr = PetscMemcpy(diag,dk,4*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A_2(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+    allowzeropivot = PetscNot(A->erroriffailure);
+    ierr = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];

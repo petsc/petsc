@@ -2759,10 +2759,11 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   PetscErrorCode    ierr;
   PetscInt          n,m = a->inode.node_count,cnt = 0,i,j,row,i1,i2;
   PetscInt          sz,k,ipvt[5];
-  PetscBool         zeropivotdetected=PETSC_FALSE;
+  PetscBool         allowzeropivot,zeropivotdetected=PETSC_FALSE;
   const PetscInt    *sizes = a->inode.size,*idx,*diag = a->diag,*ii = a->i;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
   if (omega != 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
   if (fshift == -1.0) fshift = 0.0; /* negative fshift indicates do not error on zero diagonal; this code never errors on zero diagonal */
   if (fshift != 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
@@ -2797,16 +2798,16 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         ibdiag[cnt] = 1.0/ibdiag[cnt];
         break;
       case 2:
-        ierr = PetscKernel_A_gets_inverse_A_2(ibdiag+cnt,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_2(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
         break;
       case 3:
-        ierr = PetscKernel_A_gets_inverse_A_3(ibdiag+cnt,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_3(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
         break;
       case 4:
-        ierr = PetscKernel_A_gets_inverse_A_4(ibdiag+cnt,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_4(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
         break;
       case 5:
-        ierr = PetscKernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
         break;
       default:
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);

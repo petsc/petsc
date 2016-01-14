@@ -17,9 +17,11 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
   PetscInt       *diag_offset,i,bs = A->rmap->bs,mbs = a->mbs,ipvt[5],bs2 = bs*bs,*v_pivots;
   MatScalar      *v    = a->a,*odiag,*diag,*mdiag,work[25],*v_work;
   PetscReal      shift = 0.0;
-  PetscBool      zeropivotdetected;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
+
   if (a->idiagvalid) {
     if (values) *values = a->idiag;
     PetscFunctionReturn(0);
@@ -50,7 +52,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag    = v + 4*diag_offset[i];
       diag[0]  = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
       mdiag[0] = odiag[0]; mdiag[1] = odiag[1]; mdiag[2] = odiag[2]; mdiag[3] = odiag[3];
-      ierr     = PetscKernel_A_gets_inverse_A_2(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      ierr     = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
       if (zeropivotdetected) break;
       diag    += 4;
       mdiag   += 4;
@@ -65,7 +67,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       mdiag[0] = odiag[0]; mdiag[1] = odiag[1]; mdiag[2] = odiag[2]; mdiag[3] = odiag[3];
       mdiag[4] = odiag[4]; mdiag[5] = odiag[5]; mdiag[6] = odiag[6]; mdiag[7] = odiag[7];
       mdiag[8] = odiag[8];
-      ierr     = PetscKernel_A_gets_inverse_A_3(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      ierr     = PetscKernel_A_gets_inverse_A_3(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
       if (zeropivotdetected) break;
       diag    += 9;
       mdiag   += 9;
@@ -76,7 +78,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag  = v + 16*diag_offset[i];
       ierr   = PetscMemcpy(diag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr   = PetscMemcpy(mdiag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr   = PetscKernel_A_gets_inverse_A_4(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      ierr   = PetscKernel_A_gets_inverse_A_4(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
       if (zeropivotdetected) break;
       diag  += 16;
       mdiag += 16;
@@ -87,7 +89,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag  = v + 25*diag_offset[i];
       ierr   = PetscMemcpy(diag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr   = PetscMemcpy(mdiag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr   = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      ierr   = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
       if (zeropivotdetected) break;
       diag  += 25;
       mdiag += 25;
@@ -98,7 +100,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag  = v + 36*diag_offset[i];
       ierr   = PetscMemcpy(diag,odiag,36*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr   = PetscMemcpy(mdiag,odiag,36*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr   = PetscKernel_A_gets_inverse_A_6(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      ierr   = PetscKernel_A_gets_inverse_A_6(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
       if (zeropivotdetected) break;
       diag  += 36;
       mdiag += 36;
@@ -109,7 +111,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
       odiag  = v + 49*diag_offset[i];
       ierr   = PetscMemcpy(diag,odiag,49*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr   = PetscMemcpy(mdiag,odiag,49*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr   = PetscKernel_A_gets_inverse_A_7(diag,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+      ierr   = PetscKernel_A_gets_inverse_A_7(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
       if (zeropivotdetected) break;
       diag  += 49;
       mdiag += 49;

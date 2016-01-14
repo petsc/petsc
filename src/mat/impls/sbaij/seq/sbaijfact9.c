@@ -17,7 +17,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
   MatScalar      u13,u14,u15,u16,u17,u18,u19,u20,u21,u22,u23,u24,u25,u26,u27;
   MatScalar      u28,u29,u30,u31,u32,u33,u34,u35;
   PetscReal      shift = info->shiftamount;
-  PetscBool      zeropivotdetected;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
   /* initialization */
@@ -261,7 +261,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
     /* invert diagonal block */
     d    = ba+k*36;
     ierr = PetscMemcpy(d,dk,36*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A_6(d,shift,!A->erroriffailure,&zeropivotdetected);CHKERRQ(ierr);
+    allowzeropivot = PetscNot(A->erroriffailure);
+    ierr = PetscKernel_A_gets_inverse_A_6(d,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
