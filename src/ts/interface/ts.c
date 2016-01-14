@@ -6709,6 +6709,8 @@ PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS,PetscRe
     Note:
     This function should be used to ensure the state is in a valid part of the space.
     For example, one can ensure here all values are positive.
+
+    Level: advanced
 @*/
 PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* accept)
 {

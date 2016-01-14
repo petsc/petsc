@@ -809,16 +809,12 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       perturbs the problem the Jacobian represents to be P(x, b) - x = 0, where P(x, b) is the preconditioner.
 
       References:
-
-      Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
-
-      R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi-Newton Matrices and their use in Limited Memory Methods,
++   1. -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
+.   2. -   R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi Newton Matrices and their use in Limited Memory Methods,
       Technical Report, Northwestern University, June 1992.
-
-      Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
+.   3. -   Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
       Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
-
-      Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
+-   4. -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
        SIAM Review, 57(4), 2015
 
       Level: beginner

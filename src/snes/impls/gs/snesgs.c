@@ -331,8 +331,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
   its parent's Gauss-Seidel routine associated with it.
 
    References:
-
-   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+.  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types)

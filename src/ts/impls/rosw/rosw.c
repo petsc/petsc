@@ -111,7 +111,7 @@ M*/
      This is strongly A-stable with R(infty) = 0.73. The embedded method of order 2 is strongly A-stable with R(infty) = 0.73.
 
      References:
-     Rang and Angermann, New Rosenbrock-W methods of order 3 for partial differential algebraic equations of index 1, 2005.
+.  1. -   Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
      Level: intermediate
 
@@ -126,7 +126,7 @@ M*/
      This is strongly A-stable with R(infty) = 0. The embedded method of order 2 is strongly A-stable with R(infty) = 0.48.
 
      References:
-     Rang and Angermann, New Rosenbrock-W methods of order 3 for partial differential algebraic equations of index 1, 2005.
+.  1. -   Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
      Level: intermediate
 
@@ -141,7 +141,7 @@ M*/
      Both the third order and embedded second order methods are stiffly accurate and L-stable.
 
      References:
-     Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
+.  1. -   Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
      Level: intermediate
 
@@ -159,7 +159,7 @@ M*/
      This method is called ROS3 in the paper.
 
      References:
-     Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
+.  1. -   Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
      Level: intermediate
 
@@ -174,7 +174,7 @@ M*/
      A-stable SPP explicit order 3, 3 stages, CFL 1 (eff = 1/3)
 
      References:
-     Emil Constantinescu
+.     Emil Constantinescu
 
      Level: intermediate
 
@@ -189,7 +189,7 @@ M*/
      L-stable (A-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
 
      References:
-     Emil Constantinescu
+.     Emil Constantinescu
 
      Level: intermediate
 
@@ -204,7 +204,7 @@ M*/
      L-stable (L-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
 
      References:
-     Emil Constantinescu
+.     Emil Constantinescu
 
      Level: intermediate
 
@@ -221,9 +221,8 @@ M*/
      This method does not provide a dense output formula.
 
      References:
-     Kaps and Rentrop, Generalized Runge-Kutta methods of order four with stepsize control for stiff ordinary differential equations, 1979.
-
-     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
++   1. -  Kaps and Rentrop, Generalized Runge Kutta methods of order four with stepsize control for stiff ordinary differential equations, 1979.
+-   2. -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
@@ -242,9 +241,8 @@ M*/
      This method does not provide a dense output formula.
 
      References:
-     Shampine, Implementation of Rosenbrock methods, 1982.
-
-     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
++   1. -  Shampine, Implementation of Rosenbrock methods, 1982.
+-   2. -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
@@ -263,9 +261,8 @@ M*/
      This method does not provide a dense output formula.
 
      References:
-     van Veldhuizen, D-stability and Kaps-Rentrop methods, 1984.
-
-     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
++   1. -  van Veldhuizen, D stability and Kaps Rentrop methods, 1984.
+-   2. -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
@@ -284,7 +281,7 @@ M*/
      This method does not provide a dense output formula.
 
      References:
-     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
+.  1. -   Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 

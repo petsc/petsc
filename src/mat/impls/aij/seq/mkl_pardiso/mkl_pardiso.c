@@ -1194,7 +1194,8 @@ PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F,PetscInt icntl,PetscInt i
 
    Level: beginner
 
-   References: Mkl_Pardiso Users' Guide
+   References:
+.      Mkl_Pardiso Users' Guide
 
 .seealso: MatGetFactor()
 @*/

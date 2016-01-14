@@ -2508,6 +2508,7 @@ PetscErrorCode  PetscOptionsLeft(PetscOptions options)
   Output Parameter:
 .   options - Options database object
 
+  Level: advanced
 
 @*/
 PetscErrorCode  PetscOptionsCreate(PetscOptions *options)

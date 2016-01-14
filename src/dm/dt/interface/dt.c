@@ -439,7 +439,7 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,Pets
    Level: intermediate
 
    References:
-   Golub and Welsch, Calculation of Quadrature Rules, Math. Comp. 23(106), 221--230, 1969.
+.   1. - Golub and Welsch, Calculation of Quadrature Rules, Math. Comp. 23(106), 1969.
 
 .seealso: PetscDTLegendreEval()
 @*/
@@ -708,8 +708,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   Level: intermediate
 
   References:
-  Karniadakis and Sherwin.
-  FIAT
+.  1. - Karniadakis and Sherwin.  FIAT
 
 .seealso: PetscDTGaussTensorQuadrature(), PetscDTGaussQuadrature()
 @*/

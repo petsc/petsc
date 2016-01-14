@@ -1291,11 +1291,10 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
    Concepts: additive Schwarz method
 
     References:
-    M Dryja, OB Widlund, An additive variant of the Schwarz alternating method for the case of many subregions
-     - Courant Institute, New York University Technical report
-
-    Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
-    Cambridge University Press, ISBN 0-521-49589-X.
++   1. - M Dryja, OB Widlund, An additive variant of the Schwarz alternating method for the case of many subregions
+     Courant Institute, New York University Technical report
+-   2. - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
+    Cambridge University Press.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCBJACOBI,  PCGASMGetSubKSP(), PCGASMSetSubdomains(),

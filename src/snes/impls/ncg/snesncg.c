@@ -472,8 +472,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
           chooses the initial search direction as F(x) for the initial guess x.
 
    References:
-
-    Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
+.  1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
 

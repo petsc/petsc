@@ -210,11 +210,9 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
    Very similar to the SNESNGMRES algorithm.
 
    References:
-
-    "D. G. Anderson. Iterative procedures for nonlinear integral equations.
-    J. Assoc. Comput. Mach., 12:547-560, 1965."
-
-   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers", 
++  1. -  D. G. Anderson. Iterative procedures for nonlinear integral equations.
+    J. Assoc. Comput. Mach., 12, 1965."
+-  2. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers", 
    SIAM Review, 57(4), 2015
 
 

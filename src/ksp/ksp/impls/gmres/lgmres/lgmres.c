@@ -779,9 +779,7 @@ static PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
    Notes: Supports both left and right preconditioning, but not symmetric.
 
    References:
-    A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for
-    accelerating the convergence of restarted GMRES. SIAM
-    Journal on Matrix Analysis and Applications, 26 (2005), pp. 962-984.
+.    1. - A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for accelerating the convergence of restarted GMRES. SIAM Journal on Matrix Analysis and Applications, 26 (2005).
 
   Developer Notes:  This object is subclassed off of KSPGMRES
 
