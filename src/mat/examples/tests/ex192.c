@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatSolve() and MatMatSolve() with mumps sequential solver in Schur complement mode.\n\
+static char help[] = "Tests MatSolve() and MatMatSolve() with MUMPS or MKL_PARDISO sequential solvers in Schur complement mode.\n\
 Example: mpiexec -n 1 ./ex192 -f <matrix binary file> -nrhs 4 -symmetric_solve -hermitian_solve -schur_ratio 0.3\n\n";
 
 #include <petscmat.h>
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscInt       isolver=0,size_schur,m,n,nfact,nsolve,nrhs;
   PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscRandom    rand;
-  PetscBool      flg,herm,symm;
+  PetscBool      data_provided,herm,symm,use_lu;
   PetscReal      sratio = 5.1/12.;
   PetscViewer    fd;              /* viewer */
   char           solver[256];
@@ -34,8 +34,8 @@ int main(int argc,char **args)
   if (herm) symm = PETSC_TRUE;
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (!flg) { /* get matrices from PETSc distribution */
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
+  if (!data_provided) { /* get matrices from PETSc distribution */
     sprintf(file,PETSC_DIR);
     ierr = PetscStrcat(file,"/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
     if (symm) {
@@ -66,17 +66,6 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-
-#if defined (PETSC_USE_COMPLEX)
-  if (symm & !flg) { /* MUMPS (5.0.0) does not have support for hermitian matrices, so make them symmetric */
-    PetscScalar im = PetscSqrtScalar((PetscScalar)-1.);
-    PetscScalar val = -1.0;
-    val = val + im;
-    ierr = MatSetValue(A,1,0,val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-#endif
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
@@ -119,6 +108,17 @@ int main(int argc,char **args)
       break;
   }
 
+#if defined (PETSC_USE_COMPLEX)
+  if (isolver == 0 && symm && !data_provided) { /* MUMPS (5.0.0) does not have support for hermitian matrices, so make them symmetric */
+    PetscScalar im = PetscSqrtScalar((PetscScalar)-1.);
+    PetscScalar val = -1.0;
+    val = val + im;
+    ierr = MatSetValue(A,1,0,val,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+#endif
+
   ierr = PetscOptionsGetReal(NULL,NULL,"-schur_ratio",&sratio,NULL);CHKERRQ(ierr);
   if (sratio < 0. || sratio > 1.) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %f", sratio);
@@ -127,13 +127,20 @@ int main(int argc,char **args)
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %d, sym %d, herm %d, size schur %d, size mat %d\n",solver,nrhs,symm,herm,size_schur,m);CHKERRQ(ierr);
 
-  if (herm) { /* test also conversion routines inside the solver packages */
+  /* Test LU/Cholesky Factorization */
+  use_lu = PETSC_FALSE;
+  if (!symm) use_lu = PETSC_TRUE;
+#if defined (PETSC_USE_COMPLEX)
+  if (isolver == 1) use_lu = PETSC_TRUE;
+#endif
+
+  if (herm && !use_lu) { /* test also conversion routines inside the solver packages */
     ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatConvert(A,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   }
 
-  /* Test LU/Cholesky Factorization */
-  if (!symm) {
+
+  if (use_lu) {
     ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   } else {
     if (herm) {
@@ -148,7 +155,7 @@ int main(int argc,char **args)
   ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,m-size_schur,1,&is_schur);CHKERRQ(ierr);
   ierr = MatFactorSetSchurIS(F,is_schur);CHKERRQ(ierr);
   ierr = ISDestroy(&is_schur);CHKERRQ(ierr);
-  if (!symm) {
+  if (use_lu) {
     ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {
     ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
@@ -164,7 +171,7 @@ int main(int argc,char **args)
       }
       ierr = MatDiagonalSet(A,x,ADD_VALUES);CHKERRQ(ierr);
     }
-    if (!symm) {
+    if (use_lu) {
       ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
     } else {
       ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
