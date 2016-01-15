@@ -65,7 +65,7 @@ import os
 import sys
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
 if useThreads is None:
-  useThreads = 0 # match the default set in script.py
+  useThreads = 1
 else:
   useThreads = int(useThreads)
 
