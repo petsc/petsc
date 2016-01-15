@@ -359,7 +359,7 @@ int MPI_Finalized(int *flag)
 #endif
 
 /* Do not build fortran interface if MPI namespace colision is to be avoided */
-#if defined(PETSC_HAVE_FORTRAN) && !defined(MPIUNI_AVOID_MPI_NAMESPACE)
+#if defined(MPIUNI_FORTRAN_BINDING)
 
 PETSC_EXTERN void PETSC_STDCALL mpiunisetcommonblock_(void);
 
