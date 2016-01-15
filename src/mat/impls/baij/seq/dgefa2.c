@@ -1,6 +1,6 @@
 
 /*
-     Inverts 2 by 2 matrix using partial pivoting.
+     Inverts 2 by 2 matrix using gaussian elimination with partial pivoting.
 
        Used by the sparse factorization routines in
      src/mat/impls/baij/seq
@@ -21,22 +21,19 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscRea
   MatScalar *aa,*ax,*ay,work[4],stmp;
   MatReal   tmp,max;
 
-  /* gaussian elimination with partial pivoting */
-
   PetscFunctionBegin;
   if (zeropivotdetected) *zeropivotdetected = PETSC_FALSE;
-
   shift = .25*shift*(1.e-12 + PetscAbsScalar(a[0]) + PetscAbsScalar(a[3]));
+
   /* Parameter adjustments */
   a -= 3;
 
-  /*for (k = 1; k <= 1; ++k) {*/
   k   = 1;
   kp1 = k + 1;
   k3  = 2*k;
   k4  = k3 + k;
-  /* find l = pivot index */
 
+  /* find l = pivot index */
   i__2 = 3 - k;
   aa   = &a[k4];
   max  = PetscAbsScalar(aa[0]);
@@ -56,7 +53,6 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscRea
   }
 
   /* interchange if necessary */
-
   if (l != k) {
     stmp      = a[l + k3];
     a[l + k3] = a[k4];
@@ -64,14 +60,12 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscRea
   }
 
   /* compute multipliers */
-
   stmp = -1. / a[k4];
   i__2 = 2 - k;
   aa = &a[1 + k4];
   for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 
   /* row elimination with column indexing */
-
   ax = &a[k4+1];
   for (j = kp1; j <= 2; ++j) {
     j3   = 2*j;
@@ -95,12 +89,8 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscRea
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",1);
   }
 
-  /*
-   Now form the inverse
-  */
-
+  /* Now form the inverse */
   /* compute inverse(u) */
-
   for (k = 1; k <= 2; ++k) {
     k3    = 2*k;
     k4    = k3 + k;
