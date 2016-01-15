@@ -1524,7 +1524,7 @@ PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
 /*
    Codes for matrices stored on disk. By default they are
    stored in a universal format. By changing the format with
-   PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
+   PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
    be stored in a way natural for the matrix, for example dense matrices
    would be stored as dense. Matrices stored this way may only be
    read into matrices of the same type.

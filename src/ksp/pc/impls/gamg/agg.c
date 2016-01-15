@@ -319,7 +319,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     PetscViewer viewer; char fname[32]; static int llev=0;
     sprintf(fname,"Gmat2_%d.m",llev++);
     PetscViewerASCIIOpen(comm,fname,&viewer);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(Gmat_2, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
   }

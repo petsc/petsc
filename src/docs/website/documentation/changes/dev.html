@@ -98,6 +98,7 @@
 
       <h4>General:</h4>
       <ul>
+      <li>PetscViewerSetFormat() is deprecated, you should use PetscViewerPushFormat() followed after the viewing with PetscViewerPopFormat()</li>
       <li>PetscMemoryShowUsage() and -memory_info changed to PetscMemoryView() and -memory_view</li>
       <li>PetscOptionsSetValue() may now be called BEFORE PetscInitialize() and any options set then will be used in the initialization process. These options are overwritten by command line options.</li>
 

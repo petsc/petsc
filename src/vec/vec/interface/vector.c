@@ -528,7 +528,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 -     PETSC_VIEWER_STDOUT_(comm) - for parallel vectors created on MPI communicator comm
 
    You can change the format the vector is printed using the
-   option PetscViewerSetFormat().
+   option PetscViewerPushFormat().
 
    The user can open alternative visualization contexts with
 +    PetscViewerASCIIOpen() - Outputs vector to a specified file
@@ -537,7 +537,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 .    PetscViewerDrawOpen() - Outputs vector to an X window display
 -    PetscViewerSocketOpen() - Outputs vector to Socket viewer
 
-   The user can call PetscViewerSetFormat() to specify the output
+   The user can call PetscViewerPushFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
 +    PETSC_VIEWER_DEFAULT - default, prints vector contents
