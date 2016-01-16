@@ -1,6 +1,6 @@
 
 /*
-      Inverts 5 by 5 matrix using partial pivoting.
+      Inverts 5 by 5 matrix using gaussian elimination with partial pivoting.
 
        Used by the sparse factorization routines in
      src/mat/impls/baij/seq
@@ -20,12 +20,10 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *a,PetscInt
   MatScalar *aa,*ax,*ay,stmp;
   MatReal   tmp,max;
 
-  /* gaussian elimination with partial pivoting */
-
   PetscFunctionBegin;
   if (zeropivotdetected) *zeropivotdetected = PETSC_FALSE;
-
   shift = .25*shift*(1.e-12 + PetscAbsScalar(a[0]) + PetscAbsScalar(a[6]) + PetscAbsScalar(a[12]) + PetscAbsScalar(a[18]) + PetscAbsScalar(a[24]));
+
   /* Parameter adjustments */
   a -= 6;
 
@@ -33,8 +31,8 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *a,PetscInt
     kp1 = k + 1;
     k3  = 5*k;
     k4  = k3 + k;
-    /* find l = pivot index */
 
+    /* find l = pivot index */
     i__2 = 6 - k;
     aa   = &a[k4];
     max  = PetscAbsScalar(aa[0]);
@@ -47,15 +45,19 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *a,PetscInt
     ipvt[k-1] = l;
 
     if (a[l + k3] == 0.0) {
-      if (shift == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
-      else {
+      if (shift == 0.0) {
+        if (allowzeropivot) {
+          PetscErrorCode ierr;
+          ierr = PetscInfo1(NULL,"Zero pivot, row %D\n",k-1);CHKERRQ(ierr);
+          *zeropivotdetected = PETSC_TRUE;
+        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+      } else {
         /* SHIFT is applied to SINGLE diagonal entry; does this make any sense? */
         a[l + k3] = shift;
       }
     }
 
     /* interchange if necessary */
-
     if (l != k) {
       stmp      = a[l + k3];
       a[l + k3] = a[k4];
@@ -63,14 +65,12 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *a,PetscInt
     }
 
     /* compute multipliers */
-
     stmp = -1. / a[k4];
     i__2 = 5 - k;
     aa   = &a[1 + k4];
     for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 
     /* row elimination with column indexing */
-
     ax = &a[k4+1];
     for (j = kp1; j <= 5; ++j) {
       j3   = 5*j;
@@ -87,19 +87,15 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *a,PetscInt
   }
   ipvt[4] = 5;
   if (a[30] == 0.0) {
-    PetscErrorCode ierr;
     if (allowzeropivot) {
+      PetscErrorCode ierr;
       ierr = PetscInfo1(NULL,"Zero pivot, row %D\n",4);CHKERRQ(ierr);
       *zeropivotdetected = PETSC_TRUE;
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",4);
   }
 
-  /*
-   Now form the inverse
-  */
-
+  /* Now form the inverse */
   /* compute inverse(u) */
-
   for (k = 1; k <= 5; ++k) {
     k3    = 5*k;
     k4    = k3 + k;
@@ -121,7 +117,6 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *a,PetscInt
   }
 
   /* form inverse(u)*inverse(l) */
-
   for (kb = 1; kb <= 4; ++kb) {
     k   = 5 - kb;
     k3  = 5*k;
