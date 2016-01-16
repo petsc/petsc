@@ -69,7 +69,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 #if defined(PETSC_USE_LOG)
     MPI_Comm comm = PETSC_COMM_WORLD;
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,pc.ksp,snes>\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,pc.ksp,snes> (deprecated, use -log_exclude\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_exclude: <vec,mat,pc.ksp,snes>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -info_exclude: <null,vec,mat,pc,ksp,snes,ts>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
 #endif
@@ -676,13 +677,15 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 .  -log_sync - Log the synchronization in scatters, inner products and norms
 .  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
-.  -log_summary [filename] - Prints summary of flop and timing information to screen. If the filename is specified the
+.  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().
+.  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
         summary is written to the file.  See PetscLogView().
+.  -log_exclude: <vec,mat,pc.ksp,snes> - excludes subset of object classes from logging
 .  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 -  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
 
-    Only one of -log_trace, -log_summary, -log_all, -log, or -log_mpe may be used at a time
+    Only one of -log_trace, -log_view, -log_summary, -log_all, -log, or -log_mpe may be used at a time
 
    Options Database Keys for SAWs:
 +  -saws_port <portnumber> - port number to publish SAWs data, default is 8080
@@ -1101,6 +1104,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscLogViewFromOptions();CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
+    ierr = (*PetscHelpPrintf)(PETSC_COMM_WORLD,"\n\n WARNING:   -log_summary is being deprecated; switch to -log_view\n\n\n");CHKERRQ(ierr);
     PetscViewer viewer;
     if (mname[0]) {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
@@ -1108,7 +1112,9 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     } else {
       viewer = PETSC_VIEWER_STDOUT_WORLD;
+      ierr   = PetscViewerPushFormat(viewer,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
       ierr   = PetscLogView(viewer);CHKERRQ(ierr);
+      ierr   = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
   }
   mname[0] = 0;
