@@ -78,8 +78,8 @@ cdef extern from * nogil:
     int DMDAGetElements(PetscDM,PetscInt*,PetscInt*,const_PetscInt**)
     int DMDARestoreElements(PetscDM,PetscInt*,PetscInt*,const_PetscInt**)
 
-    #int DMDASetFieldName"DMDASetFieldName"(PetscDM,PetscInt,const_char[])
-    #int DMDAGetFieldName"DMDAGetFieldName"(PetscDM,PetscInt,const_char*[])
+    int DMDASetFieldName(PetscDM,PetscInt,const_char[])
+    int DMDAGetFieldName(PetscDM,PetscInt,const_char*[])
 
 # --------------------------------------------------------------------
 
