@@ -812,7 +812,7 @@ __global__ void VecMDot_SeqCUSP_kernel2(const PetscScalar *x,const PetscScalar *
   PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
   entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
   PetscInt vec_start_index = blockIdx.x * entries_per_group;
-  PetscInt vec_stop_index  = min((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
+  PetscInt vec_stop_index  = PetscMin((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
 
   PetscScalar entry_x    = 0;
   PetscScalar group_sum0 = 0;
@@ -849,7 +849,7 @@ __global__ void VecMDot_SeqCUSP_kernel3(const PetscScalar *x,const PetscScalar *
   PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
   entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
   PetscInt vec_start_index = blockIdx.x * entries_per_group;
-  PetscInt vec_stop_index  = min((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
+  PetscInt vec_stop_index  = PetscMin((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
 
   PetscScalar entry_x    = 0;
   PetscScalar group_sum0 = 0;
@@ -891,7 +891,7 @@ __global__ void VecMDot_SeqCUSP_kernel4(const PetscScalar *x,const PetscScalar *
   PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
   entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
   PetscInt vec_start_index = blockIdx.x * entries_per_group;
-  PetscInt vec_stop_index  = min((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
+  PetscInt vec_stop_index  = PetscMin((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
 
   PetscScalar entry_x    = 0;
   PetscScalar group_sum0 = 0;
@@ -939,7 +939,7 @@ __global__ void VecMDot_SeqCUSP_kernel8(const PetscScalar *x,const PetscScalar *
   PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
   entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
   PetscInt vec_start_index = blockIdx.x * entries_per_group;
-  PetscInt vec_stop_index  = min((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
+  PetscInt vec_stop_index  = PetscMin((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
 
   PetscScalar entry_x    = 0;
   PetscScalar group_sum0 = 0;
