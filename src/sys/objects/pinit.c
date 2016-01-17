@@ -1104,8 +1104,8 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscLogViewFromOptions();CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = (*PetscHelpPrintf)(PETSC_COMM_WORLD,"\n\n WARNING:   -log_summary is being deprecated; switch to -log_view\n\n\n");CHKERRQ(ierr);
     PetscViewer viewer;
+    ierr = (*PetscHelpPrintf)(PETSC_COMM_WORLD,"\n\n WARNING:   -log_summary is being deprecated; switch to -log_view\n\n\n");CHKERRQ(ierr);
     if (mname[0]) {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
       ierr = PetscLogView(viewer);CHKERRQ(ierr);
