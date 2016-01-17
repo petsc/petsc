@@ -71,6 +71,14 @@ class BaseTestDA(object):
         for i,m in enumerate(procsizes):
             self.assertEqual(m, len(ownership_ranges[i]))
 
+    def testFieldName(self):
+        for i in range(self.da.getDof()):
+            self.da.setFieldName(i, "field%d" % i)
+        for i in range(self.da.getDof()):
+            name = self.da.getFieldName(i)
+            print self.da.getDof(), name
+            #self.assertEqual(name, "field%d" % i)
+
     def testCoordinates(self):
         self.da.setUniformCoordinates(0,1,0,1,0,1)
         #

@@ -204,7 +204,7 @@ cdef class DMDA(DM):
         cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
         asBoundary(boundary_type, &btx, &bty, &btz)
         CHKERR( DMDASetBoundaryType(self.dm, btx, bty, btz) )
-        
+
     def getBoundaryType(self):
         cdef PetscInt dim = 0
         cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
@@ -222,7 +222,7 @@ cdef class DMDA(DM):
     def setStencilType(self, stencil_type):
         cdef PetscDMDAStencilType stype = asStencil(stencil_type)
         CHKERR( DMDASetStencilType(self.dm, stype) )
-        
+
     def getStencilType(self):
         cdef PetscDMDAStencilType stype = DMDA_STENCIL_BOX
         CHKERR( DMDAGetInfo(self.dm,
@@ -254,7 +254,7 @@ cdef class DMDA(DM):
         cdef PetscInt swidth = asInt(stencil_width)
         CHKERR( DMDASetStencilType(self.dm, stype) )
         CHKERR( DMDASetStencilWidth(self.dm, swidth) )
-        
+
     def getStencil(self):
         cdef PetscDMDAStencilType stype = DMDA_STENCIL_BOX
         cdef PetscInt swidth = 0
@@ -319,6 +319,20 @@ cdef class DMDA(DM):
                                     &m, &n, &p) )
         return ((toInt(x), toInt(y), toInt(z))[:<Py_ssize_t>dim],
                 (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim])
+
+    #
+
+    def setFieldName(self, field, name):
+        cdef PetscInt ival = asInt(field)
+        cdef const_char *cval = NULL
+        name = str2bytes(name, &cval)
+        CHKERR( DMDASetFieldName(self.dm, ival, cval) )
+
+    def getFieldName(self, field):
+        cdef PetscInt ival = asInt(field)
+        cdef const_char *cval = NULL
+        CHKERR( DMDAGetFieldName(self.dm, ival, &cval) )
+        return bytes2str(cval)
 
     #
 
