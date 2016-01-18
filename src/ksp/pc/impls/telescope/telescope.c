@@ -247,6 +247,9 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
         if (dm && sred->ignore_dm) {
           ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: ignoring DM\n");CHKERRQ(ierr);
         }
+        if (sred->ignore_kspcomputeoperators) {
+          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: ignoring KSPComputeOperators\n");CHKERRQ(ierr);
+        }
         switch (sred->sr_type) {
         case TELESCOPE_DEFAULT:
           ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: using default setup\n");CHKERRQ(ierr);
@@ -523,6 +526,7 @@ static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsO
   ierr = PetscOptionsInt("-pc_telescope_reduction_factor","Factor to reduce comm size by","PCTelescopeSetReductionFactor",sred->redfactor,&sred->redfactor,0);CHKERRQ(ierr);
   if (sred->redfactor > size) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"-pc_telescope_reduction_factor <= comm size");
   ierr = PetscOptionsBool("-pc_telescope_ignore_dm","Ignore any DM attached to the PC","PCTelescopeSetIgnoreDM",sred->ignore_dm,&sred->ignore_dm,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_telescope_ignore_kspcomputeoperators","Ignore method used to compute A","PCTelescopeSetIgnoreKSPComputeOperators",sred->ignore_kspcomputeoperators,&sred->ignore_kspcomputeoperators,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -816,6 +820,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
   ierr = PetscNewLog(pc,&sred);CHKERRQ(ierr);
   sred->redfactor      = 1;
   sred->ignore_dm      = PETSC_FALSE;
+  sred->ignore_kspcomputeoperators = PETSC_FALSE;
   pc->data             = (void*)sred;
 
   pc->ops->apply          = PCApply_Telescope;

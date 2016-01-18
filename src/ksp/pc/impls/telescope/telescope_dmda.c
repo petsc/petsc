@@ -400,7 +400,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
     */
     ierr = DMDACreate(subcomm,&ctx->dmrepart);CHKERRQ(ierr);
     /* Set unique option prefix name */
-    ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
+    ierr = KSPGetOptionsPrefix(sred->ksp,&prefix);CHKERRQ(ierr);
     ierr = DMSetOptionsPrefix(ctx->dmrepart,prefix);CHKERRQ(ierr);
     ierr = DMAppendOptionsPrefix(ctx->dmrepart,"repart_");CHKERRQ(ierr);
     /* standard setup from DMDACreate{1,2,3}d() */
@@ -779,7 +779,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   ierr = DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
   /* We assume that dmksp_func = NULL, is equivalent to dmActive = PETSC_FALSE */
-  if (dmksp_func) {
+  if (dmksp_func && !sred->ignore_kspcomputeoperators) {
     DM  dmrepart;
     Mat Ak,Bk;
 

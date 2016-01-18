@@ -14,7 +14,7 @@ struct _PC_Telescope {
   VecScatter        scatter;
   Vec               xred,yred,xtmp;
   Mat               Bred;
-  PetscBool         ignore_dm;
+  PetscBool         ignore_dm,ignore_kspcomputeoperators;
   PCTelescopeType   sr_type;
   void              *dm_ctx;
   PetscErrorCode    (*pctelescope_setup_type)(PC,PC_Telescope);
