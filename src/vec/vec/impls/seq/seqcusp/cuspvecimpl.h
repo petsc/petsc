@@ -1,6 +1,8 @@
 #if !defined(__CUSPVECIMPL)
 #define __CUSPVECIMPL
 
+#if defined(__CUDACC__)
+
 #include <petsccusp.h>
 #include <petsc/private/vecimpl.h>
 
@@ -24,6 +26,20 @@
 #define CUSPARRAYCPU cusp::array1d<PetscScalar,cusp::host_memory>
 #define CUSPINTARRAYGPU cusp::array1d<PetscInt,cusp::device_memory>
 #define CUSPINTARRAYCPU cusp::array1d<PetscInt,cusp::host_memory>
+#define CHKERRCUSP(err) if (((int)err) != (int)CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error %d",err)
+#define VecCUSPCastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
+#define WaitForGPU() PetscCUSPSynchronize ? cudaThreadSynchronize() : 0
+
+struct Vec_CUSP {
+  CUSPARRAY *GPUarray;        /* this always holds the GPU data */
+  cudaStream_t stream;        /* A stream for doing asynchronous data transfers */
+  PetscBool hostDataRegisteredAsPageLocked;
+};
+
+#endif
+
+
+#include <cuda_runtime.h>
 
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqCUSP(Vec,Vec,PetscScalar*, PetscScalar*);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqCUSP(Vec,Vec,Vec);
@@ -44,6 +60,7 @@ PETSC_INTERN PetscErrorCode VecSwap_SeqCUSP(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecAXPY_SeqCUSP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecAXPBY_SeqCUSP(Vec,PetscScalar,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecDuplicate_SeqCUSP(Vec,Vec*);
+PETSC_INTERN PetscErrorCode VecConjugate_SeqCUSP(Vec xin);
 PETSC_INTERN PetscErrorCode VecNorm_SeqCUSP(Vec,NormType,PetscReal*);
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck(Vec);
@@ -55,21 +72,16 @@ PETSC_INTERN PetscErrorCode VecAYPX_SeqCUSP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqCUSP(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec,Vec);
-
+PETSC_INTERN PetscErrorCode VecCopy_SeqCUSP_Private(Vec xin,Vec yin);
+PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP_Private(Vec xin,PetscRandom r);
+PETSC_INTERN PetscErrorCode VecDestroy_SeqCUSP_Private(Vec v);
+PETSC_INTERN PetscErrorCode VecResetArray_SeqCUSP_Private(Vec vin);
+PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck(Vec v);
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
+PETSC_INTERN PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci);
+PETSC_INTERN PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci);
 
-#define CHKERRCUSP(err) if (((int)err) != (int)CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error %d",err)
-
-#define VecCUSPCastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
-
-#define WaitForGPU() PetscCUSPSynchronize ? cudaThreadSynchronize() : 0
-
-struct Vec_CUSP {
-  CUSPARRAY *GPUarray;        /* this always holds the GPU data */
-  cudaStream_t stream;        /* A stream for doing asynchronous data transfers */
-  PetscBool hostDataRegisteredAsPageLocked;
-};
 
 PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
 PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscCUSPIndices*);

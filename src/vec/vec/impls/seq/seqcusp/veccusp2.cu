@@ -6,42 +6,12 @@
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
-#include <petsc/private/vecimpl.h>          /*I "petscvec.h" I*/
+#include <petsc/private/vecimpl.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 #include <cuda_runtime.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPAllocateCheckHost"
-/*
-    Allocates space for the vector array on the Host if it does not exist.
-    Does NOT change the PetscCUSPFlag for the vector
-    Does NOT zero the CUSP array
- */
-PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
-{
-  PetscErrorCode ierr;
-  PetscScalar    *array;
-  Vec_Seq        *s = (Vec_Seq*)v->data;
-  PetscInt       n = v->map->n;
-
-  PetscFunctionBegin;
-  if (!s) {
-    ierr = PetscNewLog((PetscObject)v,&s);CHKERRQ(ierr);
-    v->data = s;
-  }
-  if (!s->array) {
-    ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
-    ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    s->array           = array;
-    s->array_allocated = array;
-    if (v->valid_GPU_array == PETSC_CUSP_UNALLOCATED) {
-      v->valid_GPU_array = PETSC_CUSP_CPU;
-    }
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPAllocateCheck"
@@ -82,7 +52,6 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPCopyToGPU"
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
@@ -112,7 +81,7 @@ PetscErrorCode VecCUSPCopyToGPU(Vec v)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPCopyToGPUSome"
-static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
+PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 {
   CUSPARRAY      *varray;
   PetscErrorCode ierr;
@@ -205,135 +174,6 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
     ierr = VecCUSPRestoreArrayRead(v,&varray);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCopy_SeqCUSP_Private"
-static PetscErrorCode VecCopy_SeqCUSP_Private(Vec xin,Vec yin)
-{
-  PetscScalar       *ya;
-  const PetscScalar *xa;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPAllocateCheckHost(xin);
-  ierr = VecCUSPAllocateCheckHost(yin);
-  if (xin != yin) {
-    ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
-    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
-    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_SeqCUSP_Private"
-static PetscErrorCode VecSetRandom_SeqCUSP_Private(Vec xin,PetscRandom r)
-{
-  PetscErrorCode ierr;
-  PetscInt       n = xin->map->n,i;
-  PetscScalar    *xx;
-
-  PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_SeqCUSP_Private"
-static PetscErrorCode VecDestroy_SeqCUSP_Private(Vec v)
-{
-  Vec_Seq        *vs = (Vec_Seq*)v->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectSAWsViewOff(v);CHKERRQ(ierr);
-#if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
-#endif
-  if (vs) {
-    if (vs->array_allocated) ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
-    ierr = PetscFree(vs);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_SeqCUSP_Private"
-static PetscErrorCode VecResetArray_SeqCUSP_Private(Vec vin)
-{
-  Vec_Seq *v = (Vec_Seq*)vin->data;
-
-  PetscFunctionBegin;
-  v->array         = v->unplacedarray;
-  v->unplacedarray = 0;
-  PetscFunctionReturn(0);
-}
-
-/* these following 3 public versions are necessary because we use CUSP in the regular PETSc code and these need to be called from plain C code. */
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPAllocateCheck_Public"
-PetscErrorCode VecCUSPAllocateCheck_Public(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopyToGPU_Public"
-PetscErrorCode VecCUSPCopyToGPU_Public(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopyToGPUSome_Public"
-/*
-    VecCUSPCopyToGPUSome_Public - Copies certain entries down to the GPU from the CPU of a vector
-
-   Input Parameters:
-+    v - the vector
--    indices - the requested indices, this should be created with CUSPIndicesCreate()
-
-*/
-PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec v, PetscCUSPIndices ci)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPCopyToGPUSome(v,ci);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopyFromGPUSome_Public"
-/*
-  VecCUSPCopyFromGPUSome_Public - Copies certain entries up to the CPU from the GPU of a vector
-
-  Input Parameters:
- +    v - the vector
- -    indices - the requested indices, this should be created with CUSPIndicesCreate()
-*/
-PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec v, PetscCUSPIndices ci)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPUSome(v,ci);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1120,7 +960,7 @@ PetscErrorCode VecMDot_SeqCUSP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
       // run kernel:
       VecMDot_SeqCUSP_kernel2<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,n,group_results_gpu);
 
-      // copy results back to 
+      // copy results back to
       cuda_ierr = cudaMemcpy(group_results_cpu,group_results_gpu,sizeof(PetscScalar) * MDOT_WORKGROUP_NUM * 2,cudaMemcpyDeviceToHost);
       if (cuda_ierr != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not copy CUDA buffer to host. Error code: %d", (int)cuda_ierr);
 
@@ -1258,7 +1098,6 @@ PetscErrorCode VecScale_SeqCUSP(Vec xin, PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "VecTDot_SeqCUSP"
 PetscErrorCode VecTDot_SeqCUSP(Vec xin,Vec yin,PetscScalar *z)
@@ -1286,6 +1125,7 @@ PetscErrorCode VecTDot_SeqCUSP(Vec xin,Vec yin,PetscScalar *z)
   ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "VecCopy_SeqCUSP"
 PetscErrorCode VecCopy_SeqCUSP(Vec xin,Vec yin)
@@ -1394,6 +1234,7 @@ struct VecCUSPAX
     thrust::get<0>(t) = thrust::get<1>(t)*thrust::get<2>(t);
   }
 };
+
 #undef __FUNCT__
 #define __FUNCT__ "VecAXPBY_SeqCUSP"
 PetscErrorCode VecAXPBY_SeqCUSP(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
@@ -1459,6 +1300,7 @@ struct VecCUSPXPBYPCZ
     thrust::get<0>(t) = thrust::get<1>(t)*thrust::get<0>(t)+thrust::get<2>(t)+thrust::get<4>(t)*thrust::get<3>(t);
   }
 };
+
 struct VecCUSPAXPBYPZ
 {
   /* z = ax + b*y + z */
@@ -1630,97 +1472,6 @@ PetscErrorCode VecNorm_SeqCUSP(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-
-/*the following few functions should be modified to actually work with the GPU so they don't force unneccesary allocation of CPU memory */
-
-#undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_SeqCUSP"
-PetscErrorCode VecSetRandom_SeqCUSP(Vec xin,PetscRandom r)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecSetRandom_SeqCUSP_Private(xin,r);CHKERRQ(ierr);
-  xin->valid_GPU_array = PETSC_CUSP_CPU;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_SeqCUSP"
-PetscErrorCode VecResetArray_SeqCUSP(Vec vin)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
-  ierr = VecResetArray_SeqCUSP_Private(vin);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUSP_CPU;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecPlaceArray_SeqCUSP"
-PetscErrorCode VecPlaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
-  ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUSP_CPU;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecReplaceArray_SeqCUSP"
-PetscErrorCode VecReplaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
-  ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUSP_CPU;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateSeqCUSP"
-/*@
-   VecCreateSeqCUSP - Creates a standard, sequential array-style vector.
-
-   Collective on MPI_Comm
-
-   Input Parameter:
-+  comm - the communicator, should be PETSC_COMM_SELF
--  n - the vector length
-
-   Output Parameter:
-.  V - the vector
-
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
-
-   Level: intermediate
-
-   Concepts: vectors^creating sequential
-
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
-@*/
-PetscErrorCode  VecCreateSeqCUSP(MPI_Comm comm,PetscInt n,Vec *v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCreate(comm,v);CHKERRQ(ierr);
-  ierr = VecSetSizes(*v,n,n);CHKERRQ(ierr);
-  ierr = VecSetType(*v,VECSEQCUSP);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*The following template functions are for VecDotNorm2_SeqCUSP.  Note that there is no complex support as currently written*/
 template <typename T>
 struct cuspdotnormcalculate : thrust::unary_function<T,T>
@@ -1794,26 +1545,12 @@ PetscErrorCode VecDotNorm2_SeqCUSP(Vec s, Vec t, PetscScalar *dp, PetscScalar *n
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_SeqCUSP"
-PetscErrorCode VecDuplicate_SeqCUSP(Vec win,Vec *V)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCreateSeqCUSP(PetscObjectComm((PetscObject)win),win->map->n,V);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
-  ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
-  ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
-  (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "VecDestroy_SeqCUSP"
 PetscErrorCode VecDestroy_SeqCUSP(Vec v)
 {
   PetscErrorCode ierr;
   cudaError_t    err;
+
   PetscFunctionBegin;
   try {
     if (v->spptr) {
@@ -1830,7 +1567,7 @@ PetscErrorCode VecDestroy_SeqCUSP(Vec v)
 
 
 #if defined(PETSC_USE_COMPLEX)
-struct conjugate 
+struct conjugate
 {
   __host__ __device__
   PetscScalar operator()(PetscScalar x)
@@ -1937,59 +1674,41 @@ PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec v,Vec w)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecCreate_SeqCUSP"
-PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec V)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUSP on more than one process");
-  ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUSP);CHKERRQ(ierr);
-
-  V->ops->dot                    = VecDot_SeqCUSP;
-  V->ops->norm                   = VecNorm_SeqCUSP;
-  V->ops->tdot                   = VecTDot_SeqCUSP;
-  V->ops->scale                  = VecScale_SeqCUSP;
-  V->ops->copy                   = VecCopy_SeqCUSP;
-  V->ops->set                    = VecSet_SeqCUSP;
-  V->ops->swap                   = VecSwap_SeqCUSP;
-  V->ops->axpy                   = VecAXPY_SeqCUSP;
-  V->ops->axpby                  = VecAXPBY_SeqCUSP;
-  V->ops->axpbypcz               = VecAXPBYPCZ_SeqCUSP;
-  V->ops->pointwisemult          = VecPointwiseMult_SeqCUSP;
-  V->ops->pointwisedivide        = VecPointwiseDivide_SeqCUSP;
-  V->ops->setrandom              = VecSetRandom_SeqCUSP;
-  V->ops->dot_local              = VecDot_SeqCUSP;
-  V->ops->tdot_local             = VecTDot_SeqCUSP;
-  V->ops->norm_local             = VecNorm_SeqCUSP;
-  V->ops->mdot_local             = VecMDot_SeqCUSP;
-  V->ops->maxpy                  = VecMAXPY_SeqCUSP;
-  V->ops->mdot                   = VecMDot_SeqCUSP;
-  V->ops->aypx                   = VecAYPX_SeqCUSP;
-  V->ops->waxpy                  = VecWAXPY_SeqCUSP;
-  V->ops->dotnorm2               = VecDotNorm2_SeqCUSP;
-  V->ops->placearray             = VecPlaceArray_SeqCUSP;
-  V->ops->replacearray           = VecReplaceArray_SeqCUSP;
-  V->ops->resetarray             = VecResetArray_SeqCUSP;
-  V->ops->destroy                = VecDestroy_SeqCUSP;
-  V->ops->duplicate              = VecDuplicate_SeqCUSP;
-  V->ops->conjugate              = VecConjugate_SeqCUSP;
-  V->ops->getlocalvector         = VecGetLocalVector_SeqCUSP;
-  V->ops->restorelocalvector     = VecRestoreLocalVector_SeqCUSP;
-  V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUSP;
-  V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUSP;
-
-  ierr = VecCUSPAllocateCheck(V);CHKERRQ(ierr);
-  V->valid_GPU_array      = PETSC_CUSP_GPU;
-  ierr = VecSet(V,0.0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "VecCUSPGetArrayReadWrite"
+/*@C
+   VecCUSPGetArrayReadWrite - Provides access to the CUSP vector inside a vector.
+
+   This function has semantics similar to VecGetArray():  the CUSP
+   vector returned by this function points to a consistent view of the
+   vector data.  This may involve a copy operation of data from the host
+   to the device if the data on the device is out of date.  If the
+   device memory hasn't been allocated previously it will be allocated
+   as part of this function call.  VecCUSPGetArrayReadWrite() assumes
+   that the user will modify the vector data.  This is similar to
+   intent(inout) in fortran.
+
+   The CUSP device vector has to be released by calling
+   VecCUSPRestoreArrayReadWrite().  Upon restoring the vector data the
+   data on the host will be marked as out of date.  A subsequent access
+   of the host data will thus incur a data transfer from the device to
+   the host.
+
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  a - the CUSP device vector
+   
+   Fortran note: This function is not currently available from Fortran.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUSPRestoreArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecGetArrayRead()
+@*/
 PETSC_EXTERN PetscErrorCode VecCUSPGetArrayReadWrite(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
@@ -2003,6 +1722,25 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetArrayReadWrite(Vec v, CUSPARRAY **a)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPRestoreArrayReadWrite"
+/*@C
+   VecCUSPRestoreArrayReadWrite - Restore a CUSP device vector previously acquired with VecCUSPGetArrayReadWrite().
+
+   This marks the host data as out of date.  Subsequent access to the
+   vector data on the host side with for instance VecGetArray() incurs a
+   data transfer.
+
+   Input Parameter:
++  v - the vector
+-  a - the CUSP device vector.  This pointer is invalid after
+       VecCUSPRestoreArrayReadWrite() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUSPGetCUDAArrayRead(), VecCUSPGetCUDAArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
 PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
@@ -2016,6 +1754,37 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY **a)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPGetArrayRead"
+/*@C
+   VecCUSPGetArrayRead - Provides read access to the CUSP device vector inside a vector.
+
+   This function is analogous to VecGetArrayRead():  The CUSP vector
+   returned by this function points to a consistent view of the vector
+   data.  This may involve a copy operation of data from the host to the
+   device if the data on the device is out of date.  If the device
+   memory hasn't been allocated previously it will be allocated as part
+   of this function call.  VecCUSPGetArrayRead() assumes that the user
+   will not modify the vector data.  This is analogous to intent(in) in
+   Fortran.
+
+   The CUSP device vector has to be released by calling
+   VecCUSPRestoreArrayRead().  If the data on the host side was
+   previously up to date it will remain so, i.e. data on both the device
+   and the host is up to date.  Accessing data on the host side does not
+   incur a device to host data transfer.
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  a - the CUSP device vector
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUSPRestoreArrayRead(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayWrite(), VecCUSPGetArrayReadWrite(), VecGetArray(), VecGetArrayRead()
+@*/
 PETSC_EXTERN PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
@@ -2029,6 +1798,26 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY **a)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPRestoreArrayRead"
+/*@C
+   VecCUSPRestoreArrayRead - Restore a CUSP device vector previously acquired with VecCUSPGetArrayRead().
+
+   If the data on the host side was previously up to date it will remain
+   so, i.e. data on both the device and the host is up to date.
+   Accessing data on the host side e.g. with VecGetArray() does not
+   incur a device to host data transfer.
+
+   Input Parameter:
++  v - the vector
+-  a - the CUSP device vector.  This pointer is invalid after
+       VecCUSPRestoreArrayRead() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecCUSPGetArrayReadWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
 PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayRead(Vec v, CUSPARRAY **a)
 {
   PetscFunctionBegin;
@@ -2037,6 +1826,35 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayRead(Vec v, CUSPARRAY **a)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPGetArrayWrite"
+/*@C
+   VecCUSPGetArrayWrite - Provides write access to the CUSP device vector inside a vector.
+
+   The data pointed to by the device vector is uninitialized.  The user
+   must not read this data.  Furthermore, the entire array needs to be
+   filled by the user to obtain well-defined behaviour.  The device
+   memory will be allocated by this function if it hasn't been allocated
+   previously.  This is analogous to intent(out) in Fortran.
+
+   The CUSP device vector needs to be released with
+   VecCUSPRestoreArrayWrite().  When the pointer is released the host
+   data of the vector is marked as out of data.  Subsequent access of
+   the host data with e.g. VecGetArray() incurs a device to host data
+   transfer.
+
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  a - the CUDA pointer
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUSPRestoreArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecGetArrayRead()
+@*/
 PETSC_EXTERN PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
@@ -2050,6 +1868,25 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY **a)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPRestoreArrayWrite"
+/*@C
+   VecCUSPRestoreArrayWrite - Restore a CUSP device vector previously acquired with VecCUSPGetArrayWrite().
+
+   Data on the host will be marked as out of date.  Subsequent access of
+   the data on the host side e.g. with VecGetArray() will incur a device
+   to host data transfer.
+
+   Input Parameter:
++  v - the vector
+-  a - the CUDA device pointer.  This pointer is invalid after
+       VecCUSPRestoreArrayWrite() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: intermediate
+
+.seealso: VecCUSPGetArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
 PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
@@ -2061,45 +1898,230 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY **a)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
-#define __FUNCT__ "VecCUSPGetCUDAArray"
-/*MC
-   VecCUSPGetCUDAArray - Provides write access to the CUDA buffer inside a vector.
+#define __FUNCT__ "VecCUSPGetCUDAArrayReadWrite"
+/*@C
+   VecCUSPGetCUDAArrayReadWrite - Provides access to the CUDA buffer inside a vector.
+
+   This function has semantics similar to VecGetArray():  the pointer
+   returned by this function points to a consistent view of the vector
+   data.  This may involve a copy operation of data from the host to the
+   device if the data on the device is out of date.  If the device
+   memory hasn't been allocated previously it will be allocated as part
+   of this function call.  VecCUSPGetCUDAArrayReadWrite() assumes that
+   the user will modify the vector data.  This is similar to
+   intent(inout) in fortran.
+
+   The CUDA device pointer has to be released by calling
+   VecCUSPRestoreCUDAArrayReadWrite().  Upon restoring the vector data
+   the data on the host will be marked as out of date.  A subsequent
+   access of the host data will thus incur a data transfer from the
+   device to the host.
+
 
    Input Parameter:
--  v - the vector
+.  v - the vector
 
    Output Parameter:
-.  a - the CUDA pointer
+.  a - the CUDA device pointer
 
-   Level: intermediate
+   Fortran note:
+   This function is not currently available from Fortran.
 
-.seealso: VecCUSPGetArrayRead(), VecCUSPGetArrayWrite()
-M*/
-PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArray(Vec v, PetscScalar **a)
+   Level: advanced
+
+.seealso: VecCUSPRestoreCUDAArrayReadWrite(), VecCUSPGetCUDAArrayRead(), VecCUSPGetCUDAArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayReadWrite(Vec v, PetscScalar **a)
 {
   PetscErrorCode ierr;
   CUSPARRAY      *cusparray;
 
   PetscFunctionBegin;
   PetscValidPointer(a,1);
-  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayReadWrite(v, &cusparray);CHKERRQ(ierr);
+  *a   = thrust::raw_pointer_cast(cusparray->data());
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPRestoreCUDAArrayReadWrite"
+/*@C
+   VecCUSPRestoreCUDAArrayReadWrite - Restore a device vector previously acquired with VecCUSPGetCUDAArrayReadWrite().
+
+   This marks the host data as out of date.  Subsequent access to the
+   vector data on the host side with for instance VecGetArray() incurs a
+   data transfer.
+
+   Input Parameter:
++  v - the vector
+-  a - the CUDA device pointer.  This pointer is invalid after
+       VecCUSPRestoreCUDAArrayReadWrite() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: advanced
+
+.seealso: VecCUSPGetCUDAArrayRead(), VecCUSPGetCUDAArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayReadWrite(Vec v, PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->valid_GPU_array = PETSC_CUSP_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPGetCUDAArrayRead"
+/*@C
+   VecCUSPGetCUDAArrayRead - Provides read access to the CUDA buffer inside a vector.
+
+   This function is analogous to VecGetArrayRead():  The pointer
+   returned by this function points to a consistent view of the vector
+   data.  This may involve a copy operation of data from the host to the
+   device if the data on the device is out of date.  If the device
+   memory hasn't been allocated previously it will be allocated as part
+   of this function call.  VecCUSPGetCUDAArrayRead() assumes that the
+   user will not modify the vector data.  This is analgogous to
+   intent(in) in Fortran.
+
+   The CUDA device pointer has to be released by calling
+   VecCUSPRestoreCUDAArrayRead().  If the data on the host side was
+   previously up to date it will remain so, i.e. data on both the device
+   and the host is up to date.  Accessing data on the host side does not
+   incur a device to host data transfer.
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  a - the CUDA pointer.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: advanced
+
+.seealso: VecCUSPRestoreCUDAArrayRead(), VecCUSPGetCUDAArrayReadWrite(), VecCUSPGetCUDAArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayRead(Vec v, PetscScalar **a)
+{
+  PetscErrorCode ierr;
+  CUSPARRAY      *cusparray;
+
+  PetscFunctionBegin;
+  PetscValidPointer(a,1);
+  ierr = VecCUSPGetArrayRead(v, &cusparray);CHKERRQ(ierr);
+  *a   = thrust::raw_pointer_cast(cusparray->data());
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPRestoreCUDAArrayRead"
+/*@C
+   VecCUSPRestoreCUDAArrayRead - Restore a device vector previously acquired with VecCUSPGetCUDAArrayRead()
+
+   If the data on the host side was previously up to date it will remain
+   so, i.e. data on both the device and the host is up to date.
+   Accessing data on the host side e.g. with VecGetArray() does not
+   incur a device to host data transfer.
+
+   Input Parameter:
++  v - the vector
+
+-  a - the CUDA device pointer.  This pointer is invalid after
+       VecCUSPRestoreCUDAArrayRead() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: advanced
+
+   Fortran note: This function is not currently available from Fortran.
+
+.seealso: VecCUSPGetCUDAArrayRead(), VecCUSPGetCUDAArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayRead(Vec v, PetscScalar **a)
+{
+  PetscFunctionBegin;
+  v->valid_GPU_array = PETSC_CUSP_BOTH;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPGetCUDAArrayWrite"
+/*@C
+   VecCUSPGetCUDAArrayWrite - Provides write access to the CUDA buffer inside a vector.
+
+   The data pointed to by the device pointer is uninitialized.  The user
+   may not read from this data.  Furthermore, the entire array needs to
+   be filled by the user to obtain well-defined behaviour.  The device
+   memory will be allocated by this function if it hasn't been allocated
+   previously.  This is analogous to intent(out) in Fortran.
+
+   The device pointer needs to be released with
+   VecCUSPRestoreCUDAArrayWrite().  When the pointer is released the
+   host data of the vector is marked as out of data.  Subsequent access
+   of the host data with e.g. VecGetArray() incurs a device to host data
+   transfer.
+
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  a - the CUDA pointer
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: advanced
+
+.seealso: VecCUSPRestoreCUDAArrayWrite(), VecCUSPGetCUDAArrayReadWrite(), VecCUSPGetCUDAArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayWrite(Vec v, PetscScalar **a)
+{
+  PetscErrorCode ierr;
+  CUSPARRAY      *cusparray;
+
+  PetscFunctionBegin;
+  PetscValidPointer(a,1);
   ierr = VecCUSPGetArrayWrite(v, &cusparray);CHKERRQ(ierr);
   *a   = thrust::raw_pointer_cast(cusparray->data());
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
-#define __FUNCT__ "VecCUSPRestoreCUDAArray"
-PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArray(Vec v, PetscScalar **a)
+#define __FUNCT__ "VecCUSPRestoreCUDAArrayWrite"
+/*@C
+   VecCUSPRestoreCUDAArrayWrite - Restore a device vector previously acquired with VecCUSPGetCUDAArrayWrite().
+
+   Data on the host will be marked as out of date.  Subsequent access of
+   the data on the host side e.g. with VecGetArray() will incur a device
+   to host data transfer.
+
+   Input Parameter:
++  v - the vector
+
+-  a - the CUDA device pointer.  This pointer is invalid after
+       VecCUSPRestoreCUDAArrayWrite() returns.
+
+   Fortran note:
+   This function is not currently available from Fortran.
+
+   Level: advanced
+
+.seealso: VecCUSPGetCUDAArrayWrite(), VecCUSPGetCUDAArrayWrite(), VecCUSPGetArrayReadWrite(), VecCUSPGetArrayRead(), VecCUSPGetArrayWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
+@*/
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayWrite(Vec v, PetscScalar **a)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Note: cannot call VecCUSPRestoreArrayWrite() here because the CUSP vector is not available. */
   v->valid_GPU_array = PETSC_CUSP_GPU;
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
