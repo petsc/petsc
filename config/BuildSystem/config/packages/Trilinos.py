@@ -6,8 +6,8 @@ class Configure(config.package.CMakePackage):
     self.gitcommit        = 'origin/master'
     self.download         = ['git://https://github.com/trilinos/trilinos']
     self.downloadfilename = 'trilinos'
-    self.includes         = ['TPI.h','Trilinos_version.h']
-    self.functions        = ['TPI_Block']   # one of the very few C routines in Trilinos
+    self.includes         = ['Trilinos_version.h']
+    self.functions        = ['Zoltan_Create']   # one of the very few C routines in Trilinos
     self.cxx              = 1
     self.requirescxx11    = 1
     self.downloadonWindows= 0
