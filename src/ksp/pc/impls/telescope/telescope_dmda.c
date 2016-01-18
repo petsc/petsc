@@ -478,7 +478,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
     if (isActiveRank(sred->psubcomm)) {
       ierr = KSPSetDM(sred->ksp,ctx->dmrepart);CHKERRQ(ierr);
       
-      if (!dmksp_func) {
+      if (!dmksp_func || sred->ignore_kspcomputeoperators) {
         ierr = KSPSetDMActive(sred->ksp,PETSC_FALSE);CHKERRQ(ierr);
       } else {
         /* sub ksp inherits dmksp_func and context provided by user */
