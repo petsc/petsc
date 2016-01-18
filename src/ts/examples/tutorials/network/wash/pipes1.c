@@ -138,7 +138,7 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
   ierr = DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr); 
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
-  //ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 
@@ -181,7 +181,7 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
     ierr = DMNetworkGetVariableOffset(networkdm,vto,&offsetto);CHKERRQ(ierr);   
 
     /* set initial values for this pipe */
-    //Q0=0.477432; H0=150.0; needs to be updated by its succeeding pipe. Use SNESSolve()?
+    /* Q0=0.477432; H0=150.0; needs to be updated by its succeeding pipe. Use SNESSolve()? */
     pipe     = (Pipe)(nwarr + pipeoffset); 
     ierr = PipeComputeSteadyState(pipe, 0.477432, wash->H0);CHKERRQ(ierr); 
     ierr = VecGetSize(pipe->x,&nx);CHKERRQ(ierr);
@@ -269,8 +269,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
 
   /* get num of local and global total nnodes */
   nidx = wash->nnodes_loc; 
-  ierr = MPIU_Allreduce(&nidx,&nx,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  //printf("[%d] nx %d, nidx %d\n",rank,nx,nidx);
+  ierr = MPIU_Allreduce(&nidx,&nx,1,MPIU_INT,MPIU_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&Xq);CHKERRQ(ierr);
   if (rank == 0) { /* all entries of Xq are in proc[0] */
@@ -285,7 +284,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   /* set idx1 and idx2 */
-  ierr = PetscMalloc4(nidx,&idx1,nidx,&idx2,nidx,&idx1_h,nidx,&idx2_h);CHKERRQ(ierr);
+  ierr = PetscCalloc4(nidx,&idx1,nidx,&idx2,nidx,&idx1_h,nidx,&idx2_h);CHKERRQ(ierr);
   
   ierr = DMNetworkGetComponentDataArray(networkdm,&nwarr);CHKERRQ(ierr); 
   ierr = DMNetworkGetEdgeRange(networkdm,&Start, &End);CHKERRQ(ierr);
@@ -344,7 +343,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
 
 #undef __FUNCT__
 #define __FUNCT__ "WashNetworkCleanUp"
-PetscErrorCode WashNetworkCleanUp(Wash wash,PetscInt *edgelist)
+PetscErrorCode WashNetworkCleanUp(Wash wash,int *edgelist)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -360,32 +359,35 @@ PetscErrorCode WashNetworkCleanUp(Wash wash,PetscInt *edgelist)
 
 #undef __FUNCT__
 #define __FUNCT__ "WashNetworkCreate"
-PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr,PetscInt **elist)
+PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr,int **elist)
 {
   PetscErrorCode ierr;
   PetscInt       nnodes,npipes;
   PetscMPIInt    rank;
   Wash           wash;
-  PetscInt       i,numVertices,numEdges,*edgelist;
-  Junction       junctions;
-  Pipe           pipes;
+  PetscInt       i,numVertices,numEdges;
+  int            *edgelist;
+  Junction       junctions=NULL;
+  Pipe           pipes=NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(1,&wash);CHKERRQ(ierr);
+  ierr = PetscCalloc1(1,&wash);CHKERRQ(ierr);
   wash->comm = comm;
   *wash_ptr  = wash;
-  wash->Q0   = 0.477432; //copied from initial soluiton
+  wash->Q0   = 0.477432; /* copied from initial soluiton */
   wash->H0   = 150.0;
-  wash->HL   = 143.488; //copied from initial soluiton
+  wash->HL   = 143.488; /* copied from initial soluiton */
   wash->nnodes_loc = 0;
 
   numVertices = 0; 
   numEdges    = 0; 
   edgelist    = NULL;
 
-  if (!rank) printf("Setup pipesCase %d\n",pipesCase);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Setup pipesCase %D\n",pipesCase);CHKERRQ(ierr);
+  }
   nnodes = 6;
   ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-npipenodes", &nnodes, PETSC_NULL);CHKERRQ(ierr);
 
@@ -395,7 +397,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   case 0:
     /* pipeCase 0: */
     /* =============================
-    v0 --E0--> v1--E1--> v2 --E1-->v3
+    v0 --E0--> v1--E1--> v2 --E2-->v3
     ================================  */
     npipes = 3;
     ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-npipes", &npipes, PETSC_NULL);CHKERRQ(ierr);
@@ -410,14 +412,14 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
-      ierr = PetscMalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
+      ierr = PetscCalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
       for (i=0; i<numEdges; i++) {
         edgelist[2*i] = i; edgelist[2*i+1] = i+1;
       }
 
       /* Add network components */
       /*------------------------*/
-      ierr = PetscMalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
+      ierr = PetscCalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
       /* vertex */
       for (i=0; i<numVertices; i++) {
         junctions[i].id = i;
@@ -459,14 +461,14 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
-      ierr = PetscMalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
+      ierr = PetscCalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
       edgelist[0] = 0; edgelist[1] = 3;  /* edge[0] */
       edgelist[2] = 3; edgelist[3] = 1;  /* edge[1] */
       edgelist[4] = 3; edgelist[5] = 2;  /* edge[2] */
 
       /* Add network components */
       /*------------------------*/
-      ierr = PetscMalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
+      ierr = PetscCalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
       /* vertex */
       for (i=0; i<numVertices; i++) {
         junctions[i].id = i;
@@ -505,14 +507,14 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
-      ierr = PetscMalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
+      ierr = PetscCalloc1(2*numEdges,&edgelist);CHKERRQ(ierr);
       edgelist[0] = 0; edgelist[1] = 3;  /* edge[0] */
       edgelist[2] = 3; edgelist[3] = 1;  /* edge[1] */
       edgelist[4] = 2; edgelist[5] = 3;  /* edge[2] */
 
       /* Add network components */
       /*------------------------*/
-      ierr = PetscMalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
+      ierr = PetscCalloc2(numVertices,&junctions,numEdges,&pipes);CHKERRQ(ierr);
       /* vertex */
       for (i=0; i<numVertices; i++) {
         junctions[i].id = i;
@@ -528,7 +530,6 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
 
       /* edge and pipe */
       for (i=0; i<numEdges; i++) {
-        //edges[i].id     = i;
         pipes[i].id     = i;
         pipes[i].nnodes = nnodes;
       }
@@ -555,7 +556,8 @@ int main(int argc,char ** argv)
   Wash              wash;
   Junction          junctions,junction;
   Pipe              pipe,pipes;
-  PetscInt          numEdges,numVertices,*edgelist = NULL,KeyPipe,KeyJunction;
+  PetscInt          numEdges,numVertices,KeyPipe,KeyJunction;
+  int               *edgelist = NULL;
   PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,pipeOffset,key,frombType,tobType;
   PetscInt          vfrom,vto,vkey,fromOffset,toOffset,type,varoffset,pipeoffset;
   PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;
@@ -669,11 +671,11 @@ int main(int argc,char ** argv)
     pipe->comm = PETSC_COMM_SELF; /* must be set here, otherwise crashes in my mac??? */
     wash->nnodes_loc += pipe->nnodes; /* local total num of nodes, will be used by PipesView() */
     ierr = PipeSetParameters(pipe,
-                               600.0,    // length
-                               pipe->nnodes,   // nnodes -- rm from PipeSetParameters
-                               0.5,      // diameter
-                               1200.0,   // a
-                               0.018);CHKERRQ(ierr);    // friction
+                             600.0,          /* length */
+                             pipe->nnodes,   /* nnodes -- rm from PipeSetParameters */
+                             0.5,            /* diameter */
+                             1200.0,         /* a */
+                             0.018);CHKERRQ(ierr);    /* friction */
 
     /* set boundary conditions for this pipe */
     if (from_nedge_in <= 1 && from_nedge_out > 0) {
@@ -734,12 +736,12 @@ int main(int argc,char ** argv)
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
-  //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   
   /* View solution q and h */
   /* --------------------- */
   viewpipes = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-pipe_view", &viewpipes,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-pipe_view", &viewpipes,NULL);CHKERRQ(ierr);
   if (viewpipes) {
     ierr = PipesView(X,networkdm,wash);CHKERRQ(ierr);
   }

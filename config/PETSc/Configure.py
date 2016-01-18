@@ -40,6 +40,8 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
+    help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
+
     return
 
   def setupDependencies(self, framework):
@@ -720,6 +722,53 @@ prepend-path PATH %s
       self.addDefine('DEPRECATED(why)', ' ')
     self.popLanguage()
 
+  def configureAlign(self):
+    '''Check if __attribute(align) is supported'''
+    filename = 'conftestalign'
+    includes = '''
+#include <sys/types.h>
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stdio.h>
+#include <stddef.h>
+#endif\n'''
+    body     = '''
+struct mystruct {int myint;} __attribute((aligned(16)));
+FILE *f = fopen("'''+filename+'''", "w");
+if (!f) exit(1);
+fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
+'''
+    if 'known-has-attribute-aligned' in self.argDB:
+      if self.argDB['known-has-attribute-aligned']:
+        size = 16
+      else:
+        size = -3
+    elif not self.argDB['with-batch']:
+      self.pushLanguage(self.languages.clanguage)
+      try:
+        if self.checkRun(includes, body) and os.path.exists(filename):
+          f    = file(filename)
+          size = int(f.read())
+          f.close()
+          os.remove(filename)
+        else:
+          size = -4
+      except:
+        size = -1
+        self.framework.logPrint('Error checking attribute(aligned)')
+      self.popLanguage()
+    else:
+      self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>', '#include <sys/types.h>','struct mystruct {int myint;} __attribute((aligned(16)));'])
+      self.framework.addBatchBody('fprintf(output, "  \'--known-has-attribute-aligned=%d\',\\n", sizeof(struct mystruct)==16);')
+      size = -2
+    if size == 16:
+      self.addDefine('ATTRIBUTEALIGNED(size)', '__attribute((aligned (size)))')
+      self.addDefine('HAVE_ATTRIBUTEALIGNED', 1)
+    else:
+      self.framework.logPrint('incorrect alignment. Found alignment:'+ str(size))
+      self.addDefine('ATTRIBUTEALIGNED(size)', ' ')
+    return
+
   def configureExpect(self):
     '''Sees if the __builtin_expect directive is supported'''
     self.pushLanguage(self.languages.clanguage)
@@ -990,6 +1039,7 @@ prepend-path PATH %s
     self.executeTest(self.configureDeprecated)
     self.executeTest(self.configureIsatty)
     self.executeTest(self.configureExpect);
+    self.executeTest(self.configureAlign);
     self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)

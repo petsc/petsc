@@ -895,7 +895,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # pretty print repr(args.values())
       for itm in args:
         if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=config.compilerOptions'):
-          body.append('fprintf(output,"  \''+str(itm)+'\',\\n");')
+          body.append('fprintf(output,"  \'%s\',\\n","'+str(itm)+'");')
       body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
                 '  import os',
