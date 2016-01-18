@@ -4,7 +4,6 @@
    We need this stub function in a seperate file that does not include petscviewer.h so that PETSc Fortran 
    builds do not print messages about deprecated functions
 */
-typedef struct _p_PetscViewer *PetscViewer;
 typedef PetscEnum PetscViewerFormat;
 
 PETSC_EXTERN PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
