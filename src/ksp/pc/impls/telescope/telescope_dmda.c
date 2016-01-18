@@ -1,4 +1,6 @@
 
+
+#include <petsc/private/matimpl.h>
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/dmimpl.h>
 #include <petscksp.h>           /*I "petscksp.h" I*/
@@ -865,6 +867,8 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   if (isActiveRank(sred->psubcomm)) {
     /* create new nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,&sub_nullspace);CHKERRQ(ierr);
+    sub_nullspace->remove = nullspace->remove;
+    sub_nullspace->rmctx = nullspace->rmctx;
 
     /* attach redundant nullspace to Bred */
     ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
