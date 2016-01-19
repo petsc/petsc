@@ -76,8 +76,7 @@ class BaseTestDA(object):
             self.da.setFieldName(i, "field%d" % i)
         for i in range(self.da.getDof()):
             name = self.da.getFieldName(i)
-            print self.da.getDof(), name
-            #self.assertEqual(name, "field%d" % i)
+            self.assertEqual(name, "field%d" % i)
 
     def testCoordinates(self):
         self.da.setUniformCoordinates(0,1,0,1,0,1)
