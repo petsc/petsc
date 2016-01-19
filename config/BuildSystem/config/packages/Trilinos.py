@@ -38,6 +38,10 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
+    # Check for 64bit pointers
+    if self.types.sizes['known-sizeof-void-p'] != 8:
+      raise RuntimeError('Trilinos requires 64bit compilers!')
+
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
 
     # multiple libraries in Trilinos seem to depend on Boost, I cannot easily determine which
