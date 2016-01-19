@@ -22,6 +22,9 @@ cdef extern from * nogil:
         DM_BOUNDARY_PERIODIC
         DM_BOUNDARY_TWIST
 
+    struct _n_DMLabel
+    ctypedef _n_DMLabel* PetscDMLabel "DMLabel"
+
     int DMCreate(MPI_Comm,PetscDM*)
     int DMClone(PetscDM,PetscDM*)
     int DMDestroy(PetscDM*)
@@ -76,6 +79,26 @@ cdef extern from * nogil:
     int DMSetDefaultSF(PetscDM,PetscSF)
     int DMGetPointSF(PetscDM,PetscSF*)
     int DMSetPointSF(PetscDM,PetscSF)
+
+    int DMCreateLabel(PetscDM,const_char[])
+    int DMGetLabelValue(PetscDM,const_char[],PetscInt,PetscInt*)
+    int DMSetLabelValue(PetscDM,const_char[],PetscInt,PetscInt)
+    int DMHasLabel(PetscDM,const_char[],PetscBool*)
+    int DMClearLabelValue(PetscDM,const_char[],PetscInt,PetscInt)
+    int DMGetLabelSize(PetscDM,const_char[],PetscInt*)
+    int DMGetLabelIdIS(PetscDM,const_char[],PetscIS*)
+    int DMGetStratumSize(PetscDM,const_char[],PetscInt,PetscInt*)
+    int DMGetStratumIS(PetscDM,const_char[],PetscInt,PetscIS*)
+    int DMClearLabelStratum(PetscDM,const_char[],PetscInt)
+    int DMSetLabelOutput(PetscDM,const_char[],PetscBool)
+    int DMGetLabelOutput(PetscDM,const_char[],PetscBool*)
+    int DMGetNumLabels(PetscDM,PetscInt*)
+    int DMGetLabelName(PetscDM,PetscInt,const_char**)
+    int DMHasLabel(PetscDM,const_char[],PetscBool*)
+    int DMGetLabel(PetscDM,const_char*,PetscDMLabel*)
+    int DMAddLabel(PetscDM,PetscDMLabel)
+    int DMRemoveLabel(PetscDM,const_char[],PetscDMLabel*)
+    int DMCopyLabels(PetscDM,PetscDM)
 
     int DMShellSetGlobalVector(PetscDM,PetscVec)
     int DMShellSetLocalVector(PetscDM,PetscVec)

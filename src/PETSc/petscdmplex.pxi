@@ -2,9 +2,6 @@
 
 cdef extern from * nogil:
 
-    struct _n_DMLabel
-    ctypedef _n_DMLabel* PetscDMLabel "DMLabel"
-
     int DMPlexCreate(MPI_Comm,PetscDM*)
     int DMPlexCreateCohesiveSubmesh(PetscDM,PetscBool,const_char[],PetscInt,PetscDM*)
     int DMPlexCreateFromCellList(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,int[],PetscInt,double[],PetscDM*)
@@ -47,25 +44,8 @@ cdef extern from * nogil:
     #int DMPlexPointGlobalRef(PetscDM,PetscInt,PetscScalar*,void*)
     #int DMPlexPointGlobalRead(PetscDM,PetscInt,const_PetscScalar*,const_void*)
 
-    int DMPlexCreateLabel(PetscDM,const_char[])
-    int DMPlexGetLabelValue(PetscDM,const_char[],PetscInt,PetscInt*)
-    int DMPlexSetLabelValue(PetscDM,const_char[],PetscInt,PetscInt)
-    int DMPlexClearLabelValue(PetscDM,const_char[],PetscInt,PetscInt)
-    int DMPlexGetLabelSize(PetscDM,const_char[],PetscInt*)
-    int DMPlexGetLabelIdIS(PetscDM,const_char[],PetscIS*)
-    int DMPlexGetStratumSize(PetscDM,const_char[],PetscInt,PetscInt*)
-    int DMPlexGetStratumIS(PetscDM,const_char[],PetscInt,PetscIS*)
-    int DMPlexClearLabelStratum(PetscDM,const_char[],PetscInt)
-    int DMPlexSetLabelOutput(PetscDM,const_char[],PetscBool)
-    int DMPlexGetLabelOutput(PetscDM,const_char[],PetscBool*)
     #int PetscSectionCreateGlobalSectionLabel(PetscSection,PetscSF,PetscBool,PetscDMLabel,PetscInt,PetscSection*)
 
-    int DMPlexGetNumLabels(PetscDM,PetscInt*)
-    int DMPlexGetLabelName(PetscDM,PetscInt,const_char**)
-    int DMPlexHasLabel(PetscDM,const_char[],PetscBool*)
-    int DMPlexGetLabel(PetscDM,const_char*,PetscDMLabel*)
-    #int DMPlexAddLabel(PetscDM,PetscDMLabel)
-    int DMPlexRemoveLabel(PetscDM,const_char[],PetscDMLabel*)
     int DMPlexGetCellNumbering(PetscDM,PetscIS*)
     int DMPlexGetVertexNumbering(PetscDM,PetscIS*)
     int DMPlexCreatePointNumbering(PetscDM,PetscIS*)
@@ -90,7 +70,6 @@ cdef extern from * nogil:
     int DMPlexTriangleSetOptions(PetscDM,const_char*)
     int DMPlexTetgenSetOptions(PetscDM,const_char*)
     #int DMPlexCopyCoordinates(PetscDM,PetscDM)
-    #int DMPlexCopyLabels(PetscDM,PetscDM)
     #int DMPlexCreateDoublet(MPI_Comm,PetscInt,PetscBool,PetscBool,PetscBool,PetscReal,PetscDM*)
     int DMPlexCreateSquareBoundary(PetscDM,const_PetscReal[],const_PetscReal[],const_PetscInt[])
     int DMPlexCreateCubeBoundary(PetscDM,const_PetscReal[],const_PetscReal[],const_PetscInt[])

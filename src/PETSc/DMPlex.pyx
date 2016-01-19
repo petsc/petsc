@@ -286,103 +286,6 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexCreatePointNumbering(self.dm, &iset.iset) )
         return iset
 
-    def getNumLabels(self):
-        cdef PetscInt nLabels = 0
-        CHKERR( DMPlexGetNumLabels(self.dm, &nLabels) )
-        return toInt(nLabels)
-
-    def getLabelName(self, index):
-        cdef PetscInt cindex = asInt(index)
-        cdef const_char *cname = NULL
-        CHKERR( DMPlexGetLabelName(self.dm, cindex, &cname) )
-        return bytes2str(cname)
-
-    def hasLabel(self, name):
-        cdef PetscBool flag = PETSC_FALSE
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexHasLabel(self.dm, cname, &flag) )
-        return <bint> flag
-
-    def createLabel(self, name):
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexCreateLabel(self.dm, cname) )
-
-    def removeLabel(self, name):
-        cdef const_char *cname = NULL
-        cdef PetscDMLabel clbl = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexRemoveLabel(self.dm, cname, &clbl) )
-
-    def getLabelValue(self, name, point):
-        cdef PetscInt cpoint = asInt(point), value = 0
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexGetLabelValue(self.dm, cname, cpoint, &value) )
-        return toInt(value)
-
-    def setLabelValue(self, name, point, value):
-        cdef PetscInt cpoint = asInt(point), cvalue = asInt(value)
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexSetLabelValue(self.dm, cname, cpoint, cvalue) )
-
-    def clearLabelValue(self, name, point, value):
-        cdef PetscInt cpoint = asInt(point), cvalue = asInt(value)
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexClearLabelValue(self.dm, cname, cpoint, cvalue) )
-
-    def getLabelSize(self, name):
-        cdef PetscInt size = 0
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexGetLabelSize(self.dm, cname, &size) )
-        return toInt(size)
-
-    def getLabelIdIS(self, name):
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        cdef IS lis = IS()
-        CHKERR( DMPlexGetLabelIdIS(self.dm, cname, &lis.iset) )
-        return lis
-
-    def setLabelOutput(self, name, output):
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        cdef PetscBool coutput = output
-        CHKERR( DMPlexSetLabelOutput(self.dm, cname, coutput) )
-
-    def getLabelOutput(self, name):
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        cdef PetscBool coutput = PETSC_FALSE
-        CHKERR( DMPlexGetLabelOutput(self.dm, cname, &coutput) )
-        return coutput
-
-    def getStratumSize(self, name, value):
-        cdef PetscInt size = 0
-        cdef PetscInt cvalue = asInt(value)
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexGetStratumSize(self.dm, cname, cvalue, &size) )
-        return toInt(size)
-
-    def getStratumIS(self, name, value):
-        cdef PetscInt cvalue = asInt(value)
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        cdef IS sis = IS()
-        CHKERR( DMPlexGetStratumIS(self.dm, cname, cvalue, &sis.iset) )
-        return sis
-
-    def clearLabelStratum(self, name, value):
-        cdef PetscInt cvalue = asInt(value)
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        CHKERR( DMPlexClearLabelStratum(self.dm, cname, cvalue) )
-
     def getDepth(self):
         cdef PetscInt depth = 0
         CHKERR( DMPlexGetDepth(self.dm,&depth) )
@@ -495,7 +398,7 @@ cdef class DMPlex(DM):
         cdef const_char *cval = NULL
         label = str2bytes(label, &cval)
         cdef PetscDMLabel clbl = NULL
-        CHKERR( DMPlexGetLabel(self.dm, cval, &clbl) )
+        CHKERR( DMGetLabel(self.dm, cval, &clbl) )
         CHKERR( DMPlexMarkBoundaryFaces(self.dm, clbl) )
 
     def setAdjacencyUseCone(self, useCone=True):
