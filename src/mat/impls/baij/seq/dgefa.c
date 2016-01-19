@@ -21,8 +21,6 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt,PetscBool
   MatScalar t,*ax,*ay,*aa;
   MatReal   tmp,max;
 
-  /* gaussian elimination with partial pivoting */
-
   PetscFunctionBegin;
   if (zeropivotdetected) *zeropivotdetected = PETSC_FALSE;
 
