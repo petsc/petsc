@@ -157,9 +157,9 @@ PetscLogEventFindName(PetscLogEvent eventid,
 
 #if !defined(PETSC_HAVE_CUSP)
 #undef  __FUNCT__
-#define __FUNCT__ "VecCUSPGetCUDAArray"
+#define __FUNCT__ "VecCUSPGetCUDAArrayReadWrite"
 PETSC_STATIC_INLINE PetscErrorCode
-VecCUSPGetCUDAArray(Vec v,PetscScalar **a)
+VecCUSPGetCUDAArrayReadWrite(Vec v,PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
@@ -169,9 +169,9 @@ VecCUSPGetCUDAArray(Vec v,PetscScalar **a)
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
 #undef  __FUNCT__
-#define __FUNCT__ "VecCUSPRestoreCUDAArray"
+#define __FUNCT__ "VecCUSPRestoreCUDAArrayReadWrite"
 PETSC_STATIC_INLINE PetscErrorCode
-VecCUSPRestoreCUDAArray(Vec v,PetscScalar **a)
+VecCUSPRestoreCUDAArrayReadWrite(Vec v,PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
