@@ -99,7 +99,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *inf
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    /* ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
+   
     allowzeropivot = PetscNot(A->erroriffailure);
     ierr = PetscKernel_A_gets_inverse_A_2(pv,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
@@ -214,7 +214,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const Ma
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    /* ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
+   
     allowzeropivot = PetscNot(A->erroriffailure);
     ierr = PetscKernel_A_gets_inverse_A_2(pv,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
@@ -1547,6 +1547,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   PetscReal *vtmp_abs;
   MatScalar *v_work;
   PetscInt  *v_pivots;
+  PetscBool allowzeropivot,zeropivotdetected=PETSC_FALSE;
 
   PetscFunctionBegin;
   /* ------- symbolic factorization, can be reused ---------*/
@@ -1615,6 +1616,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr = PetscMalloc1(mbs+1,&vtmp_abs);CHKERRQ(ierr);
   ierr = PetscMalloc3(bs,&v_work,bs2,&multiplier,bs,&v_pivots);CHKERRQ(ierr);
 
+  allowzeropivot = PetscNot(A->erroriffailure);
   bi[0]       = 0;
   bdiag[0]    = (nnz_max/bs2)-1; /* location of diagonal in factor B */
   bi[2*mbs+1] = bdiag[0]+1; /* endof bj and ba array */
@@ -1625,7 +1627,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     if (!nzi) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     nzi_al = adiag[r[i]] - ai[r[i]];
     nzi_au = ai[r[i]+1] - adiag[r[i]] -1;
-    /* printf("row %d, nzi_al/au %d %d\n",i,nzi_al,nzi_au); */
 
     /* load in initial unfactored row */
     ajtmp = aj + ai[r[i]];
@@ -1677,24 +1678,14 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
       nzi_bl++; j++;
     }
     nzi_bu = nzi - nzi_bl -1;
-    /* printf("nzi %d, nzi_bl %d, nzi_bu %d\n",nzi,nzi_bl,nzi_bu); */
 
     while (j < nzi) { /* U-part */
       ierr = PetscMemcpy(vtmp+bs2*j,rtmp+bs2*jtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      /*
-      printf(" col %d: ",jtmp[j]);
-      for (j1=0; j1<bs2; j1++) printf(" %g",*(vtmp+bs2*j+j1));
-      printf(" \n");
-      */
       j++;
     }
 
     ierr = MatBlockAbs_private(nzi,bs2,vtmp,vtmp_abs);CHKERRQ(ierr);
-    /*
-    printf(" row %d, nzi %d, vtmp_abs\n",i,nzi);
-    for (j1=0; j1<nzi; j1++) printf(" (%d %g),",jtmp[j1],vtmp_abs[j1]);
-    printf(" \n");
-    */
+    
     bjtmp = bj + bi[i];
     batmp = ba + bs2*bi[i];
     /* apply level dropping rule to L part */
@@ -1708,11 +1699,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     for (j=0; j<ncut; j++) {
       bjtmp[j] = jtmp[j];
       ierr     = PetscMemcpy(batmp+bs2*j,rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      /*
-      printf(" col %d: ",bjtmp[j]);
-      for (j1=0; j1<bs2; j1++) printf(" %g,",*(batmp+bs2*j+j1));
-      printf("\n");
-      */
     }
     bi[i+1] = bi[i] + ncut;
     nzi     = ncut + 1;
@@ -1735,31 +1721,22 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     batmp  = ba + bs2*bdiag[i];
     ierr   = PetscMemcpy(batmp,rtmp+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
     *bjtmp = i;
-    /*
-    printf(" diag %d: ",*bjtmp);
-    for (j=0; j<bs2; j++) {
-      printf(" %g,",batmp[j]);
-    }
-    printf("\n");
-    */
+    
     bjtmp = bj + bdiag[i+1]+1;
     batmp = ba + (bdiag[i+1]+1)*bs2;
 
     for (k=0; k<ncut; k++) {
       bjtmp[k] = jtmp[nzi_bl+1+k];
       ierr     = PetscMemcpy(batmp+bs2*k,rtmp+bs2*bjtmp[k],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      /*
-      printf(" col %d:",bjtmp[k]);
-      for (j1=0; j1<bs2; j1++) printf(" %g,",*(batmp+bs2*k+j1));
-      printf("\n");
-      */
     }
 
     im[i] = nzi; /* used by PetscLLAddSortedLU() */
 
     /* invert diagonal block for simplier triangular solves - add shift??? */
     batmp = ba + bs2*bdiag[i];
-    ierr  = PetscKernel_A_gets_inverse_A(bs,batmp,v_pivots,v_work);CHKERRQ(ierr);
+
+    ierr  = PetscKernel_A_gets_inverse_A(bs,batmp,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   } /* for (i=0; i<mbs; i++) */
   ierr = PetscFree3(v_work,multiplier,v_pivots);CHKERRQ(ierr);
 

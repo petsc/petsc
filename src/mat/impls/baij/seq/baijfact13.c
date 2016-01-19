@@ -30,6 +30,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc1(9*(n+1),&rtmp);CHKERRQ(ierr);
+  allowzeropivot = PetscNot(A->erroriffailure);
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -106,7 +107,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
     }
     /* invert diagonal block */
     w    = ba + 9*diag_offset[i];
-    allowzeropivot = PetscNot(A->erroriffailure);
     ierr = PetscKernel_A_gets_inverse_A_3(w,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   }

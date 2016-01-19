@@ -19,7 +19,7 @@
    src/mat/impls/baij/seq
 */
 
-extern PetscErrorCode PetscLINPACKgefa(MatScalar*,PetscInt,PetscInt*);
+extern PetscErrorCode PetscLINPACKgefa(MatScalar*,PetscInt,PetscInt*,PetscBool,PetscBool*);
 extern PetscErrorCode PetscLINPACKgedi(MatScalar*,PetscInt,PetscInt*,MatScalar*);
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar*,PetscReal,PetscBool,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar*,PetscReal,PetscBool,PetscBool*);
@@ -115,7 +115,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    pivots - integer work array of length bs
    W      -  bs by 1 work array
 */
-#define PetscKernel_A_gets_inverse_A(bs,A,pivots,W) (PetscLINPACKgefa((A),(bs),(pivots)) || PetscLINPACKgedi((A),(bs),(pivots),(W)))
+#define PetscKernel_A_gets_inverse_A(bs,A,pivots,W,allowzeropivot,zeropivotdetected) (PetscLINPACKgefa((A),(bs),(pivots),(allowzeropivot),(zeropivotdetected)) || PetscLINPACKgedi((A),(bs),(pivots),(W)))
 
 /* -----------------------------------------------------------------------*/
 

@@ -103,7 +103,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    /* PetscKernel_A_gets_inverse_A(bs,pv,pivots,work); */
+   
     allowzeropivot = PetscNot(A->erroriffailure);
     ierr = PetscKernel_A_gets_inverse_A_15(pv,ipvt,work,info->shiftamount,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
@@ -142,10 +142,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
   PetscInt       bs=A->rmap->bs,bs2 = a->bs2,*v_pivots,flg;
   MatScalar      *v_work;
   PetscBool      col_identity,row_identity,both_identity;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  allowzeropivot = PetscNot(A->erroriffailure);
 
   ierr = PetscMalloc1(bs2*n,&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
@@ -216,7 +218,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     pj = b->j + bdiag[i];
     /* if (*pj != i)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"row %d != *pj %d",i,*pj); */
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr);
+
+    ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);

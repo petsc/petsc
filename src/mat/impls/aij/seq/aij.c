@@ -3045,7 +3045,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
         IJ[j] = bs*i + j;
       }
       ierr  = MatGetValues(A,bs,IJ,bs,IJ,diag);CHKERRQ(ierr);
-      ierr  = PetscKernel_A_gets_inverse_A(bs,diag,v_pivots,v_work);CHKERRQ(ierr);
+      ierr  = PetscKernel_A_gets_inverse_A(bs,diag,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       ierr  = PetscKernel_A_gets_transpose_A_N(diag,bs);CHKERRQ(ierr);
       diag += bs2;
     }
