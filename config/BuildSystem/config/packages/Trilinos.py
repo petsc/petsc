@@ -1,4 +1,5 @@
 import config.package
+import os
 
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
@@ -41,12 +42,15 @@ class Configure(config.package.CMakePackage):
     # Check for 64bit pointers
     if self.types.sizes['known-sizeof-void-p'] != 8:
       raise RuntimeError('Trilinos requires 64bit compilers!')
-
-    args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-
     # multiple libraries in Trilinos seem to depend on Boost, I cannot easily determine which
     if not self.boost.found:
       raise RuntimeError('Trilinos requires boost so add --with-boost-dir=/pathtoboost or --download-boost and run configure again')
+
+    args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+
+    # Trilinos cmake does not set this variable (as it should) so cmake install does not properly reset the -id and rpath of --prefix installed Trilinos libraries
+    args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
+
     args.append('-DTPL_ENABLE_Boost=ON')
     args.append('-DTPL_Boost_INCLUDE_DIRS:FILEPATH='+self.headers.toStringNoDupes(self.boost.include))
     args.append('-DTPL_Boost_INCLUDE_DIRS:FILEPATH='+self.headers.toStringNoDupes(self.boost.lib))
