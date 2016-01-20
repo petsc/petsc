@@ -59,6 +59,9 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(viewer,"Permuted matrix\n");CHKERRQ(ierr);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
 
+  if (!view_sparse) {
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerASCIIPrintf(viewer,"Row permutation\n");CHKERRQ(ierr);
   ierr = ISView(isrow,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Column permutation\n");CHKERRQ(ierr);

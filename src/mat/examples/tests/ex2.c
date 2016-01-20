@@ -115,10 +115,10 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&matB);CHKERRQ(ierr);
   }
 
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free data structures */
-  if (mat)  {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
-  if (tmat) {ierr = MatDestroy(&tmat);CHKERRQ(ierr);}
-
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

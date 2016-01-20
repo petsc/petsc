@@ -65,6 +65,8 @@ int main(int argc, char **argv)
     ierr = DMView(da2,view_vtk_eta);CHKERRQ(ierr);
     ierr = VecView(cv,view_vtk_cv);CHKERRQ(ierr);
     ierr = VecView(eta,view_vtk_eta);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(view_vtk_cv);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(view_vtk_eta);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&view_vtk_cv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&view_vtk_eta);CHKERRQ(ierr);
   }
