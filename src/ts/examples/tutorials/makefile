@@ -426,6 +426,11 @@ runex16adj:
 	   ${DIFF} output/ex16adj_1.out ex16adj_1.tmp || printf "${PWD}\nPossible problem with ex16adj_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex16adj_1.tmp
 
+runex16adj_2:
+	-@${MPIEXEC} -n 1 ./ex16adj -monitor 0 -tstrajectory_type memory > ex16adj_2.tmp 2>&1; \
+	  ${DIFF} output/ex16adj_1.out ex16adj_2.tmp || printf "${PWD}\nPossible problem with ex16adj_2, diffs above\n=========================================\n"; \
+	  ${RM} -f ex16adj_2.tmp
+
 runex16opt_p:
 	-@${MPIEXEC} -n 1 ./ex16opt_p -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor  -tao_gttol 1.e-5 > ex16opt_p_1.tmp 2>&1; \
 	   ${DIFF} output/ex16opt_p_1.out ex16opt_p_1.tmp || printf "${PWD}\nPossible problem with ex16opt_p_1, diffs above\n=========================================\n"; \
@@ -679,7 +684,7 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 e
                             ex8.PETSc runex8 ex8.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_5 ex15.rm \
-                            ex16adj.PETSc  runex16adj ex16adj.rm \
+                            ex16adj.PETSc runex16adj runex16adj_2 ex16adj.rm \
                             ex17.PETSc runex17 ex17.rm \
                             ex19.PETSc ex19.rm \
                             ex22.PETSc runex22_2 runex22_3 ex22.rm \

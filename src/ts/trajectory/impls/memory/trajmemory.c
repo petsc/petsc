@@ -1655,7 +1655,8 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   if (flg) { /* fixed time step */
     tjsch->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
   }
-  if (tjsch->max_cps_ram > 1) stack->stacksize = tjsch->max_cps_ram;
+  if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_cps_ram;
+
   if (tjsch->stride > 1) { /* two level mode */
     if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram < tjsch->stride-1) { /* use revolve_offline for each stride */
       tjsch->stype = TWO_LEVEL_REVOLVE;
@@ -1682,6 +1683,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
       }
     } else { /* adaptive time step */
       tjsch->stype = NONE;
+      if(tjsch->max_cps_ram == -1) stack->stacksize = ts->max_steps; /* if max_cps_ram is not specified, use maximal allowed number of steps for stack size */
       tjsch->total_steps = stack->solution_only ? stack->stacksize:stack->stacksize+1; /* will be updated as time integration advances */
     }
 #ifdef PETSC_HAVE_REVOLVE
