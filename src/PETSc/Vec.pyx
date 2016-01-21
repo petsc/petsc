@@ -391,15 +391,32 @@ cdef class Vec(Object):
         self.set_attr('__placed_array__', None)
         return array
 
-    def getCUDAHandle(self):
+    def getCUDAHandle(self, mode=None):
         cdef PetscScalar *hdl = NULL
-        CHKERR( VecCUSPGetCUDAArrayReadWrite(self.vec, &hdl) )
+        cdef const_char *m = NULL
+        if mode is not None: mode = str2bytes(mode, &m)
+        if m == NULL or (m[0] == c'r' and m[1] == c'w'):
+            CHKERR( VecCUSPGetCUDAArrayReadWrite(self.vec, &hdl) )
+        elif m[0] == c'r':
+            CHKERR( VecCUSPGetCUDAArrayRead(self.vec, &hdl) )
+        elif m[0] == c'w':
+            CHKERR( VecCUSPGetCUDAArrayWrite(self.vec, &hdl) )
+        else:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
         return <Py_uintptr_t>hdl
 
-    def restoreCUDAHandle(self, handle):
-        cdef PetscScalar *hdl = NULL
-        hdl = <PetscScalar*>(<Py_uintptr_t>handle)
-        CHKERR( VecCUSPRestoreCUDAArrayReadWrite(self.vec, &hdl) )
+    def restoreCUDAHandle(self, handle, mode='rw'):
+        cdef PetscScalar *hdl = <PetscScalar*>(<Py_uintptr_t>handle)
+        cdef const_char *m = NULL
+        if mode is not None: mode = str2bytes(mode, &m)
+        if m == NULL or (m[0] == c'r' and m[1] == c'w'):
+            CHKERR( VecCUSPRestoreCUDAArrayReadWrite(self.vec, &hdl) )
+        elif m[0] == c'r':
+            CHKERR( VecCUSPRestoreCUDAArrayRead(self.vec, &hdl) )
+        elif m[0] == c'w':
+            CHKERR( VecCUSPRestoreCUDAArrayWrite(self.vec, &hdl) )
+        else:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
 
     def duplicate(self, array=None):
         cdef Vec vec = type(self)()
