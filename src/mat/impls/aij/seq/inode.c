@@ -2794,7 +2794,12 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       switch (sizes[i]) {
       case 1:
         /* Create matrix data structure */
-        if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
+        if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) {
+          if (allowzeropivot) {
+            zeropivotdetected = PETSC_TRUE;
+            ierr = PetscInfo1(A,"Zero pivot, row %D\n",row);CHKERRQ(ierr);
+          } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
+        }
         ibdiag[cnt] = 1.0/ibdiag[cnt];
         break;
       case 2:
