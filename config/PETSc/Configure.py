@@ -1015,6 +1015,11 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     if postPackages:
       # ctetgen needs petsc conf files. so attempt to create them early
       self.framework.dumpConfFiles()
+      # tacky fix for dependency of Aluimia on Pflotran; requested via petsc-dev Matt provide a correct fix
+      for i in postPackages:
+        if i.name.upper() in ['PFLOTRAN']:
+          i.postProcess()
+          postPackages.remove(i)
       for i in postPackages: i.postProcess()
     return
 
