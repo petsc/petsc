@@ -13,7 +13,6 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
-#    self.arch           = framework.require('PETSc.options.arch', self.setCompilers)
     self.mpi   = framework.require('config.packages.MPI', self)
     self.hdf5  = framework.require('config.packages.hdf5', self)
     self.deps  = [self.mpi, self.hdf5]
@@ -48,11 +47,11 @@ class Configure(config.package.GNUPackage):
     try:
       self.logPrintBox('Compiling Pflotran; this may take several minutes')
       # uses the regular PETSc library builder and then moves result 
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src','pflotran')+' && '+self.make.make+' PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' pflotran',timeout=1000, log = self.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src','pflotran')+' && '+self.make.make+' use_matseqaij_fix=1 PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' libpflotran.a',timeout=1000, log = self.log)
       self.log.write(output+err)
       self.logPrintBox('Installing Pflotran; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' install-pflotran',timeout=1000, log = self.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','libpflotran.a')+' '+self.lib[0],timeout=1000, log = self.log)
       self.log.write(output+err)
     except RuntimeError, e:
       raise RuntimeError('Error running make on Pflotran: '+str(e))
