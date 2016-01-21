@@ -526,9 +526,12 @@ class Package(config.base.Configure):
     Dir = None
     pkgdirs = os.listdir(packages)
     gitpkg  = 'git.'+self.package
-    self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ' or a directory starting with '+str(self.downloadfilename))
+    hgpkg  = 'hg.'+self.package
+    self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ', '+hgpkg+' or a directory starting with '+str(self.downloadfilename))
     if hasattr(self.sourceControl, 'git') and gitpkg in pkgdirs:
       Dir = gitpkg
+    elif hasattr(self.sourceControl, 'hg') and hgpkg in pkgdirs:
+      Dir = hgpkg
     else:
       for d in pkgdirs:
         if d.startswith(self.downloadfilename) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
