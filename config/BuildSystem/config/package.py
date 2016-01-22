@@ -265,6 +265,7 @@ class Package(config.base.Configure):
     self.packageDir = self.getDir()
     if not self.packageDir: self.packageDir = self.downLoad()
     self.updateGitDir()
+    self.updatehgDir()
     if self.publicInstall:
       self.installDir = self.defaultInstallDir
       self.installSudo= self.installDirProvider.installSudo
@@ -487,9 +488,14 @@ class Package(config.base.Configure):
         return 1
     return 0
 
+  def updatehgDir(self):
+    '''Checkout the correct hash'''
+    if hasattr(self.sourceControl, 'hg') and (self.packageDir == os.path.join(self.externalPackagesDir,'hg.'+self.package)):
+      if hasattr(self,'hghash'):
+        config.base.Configure.executeShellCommand([self.sourceControl.hg, 'update', '-c', self.hghash], cwd=self.packageDir, log = self.log)
+
   def updateGitDir(self):
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
-    return
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
       prefetch = 0
       if self.gitcommit.startswith('origin/'):
