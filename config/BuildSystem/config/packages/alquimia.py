@@ -48,8 +48,10 @@ class Configure(config.package.GNUPackage):
   def postProcess(self):
     try:
       self.logPrintBox('Compiling Alquimia; this may take several minutes')
-      # uses the regular PETSc library builder and then moves result 
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+self.make.make+' PFLOTRAN_DIR='+self.installDir+' PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' libs',timeout=1000, log = self.log)
+      generic=' COMPILER=generic '
+      if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
+        generic=''
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+generic+self.make.make+' PFLOTRAN_DIR='+self.installDir+' PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' libs',timeout=1000, log = self.log)
       self.log.write(output+err)
       self.logPrintBox('Installing Pflotran; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
