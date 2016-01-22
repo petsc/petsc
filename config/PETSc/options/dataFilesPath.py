@@ -28,7 +28,7 @@ class Configure(config.base.Configure):
 
   def getDatafilespath(self):
     '''Checks what DATAFILESPATH should be'''
-    homeloc = os.path.join(os.getenv('HOME'),'datafiles')
+    homeloc = os.path.join(os.getenv('HOME', '.'), 'datafiles')
     parentloc =  os.path.join(self.petscdir.dir,'..','datafiles')
     self.datafilespath = None
 
