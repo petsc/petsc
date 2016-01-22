@@ -57,7 +57,7 @@ class Configure(config.package.CMakePackage):
     # do not build with shared libraries because they require PETSc libraries be built first;
     rejects = ['-DBUILD_SHARED_LIBS=on']
     args = [arg for arg in args if not arg in rejects]
-    args.append('-DBUILD_SHARED_LIBS:BOOL=off')
+    args.append('-DBUILD_SHARED_LIBS=off')
     return args
 
 
