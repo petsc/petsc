@@ -45,6 +45,14 @@ class Configure(config.package.GNUPackage):
     self.framework.packages.append(self)
 
   def postProcess(self):
+    # Patch the PETSc paths so that older versions of PFlotran can find Fortran include files and configuration files
+    try:
+      if not os.path.isdir(os.path.join(self.petscdir.dir,'include','finclude')):
+        output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.petscdir.dir,'include')+' && ln -s petsc/finclude finclude',timeout=10, log = self.log)
+      if not os.path.isdir(os.path.join(self.petscdir.dir,'conf')):
+        output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.petscdir.dir+' && ln -s lib/petsc/conf conf',timeout=10, log = self.log)
+    except RuntimeError, e:
+      raise RuntimeError('Unable to make links required by older versions of PFlotran')
     try:
       self.logPrintBox('Compiling Pflotran; this may take several minutes')
       # uses the regular PETSc library builder and then moves result 
@@ -53,9 +61,9 @@ class Configure(config.package.GNUPackage):
       self.logPrintBox('Installing Pflotran; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
       output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','libpflotran.a')+' '+self.lib[0],timeout=1000, log = self.log)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','libpflotranchem.a')+' '+self.lib[1],timeout=1000, log = self.log)      
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','libpflotranchem.a')+' '+self.lib[1],timeout=100, log = self.log)
       self.log.write(output+err)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','*.mod')+' '+self.include[0],timeout=1000, log = self.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','*.mod')+' '+self.include[0],timeout=100, log = self.log)
       self.log.write(output+err)
     except RuntimeError, e:
       raise RuntimeError('Error running make on Pflotran: '+str(e))

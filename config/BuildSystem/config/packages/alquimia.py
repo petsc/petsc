@@ -53,6 +53,11 @@ class Configure(config.package.CMakePackage):
     args.append('-DXSDK_WITH_PFLOTRAN=ON')
     args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[1])
     args.append('-DTPL_PFLOTRAN_INCLUDE_DIRS='+self.pflotran.include[0])
+
+    # do not build with shared libraries because they require PETSc libraries be built first;
+    rejects = ['-DBUILD_SHARED_LIBS=on']
+    args = [arg for arg in args if not arg in rejects]
+    args.append('-DBUILD_SHARED_LIBS:BOOL=off')
     return args
 
 
