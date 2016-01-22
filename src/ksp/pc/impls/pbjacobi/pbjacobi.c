@@ -220,6 +220,8 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
   ierr = MatInvertBlockDiagonal(A,&jac->diag);CHKERRQ(ierr);
+  if (A->errortype) pc->failedreason = (PCFailedReason)A->errortype;
+ 
   ierr = MatGetBlockSize(A,&jac->bs);CHKERRQ(ierr);
   jac->mbs = A->rmap->n/jac->bs;
   switch (jac->bs) {

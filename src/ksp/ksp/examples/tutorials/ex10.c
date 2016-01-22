@@ -153,23 +153,17 @@ int main(int argc,char **args)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL, "-test_zeropivot", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    PetscInt          row,ncols;
-    const PetscInt    *cols;
-    const PetscScalar *vals;
+    PetscInt          row=0;
     PetscBool         flg1=PETSC_FALSE;
-    PetscScalar       *zeros,zero=0.0;
+    PetscScalar       zero=0.0;
 
-    if (!rank) {
-      row  = 0;
-      ierr = PetscOptionsGetBool(NULL,NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
-      if (flg1) {   /* set entire row as zero */
-        ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-        ierr = PetscCalloc1(ncols+1,&zeros);CHKERRQ(ierr);
-        ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = PetscFree(zeros);CHKERRQ(ierr);
-      } else {   /* only set (row,row) entry as zero */
-        ierr = MatSetValues(A,1,&row,1,&row,&zero,INSERT_VALUES);CHKERRQ(ierr);
-      }
+    ierr = PetscOptionsGetBool(NULL,NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
+    if (flg1) {   /* set a row as zeros */
+      ierr = MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatZeroRows(A,1,&row,0.0,NULL,NULL);CHKERRQ(ierr);
+    } else if (!rank) {
+      /* set (row,row) entry as zero */
+      ierr = MatSetValues(A,1,&row,1,&row,&zero,INSERT_VALUES);CHKERRQ(ierr); 
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

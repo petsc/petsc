@@ -15,15 +15,15 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLINPACKgefa"
-PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
+PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt,PetscBool allowzeropivot,PetscBool *zeropivotdetected)
 {
   PetscInt  i__2,i__3,kp1,nm1,j,k,l,ll,kn,knp1,jn1;
   MatScalar t,*ax,*ay,*aa;
   MatReal   tmp,max;
 
-/*     gaussian elimination with partial pivoting */
-
   PetscFunctionBegin;
+  if (zeropivotdetected) *zeropivotdetected = PETSC_FALSE;
+
   /* Parameter adjustments */
   --ipvt;
   a -= n + 1;
@@ -35,7 +35,7 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
     kn   = k*n;
     knp1 = k*n + k;
 
-/*        find l = pivot index */
+    /* find l = pivot index */
 
     i__2 = n - k + 1;
     aa   = &a[knp1];
@@ -48,25 +48,28 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
     l      += k - 1;
     ipvt[k] = l;
 
-    if (a[l + kn] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+    if (a[l + kn] == 0.0) {
+      if (allowzeropivot) {
+        PetscErrorCode ierr;
+        ierr = PetscInfo1(NULL,"Zero pivot, row %D\n",k-1);CHKERRQ(ierr);
+        *zeropivotdetected = PETSC_TRUE;
+      } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+    }
 
-/*           interchange if necessary */
-
+    /* interchange if necessary */
     if (l != k) {
       t         = a[l + kn];
       a[l + kn] = a[knp1];
       a[knp1]   = t;
     }
 
-/*           compute multipliers */
-
+    /* compute multipliers */
     t    = -1. / a[knp1];
     i__2 = n - k;
     aa   = &a[1 + knp1];
     for (ll=0; ll<i__2; ll++) aa[ll] *= t;
 
-/*           row elimination with column indexing */
-
+    /* row elimination with column indexing */
     ax = aa;
     for (j = kp1; j <= n; ++j) {
       jn1 = j*n;
@@ -82,7 +85,13 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
     }
   }
   ipvt[n] = n;
-  if (a[n + n * n] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",n-1);
+  if (a[n + n * n] == 0.0) {
+    if (allowzeropivot) {
+      PetscErrorCode ierr;
+      ierr = PetscInfo1(NULL,"Zero pivot, row %D\n",n-1);CHKERRQ(ierr);
+      *zeropivotdetected = PETSC_TRUE;
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",n-1);
+  }
   PetscFunctionReturn(0);
 }
 
