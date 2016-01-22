@@ -13,6 +13,7 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
     self.mpi   = framework.require('config.packages.MPI', self)
     self.hdf5  = framework.require('config.packages.hdf5', self)
@@ -51,6 +52,8 @@ class Configure(config.package.GNUPackage):
       generic=' COMPILER=generic '
       if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
         generic=''
+      if not self.compilerFlags.debugging:
+        generic = generic+' RELEASE=1 '
       output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+generic+self.make.make+' PFLOTRAN_DIR='+self.installDir+' PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' libs',timeout=1000, log = self.log)
       self.log.write(output+err)
       self.logPrintBox('Installing Pflotran; this may take several minutes')
