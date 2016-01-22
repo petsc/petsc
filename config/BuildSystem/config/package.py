@@ -507,6 +507,7 @@ class Package(config.base.Configure):
       try:
         gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
         if self.gitcommit != 'HEAD':
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
       except:
         raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
