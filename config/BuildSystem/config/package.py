@@ -489,6 +489,7 @@ class Package(config.base.Configure):
 
   def updateGitDir(self):
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
+    return
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
       prefetch = 0
       if self.gitcommit.startswith('origin/'):

@@ -1,18 +1,19 @@
 import config.package
 import os
 
-class Configure(config.package.GNUPackage):
+class Configure(config.package.CMakePackage):
   def __init__(self, framework):
-    config.package.GNUPackage.__init__(self, framework)
+    config.package.CMakePackage.__init__(self, framework)
     #  temporarily use a fork of Alquimia with needed changes in it. Pull request already made to alquimia developers
-    self.download          = ['ssh://hg@bitbucket.org/petsc/alquimia']
+    self.gitcommit         = 'master'
+    self.download          = ['git://https://git@github.com/LBL-EESA/alquimia-dev.git']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
     return
 
   def setupDependencies(self, framework):
-    config.package.GNUPackage.setupDependencies(self, framework)
+    config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
     self.mpi   = framework.require('config.packages.MPI', self)
@@ -21,6 +22,7 @@ class Configure(config.package.GNUPackage):
     self.deps  = [self.mpi, self.hdf5, self.pflotran]
     return
 
+  # the install is delayed until postProcess() since Alquimia requires PETSc 
   def Install(self):
     return self.installDir
 
@@ -46,22 +48,15 @@ class Configure(config.package.GNUPackage):
       self.framework.packages = []
     self.framework.packages.append(self)
 
+  def formCMakeConfigureArgs(self):
+    args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+    args.append('-DXSDK_WITH_PFLOTRAN=ON')
+    args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[1])
+    args.append('-DTPL_PFLOTRAN_INCLUDE_DIRS='+self.pflotran.include[0])
+    return args
+
+
   def postProcess(self):
-    try:
-      self.logPrintBox('Compiling Alquimia; this may take several minutes')
-      generic=' COMPILER=generic '
-      if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
-        generic=''
-      if not self.compilerFlags.debugging:
-        generic = generic+' RELEASE=1 '
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+generic+self.make.make+' PFLOTRAN_DIR='+self.installDir+' PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' libs',timeout=1000, log = self.log)
-      self.log.write(output+err)
-      self.logPrintBox('Installing Pflotran; this may take several minutes')
-      self.installDirProvider.printSudoPasswordMessage(1)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f src/alquimia/c/*.a src/alquimia/fortran/*.a  '+os.path.join(self.installDir,'lib'),timeout=1000, log = self.log)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','alquimia','fortran','*.mod')+' '+self.include[0],timeout=1000, log = self.log)
-      self.log.write(output+err)
-    except RuntimeError, e:
-      raise RuntimeError('Error running make on Alquimia: '+str(e))
+    config.package.CMakePackage.Install(self)
 
 
