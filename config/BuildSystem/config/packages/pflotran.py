@@ -9,6 +9,7 @@ class Configure(config.package.GNUPackage):
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
+    self.fc                = 1    # 1 means requires fortran   
     return
 
   def setupDependencies(self, framework):

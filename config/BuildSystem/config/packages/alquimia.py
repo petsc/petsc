@@ -6,10 +6,12 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     #  temporarily use a fork of Alquimia with needed changes in it. Pull request already made to alquimia developers
     self.gitcommit         = 'master'
-    self.download          = ['git://https://git@github.com:petsc/alquimia-dev.git']
+    self.download          = ['git://https://git@github.com/petsc/alquimia-dev.git']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
+    self.fc                = 1    # 1 means requires fortran   
+    self.cxx               = 1    # 1 means requires C++
     return
 
   def setupDependencies(self, framework):
