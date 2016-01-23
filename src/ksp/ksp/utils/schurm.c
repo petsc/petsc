@@ -950,7 +950,7 @@ static PetscBool KSPMatRegisterAllCalled;
 
 .keywords: Mat, KSP, register, all
 
-.seealso: MatRegisterAll(), MatRegisterDestroy(), KSPInitializePackage()
+.seealso: MatRegisterAll(),  KSPInitializePackage()
 @*/
 PetscErrorCode KSPMatRegisterAll()
 {
