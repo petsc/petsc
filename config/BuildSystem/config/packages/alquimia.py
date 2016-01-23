@@ -51,7 +51,7 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DXSDK_WITH_PFLOTRAN=ON')
-    args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[1])
+    args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[0])
     args.append('-DTPL_PFLOTRAN_INCLUDE_DIRS='+self.pflotran.include[0])
 
     # do not build with shared libraries because they require PETSc libraries be built first;

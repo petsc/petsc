@@ -37,7 +37,7 @@ class Configure(config.package.GNUPackage):
 
     self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]
-    self.lib     = [os.path.join(self.installDir,'lib','libpflotran.a'),os.path.join(self.installDir,'lib','libpflotranchem.a')]
+    self.lib     = [os.path.join(self.installDir,'lib','libpflotranchem.a')]
     self.found   = 1
     self.dlib    = self.lib
     if not hasattr(self.framework, 'packages'):
@@ -56,12 +56,11 @@ class Configure(config.package.GNUPackage):
     try:
       self.logPrintBox('Compiling Pflotran; this may take several minutes')
       # uses the regular PETSc library builder and then moves result 
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src','pflotran')+' && '+self.make.make+' use_matseqaij_fix=1 PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' libpflotran.a libpflotranchem.a',timeout=1000, log = self.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src','pflotran')+' && '+self.make.make+' use_matseqaij_fix=1 PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' libpflotranchem.a',timeout=1000, log = self.log)
       self.log.write(output+err)
       self.logPrintBox('Installing Pflotran; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','libpflotran.a')+' '+self.lib[0],timeout=1000, log = self.log)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','libpflotranchem.a')+' '+self.lib[1],timeout=100, log = self.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','libpflotran*.a')+' '+os.path.join(self.installDir,'lib'),timeout=1000, log = self.log)
       self.log.write(output+err)
       output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','*.mod')+' '+self.include[0],timeout=100, log = self.log)
       self.log.write(output+err)
