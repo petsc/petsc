@@ -45,7 +45,17 @@ class Configure(config.package.GNUPackage):
       self.framework.packages = []
     self.framework.packages.append(self)
 
+  def compilePETSc(self):
+    try:
+      self.logPrintBox('Compiling PETSc; this may take several minutes')
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=1000, log = self.log)
+      self.log.write(output+err)
+    except RuntimeError, e:
+      raise RuntimeError('Error running make all on PETSc: '+str(e))
+
   def postProcess(self):
+    self.compilePETSc()
+    
     # Patch the PETSc paths so that older versions of PFlotran can find Fortran include files and configuration files
     try:
       if not os.path.isdir(os.path.join(self.petscdir.dir,'include','finclude')):
