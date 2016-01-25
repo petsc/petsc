@@ -2273,11 +2273,12 @@ static PetscErrorCode DMPforestGetPlex(DM dm,DM *plex)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr    = DMSetUp(dm);CHKERRQ(ierr);
   pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
   if (!pforest->plex) {
     ierr = DMConvert_pforest_plex(dm,DMPLEX,NULL);CHKERRQ(ierr);
   }
-  ierr = DMShareDiscretization(dm,pforest->plex);CHKERRQ(ierr);
+  ierr  = DMShareDiscretization(dm,pforest->plex);CHKERRQ(ierr);
   *plex = pforest->plex;
   PetscFunctionReturn(0);
 }
@@ -2291,7 +2292,6 @@ static PetscErrorCode DMCreateCoordinateDM_pforest(DM dm,DM *cdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(plex,cdm);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)*cdm);CHKERRQ(ierr);

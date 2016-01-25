@@ -1406,6 +1406,25 @@ int main(int argc, char **argv)
   if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
   ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
 
+  {
+    char      convType[256];
+    PetscBool flg;
+
+    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();
+    if (flg) {
+      DM dmConv;
+
+      ierr = DMConvert(dm,convType,&dmConv);CHKERRQ(ierr);
+      if (dmConv) {
+        ierr = DMViewFromOptions(dmConv, NULL, "-dm_conv_view");CHKERRQ(ierr);
+        ierr = DMDestroy(&dm);CHKERRQ(ierr);
+        dm  = dmConv;
+      }
+    }
+  }
+
   ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
