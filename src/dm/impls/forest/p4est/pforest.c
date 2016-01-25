@@ -691,6 +691,17 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, const char *ghostN
     ierr = DMPlexGetSupport(dm, f, &supp);CHKERRQ(ierr);
 
     for (s = 0; s < numSupp; s++) {
+      PetscInt p = supp[s];
+
+      if (p >= cEnd) {
+        numSupp--;
+        if (s) {
+          supp = &supp[1 - s];
+        }
+        break;
+      }
+    }
+    for (s = 0; s < numSupp; s++) {
       PetscInt p = supp[s], i;
       PetscInt numCone;
       const PetscInt *cone;
