@@ -2261,8 +2261,6 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMSetPointSF(newPlex,pointSF);CHKERRQ(ierr);
     ierr = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
-    pforest->plex = newPlex;
-
     sc_array_destroy (points_per_dim);
     sc_array_destroy (cone_sizes);
     sc_array_destroy (cones);
@@ -2277,11 +2275,16 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     if (ghostLabelBase) {
       PetscInt numAdded;
       DM       newPlexGhosted;
+      void     *ctx;
 
       ierr = DMPlexConstructGhostCells(newPlex,pforest->ghostName,&numAdded,&newPlexGhosted);CHKERRQ(ierr);
+      ierr = DMGetApplicationContext(newPlex,&ctx);CHKERRQ(ierr);
+      ierr = DMSetApplicationContext(newPlexGhosted,ctx);CHKERRQ(ierr);
       ierr = DMDestroy(&newPlex);CHKERRQ(ierr);
       newPlex = newPlexGhosted;
     }
+
+    pforest->plex = newPlex;
 
     /* copy labels */
     ierr = DMPforestLabelsFinalize(dm,newPlex);CHKERRQ(ierr);
