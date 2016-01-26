@@ -349,7 +349,7 @@ prepend-path PATH %s
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
-        if i.linkedbypetsc: libs.extend(i.lib)
+      if i.linkedbypetsc: libs.extend(i.lib)
       self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
