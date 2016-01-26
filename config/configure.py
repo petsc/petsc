@@ -171,8 +171,8 @@ def chksynonyms():
         sys.argv[l]='--with-precision=__float128'
 
   if downloadideas:
-    downloadxsdk = 1
-    sys.argv.extend(['--download-pflotran','--download-alquimia','--download-mtsk'])
+    downloadxsdk = 1 # mstk currently cannot build a shared library
+    sys.argv.extend(['--download-pflotran','--download-alquimia','--download-mstk','--download-mstk-shared=0'])
 
   if downloadxsdk:
     # Common external libraries

@@ -7,6 +7,7 @@ class Configure(config.package.CMakePackage):
     self.download         = ['http://software.lanl.gov/ascem/tpls/mstk-2.23.tgz']
     self.downloadfilename = 'mstk'
     self.includes         = ['MSTK.h']
+    self.liblist          = [['libmstk.a']]
     self.functions        = []
     self.cxx              = 1
     self.requirescxx11    = 0
