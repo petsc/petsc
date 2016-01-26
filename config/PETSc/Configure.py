@@ -349,7 +349,7 @@ prepend-path PATH %s
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
-      libs.extend(i.lib)
+        if i.linkedbypetsc: libs.extend(i.lib)
       self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
@@ -565,8 +565,9 @@ prepend-path PATH %s
       includes  = []
       libvars   = []
       for pkg in self.framework.packages:
-        extendby(pkg.lib)
-        uniqextend(includes,pkg.include)
+        if pkg.linkedbypetsc:
+          extendby(pkg.lib)
+          uniqextend(includes,pkg.include)
       extendby(self.libraries.math)
       extendby(self.libraries.rt)
       extendby(self.compilers.flibs)
@@ -1064,9 +1065,9 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()
-    self.postProcessPackages()
     self.dumpCMakeConfig()
     self.dumpCMakeLists()
+    self.postProcessPackages()
     self.cmakeBoot()
     self.DumpPkgconfig()
     self.DumpModule()

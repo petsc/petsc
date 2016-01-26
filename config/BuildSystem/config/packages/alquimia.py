@@ -10,8 +10,10 @@ class Configure(config.package.CMakePackage):
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
-    self.fc                = 1    # 1 means requires fortran   
+    self.fc                = 1    # 1 means requires fortran
     self.cxx               = 1    # 1 means requires C++
+    self.linkedbypetsc     = 0
+    self.makerulename      = 'alquimia'    # make on the alquimia directory tries to build executables that will fail so force only building the libraries
     return
 
   def setupDependencies(self, framework):
@@ -43,7 +45,7 @@ class Configure(config.package.CMakePackage):
 
     self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]
-    self.lib     = [os.path.join(self.installDir,'lib','libalquimia_c.a'),os.path.join(self.installDir,'lib','libalquimia_cutils.a'),os.path.join(self.installDir,'lib','libalquimia_fortran.a')]
+    self.lib     = [os.path.join(self.installDir,'lib','libalquimia.a')]
     self.found   = 1
     self.dlib    = self.lib
     if not hasattr(self.framework, 'packages'):
@@ -55,13 +57,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DXSDK_WITH_PFLOTRAN=ON')
     args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[0])
     args.append('-DTPL_PFLOTRAN_INCLUDE_DIRS='+self.pflotran.include[0])
-
-    # do not build with shared libraries because they require PETSc libraries be built first;
-    rejects = ['-DBUILD_SHARED_LIBS=on']
-    args = [arg for arg in args if not arg in rejects]
-    args.append('-DBUILD_SHARED_LIBS=off')
     return args
-
 
   def postProcess(self):
     config.package.CMakePackage.Install(self)

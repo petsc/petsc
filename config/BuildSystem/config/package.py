@@ -30,6 +30,7 @@ class Package(config.base.Configure):
                                  # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
                                  # args database so it keeps track of what the user set vs what the program set
     self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
+    self.linkedbypetsc    = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
     self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
     self.download         = []   # list of URLs where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
@@ -69,6 +70,7 @@ class Package(config.base.Configure):
     self.isMPI            = 0 # Is an MPI implementation, needed to check for compiler wrappers
     self.hastests         = 0 # indicates that PETSc make alltests has tests for this package
     self.hastestsdatafiles= 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
+    self.makerulename     = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
     return
 
   def __str__(self):
@@ -1155,8 +1157,8 @@ class GNUPackage(Package):
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
-      if self.parallelMake: pmake = self.make.make_jnp
-      else: pmake = self.make.make
+      if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
+      else: pmake = self.make.make+' '+self.makerulename+' '
 
       output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean', timeout=200, log = self.log)
       output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+pmake, timeout=6000, log = self.log)
@@ -1257,7 +1259,7 @@ class CMakePackage(Package):
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.make.make_jnp+' && '+self.installSudo+' '+self.make.make+' install', timeout=3000, log = self.log)
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.make.make_jnp+' '+self.makerulename+' && '+self.installSudo+' '+self.make.make+' install', timeout=3000, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
       self.postInstall(output1+err1+output2+err2,conffile)

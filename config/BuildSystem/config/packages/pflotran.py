@@ -10,6 +10,7 @@ class Configure(config.package.GNUPackage):
     self.includes          = []
     self.hastests          = 1
     self.fc                = 1    # 1 means requires fortran   
+    self.linkedbypetsc     = 0
     return
 
   def setupDependencies(self, framework):
