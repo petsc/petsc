@@ -1791,9 +1791,10 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
       PetscInt t, val;
 
       if (ghostLabel) {
-        PetscBool isGhost;
-        ierr = DMLabelHasPoint(ghostLabel,p,&isGhost);CHKERRQ(ierr);
-        if (isGhost) continue;
+        PetscInt ghostIdx;
+
+        ierr = DMLabelGetValue(ghostLabel,p,&ghostIdx);CHKERRQ(ierr);
+        if (ghostIdx < 0) continue;
       }
 
       ierr = DMPlexGetTransitiveClosure(plex,p,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
