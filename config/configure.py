@@ -131,9 +131,16 @@ def chkenable():
 
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
+  downloadxsdk = 0
+  downloadideas = 0
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
 
+    if name.startswith('--download-xsdk'): 
+      downloadxsdk = 1
+
+    if name.startswith('--download-ideas'): 
+      downloadideas = 1
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
       if name.find('=') == -1:
@@ -162,6 +169,21 @@ def chksynonyms():
       head,tail = name.split('=',1)
       if tail.find('quad')>=0:
         sys.argv[l]='--with-precision=__float128'
+
+  if downloadideas:
+    downloadxsdk = 1
+    sys.argv.extend(['--download-pflotran','--download-alquimia','--download-mtsk'])
+
+  if downloadxsdk:
+    # Common external libraries
+    sys.argv.extend(['--download-hdf5','--download-netcdf','--download-exodusii'])
+    sys.argv.extend(['--download-metis'])
+
+    sys.argv.extend(['--download-parmetis','--download-superlu_dist'])
+    sys.argv.extend(['--download-hypre'])
+
+    # Trilinos takes a long time to compile
+    # sys.argv.extend(['--with-cxx-dialect=C++11','--download-boost','--download-trilinos'])
 
 
 def chkwinf90():
