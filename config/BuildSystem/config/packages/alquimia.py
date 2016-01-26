@@ -68,6 +68,9 @@ class Configure(config.package.CMakePackage):
     return args
 
   def postProcess(self):
+    #alquimia cmake requires PETSc environmental variables
+    os.environ['PETSC_DIR']  = self.petscdir.dir
+    os.environ['PETSC_ARCH'] = self.arch
     config.package.CMakePackage.Install(self)
 
 
