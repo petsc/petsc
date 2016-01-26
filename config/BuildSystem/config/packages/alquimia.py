@@ -54,6 +54,14 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+    args.append('-DUSE_XSDK_DEFAULTS=YES')
+    if self.compilerFlags.debugging:
+      args.append('-DCMAKE_BUILD_TYPE=DEBUG')
+      args.append('-DXSDK_ENABLE_DEBUG=YES')
+    else:
+      args.append('-DCMAKE_BUILD_TYPE=RELEASE')
+      args.append('-DXSDK_ENABLE_DEBUG=NO')
+
     args.append('-DXSDK_WITH_PFLOTRAN=ON')
     args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[0])
     args.append('-DTPL_PFLOTRAN_INCLUDE_DIRS='+self.pflotran.include[0])

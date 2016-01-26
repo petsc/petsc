@@ -25,6 +25,14 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+    args.append('-DUSE_XSDK_DEFAULTS=YES')
+    if self.compilerFlags.debugging:
+      args.append('-DCMAKE_BUILD_TYPE=DEBUG')
+      args.append('-DXSDK_ENABLE_DEBUG=YES')
+    else:
+      args.append('-DCMAKE_BUILD_TYPE=RELEASE')
+      args.append('-DXSDK_ENABLE_DEBUG=NO')
+
     args.append('-DENABLE_PARALLEL=yes')
     if not self.metis.found and not self.zoltan.found:
       raise  RuntimeError('MSTK requires either Metis (--download-metis) or Zoltan (--download-zoltan --download-parmetis --download-metis)!')
