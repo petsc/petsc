@@ -625,7 +625,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
     if (B && B != A) {
       ierr = MatMissingDiagonal(B,&missing,NULL);CHKERRQ(ierr);
       if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Bmat passed to TSSetRHSJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
-    } 
+    }
   } else {
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
     if (A != B) {ierr = MatZeroEntries(B);CHKERRQ(ierr);}

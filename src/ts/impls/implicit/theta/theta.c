@@ -28,6 +28,10 @@ typedef struct {
   Vec          *VecsDeltaFwdSensip;     /* Increment of the forward sensitivity at stage */
   Vec          VecIntegralSensiTemp;     /* Working vector for forward integral sensitivity */
   Vec          VecIntegralSensipTemp;    /* Working vector for forward integral sensitivity */
+  Vec          *VecsFwdSensi0;          /* backup for roll-backs due to events */
+  Vec          *VecsFwdSensip0;         /* backup for roll-backs due to events */
+  Vec          *VecsIntegralSensi0;      /* backup for roll-backs due to events */
+  Vec          *VecsIntegralSensip0;     /* backup for roll-backs due to events */
 
   /* context for error estimation */
   Vec          vec_sol_prev;
@@ -426,6 +430,7 @@ static PetscErrorCode TSEvaluateWLTE_Theta(TS ts,NormType wnormtype,PetscInt *or
 static PetscErrorCode TSRollBack_Theta(TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscInt       ndir,ncost;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -434,6 +439,27 @@ static PetscErrorCode TSRollBack_Theta(TS ts)
     ierr = VecCopy(th->VecCostIntegral0,ts->vec_costintegral);CHKERRQ(ierr);
   }
   th->status = TS_STEP_INCOMPLETE;
+
+  if (ts->vecs_fwdsensi) {
+    for (ndir=0;ndir<ts->num_initialvalues;ndir++) {
+      ierr = VecCopy(th->VecsFwdSensi0[ndir],ts->vecs_fwdsensi[ndir]);CHKERRQ(ierr);
+    }
+  }
+  if (ts->vecs_fwdsensip) {
+    for (ndir=0;ndir<ts->num_parameters;ndir++) {
+      ierr = VecCopy(th->VecsFwdSensip0[ndir],ts->vecs_fwdsensip[ndir]);CHKERRQ(ierr);
+    }
+  }
+  if (ts->vecs_integral_sensi) {
+    for (ncost=0;ncost<ts->numcost;ncost++) {
+      ierr = VecCopy(th->VecsIntegralSensi0[ncost],ts->vecs_integral_sensi[ncost]);CHKERRQ(ierr);
+    }
+  }
+  if (ts->vecs_integral_sensip) {
+    for (ncost=0;ncost<ts->numcost;ncost++) {
+      ierr = VecCopy(th->VecsIntegralSensip0[ncost],ts->vecs_integral_sensip[ncost]);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -468,6 +494,23 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  for (ndir=0;ndir<ts->num_initialvalues;ndir++) {
+    ierr = VecCopy(ts->vecs_fwdsensi[ndir],th->VecsFwdSensi0[ndir]);CHKERRQ(ierr);
+  }
+  for (ndir=0;ndir<ts->num_parameters;ndir++) {
+    ierr = VecCopy(ts->vecs_fwdsensip[ndir],th->VecsFwdSensip0[ndir]);CHKERRQ(ierr);
+  }
+  if (ts->vecs_integral_sensi) {
+    for (ncost=0; ncost<ts->numcost;ncost++) {
+      ierr = VecCopy(ts->vecs_integral_sensi[ncost],th->VecsIntegralSensi0[ncost]);CHKERRQ(ierr);
+    }
+  }
+  if (ts->vecs_integral_sensip) {
+    for (ncost=0;ncost<ts->numcost;ncost++) {
+      ierr = VecCopy(ts->vecs_integral_sensip[ncost],th->VecsIntegralSensip0[ncost]);CHKERRQ(ierr);
+    }
+  }
+
   ierr = SNESGetKSP(ts->snes,&ksp);CHKERRQ(ierr);
   ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
 
@@ -624,15 +667,20 @@ static PetscErrorCode TSReset_Theta(TS ts)
   ierr = VecDestroy(&th->VecCostIntegral0);CHKERRQ(ierr);
   if (ts->forward_solve) {
     if (ts->vecs_fwdsensi) {
-      ierr = VecDestroyVecs(ts->num_initialvalues,&th->VecsDeltaFwdSensi);CHKERRQ(ierr);    }
+      ierr = VecDestroyVecs(ts->num_initialvalues,&th->VecsDeltaFwdSensi);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(ts->num_initialvalues,&th->VecsFwdSensi0);CHKERRQ(ierr);
+    }
     if (ts->vecs_fwdsensip) {
       ierr = VecDestroyVecs(ts->num_parameters,&th->VecsDeltaFwdSensip);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(ts->num_parameters,&th->VecsFwdSensip0);CHKERRQ(ierr);
     }
     if (ts->vecs_integral_sensi) {
       ierr = VecDestroy(&th->VecIntegralSensiTemp);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(ts->numcost,&th->VecsIntegralSensi0);CHKERRQ(ierr);
     }
     if (ts->vecs_integral_sensip) {
       ierr = VecDestroy(&th->VecIntegralSensipTemp);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(ts->numcost,&th->VecsIntegralSensip0);CHKERRQ(ierr);
     }
   }
   ierr = VecDestroyVecs(ts->numcost,&th->VecsDeltaLam);CHKERRQ(ierr);
@@ -721,6 +769,19 @@ static PetscErrorCode TSForwardSetUp_Theta(TS ts)
   }
   if (ts->vecs_integral_sensip) {
     ierr = VecDuplicate(ts->vecs_integral_sensip[0],&th->VecIntegralSensipTemp);CHKERRQ(ierr);
+  }
+  /* backup sensitivity results for roll-backs */
+  if (ts->vecs_fwdsensi) {
+      ierr = VecDuplicateVecs(ts->vecs_fwdsensi[0],ts->num_initialvalues,&th->VecsFwdSensi0);CHKERRQ(ierr);
+  }
+  if (ts->vecs_fwdsensip) {
+    ierr = VecDuplicateVecs(ts->vecs_fwdsensip[0],ts->num_parameters,&th->VecsFwdSensip0);CHKERRQ(ierr);
+  }
+  if (ts->vecs_integral_sensi) {
+    ierr = VecDuplicateVecs(ts->vecs_integral_sensi[0],ts->numcost,&th->VecsIntegralSensi0);CHKERRQ(ierr);
+  }
+  if (ts->vecs_integral_sensip) {
+    ierr = VecDuplicateVecs(ts->vecs_integral_sensip[0],ts->numcost,&th->VecsIntegralSensip0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
