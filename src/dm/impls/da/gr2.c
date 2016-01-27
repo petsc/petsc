@@ -738,7 +738,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_BINARY_MATLAB) {
       /* temporarily remove viewer format so it won't trigger in the VecView() */
-      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
     }
 
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
@@ -751,7 +751,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       PetscInt    dim,ni,nj,nk,pi,pj,pk,dof,n;
 
       /* set the viewer format back into the viewer */
-      ierr = PetscViewerSetFormat(viewer,format);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
       ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
       ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,0,0,0,0,0);CHKERRQ(ierr);

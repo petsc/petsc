@@ -244,8 +244,9 @@ int main(int argc,char **args)
   if (!PETSC_TRUE) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIOpen(comm, "Amat.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(Amat,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
   }
 
@@ -336,23 +337,6 @@ int main(int argc,char **args)
     ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,(double)(norm/norm2),(double)norm2,(double)emax);
-    /*ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
-     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-     ierr = VecView(bb,viewer);CHKERRQ(ierr);
-     ierr = PetscViewerDestroy(&viewer);*/
-
-
-    /* ierr = PetscViewerASCIIOpen(comm, "rhs.m", &viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); */
-    /* CHKERRQ(ierr); */
-    /* ierr = VecView(bb,viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); */
-
-    /* ierr = PetscViewerASCIIOpen(comm, "solution.m", &viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); */
-    /* CHKERRQ(ierr); */
-    /* ierr = VecView(xx, viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); */
   }
 
   /* Free work space */

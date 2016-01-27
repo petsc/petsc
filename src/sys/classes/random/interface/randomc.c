@@ -240,7 +240,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
          data to the first processor to print.
 
    You can change the format the vector is printed using the
-   option PetscViewerSetFormat().
+   option PetscViewerPushFormat().
 
    Level: beginner
 

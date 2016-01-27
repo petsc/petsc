@@ -62,12 +62,14 @@ int main(int argc,char **argv)
   ierr = VecView(global1,viewer);CHKERRQ(ierr);
   ierr = VecSetRandom(global3,rdm);CHKERRQ(ierr);
   ierr = VecView(global3,viewer);CHKERRQ(ierr);
+  if (native) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   if (native) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);}
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
   ierr = VecLoad(global4,viewer);CHKERRQ(ierr);
+  if (native) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   if (native) {

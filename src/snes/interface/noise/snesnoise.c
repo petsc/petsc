@@ -257,8 +257,9 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   ierr = PetscOptionsGetBool(NULL,NULL,"-print_vecs",&printv,NULL);CHKERRQ(ierr);
   if (printv) {
     ierr = PetscViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
     ierr = VecView(yy1,view2);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(view2);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&view2);CHKERRQ(ierr);
   }
 
@@ -277,8 +278,9 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
     if (printv) {
       sprintf(filename,"y2.%d.out",(int)i);
       ierr = PetscViewerASCIIOpen(comm,filename,&view2);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
       ierr = VecView(yy2,view2);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(view2);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&view2);CHKERRQ(ierr);
     }
 

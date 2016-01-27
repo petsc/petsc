@@ -84,7 +84,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer,const char*[
    The values below are also listed in petsc/finclude/petscviewer.h. If another values is added below it
    must also be added there.
 
-.seealso: PetscViewerSetFormat(), PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
+.seealso: PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
 E*/
 typedef enum {
   PETSC_VIEWER_DEFAULT,
@@ -120,7 +120,7 @@ typedef enum {
   } PetscViewerFormat;
 PETSC_EXTERN const char *const PetscViewerFormats[];
 
-PETSC_EXTERN PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
+PETSC_EXTERN PETSC_DEPRECATED("Use PetscViewerPushFormat()/PetscViewerPopFormat()") PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
 PETSC_EXTERN PetscErrorCode PetscViewerPushFormat(PetscViewer,PetscViewerFormat);
 PETSC_EXTERN PetscErrorCode PetscViewerPopFormat(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);

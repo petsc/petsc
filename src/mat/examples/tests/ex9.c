@@ -63,13 +63,10 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   ierr = MatMult(C,x,y);CHKERRQ(ierr);
-  /*
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-   */
+
   ierr = PetscOptionsHasName(NULL,NULL,"-view_info",&flg_info);CHKERRQ(ierr);
   if (flg_info)  {
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
