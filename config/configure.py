@@ -183,7 +183,7 @@ def chksynonyms():
     sys.argv.extend(['--download-hypre'])
 
     # Trilinos takes a long time to compile
-    # sys.argv.extend(['--with-cxx-dialect=C++11','--download-boost','--download-trilinos'])
+    sys.argv.extend(['--with-cxx-dialect=C++11','--download-boost','--download-trilinos'])
 
 
 def chkwinf90():
