@@ -1154,34 +1154,32 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SolutionFunctional"
+/* put the solution callback into a functional callback */
+static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *modctx)
+{
+  Model          mod;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  mod  = (Model) modctx;
+  ierr = (mod->solution)(mod,time,x,u,mod->solutionctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetInitialCondition"
 PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 {
-  DM                 dmCell;
+  PetscErrorCode     (*func[1]) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  void               *ctx[1];
   Model              mod = user->model;
-  Vec                cellgeom;
-  const PetscScalar *cgeom;
-  PetscScalar       *x;
-  PetscInt           cStart, cEnd, cEndInterior, c;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
-  ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = VecGetArray(X, &x);CHKERRQ(ierr);
-  for (c = cStart; c < cEndInterior; ++c) {
-    const PetscFVCellGeom *cg;
-    PetscScalar           *xc;
-
-    ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
-    ierr = DMPlexPointGlobalRef(dm,c,x,&xc);CHKERRQ(ierr);
-    if (xc) {ierr = (*mod->solution)(mod,0.0,cg->centroid,xc,mod->solutionctx);CHKERRQ(ierr);}
-  }
-  ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
+  func[0] = SolutionFunctional;
+  ctx[0]  = (void *) mod;
+  ierr    = DMProjectFunction(dm,0.0,func,ctx,INSERT_ALL_VALUES,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
