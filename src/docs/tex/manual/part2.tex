@@ -5592,13 +5592,9 @@ MatView() functions with a viewer type of ASCII (see PetscViewerASCIIOpen(),
 \trl{PETSC_VIEWER_STDOUT_WORLD}, \trl{PETSC_VIEWER_STDOUT_SELF}, or \trl{PETSC_VIEWER_STDOUT_(MPI_Comm)}). Before calling
 the viewer set the output type with, for example,
 \begin{tabbing}
-  PetscViewerSetFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
-  VecView(A,PETSC\_VIEWER\_STDOUT\_WORLD);
-\end{tabbing}
-or
-\begin{tabbing}
   PetscViewerPushFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
-  MatView(B,PETSC\_VIEWER\_STDOUT\_WORLD);
+  VecView(A,PETSC\_VIEWER\_STDOUT\_WORLD);
+  PetscViewerPopFormat(PETSC\_VIEWER\_STDOUT\_WORLD);\\  
 \end{tabbing}
 The name of each PETSc variable printed for MATLAB may be set with
 \begin{tabbing}\sindex{PetscObjectSetName()}
@@ -7139,7 +7135,7 @@ predefined viewers:
 The user can control the format of ASCII printed objects with viewers
 created by PetscViewerASCIIOpen() by calling
 \begin{tabbing}
-  PetscViewerSetFormat(PetscViewer viewer,int format);
+  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
 \end{tabbing}
 \findex{PETSC_VIEWER_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB}
 \findex{PETSC_VIEWER_ASCII_IMPL}

@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   n    = m;
   ierr = PetscOptionsHasName(NULL,NULL,"-rectA",&flg);CHKERRQ(ierr);

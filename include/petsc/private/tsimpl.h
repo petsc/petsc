@@ -62,6 +62,7 @@ struct _TSTrajectoryOps {
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
   PetscInt setupcalled;             /* true if setup has been called */
+  PetscInt recomps;                 /* counter for recomputations in the adjoint run */
   void *data;
 };
 

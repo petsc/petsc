@@ -144,6 +144,7 @@ int main(int argc, char **argv)
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, NULL, &viewer);CHKERRQ(ierr);
       if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
       ierr = MatView(A, viewer);CHKERRQ(ierr);
+      if (Ne > 500) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
@@ -164,6 +165,7 @@ int main(int argc, char **argv)
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, NULL, &viewer);CHKERRQ(ierr);
       if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
       ierr = MatView(A, viewer);CHKERRQ(ierr);
+      if (Ne > 500) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);

@@ -44,6 +44,8 @@ const char *const PetscViewerFormats[] = {
 
    Logically Collective on PetscViewer
 
+   This routine is deprecated, you should use PetscViewerPushFormat()/PetscViewerPopFormat()
+
    Input Parameters:
 +  viewer - the PetscViewer
 -  format - the format

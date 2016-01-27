@@ -975,7 +975,7 @@ static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const P
   X[1*2+0]  = 1;
   X[1*2+1]  = speeds[1];
   ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
-  ierr = PetscKernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
+  ierr = PetscKernel_A_gets_inverse_A_2(Xi,0,PETSC_FALSE,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1141,7 +1141,7 @@ static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const 
   X[1*2+0]  = 1;
   X[1*2+1]  = speeds[1];
   ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
-  ierr = PetscKernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
+  ierr = PetscKernel_A_gets_inverse_A_2(Xi,0,PETSC_FALSE,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1582,8 +1582,9 @@ int main(int argc,char *argv[])
   if (view_final) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,final_fname,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(X,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 

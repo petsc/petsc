@@ -224,7 +224,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval
   Concepts: remote file
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerBinaryOpen(),
-          PetscViewerASCIIGetPointer(), PetscViewerSetFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
+          PetscViewerASCIIGetPointer(), PetscViewerPushFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
           PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF,
 @*/
 PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
@@ -323,7 +323,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
   Concepts: remote file
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerBinaryOpen(),
-          PetscViewerASCIIGetPointer(), PetscViewerSetFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
+          PetscViewerASCIIGetPointer(), PetscViewerPushFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
           PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF, PetscViewerASCIIOpen()
 @*/
 PetscErrorCode  PetscViewerASCIIOpenWithFILE(MPI_Comm comm,FILE *fd,PetscViewer *lab)

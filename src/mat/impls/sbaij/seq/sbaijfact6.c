@@ -16,9 +16,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat C,Mat A,const MatFactorIn
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   PetscBool      pivotinblocks = b->pivotinblocks;
   PetscReal      shift         = info->shiftamount;
+  PetscBool      allowzeropivot,zeropivotdetected=PETSC_FALSE;
 
   PetscFunctionBegin;
   /* initialization */
+  allowzeropivot = PetscNot(A->erroriffailure);
   ierr = PetscCalloc1(16*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
@@ -180,7 +182,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat C,Mat A,const MatFactorIn
     ierr = PetscMemcpy(diag,dk,16*sizeof(MatScalar));CHKERRQ(ierr);
 
     if (pivotinblocks) {
-      ierr = PetscKernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+      ierr = PetscKernel_A_gets_inverse_A_4(diag,shift, allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else {
       ierr = PetscKernel_A_gets_inverse_A_4_nopivot(diag);CHKERRQ(ierr);
     }

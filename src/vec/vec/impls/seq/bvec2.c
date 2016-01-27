@@ -500,22 +500,13 @@ PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
   PetscErrorCode    ierr;
   PetscDraw         draw;
   PetscBool         isnull;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-
-  ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
-  /*
-     Currently it only supports drawing to a line graph */
-  if (format != PETSC_VIEWER_DRAW_LG) {
-    ierr = PetscViewerPushFormat(v,PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerPushFormat(v,PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
   ierr = VecView_Seq_Draw_LG(xin,v);CHKERRQ(ierr);
-  if (format != PETSC_VIEWER_DRAW_LG) {
-    ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

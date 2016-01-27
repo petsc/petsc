@@ -52,7 +52,8 @@ int main(int argc,char **args)
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_IMPL);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  
   /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);

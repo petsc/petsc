@@ -327,7 +327,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Concepts: HDF5 files
    Concepts: PetscViewerHDF5^creating
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
           PetscViewerHDF5SetSPOutput(), PetscViewerHDF5GetBaseDimension2(), VecView(), MatView(), VecLoad(),
           MatLoad(), PetscFileMode, PetscViewer
 @*/
