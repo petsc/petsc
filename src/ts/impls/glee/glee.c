@@ -634,7 +634,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
         ts->snes_its += its; ts->ksp_its += lits;
       }
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-      ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+      ierr = TSAdaptCheckStage(adapt,ts,glee->stage_time,Y[i],&accept);CHKERRQ(ierr);
       if (!accept) goto reject_step;
       ierr = TSPostStage(ts,glee->stage_time,i,YStage); CHKERRQ(ierr);
       ierr = TSComputeRHSFunction(ts,t+h*c[i],YStage[i],YdotStage[i]);CHKERRQ(ierr);
@@ -915,7 +915,7 @@ PetscErrorCode TSStartingMethod_GLEE(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_GLEE"
-static PetscErrorCode TSSetFromOptions_GLEE(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   PetscErrorCode ierr;
   char           gleetype[256];
