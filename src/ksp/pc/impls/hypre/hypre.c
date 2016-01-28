@@ -287,7 +287,8 @@ static PetscErrorCode PCReset_HYPRE(PC pc)
   if (jac->alpha_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->alpha_Poisson)); jac->alpha_Poisson = NULL;
   if (jac->beta_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->beta_Poisson)); jac->beta_Poisson = NULL;
   if (jac->n_hmnull) {
-    PetscInt i;
+    PetscInt                 i;
+    PETSC_UNUSED PetscScalar *petscvecarray;
 
     for (i=0; i<jac->n_hmnull; i++) {
       HYPREReplacePointer(jac->hmnull[i],jac->hmnull_hypre_data_array[i],petscvecarray);
@@ -307,7 +308,6 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
 {
   PC_HYPRE                 *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode           ierr;
-  PETSC_UNUSED PetscScalar *petscvecarray;
 
   PetscFunctionBegin;
   ierr = PCReset_HYPRE(pc);CHKERRQ(ierr);
