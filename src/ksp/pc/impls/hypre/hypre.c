@@ -223,6 +223,30 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCReset_HYPRE"
+static PetscErrorCode PCReset_HYPRE(PC pc)
+{
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (jac->ij) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->ij)); jac->ij = NULL;
+  if (jac->b) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->b)); jac->b = NULL;
+  if (jac->x) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->x)); jac->x = NULL;
+  if (jac->coords[0]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->coords[0])); jac->coords[0] = NULL;
+  if (jac->coords[1]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->coords[1])); jac->coords[1] = NULL;
+  if (jac->coords[2]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->coords[2])); jac->coords[2] = NULL;
+  if (jac->constants[0]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->constants[0])); jac->constants[0] = NULL;
+  if (jac->constants[1]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->constants[1])); jac->constants[1] = NULL;
+  if (jac->constants[2]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->constants[2])); jac->constants[2] = NULL;
+  if (jac->G) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->G)); jac->G = NULL;
+  if (jac->C) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->C)); jac->C = NULL;
+  if (jac->alpha_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->alpha_Poisson)); jac->alpha_Poisson = NULL;
+  if (jac->beta_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->beta_Poisson)); jac->beta_Poisson = NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_HYPRE"
 static PetscErrorCode PCDestroy_HYPRE(PC pc)
 {
@@ -230,19 +254,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (jac->ij) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->ij));
-  if (jac->b) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->b));
-  if (jac->x) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->x));
-  if (jac->coords[0]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->coords[0]));
-  if (jac->coords[1]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->coords[1]));
-  if (jac->coords[2]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->coords[2]));
-  if (jac->constants[0]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->constants[0]));
-  if (jac->constants[1]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->constants[1]));
-  if (jac->constants[2]) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->constants[2]));
-  if (jac->G) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->G));
-  if (jac->C) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->C));
-  if (jac->alpha_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->alpha_Poisson));
-  if (jac->beta_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->beta_Poisson));
+  ierr = PCReset_HYPRE(pc);CHKERRQ(ierr);
   if (jac->destroy) PetscStackCall("HYPRE_DestroyXXX",ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr););
   ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
   if (jac->comm_hypre != MPI_COMM_NULL) { ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);}
@@ -1649,6 +1661,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->data                = jac;
+  pc->ops->reset          = PCReset_HYPRE;
   pc->ops->destroy        = PCDestroy_HYPRE;
   pc->ops->setfromoptions = PCSetFromOptions_HYPRE;
   pc->ops->setup          = PCSetUp_HYPRE;
