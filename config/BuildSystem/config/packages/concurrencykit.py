@@ -26,7 +26,7 @@ class Configure(config.package.GNUPackage):
       args.append('--without-pic')
 
     # Concurrency configure errors out on certain standard configure arguments
-    return self.rmArgs(['--disable-cxx','--disable-fortran', '--disable-fc','--disable-f77','--disable-f90'])
+    return self.rmArgs(args,['--disable-cxx','--disable-fortran', '--disable-fc','--disable-f77','--disable-f90'])
 
   def checkForCorrectness(self):
     include = '#include <ck_spinlock.h>'
