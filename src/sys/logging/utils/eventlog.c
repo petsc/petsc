@@ -589,7 +589,7 @@ PetscErrorCode PetscLogEventGetPerfInfo(int stage, PetscLogEvent event, PetscEve
 
   PetscFunctionBegin;
   PetscValidPointer(info, 3);
-  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogBegin() before calling this routine");
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogDefaultBegin() before calling this routine");
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   if (stage < 0) {ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);}
   ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
@@ -607,7 +607,7 @@ PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogBegin() before calling this routine");
+  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_summary or PetscLogDefaultBegin() before calling this routine");
   ierr   = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr   = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   ierr   = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);

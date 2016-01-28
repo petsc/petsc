@@ -300,10 +300,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* basically just a regular newton's method except for the application of the Jacobian */
 
   PetscFunctionBegin;
-
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
-    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  }
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   F    = snes->vec_func;                /* residual vector */
@@ -585,7 +582,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_QN"
-static PetscErrorCode SNESSetFromOptions_QN(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
 
   PetscErrorCode    ierr;
@@ -812,15 +809,13 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       perturbs the problem the Jacobian represents to be P(x, b) - x = 0, where P(x, b) is the preconditioner.
 
       References:
-
-      Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
-
-      R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi-Newton Matrices and their use in Limited Memory Methods,
++   1. -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
+.   2. -   R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi Newton Matrices and their use in Limited Memory Methods,
       Technical Report, Northwestern University, June 1992.
-
-      Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
+.   3. -   Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
       Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
-
+-   4. -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
+       SIAM Review, 57(4), 2015
 
       Level: beginner
 

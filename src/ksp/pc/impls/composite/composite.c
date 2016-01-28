@@ -189,12 +189,15 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
   PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
+  DM               dm;
 
   PetscFunctionBegin;
   if (!jac->work1) {
     ierr = MatCreateVecs(pc->pmat,&jac->work1,0);CHKERRQ(ierr);
   }
+  ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   while (next) {
+    ierr = PCSetDM(next->pc,dm);CHKERRQ(ierr);
     ierr = PCSetOperators(next->pc,pc->mat,pc->pmat);CHKERRQ(ierr);
     next = next->next;
   }
@@ -241,7 +244,7 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Composite"
-static PetscErrorCode PCSetFromOptions_Composite(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode   ierr;

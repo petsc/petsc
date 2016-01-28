@@ -51,7 +51,7 @@ class Configure(config.base.Configure):
 
     if self.debugging.debugging:
       self.addDefine('USE_DEBUG',1)
-    elif not config.setCompilers.Configure.isIBM(self.framework.getCompiler()):
+    elif not config.setCompilers.Configure.isIBM(self.framework.getCompiler(), self.log):
       # IBM XLC version 12.1 (BG/Q and POWER) miscompiles PetscMalloc3()
       # by reordering "*(void**)&ptr = x" as though ptr was not modified
       # by this statement.
@@ -65,8 +65,10 @@ class Configure(config.base.Configure):
       self.addDefine('USE_CTABLE', '1')
 
     # used in src/mat/impls/sbaij/seq/relax.h
+    self.libraries.saveLog()
     if not self.libraries.isBGL():
       self.addDefine('USE_BACKWARD_LOOP','1')
+    self.logWrite(self.libraries.restoreLog())
 
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     if not hasattr(self.compilers, 'FC') and self.useFortranKernels:

@@ -161,7 +161,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSCheckFromOptions"
-PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;
   SNES           snes;
@@ -170,7 +170,7 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(ts->hdr.prefix, "-dmts_check", &check);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix, "-dmts_check", &check);CHKERRQ(ierr);
   if (!check) PetscFunctionReturn(0);
   ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
   ierr = TSSetSolution(ts, sol);CHKERRQ(ierr);

@@ -395,8 +395,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   ###############################################
   # Filtering Mechanisms
 
-  def filterPreprocessOutput(self,output):
-    self.log.write("Preprocess stderr before filtering:"+output+":\n")
+  def filterPreprocessOutput(self,output, log = None):
+    if log is None: log = self.log
+    log.write("Preprocess stderr before filtering:"+output+":\n")
     # Another PGI license warning, multiline so have to discard all
     if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
       output = ''
@@ -413,7 +414,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Lahey/Fujitsu
     lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
     output = reduce(lambda s, t: s+t, lines, '')
-    self.log.write("Preprocess stderr after filtering:"+output+":\n")
+    log.write("Preprocess stderr after filtering:"+output+":\n")
     return output
 
   def filterCompileOutput(self, output):
@@ -894,7 +895,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # pretty print repr(args.values())
       for itm in args:
         if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=config.compilerOptions'):
-          body.append('fprintf(output,"  \''+str(itm)+'\',\\n");')
+          body.append('fprintf(output,"  \'%s\',\\n","'+str(itm)+'");')
       body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
                 '  import os',
@@ -1000,13 +1001,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'
           se  = str(e)
-        if ret:
-          self.logWrite(msg+'\n'+se+'\n')
-          try:
-            import sys,traceback
-            traceback.print_tb(sys.exc_info()[2], file = self.log)
-          except: pass
         out = child.restoreLog()
+        if ret:
+          out += '\n'+msg+'\n'+se+'\n'
+          try:
+            import sys,traceback,cStringIO
+            tb = cStringIO.StringIO()
+            traceback.print_tb(sys.exc_info()[2], file = tb)
+            out += tb.getvalue()
+            tb.close()
+          except: pass
         # Udpate queue
         done.put((ret, out, emsg, child))
         q.task_done()

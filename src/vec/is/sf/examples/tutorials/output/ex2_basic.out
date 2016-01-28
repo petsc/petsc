@@ -10,16 +10,16 @@ PetscSF Object: 2 MPI processes
 Vec Object: 2 MPI processes
   type: mpi
 Process [0]
-0
-1
+0.
+1.
 Process [1]
-1
-0
+1.
+0.
 Vec Object: 2 MPI processes
   type: mpi
 Process [0]
-10
-11
+10.
+11.
 Process [1]
-11
-10
+11.
+10.

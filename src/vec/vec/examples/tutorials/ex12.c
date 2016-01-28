@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /*
       Create multi-component vector with 2 components

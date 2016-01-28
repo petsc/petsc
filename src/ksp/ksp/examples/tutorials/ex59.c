@@ -737,7 +737,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   /* Compute global mapping of local dofs */
   ierr = ComputeMapping(dd,&matis_map);CHKERRQ(ierr);
   /* Create MATIS object needed by BDDC */
-  ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,&temp_A);CHKERRQ(ierr);
+  ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,NULL,&temp_A);CHKERRQ(ierr);
   /* Set local subdomain matrices into MATIS object */
   ierr = MatScale(local_mat,dd.scalingfactor);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(temp_A,local_mat);CHKERRQ(ierr);
@@ -805,7 +805,6 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
   ierr        = KSPCreate(PetscObjectComm((PetscObject)F),&temp_ksp);CHKERRQ(ierr);
   ierr        = KSPSetOperators(temp_ksp,F,F);CHKERRQ(ierr);
   ierr        = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
-  ierr        = KSPSetTolerances(temp_ksp,1.0e-8,1.0e-8,1.0e15,10000);CHKERRQ(ierr);
   ierr        = KSPSetPC(temp_ksp,D);CHKERRQ(ierr);
   ierr        = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr        = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
@@ -832,7 +831,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   ierr = KSPCreate(dd.gcomm,&temp_ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(temp_ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(temp_ksp,1.0e-8,1.0e-8,1.0e15,10000);CHKERRQ(ierr);
   ierr = KSPGetPC(temp_ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCBDDC);CHKERRQ(ierr);
 
@@ -870,7 +868,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   PetscRandom rctx;
   ierr = MatCreateVecs(A,&vecs[0],&vecs[1]);CHKERRQ(ierr);
   ierr = PetscRandomCreate(dd.gcomm,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rctx,PETSCRAND);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[0],rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[1],rctx);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,2,vecs,&near_null_space);CHKERRQ(ierr);
@@ -943,9 +940,9 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->npy = 0;
   dd->npz = 0;
   dd->dim = 1;
-  ierr    = PetscOptionsGetInt (NULL,"-npx",&dd->npx,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (NULL,"-npy",&dd->npy,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (NULL,"-npz",&dd->npz,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-npx",&dd->npx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-npy",&dd->npy,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-npz",&dd->npz,NULL);CHKERRQ(ierr);
   if (dd->npy) dd->dim++;
   if (dd->npz) dd->dim++;
   /* Number of elements per dimension */
@@ -953,9 +950,9 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->nex = dd->npx;
   dd->ney = dd->npy;
   dd->nez = dd->npz;
-  ierr    = PetscOptionsGetInt (NULL,"-nex",&dd->nex,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (NULL,"-ney",&dd->ney,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (NULL,"-nez",&dd->nez,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-nex",&dd->nex,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-ney",&dd->ney,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,NULL,"-nez",&dd->nez,NULL);CHKERRQ(ierr);
   if (!dd->npy) {
     dd->ney=0;
     dd->nez=0;
@@ -963,20 +960,20 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   if (!dd->npz) dd->nez=0;
   /* Spectral degree */
   dd->p = 3;
-  ierr  = PetscOptionsGetInt (NULL,"-p",&dd->p,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-p",&dd->p,NULL);CHKERRQ(ierr);
   /* pure neumann problem? */
   dd->pure_neumann = PETSC_FALSE;
-  ierr             = PetscOptionsGetBool(NULL,"-pureneumann",&dd->pure_neumann,NULL);CHKERRQ(ierr);
+  ierr             = PetscOptionsGetBool(NULL,NULL,"-pureneumann",&dd->pure_neumann,NULL);CHKERRQ(ierr);
 
   /* How to enforce dirichlet boundary conditions (in case pureneumann has not been requested explicitly) */
   dd->DBC_zerorows = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(NULL,"-usezerorows",&dd->DBC_zerorows,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-usezerorows",&dd->DBC_zerorows,NULL);CHKERRQ(ierr);
   if (dd->pure_neumann) dd->DBC_zerorows = PETSC_FALSE;
   dd->scalingfactor = 1.0;
 
   factor = 0.0;
-  ierr   = PetscOptionsGetInt(NULL,"-jump",&factor,NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(NULL,NULL,"-jump",&factor,NULL);CHKERRQ(ierr);
   /* checkerboard pattern */
   dd->scalingfactor = PetscPowScalar(10.0,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
   /* test data passed in */

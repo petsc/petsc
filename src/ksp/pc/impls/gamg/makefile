@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   = ${GAMG_INCLUDE}
 FFLAGS   =
-SOURCEC  = gamg.c agg.c geo.c tools.c classical.c
+SOURCEC  = gamg.c agg.c geo.c util.c classical.c
 SOURCEF  =
 SOURCEH  =  gamg.h
 LIBBASE  = libpetscksp

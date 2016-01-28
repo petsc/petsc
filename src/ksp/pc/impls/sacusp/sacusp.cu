@@ -5,7 +5,7 @@
    Include files needed for the CUSP Smoothed Aggregation preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners
 */
-
+#define PETSC_SKIP_SPINLOCK
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
@@ -223,7 +223,7 @@ static PetscErrorCode PCDestroy_SACUSP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SACUSP"
-static PetscErrorCode PCSetFromOptions_SACUSP(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_SACUSP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
 

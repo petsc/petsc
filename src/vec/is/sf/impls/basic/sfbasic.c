@@ -43,7 +43,7 @@ struct _n_PetscSFBasicPack {
 
 typedef struct {
   PetscMPIInt      tag;
-  PetscInt         niranks;     /* Number of incoming ranks (ranks accessing my roots) */
+  PetscMPIInt      niranks;     /* Number of incoming ranks (ranks accessing my roots) */
   PetscMPIInt      *iranks;     /* Array of ranks that reference my roots */
   PetscInt         itotal;      /* Total number of graph edges referencing my roots */
   PetscInt         *ioffset;    /* Array of length niranks+1 holding offset in irootloc[] for each rank */
@@ -636,8 +636,9 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
     link->unitbytes *= nPetscComplexContig;
 #endif
   } else {
-    PetscMPIInt bytes;
-    ierr = MPI_Type_size(unit,&bytes);CHKERRQ(ierr);
+    MPI_Aint lb,bytes;
+    ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
+    if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
     if (bytes % sizeof(int)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for type size not divisible by %D",sizeof(int));
     switch (bytes / sizeof(int)) {
     case 1: PackInit_block_int_1(link); break;
@@ -776,8 +777,8 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,NULL,&leafoffset,NULL);CHKERRQ(ierr);
   ierr = PetscNew(&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
-  ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nrootranks+nleafranks,&link->requests);CHKERRQ(ierr);
+  ierr = PetscCalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nrootranks+nleafranks,&link->requests);CHKERRQ(ierr);
 
 found:
   link->key  = key;
@@ -831,7 +832,7 @@ static PetscErrorCode PetscSFBasicReclaimPack(PetscSF sf,PetscSFBasicPack *link)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Basic"
-static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptions *PetscOptionsObject,PetscSF sf)
+static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptionItems *PetscOptionsObject,PetscSF sf)
 {
   PetscErrorCode ierr;
 

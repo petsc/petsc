@@ -1,4 +1,4 @@
-lid velocity = 0.0625, prandtl # = 1, grashof # = 1
+lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
   0 SNES Function norm 0.239155 
     0 SNES Residual norm 2.392e-01 KSP Residual norm 2.392e-01 
     1 SNES Residual norm 3.968e-02 KSP Residual norm 3.969e-02 

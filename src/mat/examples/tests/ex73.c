@@ -38,14 +38,14 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-view_mats", &viewMats);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-view_is", &viewIS);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-view_vecs", &viewVecs);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-view_mats", &viewMats);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-view_is", &viewIS);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-view_vecs", &viewVecs);CHKERRQ(ierr);
 
   /*
      Determine file from which we read the matrix
   */
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
 
   /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate

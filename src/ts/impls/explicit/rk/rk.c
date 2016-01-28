@@ -440,10 +440,11 @@ static PetscErrorCode TSStep_RK(TS ts)
       ierr = VecMAXPY(Y[i],i,w,YdotRHS);CHKERRQ(ierr);
       ierr = TSPostStage(ts,rk->stage_time,i,Y); CHKERRQ(ierr);
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-      ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
-      if (!accept) goto reject_step;
+      ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&accept);CHKERRQ(ierr);
+      if (!accept) break;
       ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
     }
+    if(!accept) continue;
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     rk->status = TS_STEP_PENDING;
 
@@ -474,7 +475,6 @@ static PetscErrorCode TSStep_RK(TS ts)
       ts->time_step = next_time_step;
       rk->status   = TS_STEP_INCOMPLETE;
     }
-reject_step: continue;
   }
   if (rk->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
@@ -745,7 +745,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RK"
-static PetscErrorCode TSSetFromOptions_RK(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   PetscErrorCode ierr;
   char           rktype[256];

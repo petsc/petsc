@@ -36,6 +36,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   PetscReal           next_time_step;
   SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING;
   PetscErrorCode      ierr;
+  PetscBool           accept;
 
   PetscFunctionBegin;
   if (ts->steps == 0) {
@@ -58,6 +59,8 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
     ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
     ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
+    ierr = TSFunctionDomainError(ts,th->stage_time,th->V1,&accept);CHKERRQ(ierr);
+    if (!accept && !th->adapt) break;
     ierr = TSPostStage(ts,th->stage_time,0,&(th->V1));CHKERRQ(ierr);
     /* nonlinear solve convergence */
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
@@ -70,7 +73,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     if (!th->adapt) break;
     else {
       PetscReal t1     = ts->ptime + ts->time_step;
-      PetscBool stepok = (reject==0) ? PETSC_TRUE : PETSC_FALSE;
+      PetscBool stepok = (accept && !reject) ? PETSC_TRUE : PETSC_FALSE;
       ierr = th->adapt(ts,t1,th->X1,th->V1,&next_time_step,&stepok,th->adaptctx);CHKERRQ(ierr);
       ierr = PetscInfo5(ts,"Step %D (t=%g,dt=%g) %s, next dt=%g\n",ts->steps,(double)ts->ptime,(double)ts->time_step,stepok?"accepted":"rejected",(double)next_time_step);CHKERRQ(ierr);
       if (stepok) break;
@@ -84,6 +87,10 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   if (reject >= ts->max_reject) {
     ts->reason = TS_DIVERGED_STEP_REJECTED;
     ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else if(!accept) {
+    ts->reason = TS_DIVERGED_STEP_REJECTED;
+    ierr = PetscInfo2(ts,"Step=%D, step rejections %D function domain error, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
@@ -201,7 +208,7 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Alpha"
-static PetscErrorCode TSSetFromOptions_Alpha(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscErrorCode ierr;
@@ -309,14 +316,12 @@ PetscErrorCode  TSAlphaSetAdapt_Alpha(TS ts,TSAlphaAdaptFunction adapt,void *ctx
   Level: beginner
 
   References:
-  K.E. Jansen, C.H. Whiting, G.M. Hulber, "A generalized-alpha
-  method for integrating the filtered Navier-Stokes equations with a
++ 1. - K.E. Jansen, C.H. Whiting, G.M. Hulber, "A generalized alpha
+  method for integrating the filtered Navier Stokes equations with a
   stabilized finite element method", Computer Methods in Applied
-  Mechanics and Engineering, 190, 305-319, 2000.
-  DOI: 10.1016/S0045-7825(00)00203-6.
-
-  J. Chung, G.M.Hubert. "A Time Integration Algorithm for Structural
-  Dynamics with Improved Numerical Dissipation: The Generalized-alpha
+  Mechanics and Engineering, 190, 2000.
+- 2. - J. Chung, G.M.Hubert. "A Time Integration Algorithm for Structural
+  Dynamics with Improved Numerical Dissipation: The Generalized alpha
   Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
 .seealso:  TSCreate(), TS, TSSetType()

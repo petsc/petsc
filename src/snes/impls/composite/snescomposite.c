@@ -444,7 +444,7 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Composite"
-static PetscErrorCode SNESSetFromOptions_Composite(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
   PetscErrorCode     ierr;
@@ -829,9 +829,7 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
       ierr = SNESCompositeApply_Multiplicative(snes,X,B,F,&fnorm);CHKERRQ(ierr);
     } else if (comp->type == SNES_COMPOSITE_ADDITIVEOPTIMAL) {
       ierr = SNESCompositeApply_AdditiveOptimal(snes,X,B,F,&fnorm);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported SNESComposite type");
-    }
+    } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported SNESComposite type");
     if (snes->reason < 0) break;
 
     /* Compute the solution update for convergence testing */
@@ -901,6 +899,10 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
 .seealso:  SNESCreate(), SNESSetType(), SNESType (for list of available types), SNES,
            SNESSHELL, SNESCompositeSetType(), SNESCompositeSpecialSetAlpha(), SNESCompositeAddSNES(),
            SNESCompositeGetSNES()
+
+   References:
+.  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
+   SIAM Review, 57(4), 2015
 
 M*/
 

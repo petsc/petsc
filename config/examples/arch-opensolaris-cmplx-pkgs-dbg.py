@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-debugger=/bin/true',
+  #'--with-debugger=/bin/true',
   '--with-scalar-type=complex',
+  'FFLAGS=-ftrap=%none',
   #'--with-clanguage=cxx', # solaris C++ compiler behave differently with PETSC_EXTERN stuff - and breaks
 
-  # mpich does not build with -g - compiler bug? So revert this build to a pre-built mpich
+  # mpich does not build with -g - compiler bug?
   #'--download-mpich=1',
-  '--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
+  '--with-mpi-dir=/export/home/petsc/soft/mpich-3.1.3',
   '--with-c2html=0',
 
-  #'-download-fblaslapack=1',
   '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',
-  #'--download-superlu=1',
-  #'--download-superlu_dist=1',
+  '--download-superlu=1',
+  '--download-superlu_dist=1',
   '--download-fblaslapack=1', # -lsunperf is insufficient for scalapack
   '--download-scalapack=1',
   '--download-mumps=1',

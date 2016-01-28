@@ -29,10 +29,10 @@ int main(int argc, char **argv)
   PetscInt       seed;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
-  ierr = PetscOptionsSetValue("-viewer_binary_skip_info","true");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-f",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue(NULL,"-viewer_binary_skip_info","true");CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = PetscOptionsGetInt(NULL,"-random_seed",&seed,&sflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-random_seed",&seed,&sflg);CHKERRQ(ierr);
     if (!sflg) {
       ierr = PetscStrcpy(filename,"ex61.data");CHKERRQ(ierr);
     } else {
@@ -59,12 +59,14 @@ int main(int argc, char **argv)
     sprintf(eta_filename,"%s_eta_%d.vtk",filename,i);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,cv_filename,&view_vtk_cv);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,eta_filename,&view_vtk_eta);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(view_vtk_cv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(view_vtk_eta, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(view_vtk_cv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(view_vtk_eta, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(da2,view_vtk_cv);CHKERRQ(ierr);
     ierr = DMView(da2,view_vtk_eta);CHKERRQ(ierr);
     ierr = VecView(cv,view_vtk_cv);CHKERRQ(ierr);
     ierr = VecView(eta,view_vtk_eta);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(view_vtk_cv);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(view_vtk_eta);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&view_vtk_cv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&view_vtk_eta);CHKERRQ(ierr);
   }

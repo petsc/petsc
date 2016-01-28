@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://ftp.gnu.org/gnu/make/make-3.82.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-3.82.tar.gz']
+    self.download          = ['http://ftp.gnu.org/gnu/make/make-4.1.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.1.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.downloadonWindows = 1
@@ -12,6 +12,7 @@ class Configure(config.package.GNUPackage):
 
     self.printdirflag      = ''
     self.noprintdirflag    = ''
+    self.paroutflg         = ''
     self.haveGNUMake       = 0
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np
@@ -56,8 +57,7 @@ class Configure(config.package.GNUPackage):
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.framework.\
-log)
+      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error building or installing make '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1, conffile)
@@ -93,6 +93,8 @@ log)
         minor = int(gver.group(2))
         if ((major > 3) or (major == 3 and minor > 80)):
           self.haveGNUMake = 1
+        if (major > 3) and not self.setCompilers.isDarwin(self.log) and not self.setCompilers.isFreeBSD(self.log):
+          self.paroutflg = "--output-sync=recurse"
     except RuntimeError, e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
 
@@ -116,34 +118,38 @@ log)
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
     return
 
+  def compute_make_np(self,i):
+    f16 = .80
+    f32 = .65
+    f64 = .50
+    f99 = .30
+    if (i<=2):    return 2
+    elif (i<=4):  return i
+    elif (i<=16): return int(4+(i-4)*f16)
+    elif (i<=32): return int(4+12*f16+(i-16)*f32)
+    elif (i<=64): return int(4+12*f16+16*f32+(i-32)*f64)
+    else:         return int(4+12*f16+16*f32+32*f64+(i-64)*f99)
+    return
+
   def configureMakeNP(self):
     '''check no of cores on the build machine [perhaps to do make '-j ncores']'''
-    make_np = self.argDB.get('with-make-np')
-    if make_np is not None:
-      self.logPrint('using user-provided make_np = %d' % make_np)
-    else:
-      def compute_make_np(i):
-        f16 = .80
-        f32 = .65
-        f64 = .50
-        f99 = .30
-        if (i<=2):    return 2
-        elif (i<=4):  return i
-        elif (i<=16): return int(4+(i-4)*f16)
-        elif (i<=32): return int(4+12*f16+(i-16)*f32)
-        elif (i<=64): return int(4+12*f16+16*f32+(i-32)*f64)
-        else:         return int(4+12*f16+16*f32+32*f64+(i-64)*f99)
-        return
-      try:
-        import multiprocessing # python-2.6 feature
-        cores = multiprocessing.cpu_count()
-        make_np = compute_make_np(cores)
-        self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
-      except (ImportError), e:
-        make_np = 2
-        self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
+    try:
+      import multiprocessing # python-2.6 feature
+      cores = multiprocessing.cpu_count()
+      make_np = self.compute_make_np(cores)
+      self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
+    except (ImportError), e:
+      cores = 2
+      make_np = 2
+      self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
+
+    if 'with-make-np' in self.argDB and self.argDB['with-make-np']:
+        self.logPrint('using user-provided make_np = %d' % make_np)
+        make_np = self.argDB['with-make-np']
+
     self.make_np = make_np
     self.addMakeMacro('MAKE_NP',str(make_np))
+    self.addMakeMacro('NPMAX',str(cores))
     self.make_jnp = self.make + ' -j ' + str(self.make_np)
     return
 
@@ -157,4 +163,5 @@ log)
     self.executeTest(self.configureMakeNP)
     self.addMakeMacro('OMAKE_PRINTDIR ', self.make+' '+self.printdirflag)
     self.addMakeMacro('OMAKE', self.make+' '+self.noprintdirflag)
+    self.addMakeMacro('MAKE_PAR_OUT_FLG', self.paroutflg)
     return

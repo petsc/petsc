@@ -46,9 +46,9 @@ program main
   call MPI_Comm_rank(comm,rank,ierr)
   call MPI_Comm_size(comm,size,ierr)
   if (rank == 0) then
-    write(*,*) "Hi! We're solving van der Pol using ",size," processes."
-    write(*,*) " "
-    write(*,*) "  t     x1         x2"
+    write(*,*) 'Hi! We are solving van der Pol using ',size,' processes.'
+    write(*,*) ' '
+    write(*,*) '  t     x1         x2'
   endif
 
   ! Set up the global grid
@@ -130,6 +130,7 @@ program main
  
   ! Initial set-up finished.
   ! Time loop
+  maxstep = 5 
   do itime=1,maxstep 
 
     ! Communicate such that everyone has the correct values in ghost cells
@@ -155,6 +156,8 @@ program main
   ! Deallocate and finalize
   call DMRestoreLocalVector(SolScal,Lvec,ierr)
   call DMDestroy(SolScal,ierr)
+  deallocate(f)
+  deallocate(grid)
   call PetscFinalize(ierr)
 
   ! Format for writing output to screen

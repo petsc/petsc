@@ -12,7 +12,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
   IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j;
   PetscErrorCode ierr;
   const PetscInt *r;
   PetscInt       nz,*vj,k,idx;
@@ -106,7 +106,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_inplace(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4.0*a->bs2*a->nz - (A->rmap->bs+2.0*a->bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -205,7 +205,7 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_4_NaturalOrdering(PetscInt *ai,PetscIn
 PetscErrorCode MatSolve_SeqSBSTRM_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
   PetscScalar    *x,*b;
   PetscErrorCode ierr;
 
@@ -225,7 +225,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   ierr = MatBackwardSolve_SeqSBSTRM_4_NaturalOrdering(ai,aj,as,mbs,x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4.0*a->bs2*a->nz - (A->rmap->bs+2.0*a->bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -234,7 +234,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatForwardSolve_SeqSBSTRM_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
   PetscScalar    *x,*b;
   PetscErrorCode ierr;
 
@@ -248,7 +248,7 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_4_NaturalOrdering_inplace(Mat A,Vec bb,
   ierr = MatForwardSolve_SeqSBSTRM_4_NaturalOrdering(ai,aj,as,mbs,x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->bs2*a->nz - A->rmap->bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -257,7 +257,7 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_4_NaturalOrdering_inplace(Mat A,Vec bb,
 PetscErrorCode MatBackwardSolve_SeqSBSTRM_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
   PetscScalar    *x,*b;
   PetscErrorCode ierr;
 
@@ -271,7 +271,7 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_4_NaturalOrdering_inplace(Mat A,Vec bb
   ierr = MatBackwardSolve_SeqSBSTRM_4_NaturalOrdering(ai,aj,as,mbs,x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*bs2*(a->nz-mbs));CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->bs2*(a->nz-mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -281,7 +281,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a   =(Mat_SeqSBAIJ*)A->data;
   IS             isrow=a->row;
-  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2 = a->bs2;
+  PetscInt       mbs  =a->mbs,*ai=a->i,*aj=a->j;
   PetscErrorCode ierr;
   const PetscInt *r;
   PetscInt       nz,*vj,k,idx;
@@ -381,7 +381,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_inplace(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4.0*a->bs2*a->nz - (A->rmap->bs+2.0*a->bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -487,7 +487,7 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_5_NaturalOrdering(PetscInt *ai,PetscIn
 PetscErrorCode MatSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2 = a->bs2;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
   PetscScalar    *x,*b;
   PetscErrorCode ierr;
 
@@ -495,8 +495,6 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   MatScalar     *as     =sbstrm->as;
 
   PetscFunctionBegin;
-#if 0
-#endif
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
@@ -509,7 +507,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4.0*a->bs2*a->nz - (A->rmap->bs+2.0*a->bs2)*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -518,7 +516,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatForwardSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs=A->rmap->bs,bs2=a->bs2;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
   PetscScalar    *x,*b;
   PetscErrorCode ierr;
 
@@ -532,7 +530,7 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,
   ierr = MatForwardSolve_SeqSBSTRM_5_NaturalOrdering(ai,aj,as,mbs,x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*bs2*a->nz - bs*mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->bs2*a->nz - A->rmap->bs*mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -541,7 +539,7 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,
 PetscErrorCode MatBackwardSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a =(Mat_SeqSBAIJ*)A->data;
-  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,bs2=a->bs2;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
   PetscScalar    *x,*b;
   PetscErrorCode ierr;
   Mat_SeqSBSTRM  *sbstrm = (Mat_SeqSBSTRM*)A->spptr;
@@ -554,7 +552,7 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb
   ierr = MatBackwardSolve_SeqSBSTRM_5_NaturalOrdering(ai,aj,as,mbs,x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*bs2*(a->nz-mbs));CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->bs2*(a->nz-mbs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

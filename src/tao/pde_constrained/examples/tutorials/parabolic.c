@@ -125,10 +125,11 @@ int main(int argc, char **argv)
   PetscInt           lo,hi,hi2,lo2,ksp_old;
   PetscInt           ntests = 1;
   PetscInt           i;
-  int                stages[1];
+#if defined(PETSC_USE_LOG)
+  PetscLogStage      stages[1];
+#endif
 
   PetscInitialize(&argc, &argv, (char*)0,help);
-
   user.mx = 8;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
@@ -1071,6 +1072,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->JsBlockPrec);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(user->solver,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetTolerances(user->solver,1e-4,1e-20,1e3,500);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(user->solver);CHKERRQ(ierr);
   ierr = KSPGetPC(user->solver,&user->prec);CHKERRQ(ierr);
   ierr = PCSetType(user->prec,PCSHELL);CHKERRQ(ierr);
 

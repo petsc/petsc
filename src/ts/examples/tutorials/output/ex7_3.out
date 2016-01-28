@@ -1,4 +1,4 @@
-timestep 0 time 0 norm 1.9391
+timestep 0 time 0. norm 1.9391
     0 SNES Function norm 336.91 
     1 SNES Function norm 0.0648667 
     2 SNES Function norm 5.26567e-08 

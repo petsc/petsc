@@ -719,22 +719,6 @@ A Hessian evaluation routine can be supplied in a similar manner.
 
 \heading{Convergence}
 
-Absolute tolerances specify acceptable errors in the optimality of the function
-and the constraints.
-\[ f(x) \leq f(x^*) + \epsilon_{fatol} \]
-Relative tolerances specify the number of significant digits required
-in the solution and the constraints.
-\[ 
-f(x) \leq f(x^*) + \epsilon_{frtol} | f(x^*) |
-\]
-
-These tolerance can be changed
-\begin{alltt}
-\scriptsize \setlength{\baselineskip}{10pt}
-    int TaoSetTolerances(TAO_SOLVER solver,double fatol,double frtol,
-                                           double catol,double crtol)
-\end{alltt}
-
 \vfill
 
 \end{slide}

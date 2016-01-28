@@ -1,4 +1,4 @@
-!  Program usage: mpirun -np 1 rosenbrock1f [-help] [all TAO options]
+!  Program usage: mpiexec -n 1 rosenbrock1f [-help] [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve an
 !  unconstrained minimization problem on a single processor.  We minimize the
@@ -72,10 +72,10 @@
 
 
 ! Check for command line arguments to override defaults
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,           &
-     &                        ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-alpha',            &
-     &                           alpha,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-n',n,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-alpha',alpha,flg,ierr)
 
 !  Allocate vectors for the solution and gradient
       call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)

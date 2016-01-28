@@ -106,8 +106,8 @@ PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],size_t len,Pet
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSingleton_String"
-PetscErrorCode PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
+#define __FUNCT__ "PetscViewerGetSubViewer_String"
+PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
   PetscErrorCode     ierr;
@@ -118,8 +118,8 @@ PetscErrorCode PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sv
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSingleton_String"
-PetscErrorCode PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
+#define __FUNCT__ "PetscViewerRestoreSubViewer_String"
+PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscErrorCode     ierr;
   PetscViewer_String *iviewer = (PetscViewer_String*)(*sviewer)->data;
@@ -143,8 +143,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   v->ops->destroy          = PetscViewerDestroy_String;
   v->ops->view             = 0;
   v->ops->flush            = 0;
-  v->ops->getsingleton     = PetscViewerGetSingleton_String;
-  v->ops->restoresingleton = PetscViewerRestoreSingleton_String;
+  v->ops->getsubviewer     = PetscViewerGetSubViewer_String;
+  v->ops->restoresubviewer = PetscViewerRestoreSubViewer_String;
   ierr                     = PetscNewLog(v,&vstr);CHKERRQ(ierr);
   v->data                  = (void*)vstr;
   vstr->string             = 0;

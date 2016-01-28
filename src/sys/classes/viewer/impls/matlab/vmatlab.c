@@ -226,7 +226,7 @@ $    FILE_MODE_WRITE - open existing file for MATLAB output
    Concepts: MATLAB .mat files
    Concepts: PetscViewerMatlab^creating
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PETSCVIEWERBINARY, PetscViewerBinaryOpen()
+.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PETSCVIEWERBINARY, PetscViewerBinaryOpen()
           VecView(), MatView(), VecLoad(), MatLoad()
 @*/
 PetscErrorCode  PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)

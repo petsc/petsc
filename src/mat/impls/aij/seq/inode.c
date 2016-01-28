@@ -1329,7 +1329,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         /* Check zero pivot */
         sctx.rs = rs;
         sctx.pv = rtmp1[i];
-        ierr    = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i);CHKERRQ(ierr);
         if (sctx.newshift) break;
 
         /* Mark diagonal and invert diagonal for simplier triangular solves */
@@ -1413,7 +1413,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp1[i];
-        ierr    = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc1  = b->a + bdiag[i]; /* Mark diagonal */
         *pc1 = 1.0/sctx.pv;
@@ -1452,7 +1452,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp2[i+1];
-        ierr    = MatPivotCheck(A,info,&sctx,i+1);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i+1);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc2  = b->a + bdiag[i+1];
         *pc2 = 1.0/sctx.pv;
@@ -1536,7 +1536,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp1[i];
-        ierr    = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc1  = b->a + bdiag[i]; /* Mark diag[i] */
         *pc1 = 1.0/sctx.pv;
@@ -1578,7 +1578,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp2[i+1];
-        ierr    = MatPivotCheck(A,info,&sctx,i+1);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i+1);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc2  = b->a + bdiag[i+1];
         *pc2 = 1.0/sctx.pv; /* Mark diag[i+1] */
@@ -1617,7 +1617,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp3[i+2];
-        ierr    = MatPivotCheck(A,info,&sctx,i+2);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i+2);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc3  = b->a + bdiag[i+2];
         *pc3 = 1.0/sctx.pv; /* Mark diag[i+2] */
@@ -1702,7 +1702,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp1[i];
-        ierr    = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc1  = b->a + bdiag[i]; /* Mark diag[i] */
         *pc1 = 1.0/sctx.pv;
@@ -1747,7 +1747,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp2[i+1];
-        ierr    = MatPivotCheck(A,info,&sctx,i+1);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i+1);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc2  = b->a + bdiag[i+1];
         *pc2 = 1.0/sctx.pv; /* Mark diag[i+1] */
@@ -1789,7 +1789,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp3[i+2];
-        ierr    = MatPivotCheck(A,info,&sctx,i+2);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i+2);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc3  = b->a + bdiag[i+2];
         *pc3 = 1.0/sctx.pv; /* Mark diag[i+2] */
@@ -1828,7 +1828,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
         sctx.rs = rs;
         sctx.pv = rtmp4[i+3];
-        ierr    = MatPivotCheck(A,info,&sctx,i+3);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,i+3);CHKERRQ(ierr);
         if (sctx.newshift) break;
         pc4  = b->a + bdiag[i+3];
         *pc4 = 1.0/sctx.pv; /* Mark diag[i+3] */
@@ -2045,7 +2045,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != row) rs += PetscAbsScalar(pc1[j]);
         }
         sctx.rs = rs;
-        ierr    = MatPivotCheck(A,info,&sctx,row);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,row);CHKERRQ(ierr);
         if (sctx.newshift) goto endofwhile;
         break;
 
@@ -2107,7 +2107,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != prow) rs += PetscAbsScalar(rtmp11[idx]);
         }
         sctx.rs = rs;
-        ierr    = MatPivotCheck(A,info,&sctx,row);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,row);CHKERRQ(ierr);
         if (sctx.newshift) goto endofwhile;
 
         if (*pc2 != 0.0) {
@@ -2139,7 +2139,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != row+1) rs += PetscAbsScalar(pc2[j]);
         }
         sctx.rs = rs;
-        ierr    = MatPivotCheck(A,info,&sctx,row+1);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,row+1);CHKERRQ(ierr);
         if (sctx.newshift) goto endofwhile;
         break;
 
@@ -2212,7 +2212,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != row) rs += PetscAbsScalar(rtmp11[idx]);
         }
         sctx.rs = rs;
-        ierr    = MatPivotCheck(A,info,&sctx,row);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,row);CHKERRQ(ierr);
         if (sctx.newshift) goto endofwhile;
 
         if (*pc2 != 0.0 || *pc3 != 0.0) {
@@ -2242,7 +2242,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != prow) rs += PetscAbsScalar(rtmp22[idx]);
         }
         sctx.rs = rs;
-        ierr    = MatPivotCheck(A,info,&sctx,row+1);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,row+1);CHKERRQ(ierr);
         if (sctx.newshift) goto endofwhile;
 
         if (*pc3 != 0.0) {
@@ -2278,7 +2278,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
         }
 
         sctx.rs = rs;
-        ierr    = MatPivotCheck(A,info,&sctx,row+2);CHKERRQ(ierr);
+        ierr    = MatPivotCheck(B,A,info,&sctx,row+2);CHKERRQ(ierr);
         if (sctx.newshift) goto endofwhile;
         break;
 
@@ -2759,9 +2759,11 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   PetscErrorCode    ierr;
   PetscInt          n,m = a->inode.node_count,cnt = 0,i,j,row,i1,i2;
   PetscInt          sz,k,ipvt[5];
+  PetscBool         allowzeropivot,zeropivotdetected=PETSC_FALSE;
   const PetscInt    *sizes = a->inode.size,*idx,*diag = a->diag,*ii = a->i;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
   if (omega != 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
   if (fshift == -1.0) fshift = 0.0; /* negative fshift indicates do not error on zero diagonal; this code never errors on zero diagonal */
   if (fshift != 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
@@ -2792,24 +2794,33 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       switch (sizes[i]) {
       case 1:
         /* Create matrix data structure */
-        if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
+        if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) {
+          if (allowzeropivot) {
+            zeropivotdetected = PETSC_TRUE;
+            ierr = PetscInfo1(A,"Zero pivot, row %D\n",row);CHKERRQ(ierr);
+          } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
+        }
         ibdiag[cnt] = 1.0/ibdiag[cnt];
         break;
       case 2:
-        ierr = PetscKernel_A_gets_inverse_A_2(ibdiag+cnt,shift);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_2(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
         break;
       case 3:
-        ierr = PetscKernel_A_gets_inverse_A_3(ibdiag+cnt,shift);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_3(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
         break;
       case 4:
-        ierr = PetscKernel_A_gets_inverse_A_4(ibdiag+cnt,shift);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_4(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
         break;
       case 5:
-        ierr = PetscKernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift);CHKERRQ(ierr);
+        ierr = PetscKernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
         break;
       default:
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
+      if (zeropivotdetected) {
+        A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      }
+
       cnt += sizes[i]*sizes[i];
       row += sizes[i];
     }

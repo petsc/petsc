@@ -21,8 +21,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Test MatSetValues() and MatGetValues() */
-  ierr = PetscOptionsGetInt(NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,NULL,&A);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
@@ -71,19 +71,19 @@ int main(int argc,char **args)
   /* Test MatNorm() */
   ierr  = MatNorm(A,NORM_FROBENIUS,&s1norm);CHKERRQ(ierr);
   ierr  = MatNorm(B,NORM_FROBENIUS,&s2norm);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(s2norm-s1norm)/s2norm;
+  rnorm = PetscAbsReal(s2norm-s1norm)/s2norm;
   if (rnorm>tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS()- NormA=%16.14e NormB=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_INFINITY,&s1norm);CHKERRQ(ierr);
   ierr  = MatNorm(B,NORM_INFINITY,&s2norm);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(s2norm-s1norm)/s2norm;
+  rnorm = PetscAbsReal(s2norm-s1norm)/s2norm;
   if (rnorm>tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY()- NormA=%16.14e NormB=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_1,&s1norm);CHKERRQ(ierr);
   ierr  = MatNorm(B,NORM_1,&s2norm);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(s2norm-s1norm)/s2norm;
+  rnorm = PetscAbsReal(s2norm-s1norm)/s2norm;
   if (rnorm>tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_NORM_1()- NormA=%16.14e NormB=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
   }

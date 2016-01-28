@@ -9,6 +9,7 @@
 PetscClassId  PC_CLASSID;
 PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
 PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks, PC_ApplyOnMproc;
+PetscInt      PetscMGLevelId;
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGetDefaultType_Private"
@@ -906,11 +907,11 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
 .seealso: PCCreate(), PCApply(), PCDestroy()
 @*/
-PetscErrorCode  PCGetSetUpFailedReason(PC pc,PetscInt *reason)
+PetscErrorCode PCGetSetUpFailedReason(PC pc,PCFailedReason *reason)
 {
   PetscFunctionBegin;
-  if (pc->setupcalled < 0) *reason = pc->setupcalled;
-  else *reason = 0;
+  if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
+  else *reason = pc->failedreason;
   PetscFunctionReturn(0);
 }
 
@@ -976,8 +977,8 @@ PetscErrorCode  PCSetUp(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
-  ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
-  ierr = MatSetErrorIfFPE(pc->mat,pc->erroriffailure);CHKERRQ(ierr);
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+  ierr = MatSetErrorIfFailure(pc->mat,pc->erroriffailure);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);

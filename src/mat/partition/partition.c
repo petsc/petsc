@@ -29,6 +29,45 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   PetscFunctionReturn(0);
 }
 
+/*
+   partition an index to rebalance the computation
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply_Average"
+static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part,IS *partitioning)
+{
+  PetscErrorCode ierr;
+  PetscInt       m,M,nparts,*indices,r,d,*parts,i,start,end,loc;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(part->adj,&M,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(part->adj,&m,NULL);CHKERRQ(ierr);
+  nparts = part->n;
+  ierr = PetscCalloc1(nparts,&parts);CHKERRQ(ierr);
+  d = M/nparts;
+  for(i=0; i<nparts; i++){
+	parts[i] = d;
+  }
+  r = M%nparts;
+  for(i=0; i<r; i++){
+	parts[i] += 1;
+  }
+  for(i=1; i<nparts; i++){
+	parts[i] += parts[i-1];
+  }
+  ierr = PetscCalloc1(m,&indices);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(part->adj,&start,&end);CHKERRQ(ierr);
+  for(i=start; i<end; i++){
+	ierr = PetscFindInt(i,nparts,parts,&loc);CHKERRQ(ierr);
+	if(loc<0) loc = -(loc+1);
+	else loc = loc+1;
+	indices[i-start] = loc;
+  }
+  ierr = PetscFree(parts);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),m,indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningApply_Square"
 static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
@@ -63,6 +102,17 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
+  part->ops->view    = 0;
+  part->ops->destroy = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Average"
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part)
+{
+  PetscFunctionBegin;
+  part->ops->apply   = MatPartitioningApply_Average;
   part->ops->view    = 0;
   part->ops->destroy = 0;
   PetscFunctionReturn(0);
@@ -225,7 +275,7 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)matp)->options,NULL,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);

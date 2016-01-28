@@ -61,12 +61,12 @@ int main(int argc,char **argv)
   ctx.kappa       = 1.0;
   ierr            = PetscOptionsGetReal(NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
-  ierr            = PetscOptionsGetBool(NULL,"-cahn-hillard",&ctx.cahnhillard,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetBool(NULL,NULL,"-cahn-hillard",&ctx.cahnhillard,NULL);CHKERRQ(ierr);
   ierr            = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr);
   ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
   ctx.energy      = 1;
-  /* ierr = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr); */
-  ierr        = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
+  /* ierr = PetscOptionsGetInt(NULL,NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr); */
+  ierr        = PetscOptionsGetInt(NULL,NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol     = 1.0e-8;
   ierr        = PetscOptionsGetReal(NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
   ctx.theta   = .001;
@@ -155,7 +155,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
   if (wait) {
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }

@@ -50,9 +50,9 @@ PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun
     (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
     (*PetscErrorPrintf)("destroying unneeded objects.\n");
     PetscMallocGetCurrentUsage(&mem); PetscMemoryGetCurrentUsage(&rss);
-    PetscOptionsGetBool(NULL,"-malloc_dump",&flg1,NULL);
-    PetscOptionsGetBool(NULL,"-malloc_log",&flg2,NULL);
-    PetscOptionsHasName(NULL,"-malloc_log_threshold",&flg3);
+    PetscOptionsGetBool(NULL,NULL,"-malloc_dump",&flg1,NULL);
+    PetscOptionsGetBool(NULL,NULL,"-malloc_log",&flg2,NULL);
+    PetscOptionsHasName(NULL,NULL,"-malloc_log_threshold",&flg3);
     if (flg2 || flg3) PetscMallocDumpLog(stdout);
     else {
       (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);

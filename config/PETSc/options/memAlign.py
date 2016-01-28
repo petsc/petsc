@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
       self.addDefine('MEMALIGN', self.memalign)
     else:
       raise RuntimeError('--with-memalign must be in' + str(valid))
-    self.framework.logPrint('Memory alignment is ' + self.memalign)
+    self.logPrint('Memory alignment is ' + self.memalign)
     return
 
   def configure(self):

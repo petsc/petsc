@@ -31,7 +31,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
   if (iascii) {
     PetscViewerFormat format;
 
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
       DMDALocalInfo info;
@@ -51,7 +51,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       }
 #endif
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     } else {
       ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }

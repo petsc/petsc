@@ -52,8 +52,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,M);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&M);CHKERRQ(ierr);
   } else {
     *newmat = M;
   }
@@ -106,8 +106,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,M
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,M);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&M);CHKERRQ(ierr);
   } else {
     *newmat = M;
   }

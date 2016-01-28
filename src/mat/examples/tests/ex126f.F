@@ -30,9 +30,10 @@
 
       wmumps = PETSC_FALSE
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg, ierr)
-      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-use_mumps',                       &
-     &                         wmumps,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                   &
+     &                        '-m',m,flg, ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                  &
+     &                         '-use_mumps',wmumps,flg,ierr)
 
       call MatCreate(PETSC_COMM_WORLD, A, ierr)
       call MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m*m, m*m, ierr)

@@ -3,9 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.giturls           = ['https://bitbucket.org/petsc/petsc4py']
-    self.gitcommit         = '83a14d3' # Jun 22 2015
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-83a14d3.tar.gz']
+    self.gitcommit         = '94a52a891996fe5a1db39c0a1eaac11601561d2b'
+    self.download          = ['git://https://bitbucket.org/petsc/petsc4py'] #'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-'+self.gitcommit+'.tar.gz'
     self.functions         = []
     self.includes          = []
     self.skippackagewithoptions = 1
@@ -22,14 +21,14 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     pp = os.path.join(self.installDir,'lib','python*','site-packages')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
     archflags = ""
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       if self.types.sizes['known-sizeof-void-p'] == 32:
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:
@@ -78,10 +77,10 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin():
+    if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
     self.checkDownload()
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       # The name of the Python library on Apple is Python which does not end in the expected .dylib
       # Thus see if the python library in the standard locations points to the Python version
       import sys

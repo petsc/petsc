@@ -28,18 +28,18 @@
          ten = 10
          call MatCreateSeqDense(PETSC_COMM_SELF,ten,ten,                  &
      &        PETSC_NULL_SCALAR,A,ierr)
-         v = 1.0d0
+         v = 1.0
          do row=0,9
             do col=0,9
                call MatSetValue(A,row,col,v,INSERT_VALUES,ierr)
-               v = v + 1.0d0
+               v = v + 1.0
             enddo
          enddo
 
          call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
          call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-         call PetscObjectSetName(A,"Original Matrix",ierr)
+         call PetscObjectSetName(A,'Original Matrix',ierr)
          call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 !
 !        Now Write this matrix to a binary file
@@ -58,7 +58,7 @@
          call MatSetType(A, MATSEQDENSE,ierr)
          call MatLoad(A,view,ierr)
 
-         call PetscObjectSetName(A,"SeqDense Matrix read in from file",     &
+         call PetscObjectSetName(A,'SeqDense Matrix read in from file',     &
      &        ierr)
          call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
          call MatDestroy(A,ierr)
@@ -77,7 +77,7 @@
       call MatSetType(A, MATMPIDENSE,ierr)
       call MatLoad(A,view,ierr)
 
-      call PetscObjectSetName(A, "MPIDense Matrix read in from file",        &
+      call PetscObjectSetName(A, 'MPIDense Matrix read in from file',        &
      &     ierr)
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call MatDestroy(A,ierr)

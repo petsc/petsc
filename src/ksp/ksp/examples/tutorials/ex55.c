@@ -21,7 +21,6 @@ int main(int argc,char **args)
   MPI_Comm       comm;
   PetscBool      use_coords = PETSC_FALSE;
   PetscMPIInt    npe,mype;
-  PC             pc;
   PetscScalar    DD[8][8],DD2[8][8];
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage[2];
@@ -40,11 +39,11 @@ int main(int argc,char **args)
   comm = PETSC_COMM_WORLD;
   ierr  = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
   h     = 1./ne;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-use_coordinates",&use_coords,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_coordinates",&use_coords,NULL);CHKERRQ(ierr);
   M    = 2*(ne+1)*(ne+1); /* global number of equations */
   m    = (ne+1)*(ne+1)/npe;
   if (mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
@@ -138,7 +137,7 @@ int main(int argc,char **args)
       DD[7][5] =  6.66666666666666519E-002;
       DD[7][6] = -0.20000000000000001;
       DD[7][7] =  0.53333333333333321;
-    
+
     /* BC version of element */
     for (i=0; i<8; i++) {
       for (j=0; j<8; j++) {
@@ -159,12 +158,13 @@ int main(int argc,char **args)
       x            = h*(Ii % (ne+1)); y = h*(Ii/(ne+1));
       coords[2*ix] = x; coords[2*ix+1] = y;
       if (i<ne && j<ne) {
-        PetscInt jj,ii,idx[4] = {Ii, Ii+1, Ii + (ne+1) + 1, Ii + (ne+1)};
+        PetscInt jj,ii,idx[4];
         /* radius */
         PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2));
         PetscReal alpha  = 1.0;
         if (radius < 0.25) alpha = soft_alpha;
 
+        idx[0] = Ii; idx[1] = Ii+1; idx[2] = Ii + (ne+1) + 1;  idx[3] = Ii + (ne+1);
         for (ii=0; ii<8; ii++) {
           for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         }
@@ -194,14 +194,13 @@ int main(int argc,char **args)
 
     /* Setup solver */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp, KSPCG);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc, PCGAMG);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /* finish KSP/PC setup */
     ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     if (use_coords) {
+      PC             pc;
+      ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
       ierr = PCSetCoordinates(pc, 2, m/2, coords);CHKERRQ(ierr);
     }
     ierr = PetscFree(coords);CHKERRQ(ierr);
@@ -210,8 +209,9 @@ int main(int argc,char **args)
   if (!PETSC_TRUE) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIOpen(comm, "Amat.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(Amat,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
   }
 
@@ -251,24 +251,12 @@ int main(int argc,char **args)
     ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
     ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/norm2,norm2);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/norm2,norm2);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(bb,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
-
-
-    /* ierr = PetscViewerASCIIOpen(comm, "rhs.m", &viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); */
-    /* CHKERRQ(ierr); */
-    /* ierr = VecView(bb,viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); */
-
-    /* ierr = PetscViewerASCIIOpen(comm, "solution.m", &viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); */
-    /* CHKERRQ(ierr); */
-    /* ierr = VecView(xx, viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); */
   }
 
   /* Free work space */

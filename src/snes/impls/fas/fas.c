@@ -5,7 +5,7 @@ const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE"
 
 extern PetscErrorCode SNESDestroy_FAS(SNES snes);
 extern PetscErrorCode SNESSetUp_FAS(SNES snes);
-extern PetscErrorCode SNESSetFromOptions_FAS(PetscOptions *PetscOptionsObject,SNES snes);
+extern PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes);
 extern PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer);
 extern PetscErrorCode SNESSolve_FAS(SNES snes);
 extern PetscErrorCode SNESReset_FAS(SNES snes);
@@ -28,7 +28,7 @@ Options Database:
 .   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
 .   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
 .   -snes_fas_monitor -  Monitor progress of all of the levels
-.   -snes_fas_full_downsweepsmooth<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
+.   -snes_fas_full_downsweep<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
 .   -fas_levels_snes_ -  SNES options for all smoothers
 .   -fas_levels_cycle_snes_ -  SNES options for all cycles
 .   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
@@ -41,6 +41,10 @@ Notes:
    The cycle SNES instance may be used for monitoring convergence on a particular level.
 
 Level: beginner
+
+   References:
+. 1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+   SIAM Review, 57(4), 2015
 
 .seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
@@ -308,7 +312,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_FAS"
-PetscErrorCode SNESSetFromOptions_FAS(PetscOptions *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_FAS       *fas   = (SNES_FAS*) snes->data;
   PetscInt       levels = 1;
@@ -857,6 +861,7 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
       ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
       if (fas->level != 1) next->max_its -= 1;
     } else {
+      /* The smoother on the coarse level is the coarse solver */
       ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
     }
     fas->full_stage = 1;
@@ -921,9 +926,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
 
   PetscFunctionBegin;
 
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
-    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  }
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   maxits       = snes->max_its;      /* maximum number of iterations */
@@ -981,9 +984,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
       ierr = SNESFASCycle_Full(snes, X);CHKERRQ(ierr);
     } else if (fas->fastype ==SNES_FAS_KASKADE) {
       ierr = SNESFASCycle_Kaskade(snes, X);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
-    }
+    } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
 
     /* check for FAS cycle divergence */
     if (snes->reason != SNES_CONVERGED_ITERATING) PetscFunctionReturn(0);

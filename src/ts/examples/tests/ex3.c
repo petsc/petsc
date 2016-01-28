@@ -14,7 +14,7 @@ Input arguments are\n\
 #include <petscts.h>
 
 /* special variable - max size of all arrays  */
-#define num_z 60
+#define num_z 10
 
 /*
    User-defined application context - contains data needed by the
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
-  ierr = PetscOptionsGetInt(NULL,"-nphase",&nphase,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nphase",&nphase,NULL);CHKERRQ(ierr);
   if (nphase > 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nphase must be an integer between 1 and 3");
 
   /* initializations */
@@ -77,8 +77,8 @@ int main(int argc,char **argv)
   appctx.debug      = PETSC_FALSE;
   appctx.useAlhs    = PETSC_FALSE;
 
-  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr);
 
   /* create vector to hold ts solution */
   /*-----------------------------------*/

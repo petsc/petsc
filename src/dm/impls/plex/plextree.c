@@ -258,8 +258,8 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
 #endif
   /* create a reference element */
   ierr = DMPlexCreateReferenceCell(comm, dim, simplex, &K);CHKERRQ(ierr);
-  ierr = DMPlexCreateLabel(K, "identity");CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(K, "identity", &identity);CHKERRQ(ierr);
+  ierr = DMCreateLabel(K, "identity");CHKERRQ(ierr);
+  ierr = DMGetLabel(K, "identity", &identity);CHKERRQ(ierr);
   ierr = DMPlexGetChart(K, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; p++) {
     ierr = DMLabelSetValue(identity, p, p);CHKERRQ(ierr);
@@ -269,7 +269,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
 
   /* the reference tree is the union of these two, without duplicating
    * points that appear in both */
-  ierr = DMPlexGetLabel(Kref, "identity", &identityRef);CHKERRQ(ierr);
+  ierr = DMGetLabel(Kref, "identity", &identityRef);CHKERRQ(ierr);
   ierr = DMPlexGetChart(Kref, &pRefStart, &pRefEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &unionSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(unionSection, 0, (pEnd - pStart) + (pRefEnd - pRefStart));CHKERRQ(ierr);
@@ -644,7 +644,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
     }
   }
   ierr = ISRestoreIndices(is,&vals);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
   if (!globalAnyNew) {
     ierr = PetscSectionDestroy(&secNew);CHKERRQ(ierr);
     *sectionNew = NULL;
@@ -653,7 +653,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
   else {
     PetscBool globalCompress;
 
-    ierr = MPI_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
     if (compress) {
       PetscSection secComp;
       PetscInt *valsComp = NULL;
@@ -703,7 +703,7 @@ static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(dm,"canonical",&canonLabel);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm,"canonical",&canonLabel);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; p++) {
     PetscInt parent;
 
@@ -800,12 +800,44 @@ static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetTrueSupportSize"
+static PetscErrorCode DMPlexGetTrueSupportSize(DM dm,PetscInt p,PetscInt *dof,PetscInt *numTrueSupp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (numTrueSupp[p] == -1) {
+    PetscInt i, alldof;
+    const PetscInt *supp;
+    PetscInt count = 0;
+
+    ierr = DMPlexGetSupportSize(dm,p,&alldof);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm,p,&supp);CHKERRQ(ierr);
+    for (i = 0; i < alldof; i++) {
+      PetscInt q = supp[i], numCones, j;
+      const PetscInt *cone;
+
+      ierr = DMPlexGetConeSize(dm,q,&numCones);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm,q,&cone);CHKERRQ(ierr);
+      for (j = 0; j < numCones; j++) {
+        if (cone[j] == p) break;
+      }
+      if (j < numCones) count++;
+    }
+    numTrueSupp[p] = count;
+  }
+  *dof = numTrueSupp[p];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexTreeExchangeSupports"
 static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscSection newSupportSection;
   PetscInt newSize, *newSupports, pStart, pEnd, p, d, depth;
+  PetscInt *numTrueSupp;
   PetscInt *offsets;
   PetscErrorCode ierr;
 
@@ -817,21 +849,23 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(newSupportSection,pStart,pEnd);CHKERRQ(ierr);
   ierr = PetscCalloc1(pEnd,&offsets);CHKERRQ(ierr);
-  /* if a point is in the support of q, it should be in the support of
+  ierr = PetscMalloc1(pEnd,&numTrueSupp);CHKERRQ(ierr);
+  for (p = 0; p < pEnd; p++) numTrueSupp[p] = -1;
+  /* if a point is in the (true) support of q, it should be in the support of
    * parent(q) */
   for (d = 0; d <= depth; d++) {
     ierr = DMPlexGetHeightStratum(dm,d,&pStart,&pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, q, qdof, parent;
 
-      ierr = PetscSectionGetDof(mesh->supportSection, p, &dof);CHKERRQ(ierr);
+      ierr = DMPlexGetTrueSupportSize(dm,p,&dof,numTrueSupp);CHKERRQ(ierr);
       ierr = PetscSectionAddDof(newSupportSection, p, dof);CHKERRQ(ierr);
       q    = p;
       ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
       while (parent != q && parent >= pStart && parent < pEnd) {
         q = parent;
 
-        ierr = PetscSectionGetDof(mesh->supportSection, q, &qdof);CHKERRQ(ierr);
+        ierr = DMPlexGetTrueSupportSize(dm,q,&qdof,numTrueSupp);CHKERRQ(ierr);
         ierr = PetscSectionAddDof(newSupportSection,p,qdof);CHKERRQ(ierr);
         ierr = PetscSectionAddDof(newSupportSection,q,dof);CHKERRQ(ierr);
         ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
@@ -851,7 +885,16 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
       ierr = PetscSectionGetDof(newSupportSection, p, &newDof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(newSupportSection, p, &newOff);CHKERRQ(ierr);
       for (i = 0; i < dof; i++) {
-        newSupports[newOff+offsets[p]++] = mesh->supports[off + i];
+        PetscInt numCones, j;
+        const PetscInt *cone;
+        PetscInt q = mesh->supports[off + i];
+
+        ierr = DMPlexGetConeSize(dm,q,&numCones);CHKERRQ(ierr);
+        ierr = DMPlexGetCone(dm,q,&cone);CHKERRQ(ierr);
+        for (j = 0; j < numCones; j++) {
+          if (cone[j] == p) break;
+        }
+        if (j < numCones) newSupports[newOff+offsets[p]++] = q;
       }
       mesh->maxSupportSize = PetscMax(mesh->maxSupportSize,newDof);
 
@@ -863,10 +906,28 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
         ierr = PetscSectionGetOffset(mesh->supportSection, q, &qoff);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(newSupportSection, q, &newqOff);CHKERRQ(ierr);
         for (i = 0; i < qdof; i++) {
-          newSupports[newOff+offsets[p]++] = mesh->supports[qoff + i];
+          PetscInt numCones, j;
+          const PetscInt *cone;
+          PetscInt r = mesh->supports[qoff + i];
+
+          ierr = DMPlexGetConeSize(dm,r,&numCones);CHKERRQ(ierr);
+          ierr = DMPlexGetCone(dm,r,&cone);CHKERRQ(ierr);
+          for (j = 0; j < numCones; j++) {
+            if (cone[j] == q) break;
+          }
+          if (j < numCones) newSupports[newOff+offsets[p]++] = r;
         }
         for (i = 0; i < dof; i++) {
-          newSupports[newqOff+offsets[q]++] = mesh->supports[off + i];
+          PetscInt numCones, j;
+          const PetscInt *cone;
+          PetscInt r = mesh->supports[off + i];
+
+          ierr = DMPlexGetConeSize(dm,r,&numCones);CHKERRQ(ierr);
+          ierr = DMPlexGetCone(dm,r,&cone);CHKERRQ(ierr);
+          for (j = 0; j < numCones; j++) {
+            if (cone[j] == p) break;
+          }
+          if (j < numCones) newSupports[newqOff+offsets[q]++] = r;
         }
         ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
       }
@@ -877,6 +938,7 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   ierr = PetscFree(mesh->supports);CHKERRQ(ierr);
   mesh->supports = newSupports;
   ierr = PetscFree(offsets);CHKERRQ(ierr);
+  ierr = PetscFree(numTrueSupp);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -914,7 +976,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   if (refTree) {
     DMLabel canonLabel;
 
-    ierr = DMPlexGetLabel(refTree,"canonical",&canonLabel);CHKERRQ(ierr);
+    ierr = DMGetLabel(refTree,"canonical",&canonLabel);CHKERRQ(ierr);
     if (canonLabel) {
       PetscInt i;
 
@@ -937,7 +999,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
     /* add the canonical label */
     ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-    ierr = DMPlexCreateLabel(dm,"canonical");CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm,"canonical");CHKERRQ(ierr);
     for (d = 0; d <= dim; d++) {
       PetscInt p, dStart, dEnd, canon = -1, cNumChildren;
       const PetscInt *cChildren;
@@ -958,9 +1020,9 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
         ierr = DMPlexGetTreeChildren(dm,p,&numChildren,&children);CHKERRQ(ierr);
         if (numChildren) {
           if (numChildren != cNumChildren) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"All parent points in a stratum should have the same number of children: %d != %d", numChildren, cNumChildren);
-          ierr = DMPlexSetLabelValue(dm,"canonical",p,canon);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm,"canonical",p,canon);CHKERRQ(ierr);
           for (i = 0; i < numChildren; i++) {
-            ierr = DMPlexSetLabelValue(dm,"canonical",children[i],cChildren[i]);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm,"canonical",children[i],cChildren[i]);CHKERRQ(ierr);
           }
         }
       }
@@ -1164,7 +1226,10 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
   ierr = PetscMalloc6(spdim,&v0,spdim,&v0parent,spdim,&vtmp,spdim*spdim,&J,spdim*spdim,&Jparent,spdim*spdim,&invJparent);CHKERRQ(ierr);
 
   for (f = 0; f < numFields; f++) {
-    PetscFE fe;
+    PetscObject disc;
+    PetscFE fe = NULL;
+    PetscFV fv = NULL;
+    PetscClassId id;
     PetscDualSpace space;
     PetscInt i, j, k, nPoints, offset;
     PetscInt fSize, fComp;
@@ -1172,10 +1237,22 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
     PetscReal *weights, *pointsRef, *pointsReal;
     Mat Amat, Bmat, Xmat;
 
-    ierr = PetscDSGetDiscretization(ds,f,(PetscObject *)(&fe));CHKERRQ(ierr);
-    ierr = PetscFEGetDualSpace(fe,&space);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetDimension(space,&fSize);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      fe = (PetscFE) disc;
+      ierr = PetscFEGetDualSpace(fe,&space);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(space,&fSize);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+    }
+    else if (id == PETSCFV_CLASSID) {
+      fv = (PetscFV) disc;
+      ierr = PetscFVGetDualSpace(fv,&space);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(space,&fSize);CHKERRQ(ierr);
+      ierr = PetscFVGetNumComponents(fv,&fComp);CHKERRQ(ierr);
+    }
+    else SETERRQ1(PetscObjectComm(disc),PETSC_ERR_ARG_UNKNOWN_TYPE, "PetscDS discretization id %d not recognized.", id);
+
     ierr = MatCreate(PETSC_COMM_SELF,&Amat);CHKERRQ(ierr);
     ierr = MatSetSizes(Amat,fSize,fSize,fSize,fSize);CHKERRQ(ierr);
     ierr = MatSetType(Amat,MATSEQDENSE);CHKERRQ(ierr);
@@ -1204,7 +1281,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       ierr = PetscMemcpy(pointsRef+spdim*offset,p,spdim*qPoints*sizeof(*p));CHKERRQ(ierr);
       offset += qPoints;
     }
-    ierr = PetscFEGetTabulation(fe,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      ierr = PetscFEGetTabulation(fe,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    }
+    else {
+      ierr = PetscFVGetTabulation(fv,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    }
     offset = 0;
     for (i = 0; i < fSize; i++) {
       PetscInt        qPoints;
@@ -1222,7 +1304,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       }
       offset += qPoints;
     }
-    ierr = PetscFERestoreTabulation(fe,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      ierr = PetscFERestoreTabulation(fe,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    }
+    else {
+      ierr = PetscFVRestoreTabulation(fv,nPoints,pointsRef,&B,NULL,NULL);CHKERRQ(ierr);
+    }
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatLUFactor(Amat,NULL,NULL,NULL);CHKERRQ(ierr);
@@ -1258,7 +1345,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
         CoordinatesRefToReal(spdim, spdim, v0, J, &pointsRef[i*spdim],vtmp);CHKERRQ(ierr);
         CoordinatesRealToRef(spdim, spdim, v0parent, invJparent, vtmp, &pointsReal[i*spdim]);CHKERRQ(ierr);
       }
-      ierr = PetscFEGetTabulation(fe,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        ierr = PetscFEGetTabulation(fe,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      }
+      else {
+        ierr = PetscFVGetTabulation(fv,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      }
       offset = 0;
       for (i = 0; i < fSize; i++) {
         PetscInt        qPoints;
@@ -1276,7 +1368,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
         }
         offset += qPoints;
       }
-      ierr = PetscFERestoreTabulation(fe,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        ierr = PetscFERestoreTabulation(fe,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      }
+      else {
+        ierr = PetscFVRestoreTabulation(fv,nPoints,pointsReal,&B,NULL,NULL);CHKERRQ(ierr);
+      }
       ierr = MatAssemblyBegin(Bmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(Bmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatMatSolve(Amat,Bmat,Xmat);CHKERRQ(ierr);
@@ -1440,10 +1537,22 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
     ierr = DMPlexGetTransitiveClosure(refTree,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
     for (f = 0; f < numFields; f++) {
       PetscInt cDof, cOff, numCols, r, i, fComp;
-      PetscFE fe;
+      PetscObject disc;
+      PetscClassId id;
+      PetscFE fe = NULL;
+      PetscFV fv = NULL;
 
-      ierr = PetscDSGetDiscretization(ds,f,(PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {
+        fe = (PetscFE) disc;
+        ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+      }
+      else if (id == PETSCFV_CLASSID) {
+        fv = (PetscFV) disc;
+        ierr = PetscFVGetNumComponents(fv,&fComp);CHKERRQ(ierr);
+      }
+      else SETERRQ1(PetscObjectComm(disc),PETSC_ERR_ARG_UNKNOWN_TYPE, "PetscDS discretization id %d not recognized.", id);
 
       if (numFields > 1) {
         ierr = PetscSectionGetFieldDof(refConSec,p,f,&cDof);CHKERRQ(ierr);
@@ -1554,10 +1663,21 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
       for (f = 0; f < numFields; f++) {
         PetscInt cDof, cOff, numCols, numFillCols, i, r, fComp, matOffset, offset;
         PetscScalar *pointMat;
-        PetscFE fe;
+        PetscObject disc;
+        PetscClassId id;
+        PetscFE fe = NULL;
+        PetscFV fv = NULL;
 
-        ierr = PetscDSGetDiscretization(ds,f,(PetscObject *) &fe);CHKERRQ(ierr);
-        ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+        ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID) {
+          fe = (PetscFE) disc;
+          ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+        }
+        else if (id == PETSCFV_CLASSID) {
+          fv = (PetscFV) disc;
+          ierr = PetscFVGetNumComponents(fv,&fComp);CHKERRQ(ierr);
+        }
 
         if (numFields > 1) {
           ierr = PetscSectionGetFieldDof(conSec,point,f,&cDof);CHKERRQ(ierr);
@@ -1573,9 +1693,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
 #if defined(PETSC_USE_DEBUG)
         for (r = 0; r < cDof; r++) {
           if (cDof > 1 && r) {
-            if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) {
-              SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %d vs. %d", (ia[rows[r]+1]-ia[rows[r]]), (ia[rows[r]]-ia[rows[r]-1]));
-            }
+            if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %D vs. %D", (ia[rows[r]+1]-ia[rows[r]]), (ia[rows[r]]-ia[rows[r]-1]));
           }
         }
 #endif

@@ -56,23 +56,27 @@ PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, con
 
   Input Parameter:
 + dm - The DMPlex object
-- otype - type of reordering, one of the following:
+. otype - type of reordering, one of the following:
 $     MATORDERINGNATURAL - Natural
 $     MATORDERINGND - Nested Dissection
 $     MATORDERING1WD - One-way Dissection
 $     MATORDERINGRCM - Reverse Cuthill-McKee
 $     MATORDERINGQMD - Quotient Minimum Degree
+- label - [Optional] Label used to segregate ordering into sets, or NULL
 
 
   Output Parameter:
-. perm - The point permutation as an IS
+. perm - The point permutation as an IS, perm[old point number] = new point number
+
+  Note: The label is used to group sets of points together by label value. This makes it easy to reorder a mesh which
+  has different types of cells, and then loop over each set of reordered cells for assembly.
 
   Level: intermediate
 
 .keywords: mesh
 .seealso: MatGetOrdering()
 @*/
-PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
+PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
 {
   PetscInt       numCells = 0;
   PetscInt      *start = NULL, *adjacency = NULL, *cperm, *clperm, *invclperm, *mask, *xls, pStart, pEnd, c, i;
@@ -93,6 +97,41 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
   ierr = PetscFree(adjacency);CHKERRQ(ierr);
   /* Shift for Fortran numbering */
   for (c = 0; c < numCells; ++c) --cperm[c];
+  /* Segregate */
+  if (label) {
+    IS              valueIS;
+    const PetscInt *values;
+    PetscInt        numValues, numPoints = 0;
+    PetscInt       *sperm, *vsize, *voff, v;
+
+    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
+    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = PetscCalloc3(numCells,&sperm,numValues,&vsize,numValues+1,&voff);CHKERRQ(ierr);
+    for (v = 0; v < numValues; ++v) {
+      ierr = DMLabelGetStratumSize(label, values[v], &vsize[v]);CHKERRQ(ierr);
+      if (v < numValues-1) voff[v+2] += vsize[v] + voff[v+1];
+      numPoints += vsize[v];
+    }
+    if (numPoints != numCells) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label only covers %D cells < %D total", numPoints, numCells);
+    for (c = 0; c < numCells; ++c) {
+      const PetscInt oldc = cperm[c];
+      PetscInt       val, vloc;
+
+      ierr = DMLabelGetValue(label, oldc, &val);CHKERRQ(ierr);
+      if (val == -1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %D not present in label", oldc);
+      ierr = PetscFindInt(val, numValues, values, &vloc);CHKERRQ(ierr);
+      if (vloc < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D not present label", val);
+      sperm[voff[vloc+1]++] = oldc;
+    }
+    for (v = 0; v < numValues; ++v) {
+      if (voff[v+1] - voff[v] != vsize[v]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %D values found is %D != %D", values[v], voff[v+1] - voff[v], vsize[v]);
+    }
+    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+    ierr = PetscMemcpy(cperm, sperm, numCells * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscFree3(sperm, vsize, voff);CHKERRQ(ierr);
+  }
   /* Construct closure */
   ierr = DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm);CHKERRQ(ierr);
   ierr = PetscFree3(cperm,mask,xls);CHKERRQ(ierr);
@@ -112,7 +151,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
 
   Input Parameter:
 + dm - The DMPlex object
-- perm - The point permutation
+- perm - The point permutation, perm[old point number] = new point number
 
   Output Parameter:
 . pdm - The permuted DM
@@ -155,12 +194,15 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscScalar    *coords, *coordsNew;
     const PetscInt *pperm;
     PetscInt        pStart, pEnd, p;
+    const char     *name;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(cdm, &csection);CHKERRQ(ierr);
     ierr = PetscSectionPermute(csection, perm, &csectionNew);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = VecDuplicate(coordinates, &coordinatesNew);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)coordinates,&name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)coordinatesNew,name);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(csectionNew, &pStart, &pEnd);CHKERRQ(ierr);
@@ -187,11 +229,11 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscInt numLabels, l;
     DMLabel  label, labelNew;
 
-    ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+    ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     for (l = numLabels-1; l >= 0; --l) {
-      ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+      ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
       ierr = DMLabelPermute(label, perm, &labelNew);CHKERRQ(ierr);
-      ierr = DMPlexAddLabel(*pdm, labelNew);CHKERRQ(ierr);
+      ierr = DMAddLabel(*pdm, labelNew);CHKERRQ(ierr);
     }
     if (plex->subpointMap) {ierr = DMLabelPermute(plex->subpointMap, perm, &plexNew->subpointMap);CHKERRQ(ierr);}
   }

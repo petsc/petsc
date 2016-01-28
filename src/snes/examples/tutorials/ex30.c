@@ -138,12 +138,12 @@ int main(int argc,char **argv)
   DM             da;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  PetscOptionsSetValue("-file","ex30_output");
-  PetscOptionsSetValue("-snes_monitor_short",NULL);
-  PetscOptionsSetValue("-snes_max_it","20");
-  PetscOptionsSetValue("-ksp_max_it","1500");
-  PetscOptionsSetValue("-ksp_gmres_restart","300");
-  PetscOptionsInsert(&argc,&argv,NULL);
+  PetscOptionsSetValue(NULL,"-file","ex30_output");
+  PetscOptionsSetValue(NULL,"-snes_monitor_short",NULL);
+  PetscOptionsSetValue(NULL,"-snes_max_it","20");
+  PetscOptionsSetValue(NULL,"-ksp_max_it","1500");
+  PetscOptionsSetValue(NULL,"-ksp_gmres_restart","300");
+  PetscOptionsInsert(NULL,&argc,&argv,NULL);
 
   comm = PETSC_COMM_WORLD;
 
@@ -823,25 +823,25 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->lid_depth   = 35.0;                                               /* km */
   param->fault_depth = 35.0;                                               /* km */
 
-  ierr = PetscOptionsGetReal(NULL,"-slab_dip",&(param->slab_dip),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-width",&(param->width),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-depth",&(param->depth),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-lid_depth",&(param->lid_depth),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-fault_depth",&(param->fault_depth),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-slab_dip",&(param->slab_dip),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-width",&(param->width),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-depth",&(param->depth),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-lid_depth",&(param->lid_depth),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-fault_depth",&(param->fault_depth),NULL);CHKERRQ(ierr);
 
   param->slab_dip = param->slab_dip*PETSC_PI/180.0;                    /* radians */
 
   /* grid information */
-  ierr     = PetscOptionsGetInt(NULL, "-jfault",&(grid->jfault),NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(NULL,NULL, "-jfault",&(grid->jfault),NULL);CHKERRQ(ierr);
   grid->ni = 82;
-  ierr     = PetscOptionsGetInt(NULL, "-ni",&(grid->ni),NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(NULL,NULL, "-ni",&(grid->ni),NULL);CHKERRQ(ierr);
 
   grid->dx            = param->width/((PetscReal)(grid->ni-2));               /* km */
   grid->dz            = grid->dx*tan(param->slab_dip);                     /* km */
   grid->nj            = (PetscInt)(param->depth/grid->dz + 3.0);         /* gridpoints*/
   param->depth        = grid->dz*(grid->nj-2);                             /* km */
   grid->inose         = 0;                                          /* gridpoints*/
-  ierr                = PetscOptionsGetInt(NULL,"-inose",&(grid->inose),NULL);CHKERRQ(ierr);
+  ierr                = PetscOptionsGetInt(NULL,NULL,"-inose",&(grid->inose),NULL);CHKERRQ(ierr);
   grid->bx            = DM_BOUNDARY_NONE;
   grid->by            = DM_BOUNDARY_NONE;
   grid->stencil       = DMDA_STENCIL_BOX;
@@ -852,7 +852,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   /* boundary conditions */
   param->pv_analytic = PETSC_FALSE;
   param->ibound      = BC_NOSTRESS;
-  ierr               = PetscOptionsGetInt(NULL,"-ibound",&(param->ibound),NULL);CHKERRQ(ierr);
+  ierr               = PetscOptionsGetInt(NULL,NULL,"-ibound",&(param->ibound),NULL);CHKERRQ(ierr);
 
   /* physical constants */
   param->slab_velocity = 5.0;               /* cm/yr */
@@ -861,11 +861,11 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->kappa         = 0.7272e-6;         /* m^2/sec */
   param->potentialT    = 1300.0;            /* degrees C */
 
-  ierr = PetscOptionsGetReal(NULL,"-slab_velocity",&(param->slab_velocity),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-slab_age",&(param->slab_age),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-lid_age",&(param->lid_age),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-kappa",&(param->kappa),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-potentialT",&(param->potentialT),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-slab_velocity",&(param->slab_velocity),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-slab_age",&(param->slab_age),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-lid_age",&(param->lid_age),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-kappa",&(param->kappa),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-potentialT",&(param->potentialT),NULL);CHKERRQ(ierr);
 
   /* viscosity */
   param->ivisc        = 3;                  /* 0=isovisc, 1=difn creep, 2=disl creep, 3=full */
@@ -885,26 +885,26 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->dislocation.Estar = 530e3;           /* J/mol */
   param->dislocation.Vstar = 14e-6;           /* m^3/mol */
 
-  ierr = PetscOptionsGetInt(NULL, "-ivisc",&(param->ivisc),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-visc_cutoff",&(param->visc_cutoff),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-ivisc",&(param->ivisc),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-visc_cutoff",&(param->visc_cutoff),NULL);CHKERRQ(ierr);
 
   param->output_ivisc = param->ivisc;
 
-  ierr = PetscOptionsGetInt(NULL,"-output_ivisc",&(param->output_ivisc),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-vstar",&(param->dislocation.Vstar),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-output_ivisc",&(param->output_ivisc),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-vstar",&(param->dislocation.Vstar),NULL);CHKERRQ(ierr);
 
   /* output options */
   param->quiet      = PETSC_FALSE;
   param->param_test = PETSC_FALSE;
 
-  ierr = PetscOptionsHasName(NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-test",&(param->param_test));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));
+  ierr = PetscOptionsHasName(NULL,NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-test",&(param->param_test));CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */
 
-  ierr = PetscOptionsGetInt(NULL,"-adv_scheme",&(param->adv_scheme),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-adv_scheme",&(param->adv_scheme),NULL);CHKERRQ(ierr);
 
   /* misc. flags */
   param->stop_solve    = PETSC_FALSE;
@@ -939,7 +939,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
                         / param->kappa;                         /* m^2/sec */
   param->z_scale = param->L * alpha_g_on_cp_units_inverse_km;
   param->skt     = PetscSqrtReal(param->kappa*param->slab_age*SEC_PER_YR);
-  ierr           = PetscOptionsGetReal(NULL,"-peclet",&(param->peclet),NULL);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetReal(NULL,NULL,"-peclet",&(param->peclet),NULL);CHKERRQ(ierr);
 
   return ierr_out;
 }
@@ -1314,7 +1314,7 @@ PetscBool  OptionsHasName(const char pre[],const char name[])
 {
   PetscBool      retval;
   PetscErrorCode ierr;
-  ierr = PetscOptionsHasName(pre,name,&retval);CHKERRABORT(PETSC_COMM_WORLD,ierr);
+  ierr = PetscOptionsHasName(NULL,pre,name,&retval);CHKERRABORT(PETSC_COMM_WORLD,ierr);
   return retval;
 }
 

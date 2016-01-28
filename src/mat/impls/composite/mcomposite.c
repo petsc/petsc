@@ -208,7 +208,7 @@ PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)Y)->prefix,"-mat_composite_merge",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)Y)->options,((PetscObject)Y)->prefix,"-mat_composite_merge",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCompositeMerge(Y);CHKERRQ(ierr);
   }
@@ -627,7 +627,7 @@ PetscErrorCode  MatCompositeMerge(Mat mat)
   if ((left = shell->left)) {ierr = PetscObjectReference((PetscObject)left);CHKERRQ(ierr);}
   if ((right = shell->right)) {ierr = PetscObjectReference((PetscObject)right);CHKERRQ(ierr);}
 
-  ierr = MatHeaderReplace(mat,tmat);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(mat,&tmat);CHKERRQ(ierr);
 
   ierr = MatDiagonalScale(mat,left,right);CHKERRQ(ierr);
   ierr = MatScale(mat,scale);CHKERRQ(ierr);

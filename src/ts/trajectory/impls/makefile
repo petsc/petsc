@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  =
-DIRS     = basic singlefile
+DIRS     = basic singlefile memory
 LOCDIR   = src/ts/trajectory/impls
 MANSEC   = TS
 

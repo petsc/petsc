@@ -5,12 +5,14 @@
 #define petscviewerfilesetname_                PETSCVIEWERFILESETNAME
 #define petscviewerasciiprintf_                PETSCVIEWERASCIIPRINTF
 #define petscviewerasciisynchronizedprintf_    PETSCVIEWERASCIISYNCHRONIZEDPRINTF
-#define petscviewerasciisynchronizedallow_     PETSCVIEWERASCIISYNCHRONIZEALLOW
+#define petscviewerasciipushsynchronized_      PETSCVIEWERASCIIPUSHSYNCHRONIZE
+#define petscviewerasciipopsynchronized_       PETSCVIEWERASCIIPOPSYNCHRONIZE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerfilesetname_                petscviewerfilesetname
 #define petscviewerasciiprintf_                petscviewerasciiprintf
 #define petscviewerasciisynchronizedprintf_    petscviewerasciisynchronizedprintf
-#define petscviewerasciisynchronizedallow_     petscviewerasciisynchronizedallow
+#define petscviewerasciipushsynchronized_      petscviewerasciipushsynchronized
+#define petscviewerasciipopsynchronized_       petscviewerasciipopsynchronized
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
@@ -66,10 +68,18 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer 
   *ierr = PetscFree(tmp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerasciisynchronizedallow_(PetscViewer *viewer,PetscBool *allow,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscviewerasciipushsynchronized_(PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
 
   PetscPatchDefaultViewers_Fortran(viewer,v);
-  *ierr = PetscViewerASCIISynchronizedAllow(v,*allow);
+  *ierr = PetscViewerASCIIPushSynchronized(v);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscviewerasciipopsynchronized_(PetscViewer *viewer,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = PetscViewerASCIIPopSynchronized(v);
 }

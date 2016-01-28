@@ -12,168 +12,168 @@ Labels:
 Local function:
 Vec Object: 1 MPI processes
   type: seq
-0
-1
-1
-2
-1
-2
-2
-3
+0.
+0.666667
+0.666667
+1.33333
+0.666667
+1.33333
+1.33333
+2.
 Initial guess
 Vec Object:potential 1 MPI processes
   type: seq
-0
-1
-1
-2
-1
-2
-2
-3
-L_2 Error: 0.625
+0.
+0.666667
+0.666667
+1.33333
+0.666667
+1.33333
+1.33333
+2.
+L_2 Error: 0.416667
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-0
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-0
+-0.333333
 Initial Residual
 Vec Object: 1 MPI processes
   type: seq
-0
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-0
-L_2 Residual: 0.816497
+-0.333333
+L_2 Residual: 0.942809
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-0
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-0
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-3.61917e-08
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-0
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
--1.20639e-08
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-0
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
--1.20639e-08
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-0
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-0
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
--1.20639e-08
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
--1.20639e-08
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-0
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-0
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
--1.20639e-08
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-0
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
--1.20639e-08
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-0
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-3.61917e-08
+-0.333333
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-1
+1.
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
--1
+-1.
 Au - b = Au + F(0)
 Vec Object: 1 MPI processes
   type: seq
-8.41884e-10
+0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
-1.75638e-08
-Linear L_2 Residual: 0.816497
+-0.333333
+Linear L_2 Residual: 0.942809

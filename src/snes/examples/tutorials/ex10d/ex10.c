@@ -133,16 +133,16 @@ int main(int argc,char **argv)
   user.Nvglobal = 16;      /*Global # of vertices  */
   user.Neglobal = 18;      /*Global # of elements  */
 
-  ierr = PetscOptionsGetInt(NULL,"-vert",&user.Nvglobal,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-elem",&user.Neglobal,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-vert",&user.Nvglobal,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-elem",&user.Neglobal,NULL);CHKERRQ(ierr);
 
   user.non_lin_param = 0.06;
 
-  ierr = PetscOptionsGetReal(NULL,"-nl_par",&user.non_lin_param,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-nl_par",&user.non_lin_param,NULL);CHKERRQ(ierr);
 
   user.lin_param = -1.0;
 
-  ierr = PetscOptionsGetReal(NULL,"-lin_par",&user.lin_param,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-lin_par",&user.lin_param,NULL);CHKERRQ(ierr);
 
   user.Nvlocal = 0;
   user.Nelocal = 0;
@@ -408,7 +408,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
   if (!fd_jacobian_coloring) {
     ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
   } else {  /* Use matfdcoloring */

@@ -195,7 +195,7 @@ PetscErrorCode KSPDestroy_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GCR"
-PetscErrorCode KSPSetFromOptions_GCR(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_GCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -328,9 +328,8 @@ PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 /*MC
      KSPGCR - Implements the preconditioned Generalized Conjugate Residual method.
 
-
    Options Database Keys:
-+   -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
+.   -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
 
    Level: beginner
 
@@ -351,8 +350,8 @@ PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
     Contributed by Dave May
 
     References:
-           S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for
-           non-symmetric systems of linear equations. SIAM J. Numer. Anal., 20, 345-357, 1983
+.          1. - S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for
+           nonsymmetric systems of linear equations. SIAM J. Numer. Anal., 20, 1983
 
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,

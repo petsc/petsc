@@ -10,6 +10,7 @@ class Configure(config.package.Package):
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']
     self.needsMath    = 1
+    self.hastests     = 1
     return
 
   def setupDependencies(self, framework):
@@ -62,7 +63,7 @@ class Configure(config.package.Package):
     self.cflags = self.cflags + ' -DSCOTCH_RENAME -Drestrict="" '
     # this is needed on the Mac, because common2.c includes common.h which DOES NOT include mpi.h because
     # SCOTCH_PTSCOTCH is NOT defined above Mac does not know what clock_gettime() is!
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       self.cflags = self.cflags + ' -DCOMMON_TIMING_OLD'
     if self.indexTypes.integerSize == 64:
       self.cflags = self.cflags + ' -DINTSIZE64'

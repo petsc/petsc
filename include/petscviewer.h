@@ -65,10 +65,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFil
 PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,PetscViewerType*);
 PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,PetscViewerType);
 PETSC_EXTERN PetscErrorCode PetscViewerDestroy(PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerGetSingleton(PetscViewer,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerGetSubcomm(PetscViewer,MPI_Comm,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerRestoreSubcomm(PetscViewer,MPI_Comm,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerGetSubViewer(PetscViewer,MPI_Comm,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerRestoreSubViewer(PetscViewer,MPI_Comm,PetscViewer*);
 
 PETSC_EXTERN PetscErrorCode PetscViewerSetUp(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerView(PetscViewer,PetscViewer);
@@ -86,7 +84,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer,const char*[
    The values below are also listed in petsc/finclude/petscviewer.h. If another values is added below it
    must also be added there.
 
-.seealso: PetscViewerSetFormat(), PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
+.seealso: PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
 E*/
 typedef enum {
   PETSC_VIEWER_DEFAULT,
@@ -107,6 +105,7 @@ typedef enum {
   PETSC_VIEWER_ASCII_PYTHON,
   PETSC_VIEWER_ASCII_FACTOR_INFO,
   PETSC_VIEWER_ASCII_LATEX,
+  PETSC_VIEWER_ASCII_XML,
   PETSC_VIEWER_DRAW_BASIC,
   PETSC_VIEWER_DRAW_LG,
   PETSC_VIEWER_DRAW_CONTOUR,
@@ -121,7 +120,7 @@ typedef enum {
   } PetscViewerFormat;
 PETSC_EXTERN const char *const PetscViewerFormats[];
 
-PETSC_EXTERN PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
+PETSC_EXTERN PETSC_DEPRECATED("Use PetscViewerPushFormat()/PetscViewerPopFormat()") PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
 PETSC_EXTERN PetscErrorCode PetscViewerPushFormat(PetscViewer,PetscViewerFormat);
 PETSC_EXTERN PetscErrorCode PetscViewerPopFormat(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
@@ -129,7 +128,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerFlush(PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,const char[],const char[],PetscViewer*,PetscViewerFormat*,PetscBool*);
 #define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f);
-PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptions*,const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems*,const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
 
 /*
    Operations explicit to a particular class of viewers
@@ -141,7 +140,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerFileSetMode(PetscViewer,PetscFileMode);
 PETSC_EXTERN PetscErrorCode PetscViewerRead(PetscViewer,void*,PetscInt,PetscInt*,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...);
-PETSC_EXTERN PetscErrorCode PetscViewerASCIISynchronizedAllow(PetscViewer,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPushTab(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPopTab(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer,PetscBool );
@@ -295,75 +295,11 @@ M*/
 
 #define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStart"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer,PetscInt *mcnt,PetscInt *cnt)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = PetscViewerBinaryGetFlowControl(viewer,mcnt);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetFlowControl(viewer,cnt);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStepMaster"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,PetscInt *mcnt,PetscInt cnt)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  if (i >= *mcnt) {
-    *mcnt += cnt;
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlEndMaster"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer,PetscInt *mcnt)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  *mcnt = 0;
-  ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStepWorker"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt rank,PetscInt *mcnt)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  while (PETSC_TRUE) { 
-    if (rank < *mcnt) break;
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlEndWorker"
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer,PetscInt *mcnt)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  while (PETSC_TRUE) {
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-    if (!*mcnt) break;
-  }
-  PetscFunctionReturn(0);
-}
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStart(PetscViewer,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer,PetscInt,PetscInt*,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer,PetscMPIInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer,PetscInt*);
 
 /*
    PetscViewer writes to MATLAB .mat file

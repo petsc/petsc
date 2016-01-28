@@ -219,7 +219,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
             cone[7] = tmp;
           }
           ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(*dm, "zone", c, z);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(*dm, "zone", c, z);CHKERRQ(ierr);
         }
       } else {
         switch (cellType) {
@@ -248,7 +248,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
             cone[7] = tmp;
           }
           ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(*dm, "zone", c, z);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(*dm, "zone", c, z);CHKERRQ(ierr);
         }
       }
       ierr = PetscFree2(elements,cone);CHKERRQ(ierr);
@@ -264,8 +264,8 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
     {
       DMLabel label;
 
-      ierr = DMPlexRemoveLabel(*dm, "zone", &label);CHKERRQ(ierr);
-      if (label) {ierr = DMPlexAddLabel(idm, label);CHKERRQ(ierr);}
+      ierr = DMRemoveLabel(*dm, "zone", &label);CHKERRQ(ierr);
+      if (label) {ierr = DMAddLabel(idm, label);CHKERRQ(ierr);}
     }
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
@@ -344,8 +344,8 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       ierr = cg_nbocos(cgid, 1, z, &nbc);CHKERRQ(ierr);
       for (bc = 1; bc <= nbc; ++bc) {
         ierr = cg_boco_info(cgid, 1, z, bc, bcname, &bctype, &pointtype, &npoints, normal, &nnormals, &datatype, &ndatasets);CHKERRQ(ierr);
-        ierr = DMPlexCreateLabel(*dm, bcname);CHKERRQ(ierr);
-        ierr = DMPlexGetLabel(*dm, bcname, &label);CHKERRQ(ierr);
+        ierr = DMCreateLabel(*dm, bcname);CHKERRQ(ierr);
+        ierr = DMGetLabel(*dm, bcname, &label);CHKERRQ(ierr);
         ierr = PetscMalloc2(npoints, &points, nnormals, &normals);CHKERRQ(ierr);
         ierr = cg_boco_read(cgid, 1, z, bc, points, (void *) normals);CHKERRQ(ierr);
         if (pointtype == ElementRange) {

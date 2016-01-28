@@ -126,8 +126,8 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterReal(bag, &user->alpha, 1.0, "alpha", "Linear coefficient");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &user->lambda, 6.0, "lambda", "Nonlinear coefficient");CHKERRQ(ierr);
   ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-alpha",&user->alpha,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-lambda",&user->lambda,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&user->alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-lambda",&user->lambda,NULL);CHKERRQ(ierr);
   if (user->lambda > lambda_max || user->lambda < lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda %g is out of range [%g, %g]", (double)user->lambda, (double)lambda_min, (double)lambda_max);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -225,13 +225,13 @@ PetscErrorCode CreateNullSpace(DM da, Vec *N)
 */
 PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 {
-  AppCtx         *user;
-  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscErrorCode ierr;
-  PetscReal      lambda,hx,hy;
+  AppCtx                 *user;
+  PetscInt               i,j,Mx,My,xs,ys,xm,ym;
+  PetscErrorCode         ierr;
+  PetscReal              lambda,hx,hy;
   PETSC_UNUSED PetscReal temp1;
-  Field          **x;
-  DM             da;
+  Field                  **x;
+  DM                     da;
 
   PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);

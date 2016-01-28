@@ -18,7 +18,6 @@ int main(int argc,char **args)
   PetscReal      soft_alpha = 1.e-3;
   MPI_Comm       comm;
   PetscMPIInt    npe,mype;
-  PC             pc;
   PetscScalar    DD[4][4],DD2[4][4];
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage;
@@ -33,10 +32,10 @@ int main(int argc,char **args)
   comm = PETSC_COMM_WORLD;
   ierr  = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
   h     = 1./ne;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
   M    = (ne+1)*(ne+1); /* global number of nodes */
   /* create stiffness matrix */
   ierr = MatCreateAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,M,M,
@@ -69,7 +68,7 @@ int main(int argc,char **args)
     DD1[3][1] = -0.33333333333333343;
     DD1[3][2] = -0.16666666666666663;
     DD1[3][3] =  0.66666666666666663;
-   
+
     /* BC version of element */
     for (i=0;i<4;i++) {
       for (j=0;j<4;j++) {
@@ -82,6 +81,7 @@ int main(int argc,char **args)
   }
   {
     PetscReal *coords;
+    PC             pc;
     ierr = PetscMalloc1(2*m,&coords);CHKERRQ(ierr);
     /* forms the element stiffness for the Laplacian and coordinates */
     for (Ii=Istart,ix=0; Ii<Iend; Ii++,ix++) {
@@ -128,15 +128,12 @@ int main(int argc,char **args)
 
     /* Setup solver */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp, KSPCG);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCGAMG);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-
-    /* ierr = PCGAMGSetType(pc,"agg");CHKERRQ(ierr); */
 
     /* finish KSP/PC setup */
     ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
+
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetCoordinates(pc, 2, m, coords);CHKERRQ(ierr);
     ierr = PetscFree(coords);CHKERRQ(ierr);
   }
@@ -144,8 +141,9 @@ int main(int argc,char **args)
   if (!PETSC_TRUE) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIOpen(comm, "Amat.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(Amat,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
   }
 
@@ -171,14 +169,16 @@ int main(int argc,char **args)
     PetscViewer viewer;
     Vec         res;
     ierr = PetscViewerASCIIOpen(comm, "rhs.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(bb,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
     ierr = VecNorm(bb, NORM_2, &norm2);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIOpen(comm, "solution.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(xx,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
 
     ierr = VecDuplicate(xx, &res);CHKERRQ(ierr);
@@ -189,8 +189,9 @@ int main(int argc,char **args)
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/norm2,norm2);
 
     ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(bb,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
   }
 

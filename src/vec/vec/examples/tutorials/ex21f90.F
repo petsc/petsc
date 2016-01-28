@@ -121,7 +121,8 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       n     = 30
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                        '-n',n,flg,ierr)
       call VecCreate(PETSC_COMM_WORLD,x,ierr)
       call VecSetSizes(x,PETSC_DECIDE,n,ierr)
       call VecSetFromOptions(x,ierr)
@@ -138,7 +139,7 @@
       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
       call VecGetArrayMyStruct(x,xarray,ierr)
       do i = 1 , 10
-        write(*,*) xarray(i)%a,xarray(i)%b,xarray(i)%c
+        write(*,*) abs(xarray(i)%a),abs(xarray(i)%b),abs(xarray(i)%c)
       end do
       call VecRestoreArrayMyStruct(x,xarray,ierr)
 

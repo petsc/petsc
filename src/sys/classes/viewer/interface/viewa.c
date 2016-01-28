@@ -20,6 +20,7 @@ const char *const PetscViewerFormats[] = {
   "ASCII_PYTHON",
   "ASCII_FACTOR_INFO",
   "ASCII_LATEX",
+  "ASCII_XML",
   "DRAW_BASIC",
   "DRAW_LG",
   "DRAW_CONTOUR",
@@ -42,6 +43,8 @@ const char *const PetscViewerFormats[] = {
    PetscViewerSetFormat - Sets the format for PetscViewers.
 
    Logically Collective on PetscViewer
+
+   This routine is deprecated, you should use PetscViewerPushFormat()/PetscViewerPopFormat()
 
    Input Parameters:
 +  viewer - the PetscViewer
@@ -79,6 +82,8 @@ const char *const PetscViewerFormats[] = {
    If a format (for example PETSC_VIEWER_DRAW_CONTOUR) was applied to a viewer
   where it didn't apply (PETSC_VIEWER_STDOUT_WORLD) it cause the default behavior
   for that viewer to be used.
+
+    Note: This supports passing in a NULL for the viewer for use in the debugger, but it should never be called in the code with a NULL viewer
 
    Concepts: PetscViewer^setting format
 
@@ -141,7 +146,7 @@ PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat forma
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveEnum(viewer,format,2);
-  if (viewer->iformat > 9) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many pushes");
+  if (viewer->iformat > PETSCVIEWERFORMATPUSHESMAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscViewerPushFormat(), perhaps you forgot PetscViewerPopFormat()?");
 
   viewer->formats[viewer->iformat++] = viewer->format;
   viewer->format                     = format;

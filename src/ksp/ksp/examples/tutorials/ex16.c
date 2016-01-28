@@ -40,8 +40,8 @@ int main(int argc,char **args)
   PetscScalar    v,one = 1.0,neg_one = -1.0,rhs;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix for use in solving a series of
@@ -143,7 +143,7 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ntimes = 2;
-  ierr   = PetscOptionsGetInt(NULL,"-ntimes",&ntimes,NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(NULL,NULL,"-ntimes",&ntimes,NULL);CHKERRQ(ierr);
   for (k=1; k<ntimes+1; k++) {
 
     /*
@@ -157,7 +157,7 @@ int main(int argc,char **args)
     /*
        View the exact solution vector if desired
     */
-    ierr = PetscOptionsGetBool(NULL,"-view_exact_sol",&flg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL);CHKERRQ(ierr);
     if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);

@@ -278,7 +278,7 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
-static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_Advect *advect;
   PetscErrorCode ierr;
@@ -443,7 +443,7 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
-static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_SW     *sw;
   PetscErrorCode ierr;
@@ -623,7 +623,7 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Euler"
-static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_Euler   *eu;
   PetscErrorCode  ierr;
@@ -675,21 +675,21 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
 
-  ierr = DMPlexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
+  ierr = DMHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
   if (!hasLabel) PetscFunctionReturn(0);
-  ierr = DMPlexGetLabelSize(dm, name, &numRegions);CHKERRQ(ierr);
+  ierr = DMGetLabelSize(dm, name, &numRegions);CHKERRQ(ierr);
   if (numRegions != 2) PetscFunctionReturn(0);
   /* Get the inner id */
-  ierr = DMPlexGetLabelIdIS(dm, name, &regionIS);CHKERRQ(ierr);
+  ierr = DMGetLabelIdIS(dm, name, &regionIS);CHKERRQ(ierr);
   ierr = ISGetIndices(regionIS, &regions);CHKERRQ(ierr);
   innerRegion = regions[0];
   ierr = ISRestoreIndices(regionIS, &regions);CHKERRQ(ierr);
   ierr = ISDestroy(&regionIS);CHKERRQ(ierr);
   /* Find the faces between cells in different regions, could call DMPlexCreateNeighborCSR() */
-  ierr = DMPlexGetStratumIS(dm, name, innerRegion, &innerIS);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(dm, name, innerRegion, &innerIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(innerIS, &numCells);CHKERRQ(ierr);
   ierr = ISGetIndices(innerIS, &cells);CHKERRQ(ierr);
-  ierr = DMPlexCreateLabel(dm, bdname);CHKERRQ(ierr);
+  ierr = DMCreateLabel(dm, bdname);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {
     const PetscInt cell = cells[c];
     const PetscInt *faces;
@@ -710,12 +710,12 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
       if ((neighbors[0] >= cEndInterior) || (neighbors[1] >= cEndInterior)) continue;
       if ((neighbors[0] < cStart) || (neighbors[0] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[0]);
       if ((neighbors[1] < cStart) || (neighbors[1] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[1]);
-      ierr = DMPlexGetLabelValue(dm, name, neighbors[0], &regionA);CHKERRQ(ierr);
-      ierr = DMPlexGetLabelValue(dm, name, neighbors[1], &regionB);CHKERRQ(ierr);
+      ierr = DMGetLabelValue(dm, name, neighbors[0], &regionA);CHKERRQ(ierr);
+      ierr = DMGetLabelValue(dm, name, neighbors[1], &regionB);CHKERRQ(ierr);
       if (regionA < 0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
       if (regionB < 0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
       if (regionA != regionB) {
-        ierr = DMPlexSetLabelValue(dm, bdname, faces[f], 1);CHKERRQ(ierr);
+        ierr = DMSetLabelValue(dm, bdname, faces[f], 1);CHKERRQ(ierr);
       }
     }
   }
@@ -724,8 +724,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   {
     DMLabel label;
 
-    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(dm, bdname, &label);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, bdname, &label);CHKERRQ(ierr);
     ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -752,14 +751,14 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexHasLabel(dm, labelName, &hasLabel);CHKERRQ(ierr);
+  ierr = DMHasLabel(dm, labelName, &hasLabel);CHKERRQ(ierr);
   if (!hasLabel) PetscFunctionReturn(0);
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), &sdm);CHKERRQ(ierr);
   ierr = DMSetType(sdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(sdm, dim);CHKERRQ(ierr);
 
-  ierr = DMPlexGetLabelIdIS(dm, labelName, &idIS);CHKERRQ(ierr);
+  ierr = DMGetLabelIdIS(dm, labelName, &idIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
   ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
 
@@ -767,7 +766,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   for (fs = 0; fs < numFS; ++fs) {
     PetscInt numBdFaces;
 
-    ierr = DMPlexGetStratumSize(dm, labelName, ids[fs], &numBdFaces);CHKERRQ(ierr);
+    ierr = DMGetStratumSize(dm, labelName, ids[fs], &numBdFaces);CHKERRQ(ierr);
     user->numSplitFaces += numBdFaces;
   }
   ierr  = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
@@ -797,7 +796,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     const PetscInt *faces;
     PetscInt       numFaces, f;
 
-    ierr = DMPlexGetStratumIS(dm, labelName, ids[fs], &faceIS);CHKERRQ(ierr);
+    ierr = DMGetStratumIS(dm, labelName, ids[fs], &faceIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f, ++newf) {
@@ -838,7 +837,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     const PetscInt *faces;
     PetscInt       numFaces, f;
 
-    ierr = DMPlexGetStratumIS(dm, labelName, ids[fs], &faceIS);CHKERRQ(ierr);
+    ierr = DMGetStratumIS(dm, labelName, ids[fs], &faceIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f, ++newf) {
@@ -872,16 +871,16 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(sdm, coordinates);CHKERRQ(ierr);
   /* Convert labels */
-  ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+  ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   for (l = 0; l < numLabels; ++l) {
     const char *lname;
     PetscBool  isDepth;
 
-    ierr = DMPlexGetLabelName(dm, l, &lname);CHKERRQ(ierr);
+    ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
-    ierr = DMPlexCreateLabel(sdm, lname);CHKERRQ(ierr);
-    ierr = DMPlexGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
+    ierr = DMCreateLabel(sdm, lname);CHKERRQ(ierr);
+    ierr = DMGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
     ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
     for (fs = 0; fs < numFS; ++fs) {
@@ -889,13 +888,13 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
       const PetscInt *points;
       PetscInt       numPoints;
 
-      ierr = DMPlexGetStratumIS(dm, lname, ids[fs], &pointIS);CHKERRQ(ierr);
+      ierr = DMGetStratumIS(dm, lname, ids[fs], &pointIS);CHKERRQ(ierr);
       ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
       ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
       for (p = 0; p < numPoints; ++p) {
         PetscInt newpoint = points[p];
 
-        ierr = DMPlexSetLabelValue(sdm, lname, newpoint, ids[fs]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue(sdm, lname, newpoint, ids[fs]);CHKERRQ(ierr);
       }
       ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
@@ -1091,7 +1090,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelFunctionalSetFromOptions"
-static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *PetscOptionsObject)
+static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptionItems *PetscOptionsObject)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -1367,10 +1366,10 @@ int main(int argc, char **argv)
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {
-    PetscErrorCode (*physcreate)(DM,Model,Physics,PetscOptions*);
+    PetscErrorCode (*physcreate)(DM,Model,Physics,PetscOptionItems*);
     char             physname[256]  = "advect";
 
-    ierr = DMPlexCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);

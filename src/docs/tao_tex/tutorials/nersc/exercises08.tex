@@ -62,8 +62,8 @@ on a single processor.
   (or \texttt{ \% make rosenbrock1f} for Fortran users)
 
  \item Execute the program with \\
-  \quad \texttt{ \% mpirun -np 1 ./rosenbrock1 -tao\_monitor -tao\_view} \\
-  (or \texttt{ \% mpirun -np 1 ./rosenbrock1f -tao\_monitor -tao\_view}) \\
+  \quad \texttt{ \% mpiexec -n 1 ./rosenbrock1 -tao\_monitor -tao\_view} \\
+  (or \texttt{ \% mpiexec -n 1 ./rosenbrock1f -tao\_monitor -tao\_view}) \\
 
   What method was used to solve the problem?
   What is the function value at the final iterate? 
@@ -85,7 +85,7 @@ Compile and execute the \texttt{minsurf2} example using
     
 \texttt{\% make minsurf2}
 
-\texttt{\% mpirun -np 2 ./minsurf2 -tao\_monitor -tao\_view}
+\texttt{\% mpiexec -n 2 ./minsurf2 -tao\_monitor -tao\_view}
 
 \item
 This problem uses the variables {\tt mx} and {\tt my} to determine
@@ -93,7 +93,7 @@ the discretization of the grid.  By default, these values are set to
 $4$ ($4 \times 4 = 16$ variables). Increase the discretization of the 
 domain by using the command 
 
-\texttt{\% mpirun -np 2 ./minsurf2 -tao\_monitor -tao\_view -mx 20 -my 20}
+\texttt{\% mpiexec -n 2 ./minsurf2 -tao\_monitor -tao\_view -mx 20 -my 20}
 
 How does this affect the solution?
 Try different solvers using the option \texttt{-tao\_method} followed by
@@ -101,11 +101,6 @@ Try different solvers using the option \texttt{-tao\_method} followed by
 \texttt{tao\_lmvm}, \texttt{tao\_ntr}, or \texttt{tao\_nls}.
 How many iterations do the different solvers require to solve the problem?
 
-\item
-Set the tolerances to increase the precision of the solution by adding the
-command line options \texttt{-tao\_frtol 0 -tao\_fatol 1e-8}
-
-Now how many iterations does each solver take?
 
 \item
 Execute the programs from the last step again, but this time use the command line option 
@@ -118,7 +113,7 @@ each algorithm takes to solve the problem. How many floating point operations (f
 \item
 Run the problem \texttt{minsurf2.c} on four processors and view the output.
 
-\texttt{\% mpirun -np 4 ./minsurf2 -tao\_monitor -mx 20 -my 20 -log\_summary}
+\texttt{\% mpiexec -n 4 ./minsurf2 -tao\_monitor -mx 20 -my 20 -log\_summary}
 
 \end{itemize}
 

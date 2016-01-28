@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   data.dx      = 1.0/(data.m+1.0);
   data.dy      = 1.0/(data.n+1.0);
   mn           = (data.m)*(data.n);
-  ierr         = PetscOptionsGetInt(NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
 
   /* set initial conditions */
   ierr = VecCreate(PETSC_COMM_WORLD,&global);CHKERRQ(ierr);
@@ -105,16 +105,16 @@ int main(int argc,char **argv)
   ierr = MatSeqAIJSetPreallocation(J,5,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(J,5,NULL,5,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-ts_fd",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-ts_fd",&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
   } else {
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
     if (fd_jacobian_coloring) { /* Use finite differences with coloring */
       /* Get data structure of J */
       PetscBool pc_diagonal;
-      ierr = PetscOptionsHasName(NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(NULL,NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
       if (pc_diagonal) { /* the preconditioner of J is a diagonal matrix */
         PetscInt    rstart,rend,i;
         PetscScalar zero=0.0;
@@ -159,12 +159,12 @@ int main(int argc,char **argv)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   /* Test TSSetPostStep() */
-  ierr = PetscOptionsHasName(NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetInt(NULL,"-NOUT",&NOUT,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-NOUT",&NOUT,NULL);CHKERRQ(ierr);
   for (iout=1; iout<=NOUT; iout++) {
     ierr = TSSetDuration(ts,time_steps,iout*ftime_original/NOUT);CHKERRQ(ierr);
     ierr = TSSolve(ts,global);CHKERRQ(ierr);
@@ -175,11 +175,12 @@ int main(int argc,char **argv)
   ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
   ierr = TSInterpolate(ts,ftime_original,global);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-matlab_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-matlab_view",&flg);CHKERRQ(ierr);
   if (flg) { /* print solution into a MATLAB file */
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(global,viewfile);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewfile);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewfile);CHKERRQ(ierr);
   }
 
@@ -263,16 +264,12 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   PetscErrorCode    ierr;
   const PetscScalar *tmp;
   PetscReal         maxtime;
-  Data              *data  = (Data*)ctx;
-  PetscReal         tfinal = data->tfinal;
 
   PetscFunctionBeginUser;
-  if (time > tfinal) PetscFunctionReturn(0);
-
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   /* display output at selected time steps */
   ierr = TSGetDuration(ts, &maxsteps, &maxtime);CHKERRQ(ierr);
-  if (nsteps % 10 != 0 && time < maxtime) PetscFunctionReturn(0);
+  if (nsteps % 10 != 0) PetscFunctionReturn(0);
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);

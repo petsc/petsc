@@ -84,10 +84,10 @@ int main( int argc, char **argv )
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(NULL,"-mx",&user.nx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my",&user.ny,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-ecc",&user.ecc,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-b",&user.b,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.nx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.ny,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-ecc",&user.ecc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-b",&user.b,&flg);CHKERRQ(ierr);
 
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n");CHKERRQ(ierr);
@@ -153,11 +153,11 @@ int main( int argc, char **argv )
     ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(NULL,"-testmonitor",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-testmonitor",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TaoSetMonitor(tao,Monitor,&user,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(NULL,"-testconvergence",&flg);
+  ierr = PetscOptionsHasName(NULL,NULL,"-testconvergence",&flg);
   if (flg) {
     ierr = TaoSetConvergenceTest(tao,ConvergenceTest,&user);CHKERRQ(ierr);
   }

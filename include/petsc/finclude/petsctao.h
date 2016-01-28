@@ -4,8 +4,6 @@
 !
 #include "petsc/finclude/petsctaodef.h"
 
-      PetscEnum TAO_CONVERGED_FATOL
-      PetscEnum TAO_CONVERGED_FRTOL
       PetscEnum TAO_CONVERGED_GATOL
       PetscEnum TAO_CONVERGED_GRTOL
       PetscEnum TAO_CONVERGED_GTTOL
@@ -20,8 +18,6 @@
       PetscEnum TAO_DIVERGED_USER
       PetscEnum TAO_CONTINUE_ITERATING
 
-      parameter ( TAO_CONVERGED_FATOL = 1)
-      parameter ( TAO_CONVERGED_FRTOL = 2)
       parameter ( TAO_CONVERGED_GATOL = 3)
       parameter ( TAO_CONVERGED_GRTOL = 4)
       parameter ( TAO_CONVERGED_GTTOL = 5)

@@ -52,20 +52,20 @@ int main(int argc,char **argv)
   Mat            A,A_tmp,P,C,C1,C2;
   PetscScalar    *array,none = -1.0,alpha;
   Vec            x,v1,v2,v3,v4;
-  PetscReal      norm,norm_tmp,norm_tmp1,tol=1.e-12;
+  PetscReal      norm,norm_tmp,norm_tmp1,tol=100.*PETSC_MACHINE_EPSILON;
   PetscRandom    rdm;
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
 
   PetscInitialize(&argc,&argv,NULL,help);
-  ierr = PetscOptionsGetReal(NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
 
   user.ratio     = 2;
   user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
 
-  ierr = PetscOptionsGetInt(NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-Mz",&user.coarse.mz,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Mz",&user.coarse.mz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
 
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
@@ -75,9 +75,9 @@ int main(int argc,char **argv)
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-Npx",&Npx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-Npy",&Npy,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-Npz",&Npz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Npx",&Npx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Npy",&Npy,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Npz",&Npz,NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   if (!Test_3D) {

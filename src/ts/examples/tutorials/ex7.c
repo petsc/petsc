@@ -74,14 +74,14 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MyTSMonitor,0,0);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MyTSMonitor,PETSC_VIEWER_STDOUT_WORLD,NULL);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESMonitorSet(snes,MySNESMonitor,NULL,NULL);
+  ierr = SNESMonitorSet(snes,MySNESMonitor,PETSC_VIEWER_STDOUT_WORLD,NULL);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

@@ -19,7 +19,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, interpolate, &dm);CHKERRQ(ierr);
   /* Distribute mesh over processes */
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   /* Prescribe a Dirichlet condition on u on the boundary
        Label "marker" is made by the mesh creation routine */
   bcField[0] = 0;
-  ierr = DMPlexGetStratumIS(dm, "marker", 1, &bcPointIS[0]);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(dm, "marker", 1, &bcPointIS[0]);CHKERRQ(ierr);
   /* Create a PetscSection with this data layout */
   ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcField, NULL, bcPointIS, NULL, &section);CHKERRQ(ierr);
   ierr = ISDestroy(&bcPointIS[0]);CHKERRQ(ierr);
@@ -57,9 +57,10 @@ int main(int argc, char **argv)
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, "sol.vtk");CHKERRQ(ierr);
   ierr = VecView(u, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Cleanup */

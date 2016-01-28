@@ -55,6 +55,7 @@
       1 SNES Function norm 2.48893e-07 
         0 SNES Function norm 2.00224e-07 
         1 SNES Function norm < 1.e-11
+        2 SNES Function norm < 1.e-11
       0 SNES Function norm 1.83268e-07 
       1 SNES Function norm < 1.e-11
     0 SNES Function norm 0.00209089 
@@ -70,8 +71,8 @@ SNES Object: 1 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-      total number of linear solver iterations=1
-      total number of function evaluations=1
+      total number of linear solver iterations=2
+      total number of function evaluations=2
       SNESLineSearch Object:      (fas_coarse_)       1 MPI processes
         type: basic
         maxstep=1.000000e+08, minlambda=1.000000e-12
@@ -82,7 +83,7 @@ SNES Object: 1 MPI processes
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object:      (fas_coarse_)       1 MPI processes
@@ -98,7 +99,7 @@ SNES Object: 1 MPI processes
     SNES Object:    (fas_levels_1_)     1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
-      tolerances: relative=0, absolute=0, solution=0
+      tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=1
       total number of function evaluations=2
       norm schedule FINALONLY
@@ -114,7 +115,7 @@ SNES Object: 1 MPI processes
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object:      (fas_levels_1_)       1 MPI processes
@@ -131,7 +132,7 @@ SNES Object: 1 MPI processes
     SNES Object:    (fas_levels_2_)     1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
-      tolerances: relative=0, absolute=0, solution=0
+      tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=1
       total number of function evaluations=2
       norm schedule FINALONLY
@@ -147,7 +148,7 @@ SNES Object: 1 MPI processes
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object:      (fas_levels_2_)       1 MPI processes

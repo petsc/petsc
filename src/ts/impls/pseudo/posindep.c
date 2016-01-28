@@ -22,6 +22,7 @@ typedef struct {
   PetscReal dt_increment;                   /* scaling that dt is incremented each time-step */
   PetscReal dt_max;                         /* maximum time step */
   PetscBool increment_dt_from_initial_dt;
+  PetscReal fatol,frtol;
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
@@ -129,9 +130,12 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!pseudo->verify) {*flag = PETSC_TRUE; PetscFunctionReturn(0);}
 
-  ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
+  *flag = PETSC_TRUE;
+  ierr = TSFunctionDomainError(ts,ts->ptime,update,flag);CHKERRQ(ierr);
+  if(*flag && pseudo->verify) {
+    ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -171,6 +175,21 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
     ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
     ierr = PetscInfo2(ts,"step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (pseudo->fnorm < 0) {
+    ierr = VecZeroEntries(pseudo->xdot);CHKERRQ(ierr);
+    ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr);
+  }
+  if (pseudo->fnorm < pseudo->fatol) {
+    ts->reason = TS_CONVERGED_PSEUDO_FATOL;
+    ierr = PetscInfo3(ts,"step=%D, converged since fnorm %g < fatol %g\n",ts->steps,pseudo->fnorm,pseudo->frtol);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (pseudo->fnorm/pseudo->fnorm_initial < pseudo->frtol) {
+    ts->reason = TS_CONVERGED_PSEUDO_FRTOL;
+    ierr = PetscInfo4(ts,"step=%D, converged since fnorm %g / fnorm_initial %g < frtol %g\n",ts->steps,pseudo->fnorm,pseudo->fnorm_initial,pseudo->fatol);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (reject >= ts->max_reject) {
@@ -322,9 +341,6 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ts),&viewer);CHKERRQ(ierr);
-  }
   if (pseudo->fnorm < 0) {      /* The last computed norm is stale, recompute */
     ierr = VecZeroEntries(pseudo->xdot);CHKERRQ(ierr);
     ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func,PETSC_FALSE);CHKERRQ(ierr);
@@ -338,7 +354,7 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
-static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -359,6 +375,8 @@ static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,T
   }
   ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_pseudo_fatol","Tolerance for norm of function","",pseudo->fatol,&pseudo->fatol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_pseudo_frtol","Relative tolerance for norm of function","",pseudo->frtol,&pseudo->frtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -368,8 +386,19 @@ static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,T
 static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  PetscBool      isascii;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+    ierr = PetscViewerASCIIPrintf(viewer,"Parameters for pseudo timestepping\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  frtol - relative tolerance in function value %g\n",(double)pseudo->frtol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  fatol - absolute tolerance in function value %g\n",(double)pseudo->fatol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  dt_initial - initial timestep %g\n",(double)pseudo->dt_initial);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  dt_increment - increase in timestep on successful step %g\n",(double)pseudo->dt_increment);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  dt_max - maximum time %g\n",(double)pseudo->dt_max);CHKERRQ(ierr);
+  }
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -640,13 +669,15 @@ $    G(Y) = F(Y,(Y-X)/dt)
 
   Options database keys:
 +  -ts_pseudo_increment <real> - ratio of increase dt
--  -ts_pseudo_increment_dt_from_initial_dt <truth> - Increase dt as a ratio from original dt
+.  -ts_pseudo_increment_dt_from_initial_dt <truth> - Increase dt as a ratio from original dt
+.  -ts_pseudo_fatol <atol> - stop iterating when the function norm is less than atol
+-  -ts_pseudo_frtol <rtol> - stop iterating when the function norm divided by the initial function norm is less than rtol
 
   Level: beginner
 
   References:
-  Todd S. Coffey and C. T. Kelley and David E. Keyes, Pseudotransient Continuation and Differential-Algebraic Equations, 2003.
-  C. T. Kelley and David E. Keyes, Convergence analysis of Pseudotransient Continuation, 1998.
++  1. - Todd S. Coffey and C. T. Kelley and David E. Keyes, Pseudotransient Continuation and Differential Algebraic Equations, 2003.
+-  2. - C. T. Kelley and David E. Keyes, Convergence analysis of Pseudotransient Continuation, 1998.
 
   Notes:
   The residual computed by this method includes the transient term (Xdot is computed instead of
@@ -693,7 +724,13 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   pseudo->increment_dt_from_initial_dt = PETSC_FALSE;
   pseudo->dt                           = TSPseudoTimeStepDefault;
   pseudo->fnorm                        = -1;
-
+ #if defined(PETSC_USE_REAL_SINGLE)
+  pseudo->fatol                        = 1.e-25;
+  pseudo->frtol                        = 1.e-5;
+#else
+  pseudo->fatol                        = 1.e-50;
+  pseudo->frtol                        = 1.e-12;
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetMaxTimeStep_C",TSPseudoSetMaxTimeStep_Pseudo);CHKERRQ(ierr);

@@ -513,7 +513,7 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCGTruncationType *truncstrat)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FCG"
-PetscErrorCode KSPSetFromOptions_FCG(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
@@ -551,10 +551,9 @@ PetscErrorCode KSPSetFromOptions_FCG(PetscOptions *PetscOptionsObject,KSP ksp)
    Level: beginner
 
   References:
-    1) Notay, Y."Flexible Conjugate Gradients", SIAM J. Sci. Comput. 22:4, pp 1444-1460, 2000
-
-    2) Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable-Step Preconditioning",
-    SIAM J. Matrix Anal. Appl. 12:4, pp 625-44, 1991
++    1. - Notay, Y."Flexible Conjugate Gradients", SIAM J. Sci. Comput. 22:4, 2000
+-    2. - Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable step Preconditioning",
+    SIAM J. Matrix Anal. Appl. 12:4, 1991
 
  .seealso : KSPGCR, KSPFGMRES, KSPCG, KSPFCGSetMmax(), KSPFCGGetMmax(), KSPFCGSetNprealloc(), KSPFCGGetNprealloc(), KSPFCGSetTruncationType(), KSPFCGGetTruncationType()
 

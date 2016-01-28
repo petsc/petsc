@@ -35,11 +35,11 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,dd->M,dd->m,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",info.xs,info.xs+info.xm);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     } else {
       ierr = DMView_DA_VTK(da, viewer);CHKERRQ(ierr);
     }
@@ -142,8 +142,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   */
   if (!lx) {
     ierr = PetscMalloc1(m, &dd->lx);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(NULL,"-da_partition_blockcomm",&flg1,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(NULL,"-da_partition_nodes_at_end",&flg2,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)da)->options,((PetscObject)da)->prefix,"-da_partition_blockcomm",&flg1,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)da)->options,((PetscObject)da)->prefix,"-da_partition_nodes_at_end",&flg2,NULL);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
       xs = rank*M/m;
       x  = (rank + 1)*M/m - xs;

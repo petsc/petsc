@@ -14,12 +14,18 @@ static PetscErrorCode TSStep_Euler(TS ts)
   TS_Euler       *euler = (TS_Euler*)ts->data;
   Vec            sol    = ts->vec_sol,update = euler->update;
   PetscErrorCode ierr;
+  PetscBool      accept;
 
   PetscFunctionBegin;
   ierr = TSPreStep(ts);CHKERRQ(ierr);
   ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
   ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
   ierr = VecAXPY(sol,ts->time_step,update);CHKERRQ(ierr);
+  ierr = TSFunctionDomainError(ts,ts->ptime,sol,&accept);CHKERRQ(ierr);
+  if(!accept) {
+    ts->reason = TS_DIVERGED_STEP_REJECTED;
+    PetscFunctionReturn(0);
+  }
   ierr = TSPostStage(ts,ts->ptime,0,&sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
   ts->steps++;
@@ -33,8 +39,13 @@ static PetscErrorCode TSSetUp_Euler(TS ts)
 {
   TS_Euler       *euler = (TS_Euler*)ts->data;
   PetscErrorCode ierr;
+  TSRHSFunction  rhsfunction;
+  TSIFunction    ifunction;
 
   PetscFunctionBegin;
+  ierr =  TSGetIFunction(ts,NULL,&ifunction,NULL);CHKERRQ(ierr);
+  ierr =  TSGetRHSFunction(ts,NULL,&rhsfunction,NULL);CHKERRQ(ierr);
+  if (!rhsfunction || ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must define RHSFunction() and leave IFunction() undefined in order to use -ts_type euler");
   ierr = VecDuplicate(ts->vec_sol,&euler->update);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -66,7 +77,7 @@ static PetscErrorCode TSDestroy_Euler(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Euler"
-static PetscErrorCode TSSetFromOptions_Euler(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Euler(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -31,7 +31,7 @@ struct _TSOps {
   PetscErrorCode (*solve)(TS);
   PetscErrorCode (*interpolate)(TS,PetscReal,Vec);
   PetscErrorCode (*evaluatestep)(TS,PetscInt,Vec,PetscBool*);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,TS);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TS);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS,PetscViewer);
   PetscErrorCode (*reset)(TS);
@@ -55,10 +55,14 @@ struct _TSTrajectoryOps {
   PetscErrorCode (*destroy)(TSTrajectory);
   PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
   PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal*);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TSTrajectory);
+  PetscErrorCode (*setup)(TSTrajectory,TS);
 };
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
+  PetscInt setupcalled;             /* true if setup has been called */
+  PetscInt recomps;                 /* counter for recomputations in the adjoint run */
   void *data;
 };
 
@@ -75,11 +79,16 @@ struct _p_TS {
   PetscErrorCode (*monitordestroy[MAXTSMONITORS])(void**);
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
+  PetscErrorCode (*adjointmonitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
+  PetscErrorCode (*adjointmonitordestroy[MAXTSMONITORS])(void**);
+  void *adjointmonitorcontext[MAXTSMONITORS];
+  PetscInt  numberadjointmonitors;
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
+  PetscErrorCode (*functiondomainerror)(TS,PetscReal,Vec,PetscBool*);
 
   /* ---------------------- Sensitivity Analysis support -----------------*/
   TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
@@ -182,14 +191,14 @@ struct _TSAdaptOps {
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*reset)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,TSAdapt);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TSAdapt);
   PetscErrorCode (*load)(TSAdapt,PetscViewer);
 };
 
 struct _p_TSAdapt {
   PETSCHEADER(struct _TSAdaptOps);
   void *data;
-  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscBool*);
+  PetscErrorCode (*checkstage)(TSAdapt,TS,PetscReal,Vec,PetscBool*);
   struct {
     PetscInt   n;                /* number of candidate schemes, including the one currently in use */
     PetscBool  inuse_set;        /* the current scheme has been set */
@@ -293,7 +302,7 @@ PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
 PETSC_EXTERN PetscErrorCode TSAdjointEventMonitor(TS);
 PETSC_EXTERN PetscErrorCode TSEventMonitorInitialize(TS);
 
-PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+PETSC_EXTERN PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of step */
               TS_STEP_PENDING,    /* vec_sol advanced, but step has not been accepted yet */
@@ -318,5 +327,6 @@ struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
 
+PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, Disk_Write, Disk_Read;
 
 #endif

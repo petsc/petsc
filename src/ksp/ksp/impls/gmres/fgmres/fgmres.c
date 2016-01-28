@@ -42,13 +42,16 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&fgmres->prevecs);CHKERRQ(ierr);
-  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&fgmres->prevecs_user_work);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
+  ierr = PetscMalloc1(max_k+2,&fgmres->prevecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(max_k+2,&fgmres->prevecs_user_work);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(max_k+2)*(2*sizeof(void*)));CHKERRQ(ierr);
 
-  ierr = KSPCreateVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
-  for (k=0; k < fgmres->vv_allocated; k++) {
+  /* fgmres->vv_allocated includes extra work vectors, which are not used in the additional
+     block of vectors used to store the preconditioned directions, hence  the -VEC_OFFSET
+     term for this first allocation of vectors holding preconditioned directions */
+  ierr = KSPCreateVecs(ksp,fgmres->vv_allocated-VEC_OFFSET,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
+  ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated-VEC_OFFSET,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
+  for (k=0; k < fgmres->vv_allocated - VEC_OFFSET ; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   }
   PetscFunctionReturn(0);
@@ -121,6 +124,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* initial residual is in VEC_VV(0)  - compute its norm*/
   ierr = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,res_norm);
 
   /* first entry in right-hand-side of hessenberg system is just
      the initial residual norm */
@@ -512,7 +516,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
   ierr = KSPCreateVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
-    fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
+    fgmres->prevecs[it+k] = fgmres->prevecs_user_work[nwork][k];
   }
 
   /* increment the number of work vector chunks */
@@ -563,7 +567,7 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FGMRES"
-PetscErrorCode KSPSetFromOptions_FGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_FGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -605,8 +609,13 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);
-  for (i=0; i<fgmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(fgmres->mwork_alloc[i],&fgmres->prevecs_user_work[i]);CHKERRQ(ierr);
+  if(fgmres->nwork_alloc>0){
+    i=0;
+    /* In the first allocation we allocated VEC_OFFSET fewer vectors in prevecs */
+    ierr = VecDestroyVecs(fgmres->mwork_alloc[i]-VEC_OFFSET,&fgmres->prevecs_user_work[i]);CHKERRQ(ierr);
+    for (i=1; i<fgmres->nwork_alloc; i++) {
+      ierr = VecDestroyVecs(fgmres->mwork_alloc[i],&fgmres->prevecs_user_work[i]);CHKERRQ(ierr);
+    }
   }
   ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);
   if (fgmres->modifydestroy) {

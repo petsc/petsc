@@ -8,6 +8,7 @@ class Configure(config.package.CMakePackage):
     self.includes          = ['parmetis.h']
     self.liblist           = [['libparmetis.a']]
     self.needsMath         = 1
+    self.hastests          = 1
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)

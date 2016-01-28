@@ -19,7 +19,7 @@
       VecScatter   ctx
 
       n    = 5
-      zero = 0.d0
+      zero = 0.0
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)

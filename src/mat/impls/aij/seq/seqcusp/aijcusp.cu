@@ -3,14 +3,13 @@
   matrix storage format.
 */
 #define PETSC_SKIP_COMPLEX
+#define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
-PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <petscbt.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/vecimpl.h>
-PETSC_CUDA_EXTERN_C_END
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
 
@@ -79,7 +78,7 @@ PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSP"
-PetscErrorCode MatSetFromOptions_SeqAIJCUSP(PetscOptions *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_SeqAIJCUSP(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   Mat_SeqAIJCUSP       *cuspMat = (Mat_SeqAIJCUSP*)A->spptr;
   PetscErrorCode       ierr;
@@ -231,9 +230,8 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
     if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
       try {
         mat = Agpu;
-        if (a->compressedrow.use) {
-          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Cannot handle row compression for GPU matrices");
-        } else {
+        if (a->compressedrow.use) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Cannot handle row compression for GPU matrices");
+        else {
           PetscInt i;
 
           if (m+1 != (PetscInt) mat->row_offsets.size()) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", mat->row_offsets.size()-1, m);
@@ -276,9 +274,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
     /* delete the temporary */
     if (cuspstruct->format==MAT_CUSP_ELL || cuspstruct->format==MAT_CUSP_DIA)
       delete (CUSPMATRIX*) mat;
-  } else {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only valid for unallocated GPU matrices");
-  }
+  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only valid for unallocated GPU matrices");
   PetscFunctionReturn(0);
 }
 
@@ -557,8 +553,6 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 }
 
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt*,const PetscScalar*);
-
-PETSC_EXTERN PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"

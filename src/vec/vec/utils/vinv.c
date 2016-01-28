@@ -169,12 +169,12 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
     PetscScalar sum = 0.0;
     for (i=0; i<n; i+=bs) sum += x[i]*(PetscConj(x[i]));
     tnorm = PetscRealPart(sum);
-    ierr  = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
     *nrm  = PetscSqrtReal(*nrm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
     for (i=0; i<n; i+=bs) tnorm += PetscAbsScalar(x[i]);
-    ierr = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     tnorm = 0.0;
@@ -184,7 +184,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
       /* check special case of tmp == NaN */
       if (tmp != tmp) {tnorm = tmp; break;}
     }
-    ierr = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -257,7 +257,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else {
     PetscReal in[2],out[2];
     PetscInt  rstart;
@@ -265,7 +265,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in[0] = max;
     in[1] = rstart+id+start;
-    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
@@ -339,7 +339,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
   } else {
     PetscReal in[2],out[2];
     PetscInt  rstart;
@@ -347,7 +347,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in[0] = min;
     in[1] = rstart+id;
-    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
@@ -462,7 +462,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
     }
     for (j=0; j<bs; j++) tnorm[j]  = PetscRealPart(sum[j]);
 
-    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
     for (j=0; j<bs; j++) nrm[j] = PetscSqrtReal(nrm[j]);
   } else if (ntype == NORM_1) {
     for (j=0; j<bs; j++) tnorm[j] = 0.0;
@@ -471,7 +471,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
       for (j=0; j<bs; j++) tnorm[j] += PetscAbsScalar(x[i+j]);
     }
 
-    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     for (j=0; j<bs; j++) tnorm[j] = 0.0;
@@ -483,7 +483,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
         if (tmp != tmp) {tnorm[j] = tmp; break;}
       }
     }
-    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -548,7 +548,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
       }
     }
   }
-  ierr = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -613,7 +613,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
       }
     }
   }
-  ierr   = MPI_Allreduce(min,nrm,bs,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+  ierr   = MPIU_Allreduce(min,nrm,bs,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1400,7 +1400,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
     work[0] = dpx;
     work[1] = nmx;
 
-    ierr = MPI_Allreduce(work,sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(work,sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
     *dp  = sum[0];
     *nm  = PetscRealPart(sum[1]);
 
@@ -1444,7 +1444,7 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) lsum += x[i];
-  ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1625,7 +1625,7 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
       }
     }
     /* combine results from all processors */
-    ierr = MPI_Allreduce(&flg1,flg,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)vec1));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&flg1,flg,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)vec1));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

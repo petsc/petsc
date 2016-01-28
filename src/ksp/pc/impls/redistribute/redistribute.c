@@ -28,7 +28,7 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = MPI_Allreduce(&red->dcnt,&ncnt,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&red->dcnt,&ncnt,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    Number rows eliminated %D Percentage rows eliminated %g\n",ncnt,100.0*((PetscReal)ncnt)/((PetscReal)N));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Redistribute preconditioner: \n");CHKERRQ(ierr);
@@ -104,7 +104,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     /* create PetscLayout for load-balanced non-diagonal rows on each process */
     ierr = PetscLayoutCreate(comm,&nmap);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(nmap,ncnt);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(nmap,1);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
@@ -275,7 +275,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redistribute"
-static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red = (PC_Redistribute*)pc->data;

@@ -44,7 +44,7 @@ PetscErrorCode DMPlexCopyBoundary(DM dm, DM dmNew)
   ierr = BoundaryDuplicate(mesh->boundary, &meshNew->boundary);CHKERRQ(ierr);
   for (b = meshNew->boundary; b; b = b->next) {
     if (b->labelname) {
-      ierr = DMPlexGetLabel(dmNew, b->labelname, &b->label);CHKERRQ(ierr);
+      ierr = DMGetLabel(dmNew, b->labelname, &b->label);CHKERRQ(ierr);
       if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
     }
   }
@@ -93,7 +93,7 @@ PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[]
   ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
   if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
   if (b->labelname) {
-    ierr = DMPlexGetLabel(dm, b->labelname, &b->label);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, b->labelname, &b->label);CHKERRQ(ierr);
     if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
   }
   b->essential   = isEssential;
@@ -138,7 +138,7 @@ PetscErrorCode DMPlexGetNumBoundary(DM dm, PetscInt *numBd)
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetBoundary"
 /*@C
-  DMPlexAddBoundary - Add a boundary condition to the model
+  DMPlexGetBoundary - Add a boundary condition to the model
 
   Input Parameters:
 + dm          - The mesh object

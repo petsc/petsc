@@ -14,7 +14,7 @@ int main(int argc,char *argv[])
   PetscMPIInt    rank,size;
 
   PetscInitialize(&argc,&argv,0,help);
-  ierr = PetscOptionsGetInt(0,"-dim",&dim,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,0,"-dim",&dim,0);CHKERRQ(ierr);
   switch (dim) {
   case 2:
     ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, -3,-5,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);

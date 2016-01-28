@@ -530,7 +530,7 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_IPM"
-static PetscErrorCode TaoSetFromOptions_IPM(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_IPM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
   PetscErrorCode ierr;
@@ -1118,8 +1118,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 200;
   if (!tao->max_funcs_changed) tao->max_funcs = 500;
-  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
 
   ipmP->dec = 10000; /* line search critera */
   ipmP->taumin = 0.995;

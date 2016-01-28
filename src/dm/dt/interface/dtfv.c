@@ -194,7 +194,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
   }
   if (lim->ops->setfromoptions) {ierr = (*lim->ops->setfromoptions)(lim);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject) lim);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) lim);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscLimiterViewFromOptions(lim, NULL, "-petsclimiter_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1193,7 +1193,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
   }
   if (fvm->ops->setfromoptions) {ierr = (*fvm->ops->setfromoptions)(fvm);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject) fvm);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscLimiterSetFromOptions(fvm->limiter);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscFVViewFromOptions(fvm, NULL, "-petscfv_view");CHKERRQ(ierr);
@@ -2079,11 +2079,13 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscScalar   *Brhs, *Aback;
   PetscScalar   *tmpwork;
   PetscReal      rcond;
+#if defined (PETSC_USE_COMPLEX)
+  PetscInt       rworkSize;
+  PetscReal     *rwork;
+#endif
   PetscInt       i, j, maxmn;
   PetscBLASInt   M, N, lda, ldb, ldwork;
-#if !defined(PETSC_USE_COMPLEX)
   PetscBLASInt   nrhs, irank, info;
-#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2107,13 +2109,18 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   ierr  = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
   rcond = -1;
   ierr  = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+  nrhs  = M;
 #if defined(PETSC_USE_COMPLEX)
-  if (tmpwork && rcond) rcond = 0.0; /* Get rid of compiler warning */
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "I don't think this makes sense for complex numbers");
+  rworkSize = 5 * PetscMin(M,N);
+  ierr  = PetscMalloc1(rworkSize,&rwork);CHKERRQ(ierr);
+  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,rwork,&info);
+  ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  ierr = PetscFree(rwork);CHKERRQ(ierr);
 #else
   nrhs  = M;
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
+#endif
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
   if (irank < PetscMin(M,N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
@@ -2124,7 +2131,6 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
     for (j=0; j<nrhs; j++) Ainv[i*mstride+j] = Brhs[i + j*maxmn];
   }
   PetscFunctionReturn(0);
-#endif
 }
 
 #if 0

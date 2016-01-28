@@ -4,7 +4,7 @@ iter =   2, Function value 4575.71, Residual: 4838.21
 iter =   3, Function value 4575.71, Residual: 1404.45 
 iter =   4, Function value 3627.39, Residual: 11279.7 
 iter =   5, Function value 2584.92, Residual: 16120.5 
-iter =   6, Function value 2584.92, Residual: 1144 
+iter =   6, Function value 2584.92, Residual: 1144. 
 iter =   7, Function value 2524.69, Residual: 257.614 
 iter =   8, Function value 2500.24, Residual: 1072.25 
 iter =   9, Function value 2418.14, Residual: 16.9207 
@@ -35,61 +35,19 @@ iter =  33, Function value 2384.48, Residual: 0.287332
 iter =  34, Function value 2384.48, Residual: 0.221247 
 iter =  35, Function value 2384.48, Residual: 0.0183748 
 iter =  36, Function value 2384.48, Residual: 0.0155711 
-iter =  37, Function value 2384.48, Residual: 0.0473476 
+iter =  37, Function value 2384.48, Residual: 0.0473477 
 iter =  38, Function value 2384.48, Residual: 0.00108411 
 iter =  39, Function value 2384.48, Residual: 0.0048771 
 iter =  40, Function value 2384.48, Residual: 0.000172833 
 iter =  41, Function value 2384.48, Residual: 5.48205e-06 
-4575.71	4.49423e+307
-4575.71	1815.3
-4575.71	4838.21
-4575.71	1404.45
-3627.39	11279.7
-2584.92	16120.5
-2584.92	1144
-2524.69	257.614
-2500.24	1072.25
-2418.14	16.9207
-2416.67	178.849
-2416.67	3.77357
-2415.51	10.0153
-2411.15	391.763
-2411.15	311.477
-2411.15	24.0925
-2410.86	141.568
-2410.86	9.82915
-2409.03	19.0147
-2405.37	187.39
-2405.37	36.1226
-2403.96	461.643
-2403.96	88.5303
-2401.43	125.358
-2400.63	71.9883
-2396.47	153.576
-2388.32	693.406
-2384.75	149.284
-2384.75	156.161
-2384.74	21.6925
-2384.74	3.76524
-2384.5	0.0942986
-2384.48	0.762272
-2384.48	0.287332
-2384.48	0.221247
-2384.48	0.0183748
-2384.48	0.0155711
-2384.48	0.0473476
-2384.48	0.00108411
-2384.48	0.0048771
-2384.48	0.000172833
-2384.48	5.48205e-06
 Tao Object: 1 MPI processes
   type: pounders
       initial delta: 0.1
       final delta: 0.0015625
       model points: 7
       subproblem solver: tron
-  convergence tolerances: fatol=0,   frtol=0
-  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
+      total subproblem iterations: 91
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=5.48205e-06
   Objective value=2384.48
   total number of iterations=41,                          (max: 100)

@@ -19,7 +19,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
 #endif
 
-PetscBool PetscDrawRegisterAllCalled;
+PetscBool PetscDrawRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawRegisterAll"

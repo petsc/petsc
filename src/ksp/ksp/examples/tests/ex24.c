@@ -13,17 +13,16 @@ int main(int argc,char **args)
   PetscInt       i,j,Ii,J,Istart,Iend,N,m = 4,n = 4,its,k;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscReal      err_norm,res_norm,err_tol=1.e-7,res_tol=1.e-6;
+  PetscReal      err_norm,res_norm;
   Vec            x,b,u,u_tmp;
-  PetscRandom    r;
   PC             pc;
   KSP            ksp;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   N    = m*n;
 
 
@@ -57,10 +56,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u_tmp);CHKERRQ(ierr);
   /* Set exact solution u; then compute right-hand-side vector b. */
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-  ierr = VecSetRandom(u,r);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+  ierr = VecSet(u,1.0);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
   for (k=0; k<3; k++) {
@@ -108,12 +104,8 @@ int main(int argc,char **args)
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-    if (res_norm > res_tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g;",(double)res_norm);CHKERRQ(ierr);
-    }
-    if (err_norm > err_tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %g.\n",(double)err_norm);CHKERRQ(ierr);
-    }
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g;",(double)res_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %g.\n",(double)err_norm);CHKERRQ(ierr);
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }
 

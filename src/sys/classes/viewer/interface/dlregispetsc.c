@@ -2,7 +2,7 @@
 #include <petscdraw.h>
 #include <petscviewer.h>
 
-extern PetscLogEvent PETSC_Barrier;
+extern PetscLogEvent PETSC_Barrier,PETSC_BuildTwoSided,PETSC_BuildTwoSidedF;
 
 static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -51,8 +51,10 @@ PetscErrorCode  PetscSysInitializePackage(void)
 
   /* Register Events */
   ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_CLASSID,&PETSC_Barrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("BuildTwoSided",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSided);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("BuildTwoSidedF",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSidedF);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "null", &className);CHKERRQ(ierr);
     if (className) {
@@ -60,7 +62,7 @@ PetscErrorCode  PetscSysInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "null", &className);CHKERRQ(ierr);
     if (className) {

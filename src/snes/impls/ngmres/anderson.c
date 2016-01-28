@@ -9,7 +9,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Anderson"
-PetscErrorCode SNESSetFromOptions_Anderson(PetscOptions *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
@@ -58,10 +58,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
-    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  }
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
@@ -145,7 +142,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
     ivec = k_restart % ngmres->msize;
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
       ierr = SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm);CHKERRQ(ierr);
-      ierr = SNESNGMRESSelectRestart_Private(snes,l,fnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
+      ierr = SNESNGMRESSelectRestart_Private(snes,l,fMnorm,fnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
       /* if the restart conditions persist for more than restart_it iterations, restart. */
       if (selectRestart) restart_count++;
       else restart_count = 0;
@@ -193,7 +190,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
 }
 
 /*MC
-  SNESAnderson - Anderson Mixing method.
+  SNESANDERSON - Anderson Mixing method.
 
    Level: beginner
 
@@ -210,10 +207,14 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
    The Anderson Mixing method combines m previous solutions into a minimum-residual solution by solving a small linearized
    optimization problem at each iteration.
 
-   References:
+   Very similar to the SNESNGMRES algorithm.
 
-    "D. G. Anderson. Iterative procedures for nonlinear integral equations.
-    J. Assoc. Comput. Mach., 12:547-560, 1965."
+   References:
++  1. -  D. G. Anderson. Iterative procedures for nonlinear integral equations.
+    J. Assoc. Comput. Mach., 12, 1965."
+-  2. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers", 
+   SIAM Review, 57(4), 2015
+
 
 .seealso: SNESNGMRES, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
@@ -259,4 +260,3 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
   ngmres->andersonBeta = 1.0;
   PetscFunctionReturn(0);
 }
-

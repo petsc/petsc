@@ -69,7 +69,7 @@ PetscErrorCode SNESSetUp_Shell(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Shell"
-PetscErrorCode SNESSetFromOptions_Shell(PetscOptions *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_Shell(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
 

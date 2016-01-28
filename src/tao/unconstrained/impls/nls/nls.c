@@ -167,7 +167,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
-  ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+  ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   needH = 1;
 
@@ -308,7 +308,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           ierr = VecAXPY(tao->solution,sigma,tao->gradient);CHKERRQ(ierr);
           ierr = TaoComputeGradient(tao,tao->solution,tao->gradient);CHKERRQ(ierr);
 
-          ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
+          ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           needH = 1;
 
@@ -891,7 +891,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     }
 
     /*  Check for termination */
-    ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
+    ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     needH = 1;
     ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
@@ -943,7 +943,7 @@ static PetscErrorCode TaoDestroy_NLS(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NLS"
-static PetscErrorCode TaoSetFromOptions_NLS(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_NLS(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -955,7 +955,7 @@ static PetscErrorCode TaoSetFromOptions_NLS(PetscOptions *PetscOptionsObject,Tao
   ierr = PetscOptionsEList("-tao_nls_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[nlsP->bfgs_scale_type], &nlsP->bfgs_scale_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_init_type", "radius initialization type", "", NLS_INIT, NLS_INIT_TYPES, NLS_INIT[nlsP->init_type], &nlsP->init_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_update_type", "radius update type", "", NLS_UPDATE, NLS_UPDATE_TYPES, NLS_UPDATE[nlsP->update_type], &nlsP->update_type, 0);CHKERRQ(ierr);
- ierr = PetscOptionsReal("-tao_nls_sval", "perturbation starting value", "", nlsP->sval, &nlsP->sval,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nls_sval", "perturbation starting value", "", nlsP->sval, &nlsP->sval,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_imin", "minimum initial perturbation", "", nlsP->imin, &nlsP->imin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_imax", "maximum initial perturbation", "", nlsP->imax, &nlsP->imax,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_imfac", "initial merit factor", "", nlsP->imfac, &nlsP->imfac,NULL);CHKERRQ(ierr);
@@ -1120,13 +1120,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 50;
   if (!tao->trust0_changed) tao->trust0 = 100.0;
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
-#else
-  if (!tao->fatol_changed) tao->fatol = 1.0e-10;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-10;
-#endif
 
   tao->data = (void*)nlsP;
 

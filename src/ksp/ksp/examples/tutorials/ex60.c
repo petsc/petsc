@@ -72,11 +72,7 @@ PetscErrorCode PCSetup_Noise(PC pc)
   PetscFunctionBeginUser;
   ierr = PCShellGetContext(pc,(void**)&ctx);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ctx->random);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(ctx->random,PETSCRAND);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(ctx->random,-1.0,1.0);CHKERRQ(ierr);
-
-  /* ctx->random could be randomly seeded here if desired */
-
   PetscFunctionReturn(0);
 }
 
@@ -158,9 +154,9 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Process command line options */
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-eta",&eta,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-diagfunc",&dfid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-eta",&eta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-diagfunc",&dfid,NULL);CHKERRQ(ierr);
   switch(dfid){
     case 1:
       diagfunc = diagFunc1;

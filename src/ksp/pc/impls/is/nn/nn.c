@@ -379,12 +379,13 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   /* for DEBUGGING, save the coarse matrix to a file. */
   {
     PetscBool flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-pc_nn_save_coarse_matrix",&flg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-pc_nn_save_coarse_matrix",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"coarse.m",&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
       ierr = MatView(pcnn->coarse_mat,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
   }
@@ -466,7 +467,7 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
   */
   {
     PetscBool flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-pc_nn_turn_off_first_balancing",&flg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-pc_nn_turn_off_first_balancing",&flg,NULL);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,(Vec)0,z,vec1_B,vec2_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
@@ -489,7 +490,7 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
   */
   {
     PetscBool flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-pc_turn_off_second_balancing",&flg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-pc_turn_off_second_balancing",&flg,NULL);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,vec1_B,z,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {

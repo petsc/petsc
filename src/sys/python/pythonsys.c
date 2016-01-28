@@ -16,7 +16,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
   PetscFunctionBegin;
   /* get the path for the Python interpreter executable */
   ierr = PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-python",pythonexe,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-python",pythonexe,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
   if (!flag || pythonexe[0]==0) {
     ierr = PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   }
@@ -318,9 +318,9 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(url,2);
-  if (PetscPythonMonitorSet_C == NULL) {
+  if (!PetscPythonMonitorSet_C) {
     ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
-    if (PetscPythonMonitorSet_C == NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Couldn't initialize Python support for monitors");
+    if (!PetscPythonMonitorSet_C) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Couldn't initialize Python support for monitors");
   }
   ierr = PetscPythonMonitorSet_C(obj,url);CHKERRQ(ierr);
   PetscFunctionReturn(0);

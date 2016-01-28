@@ -19,7 +19,8 @@ configure_options = [
   '--download-spai=1',
   '--download-parms=1',
   '--download-moab=1',
-  '--download-chaco=1'
+  '--download-chaco=1',
+  '--download-revolve=1',
   ]
 
 if __name__ == '__main__':

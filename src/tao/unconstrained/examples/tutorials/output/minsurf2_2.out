@@ -5,32 +5,23 @@ mx: 10     my: 10
 iter =   0, Function value 1.46076, Residual: 0.207785 
 iter =   0, Function value 1.43581, Residual: 0.187715 
 iter =   1, Function value 1.41867, Residual: 0.0159523 
-iter =   2, Function value 1.41847, Residual: 0.00014867 
-iter =   3, Function value 1.41847, Residual: < 1.0e-6 
+iter =   2, Function value 1.41847, Residual: 0.000148641 
 Tao Object: 2 MPI processes
   type: nls
       Rejected matrix updates: 0
-      Newton steps: 3
+      Newton steps: 2
       BFGS steps: 0
       Scaled gradient steps: 0
       Gradient steps: 0
-      nls ksp atol: 0
-      nls ksp rtol: 3
-      nls ksp ctol: 0
-      nls ksp negc: 0
-      nls ksp dtol: 0
-      nls ksp iter: 0
-      nls ksp othr: 0
   TaoLineSearch Object:   2 MPI processes
     type: more-thuente
   KSP Object:   2 MPI processes
     type: stcg
-  total KSP iterations: 56
-  convergence tolerances: fatol=1e-10,   frtol=1e-10
-  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=2.64453e-08
+  total KSP iterations: 30
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
+  Residual in Function/Gradient:=0.000148641
   Objective value=1.41847
-  total number of iterations=3,                          (max: 50)
-  total number of function/gradient evaluations=10,      (max: 4000)
-  total number of Hessian evaluations=4
-  Solution converged:   estimated f(x)-f(X*) <= fatol
+  total number of iterations=2,                          (max: 50)
+  total number of function/gradient evaluations=9,      (max: 4000)
+  total number of Hessian evaluations=3
+  Solution converged:    ||g(X)||/||g(X0)|| <= gttol

@@ -35,8 +35,9 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       n   = 20
-      one = 1.d0
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      one = 1.0
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+     &                        '-n',n,flg,ierr)
 
 !
 !     Create a vector, specifying only its global dimension.

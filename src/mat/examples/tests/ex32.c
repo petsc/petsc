@@ -27,7 +27,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&opt);CHKERRQ(ierr);
   if (!opt) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "No filename was specified for this test");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **args)
   ierr = PetscFree(brow);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = VecView(b,view);CHKERRQ(ierr);

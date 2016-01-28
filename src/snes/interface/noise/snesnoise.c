@@ -51,7 +51,7 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
 
   /* Open output file */
-  ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) neP->fp = fopen(noise_file,"w");
   else     neP->fp = fopen("noise.out","w");
   if (!neP->fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file");
@@ -212,7 +212,7 @@ theend:
   fcount = neP->function_count - fcount;
   ierr   = PetscInfo5(snes,"fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",fcount,neP->function_count,(double)rerrf,(double)PetscSqrtReal(*fnoise),(double)*hopt);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-noise_test",&noise_test,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-noise_test",&noise_test,NULL);CHKERRQ(ierr);
   if (noise_test) {
     ierr = JacMatMultCompare(snes,x,p,*hopt);CHKERRQ(ierr);
   }
@@ -254,11 +254,12 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   ierr = VecNorm(yy1,NORM_2,&yy1n);CHKERRQ(ierr);
 
   /* View product vector if desired */
-  ierr = PetscOptionsGetBool(NULL,"-print_vecs",&printv,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-print_vecs",&printv,NULL);CHKERRQ(ierr);
   if (printv) {
     ierr = PetscViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
     ierr = VecView(yy1,view2);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(view2);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&view2);CHKERRQ(ierr);
   }
 
@@ -277,8 +278,9 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
     if (printv) {
       sprintf(filename,"y2.%d.out",(int)i);
       ierr = PetscViewerASCIIOpen(comm,filename,&view2);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
       ierr = VecView(yy2,view2);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(view2);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&view2);CHKERRQ(ierr);
     }
 

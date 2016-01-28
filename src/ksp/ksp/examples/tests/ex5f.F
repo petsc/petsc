@@ -23,7 +23,7 @@
       m = 10
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      one = 1.d0
+      one = 1.0
       call KSPCreate(PETSC_COMM_SELF,ksp,ierr)
 
       call MatCreateShell(PETSC_COMM_SELF,m,m,m,m,PETSC_NULL_OBJECT,    &

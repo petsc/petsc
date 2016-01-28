@@ -14,9 +14,8 @@ typedef struct {
                           we still need to be able to convert from PETSc/blocked ordering to VC/VR ordering. */
   El::Grid                                     *grid;
   El::DistMatrix<PetscElemScalar>              *emat;
-  El::Matrix<PetscElemScalar>                  *esubmat; /* Used for adding off-proc matrix entries */
-  El::AxpyInterface<PetscElemScalar>           *interface;
   El::DistMatrix<PetscInt,El::VC,El::STAR> *pivot; /* pivot vector representing the pivot matrix P in PA = LU */
+  PetscBool roworiented;               /* if true, row oriented input (default) */
 } Mat_Elemental;
 
 typedef struct {

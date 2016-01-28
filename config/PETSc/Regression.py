@@ -26,8 +26,10 @@ class Configure(config.base.Configure):
     self.compilers      = framework.require('config.compilers', self)
     self.mpi            = framework.require('config.packages.MPI', self)
     self.elemental      = framework.require('config.packages.elemental', self)
+    self.superlu_dist   = framework.require('config.packages.SuperLU_DIST', self)
     self.x              = framework.require('config.packages.X', self)
     self.fortrancpp     = framework.require('PETSc.options.fortranCPP', self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     return
 
   def configureRegression(self):
@@ -41,6 +43,10 @@ class Configure(config.base.Configure):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
+      if self.libraryOptions.useInfo:
+        jobs.append('C_Info')
+      if not self.scalartypes.precision == 'single':
+        jobs.append('C_NotSingle')
       if hasattr(self.compilers, 'CXX'):
         rjobs.append('Cxx')
       if self.x.found:
@@ -49,8 +55,12 @@ class Configure(config.base.Configure):
         jobs.append('F90_DataTypes')
       elif hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
+        if not self.scalartypes.precision == 'single':
+          jobs.append('Fortran_NotSingle')
         if self.compilers.fortranIsF90:
           rjobs.append('F90')
+          if not self.scalartypes.precision == 'single':
+            jobs.append('F90_NotSingle')
           if self.scalartypes.scalartype.lower() == 'complex':
             rjobs.append('F90_Complex')
           else:
@@ -61,19 +71,28 @@ class Configure(config.base.Configure):
           rjobs.append('Fortran_Complex')
         else:
           rjobs.append('Fortran_NoComplex')
+          if not self.scalartypes.precision == 'single':
+            jobs.append('Fortran_NoComplex_NotSingle')
       if self.scalartypes.scalartype.lower() == 'complex':
         rjobs.append('C_Complex')
       else:
         rjobs.append('C_NoComplex')
+        if not self.scalartypes.precision == 'single':
+          jobs.append('C_NoComplex_NotSingle')
         if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
+          for j in self.framework.packages:
+            if j.hastestsdatafiles:
+                ejobs.append(j.name.upper()+'_DATAFILESPATH')
+        if self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
+          rjobs.append('DOUBLEINT32')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':
         for i in self.framework.packages:
-          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF','FBLASLAPACK','MAKE','MPICH','MATLABENGINE','HWLOC']:
+          if i.hastests:
             ejobs.append(i.name.upper())
           # horrible python here
           if i.name.upper() == 'MOAB':
@@ -82,8 +101,8 @@ class Configure(config.base.Configure):
                 ejobs.append('MOAB_HDF5')
       else:
         for i in self.framework.packages:
-          if i.name.upper() == 'FFTW':
-            jobs.append('FFTW_COMPLEX')
+          if i.name.upper() in ['FFTW','SUPERLU_DIST']:
+            jobs.append(i.name.upper()+ '_COMPLEX')
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return

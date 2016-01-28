@@ -66,7 +66,7 @@ typedef struct {
      This method has one explicit stage and one implicit stage.
 
      References:
-     U. Ascher, S. Ruuth, R. J. Spiteri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
+.   1. -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 
      Level: advanced
 
@@ -87,7 +87,7 @@ M*/
      This method has two implicit stages, and L-stable implicit scheme.
 
     References:
-     L. Pareschi, G. Russo, Implicit-Explicit Runge-Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005, pp. 129-155
+.   1. -  L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
 
      Level: advanced
 
@@ -135,7 +135,7 @@ M*/
      This method has three implicit stages.
 
      References:
-     L. Pareschi, G. Russo, Implicit-Explicit Runge-Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005, pp. 129-155
+.   1. -  L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
 
      This method is referred to as SSP2-(3,3,2) in http://arxiv.org/abs/1110.4375
 
@@ -149,7 +149,7 @@ M*/
      This method has one explicit stage and three implicit stages.
 
      References:
-     Kennedy and Carpenter 2003.
+.   1. -  Kennedy and Carpenter 2003.
 
      Level: advanced
 
@@ -161,9 +161,8 @@ M*/
      This method has one explicit stage and four implicit stages.
 
      References:
-     U. Ascher, S. Ruuth, R. J. Spiteri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
-
-     This method is referred to as ARS(4,4,3) in http://arxiv.org/abs/1110.4375
++   1. -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
+-   2. -  This method is referred to as ARS(4,4,3) in http://arxiv.org/abs/1110.4375
 
      Level: advanced
 
@@ -175,7 +174,7 @@ M*/
      This method has one explicit stage and four implicit stages.
 
      References:
-     This method is referred to as ARK3 in http://arxiv.org/abs/1110.4375
+ .    This method is referred to as ARK3 in http://arxiv.org/abs/1110.4375
 
      Level: advanced
 
@@ -187,7 +186,7 @@ M*/
      This method has one explicit stage and four implicit stages.
 
      References:
-     Kennedy and Carpenter 2003.
+.     Kennedy and Carpenter 2003.
 
      Level: advanced
 
@@ -199,7 +198,7 @@ M*/
      This method has one explicit stage and five implicit stages.
 
      References:
-     Kennedy and Carpenter 2003.
+.     Kennedy and Carpenter 2003.
 
      Level: advanced
 
@@ -706,9 +705,10 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscReal       next_time_step;
   PetscBool       accept;
   PetscErrorCode  ierr;
+  SNESConvergedReason snes_reason;
 
   PetscFunctionBegin;
-  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
+  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage && (!ts->event || (ts->event && ts->event->status != TSEVENT_PROCESSING))) {
     PetscReal valid_time;
     PetscBool isvalid;
     ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
@@ -755,9 +755,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     for (i=0; i<s; i++) {
       ark->stage_time = t + h*ct[i];
       if (At[i*s+i] == 0) {           /* This stage is explicit */
-        if(i!=0 && ts->equation_type>=TS_EQ_IMPLICIT){
-          SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Explicit stages other than the first one are not supported for implicit problems");
-        }
+        if(i!=0 && ts->equation_type>=TS_EQ_IMPLICIT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Explicit stages other than the first one are not supported for implicit problems");
         ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Y[i],i,w,YdotI);CHKERRQ(ierr);
@@ -786,7 +784,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr          = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
         ierr          = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-        ierr          = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+        ierr          = TSAdaptCheckStage(adapt,ts,ark->stage_time,Y[i],&accept);CHKERRQ(ierr);
         if (!accept) {
           /* We are likely rejecting the step because of solver or function domain problems so we should not attempt to
            * use extrapolation to initialize the solves on the next attempt. */
@@ -797,9 +795,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ierr = TSPostStage(ts,ark->stage_time,i,Y); CHKERRQ(ierr);
       if (ts->equation_type>=TS_EQ_IMPLICIT) {
         if (i==0 && tab->explicit_first_stage) {
-          if(!tab->stiffly_accurate ) {
-            SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s is not stiffly accurate and therefore explicit-first stage methods cannot be used if the equation is implicit because the slope cannot be evaluated",ark->tableau->name);
-          }
+          if(!tab->stiffly_accurate ) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s is not stiffly accurate and therefore explicit-first stage methods cannot be used if the equation is implicit because the slope cannot be evaluated",ark->tableau->name);
           ierr = VecCopy(Ydot0,YdotI[0]);CHKERRQ(ierr);                                      /* YdotI = YdotI(tn-1) */
         } else {
           ierr = VecAXPBYPCZ(YdotI[i],-ark->scoeff/h,ark->scoeff/h,0,Z,Y[i]);CHKERRQ(ierr);  /* YdotI = shift*(X-Z) */
@@ -856,7 +852,11 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     }
 reject_step: continue;
   }
-  if (ark->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
+  if (ark->status != TS_STEP_COMPLETE && !ts->reason){
+    ierr=SNESGetConvergedReason(snes,&snes_reason);CHKERRQ(ierr);
+    if(snes_reason<0) ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+    else ts->reason = TS_DIVERGED_STEP_REJECTED;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1166,7 +1166,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_ARKIMEX"
-static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;
