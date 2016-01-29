@@ -391,12 +391,12 @@ runex17_2:
 	   else printf "${PWD}\nPossible problem with ex17_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex17_1.tmp
 runex17_superlu_dist:
-	-@${MPIEXEC} -n 1 ./ex17 -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex17_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex17 -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_colperm MMD_ATA > ex17_1.tmp 2>&1; \
 	   if (${DIFF} output/ex17_superlu_dist.out ex17_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex17_superlu_dist, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex17_1.tmp
 runex17_superlu_dist_2:
-	-@${MPIEXEC} -n 3 ./ex17 -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex17_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex17 -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_colperm MMD_ATA > ex17_1.tmp 2>&1; \
 	   if (${DIFF} output/ex17_superlu_dist.out ex17_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex17_superlu_dist_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex17_1.tmp
