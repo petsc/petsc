@@ -2,6 +2,7 @@ import config.base
 
 import os
 import re
+import cPickle
 
 # The sorted() builtin is not available with python-2.3
 try: sorted
@@ -1067,6 +1068,10 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.dumpMachineInfo()
     self.dumpCMakeConfig()
     self.dumpCMakeLists()
+    # need to save the current state of BuildSystem so that postProcess() packages can read it in and perhaps run make install
+    self.framework.storeSubstitutions(self.framework.argDB)
+    self.framework.argDB['configureCache'] = cPickle.dumps(self.framework)
+    self.framework.argDB.save(force = True)
     self.postProcessPackages()
     self.cmakeBoot()
     self.DumpPkgconfig()

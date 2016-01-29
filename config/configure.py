@@ -190,8 +190,8 @@ def chksynonyms():
     sys.argv.extend(['--download-hypre'])
 
     sys.argv.extend(['--with-cxx-dialect=C++11'])
-    if not argsStartswith('--with-boost'): sys.argv.extend(['--download-boost'])
-    sys.argv.extend(['--download-trilinos'])
+#    if not argsStartswith('--with-boost'): sys.argv.extend(['--download-boost'])
+#    sys.argv.extend(['--download-trilinos'])
 
 
 def chkwinf90():
