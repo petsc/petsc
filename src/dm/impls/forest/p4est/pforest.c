@@ -58,6 +58,10 @@
 #define DMCreateDefaultSection_pforest        _append_pforest(DMCreateDefaultSection)
 #define DMCreateDefaultConstraints_pforest    _append_pforest(DMCreateDefaultConstraints)
 #define DMComputeL2Diff_pforest               _append_pforest(DMComputeL2Diff)
+#define VecView_pforest                       _append_pforest(VecView)
+#define VecView_pforest_Native                _infix_pforest(VecView,_Native)
+#define VecLoad_pforest                       _append_pforest(VecLoad)
+#define VecLoad_pforest_Native                _infix_pforest(VecLoad,_Native)
 
 static PetscErrorCode DMConvert_pforest_plex(DM,DMType,DM*);
 
@@ -2403,21 +2407,87 @@ static PetscErrorCode DMCreateCoordinateDM_pforest(DM dm,DM *cdm)
   PetscFunctionReturn(0);
 }
 
-#if 0
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(VecView_pforest)
+static PetscErrorCode VecView_pforest(Vec vec,PetscViewer viewer)
+{
+  DM             dm, plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(vec,&dm);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,plex);CHKERRQ(ierr);
+  ierr = VecView_Plex(vec,viewer);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(VecView_pforest_Native)
+static PetscErrorCode VecView_pforest_Native(Vec vec,PetscViewer viewer)
+{
+  DM             dm, plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(vec,&dm);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,plex);CHKERRQ(ierr);
+  ierr = VecView_Plex_Native(vec,viewer);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(VecLoad_pforest)
+static PetscErrorCode VecLoad_pforest(Vec vec,PetscViewer viewer)
+{
+  DM             dm, plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(vec,&dm);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,plex);CHKERRQ(ierr);
+  ierr = VecLoad_Plex(vec,viewer);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(VecLoad_pforest_Native)
+static PetscErrorCode VecLoad_pforest_Native(Vec vec,PetscViewer viewer)
+{
+  DM             dm, plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(vec,&dm);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,plex);CHKERRQ(ierr);
+  ierr = VecLoad_Plex_Native(vec,viewer);CHKERRQ(ierr);
+  ierr = VecSetDM(vec,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateGlobalVector_pforest)
 static PetscErrorCode DMCreateGlobalVector_pforest(DM dm,Vec *vec)
 {
-  DM                plex;
-  PetscErrorCode    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(plex,vec);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector_Section_Private(dm,vec);CHKERRQ(ierr);
+  /* ierr = VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM);CHKERRQ(ierr); */
+  ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_pforest);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_VIEWNATIVE, (void (*)(void)) VecView_pforest_Native);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_LOAD, (void (*)(void)) VecLoad_pforest);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_LOADNATIVE, (void (*)(void)) VecLoad_pforest_Native);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateLocalVector_pforest)
 static PetscErrorCode DMCreateLocalVector_pforest(DM dm,Vec *vec)
@@ -2531,7 +2601,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->view                      = DMView_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
-  dm->ops->createglobalvector        = DMCreateGlobalVector_Section_Private;
+  dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
   dm->ops->createlocalvector         = DMCreateLocalVector_Section_Private;
   dm->ops->creatematrix              = DMCreateMatrix_pforest;
   dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
