@@ -216,6 +216,7 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   ierr = DMFTopologyDestroy_pforest(&pforest->topo);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",NULL);CHKERRQ(ierr);
+  ierr = PetscFree(pforest->ghostName);CHKERRQ(ierr);
   ierr = DMDestroy(&pforest->plex);CHKERRQ(ierr);
   ierr = PetscFree(forest->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
