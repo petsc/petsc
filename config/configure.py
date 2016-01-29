@@ -128,11 +128,17 @@ def chkenable():
         if tail == '1': tail = '0'
         sys.argv[l] = head.replace('without-','with-')+'='+tail
 
-def argsStartswith(value):
-  # if the args have an argument that starts with a given value
+def argsAddDownload(value,deps = [],options = []):
+  # Adds --download-value to args if the command line DOES NOT already has --with-value or --download-value in it
+  # this is to prevent introducing conflicting arguments to ones that already exist
   for i in sys.argv:
-    if i.startswith(value): return 1
-  return 0
+    if i.startswith("--with-"+value): return
+    if i.startswith("--download-"+value): return
+  sys.argv.append('--download-'+value)
+  for i in deps:
+    argsAddDownload(i)
+  for i in options:
+    sys.argv.append(i)
 
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
@@ -141,10 +147,10 @@ def chksynonyms():
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
 
-    if name.startswith('--download-xsdk'): 
+    if name.startswith('--download-xsdk'):
       downloadxsdk = 1
 
-    if name.startswith('--download-ideas'): 
+    if name.startswith('--download-ideas'):
       downloadideas = 1
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
@@ -176,22 +182,24 @@ def chksynonyms():
         sys.argv[l]='--with-precision=__float128'
 
   if downloadideas:
-    downloadxsdk = 1 # mstk currently cannot build a shared library
-    sys.argv.extend(['--download-pflotran','--download-alquimia','--download-mstk','--download-mstk-shared=0'])
+    downloadxsdk = 1
+    argsAddDownload('pflotran')
+    argsAddDownload('alquimia')
+    # mstk currently cannot build a shared library
+    argsAddDownload('mstk',[],['--download-mstk-shared=0'])
 
   if downloadxsdk:
     # Common external libraries
-    if not argsStartswith('--with-hdf5'): sys.argv.extend(['--download-hdf5'])
-    if not argsStartswith('--with-netcdf'): sys.argv.extend(['--download-netcdf'])
-    if not argsStartswith('--with-exodusii'): sys.argv.extend(['--download-exodusii'])
-    sys.argv.extend(['--download-metis'])
+    argsAddDownload('hdf5')
+    argsAddDownload('netcdf')
+    argsAddDownload('exodusii')
+    argsAddDownload('metis')
 
-    sys.argv.extend(['--download-parmetis','--download-superlu_dist'])
-    sys.argv.extend(['--download-hypre'])
+    argsAddDownload('superlu_dist',['parmetis'])
 
-    sys.argv.extend(['--with-cxx-dialect=C++11'])
-#    if not argsStartswith('--with-boost'): sys.argv.extend(['--download-boost'])
-#    sys.argv.extend(['--download-trilinos'])
+    argsAddDownload('hypre')
+
+    argsAddDownload('trilinos',['boost'],['--with-cxx-dialect=C++11'])
 
 
 def chkwinf90():
