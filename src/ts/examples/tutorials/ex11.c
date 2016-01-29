@@ -1213,7 +1213,6 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
   if (stepnum >= 0) {           /* No summary for final time */
     Model             mod = user->model;
@@ -1229,13 +1228,16 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       fmax[i]      = PETSC_MIN_REAL;
       fintegral[i] = 0;
     }
-    ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
     ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dmCell, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dmCell,0,&cStart,&cEnd);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     for (c = cStart; c < cEndInterior; ++c) {
       const PetscFVCellGeom *cg;
       const PetscScalar     *cx;
+      /* not that these two routines as currently implemented work for any dm with a
+       * defaultSection/defaultGlobalSection */
       ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
       ierr = DMPlexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
       if (!cx) continue;        /* not a global cell */

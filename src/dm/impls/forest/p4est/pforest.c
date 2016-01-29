@@ -2401,6 +2401,7 @@ static PetscErrorCode DMCreateCoordinateDM_pforest(DM dm,DM *cdm)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateGlobalVector_pforest)
 static PetscErrorCode DMCreateGlobalVector_pforest(DM dm,Vec *vec)
@@ -2415,7 +2416,6 @@ static PetscErrorCode DMCreateGlobalVector_pforest(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#if 0
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateLocalVector_pforest)
 static PetscErrorCode DMCreateLocalVector_pforest(DM dm,Vec *vec)
@@ -2529,7 +2529,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->view                      = DMView_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
-  dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
+  dm->ops->createglobalvector        = DMCreateGlobalVector_Section_Private;
   dm->ops->createlocalvector         = DMCreateLocalVector_Section_Private;
   dm->ops->creatematrix              = DMCreateMatrix_pforest;
   dm->ops->projectfunctionlocal      = DMProjectFunctionLocal_pforest;
