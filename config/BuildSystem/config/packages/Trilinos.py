@@ -55,6 +55,16 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=RELEASE')
       args.append('-DXSDK_ENABLE_DEBUG=NO')
 
+    # Roscoe says I should to this
+    args.append('-DTrilinos_ENABLE_EXPLICIT_INSTANTIATION=ON')
+
+    # Turn off single precision and complex
+    args.append('-DTeuchos_ENABLE_FLOAT=OFF')
+    args.append('-DTeuchos_ENABLE_COMPLEX=OFF')
+    args.append('-DTpetra_INST_FLOAT=OFF')
+    args.append('-DTpetra_INST_COMPLEX_FLOAT=OFF')
+    args.append('-DTpetra_INST_COMPLEX_DOUBLE=OFF')
+
     # Trilinos cmake does not set this variable (as it should) so cmake install does not properly reset the -id and rpath of --prefix installed Trilinos libraries
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
