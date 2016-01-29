@@ -2280,6 +2280,9 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       ierr = DMPlexConstructGhostCells(newPlex,pforest->ghostName,&numAdded,&newPlexGhosted);CHKERRQ(ierr);
       ierr = DMGetApplicationContext(newPlex,&ctx);CHKERRQ(ierr);
       ierr = DMSetApplicationContext(newPlexGhosted,ctx);CHKERRQ(ierr);
+      /* we want the sf for the ghost dm to be the one for the p4est dm as well */
+      ierr = DMGetPointSF(newPlexGhosted,&pointSF);CHKERRQ(ierr);
+      ierr = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);
       ierr = DMDestroy(&newPlex);CHKERRQ(ierr);
       newPlex = newPlexGhosted;
     }
