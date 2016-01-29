@@ -128,6 +128,11 @@ def chkenable():
         if tail == '1': tail = '0'
         sys.argv[l] = head.replace('without-','with-')+'='+tail
 
+def argsStartswith(value):
+  # if the args have an argument that starts with a given value
+  for i in sys.argv:
+    if i.startswith(value): return 1
+  return 0
 
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
@@ -176,14 +181,17 @@ def chksynonyms():
 
   if downloadxsdk:
     # Common external libraries
-    sys.argv.extend(['--download-hdf5','--download-netcdf','--download-exodusii'])
+    if not argsStartswith('--with-hdf5'): sys.argv.extend(['--download-hdf5'])
+    if not argsStartswith('--with-netcdf'): sys.argv.extend(['--download-netcdf'])
+    if not argsStartswith('--with-exodusii'): sys.argv.extend(['--download-exodusii'])
     sys.argv.extend(['--download-metis'])
 
     sys.argv.extend(['--download-parmetis','--download-superlu_dist'])
     sys.argv.extend(['--download-hypre'])
 
-    # Trilinos takes a long time to compile
-    sys.argv.extend(['--with-cxx-dialect=C++11','--download-boost','--download-trilinos'])
+    sys.argv.extend(['--with-cxx-dialect=C++11'])
+    if not argsStartswith('--with-boost'): sys.argv.extend(['--download-boost'])
+    sys.argv.extend(['--download-trilinos'])
 
 
 def chkwinf90():
