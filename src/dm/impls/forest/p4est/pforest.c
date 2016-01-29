@@ -1015,6 +1015,7 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   ierr = PetscObjectReference((PetscObject)dmA->defaultGlobalSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&(dmB->defaultGlobalSection));CHKERRQ(ierr);
   dmB->defaultGlobalSection = dmA->defaultGlobalSection;
+  if (dmA->map) {ierr = PetscLayoutReference(dmA->map,&dmB->map);CHKERRQ(ierr);}
   ierr = PetscObjectReference((PetscObject)dmA->defaultSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&dmB->defaultSF);CHKERRQ(ierr);
   dmB->defaultSF = dmA->defaultSF;
