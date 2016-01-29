@@ -187,6 +187,7 @@ def chksynonyms():
     argsAddDownload('alquimia')
     # mstk currently cannot build a shared library
     argsAddDownload('mstk',[],['--download-mstk-shared=0'])
+    argsAddDownload('ascem-io')
 
   if downloadxsdk:
     # Common external libraries
