@@ -32,13 +32,7 @@
 #include <petscblaslapack_stdcall.h>
 #else
 
-#if defined(PETSC_BLASLAPACK_UNDERSCORE)
-#include <petscblaslapack_uscore.h>
-#elif defined(PETSC_BLASLAPACK_CAPS)
-#include <petscblaslapack_caps.h>
-#else
-#include <petscblaslapack_c.h>
-#endif
+#include <petscblaslapack_mangle.h>
 
 PETSC_EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
