@@ -241,7 +241,7 @@ static PetscErrorCode DMForestTemplate_pforest(DM dm, DM tdm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateConnectivity_pforest(DM,const char*,p4est_connectivity_t**,PetscInt**);
+static PetscErrorCode DMPlexCreateConnectivity_pforest(DM,p4est_connectivity_t**,PetscInt**);
 
 static int pforest_coarsen_uniform (p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
 {
@@ -325,7 +325,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
         ierr = DMDestroy(&dmRedundant);CHKERRQ(ierr);
       }
-      ierr = DMPlexCreateConnectivity_pforest(base,pforest->ghostName,&conn,&tree_face_to_uniq);CHKERRQ(ierr);
+      ierr = DMPlexCreateConnectivity_pforest(base,&conn,&tree_face_to_uniq);CHKERRQ(ierr);
       ierr = PetscNewLog(dm,&topo);CHKERRQ(ierr);
       topo->refct             = 1;
       topo->conn              = conn;
@@ -349,7 +349,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(base,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost;
+        PetscBool  isDepth, isGhost, isVTK;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -358,8 +358,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMGetLabelByNum(base, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
-        ierr = PetscStrcmp(name,pforest->ghostName,&isGhost);CHKERRQ(ierr);
+        ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
+        ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
+        if (isVTK) continue;
         ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
         ierr = DMGetLabel(dm,name,&labelNew);CHKERRQ(ierr);
         ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
@@ -400,7 +402,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost;
+        PetscBool  isDepth, isGhost, isVTK;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -409,8 +411,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMGetLabelByNum(adaptFrom, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
-        ierr = PetscStrcmp(name,pforest->ghostName,&isGhost);CHKERRQ(ierr);
+        ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
+        ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
+        if (isVTK) continue;
         ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
         ierr = DMGetLabel(dm,name,&labelNew);CHKERRQ(ierr);
         ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
@@ -567,7 +571,7 @@ static PetscErrorCode PforestConnectivityEnumerateFacets(p4est_connectivity_t *c
 
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMPlexCreateConnectivity_pforest)
-static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, const char *ghostName, p4est_connectivity_t **connOut, PetscInt **tree_face_to_uniq)
+static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity_t **connOut, PetscInt **tree_face_to_uniq)
 {
   p4est_topidx_t       numTrees, numVerts, numCorns, numCtt;
   PetscSection         ctt;
@@ -584,12 +588,10 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, const char *ghostN
   PetscInt             cStart, cEnd, cEndInterior, c, vStart, vEnd, vEndInterior, v, fStart, fEnd, fEndInterior, f, eEndInterior;
   PetscInt             *star = NULL, *closure = NULL, closureSize, starSize, cttSize;
   PetscInt             *ttf;
-  DMLabel              ghostLabel;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   /* 1: count objects, allocate */
-  ierr = DMGetLabel(dm,ghostName,&ghostLabel);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, &fEndInterior, &eEndInterior, &vEndInterior);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
@@ -895,6 +897,8 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   MPI_Comm       comm;
   PetscBool      isPlex;
   PetscInt       dim;
+  void           *ctx;
+  PetscDS        ds;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -908,6 +912,12 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   ierr = DMCreate(comm,pforest);CHKERRQ(ierr);
   ierr = DMSetType(*pforest,DMPFOREST);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(*pforest,dm);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*pforest,ctx);CHKERRQ(ierr);
+  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+  ierr = DMSetDS(*pforest,ds);CHKERRQ(ierr);
+  ierr = DMBoundaryDestroy(&(*pforest)->boundary);CHKERRQ(ierr);
+  ierr = DMBoundaryDuplicate(dm->boundary, &(*pforest)->boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1736,7 +1746,6 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   PetscInt          pStart, pEnd, pStartBase, pEndBase, p;
   DM                base;
   PetscInt          *star = NULL, starSize;
-  DMLabel           ghostLabel;
   DMLabelLink       next = dm->labels->next;
   PetscInt          guess = 0;
   p4est_topidx_t    num_trees = pforest->topo->conn->num_trees;
@@ -1744,7 +1753,6 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
 
   PetscFunctionBegin;
   ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
-  ierr = DMGetLabel(plex,pforest->ghostName,&ghostLabel);CHKERRQ(ierr);
   cLocalStart = pforest->cLocalStart;
   cLocalEnd   = pforest->cLocalEnd;
   ierr = DMPlexGetHybridBounds(base,&cEndBaseInterior,&fEndBaseInterior,&eEndBaseInterior,&vEndBaseInterior);CHKERRQ(ierr);
@@ -1774,15 +1782,20 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   while (next) {
     DMLabel baseLabel;
     DMLabel label = next->label;
-    PetscBool isDepth, isGhost;
+    PetscBool isDepth, isGhost, isVTK;
 
     ierr = PetscStrcmp(label->name,"depth",&isDepth);CHKERRQ(ierr);
     if (isDepth) {
       next = next->next;
       continue;
     }
-    ierr = PetscStrcmp(label->name,pforest->ghostName,&isGhost);CHKERRQ(ierr);
+    ierr = PetscStrcmp(label->name,"ghost",&isGhost);CHKERRQ(ierr);
     if (isGhost) {
+      next = next->next;
+      continue;
+    }
+    ierr = PetscStrcmp(label->name,"vtk",&isVTK);CHKERRQ(ierr);
+    if (isVTK) {
       next = next->next;
       continue;
     }
@@ -1795,13 +1808,6 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
       p4est_tree_t *trees = (p4est_tree_t *) pforest->forest->trees->array;
       p4est_quadrant_t * q;
       PetscInt t, val;
-
-      if (ghostLabel) {
-        PetscInt ghostIdx;
-
-        ierr = DMLabelGetValue(ghostLabel,p,&ghostIdx);CHKERRQ(ierr);
-        if (ghostIdx < 0) continue;
-      }
 
       ierr = DMPlexGetTransitiveClosure(plex,p,PETSC_FALSE,&starSize,&star);CHKERRQ(ierr);
       for (s = 0; s < starSize; s++) {
@@ -2103,7 +2109,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     while (next) {
       DMLabel adaptLabel = next->label;
       const char *name = adaptLabel->name;
-      PetscBool isDepth, isGhost;
+      PetscBool isDepth, isGhost, isVTK;
       DMLabel label;
       PetscInt  p;
 
@@ -2112,8 +2118,13 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
         next = next->next;
         continue;
       }
-      ierr = PetscStrcmp(name,pforest->ghostName,&isGhost);CHKERRQ(ierr);
+      ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
       if (isGhost) {
+        next = next->next;
+        continue;
+      }
+      ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
+      if (isVTK) {
         next = next->next;
         continue;
       }
@@ -2191,7 +2202,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   pforest = (DM_Forest_pforest *) forest->data;
   ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
   if (base) {
-    ierr = DMGetLabel(base,pforest->ghostName,&ghostLabelBase);CHKERRQ(ierr);
+    ierr = DMGetLabel(base,"ghost",&ghostLabelBase);CHKERRQ(ierr);
   }
   if (!pforest->plex) {
     ierr = DMCreate(comm,&newPlex);CHKERRQ(ierr);
@@ -2278,7 +2289,12 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (leaves);
     sc_array_destroy (remotes);
 
-    if (ghostLabelBase) {
+    pforest->plex = newPlex;
+
+    /* copy labels */
+    ierr = DMPforestLabelsFinalize(dm,newPlex);CHKERRQ(ierr);
+
+    if (ghostLabelBase) { /* we have to do this after copying labels because the labels drive the construction of ghost cells */
       PetscInt numAdded;
       DM       newPlexGhosted;
       void     *ctx;
@@ -2291,12 +2307,15 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       ierr = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);
       ierr = DMDestroy(&newPlex);CHKERRQ(ierr);
       newPlex = newPlexGhosted;
+
+      /* share the labels back */
+      ierr = DMDestroyLabelLinkList(dm);CHKERRQ(ierr);
+      newPlex->labels->refct++;
+      dm->labels = newPlex->labels;
+
+      pforest->plex = newPlex;
     }
 
-    pforest->plex = newPlex;
-
-    /* copy labels */
-    ierr = DMPforestLabelsFinalize(dm,newPlex);CHKERRQ(ierr);
 
     if (forest->setFromOptions) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
@@ -2331,7 +2350,7 @@ static PetscErrorCode DMSetFromOptions_pforest(PetscOptionItems *PetscOptionsObj
   ierr = DMSetFromOptions_Forest(PetscOptionsObject,dm);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"DM" P4EST_STRING " options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_p4est_partition_for_coarsening","partition forest to allow for coarsening","DMP4estSetPartitionForCoarsening",pforest->partition_for_coarsening,&(pforest->partition_for_coarsening),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-dm_p4est_ghost_label_name","the name of the ghost label when converting from a DMPlex",NULL,pforest->ghostName,stringBuffer,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_p4est_ghost_label_name","the name of the ghost label when converting from a DMPlex",NULL,NULL,stringBuffer,256,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(pforest->ghostName);CHKERRQ(ierr);
@@ -2651,7 +2670,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   pforest->cLocalStart              = -1;
   pforest->cLocalEnd                = -1;
   pforest->labelsFinalized          = PETSC_FALSE;
-  ierr = PetscStrallocpy("ghost",&pforest->ghostName);CHKERRQ(ierr);
+  pforest->ghostName                = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
