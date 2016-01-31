@@ -286,7 +286,7 @@ static PetscErrorCode PCReset_HYPRE(PC pc)
   if (jac->C) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->C)); jac->C = NULL;
   if (jac->alpha_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->alpha_Poisson)); jac->alpha_Poisson = NULL;
   if (jac->beta_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->beta_Poisson)); jac->beta_Poisson = NULL;
-  if (jac->n_hmnull) {
+  if (jac->n_hmnull && jac->hmnull) {
     PetscInt                 i;
     PETSC_UNUSED PetscScalar *petscvecarray;
 
