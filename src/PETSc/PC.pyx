@@ -365,7 +365,7 @@ cdef class PC(Object):
             CHKERR( PCFactorSetZeroPivot(self.pc, rval) )
         cdef PetscBool bval = PETSC_FALSE
         if inblocks is not None:
-            bval2 = PETSC_TRUE if inblocks else PETSC_FALSE
+            bval = PETSC_TRUE if inblocks else PETSC_FALSE
             CHKERR( PCFactorSetPivotInBlocks(self.pc, bval) )
 
     def setFactorShift(self, shift_type=None, amount=None):
@@ -470,7 +470,7 @@ cdef class PC(Object):
 
     # --- MG ---
     def getMGLevels(self):
-        cdef PetscInt levels
+        cdef PetscInt levels = 0
         CHKERR( PCMGGetLevels(self.pc, &levels) )
         return toInt(levels)
 

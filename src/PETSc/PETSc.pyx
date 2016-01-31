@@ -221,6 +221,7 @@ cdef int traceback(MPI_Comm       comm,
         PetscErrorMessage(n, &text, NULL)
     if text != NULL: tbl.append(bytes2str(text))
     if mess != NULL: tbl.append(bytes2str(mess))
+    <void>comm; <void>ctx; # unused
     return n
 
 cdef int PetscPythonErrorHandler(

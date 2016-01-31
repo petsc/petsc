@@ -338,6 +338,7 @@ cdef class _PyObj:
             name = getattr(ctx, '__name__', None)
         else:
             modname = getattr(ctx, '__module__', None)
+            clsname = None
             cls = getattr(ctx, '__class__', None)
             if cls:
                 clsname = getattr(cls, '__name__', None)
@@ -630,7 +631,7 @@ cdef PetscErrorCode MatSetFromOptions_Python(
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-mat_python_type",b"Python [package.]module[.{class|function}]",
-            b"MatPythonSetType",defval,name,sizeof(name),&found) )
+            b"MatPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
     if found and name[0]:
         CHKERR( MatPythonSetType_PYTHON(mat,name) )
     #
@@ -1282,7 +1283,7 @@ cdef PetscErrorCode PCSetFromOptions_Python(
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-pc_python_type",b"Python [package.]module[.{class|function}]",
-            b"PCPythonSetType",defval,name,sizeof(name),&found) )
+            b"PCPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
     if found and name[0]:
         CHKERR( PCPythonSetType_PYTHON(pc,name) )
     #
@@ -1559,7 +1560,7 @@ cdef PetscErrorCode KSPSetFromOptions_Python(
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-ksp_python_type",b"Python [package.]module[.{class|function}]",
-            b"KSPPythonSetType",defval,name,sizeof(name),&found) )
+            b"KSPPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
     if found and name[0]:
         CHKERR( KSPPythonSetType_PYTHON(ksp,name) )
     #
@@ -1689,6 +1690,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
         CHKERR( KSPConverged(ksp,ksp.iter,rnorm,&ksp.reason) )
         CHKERR( KSPLogHistory(ksp,ksp.norm) )
         CHKERR( KSPMonitor(ksp,ksp.iter,ksp.norm) )
+    <void>its # silent unused warning
     #
     return FunctionEnd()
 
@@ -1898,7 +1900,7 @@ cdef PetscErrorCode SNESSetFromOptions_Python(
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-snes_python_type",b"Python [package.]module[.{class|function}]",
-            b"SNESPythonSetType",defval,name,sizeof(name),&found) )
+            b"SNESPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
     if found and name[0]:
         CHKERR( SNESPythonSetType_PYTHON(snes,name) )
     #
@@ -1980,6 +1982,7 @@ cdef PetscErrorCode SNESSolve_Python_default(
         CHKERR( SNESConverged(snes,snes.iter,xnorm,ynorm,fnorm,&snes.reason) )
         CHKERR( SNESLogHistory(snes,snes.norm,lits) )
         CHKERR( SNESMonitor(snes,snes.iter,snes.norm) )
+    <void>its # silent unused warning
     #
     return FunctionEnd()
 
@@ -2246,7 +2249,7 @@ cdef PetscErrorCode TSSetFromOptions_Python(
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-ts_python_type",b"Python [package.]module[.{class|function}]",
-            b"TSPythonSetType",defval,name,sizeof(name),&found) )
+            b"TSPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
     if found and name[0]:
         CHKERR( TSPythonSetType_PYTHON(ts,name) )
     #
@@ -2461,6 +2464,7 @@ cdef PetscErrorCode TSStep_Python_default(
         TSAdaptStep_Python(ts,tt,vec_update,&dt,&ok)
         if ok:  break
         ts.reject += 1
+    <void>r # silent unused warning
     if not ok:
         if ts.reason == 0:
             ts.reason = TS_DIVERGED_STEP_REJECTED

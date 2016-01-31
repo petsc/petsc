@@ -1258,17 +1258,17 @@ cdef class Mat(Object):
         matfactorinfo(PETSC_FALSE, PETSC_FALSE, options, &info)
         CHKERR( MatLUFactor(self.mat, isrow.iset, iscol.iset, &info) )
     def factorSymbolicLU(self, Mat mat not None, IS isrow not None, IS iscol not None, options=None):
-        mat = isrow = iscol = options = None
+        <void>self; <void>mat; <void>isrow; <void>iscol; <void>options; # unused
         raise NotImplementedError
     def factorNumericLU(self, Mat mat not None, options=None):
-        mat = options = None
+        <void>self; <void>mat; <void>options; # unused
         raise NotImplementedError
     def factorILU(self, IS isrow not None, IS iscol not None, options=None):
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_TRUE, PETSC_FALSE, options, &info)
         CHKERR( MatILUFactor(self.mat, isrow.iset, iscol.iset, &info) )
     def factorSymbolicILU(self, IS isrow not None, IS iscol not None, options=None):
-        isrow = iscol = options = None
+        <void>self; <void>isrow; <void>iscol; <void>options; # unused
         raise NotImplementedError
 
     def factorCholesky(self, IS isperm not None, options=None):
@@ -1276,17 +1276,17 @@ cdef class Mat(Object):
         matfactorinfo(PETSC_FALSE, PETSC_TRUE, options, &info)
         CHKERR( MatCholeskyFactor(self.mat, isperm.iset, &info) )
     def factorSymbolicCholesky(self, IS isperm not None, options=None):
-        isperm = options = None
+        <void>self; <void>isperm; <void>options; # unused
         raise NotImplementedError
     def factorNumericCholesky(self, Mat mat not None, options=None):
-        mat = options = None
+        <void>self; <void>mat; <void>options; # unused
         raise NotImplementedError
     def factorICC(self, IS isperm not None, options=None):
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_TRUE, PETSC_TRUE, options, &info)
         CHKERR( MatICCFactor(self.mat, isperm.iset, &info) )
     def factorSymbolicICC(self, IS isperm not None, options=None):
-        isperm = options = None
+        <void>self; <void>isperm; <void>options; # unused
         raise NotImplementedError
 
     def getInertia(self):

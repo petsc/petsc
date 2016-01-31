@@ -341,7 +341,7 @@ cdef class ViewerHDF5(Viewer):
     def setTimestep(self, timestep):
         CHKERR( PetscViewerHDF5SetTimestep(self.vwr, asInt(timestep)) )
 
-    def incrementTimestep(self, timestep):
+    def incrementTimestep(self):
         CHKERR( PetscViewerHDF5IncrementTimestep(self.vwr) )
 
     def pushGroup(self, group):

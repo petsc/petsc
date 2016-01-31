@@ -299,8 +299,8 @@ cdef inline int vecsetvalues(PetscVec V,
     cdef PetscInt ni=0, nv=0
     cdef PetscInt    *i=NULL
     cdef PetscScalar *v=NULL
-    cdef object ai = iarray_i(oi, &ni, &i)
-    cdef object av = iarray_s(ov, &nv, &v)
+    cdef object tmp1 = iarray_i(oi, &ni, &i)
+    cdef object tmp2 = iarray_s(ov, &nv, &v)
     if ni*bs != nv: raise ValueError(
         "incompatible array sizes: ni=%d, nv=%d, bs=%d" %
         (toInt(ni), toInt(nv), toInt(bs)) )

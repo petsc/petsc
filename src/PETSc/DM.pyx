@@ -173,7 +173,7 @@ cdef class DM(Object):
     def setMatType(self, mat_type):
         """Set matrix type to be used by DM.createMat"""
         cdef PetscMatType mtype = NULL
-        vec_type = str2bytes(mat_type, &mtype)
+        mat_type = str2bytes(mat_type, &mtype)
         CHKERR( DMSetMatType(self.dm, mtype) )
 
     def createMat(self):

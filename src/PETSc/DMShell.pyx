@@ -40,15 +40,15 @@ cdef class DMShell(DM):
                          end_args=None, end_kargs=None):
         cdef PetscDMShellXToYFunction cbegin = NULL, cend = NULL
         if begin is not None:
-            if begin_args  is None: args = ()
-            if begin_kargs is None: kargs = {}
-            context = (begin, args, kargs)
+            if begin_args  is None: begin_args = ()
+            if begin_kargs is None: begin_kargs = {}
+            context = (begin, begin_args, begin_kargs)
             self.set_attr('__g2l_begin__', context)
             cbegin = &DMSHELL_GlobalToLocalBegin
         if end is not None:
-            if end_args  is None: args = ()
-            if end_kargs is None: kargs = {}
-            context = (end, args, kargs)
+            if end_args  is None: end_args = ()
+            if end_kargs is None: end_kargs = {}
+            context = (end, end_args, end_kargs)
             self.set_attr('__g2l_end__', context)
             cend = &DMSHELL_GlobalToLocalEnd
         CHKERR( DMShellSetGlobalToLocal(self.dm, cbegin, cend) )
@@ -60,15 +60,15 @@ cdef class DMShell(DM):
                          end_args=None, end_kargs=None):
         cdef PetscDMShellXToYFunction cbegin = NULL, cend = NULL
         if begin is not None:
-            if begin_args  is None: args = ()
-            if begin_kargs is None: kargs = {}
-            context = (begin, args, kargs)
+            if begin_args  is None: begin_args = ()
+            if begin_kargs is None: begin_kargs = {}
+            context = (begin, begin_args, begin_kargs)
             self.set_attr('__l2g_begin__', context)
             cbegin = &DMSHELL_LocalToGlobalBegin
         if end is not None:
-            if end_args  is None: args = ()
-            if end_kargs is None: kargs = {}
-            context = (end, args, kargs)
+            if end_args  is None: end_args = ()
+            if end_kargs is None: end_kargs = {}
+            context = (end, end_args, end_kargs)
             self.set_attr('__l2g_end__', context)
             cend = &DMSHELL_LocalToGlobalEnd
         CHKERR( DMShellSetLocalToGlobal(self.dm, cbegin, cend) )
@@ -82,15 +82,15 @@ cdef class DMShell(DM):
         cbegin = NULL
         cend = NULL
         if begin is not None:
-            if begin_args  is None: args = ()
-            if begin_kargs is None: kargs = {}
-            context = (begin, args, kargs)
+            if begin_args  is None: begin_args = ()
+            if begin_kargs is None: begin_kargs = {}
+            context = (begin, begin_args, begin_kargs)
             self.set_attr('__l2l_begin__', context)
             cbegin = &DMSHELL_LocalToLocalBegin
         if end is not None:
-            if end_args  is None: args = ()
-            if end_kargs is None: kargs = {}
-            context = (end, args, kargs)
+            if end_args  is None: end_args = ()
+            if end_kargs is None: end_kargs = {}
+            context = (end, end_args, end_kargs)
             self.set_attr('__l2l_end__', context)
             cend = &DMSHELL_LocalToLocalEnd
         CHKERR( DMShellSetLocalToLocal(self.dm, cbegin, cend) )

@@ -124,7 +124,7 @@ cdef inline PetscInt asDims(dims,
                             PetscInt *_N,
                             PetscInt *_P) except? -1:
     cdef PetscInt dim = PETSC_DECIDE
-    cdef object M, N, P
+    cdef object M=None, N=None, P=None
     dims = tuple(dims)
     dim = <PetscInt>len(dims)
     if   dim == 0: pass
@@ -151,9 +151,9 @@ cdef inline tuple asOwnershipRanges(object ownership_ranges,
                                     PetscInt **_x,
                                     PetscInt **_y,
                                     PetscInt **_z):
-    cdef PetscInt rdim, nlx, nly, nlz
-    ranges = list(ownership_ranges)
-    rdim = <PetscInt>len(ranges)
+    cdef object ranges = list(ownership_ranges)
+    cdef PetscInt rdim = <PetscInt>len(ranges)
+    cdef PetscInt nlx=0, nly=0, nlz=0
     if dim == PETSC_DECIDE: dim = rdim
     elif dim != rdim: raise ValueError(
         "number of dimensions %d and number ownership ranges %d" %
@@ -188,7 +188,7 @@ cdef inline tuple toOwnershipRanges(PetscInt dim,
     if dim > 1:
         ranges.append(array_i(n, ly))
     if dim > 2:
-        ranges.append(array_i(p, ly))
+        ranges.append(array_i(p, lz))
     return tuple(ranges)
 
 # --------------------------------------------------------------------

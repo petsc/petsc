@@ -115,6 +115,7 @@ cdef class Vec(Object):
     def __releasebuffer__(self, Py_buffer *view):
         cdef _Vec_buffer buf = <_Vec_buffer>(view.obj)
         buf.releasebuffer(view)
+        <void>self # unused
 
     # 'with' statement (PEP 343)
 
@@ -480,27 +481,27 @@ cdef class Vec(Object):
         return toScalar(sval)
 
     def mDot(self, vecs, out=None):
-        vecs = out = None
+        <void>self; <void>vecs; <void>out; # unused
         raise NotImplementedError
 
     def mDotBegin(self, vecs, out=None):
-        vecs = out = None
+        <void>self; <void>vecs; <void>out; # unused
         raise NotImplementedError
 
     def mDotEnd(self, vecs, out=None):
-        vecs = out = None
+        <void>self; <void>vecs; <void>out; # unused
         raise NotImplementedError
 
     def mtDot(self, vecs, out=None):
-        vecs = out = None
+        <void>self; <void>vecs; <void>out; # unused
         raise NotImplementedError
 
     def mtDotBegin(self, vecs, out=None):
-        vecs = out = None
+        <void>self; <void>vecs; <void>out; # unused
         raise NotImplementedError
 
     def mtDotEnd(self, vecs, out=None):
-        vecs = out = None
+        <void>self; <void>vecs; <void>out; # unused
         raise NotImplementedError
 
     def norm(self, norm_type=None):
@@ -774,7 +775,7 @@ cdef class Vec(Object):
 
     def setMPIGhost(self, ghosts):
         "Alternative to createGhost()"
-        cdef PetscInt ng, *ig=NULL
+        cdef PetscInt ng=0, *ig=NULL
         ghosts = iarray_i(ghosts, &ng, &ig)
         CHKERR( VecMPISetGhost(self.vec, ng, ig) )
 
@@ -790,8 +791,8 @@ cdef class Vec(Object):
         CHKERR( VecRestoreSubVector(self.vec, iset.iset, &subvec.vec) )
 
     def getNestSubVecs(self):
-        cdef PetscInt N
-        cdef PetscVec* sx
+        cdef PetscInt N=0
+        cdef PetscVec* sx=NULL
         CHKERR( VecNestGetSubVecs(self.vec, &N, &sx) )
         output = []
         for i in range(N):

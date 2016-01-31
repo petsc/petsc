@@ -63,9 +63,6 @@ cdef class TAO(Object):
         self.obj = <PetscObject*> &self.tao
         self.tao = NULL
 
-    def __dealloc__(self):
-        pass
-
     def view(self, Viewer viewer=None):
         """
         """

@@ -52,7 +52,7 @@ cdef class Log:
         else:   CHKERR( PetscLogDefaultBegin() )
 
     @classmethod
-    def view(self, Viewer viewer=None):
+    def view(cls, Viewer viewer=None):
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
         if vwr == NULL: vwr = PETSC_VIEWER_STDOUT_WORLD
@@ -115,6 +115,7 @@ cdef class LogStage:
         CHKERR( PetscLogStagePush(self.id) )
 
     def pop(self):
+        <void>self # unused
         CHKERR( PetscLogStagePop() )
 
     #
@@ -128,6 +129,7 @@ cdef class LogStage:
         def __get__(self):
             return self.getName()
         def __set__(self, value):
+            <void>self; <void>value; # unused
             raise TypeError("readonly attribute")
 
     #
@@ -207,6 +209,7 @@ cdef class LogClass:
         def __get__(self):
             return self.getName()
         def __set__(self, value):
+            <void>self; <void>value; # unused
             raise TypeError("readonly attribute")
 
     #
@@ -218,6 +221,7 @@ cdef class LogClass:
         CHKERR( PetscLogClassDeactivate(self.id) )
 
     def getActive(self):
+        <void>self # unused
         raise NotImplementedError
 
     def setActive(self, flag):
@@ -300,6 +304,7 @@ cdef class LogEvent:
         def __get__(self):
             return self.getName()
         def __set__(self, value):
+            <void>self; <void>value; # unused
             raise TypeError("readonly attribute")
 
     #
@@ -311,6 +316,7 @@ cdef class LogEvent:
         CHKERR( PetscLogEventDeactivate(self.id) )
 
     def getActive(self):
+        <void>self # unused
         raise NotImplementedError
 
     def setActive(self, flag):
@@ -325,6 +331,10 @@ cdef class LogEvent:
         def __set__(self, value):
             self.setActive(value)
 
+    def getActiveAll(self):
+        <void>self # unused
+        raise NotImplementedError
+
     def setActiveAll(self, flag):
         cdef PetscBool tval = PETSC_FALSE
         if flag: tval = PETSC_TRUE
@@ -332,7 +342,7 @@ cdef class LogEvent:
 
     property active_all:
         def __get__(self):
-            raise NotImplementedError
+            self.getActiveAll()
         def __set__(self, value):
             self.setActiveAll(value)
 

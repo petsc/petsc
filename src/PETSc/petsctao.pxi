@@ -161,7 +161,7 @@ cdef inline TAO ref_TAO(PetscTAO tao):
 
 cdef int TAO_Objective(PetscTAO _tao,
                        PetscVec _x, PetscReal *_f,
-                       void *_ctx) except PETSC_ERR_PYTHON with gil:
+                       void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -172,7 +172,7 @@ cdef int TAO_Objective(PetscTAO _tao,
 
 cdef int TAO_SeparableObjective(PetscTAO _tao,
                                 PetscVec _x, PetscVec _f,
-                                void *_ctx) except PETSC_ERR_PYTHON with gil:
+                                void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -183,7 +183,7 @@ cdef int TAO_SeparableObjective(PetscTAO _tao,
 
 cdef int TAO_Gradient(PetscTAO _tao,
                       PetscVec _x, PetscVec _g,
-                      void *_ctx) except PETSC_ERR_PYTHON with gil:
+                      void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -195,7 +195,7 @@ cdef int TAO_Gradient(PetscTAO _tao,
 
 cdef int TAO_ObjGrad(PetscTAO _tao,
                      PetscVec _x, PetscReal *_f, PetscVec _g,
-                     void *_ctx) except PETSC_ERR_PYTHON with gil:
+                     void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -207,7 +207,7 @@ cdef int TAO_ObjGrad(PetscTAO _tao,
 
 cdef int TAO_Constraints(PetscTAO _tao,
                          PetscVec _x, PetscVec _r,
-                         void *_ctx) except PETSC_ERR_PYTHON with gil:
+                         void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
@@ -218,7 +218,7 @@ cdef int TAO_Constraints(PetscTAO _tao,
 
 cdef int TAO_VarBounds(PetscTAO _tao,
                        PetscVec _xl, PetscVec _xu,
-                       void *_ctx) except PETSC_ERR_PYTHON with gil:
+                       void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec xl  = ref_Vec(_xl)

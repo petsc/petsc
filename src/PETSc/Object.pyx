@@ -37,6 +37,7 @@ cdef class Object:
             obj_copy = self.copy
         except AttributeError:
             raise NotImplementedError
+        <void>memo # unused
         return obj_copy()
 
     # --- attribute management ---

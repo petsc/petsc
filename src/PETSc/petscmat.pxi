@@ -443,7 +443,7 @@ cdef Mat mat_iadd(Mat self, other):
         self.axpy(1, other)
     elif isinstance(other, (tuple, list)):
         alpha, mat = other
-        self.axpy(alpha, other)
+        self.axpy(alpha, mat)
     elif isinstance(other, Vec):
         self.setDiagonal(other, PETSC_ADD_VALUES)
     else:
@@ -455,7 +455,7 @@ cdef Mat mat_isub(Mat self, other):
         self.axpy(-1, other)
     elif isinstance(other, (tuple, list)):
         alpha, mat = other
-        self.axpy(-alpha, other)
+        self.axpy(-alpha, mat)
     elif isinstance(other, Vec):
         diag = other.copy()
         diag.scale(-1)
@@ -524,6 +524,7 @@ cdef Mat mat_rmul(Mat self, other):
     return mat_mul(self, other)
 
 cdef Mat mat_rdiv(Mat self, other):
+    <void>self; <void>other; # unused
     raise NotImplementedError
 
 # -----------------------------------------------------------------------------
@@ -599,7 +600,7 @@ cdef inline int Mat_Create(
 
 cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
     #
-    cdef PetscBool aij, baij, sbaij
+    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE
     CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij))
     # local row size and block size
     cdef PetscInt m=0, bs=1
@@ -648,7 +649,7 @@ cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
 
 cdef inline int Mat_AllocAIJ_CSR(PetscMat A, object CSR) except -1:
     #
-    cdef PetscBool aij, baij, sbaij
+    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE
     CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij))
     # local row size and block size
     cdef PetscInt m=0, bs = 1
@@ -746,9 +747,9 @@ cdef inline int matsetvalues(PetscMat A,
     cdef PetscInt nj=0, *j=NULL
     cdef PetscInt nv=0
     cdef PetscScalar *v=NULL
-    cdef object ai = iarray_i(oi, &ni, &i)
-    cdef object aj = iarray_i(oj, &nj, &j)
-    cdef object av = iarray_s(ov, &nv, &v)
+    oi = iarray_i(oi, &ni, &i)
+    oj = iarray_i(oj, &nj, &j)
+    ov = iarray_s(ov, &nv, &v)
     if ni*nj*rbs*cbs != nv: raise ValueError(
         "incompatible array sizes: ni=%d, nj=%d, nv=%d" %
         (toInt(ni), toInt(nj), toInt(nv)) )
@@ -832,15 +833,14 @@ cdef inline int matsetvalues_ijv(PetscMat A,
     cdef PetscInt nj=0, *j=NULL
     cdef PetscInt nv=0
     cdef PetscScalar *v=NULL
-    cdef object ai = iarray_i(oi, &ni, &i)
-    cdef object aj = iarray_i(oj, &nj, &j)
-    cdef object av = iarray_s(ov, &nv, &v)
+    oi = iarray_i(oi, &ni, &i)
+    oj = iarray_i(oj, &nj, &j)
+    ov = iarray_s(ov, &nv, &v)
     # row indices
-    cdef object am = None
     cdef PetscInt nm=0, *m=NULL
     cdef PetscInt rs=0, re=ni-1
     if om is not None:
-        am = iarray_i(om, &nm, &m)
+        om = iarray_i(om, &nm, &m)
     else:
         if not local:
             CHKERR( MatGetOwnershipRange(A, &rs, &re) )
@@ -1037,7 +1037,7 @@ cdef matsetvaluestencil(PetscMat A,
     # values
     cdef PetscInt    nv = 1
     cdef PetscScalar *v = NULL
-    cdef object av = iarray_s(value, &nv, &v)
+    value = iarray_s(value, &nv, &v)
     if rbs*cbs != nv: raise ValueError(
         "incompatible array sizes: nv=%d" % toInt(nv) )
     if blocked:

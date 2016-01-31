@@ -10,7 +10,6 @@ cdef class DMPlex(DM):
         return self
 
     def createFromCellList(self, dim, cells, coords, interpolate=True, comm=None):
-        cdef DMPlex    dm = <DMPlex>type(self)()
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
@@ -53,7 +52,7 @@ cdef class DMPlex(DM):
 
     def createHexBoxMesh(self, numcells, boundary_type=None, comm=None):
         cdef PetscInt dim = 0, *icells = NULL
-        cells = iarray_i(numcells, &dim, &icells)
+        cdef object tmp = iarray_i(numcells, &dim, &icells)
         cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
@@ -66,7 +65,6 @@ cdef class DMPlex(DM):
         return self
 
     def createCGNS(self, cgid, interpolate=True, comm=None):
-        cdef DMPlex    dm = <DMPlex>type(self)()
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
@@ -76,7 +74,6 @@ cdef class DMPlex(DM):
         return self
 
     def createCGNSFromFile(self, filename, interpolate=True, comm=None):
-        cdef DMPlex    dm = <DMPlex>type(self)()
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
@@ -87,7 +84,6 @@ cdef class DMPlex(DM):
         return self
 
     def createExodusFromFile(self, filename, interpolate=True, comm=None):
-        cdef DMPlex    dm = <DMPlex>type(self)()
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
@@ -98,7 +94,6 @@ cdef class DMPlex(DM):
         return self
 
     def createExodus(self, exoid, interpolate=True, comm=None):
-        cdef DMPlex    dm = <DMPlex>type(self)()
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
@@ -108,7 +103,6 @@ cdef class DMPlex(DM):
         return self
 
     def createGmsh(self, Viewer viewer, interpolate=True, comm=None):
-        cdef DMPlex    dm = <DMPlex>type(self)()
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
@@ -351,7 +345,6 @@ cdef class DMPlex(DM):
         return closure
 
     def generate(self, DMPlex boundary, name=None, interpolate=True):
-        cdef DMPlex dm = <DMPlex>type(self)()
         cdef PetscBool interp = interpolate
         cdef const_char *cname = NULL
         if name: name = str2bytes(name, &cname)
@@ -371,7 +364,6 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexTetgenSetOptions(self.dm, copts) )
 
     def createSquareBoundary(self, lower, upper, edges):
-        cdef DMPlex    dm = <DMPlex>type(self)()
         cdef PetscInt nlow = 0, nup = 0, nedg = 0
         cdef PetscInt *iedg = NULL
         cdef PetscReal *ilow = NULL, *iup = NULL
@@ -382,13 +374,12 @@ cdef class DMPlex(DM):
         return self
 
     def createCubeBoundary(self, lower, upper, faces):
-        cdef DMPlex    dm = <DMPlex>type(self)()
         cdef PetscInt nlow = 0, nup = 0, nfac = 0
         cdef PetscInt *ifac = NULL
         cdef PetscReal *ilow = NULL, *iup = NULL
         lower = iarray_r(lower, &nlow, &ilow)
         upper = iarray_r(upper, &nup,  &iup)
-        edges = iarray_i(faces, &nfac, &ifac)
+        faces = iarray_i(faces, &nfac, &ifac)
         CHKERR( DMPlexCreateCubeBoundary(self.dm, ilow, iup, ifac) )
         return self
 

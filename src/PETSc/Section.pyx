@@ -59,7 +59,7 @@ cdef class Section(Object):
         CHKERR( PetscSectionSetFieldName(self.sec,cfield,cname) )
 
     def getFieldComponents(self,field):
-        cdef PetscInt cfield = asInt(field), cnumComp
+        cdef PetscInt cfield = asInt(field), cnumComp = 0
         CHKERR( PetscSectionGetFieldComponents(self.sec,cfield,&cnumComp) )
         return toInt(cnumComp)
 
@@ -79,7 +79,7 @@ cdef class Section(Object):
         CHKERR( PetscSectionSetChart(self.sec, cStart, cEnd) )
 
     def getDof(self,point):
-        cdef PetscInt cpoint = asInt(point), cnumDof
+        cdef PetscInt cpoint = asInt(point), cnumDof = 0
         CHKERR( PetscSectionGetDof(self.sec,cpoint,&cnumDof) )
         return toInt(cnumDof)
 

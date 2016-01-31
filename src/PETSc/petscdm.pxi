@@ -129,7 +129,7 @@ cdef inline PetscInt asBoundary(object boundary,
                                 PetscDMBoundaryType *_y,
                                 PetscDMBoundaryType *_z) except? -1:
     cdef PetscInt dim = PETSC_DECIDE
-    cdef object x, y, z
+    cdef object x=None, y=None, z=None
     if (boundary is None or
         isinstance(boundary, str) or
         isinstance(boundary, int)):

@@ -58,7 +58,7 @@ cdef class SF(Object):
     def getGraph(self):
         cdef PetscInt nroots = 0, nleaves = 0
         cdef const_PetscInt *ilocal = NULL
-        cdef const_PetscSFNode *iremote
+        cdef const_PetscSFNode *iremote = NULL
         CHKERR( PetscSFGetGraph(self.sf, &nroots, &nleaves, &ilocal, &iremote) )
         local = array_i(nleaves, ilocal)
         remote = []

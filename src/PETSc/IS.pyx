@@ -26,6 +26,8 @@ cdef class IS(Object):
     def __releasebuffer__(self, Py_buffer *view):
         cdef _IS_buffer buf = <_IS_buffer>(view.obj)
         buf.releasebuffer(view)
+        <void>self # unused
+
 
     # 'with' statement (PEP 343)
 
