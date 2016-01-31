@@ -156,7 +156,9 @@ struct _n_DMBoundaryLinkList {
 
 typedef struct _n_DMBoundaryLinkList *DMBoundaryLinkList;
 
+PETSC_EXTERN PetscErrorCode DMDestroyLabelLinkList(DM);
 PETSC_EXTERN PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList*);
+PETSC_EXTERN PetscErrorCode DMBoundaryDuplicate(DMBoundaryLinkList,DMBoundaryLinkList*);
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);

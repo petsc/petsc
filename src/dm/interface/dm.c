@@ -521,6 +521,29 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
 PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList *boundary);
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDestroyLabelLinkList"
+PetscErrorCode DMDestroyLabelLinkList(DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!--(dm->labels->refct)) {
+    DMLabelLink next = dm->labels->next;
+
+    /* destroy the labels */
+    while (next) {
+      DMLabelLink tmp = next->next;
+
+      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+      ierr = PetscFree(next);CHKERRQ(ierr);
+      next = tmp;
+    }
+    ierr = PetscFree(dm->labels);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy"
 /*@
     DMDestroy - Destroys a vector packer or DM.
@@ -5409,7 +5432,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMBoundaryDuplicate"
-static PetscErrorCode DMBoundaryDuplicate(DMBoundaryLinkList bd, DMBoundaryLinkList *boundary)
+PetscErrorCode DMBoundaryDuplicate(DMBoundaryLinkList bd, DMBoundaryLinkList *boundary)
 {
   DMBoundary     b = bd->next, b2, bold = NULL;
   PetscErrorCode ierr;
