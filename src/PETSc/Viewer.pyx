@@ -109,43 +109,35 @@ cdef class Viewer(Object):
         PetscCLEAR(self.obj); self.vwr = newvwr
         return self
 
-    def createASCII(self, name, mode=None, format=None, comm=None):
+    def createASCII(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: filemode(mode)
-        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
-        if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
         CHKERR( PetscViewerSetType(self.vwr, PETSCVIEWERASCII) )
         CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
-        CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
         return self
 
-    def createBinary(self, name, mode=None, format=None, comm=None):
+    def createBinary(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = filemode(mode)
-        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
-        if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerBinaryOpen(ccomm, cname, cmode, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
-        CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
         return self
 
-    def createMPIIO(self, name, mode=None, format=None, comm=None):
+    def createMPIIO(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = filemode(mode)
-        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
-        if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
@@ -153,7 +145,6 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerBinarySetUseMPIIO(self.vwr, PETSC_TRUE) )
         CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
-        CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
         return self
 
     def createVTK(self, name, mode=None, comm=None):
@@ -226,9 +217,6 @@ cdef class Viewer(Object):
         cdef PetscViewerType cval = NULL
         CHKERR( PetscViewerGetType(self.vwr, &cval) )
         return bytes2str(cval)
-
-    def setFormat(self, format):
-        CHKERR( PetscViewerSetFormat(self.vwr, format) )
 
     def getFormat(self):
         cdef PetscViewerFormat format = PETSC_VIEWER_DEFAULT
