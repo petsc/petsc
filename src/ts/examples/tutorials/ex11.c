@@ -1434,7 +1434,7 @@ int main(int argc, char **argv)
       if (flg1) {
         dim = nret1;
       }
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells,  DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, &dm);CHKERRQ(ierr);
       if (flg2) {
         PetscInt dimEmbed, i;
         PetscInt nCoords;
