@@ -218,19 +218,36 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         ierr = PetscSectionGetNumFields(dm->defaultSection,&nfields);CHKERRQ(ierr);
         for (field=0,i=0; field<(nfields?nfields:1); field++) {
-          PetscInt   fbs,j;
+          PetscInt     fbs,j;
+          PetscFV      fv = NULL;
+          PetscObject  f;
+          PetscClassId fClass;
           const char *fieldname = NULL;
           char       buf[256];
           if (nfields) {        /* We have user-defined fields/components */
             ierr = PetscSectionGetFieldDof(dm->defaultSection,cStart,field,&fbs);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
           } else fbs = bs;      /* Say we have one field with 'bs' components */
+          ierr = DMGetField(dm,field,&f);CHKERRQ(ierr);
+          ierr = PetscObjectGetClassId(f,&fClass);CHKERRQ(ierr);
+          if (fClass == PETSCFV_CLASSID) {
+            fv = (PetscFV) f;
+          }
           if (!fieldname) {
             ierr = PetscSNPrintf(buf,sizeof(buf),"CellField%D",field);CHKERRQ(ierr);
             fieldname = buf;
           }
           for (j=0; j<fbs; j++) {
-            ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%D\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,j,boffset);CHKERRQ(ierr);
+            const char *compName = NULL;
+            if (fv) {
+              ierr = PetscFVGetComponentName(fv,j,&compName);CHKERRQ(ierr);
+            }
+            if (compName) {
+              ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,compName,boffset);CHKERRQ(ierr);
+            }
+            else {
+              ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%D\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,j,boffset);CHKERRQ(ierr);
+            }
             boffset += gpiece[r].ncells*sizeof(PetscScalar) + sizeof(int);
             i++;
           }

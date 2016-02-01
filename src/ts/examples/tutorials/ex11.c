@@ -1531,6 +1531,27 @@ int main(int argc, char **argv)
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
   ierr = PetscFVSetSpatialDimension(fvm, dim);CHKERRQ(ierr);
+  {
+    PetscInt f, dof;
+    for (f=0,dof=0; f < phys->nfields; f++) {
+      PetscInt newDof = phys->field_desc[f].dof;
+
+      if (newDof == 1) {
+        ierr = PetscFVSetComponentName(fvm,dof,phys->field_desc[f].name);CHKERRQ(ierr);
+      }
+      else {
+        PetscInt j;
+
+        for (j = 0; j < newDof; j++) {
+          char     compName[256]  = "Unknown";
+
+          ierr = PetscSNPrintf(compName,sizeof(compName),"%s_%d",phys->field_desc[f].name,j);CHKERRQ(ierr);
+          ierr = PetscFVSetComponentName(fvm,dof+j,compName);CHKERRQ(ierr);
+        }
+      }
+      dof += newDof;
+    }
+  }
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   /* FV is now structured with one field having all physics as components */
   ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
