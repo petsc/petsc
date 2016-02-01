@@ -1360,7 +1360,25 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  {
+    size_t len;
+
+    ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
+    dim  = 2;
+    if (!len) { /* a null name means just do a hex box */
+      PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
+      PetscInt nret = 3;
+
+      ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-dim","Mesh dimension","",dim,&dim,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsIntArray("-grid_size","size of the hex mesh in each direction","",cells,&nret,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells,  DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
+    }
+    else {
+      ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
+    }
+  }
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
@@ -1383,6 +1401,7 @@ int main(int argc, char **argv)
     ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   {
     DM dmDist;
 
@@ -1394,7 +1413,6 @@ int main(int argc, char **argv)
       dm   = dmDist;
     }
   }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   {
     DM gdm;
 
@@ -1420,7 +1438,8 @@ int main(int argc, char **argv)
       if (dmConv) {
         ierr = DMViewFromOptions(dmConv, NULL, "-dm_conv_view");CHKERRQ(ierr);
         ierr = DMDestroy(&dm);CHKERRQ(ierr);
-        dm  = dmConv;
+        dm   = dmConv;
+        ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
       }
     }
   }
