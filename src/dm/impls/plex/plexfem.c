@@ -456,13 +456,13 @@ PetscErrorCode DMProjectFunctionLocal_Plex(DM dm, PetscReal time, PetscErrorCode
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectFieldLocal"
-PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU,
-                                       void (**funcs)(PetscInt, PetscInt, PetscInt,
-                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                      PetscReal, const PetscReal[], PetscScalar[]),
-                                       InsertMode mode, Vec localX)
+#define __FUNCT__ "DMProjectFieldLocal"
+PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
+                                        void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                       const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                       const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                       PetscReal, const PetscReal[], PetscScalar[]),
+                                        InsertMode mode, Vec localX)
 {
   DM              dmAux;
   PetscDS         prob, probAux = NULL;
