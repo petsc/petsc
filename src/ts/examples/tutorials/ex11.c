@@ -112,16 +112,16 @@ PETSC_STATIC_INLINE PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y
   return prod;
 }
 PETSC_STATIC_INLINE PetscReal NormDIM(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(DotDIM(x,x))); }
-PETSC_STATIC_INLINE void axDIM(const PetscScalar a,PetscScalar *x)
-{
-  PetscInt i;
-  for (i=0; i<DIM; i++) x[i] *= a;
-}
-PETSC_STATIC_INLINE void waxDIM(const PetscScalar a,const PetscScalar *x, PetscScalar *w)
-{
-  PetscInt i;
-  for (i=0; i<DIM; i++) w[i] = x[i]*a;
-}
+/* PETSC_STATIC_INLINE void axDIM(const PetscScalar a,PetscScalar *x) */
+/* { */
+/*   PetscInt i; */
+/*   for (i=0; i<DIM; i++) x[i] *= a; */
+/* } */
+/* PETSC_STATIC_INLINE void waxDIM(const PetscScalar a,const PetscScalar *x, PetscScalar *w) */
+/* { */
+/*   PetscInt i; */
+/*   for (i=0; i<DIM; i++) w[i] = x[i]*a; */
+/* } */
 PETSC_STATIC_INLINE void NormalSplitDIM(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
 {                               /* Split x into normal and tangential components */
   PetscInt    i;
@@ -139,15 +139,15 @@ PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x);
 PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
 PETSC_STATIC_INLINE void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
-PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscScalar a, const PetscScalar *x, const PetscScalar *y, PetscScalar *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
-PETSC_STATIC_INLINE PetscScalar DotD(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscScalar sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
-PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscScalar *x) {return PetscSqrtReal(PetscAbsScalar(DotD(dim,x,x)));}
+/* PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscScalar a, const PetscScalar *x, const PetscScalar *y, PetscScalar *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];} */
+/* PETSC_STATIC_INLINE PetscScalar DotD(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscScalar sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;} */
+/* PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscScalar *x) {return PetscSqrtReal(PetscAbsScalar(DotD(dim,x,x)));} */
 
-PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
-{                               /* Split x into normal and tangential components */
-  Scale2(Dot2(x,n)/Dot2(n,n),n,xn);
-  Waxpy2(-1,xn,x,xt);
-}
+/* PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt) */
+/* {                               /\* Split x into normal and tangential components *\/ */
+/*   Scale2(Dot2(x,n)/Dot2(n,n),n,xn); */
+/*   Waxpy2(-1,xn,x,xt); */
+/* } */
 
 /******************* Advect ********************/
 typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP} AdvectSolType;
@@ -559,7 +559,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
 {
   PetscInt    i;
   PetscScalar xn[DIM],xt[DIM];
-
+PetscPrintf(PETSC_COMM_WORLD,"%s HERE !!!!!!!!!!\n",__FUNCT__);
   PetscFunctionBeginUser;
   xG[0] = xI[0];
   NormalSplitDIM(n,xI+1,xn,xt);
