@@ -112,8 +112,10 @@ static PetscErrorCode PforestConnectivityEnumerateFacets(p4est_connectivity_t*,P
 
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMFTopologyCreateBrick_pforest)
-static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscInt P[], DMFTopology_pforest **topo, PetscBool useMorton)
+static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscInt P[], PetscReal B[],DMFTopology_pforest **topo, PetscBool useMorton)
 {
+  double         *vertices;
+  PetscInt       i, numVerts;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -126,6 +128,13 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscIn
 #else
   PetscStackCallP4estReturn((*topo)->conn,p8est_connectivity_new_brick,((int) N[0], (int) N[1], (int) N[2], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1, (P[2] == DM_BOUNDARY_NONE) ? 0 : 1));
 #endif
+  numVerts = (*topo)->conn->num_vertices;
+  vertices = (*topo)->conn->vertices;
+  for (i = 0; i < 3 * numVerts; i++) {
+    PetscInt j = i % 3;
+
+    vertices[i] = B[2 * j] + (vertices[i]/N[j]) * (B[2 * j + 1] - B[2 * j]);
+  }
   PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
   ierr = PforestConnectivityEnumerateFacets((*topo)->conn,&(*topo)->tree_face_to_uniq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -150,20 +159,26 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
   ierr = PetscStrcmp(name,"sphere",&isSphere);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
   if (isBrick) {
-    PetscBool  flgN, flgP, flgM, useMorton = PETSC_TRUE;
-    PetscInt   N[P4EST_DIM] = {2}, P[P4EST_DIM] = {0}, nretN = P4EST_DIM, nretP = P4EST_DIM, i;
+    PetscBool  flgN, flgP, flgM, flgB, useMorton = PETSC_TRUE;
+    PetscInt   N[3] = {2,2,2}, P[3] = {0,0,0}, nretN = P4EST_DIM, nretP = P4EST_DIM, nretB = 2 * P4EST_DIM, i;
+    PetscReal  B[6] = {0.0,1.0,0.0,1.0,0.0,1.0};
 
     if (forest->setFromOptions) {
       ierr = PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_size",N,&nretN,&flgN);CHKERRQ(ierr);
       ierr = PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_periodicity",P,&nretP,&flgP);CHKERRQ(ierr);
+      ierr = PetscOptionsGetRealArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_bounds",B,&nretB,&flgB);CHKERRQ(ierr);
       ierr = PetscOptionsGetBool(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_use_morton_curve",&useMorton,&flgM);CHKERRQ(ierr);
       if (flgN && nretN != P4EST_DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d sizes in -dm_p4est_brick_size, gave %d",P4EST_DIM,nretN);
-      if (flgP && nretP != P4EST_DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d periodicities in -dm_p4est_brick_size, gave %d",P4EST_DIM,nretP);
+      if (flgP && nretP != P4EST_DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d periodicities in -dm_p4est_brick_periodicity, gave %d",P4EST_DIM,nretP);
+      if (flgB && nretB != 2 * P4EST_DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d bounds in -dm_p4est_brick_bounds, gave %d",P4EST_DIM,nretP);
     }
     for (i = 0; i < P4EST_DIM; i++) {
       P[i] = (P[i] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE);
+      if (!flgB) {
+        B[2 * i + 1] = N[i];
+      }
     }
-    ierr = DMFTopologyCreateBrick_pforest(dm,N,P,topo,useMorton);CHKERRQ(ierr);
+    ierr = DMFTopologyCreateBrick_pforest(dm,N,P,B,topo,useMorton);CHKERRQ(ierr);
   }
   else {
     ierr = PetscNewLog(dm,topo);CHKERRQ(ierr);
@@ -1752,9 +1767,59 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
+  pforest->labelsFinalized = PETSC_TRUE;
   cLocalStart = pforest->cLocalStart;
   cLocalEnd   = pforest->cLocalEnd;
+  ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
+  if (!base) {
+    if (pforest->ghostName) { /* insert a label to make the boundaries, with stratum values that are denote which face of the element touches the boundary */
+      p4est_connectivity_t *conn  = pforest->topo->conn;
+      p4est_t              *p4est = pforest->forest;
+      p4est_tree_t         *trees = (p4est_tree_t *) p4est->trees->array;
+      p4est_topidx_t t, flt = p4est->first_local_tree;
+      p4est_topidx_t llt = pforest->forest->last_local_tree;
+      DMLabel ghostLabel;
+      PetscInt c;
+
+      ierr = DMCreateLabel(plex,pforest->ghostName);CHKERRQ(ierr);
+      ierr = DMGetLabel(plex,pforest->ghostName,&ghostLabel);CHKERRQ(ierr);
+      for (c = cLocalStart, t = flt; t <= llt; t++) {
+        p4est_tree_t     *tree     = &trees[t];
+        p4est_quadrant_t *quads    = (p4est_quadrant_t *) tree->quadrants.array;
+        PetscInt          numQuads = (PetscInt) tree->quadrants.elem_count;
+        PetscInt          q;
+
+        for (q = 0; q < numQuads; q++, c++) {
+          p4est_quadrant_t *quad = &quads[q];
+          PetscInt f;
+
+          for (f = 0; f < P4EST_FACES; f++) {
+            p4est_quadrant_t neigh;
+            int              isOutside;
+
+            PetscStackCallP4est(p4est_quadrant_face_neighbor,(quad,f,&neigh));
+            PetscStackCallP4estReturn(isOutside,p4est_quadrant_is_outside_face,(&neigh));
+            if (isOutside) {
+              p4est_topidx_t nt;
+              PetscInt nf;
+
+              nt = conn->tree_to_tree[t * P4EST_FACES + f];
+              nf = (PetscInt) conn->tree_to_face[t * P4EST_FACES + f];
+              nf = nf % P4EST_FACES;
+              if (nt == t && nf == f) {
+                PetscInt plexF = P4estFaceToPetscFace[f];
+                const PetscInt *cone;
+
+                ierr = DMPlexGetCone(plex,c,&cone);CHKERRQ(ierr);
+                ierr = DMLabelSetValue(ghostLabel,cone[plexF],plexF+1);CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+      }
+    }
+    PetscFunctionReturn(0);
+  }
   ierr = DMPlexGetHybridBounds(base,&cEndBaseInterior,&fEndBaseInterior,&eEndBaseInterior,&vEndBaseInterior);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(base,0,&cStartBase,&cEndBase);CHKERRQ(ierr);
   cEndBase = cEndBaseInterior < 0 ? cEndBase : cEndBaseInterior;
@@ -1765,7 +1830,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   ierr = DMPlexGetDepthStratum(base,0,&vStartBase,&vEndBase);CHKERRQ(ierr);
   vEndBase = vEndBaseInterior < 0 ? vEndBase : vEndBaseInterior;
 
-  ierr = DMPlexGetHybridBounds(base,&cEndInterior,&fEndInterior,&eEndInterior,&vEndInterior);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(plex,&cEndInterior,&fEndInterior,&eEndInterior,&vEndInterior);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMPlexGetHeightStratum(plex,1,&fStart,&fEnd);CHKERRQ(ierr);
@@ -1774,6 +1839,7 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   eEnd = eEndInterior < 0 ? eEnd : eEndInterior;
   ierr = DMPlexGetDepthStratum(plex,0,&vStart,&vEnd);CHKERRQ(ierr);
   vEnd = vEndInterior < 0 ? vEnd : vEndInterior;
+
   ierr = DMPlexGetChart(plex,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(base,&pStartBase,&pEndBase);CHKERRQ(ierr);
   /* go through the mesh: use star to find a quadrant that borders a point.  Use the closure to determine the
@@ -2068,7 +2134,6 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
     }
     next = next->next;
   }
-  pforest->labelsFinalized = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -2294,7 +2359,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     /* copy labels */
     ierr = DMPforestLabelsFinalize(dm,newPlex);CHKERRQ(ierr);
 
-    if (ghostLabelBase) { /* we have to do this after copying labels because the labels drive the construction of ghost cells */
+    if (ghostLabelBase || pforest->ghostName) { /* we have to do this after copying labels because the labels drive the construction of ghost cells */
       PetscInt numAdded;
       DM       newPlexGhosted;
       void     *ctx;
@@ -2315,7 +2380,6 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
       pforest->plex = newPlex;
     }
-
 
     if (forest->setFromOptions) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
