@@ -64,7 +64,7 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
 PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 {
   Mat                   CtC;
-  PetscInt              n, N, cStart, cEnd, c;
+  PetscInt              n, N, cStart, cEnd, cEndInterior, c;
   PetscBool             isPlex;
   KSP                   ksp;
   PC                    pc;
@@ -79,6 +79,8 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
     ierr = DMGetLocalVector(dm,&mask);CHKERRQ(ierr);
     ierr = VecSet(mask,0.0);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+    cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
     if (cEnd > cStart) {
       PetscScalar *ones;
       PetscInt numValues, i;
