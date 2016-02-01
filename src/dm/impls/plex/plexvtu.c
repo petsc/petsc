@@ -123,7 +123,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   FILE                     *fp;
   PetscMPIInt              rank,size,tag;
   PetscErrorCode           ierr;
-  PetscInt                 dim,cellHeight,cStart,cEnd,vStart,vEnd,cMax,numLabelCells,hasLabel,c,v,r,i;
+  PetscInt                 dimEmbed,cellHeight,cStart,cEnd,vStart,vEnd,cMax,numLabelCells,hasLabel,c,v,r,i;
   PieceInfo                piece,*gpiece = NULL;
   void                     *buffer = NULL;
 
@@ -145,7 +145,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 #endif
   ierr = PetscFPrintf(comm,fp,"  <UnstructuredGrid>\n");CHKERRQ(ierr);
 
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -317,11 +317,11 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         nsend = piece.nvertices*3;
         ierr  = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
         ierr  = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
-        if (dim != 3) {
+        if (dimEmbed != 3) {
           ierr = PetscMalloc1(piece.nvertices*3,&y);CHKERRQ(ierr);
           for (i=0; i<piece.nvertices; i++) {
-            y[i*3+0] = x[i*dim+0];
-            y[i*3+1] = (dim > 1) ? x[i*dim+1] : 0;
+            y[i*3+0] = x[i*dimEmbed+0];
+            y[i*3+1] = (dimEmbed > 1) ? x[i*dimEmbed+1] : 0;
             y[i*3+2] = 0;
           }
         }
