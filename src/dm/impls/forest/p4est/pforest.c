@@ -36,6 +36,7 @@
 
 #define DMInitialize_pforest                  _append_pforest(DMInitialize)
 #define DMCreate_pforest                      _append_pforest(DMCreate)
+#define DMClone_pforest                       _append_pforest(DMClone)
 #define DMForestDestroy_pforest               _append_pforest(DMForestDestroy)
 #define DMForestTemplate_pforest              _append_pforest(DMForestTemplate)
 #define DMSetUp_pforest                       _append_pforest(DMSetUp)
@@ -2675,6 +2676,24 @@ static PetscErrorCode DMCreateDefaultConstraints_pforest(DM dm)
   PetscFunctionReturn(0);
 }
 
+/* Need to forward declare */
+static PetscErrorCode DMInitialize_pforest(DM dm);
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMClone_pforest)
+static PetscErrorCode DMClone_pforest(DM dm, DM *newdm)
+{
+  DM_Forest     *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  forest->refct++;
+  (*newdm)->data = forest;
+  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMPFOREST);CHKERRQ(ierr);
+  ierr = DMInitialize_pforest(*newdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMInitialize_pforest)
 static PetscErrorCode DMInitialize_pforest(DM dm)
@@ -2682,6 +2701,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   PetscFunctionBegin;
   dm->ops->setup                     = DMSetUp_pforest;
   dm->ops->view                      = DMView_pforest;
+  dm->ops->clone                     = DMClone_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
