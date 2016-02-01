@@ -1367,13 +1367,41 @@ int main(int argc, char **argv)
     dim  = 2;
     if (!len) { /* a null name means just do a hex box */
       PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
-      PetscInt nret = 3;
+      PetscReal bounds[6] = {0.,1.,0.,1.,0.,1.};
+      PetscBool flg1, flg2;
+      PetscInt nret1 = 3;
+      PetscInt nret2 = 6;
 
       ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-dim","Mesh dimension","",dim,&dim,NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsIntArray("-grid_size","size of the hex mesh in each direction","",cells,&nret,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsIntArray("-grid_size","number of cells in each direction","",cells,&nret1,&flg1);CHKERRQ(ierr);
+      ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (e.g., x_min,x_max,y_min,y_max","",bounds,&nret2,&flg2);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      if (flg1) {
+        dim = nret1;
+      }
       ierr = DMPlexCreateHexBoxMesh(comm, dim, cells,  DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
+      if (flg2) {
+        PetscInt dimEmbed, i;
+        PetscInt nCoords;
+        PetscScalar *coords;
+        Vec coordinates;
+
+        ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
+        ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
+        ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
+        if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
+        ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
+        for (i = 0; i < nCoords; i += dimEmbed) {
+          PetscInt j;
+
+          PetscScalar *coord = &coords[i];
+          for (j = 0; j < dimEmbed; j++) {
+            coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
+          }
+        }
+        ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
+        ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+      }
     }
     else {
       ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
