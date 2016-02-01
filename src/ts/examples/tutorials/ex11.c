@@ -1265,7 +1265,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) X, "u");CHKERRQ(ierr);
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
@@ -1531,6 +1531,7 @@ int main(int argc, char **argv)
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
   ierr = PetscFVSetSpatialDimension(fvm, dim);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fvm,"");CHKERRQ(ierr);
   {
     PetscInt f, dof;
     for (f=0,dof=0; f < phys->nfields; f++) {
