@@ -5548,7 +5548,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
       for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
-      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (v = 0; v < coneSize; ++v) {ierr = DMLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
       for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
@@ -5571,7 +5571,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
       for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
-      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (v = 0; v < coneSize; ++v) {ierr = DMLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
       for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
@@ -5591,7 +5591,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      ierr = DMPlexLocalizeCoordinate_Internal(dm, spaceDim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
+      ierr = DMLocalizeCoordinate_Internal(dm, spaceDim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
       for (d = 0; d < spaceDim; ++d) {
         coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
       }

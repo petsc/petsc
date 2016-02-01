@@ -345,7 +345,7 @@ static PetscErrorCode constant_x_2d(PetscInt dim, PetscReal time, const PetscRea
   PetscErrorCode  ierr;
   u[0] = x[0];
   u[1] = x[1] + t;
-  ierr = DMPlexLocalizeCoordinate(globalUser->dm, u, u);CHKERRQ(ierr);
+  ierr = DMLocalizeCoordinate(globalUser->dm, u, u);CHKERRQ(ierr);
   return 0;
 }
 
@@ -798,7 +798,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
 
     /* Coordinates were never localized for coarse meshes */
-    if (cdm) {ierr = DMPlexLocalizeCoordinates(cdm);CHKERRQ(ierr);}
+    if (cdm) {ierr = DMLocalizeCoordinates(cdm);CHKERRQ(ierr);}
   }
   ierr = PetscDSViewFromOptions(prob, NULL, "-ds_view");CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
@@ -828,7 +828,7 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
     *dm  = gdm;
   }
   /* Localize coordinates */
-  ierr = DMPlexLocalizeCoordinates(*dm);CHKERRQ(ierr);
+  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   /* Setup problem */
   ierr = SetupDiscretization(*dm, user);CHKERRQ(ierr);

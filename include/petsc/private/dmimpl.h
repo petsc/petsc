@@ -61,6 +61,10 @@ struct _DMOps {
   PetscErrorCode (*computel2gradientdiff)(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal [],const PetscReal[],PetscInt, PetscScalar *,void *),void **,Vec,const PetscReal[],PetscReal *);
 };
 
+PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode DMLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
 struct _DMCoarsenHookLink {
   PetscErrorCode (*coarsenhook)(DM,DM,void*);              /* Run once, when coarse DM is created */

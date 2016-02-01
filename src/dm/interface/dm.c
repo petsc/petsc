@@ -4390,6 +4390,232 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLocalizeCoordinate"
+/*@
+  DMLocalizeCoordinate - If a mesh is periodic (a torus with lengths L_i, some of which can be infinite), project the coordinate onto [0, L_i) in each dimension.
+
+  Input Parameters:
++ dm     - The DM
+- in     - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out - The localized coordinate point
+
+  Level: developer
+
+.seealso: DMLocalizeCoordinates(), DMLocalizeAddCoordinate()
+@*/
+PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscScalar out[])
+{
+  PetscInt       dim, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (!dm->maxCell) {
+    for (d = 0; d < dim; ++d) out[d] = in[d];
+  } else {
+    for (d = 0; d < dim; ++d) {
+      out[d] = in[d] - dm->L[d]*floor(PetscRealPart(in[d])/dm->L[d]);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalizeCoordinate_Internal"
+/*
+  DMLocalizeCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
+
+  Input Parameters:
++ dm     - The DM
+. dim    - The spatial dimension
+. anchor - The anchor point, the input point can be no more than maxCell away from it
+- in     - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out - The localized coordinate point
+
+  Level: developer
+
+  Note: This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+
+.seealso: DMLocalizeCoordinates(), DMLocalizeAddCoordinate()
+*/
+PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  if (!dm->maxCell) {
+    for (d = 0; d < dim; ++d) out[d] = in[d];
+  } else {
+    for (d = 0; d < dim; ++d) {
+      if (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d]) {
+        out[d] = PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
+      } else {
+        out[d] = in[d];
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalizeCoordinateReal_Internal"
+PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const PetscReal anchor[], const PetscReal in[], PetscReal out[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  if (!dm->maxCell) {
+    for (d = 0; d < dim; ++d) out[d] = in[d];
+  } else {
+    for (d = 0; d < dim; ++d) {
+      if (PetscAbsReal(anchor[d] - in[d]) > dm->maxCell[d]) {
+        out[d] = anchor[d] > in[d] ? dm->L[d] + in[d] : in[d] - dm->L[d];
+      } else {
+        out[d] = in[d];
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalizeAddCoordinate_Internal"
+/*
+  DMLocalizeAddCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
+
+  Input Parameters:
++ dm     - The DM
+. dim    - The spatial dimension
+. anchor - The anchor point, the input point can be no more than maxCell away from it
+. in     - The input coordinate delta (dim numbers)
+- out    - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out    - The localized coordinate in + out
+
+  Level: developer
+
+  Note: This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+
+.seealso: DMLocalizeCoordinates(), DMLocalizeCoordinate()
+*/
+PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
+{
+  PetscInt d;
+
+  PetscFunctionBegin;
+  if (!dm->maxCell) {
+    for (d = 0; d < dim; ++d) out[d] += in[d];
+  } else {
+    for (d = 0; d < dim; ++d) {
+      if (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d]) {
+        out[d] += PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
+      } else {
+        out[d] += in[d];
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode DMPlexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode DMPlexVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalizeCoordinates"
+/*@
+  DMLocalizeCoordinates - If a mesh is periodic, create local coordinates for each cell
+
+  Input Parameter:
+. dm - The DM
+
+  Level: developer
+
+.seealso: DMLocalizeCoordinate(), DMLocalizeAddCoordinate()
+@*/
+PetscErrorCode DMLocalizeCoordinates(DM dm)
+{
+  DM             cdm;
+  PetscSection   coordSection, cSection;
+  Vec            coordinates,  cVec;
+  PetscScalar   *coords, *coords2, *anchor;
+  PetscInt       Nc, cStart, cEnd, c, vStart, vEnd, v, dof, d, off, off2, bs, coordSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!dm->maxCell) PetscFunctionReturn(0);
+  /* We need some generic way of refering to cells/vertices */
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  {
+    PetscBool isplex;
+
+    ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isplex);CHKERRQ(ierr);
+    if (isplex) {
+      ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetDepthStratum(cdm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
+  }
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &cSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(cSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldComponents(coordSection, 0, &Nc);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(cSection, 0, Nc);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(cSection, cStart, vEnd);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; ++v) {
+    ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(cSection,     v,  dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(cSection, v, 0, dof);CHKERRQ(ierr);
+  }
+  for (c = cStart; c < cEnd; ++c) {
+    ierr = DMPlexVecGetClosure(cdm, coordSection, coordinates, c, &dof, NULL);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(cSection, c, dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(cSection, c, 0, dof);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(cSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(cSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &cVec);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)cVec,"coordinates");CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(cVec,         bs);CHKERRQ(ierr);
+  ierr = VecSetSizes(cVec, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetType(cVec,VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecGetArray(cVec,        &coords2);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; ++v) {
+    ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(cSection,     v, &off2);CHKERRQ(ierr);
+    for (d = 0; d < dof; ++d) coords2[off2+d] = coords[off+d];
+  }
+  ierr = DMGetWorkArray(dm, 3, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *cellCoords = NULL;
+    PetscInt     b;
+
+    ierr = DMPlexVecGetClosure(cdm, coordSection, coordinates, c, &dof, &cellCoords);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(cSection, c, &off2);CHKERRQ(ierr);
+    for (b = 0; b < bs; ++b) anchor[b] = cellCoords[b];
+    for (d = 0; d < dof/bs; ++d) {ierr = DMLocalizeCoordinate_Internal(dm, bs, anchor, &cellCoords[d*bs], &coords2[off2+d*bs]);CHKERRQ(ierr);}
+    ierr = DMPlexVecRestoreClosure(cdm, coordSection, coordinates, c, &dof, &cellCoords);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreWorkArray(dm, 3, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(cVec,        &coords2);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dm, PETSC_DETERMINE, cSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, cVec);CHKERRQ(ierr);
+  ierr = VecDestroy(&cVec);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLocatePoints"
 /*@
   DMLocatePoints - Locate the points in v in the mesh and return an IS of the containing cells
@@ -5293,10 +5519,10 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
   Collective on DM
 
   Input Parameter:
-. dmA - The DMPlex object with initial labels
+. dmA - The DM object with initial labels
 
   Output Parameter:
-. dmB - The DMPlex object with copied labels
+. dmB - The DM object with copied labels
 
   Level: intermediate
 

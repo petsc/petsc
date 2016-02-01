@@ -197,9 +197,6 @@ PETSC_EXTERN PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefi
 PETSC_EXTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const PetscReal[], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer, PetscInt, PetscBool, PetscBool, GmshElement **);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
-PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems*,DM);
