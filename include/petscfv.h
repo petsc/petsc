@@ -68,6 +68,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFVViewFromOptions(PetscFV A,PetscObject 
 PETSC_EXTERN PetscErrorCode PetscFVView(PetscFV, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFVRegister(const char [], PetscErrorCode (*)(PetscFV));
 PETSC_EXTERN PetscErrorCode PetscFVRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode PetscFVSetComponentName(PetscFV, PetscInt, const char []);
+PETSC_EXTERN PetscErrorCode PetscFVGetComponentName(PetscFV, PetscInt, const char *[]);
 
 PETSC_EXTERN PetscErrorCode PetscFVSetLimiter(PetscFV, PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscFVGetLimiter(PetscFV, PetscLimiter *);
