@@ -377,8 +377,8 @@ runex11:
 	   ${RM} -f ex11_1.tmp
 
 runex11_euler:
-	-@${MPIEXEC} -n 1 ./ex11 -ufv_vtk_interval 0 -monitor density,energy -f -grid_size 2,1 -grid_bounds 0.,24.,0.,12. -bc_wall 1,2,3,4 -dm_refine_hierarchy 0 \
-          -physics euler -ufv_cfl 1 -eu_alpha 0. -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
+	-@${MPIEXEC} -n 1 ./ex11 -ufv_vtk_interval 1 -monitor density,energy -f -grid_size 2,1 -grid_bounds 0.,24.,0.,12. -bc_wall 1,2,3,4 -dm_refine_hierarchy 0 \
+          -physics euler -ufv_cfl 1 -eu_alpha 90. -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 \
           -petscfv_type leastsquares -petsclimiter_type sin
 #           > ex11_1.tmp 2>&1; \
 #	   ${DIFF} output/ex11_1.out ex11_euler.tmp || printf "${PWD}\nPossible problem with ex11_1, diffs above\n=========================================\n";
