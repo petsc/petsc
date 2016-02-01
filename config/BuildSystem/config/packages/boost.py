@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.download        = ['http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz']
     self.includes        = ['boost/multi_index_container.hpp']
+    self.liblist         = [['libboost_atomic.a']]
     self.cxx             = 1
     self.downloadonWindows = 1
     return

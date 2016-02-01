@@ -73,13 +73,21 @@ class Retriever(logger.Logger):
       config.base.Configure.executeShellCommand(self.sourceControl.git+' clone '+dir+' '+newgitrepo)
       return
 
+    if url.startswith('hg://'):
+      if not hasattr(self.sourceControl, 'hg'): return
+
+      newgitrepo = os.path.join(root,'hg.'+package)
+      if os.path.isdir(newgitrepo): shutil.rmtree(newgitrepo)
+      if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
+      config.base.Configure.executeShellCommand(self.sourceControl.hg+' clone '+url[5:]+' '+newgitrepo)
+      return
+
     if url.startswith('ssh://hg@'):
       if not hasattr(self.sourceControl, 'hg'): return
 
       newgitrepo = os.path.join(root,'hg.'+package)
       if os.path.isdir(newgitrepo): shutil.rmtree(newgitrepo)
       if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
-
       config.base.Configure.executeShellCommand(self.sourceControl.hg+' clone '+url+' '+newgitrepo)
       return
       
