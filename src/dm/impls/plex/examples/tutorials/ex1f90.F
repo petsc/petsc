@@ -55,7 +55,7 @@
 !     Setup boundary conditions
       numBC = 1
 !     Test label retrieval
-      call DMPlexGetLabel(dm, 'marker', label, ierr)
+      call DMGetLabel(dm, 'marker', label, ierr)
       CHKERRQ(ierr)
       call DMLabelGetValue(label, 0, val, ierr)
       CHKERRQ(ierr)
@@ -74,7 +74,7 @@
       call ISCreateStride(PETSC_COMM_WORLD, 1, 0, 1, bcCompIS(1), ierr)
       CHKERRQ(ierr)
       pBcCompIS => bcCompIS
-      call DMPlexGetStratumIS(dm, 'marker', 1, bcPointIS(1),
+      call DMGetStratumIS(dm, 'marker', 1, bcPointIS(1),
      &    ierr)
       CHKERRQ(ierr)
       pBcPointIS => bcPointIS
