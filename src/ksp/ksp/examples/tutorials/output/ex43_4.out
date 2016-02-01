@@ -52,7 +52,6 @@ KSP Object:(stokes_) 4 MPI processes
     PIPEGCR: preallocated 5 directions
     PIPEGCR: Using truncation-restart strategy
     PIPEGCR: w unrolling = 1 
-    PIPEGCR: search space resets = 0 
     PIPEGCR: restarts performed = 0 
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.

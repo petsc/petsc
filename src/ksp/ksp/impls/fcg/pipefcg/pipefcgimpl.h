@@ -12,9 +12,8 @@ typedef struct {
   Vec          *Qvecs, *ZETAvecs, *Pvecs, *Cvecs, *Svecs, **pQvecs, **pZETAvecs, **pPvecs, **pCvecs, **pSvecs,*Qold,*ZETAold,*Pold,*Sold; /* Arrays of vectors, and arrays of pointers to them */
   PetscInt     *chunksizes; /* Chunk sizes allocated */
   PetscInt     nchunks;     /* Number of chunks */
-  KSPFCDTruncationType trunctype;
+  KSPFCDTruncationType truncstrat;
   PetscInt     n_restarts;
-  PetscInt     n_search_space_resets;
   PetscScalar *dots;
   PetscReal   *etas;
   Vec         *redux;

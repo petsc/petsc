@@ -8,7 +8,7 @@
 #define KSPPIPEGCR_DEFAULT_MMAX 15
 #define KSPPIPEGCR_DEFAULT_NPREALLOC 5
 #define KSPPIPEGCR_DEFAULT_VECB 5
-#define KSPPIPEGCR_DEFAULT_TRUNCTYPE KSP_FCD_TRUNCATION_RESTART
+#define KSPPIPEGCR_DEFAULT_TRUNCSTRAT KSP_FCD_TRUNC_TYPE_NOTAY
 #define KSPPIPEGCR_DEFAULT_UNROLL_W PETSC_TRUE
 
 #include <petscksp.h>
@@ -344,9 +344,9 @@ PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
 
-  if(pipegcr->trunctype == KSP_FCD_TRUNCATION){
+  if(pipegcr->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD){
     truncstr = "Using standard truncation strategy";
-  }else if(pipegcr->trunctype == KSP_FCD_TRUNCATION_RESTART){
+  }else if(pipegcr->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){
     truncstr = "Using truncation-restart strategy";
   }else{
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCD truncation strategy");
@@ -357,7 +357,6 @@ PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: preallocated %D directions\n",PetscMin(pipegcr->nprealloc,pipegcr->mmax+1));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: %s\n",truncstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: w unrolling = %D \n", pipegcr->unroll_w);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: search space resets = %D \n", pipegcr->n_search_space_resets);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: restarts performed = %D \n", pipegcr->n_restarts);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,
@@ -679,7 +678,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
 
   Input Parameters:
 +  ksp - the Krylov space context
--  trunctype - the choice of strategy
+-  truncstrat - the choice of strategy
 
   Level: intermediate
 
@@ -688,14 +687,14 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
 @*/
-PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType trunctype)
+PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 {
   KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(ksp,trunctype,2);
-  pipegcr->trunctype=trunctype;
+  PetscValidLogicalCollectiveEnum(ksp,truncstrat,2);
+  pipegcr->truncstrat=truncstrat;
   PetscFunctionReturn(0);
 }
 
@@ -713,7 +712,7 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType trunctyp
 .  ksp - the Krylov space context
 
    Output Parameter:
-.  trunctype - the strategy type
+.  truncstrat - the strategy type
 
   Options Database:
 . -ksp_pipegcr_truncation, -ksp_pipegcr_truncation_restart
@@ -724,13 +723,13 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType trunctyp
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
 @*/
-PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp,KSPFCDTruncationType *trunctype)
+PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 {
   KSP_PIPEGCR *pipegcr=(KSP_PIPEGCR*)ksp->data;;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  *trunctype=pipegcr->trunctype;
+  *truncstrat=pipegcr->truncstrat;
   PetscFunctionReturn(0);
 }
 
@@ -750,9 +749,9 @@ PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsObject,KS
   ierr = PetscOptionsInt("-ksp_pipegcr_nprealloc","Number of directions to preallocate","KSPPIPEGCRSetNprealloc",pipegcr->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPPIPEGCRSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
   ierr = PetscOptionsBoolGroupBegin("-ksp_pipegcr_truncation","Use all stored vectors to orthogonalize","KSPPIPEGCRSetTruncationType",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEGCRSetTruncationType(ksp,KSP_FCD_TRUNCATION);CHKERRQ(ierr); }
+  if (flg) { ierr = KSPPIPEGCRSetTruncationType(ksp,KSP_FCD_TRUNC_TYPE_STANDARD);CHKERRQ(ierr); }
   ierr = PetscOptionsBoolGroupEnd("-ksp_pipegcr_truncation_restart","Collect mmax previous directions to orthogonalize then restart","KSPPIPEGCRSetTruncationType",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEGCRSetTruncationType(ksp,KSP_FCD_TRUNCATION_RESTART);CHKERRQ(ierr); }
+  if (flg) { ierr = KSPPIPEGCRSetTruncationType(ksp,KSP_FCD_TRUNC_TYPE_NOTAY);CHKERRQ(ierr); }
   ierr = PetscOptionsBool("-ksp_pipegcr_unroll_w","Use unrolling of w","KSPPIPEGCRSetUnrollW",pipegcr->unroll_w,&pipegcr->unroll_w,NULL);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -856,15 +855,14 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,&pipegcr);CHKERRQ(ierr);
-  pipegcr->mmax                  = KSPPIPEGCR_DEFAULT_MMAX;
-  pipegcr->nprealloc             = KSPPIPEGCR_DEFAULT_NPREALLOC;
-  pipegcr->nvecs                 = 0;
-  pipegcr->vecb                  = KSPPIPEGCR_DEFAULT_VECB;
-  pipegcr->nchunks               = 0;
-  pipegcr->trunctype             = KSPPIPEGCR_DEFAULT_TRUNCTYPE;
-  pipegcr->n_restarts            = 0;
-  pipegcr->n_search_space_resets = 0;
-  pipegcr->unroll_w              = KSPPIPEGCR_DEFAULT_UNROLL_W;
+  pipegcr->mmax       = KSPPIPEGCR_DEFAULT_MMAX;
+  pipegcr->nprealloc  = KSPPIPEGCR_DEFAULT_NPREALLOC;
+  pipegcr->nvecs      = 0;
+  pipegcr->vecb       = KSPPIPEGCR_DEFAULT_VECB;
+  pipegcr->nchunks    = 0;
+  pipegcr->truncstrat = KSPPIPEGCR_DEFAULT_TRUNCSTRAT;
+  pipegcr->n_restarts = 0;
+  pipegcr->unroll_w   = KSPPIPEGCR_DEFAULT_UNROLL_W;
 
   ksp->data       = (void*)pipegcr;
 

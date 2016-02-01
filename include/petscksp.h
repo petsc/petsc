@@ -160,21 +160,20 @@ PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP,PetscBool,PetscBool,PetscInt *,Ve
 
   KSPFCDTruncationType - Define how stored directions are used to orthogonalize in flexible conjugate directions (FCD) methods
 
-  KSP_FCD_TRUNCATION uses all (up to mmax) stored directions
-  KSP_FCD_TRUNCATION_RESTART uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
    Level: intermediate
 .seealso : KSPFCG,KSPPIPEFCG,KSPPIPEGCR,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
 
 E*/
-typedef enum {KSP_FCD_TRUNCATION,KSP_FCD_TRUNCATION_RESTART} KSPFCDTruncationType;
+typedef enum {KSP_FCD_TRUNC_TYPE_STANDARD,KSP_FCD_TRUNC_TYPE_NOTAY} KSPFCDTruncationType;
 PETSC_EXTERN const char *const KSPFCDTruncationTypes[];
 
 #define KSPFCDGetNumOldDirections(ctx,i,mi) ({                                                    \
-  if(ctx->trunctype == KSP_FCD_TRUNCATION_RESTART){                                               \
+  if(ctx->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){                                                \
     mi = ((i-1) % ctx->mmax)+1;                                                                   \
-    if (mi==1 && i!=1) ++(ctx->n_search_space_resets);                                            \
-  } else if (ctx->trunctype == KSP_FCD_TRUNCATION)                                                \
+  } else if (ctx->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD)                                      \
     mi = ctx->mmax;                                                                               \
  else {                                                                                           \
    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unrecognized Truncation Strategy");CHKERRQ(ierr); \

@@ -7,7 +7,7 @@
 #define KSPPIPEFCG_DEFAULT_MMAX 15
 #define KSPPIPEFCG_DEFAULT_NPREALLOC 5
 #define KSPPIPEFCG_DEFAULT_VECB 5
-#define KSPPIPEFCG_DEFAULT_TRUNCTYPE KSP_FCD_TRUNCATION_RESTART
+#define KSPPIPEFCG_DEFAULT_TRUNCSTRAT KSP_FCD_TRUNC_TYPE_NOTAY
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPAllocateVectors_PIPEFCG"
@@ -395,9 +395,9 @@ PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
 
-  if(pipefcg->trunctype == KSP_FCD_TRUNCATION){
+  if(pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD){
     truncstr = "Using standard truncation strategy";
-  }else if(pipefcg->trunctype == KSP_FCD_TRUNCATION_RESTART){
+  }else if(pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){
     truncstr = "Using truncation-restart strategy";
   }else{
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCD truncation strategy");
@@ -407,7 +407,6 @@ PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: max previous directions = %D\n",pipefcg->mmax);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: preallocated %D directions\n",PetscMin(pipefcg->nprealloc,pipefcg->mmax+1));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: %s\n",truncstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: search space resets = %D \n", pipefcg->n_search_space_resets);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: restarts performed = %D \n", pipefcg->n_restarts);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,
@@ -552,12 +551,12 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 
   Logically Collective on KSP
 
-  KSP_FCD_TRUNCATION uses all (up to mmax) stored directions
-  KSP_FCD_TRUNCATION_RESTART collects the last mmax directions and then restarts
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses max(1,mod(i,mmax)) stored directions at iteration i=0,1,..
 
   Input Parameters:
 +  ksp - the Krylov space context
--  trunctype - the choice of strategy
+-  truncstrat - the choice of strategy
 
   Level: intermediate
 
@@ -566,14 +565,14 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 
 .seealso: KSPPIPEFCG, KSPPIPEFCGGetTruncationType, KSPFCDTruncationType
 @*/
-PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType trunctype)
+PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 {
   KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(ksp,trunctype,2);
-  pipefcg->trunctype=trunctype;
+  PetscValidLogicalCollectiveEnum(ksp,truncstrat,2);
+  pipefcg->truncstrat=truncstrat;
   PetscFunctionReturn(0);
 }
 
@@ -588,7 +587,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType trunctyp
 .  ksp - the Krylov space context
 
    Output Parameter:
-.  trunctype - the strategy type
+.  truncstrat - the strategy type
 
   Options Database:
 . -ksp_pipefcg_truncation, -ksp_pipefcg_truncation_restart
@@ -599,13 +598,13 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType trunctyp
 
 .seealso: KSPPIPEFCG, KSPPIPEFCGSetTruncationType, KSPFCDTruncationType
 @*/
-PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *trunctype)
+PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 {
   KSP_PIPEFCG *pipefcg=(KSP_PIPEFCG*)ksp->data;;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  *trunctype=pipefcg->trunctype;
+  *truncstrat=pipefcg->truncstrat;
   PetscFunctionReturn(0);
 }
 
@@ -625,9 +624,9 @@ PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KS
   ierr = PetscOptionsInt("-ksp_pipefcg_nprealloc","Number of directions to preallocate","KSPPIPEFCGSetNprealloc",pipefcg->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPPIPEFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
   ierr = PetscOptionsBoolGroupBegin("-ksp_pipefcg_truncation","Use all stored vectors to orthogonalize","KSPPIPEFCGSetTruncationType",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEFCGSetTruncationType(ksp,KSP_FCD_TRUNCATION);CHKERRQ(ierr); }
+  if (flg) { ierr = KSPPIPEFCGSetTruncationType(ksp,KSP_FCD_TRUNC_TYPE_STANDARD);CHKERRQ(ierr); }
   ierr = PetscOptionsBoolGroupEnd("-ksp_pipefcg_truncation_restart","Collect mmax previous directions to orthogonalize then restart","KSPPIPEFCGSetTruncationType",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEFCGSetTruncationType(ksp,KSP_FCD_TRUNCATION_RESTART);CHKERRQ(ierr); }
+  if (flg) { ierr = KSPPIPEFCGSetTruncationType(ksp,KSP_FCD_TRUNC_TYPE_NOTAY);CHKERRQ(ierr); }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -662,18 +661,17 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,&pipefcg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  pipefcg->type                  = KSP_CG_SYMMETRIC;
+  pipefcg->type       = KSP_CG_SYMMETRIC;
 #else
-  pipefcg->type                  = KSP_CG_HERMITIAN;
+  pipefcg->type       = KSP_CG_HERMITIAN;
 #endif
-  pipefcg->mmax                  = KSPPIPEFCG_DEFAULT_MMAX;
-  pipefcg->nprealloc             = KSPPIPEFCG_DEFAULT_NPREALLOC;
-  pipefcg->nvecs                 = 0;
-  pipefcg->vecb                  = KSPPIPEFCG_DEFAULT_VECB;
-  pipefcg->nchunks               = 0;
-  pipefcg->trunctype             = KSPPIPEFCG_DEFAULT_TRUNCTYPE;
-  pipefcg->n_search_space_resets = 0;
-  pipefcg->n_restarts            = 0;
+  pipefcg->mmax       = KSPPIPEFCG_DEFAULT_MMAX;
+  pipefcg->nprealloc  = KSPPIPEFCG_DEFAULT_NPREALLOC;
+  pipefcg->nvecs      = 0;
+  pipefcg->vecb       = KSPPIPEFCG_DEFAULT_VECB;
+  pipefcg->nchunks    = 0;
+  pipefcg->truncstrat = KSPPIPEFCG_DEFAULT_TRUNCSTRAT;
+  pipefcg->n_restarts = 0;
 
   ksp->data = (void*)pipefcg;
 

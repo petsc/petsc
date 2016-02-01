@@ -7,12 +7,12 @@
 extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
 extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 
-const char *const KSPFCGTruncationTypes[]     = {"TRUNCATION","TRUNCATION-RESTART","KSPFCDTrunctionTypes","KSP_FCD_TRUNC_TYPE_",0};
+const char *const KSPFCGTruncationTypes[]     = {"STANDARD","NOTAY","KSPFCDTrunctionTypes","KSP_FCD_TRUNC_TYPE_",0};
 
-#define KSPFCG_DEFAULT_MMAX 30
-#define KSPFCG_DEFAULT_NPREALLOC 10
-#define KSPFCG_DEFAULT_VECB 5
-#define KSPFCG_DEFAULT_TRUNCTYPE KSP_FCD_TRUNCATION_RESTART
+#define KSPFCG_DEFAULT_MMAX 30          /* maximum number of search directions to keep */
+#define KSPFCG_DEFAULT_NPREALLOC 10     /* number of search directions to preallocate */
+#define KSPFCG_DEFAULT_VECB 5           /* number of search directions to allocate each time new direction vectors are needed */
+#define KSPFCG_DEFAULT_TRUNCSTRAT KSP_FCD_TRUNC_TYPE_NOTAY
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPAllocateVectors_FCG"
@@ -60,18 +60,8 @@ PetscErrorCode    KSPSetUp_FCG(KSP ksp)
   /* Allocated space for pointers to additional work vectors
    note that mmax is the number of previous directions, so we add 1 for the current direction,
    and an extra 1 for the prealloc (which might be empty) */
-  ierr = PetscMalloc5(
-    (fcg->mmax)+1,&(fcg->Pvecs),
-    (fcg->mmax)+1,&(fcg->Cvecs),
-    (fcg->mmax)+1,&(fcg->pPvecs),
-    (fcg->mmax)+1,&(fcg->pCvecs),
-    (fcg->mmax)+2,&(fcg->chunksizes)
-    );CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)ksp,
-    (fcg->mmax + 1) * 2 * sizeof(Vec*) +
-    (fcg->mmax + 1) * 2 * sizeof(Vec**) +
-    (fcg->mmax + 2)     * sizeof(PetscInt)
-  );CHKERRQ(ierr);
+  ierr = PetscMalloc5(fcg->mmax+1,&fcg->Pvecs,fcg->mmax+1,&fcg->Cvecs,fcg->mmax+1,&fcg->pPvecs,fcg->mmax+1,&fcg->pCvecs,fcg->mmax+2,&fcg->chunksizes);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,2*(fcg->mmax+1)*sizeof(Vec*) + 2*(fcg->mmax + 1)*sizeof(Vec**) + (fcg->mmax + 2)*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if(fcg->nprealloc > fcg->mmax+1){
@@ -311,18 +301,14 @@ PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
 
-  if(fcg->trunctype == KSP_FCD_TRUNCATION){
-    truncstr = "Using standard truncation strategy";
-  }else if(fcg->trunctype == KSP_FCD_TRUNCATION_RESTART){
-    truncstr = "Using Notay's truncation-restart strategy";
-  }else{
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCG truncation strategy");
-  }
+  if (fcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD) truncstr = "Using standard truncation strategy";
+  else if (fcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY) truncstr = "Using Notay's truncation strategy";
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCG truncation strategy");
 
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  FCG: m_max=%D\n",fcg->mmax);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  FCG: preallocated %D directions\n",PetscMin(fcg->nprealloc,fcg->mmax+1));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  FCG: search space resets = %D \n", fcg->n_search_space_resets);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FCG: %s\n",truncstr);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"m_max %D nprealloc %D %s",fcg->mmax,fcg->nprealloc,truncstr);CHKERRQ(ierr);
   }
@@ -422,6 +408,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ksp,nprealloc,2);
+  if(nprealloc > fcg->mmax+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot preallocate more than m_max+1 vectors");
   fcg->nprealloc = nprealloc;
   PetscFunctionReturn(0);
 }
@@ -465,12 +452,12 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 
   Logically Collective on KSP
 
-  KSP_FCD_TRUNCATION uses all (up to mmax) stored directions
-  KSP_FCD_TRUNCATION_RESTART collects mmax directions, then restarts
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1,..
 
   Input Parameters:
 +  ksp - the Krylov space context
--  trunctype - the choice of strategy
+-  truncstrat - the choice of strategy
 
   Level: intermediate
 
@@ -479,14 +466,14 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 
   .seealso: KSPFCDTruncationType, KSPFCGGetTruncationType
 @*/
-PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType trunctype)
+PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 {
   KSP_FCG *fcg=(KSP_FCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(ksp,trunctype,2);
-  fcg->trunctype=trunctype;
+  PetscValidLogicalCollectiveEnum(ksp,truncstrat,2);
+  fcg->truncstrat=truncstrat;
   PetscFunctionReturn(0);
 }
 
@@ -501,7 +488,7 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType trunctype)
 .  ksp - the Krylov space context
 
    Output Parameter:
-.  trunctype - the strategy type
+.  truncstrat - the strategy type
 
   Options Database:
 . -ksp_fcg_truncation_type <standard, notay>
@@ -512,13 +499,13 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType trunctype)
 
 .seealso: KSPFCG, KSPFCGSetTruncationType, KSPFCDTruncationType
 @*/
-PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *trunctype)
+PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 {
   KSP_FCG *fcg=(KSP_FCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  *trunctype=fcg->trunctype;
+  *truncstrat=fcg->truncstrat;
   PetscFunctionReturn(0);
 }
 
@@ -538,8 +525,10 @@ PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ks
     ierr = KSPFCGSetMmax(ksp,mmax);CHKERRQ(ierr); 
   }
   ierr = PetscOptionsInt("-ksp_fcg_nprealloc","Number of directions to preallocate","KSPFCGSetNprealloc",fcg->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
-  ierr = PetscOptionsEnum("-ksp_fcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCGTruncationTypes,(PetscEnum)fcg->trunctype,(PetscEnum*)&fcg->trunctype,NULL);CHKERRQ(ierr);
+  if (flg) { 
+    ierr = KSPFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); 
+  }
+  ierr = PetscOptionsEnum("-ksp_fcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCGTruncationTypes,(PetscEnum)fcg->truncstrat,(PetscEnum*)&fcg->truncstrat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -577,17 +566,16 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,&fcg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  fcg->type                  = KSP_CG_SYMMETRIC;
+  fcg->type       = KSP_CG_SYMMETRIC;
 #else
-  fcg->type                  = KSP_CG_HERMITIAN;
+  fcg->type       = KSP_CG_HERMITIAN;
 #endif
-  fcg->mmax                  = KSPFCG_DEFAULT_MMAX;
-  fcg->nprealloc             = KSPFCG_DEFAULT_NPREALLOC;
-  fcg->nvecs                 = 0;
-  fcg->vecb                  = KSPFCG_DEFAULT_VECB;
-  fcg->nchunks               = 0;
-  fcg->trunctype             = KSPFCG_DEFAULT_TRUNCTYPE;
-  fcg->n_search_space_resets = 0;
+  fcg->mmax       = KSPFCG_DEFAULT_MMAX;
+  fcg->nprealloc  = KSPFCG_DEFAULT_NPREALLOC;
+  fcg->nvecs      = 0;
+  fcg->vecb       = KSPFCG_DEFAULT_VECB;
+  fcg->nchunks    = 0;
+  fcg->truncstrat = KSPFCG_DEFAULT_TRUNCSTRAT;
 
   ksp->data = (void*)fcg;
 
