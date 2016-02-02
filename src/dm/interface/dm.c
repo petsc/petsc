@@ -107,7 +107,8 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
-  ierr = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "Cannot Clone() a DM which is not setup. Need to call DMSetUp().");
+  ierr = DMCreate(PetscObjectComm((PetscObject) dm), newdm);CHKERRQ(ierr);
   ierr = PetscFree((*newdm)->labels);CHKERRQ(ierr);
   dm->labels->refct++;
   (*newdm)->labels = dm->labels;
