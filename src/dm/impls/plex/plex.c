@@ -5782,14 +5782,16 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
   i[0] = 0;
   ierr = PetscSectionGetNumFields(section,&numFields);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; p++) {
-    ierr = PetscSectionGetDof(aSec,p,&dof);CHKERRQ(ierr);
-    if (!dof) continue;
-    ierr = PetscSectionGetOffset(aSec,p,&off);CHKERRQ(ierr);
+    PetscInt rDof, rOff, r;
+
+    ierr = PetscSectionGetDof(aSec,p,&rDof);CHKERRQ(ierr);
+    if (!rDof) continue;
+    ierr = PetscSectionGetOffset(aSec,p,&rOff);CHKERRQ(ierr);
     if (numFields) {
       for (f = 0; f < numFields; f++) {
         annz = 0;
-        for (q = 0; q < dof; q++) {
-          a = anchors[off + q];
+        for (r = 0; r < rDof; r++) {
+          a = anchors[rOff + r];
           ierr = PetscSectionGetFieldDof(section,a,f,&aDof);CHKERRQ(ierr);
           annz += aDof;
         }
