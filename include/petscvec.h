@@ -545,8 +545,6 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMod
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
-PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArray(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArray(Vec,PetscScalar**);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)

@@ -28,8 +28,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_inplace(Mat C,Mat A,const MatFactorI
   MatScalar       m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
   MatScalar       *ba   = b->a,work[25];
   PetscReal       shift = info->shiftamount;
+  PetscBool       allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc1(25*(n+1),&rtmp);CHKERRQ(ierr);
@@ -188,7 +190,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_inplace(Mat C,Mat A,const MatFactorI
     }
     /* invert diagonal block */
     w    = ba + 25*diag_offset[i];
-    ierr = PetscKernel_A_gets_inverse_A_5(w,ipvt,work,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_5(w,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -225,8 +228,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat B,Mat A,const MatFactorInfo *inf
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a,work[25];
   PetscInt       flg,ipvt[5];
   PetscReal      shift = info->shiftamount;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
@@ -302,8 +307,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat B,Mat A,const MatFactorInfo *inf
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    /* ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
-    ierr = PetscKernel_A_gets_inverse_A_5(pv,ipvt,work,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_5(pv,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
@@ -347,8 +352,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace(Mat C,Mat A,
   MatScalar      m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
   MatScalar      *ba   = b->a,*aa = a->a,work[25];
   PetscReal      shift = info->shiftamount;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
   ierr = PetscMalloc1(25*(n+1),&rtmp);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -486,7 +493,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace(Mat C,Mat A,
     }
     /* invert diagonal block */
     w    = ba + 25*diag_offset[i];
-    ierr = PetscKernel_A_gets_inverse_A_5(w,ipvt,work,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_5(w,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -512,8 +520,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const Ma
   MatScalar      *rtmp,*pc,*mwork,*v,*vv,*pv,*aa=a->a,work[25];
   PetscInt       flg,ipvt[5];
   PetscReal      shift = info->shiftamount;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
+
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,&rtmp,bs2,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
@@ -586,8 +597,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const Ma
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    /* ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
-    ierr = PetscKernel_A_gets_inverse_A_5(pv,ipvt,work,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_5(pv,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);

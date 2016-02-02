@@ -99,7 +99,7 @@
       <h4>General:</h4>
       <ul>
         <li>PetscGetTime() is replaced with PetscTime(), in C you must include petsctime.h to use</li>
-        <li>PetscViewerBinaryMatlabOpen() and friends are all removed, simply use PetscViewerBinaryOpen() followed by PetscViewerSetFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)</li>
+        <li>PetscViewerBinaryMatlabOpen() and friends are all removed, simply use PetscViewerBinaryOpen() followed by PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)</li>
         <li>Users should use new <tt>PetscFunctionBeginUser</tt> in there code instead of <tt>PetscFunctionBegin</tt> to get more relevant diagnostics.</li>
         <li>Replaced the hodge-podge of -xxx_view -xxx_view_yyy with a single consistent scheme: -xxx_view [ascii,binary,draw,socket,matlab,vtk][:filename][:ascii_info,ascii_info_detail,ascii_matlab,draw_contour,etc].</li>
         <li>In PETSc options files, the comment characters <tt>!</tt> and <tt>%</tt> are no longer supported, use <tt>#</tt>.</li>

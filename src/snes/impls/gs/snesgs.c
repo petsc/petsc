@@ -330,6 +330,10 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
   the Gauss-Seidel smoother is inherited through composition.  If a solver has been created with SNESGetPC(), it will have
   its parent's Gauss-Seidel routine associated with it.
 
+   References:
+.  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+   SIAM Review, 57(4), 2015
+
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types)
 M*/
 

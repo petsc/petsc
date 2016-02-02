@@ -2461,6 +2461,7 @@ PetscErrorCode  MatInvertBlockDiagonal_MPIAIJ(Mat A,const PetscScalar **values)
 
   PetscFunctionBegin;
   ierr = MatInvertBlockDiagonal(a->A,values);CHKERRQ(ierr);
+  A->errortype = a->A->errortype;
   PetscFunctionReturn(0);
 }
 
@@ -2499,6 +2500,8 @@ PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ(Mat A,PetscBool sc)
    Input Parameters:
 +    A - the matrix
 -    sc - PETSC_TRUE indicates use the scalable algorithm (default is not to use the scalable algorithm)
+
+ Level: advanced
 
 @*/
 PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat A,PetscBool sc)

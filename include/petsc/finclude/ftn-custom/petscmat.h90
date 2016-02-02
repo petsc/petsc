@@ -52,7 +52,7 @@
       Interface
         Subroutine MatSeqAIJGetArrayF90(v,array,ierr)
           USE_MAT_HIDE
-          PetscScalar, pointer :: array(:,:)
+          PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           MAT_HIDE     v
         End Subroutine
@@ -62,7 +62,7 @@
       Interface
         Subroutine MatSeqAIJRestoreArrayF90(v,array,ierr)
           USE_MAT_HIDE
-          PetscScalar, pointer :: array(:,:)
+          PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           MAT_HIDE     v
         End Subroutine

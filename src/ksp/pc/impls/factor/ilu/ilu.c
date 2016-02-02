@@ -345,17 +345,13 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
           is never done on the GPU).
 
    References:
-   T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
-   self-adjoint elliptic difference equations. SIAM J. Numer. Anal., 5:559--573, 1968.
-
-   T.A. Oliphant. An implicit numerical method for solving two-dimensional time-dependent dif-
-   fusion problems. Quart. Appl. Math., 19:221--229, 1961.
-
-   Review article: 
-    APPROXIMATE AND INCOMPLETE FACTORIZATIONS, TONY F. CHAN AND HENK A. VAN DER VORST
-      http://igitur-archive.library.uu.nl/math/2001-0621-115821/proc.pdf chapter in Parallel Numerical
++  1. - T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
+   self adjoint elliptic difference equations. SIAM J. Numer. Anal., 5, 1968.
+.  2. -  T.A. Oliphant. An implicit numerical method for solving two dimensional timedependent diffusion problems. Quart. Appl. Math., 19, 1961.
+-  3. -  TONY F. CHAN AND HENK A. VAN DER VORST, APPROXIMATE AND INCOMPLETE FACTORIZATIONS, 
+      Chapter in Parallel Numerical
       Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
-      Science and Engineering, Kluwer, pp. 167--202.
+      Science and Engineering, Kluwer.
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,

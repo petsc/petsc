@@ -676,8 +676,8 @@ $    G(Y) = F(Y,(Y-X)/dt)
   Level: beginner
 
   References:
-  Todd S. Coffey and C. T. Kelley and David E. Keyes, Pseudotransient Continuation and Differential-Algebraic Equations, 2003.
-  C. T. Kelley and David E. Keyes, Convergence analysis of Pseudotransient Continuation, 1998.
++  1. - Todd S. Coffey and C. T. Kelley and David E. Keyes, Pseudotransient Continuation and Differential Algebraic Equations, 2003.
+-  2. - C. T. Kelley and David E. Keyes, Convergence analysis of Pseudotransient Continuation, 1998.
 
   Notes:
   The residual computed by this method includes the transient term (Xdot is computed instead of

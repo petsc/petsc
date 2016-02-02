@@ -400,15 +400,17 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
   if (output) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_1D.vtk", &vv);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(dac, vv);CHKERRQ(ierr);
     ierr = VecView(ac, vv);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_1D.vtk", &vv);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(daf, vv);CHKERRQ(ierr);
     ierr = VecView(af, vv);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
   }
 
@@ -500,15 +502,17 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
   if (output) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_2D.vtk", &vv);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(dac, vv);CHKERRQ(ierr);
     ierr = VecView(ac, vv);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_2D.vtk", &vv);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(daf, vv);CHKERRQ(ierr);
     ierr = VecView(af, vv);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
   }
 
@@ -604,15 +608,17 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
   if (output) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_3D.vtk", &vv);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(dac, vv);CHKERRQ(ierr);
     ierr = VecView(ac, vv);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_3D.vtk", &vv);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(daf, vv);CHKERRQ(ierr);
     ierr = VecView(af, vv);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
   }
 

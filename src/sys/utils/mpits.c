@@ -278,8 +278,8 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 
    References:
-   The MPI_Ibarrier implementation uses the algorithm in
-   Hoefler, Siebert and Lumsdaine, Scalable communication protocols for dynamic sparse data exchange, 2010.
+.  1. - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
+   Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
 @*/
@@ -492,8 +492,8 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 
    References:
-   The MPI_Ibarrier implementation uses the algorithm in
-   Hoefler, Siebert and Lumsdaine, Scalable communication protocols for dynamic sparse data exchange, 2010.
+.  1. - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
+   Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedFReq(), PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
 @*/
@@ -548,8 +548,8 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datat
    Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
 
    References:
-   The MPI_Ibarrier implementation uses the algorithm in
-   Hoefler, Siebert and Lumsdaine, Scalable communication protocols for dynamic sparse data exchange, 2010.
+.  1. - Hoefler, Siebert and Lumsdaine, The MPI_Ibarrier implementation uses the algorithm in
+   Scalable communication protocols for dynamic sparse data exchange, 2010.
 
 .seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedF(), PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
 @*/

@@ -1,0 +1,5 @@
+nb = 9, ngen = 3, nload = 3, nbranch = 9
+  0 SNES Function norm 2.64764 
+  1 SNES Function norm 0.203366 
+  2 SNES Function norm 0.00294166 
+  3 SNES Function norm 8.853e-07

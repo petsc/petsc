@@ -267,12 +267,16 @@ typedef int   (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 
 /*
-  In order that the PETSc MPIUNI can be used with another package that has its
-  own MPIUni we map the following function names to a unique PETSc name. Those functions
-  are defined in mpi.c and put into the libpetscsys.a or libpetsc.a library.
+  To enable linking PETSc+MPIUNI with any other package that might have its
+  own MPIUNI (equivalent implementation) we need to avoid using 'MPI'
+  namespace for MPIUNI functions that go into the petsc library.
 
-  Note that this does not work for the MPIUni Fortran symbols which are explicitly in the
-  PETSc libraries unless the flag MPIUNI_AVOID_MPI_NAMESPACE is set.
+  For C functions below (that get compiled into petsc library) - we map
+  the 'MPI' functions to use 'Petsc_MPI' namespace.
+
+  However we cannot do such maping for fortran MPIUNI functions. One
+  can use the configure option --with-mpiuni-fortran-binding=0 to
+  prevent compiling MPIUNI fortran interface.
 */
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get

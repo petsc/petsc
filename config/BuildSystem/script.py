@@ -82,6 +82,7 @@ class Script(logger.Logger):
     logger.Logger.setup(self)
     self._setup = 1
     if self.hasHelpFlag():
+      self.argDB.readonly = True
       if self.argDB.target == ['default']:
         sections = None
       else:

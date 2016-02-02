@@ -2025,7 +2025,8 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt *ival)
 
    Level: beginner
 
-   References: MUMPS Users' Guide
+   References:
+.     MUMPS Users' Guide
 
 .seealso: MatGetFactor()
 @*/
@@ -2056,7 +2057,8 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
 
    Level: beginner
 
-   References: MUMPS Users' Guide
+   References:
+.     MUMPS Users' Guide
 
 .seealso: MatGetFactor()
 @*/
@@ -2111,7 +2113,8 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F,PetscInt icntl,PetscReal *val)
 
    Level: beginner
 
-   References: MUMPS Users' Guide
+   References:
+.     MUMPS Users' Guide
 
 .seealso: MatGetFactor()
 @*/
@@ -2142,7 +2145,8 @@ PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
 
    Level: beginner
 
-   References: MUMPS Users' Guide
+   References:
+.      MUMPS Users' Guide
 
 .seealso: MatGetFactor()
 @*/
@@ -2217,7 +2221,8 @@ PetscErrorCode MatMumpsGetRinfog_MUMPS(Mat F,PetscInt icntl,PetscReal *rinfog)
 
    Level: beginner
 
-   References: MUMPS Users' Guide
+   References:
+.      MUMPS Users' Guide
 
 .seealso: MatGetFactor()
 @*/
@@ -2247,7 +2252,8 @@ PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
 
    Level: beginner
 
-   References: MUMPS Users' Guide
+   References:
+.      MUMPS Users' Guide
 
 .seealso: MatGetFactor()
 @*/
@@ -2277,7 +2283,8 @@ PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
 
    Level: beginner
 
-   References: MUMPS Users' Guide
+   References:
+.       MUMPS Users' Guide
 
 .seealso: MatGetFactor()
 @*/
@@ -2307,7 +2314,8 @@ PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
 
    Level: beginner
 
-   References: MUMPS Users' Guide
+   References:
+.      MUMPS Users' Guide
 
 .seealso: MatGetFactor()
 @*/

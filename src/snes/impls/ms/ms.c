@@ -511,12 +511,9 @@ PetscErrorCode SNESMSSetType(SNES snes,SNESMSType rostype)
       The methods are specified in low storage form (Ketcheson 2010). New methods can be registered with SNESMSRegister().
 
       References:
-
-      Ketcheson (2010) Runge-Kutta methods with minimum storage implementations.
-
-      Jameson (1983) Solution of the Euler equations for two dimensional transonic flow by a multigrid method.
-
-      Pierce and Giles (1997) Preconditioned multigrid methods for compressible flow calculations on stretched meshes.
++   1. -   Ketcheson (2010) Runge Kutta methods with minimum storage implementations.
+.   2. -   Jameson (1983) Solution of the Euler equations for two dimensional transonic flow by a multigrid method.
+-   3. -   Pierce and Giles (1997) Preconditioned multigrid methods for compressible flow calculations on stretched meshes.
 
       Level: beginner
 

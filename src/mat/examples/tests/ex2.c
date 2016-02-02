@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscReal      normf,normi,norm1;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -115,10 +115,10 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&matB);CHKERRQ(ierr);
   }
 
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free data structures */
-  if (mat)  {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
-  if (tmat) {ierr = MatDestroy(&tmat);CHKERRQ(ierr);}
-
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -4,7 +4,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz']
+    self.download        = ['http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz']
     self.includes        = ['boost/multi_index_container.hpp']
     self.cxx             = 1
     self.downloadonWindows = 1
@@ -18,6 +18,9 @@ class Configure(config.package.Package):
     fd.write(self.installDir)
     fd.close()
     if not self.installNeeded(conffile): return self.installDir
+
+    if not self.checkCompile('#include <bzlib.h>', ''):
+      raise RuntimeError('Boost requires bzlib.h. Please install it in default compiler search location.')
 
     self.log.write('boostDir = '+self.packageDir+' installDir '+self.installDir+'\n')
     self.logPrintBox('Building and installing boost, this may take many minutes')

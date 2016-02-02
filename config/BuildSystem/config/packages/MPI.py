@@ -309,11 +309,11 @@ class Configure(config.package.Package):
     self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
     self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')
     self.framework.addDefine('MPI_Comm_set_errhandler(comm,p_errhandler)', 'MPI_Errhandler_set((comm),(p_errhandler))')
-    if not self.argDB['with-mpiuni-fortran-binding']:
-      self.framework.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
-      self.usingMPIUniFortranBinding = 0
-    else:
+    if hasattr(self.compilers, 'FC') and self.argDB['with-mpiuni-fortran-binding']:
       self.usingMPIUniFortranBinding = 1
+      self.framework.addDefine('MPIUNI_FORTRAN_BINDING', 1)
+    else:
+      self.usingMPIUniFortranBinding = 0
     self.logWrite(self.framework.restoreLog())
     if self.getDefaultLanguage == 'C': self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)
     self.commf2c = 1

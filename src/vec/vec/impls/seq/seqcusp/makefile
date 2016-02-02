@@ -3,7 +3,8 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECU = veccusp.cu vecscattercusp.cu
+SOURCEC  = veccusp.c
+SOURCECU = veccusp2.cu vecscattercusp.cu
 SOURCEF  =
 SOURCEH  = cuspvecimpl.h
 LIBBASE  = libpetscvec

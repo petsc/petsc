@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zviewaf.c
+SOURCEC  = zviewaf.c zviewasetf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

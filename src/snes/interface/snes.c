@@ -650,7 +650,7 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
   PetscFunctionBegin;
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerSetFormat(viewer,format);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     if (monitorsetup) {
       ierr = (*monitorsetup)(snes,viewer);CHKERRQ(ierr);
     }

@@ -211,8 +211,8 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
    Since we do not use the values in Sp, you can still put an assembled matrix there to use normal preconditioners.
 
    References:
-+  Elman, Howle, Shadid, Shuttleworth, and Tuminaro, Block preconditioners based on approximate commutators, 2006.
--  Silvester, Elman, Kay, Wathen, Efficient preconditioning of the linearized Navier-Stokes equations for incompressible flow, 2001.
++  1. - Elman, Howle, Shadid, Shuttleworth, and Tuminaro, Block preconditioners based on approximate commutators, 2006.
+-  2. - Silvester, Elman, Kay, Wathen, Efficient preconditioning of the linearized Navier Stokes equations for incompressible flow, 2001.
 
    Concepts: physics based preconditioners, block preconditioners
 

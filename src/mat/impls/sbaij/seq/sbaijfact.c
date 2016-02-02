@@ -575,11 +575,14 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   MatScalar      *work;
   PetscInt       *pivots;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
   /* initialization */
   ierr = PetscCalloc1(bs2*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
+  allowzeropivot = PetscNot(A->erroriffailure);
+
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
@@ -683,7 +686,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
     /* invert diagonal block */
     diag = ba+k*bs2;
     ierr = PetscMemcpy(diag,dk,bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A(bs,diag,pivots,work);CHKERRQ(ierr);
+
+    ierr = PetscKernel_A_gets_inverse_A(bs,diag,pivots,work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
@@ -739,6 +744,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   MatScalar      *work;
   PetscInt       *pivots;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
   ierr = PetscCalloc1(bs2*mbs,&rtmp);CHKERRQ(ierr);
@@ -748,6 +754,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
   }
   ierr = PetscMalloc3(bs2,&dk,bs2,&uik,bs,&work);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs,&pivots);CHKERRQ(ierr);
+  allowzeropivot = PetscNot(A->erroriffailure);
 
   ai = a->i; aj = a->j; aa = a->a;
 
@@ -810,7 +817,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
     /* invert diagonal block */
     diag = ba+k*bs2;
     ierr = PetscMemcpy(diag,dk,bs2*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A(bs,diag,pivots,work);CHKERRQ(ierr);
+
+    ierr = PetscKernel_A_gets_inverse_A(bs,diag,pivots,work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
@@ -864,8 +873,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
   MatScalar      *ba = b->a,*aa,*ap;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr,dk[4],uik[4];
   PetscReal      shift = info->shiftamount;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
+
   /* initialization */
   /* il and jl record the first nonzero element in each row of the accessing
      window U(0:k, k:mbs-1).
@@ -984,7 +996,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
     /* invert diagonal block */
     diag = ba+k*4;
     ierr = PetscMemcpy(diag,dk,4*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
@@ -1035,8 +1048,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
   MatScalar      *ba = b->a,*aa,*ap,dk[8],uik[8];
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   PetscReal      shift = info->shiftamount;
+  PetscBool      allowzeropivot,zeropivotdetected;
 
   PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
+
   /* initialization */
   /* il and jl record the first nonzero element in each row of the accessing
      window U(0:k, k:mbs-1).
@@ -1121,7 +1137,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
     /* invert diagonal block */
     diag = ba+k*4;
     ierr = PetscMemcpy(diag,dk,4*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+    ierr = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
