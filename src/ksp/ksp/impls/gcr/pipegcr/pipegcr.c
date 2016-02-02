@@ -40,16 +40,16 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
       ierr = PetscLogObjectParents((PetscObject)ksp,nnewvecs,pipegcr->ptvecs[pipegcr->nchunks]);CHKERRQ(ierr);
     }
     pipegcr->nvecs += nnewvecs;
-    for(i=0;i<nnewvecs;++i){
-      pipegcr->qvecs[nvecsprev + i] = pipegcr->pqvecs[pipegcr->nchunks][i];
-      pipegcr->pvecs[nvecsprev + i] = pipegcr->ppvecs[pipegcr->nchunks][i];
-      pipegcr->svecs[nvecsprev + i] = pipegcr->psvecs[pipegcr->nchunks][i];
+    for(i=0;i<nnewvecs;i++){
+      pipegcr->qvecs[nvecsprev+i] = pipegcr->pqvecs[pipegcr->nchunks][i];
+      pipegcr->pvecs[nvecsprev+i] = pipegcr->ppvecs[pipegcr->nchunks][i];
+      pipegcr->svecs[nvecsprev+i] = pipegcr->psvecs[pipegcr->nchunks][i];
       if (pipegcr->unroll_w) {
-        pipegcr->tvecs[nvecsprev + i] = pipegcr->ptvecs[pipegcr->nchunks][i];
+        pipegcr->tvecs[nvecsprev+i] = pipegcr->ptvecs[pipegcr->nchunks][i];
       }
     }
     pipegcr->chunksizes[pipegcr->nchunks] = nnewvecs;
-    ++pipegcr->nchunks;
+    pipegcr->nchunks++;
   }
   PetscFunctionReturn(0);
 }
@@ -131,12 +131,12 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     ierr = VecAXPY(z,-alpha,q);CHKERRQ(ierr);
     if(pipegcr->unroll_w){
       ierr = VecAXPY(w,-alpha,t);CHKERRQ(ierr);
-    }else{
+    } else {
       ierr = KSP_MatMult(ksp,A,z,w);CHKERRQ(ierr);
     }
 
     /* Computations of current iteration done */
-    ++i;
+    i++;
 
     if (pipegcr->modifypc) {
       ierr = (*pipegcr->modifypc)(ksp,ksp->its,ksp->rnorm,pipegcr->modifypc_ctx);CHKERRQ(ierr);
@@ -156,10 +156,10 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     eta = pipegcr->etas+idx;
 
     /* number of old directions to orthogonalize against */
-    KSPFCDGetNumOldDirections(pipegcr,i,mi);
+    KSPFCDGetNumOldDirections(pipegcr,i,mi); /* This is a macro */
 
     /* Pick old p,s,q,zeta in a way suitable for VecMDot */
-    for(k=PetscMax(0,i-mi),j=0;k<i;++j,++k){
+    for(k=PetscMax(0,i-mi),j=0;k<i;j++,k++){
       kdx = k % (pipegcr->mmax+1);
       pipegcr->pold[j] = pipegcr->pvecs[kdx];
       pipegcr->sold[j] = pipegcr->svecs[kdx];
@@ -221,7 +221,7 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
 
     /* compute new eta and scale beta */
     *eta = 0.;
-    for(k=PetscMax(0,i-mi),j=0;k<i;++j,++k){
+    for(k=PetscMax(0,i-mi),j=0;k<i;j++,k++){
       kdx = k % (pipegcr->mmax+1);
       betas[j] /= -etas[kdx];                               /* betak  /= etak */
       *eta -= betas[j]*betas[j] * etas[kdx];                /* etaitmp = -betaik^2 * etak */
@@ -233,7 +233,7 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
       pipegcr->norm_breakdown = PETSC_TRUE;
       ierr = PetscInfo1(ksp,"Restart due to square root breakdown at it = \n",ksp->its);CHKERRQ(ierr);
       break;
-    }else{
+    } else {
       alpha= gamma/(*eta);                                  /* alpha = gamma/etai */
     }
 
@@ -346,11 +346,10 @@ PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
 
   if(pipegcr->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD){
     truncstr = "Using standard truncation strategy";
-  }else if(pipegcr->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){
+  } else if(pipegcr->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){
     truncstr = "Using truncation-restart strategy";
-  }else{
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCD truncation strategy");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCD truncation strategy");
+  
 
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: max previous directions = %D\n",pipegcr->mmax);CHKERRQ(ierr);
@@ -358,10 +357,8 @@ PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: %s\n",truncstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: w unrolling = %D \n", pipegcr->unroll_w);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: restarts performed = %D \n", pipegcr->n_restarts);CHKERRQ(ierr);
-  } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer,
-      "max previous directions = %D, preallocated %D directions, %s truncation strategy",
-      pipegcr->mmax,pipegcr->nprealloc,truncstr);CHKERRQ(ierr);
+  } else if (isstring) { 
+    ierr = PetscViewerStringSPrintf(viewer, "max previous directions = %D, preallocated %D directions, %s truncation strategy", pipegcr->mmax,pipegcr->nprealloc,truncstr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -388,26 +385,13 @@ PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 
   /* Allocated space for pointers to additional work vectors
     note that mmax is the number of previous directions, so we add 1 for the current direction */
-  ierr = PetscMalloc6(
-    pipegcr->mmax+1,&(pipegcr->pvecs),pipegcr->mmax+1,&(pipegcr->ppvecs),
-    pipegcr->mmax+1,&(pipegcr->svecs),pipegcr->mmax+1,&(pipegcr->psvecs),
-    pipegcr->mmax+1,&(pipegcr->qvecs),pipegcr->mmax+1,&(pipegcr->pqvecs));CHKERRQ(ierr);
+  ierr = PetscMalloc6(pipegcr->mmax+1,&(pipegcr->pvecs),pipegcr->mmax+1,&(pipegcr->ppvecs),pipegcr->mmax+1,&(pipegcr->svecs), pipegcr->mmax+1,&(pipegcr->psvecs),pipegcr->mmax+1,&(pipegcr->qvecs),pipegcr->mmax+1,&(pipegcr->pqvecs));CHKERRQ(ierr);
   if (pipegcr->unroll_w) {
-    ierr = PetscMalloc2(
-      pipegcr->mmax+1,&(pipegcr->tvecs),pipegcr->mmax+1,&(pipegcr->ptvecs));CHKERRQ(ierr);
-    ierr = PetscMalloc1(
-      pipegcr->mmax+2,&(pipegcr->told));CHKERRQ(ierr);
+    ierr = PetscMalloc2(pipegcr->mmax+1,&(pipegcr->tvecs),pipegcr->mmax+1,&(pipegcr->ptvecs));CHKERRQ(ierr);
+    ierr = PetscMalloc1(pipegcr->mmax+2,&(pipegcr->told));CHKERRQ(ierr);
   }
-  ierr = PetscMalloc4(
-    pipegcr->mmax+2,&(pipegcr->pold),
-    pipegcr->mmax+2,&(pipegcr->sold),
-    pipegcr->mmax+2,&(pipegcr->qold),
-    pipegcr->mmax+2,&(pipegcr->chunksizes));CHKERRQ(ierr);
-  ierr = PetscMalloc3(
-    pipegcr->mmax+2,&(pipegcr->dots),
-    pipegcr->mmax+1,&(pipegcr->etas),
-    pipegcr->mmax+2,&(pipegcr->redux));CHKERRQ(ierr);
-
+  ierr = PetscMalloc4(pipegcr->mmax+2,&(pipegcr->pold),pipegcr->mmax+2,&(pipegcr->sold),pipegcr->mmax+2,&(pipegcr->qold),pipegcr->mmax+2,&(pipegcr->chunksizes));CHKERRQ(ierr);
+  ierr = PetscMalloc3(pipegcr->mmax+2,&(pipegcr->dots),pipegcr->mmax+1,&(pipegcr->etas),pipegcr->mmax+2,&(pipegcr->redux));CHKERRQ(ierr); 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if(pipegcr->nprealloc > pipegcr->mmax+1){
     ierr = PetscInfo2(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",pipegcr->nprealloc, pipegcr->mmax+1);CHKERRQ(ierr);
@@ -456,7 +440,7 @@ PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 
   /* Destroy vectors for old directions and the arrays that manage pointers to them */
   if(pipegcr->nvecs){
-    for(i=0;i<pipegcr->nchunks;++i){
+    for(i=0;i<pipegcr->nchunks;i++){
       ierr = VecDestroyVecs(pipegcr->chunksizes[i],&pipegcr->ppvecs[i]);CHKERRQ(ierr);
       ierr = VecDestroyVecs(pipegcr->chunksizes[i],&pipegcr->psvecs[i]);CHKERRQ(ierr);
       ierr = VecDestroyVecs(pipegcr->chunksizes[i],&pipegcr->pqvecs[i]);CHKERRQ(ierr);
@@ -673,8 +657,8 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
 
   Logically Collective on KSP
 
-  KSP_FCD_TRUNCATION uses all (up to mmax) stored directions
-  KSP_FCD_TRUNCATION_RESTART collects the last mmax directions and then restarts
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -703,10 +687,10 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 /*@
   KSPPIPEGCRGetTruncationType - get the truncation strategy employed by PIPEGCR
 
-   Not Collective
+  Not Collective
 
-   KSP_FCD_TRUNCATION uses all (up to mmax) stored directions
-   KSP_FCD_TRUNCATION_RESTART collects the last mmax directions and then restarts
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) directions at iteration i=0,1,..
 
    Input Parameter:
 .  ksp - the Krylov space context
