@@ -24,8 +24,8 @@ extern PetscErrorCode KSPReset_PIPEFGMRES(KSP);
 #define __FUNCT__ "KSPSetUp_PIPEFGMRES"
 static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 {
-  PetscErrorCode   ierr;
-  PetscInt         k;
+  PetscErrorCode ierr;
+  PetscInt       k;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
   const PetscInt max_k = pipefgmres->max_k;
 
@@ -82,17 +82,17 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)(ksp->data);
-  PetscReal        res_norm;
-  PetscReal        hapbnd,tt,shift = pipefgmres->shift;
-  PetscScalar      *hh,*hes,*lhh;
-  PetscBool        hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
-  PetscErrorCode   ierr;
-  PetscInt         loc_it;                /* local count of # of dir. in Krylov space */
-  PetscInt         max_k = pipefgmres->max_k; /* max # of directions Krylov space */
-  PetscInt         i,j,k;
-  Mat              Amat,Pmat;
-  Vec              Q,W; /* Pipelining vectors */
-  Vec              *redux = pipefgmres->redux; /* workspace for single reduction */
+  PetscReal      res_norm;
+  PetscReal      hapbnd,tt,shift = pipefgmres->shift;
+  PetscScalar    *hh,*hes,*lhh;
+  PetscBool      hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
+  PetscErrorCode ierr;
+  PetscInt       loc_it;                /* local count of # of dir. in Krylov space */
+  PetscInt       max_k = pipefgmres->max_k; /* max # of directions Krylov space */
+  PetscInt       i,j,k;
+  Mat            Amat,Pmat;
+  Vec            Q,W; /* Pipelining vectors */
+  Vec            *redux = pipefgmres->redux; /* workspace for single reduction */
 
   PetscFunctionBegin;
 
@@ -173,7 +173,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
        coefficients we use in the orthogonalization process,because of the shift */
 
     /* Do some local twiddling to allow for a single reduction */
-    for(i=0;i<loc_it+1;++i){
+    for(i=0;i<loc_it+1;i++){
       redux[i] = VEC_VV(i);
     }
     redux[loc_it+1] = ZVEC(loc_it);
@@ -218,13 +218,13 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
     hes[loc_it] = lhh[loc_it] + shift;
 
     /* we delay applying the shift here */
-    for (j=0; j<=loc_it; ++j) {
+    for (j=0; j<=loc_it; j++) {
       lhh[j]        = -lhh[j]; /* flip sign */
     }
 
     /* Compute the norm of the un-normalized new direction using the rearranged formula
        Note that these are shifted ("barred") quantities */
-    for(k=0;k<=loc_it;++k) tt -= lhh[k] * lhh[k];
+    for(k=0;k<=loc_it;k++) tt -= lhh[k] * lhh[k];
     if (tt < 0.0) {
       /* If we detect square root breakdown in the norm, we must restart the algorithm.
          Here this means we simply break the current loop and reconstruct the solution
@@ -234,7 +234,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
          */
       ierr = PetscInfo1(ksp,"Restart due to square root breakdown at it = \n",ksp->its);CHKERRQ(ierr);
       break;
-    }else{
+    } else {
       tt = PetscRealPart(PetscSqrtScalar(tt));
     }
 
@@ -355,10 +355,10 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 #define __FUNCT__ "KSPSolve_PIPEFGMRES"
 static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
 {
-  PetscErrorCode   ierr;
-  PetscInt         its,itcount;
+  PetscErrorCode ierr;
+  PetscInt       its,itcount;
   KSP_PIPEFGMRES *pipefgmres    = (KSP_PIPEFGMRES*)ksp->data;
-  PetscBool        guess_zero = ksp->guess_zero;
+  PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !pipefgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -411,9 +411,9 @@ static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
 #define __FUNCT__ "KSPPIPEFGMRESBuildSoln"
 static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
-  PetscScalar      tt;
-  PetscErrorCode   ierr;
-  PetscInt         k,j;
+  PetscScalar    tt;
+  PetscErrorCode ierr;
+  PetscInt       k,j;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)(ksp->data);
 
   PetscFunctionBegin;
@@ -471,11 +471,11 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vde
  */
 static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool *hapend,PetscReal *res)
 {
-  PetscScalar      *hh,*cc,*ss,*rs;
-  PetscInt         j;
-  PetscReal        hapbnd;
+  PetscScalar    *hh,*cc,*ss,*rs;
+  PetscInt       j;
+  PetscReal      hapbnd;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)(ksp->data);
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   hh = HH(0,it);   /* pointer to beginning of column to update */
@@ -561,7 +561,7 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBoo
 PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!ptr) {
@@ -586,10 +586,10 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp,Vec ptr,Vec *result)
 #define __FUNCT__ "KSPSetFromOptions_PIPEFGMRES"
 PetscErrorCode KSPSetFromOptions_PIPEFGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
-  PetscBool        flg;
-  PetscScalar      shift;
+  PetscBool      flg;
+  PetscScalar    shift;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);
@@ -605,16 +605,16 @@ PetscErrorCode KSPSetFromOptions_PIPEFGMRES(PetscOptionItems *PetscOptionsObject
 PetscErrorCode KSPView_PIPEFGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
-  PetscErrorCode   ierr;
-  PetscBool        iascii,isstring;
+  PetscErrorCode ierr;
+  PetscBool      iascii,isstring;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
 
   if (iascii) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D\n",pipefgmres->max_k);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",(double)pipefgmres->haptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D\n",pipefgmres->max_k);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",(double)pipefgmres->haptol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," PIPEFGMRES: shift=%g\n",pipefgmres->shift);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"restart %D",pipefgmres->max_k);CHKERRQ(ierr);
@@ -682,7 +682,7 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres;
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,&pipefgmres);CHKERRQ(ierr);
@@ -724,10 +724,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
 static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
-  PetscInt         nwork   = pipefgmres->nwork_alloc; /* number of work vector chunks allocated */
-  PetscInt         nalloc;                            /* number to allocate */
-  PetscErrorCode   ierr;
-  PetscInt         k;
+  PetscInt       nwork   = pipefgmres->nwork_alloc; /* number of work vector chunks allocated */
+  PetscInt       nalloc;                            /* number to allocate */
+  PetscErrorCode ierr;
+  PetscInt       k;
 
   PetscFunctionBegin;
   nalloc = pipefgmres->delta_allocate; /* number of vectors to allocate
