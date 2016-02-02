@@ -2733,6 +2733,8 @@ static PetscErrorCode DMClone_pforest(DM dm, DM *newdm)
 #define __FUNCT__ _pforest_string(DMInitialize_pforest)
 static PetscErrorCode DMInitialize_pforest(DM dm)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   dm->ops->setup                     = DMSetUp_pforest;
   dm->ops->view                      = DMView_pforest;
@@ -2749,6 +2751,8 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->createdefaultconstraints  = DMCreateDefaultConstraints_pforest;
   dm->ops->computel2diff             = DMComputeL2Diff_pforest;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_pforest;
+  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2792,9 +2796,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   pforest->cLocalEnd                = -1;
   pforest->labelsFinalized          = PETSC_FALSE;
   pforest->ghostName                = NULL;
-
-  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
