@@ -5725,7 +5725,15 @@ static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection 
   ierr = PetscSectionCreate(PETSC_COMM_SELF,cSec);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section,&numFields);CHKERRQ(ierr);
   if (numFields) {
+    PetscInt f;
     ierr = PetscSectionSetNumFields(*cSec,numFields);CHKERRQ(ierr);
+
+    for (f = 0; f < numFields; f++) {
+      PetscInt numComp;
+
+      ierr = PetscSectionGetFieldComponents(section,f,&numComp);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldComponents(*cSec,f,numComp);CHKERRQ(ierr);
+    }
   }
   ierr = PetscSectionGetChart(anchorSection,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section,&sStart,&sEnd);CHKERRQ(ierr);
