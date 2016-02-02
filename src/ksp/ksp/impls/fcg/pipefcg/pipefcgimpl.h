@@ -9,14 +9,14 @@ typedef struct {
   PetscInt     nprealloc;   /* How many vectors to preallocate */
   PetscInt     nvecs;       /* How many P/C vecs are actually stored */
   PetscInt     vecb;        /* How many vecs to allocate at a time in a chunk */
-  Vec          *Qvecs, *ZETAvecs, *Pvecs, *Cvecs, *Svecs, **pQvecs, **pZETAvecs, **pPvecs, **pCvecs, **pSvecs,*Qold,*ZETAold,*Pold,*Sold; /* Arrays of vectors, and arrays of pointers to them */
+  Vec          *Qvecs, *ZETAvecs, *Pvecs, *Cvecs, *Svecs, **pQvecs, **pZETAvecs, **pPvecs, **pCvecs, **pSvecs,*Qold,*ZETAold,*Pold,*Sold;
   PetscInt     *chunksizes; /* Chunk sizes allocated */
   PetscInt     nchunks;     /* Number of chunks */
   KSPFCDTruncationType truncstrat;
   PetscInt     n_restarts;
-  PetscScalar *dots;
-  PetscReal   *etas;
-  Vec         *redux;
+  PetscScalar  *dots;
+  PetscReal    *etas;
+  Vec          *redux;
   PetscBool    norm_breakdown;
 } KSP_PIPEFCG;
 

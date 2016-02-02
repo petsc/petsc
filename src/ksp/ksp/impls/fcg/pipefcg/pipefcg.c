@@ -63,28 +63,11 @@ PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
   /* Allocated space for pointers to additional work vectors
    note that mmax is the number of previous directions, so we add 1 for the current direction,
    and an extra 1 for the prealloc (which might be empty) */
-  ierr = PetscMalloc4(
-    pipefcg->mmax+1,&(pipefcg->Pvecs),pipefcg->mmax+1,&(pipefcg->pPvecs),
-    pipefcg->mmax+1,&(pipefcg->Svecs),pipefcg->mmax+1,&(pipefcg->pSvecs)
-  );CHKERRQ(ierr);
-  ierr = PetscMalloc4(
-    pipefcg->mmax+1,&(pipefcg->Qvecs),pipefcg->mmax+1,&(pipefcg->pQvecs),
-    pipefcg->mmax+1,&(pipefcg->ZETAvecs),pipefcg->mmax+1,&(pipefcg->pZETAvecs)
-  );CHKERRQ(ierr);
-  ierr = PetscMalloc4(
-    pipefcg->mmax+1,&(pipefcg->Pold),
-    pipefcg->mmax+1,&(pipefcg->Sold),
-    pipefcg->mmax+1,&(pipefcg->Qold),
-    pipefcg->mmax+1,&(pipefcg->ZETAold)
-  );CHKERRQ(ierr);
-  ierr = PetscMalloc1(
-    pipefcg->mmax+1,&(pipefcg->chunksizes)
-  );CHKERRQ(ierr);
-  ierr = PetscMalloc3(
-    pipefcg->mmax+2,&(pipefcg->dots),
-    pipefcg->mmax+1,&(pipefcg->etas),
-    pipefcg->mmax+2,&(pipefcg->redux)
-  );CHKERRQ(ierr);
+  ierr = PetscMalloc4(pipefcg->mmax+1,&(pipefcg->Pvecs),pipefcg->mmax+1,&(pipefcg->pPvecs),pipefcg->mmax+1,&(pipefcg->Svecs),pipefcg->mmax+1,&(pipefcg->pSvecs));CHKERRQ(ierr);
+  ierr = PetscMalloc4(pipefcg->mmax+1,&(pipefcg->Qvecs),pipefcg->mmax+1,&(pipefcg->pQvecs),pipefcg->mmax+1,&(pipefcg->ZETAvecs),pipefcg->mmax+1,&(pipefcg->pZETAvecs));CHKERRQ(ierr);
+  ierr = PetscMalloc4(pipefcg->mmax+1,&(pipefcg->Pold),pipefcg->mmax+1,&(pipefcg->Sold),pipefcg->mmax+1,&(pipefcg->Qold),pipefcg->mmax+1,&(pipefcg->ZETAold));CHKERRQ(ierr);
+  ierr = PetscMalloc1(pipefcg->mmax+1,&(pipefcg->chunksizes));CHKERRQ(ierr);
+  ierr = PetscMalloc3(pipefcg->mmax+2,&(pipefcg->dots),pipefcg->mmax+1,&(pipefcg->etas),pipefcg->mmax+2,&(pipefcg->redux));CHKERRQ(ierr);
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if(pipefcg->nprealloc > pipefcg->mmax+1){
@@ -94,15 +77,8 @@ PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
   /* Preallocate additional work vectors */
   ierr = KSPAllocateVectors_PIPEFCG(ksp,pipefcg->nprealloc,pipefcg->nprealloc);CHKERRQ(ierr);
 
-  ierr = PetscLogObjectMemory((PetscObject)ksp,
-    (pipefcg->mmax + 1) * 4 * sizeof(Vec*) +        /* old dirs */
-    (pipefcg->mmax + 1) * 4 * sizeof(Vec**) +       /* old pdirs */
-    (pipefcg->mmax + 1) * 4 * sizeof(Vec*) +        /* p/q/s/zold */
-    (pipefcg->mmax + 1) *     sizeof(PetscInt) +    /* chunksizes */
-    (pipefcg->mmax + 2) *     sizeof(Vec*) +        /* redux */
-    (pipefcg->mmax + 2) *     sizeof(PetscScalar) + /* dots */
-    (pipefcg->mmax + 1) *     sizeof(PetscReal)     /* etas */
-  );CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(pipefcg->mmax+1)*4*sizeof(Vec*)+(pipefcg->mmax+1)*4*sizeof(Vec**)+(pipefcg->mmax+1)*4*sizeof(Vec*)+
+    (pipefcg->mmax+1)*sizeof(PetscInt)+(pipefcg->mmax+2)*sizeof(Vec*)+(pipefcg->mmax+2)*sizeof(PetscScalar)+(pipefcg->mmax+1)*sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +232,7 @@ PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
       pipefcg->norm_breakdown = PETSC_TRUE;
       ierr = PetscInfo1(ksp,"Restart due to square root breakdown at it = \n",ksp->its);CHKERRQ(ierr);
       break;
-    }else{
+    } else {
       alpha= gamma/(*eta);                                  /* alpha = gamma/etai */
     }
 
@@ -397,9 +373,9 @@ PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
 
   if(pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD){
     truncstr = "Using standard truncation strategy";
-  }else if(pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){
+  } else if(pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){
     truncstr = "Using truncation-restart strategy";
-  }else{
+  } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCD truncation strategy");
   }
 
