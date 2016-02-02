@@ -6080,3 +6080,34 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMComputeL2FieldDiff"
+/*@C
+  DMComputeL2FieldDiff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h, separated into field components.
+
+  Input Parameters:
++ dm    - The DM
+. time  - The time
+. funcs - The functions to evaluate for each field component
+. ctxs  - Optional array of contexts to pass to each function, or NULL.
+- X     - The coefficient vector u_h
+
+  Output Parameter:
+. diff - The array of differences, ||u^f - u^f_h||_2
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMPlexComputeL2FieldDiff(), DMComputeL2GradientDiff()
+@*/
+PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,5);
+  if (!dm->ops->computel2fielddiff) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMComputeL2FieldDiff",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->computel2fielddiff)(dm,time,funcs,ctxs,X,diff);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

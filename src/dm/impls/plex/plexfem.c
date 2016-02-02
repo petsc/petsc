@@ -914,25 +914,8 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeL2FieldDiff"
-/*@C
-  DMPlexComputeL2FieldDiff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h, separated into field components.
-
-  Input Parameters:
-+ dm    - The DM
-. time  - The time
-. funcs - The functions to evaluate for each field component
-. ctxs  - Optional array of contexts to pass to each function, or NULL.
-- X     - The coefficient vector u_h
-
-  Output Parameter:
-. diff - The array of differences, ||u^f - u^f_h||_2
-
-  Level: developer
-
-.seealso: DMProjectFunction(), DMComputeL2Diff(), DMComputeL2GradientDiff()
-@*/
-PetscErrorCode DMPlexComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal diff[])
+#define __FUNCT__ "DMComputeL2FieldDiff_Plex"
+PetscErrorCode DMPlexComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal diff[])
 {
   const PetscInt   debug = 0;
   PetscSection     section;

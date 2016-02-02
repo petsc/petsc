@@ -1006,6 +1006,7 @@ extern PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM,PetscReal,DMLabel,Pets
 extern PetscErrorCode DMProjectFieldLocal_Plex(DM,Vec,void (**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],PetscScalar[]),InsertMode,Vec);
 extern PetscErrorCode DMComputeL2Diff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 extern PetscErrorCode DMComputeL2GradientDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[], const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,const PetscReal [],PetscReal *);
+extern PetscErrorCode DMComputeL2FieldDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal **);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexReplace_Static"
@@ -1335,6 +1336,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->projectfieldlocal               = DMProjectFieldLocal_Plex;
   dm->ops->computel2diff                   = DMComputeL2Diff_Plex;
   dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
+  dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
   PetscFunctionReturn(0);
 }
 
