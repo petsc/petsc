@@ -61,6 +61,7 @@
 #define DMCreateDefaultConstraints_pforest    _append_pforest(DMCreateDefaultConstraints)
 #define DMComputeL2Diff_pforest               _append_pforest(DMComputeL2Diff)
 #define DMComputeL2FieldDiff_pforest          _append_pforest(DMComputeL2FieldDiff)
+#define DMGetDimPoints_pforest                _append_pforest(DMGetDimPoints)
 #define VecView_pforest                       _append_pforest(VecView)
 #define VecView_pforest_Native                _infix_pforest(VecView,_Native)
 #define VecLoad_pforest                       _append_pforest(VecLoad)
@@ -879,7 +880,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
       PetscScalar *cellCoords = NULL;
 
       ierr = DMPlexVecGetClosure(dm, coordSec, coordVec, c, &dof, &cellCoords);CHKERRQ(ierr);
-      if (dof != P4EST_CHILDREN * coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners\n");
+      if (!dm->maxCell && dof != P4EST_CHILDREN * coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Need coordinates at the corners\n");
       for (v = 0; v < P4EST_CHILDREN; v++) {
         PetscInt i, lim = PetscMin(3, coordDim);
         PetscInt p4estVert = PetscVertToP4estVert[v];
@@ -934,6 +935,13 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   ierr = DMSetApplicationContext(*pforest,ctx);CHKERRQ(ierr);
   ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
   ierr = DMSetDS(*pforest,ds);CHKERRQ(ierr);
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    const DMBoundaryType *bd;
+
+    ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*pforest,maxCell,L,bd);CHKERRQ(ierr);
+  }
   ierr = DMBoundaryDestroy(&(*pforest)->boundary);CHKERRQ(ierr);
   ierr = DMBoundaryDuplicate(dm->boundary, &(*pforest)->boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2346,6 +2354,14 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMSetPointSF(newPlex,pointSF);CHKERRQ(ierr);
     ierr = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
+    if (dm->maxCell) {
+      const PetscReal *maxCell, *L;
+      const DMBoundaryType *bd;
+
+      ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
+      ierr = DMSetPeriodicity(newPlex,maxCell,L,bd);CHKERRQ(ierr);
+      ierr = DMLocalizeCoordinates(newPlex);CHKERRQ(ierr);
+    }
     sc_array_destroy (points_per_dim);
     sc_array_destroy (cone_sizes);
     sc_array_destroy (cones);
@@ -2389,6 +2405,12 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex);CHKERRQ(ierr);
       ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) newPlex);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
+    {
+      Vec coords;
+
+      ierr = DMGetCoordinatesLocal(newPlex,&coords);CHKERRQ(ierr);
+      ierr = DMSetCoordinatesLocal(dm,coords);CHKERRQ(ierr);
     }
   }
   newPlex = pforest->plex;
@@ -2711,6 +2733,20 @@ static PetscErrorCode DMCreateDefaultConstraints_pforest(DM dm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMGetDimPoints_pforest)
+static PetscErrorCode DMGetDimPoints_pforest(DM dm, PetscInt dim, PetscInt *cStart, PetscInt *cEnd)
+{
+  DM                plex;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = DMGetDimPoints(plex,dim,cStart,cEnd);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* Need to forward declare */
 static PetscErrorCode DMInitialize_pforest(DM dm);
 
@@ -2748,6 +2784,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->createdefaultconstraints  = DMCreateDefaultConstraints_pforest;
   dm->ops->computel2diff             = DMComputeL2Diff_pforest;
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_pforest;
+  dm->ops->getdimpoints              = DMGetDimPoints_pforest;
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
