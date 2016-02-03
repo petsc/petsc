@@ -41,6 +41,8 @@ struct _TSOps {
   PetscErrorCode (*getstages)(TS,PetscInt*,Vec**);
   PetscErrorCode (*adjointstep)(TS);
   PetscErrorCode (*adjointsetup)(TS);
+  PetscErrorCode (*adjointintegral)(TS);
+  PetscErrorCode (*forwardintegral)(TS);
 };
 
 /* 
