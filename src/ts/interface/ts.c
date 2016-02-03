@@ -3402,7 +3402,6 @@ PetscErrorCode  TSAdjointStep(TS ts)
     }
   } else if (!ts->reason) {
     if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time)         ts->reason = TS_CONVERGED_TIME;
   }
   ts->total_steps--;
   PetscFunctionReturn(0);
