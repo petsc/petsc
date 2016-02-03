@@ -4559,7 +4559,10 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->maxCell) PetscFunctionReturn(0);
+  if (!dm->maxCell) {
+    *areLocalized = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
   /* We need some generic way of refering to cells/vertices */
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   {
