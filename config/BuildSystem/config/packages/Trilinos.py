@@ -70,7 +70,7 @@ class Configure(config.package.CMakePackage):
 
     args.append('-DTPL_ENABLE_Boost=ON')
     args.append('-DTPL_Boost_INCLUDE_DIRS:FILEPATH='+self.headers.toStringNoDupes(self.boost.include))
-    args.append('-DTPL_Boost_INCLUDE_DIRS:FILEPATH='+self.headers.toStringNoDupes(self.boost.lib))
+    args.append('-DTPL_Boost_LIBRARIES='+self.headers.toStringNoDupes(self.boost.lib))
 
     args.append('-DTPL_ENABLE_MPI=ON')
     #  Below is the set of packages recommended by Mike H.
