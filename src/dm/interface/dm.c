@@ -4552,7 +4552,8 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscSection   coordSection, cSection;
   Vec            coordinates,  cVec;
   PetscScalar   *coords, *coords2, *anchor;
-  PetscInt       Nc, cStart, cEnd, c, vStart, vEnd, v, dof, d, off, off2, bs, coordSize;
+  PetscInt       Nc, cStart, cEnd, c, vStart, vEnd, v, sStart, sEnd, dof, d, off, off2, bs, coordSize;
+  PetscBool      alreadyLocalized, alreadyLocalizedGlobal;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4571,6 +4572,21 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   }
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection,&sStart,&sEnd);CHKERRQ(ierr);
+  alreadyLocalized = alreadyLocalizedGlobal = PETSC_TRUE;
+  for (c = cStart; c < cEnd; ++c) {
+    if (c < sStart || c >= sEnd) {
+      alreadyLocalized = PETSC_FALSE;
+      break;
+    }
+    ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+    if (!dof) {
+      alreadyLocalized = PETSC_FALSE;
+      break;
+    }
+  }
+  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  if (alreadyLocalizedGlobal) PetscFunctionReturn(0);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &cSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(cSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(coordSection, 0, &Nc);CHKERRQ(ierr);
