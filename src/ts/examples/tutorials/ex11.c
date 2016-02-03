@@ -510,7 +510,6 @@ typedef struct {
 static const struct FieldDescription PhysicsFields_Euler[] = {{"Density",1},{"Momentum",DIM},{"Energy",1},{NULL,0}};
 
 /* initial condition */
-static PetscReal s_rho1, s_u1, s_E0, s_E1; // hack to set IC
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsSolution_Euler"
 static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
@@ -519,22 +518,34 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   Physics         phys = (Physics)ctx;
   Physics_Euler   *eu  = (Physics_Euler*)phys->data;
   EulerNode *uu   = (EulerNode*)u;
+  PetscScalar p0,gamma;
   PetscFunctionBeginUser;
   if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   for (i=0; i<DIM; i++) uu->ru[i] = 0.0; // zero out initial velocity
-  uu->E = s_E0;
+
+  gamma = eu->pars[EULER_PAR_GAMMA];
+  p0 = 1.;
+  /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
   if (x[0] < eu->pars[EULER_PAR_LX2] + x[1]*eu->pars[EULER_PAR_ITANA]) {
     if (x[0] < eu->pars[EULER_PAR_LX2]/2.0) { // left of shock (1)
-      uu->r = s_rho1;
-      uu->ru[0] = s_u1;
-      uu->E = s_E1;
+      PetscScalar amach,rho,press,gas1,p1;
+      amach = eu->pars[EULER_PAR_AMACH];
+      rho = 1.;
+      press = p0;
+      p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
+      gas1 = (gamma-1.0)/(gamma+1.0);
+      uu->r = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
+      uu->ru[0]   = ((uu->r - rho)*sqrt(gamma*press/rho)*amach)/uu->r;
+      uu->E = p1/(gamma-1.0) + .5*uu->r*uu->ru[0]*uu->ru[0];
     }
     else { // left of discontinuity (0)
-      uu->r = 1.;
+      uu->r = 1.; // rho = 1
+      uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity right of shock
     }
   }
   else { // right of discontinuity (2)
     uu->r = eu->pars[EULER_PAR_RHOR];
+    uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity right of shock
   }
   PetscFunctionReturn(0);
 }
@@ -667,7 +678,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   phys->data    = eu;
   ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
   {
-    PetscReal amach,alpha,rho,press,gas1,p0,p1,gamma;
+    PetscReal alpha;
     eu->type = EULER_IV_SHOCK; // generalize later...
     eu->pars[EULER_PAR_GAMMA] = 1.4;
     eu->pars[EULER_PAR_AMACH] = 2.02;
@@ -681,20 +692,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
     ierr = PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL);CHKERRQ(ierr);
     if (alpha<=0. || alpha>90.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
     eu->pars[EULER_PAR_ITANA] = 1./tan ( alpha * M_PI / 180.0 );
-    /* inital conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
-    amach = eu->pars[EULER_PAR_AMACH];
-    gamma = eu->pars[EULER_PAR_GAMMA];
-    rho = 1.;
-    p0 = 1.;
-    press = p0;
-    p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
-    gas1 = (gamma-1.0)/(gamma+1.0);
-    //gas2=2.D0*gamma/(gamma+1.D0);
-    s_rho1 = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
-    s_u1   = ((s_rho1-rho)*sqrt(gamma*press/rho)*amach)/s_rho1;
-    s_E1   = p1/(gamma-1.0) + .5*s_rho1*s_u1*s_u1;
-    s_E0   = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity right of shock
- }
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   eu->sound    = SpeedOfSound_PG;
   phys->maxspeed = eu->pars[EULER_PAR_AMACH]; // speed of shock, not wind???
