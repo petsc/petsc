@@ -13,6 +13,8 @@ typedef struct {
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*setup)(PC);
   PetscErrorCode (*apply)(PC,Vec,Vec);
+  PetscErrorCode (*applysymmetricleft)(PC,Vec,Vec);
+  PetscErrorCode (*applysymmetricright)(PC,Vec,Vec);
   PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec);
   PetscErrorCode (*presolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);
@@ -125,6 +127,32 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
     /* increase the state of the output vector since the user did not update its state themselve as should have been done */
     ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCApplySymmetricLeft_Shell"
+static PetscErrorCode PCApplySymmetricLeft_Shell(PC pc,Vec x,Vec y)
+{
+  PC_Shell       *shell = (PC_Shell*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!shell->applysymmetricleft) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  PetscStackCall("PCSHELL user function apply()",ierr = (*shell->applysymmetricleft)(pc,x,y);CHKERRQ(ierr));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCApplySymmetricRight_Shell"
+static PetscErrorCode PCApplySymmetricRight_Shell(PC pc,Vec x,Vec y)
+{
+  PC_Shell       *shell = (PC_Shell*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!shell->applysymmetricright) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  PetscStackCall("PCSHELL user function apply()",ierr = (*shell->applysymmetricright)(pc,x,y);CHKERRQ(ierr));
   PetscFunctionReturn(0);
 }
 
@@ -286,6 +314,28 @@ static PetscErrorCode  PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(PC,Ve
 
   PetscFunctionBegin;
   shell->apply = apply;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCShellSetApplySymmetricLeft_Shell"
+static PetscErrorCode  PCShellSetApplySymmetricLeft_Shell(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
+{
+  PC_Shell *shell = (PC_Shell*)pc->data;
+
+  PetscFunctionBegin;
+  shell->applysymmetricleft = apply;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCShellSetApplySymmetricRight_Shell"
+static PetscErrorCode  PCShellSetApplySymmetricRight_Shell(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
+{
+  PC_Shell *shell = (PC_Shell*)pc->data;
+
+  PetscFunctionBegin;
+  shell->applysymmetricright = apply;
   PetscFunctionReturn(0);
 }
 
@@ -541,6 +591,82 @@ PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc,"PCShellSetApply_C",(PC,PetscErrorCode (*)(PC,Vec,Vec)),(pc,apply));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCShellSetApplySymmetricLeft"
+/*@C
+   PCShellSetApplySymmetricLeft - Sets routine to use as left preconditioner (when the PC_SYMMETRIC is used).
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  apply - the application-provided left preconditioning routine
+
+   Calling sequence of apply:
+.vb
+   PetscErrorCode apply (PC pc,Vec xin,Vec xout)
+.ve
+
++  pc - the preconditioner, get the application context with PCShellGetContext()
+.  xin - input vector
+-  xout - output vector
+
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+
+   Level: developer
+
+.keywords: PC, shell, set, apply, user-provided
+
+.seealso: PCShellSetApply(), PCShellSetApplySymmetricLeft(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext()
+@*/
+PetscErrorCode  PCShellSetApplySymmetricLeft(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCShellSetApplySymmetricLeft_C",(PC,PetscErrorCode (*)(PC,Vec,Vec)),(pc,apply));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCShellSetApplySymmetricRight"
+/*@C
+   PCShellSetApply - Sets routine to use as right preconditioner (when the PC_SYMMETRIC is used).
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  apply - the application-provided right preconditioning routine
+
+   Calling sequence of apply:
+.vb
+   PetscErrorCode apply (PC pc,Vec xin,Vec xout)
+.ve
+
++  pc - the preconditioner, get the application context with PCShellGetContext()
+.  xin - input vector
+-  xout - output vector
+
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+
+   Level: developer
+
+.keywords: PC, shell, set, apply, user-provided
+
+.seealso: PCShellSetApply(), PCShellSetApplySymmetricLeft(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext()
+@*/
+PetscErrorCode  PCShellSetApplySymmetricRight(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCShellSetApplySymmetricRight_C",(PC,PetscErrorCode (*)(PC,Vec,Vec)),(pc,apply));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -850,6 +976,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   pc->ops->destroy         = PCDestroy_Shell;
   pc->ops->view            = PCView_Shell;
   pc->ops->apply           = PCApply_Shell;
+  pc->ops->applysymmetricleft  = PCApplySymmetricLeft_Shell;
+  pc->ops->applysymmetricright = PCApplySymmetricRight_Shell;
   pc->ops->applytranspose  = 0;
   pc->ops->applyrichardson = 0;
   pc->ops->setup           = 0;
@@ -866,10 +994,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   shell->setup          = 0;
   shell->view           = 0;
   shell->destroy        = 0;
+  shell->applysymmetricleft  = 0;
+  shell->applysymmetricright = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetDestroy_C",PCShellSetDestroy_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetSetUp_C",PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApply_C",PCShellSetApply_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplySymmetricLeft_C",PCShellSetApplySymmetricLeft_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplySymmetricRight_C",PCShellSetApplySymmetricRight_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyBA_C",PCShellSetApplyBA_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetPreSolve_C",PCShellSetPreSolve_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetPostSolve_C",PCShellSetPostSolve_Shell);CHKERRQ(ierr);

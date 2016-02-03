@@ -479,9 +479,8 @@ static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
   Level: beginner
 
   References:
-  Ketcheson, Highly efficient strong stability preserving Runge-Kutta methods with low-storage implementations, SISC, 2008.
-
-  Gottlieb, Ketcheson, and Shu, High order strong stability preserving time discretizations, J Scientific Computing, 2009.
++  1. - Ketcheson, Highly efficient strong stability preserving Runge Kutta methods with low storage implementations, SISC, 2008.
+-  2. - Gottlieb, Ketcheson, and Shu, High order strong stability preserving time discretizations, J Scientific Computing, 2009.
 
 .seealso:  TSCreate(), TS, TSSetType()
 

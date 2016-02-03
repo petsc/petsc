@@ -138,7 +138,8 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
           That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
           it is a bound on the true residual.
 
-   References: Freund, 1993
+   References:
+.   1. -  Freund, 1993
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
 M*/

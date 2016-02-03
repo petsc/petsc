@@ -106,7 +106,7 @@
       CHKERRQ(ierr)
       call PetscViewerSetType(viewer, PETSCVIEWERVTK, ierr)
       CHKERRQ(ierr)
-      call PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK, ierr)
+      call PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK, ierr)
       CHKERRQ(ierr)
       call PetscViewerFileSetName(viewer, 'sol.vtk', ierr)
       CHKERRQ(ierr)

@@ -7,6 +7,36 @@
 /************************** Interpolation *******************************/
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSNESConvertPlex"
+static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
+{
+  PetscBool      isPlex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (isPlex) {
+    *plex = dm;
+    ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+  }
+  else {
+    ierr = DMConvert(dm,DMPLEX,plex);CHKERRQ(ierr);
+    if (copy) {
+      PetscInt    i;
+      PetscObject obj;
+      const char *comps[3] = {"A","dmAux","dmCh"};
+
+      ierr = DMCopyDMSNES(dm,*plex);CHKERRQ(ierr);
+      for (i = 0; i < 3; i++) {
+        ierr = PetscObjectQuery((PetscObject)dm,comps[i],&obj);CHKERRQ(ierr);
+        ierr = PetscObjectCompose((PetscObject)*plex,comps[i],obj);CHKERRQ(ierr);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMInterpolationCreate"
 PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 {
@@ -997,9 +1027,13 @@ PetscErrorCode DMPlexGetCellFields(DM dm, PetscInt cStart, PetscInt cEnd, Vec lo
       ierr = DMPlexVecRestoreClosure(dm, section, locX_t, c, NULL, &x_t);CHKERRQ(ierr);
     }
     if (locA) {
-      ierr = DMPlexVecGetClosure(dmAux, sectionAux, locA, c, NULL, &x);CHKERRQ(ierr);
+      DM dmAuxPlex;
+
+      ierr = DMSNESConvertPlex(dmAux, &dmAuxPlex, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(dmAuxPlex, sectionAux, locA, c, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) al[(c-cStart)*totDimAux+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, locA, c, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(dmAuxPlex, sectionAux, locA, c, NULL, &x);CHKERRQ(ierr);
+      ierr = DMDestroy(&dmAuxPlex);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1996,9 +2030,13 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
       ierr = DMPlexVecRestoreClosure(dm, section, X_t, c, NULL, &x_t);CHKERRQ(ierr);
     }
     if (dmAux) {
-      ierr = DMPlexVecGetClosure(dmAux, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+      DM dmAuxPlex;
+
+      ierr = DMSNESConvertPlex(dmAux,&dmAuxPlex, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(dmAuxPlex, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) a[c*totDimAux+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(dmAuxPlex, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+      ierr = DMDestroy(&dmAuxPlex);CHKERRQ(ierr);
     }
   }
   for (f = 0; f < Nf; ++f) {
@@ -2075,28 +2113,19 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
   PetscObject    check;
   PetscInt       cStart, cEnd, cEndInterior;
-  PetscBool      isPlex;
-  DM             plex = NULL;
+  DM             plex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (!isPlex) {
-    ierr = DMConvert(dm,DMPLEX,&plex);CHKERRQ(ierr);
-    if (!plex) {SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot convert to DMPlex");}
-    ierr = DMCopyDMSNES(dm,plex);CHKERRQ(ierr);
-    dm = plex;
-  }
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   /* The dmCh is used to check two mathematically equivalent discretizations for computational equivalence */
-  ierr = PetscObjectQuery((PetscObject) dm, "dmCh", &check);CHKERRQ(ierr);
-  if (check) {ierr = DMPlexComputeResidualFEM_Check_Internal(dm, X, NULL, F, user);CHKERRQ(ierr);}
-  else       {ierr = DMPlexComputeResidual_Internal(dm, cStart, cEnd, PETSC_MIN_REAL, X, NULL, F, user);CHKERRQ(ierr);}
-  if (!isPlex) {
-    ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectQuery((PetscObject) plex, "dmCh", &check);CHKERRQ(ierr);
+  if (check) {ierr = DMPlexComputeResidualFEM_Check_Internal(plex, X, NULL, F, user);CHKERRQ(ierr);}
+  else       {ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, PETSC_MIN_REAL, X, NULL, F, user);CHKERRQ(ierr);}
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2359,25 +2388,16 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
 PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void *user)
 {
   PetscInt       cStart, cEnd, cEndInterior;
-  DM             plex = NULL;
-  PetscBool      isPlex;
+  DM             plex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (!isPlex) {
-    ierr = DMConvert(dm,DMPLEX,&plex);CHKERRQ(ierr);
-    if (!plex) {SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot convert to DMPlex");}
-    ierr = DMCopyDMSNES(dm,plex);CHKERRQ(ierr);
-    dm = plex;
-  }
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMPlexComputeJacobian_Internal(dm, cStart, cEnd, 0.0, 0.0, X, NULL, Jac, JacP, user);CHKERRQ(ierr);
-  if (!isPlex) {
-    ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  }
+  ierr = DMPlexComputeJacobian_Internal(plex, cStart, cEnd, 0.0, 0.0, X, NULL, Jac, JacP, user);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2403,7 +2423,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   if (numFields > 1) {
     PetscInt f;
 
-    ierr = DMPlexComputeL2FieldDiff(dm, 0.0, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
+    ierr = DMComputeL2FieldDiff(dm, 0.0, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: [");CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       if (f) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}

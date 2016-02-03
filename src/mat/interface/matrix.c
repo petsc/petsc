@@ -764,7 +764,7 @@ PetscErrorCode MatSetUp(Mat A)
          Currently only the sequential dense and AIJ
          matrix types support the Socket viewer.
 
-   The user can call PetscViewerSetFormat() to specify the output
+   The user can call PetscViewerPushFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
 +    PETSC_VIEWER_DEFAULT - default, prints matrix contents
@@ -810,7 +810,7 @@ PetscErrorCode MatSetUp(Mat A)
    Concepts: matrices^plotting
    Concepts: matrices^printing
 
-.seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(),
+.seealso: PetscViewerPushFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(),
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), MatLoad()
 @*/
 PetscErrorCode MatView(Mat mat,PetscViewer viewer)

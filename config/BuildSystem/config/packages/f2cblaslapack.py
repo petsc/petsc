@@ -51,6 +51,8 @@ class Configure(config.package.Package):
 
       if line.startswith('include'):
         line = '\n'
+      if line.find("-no-prec-div") >= 0:
+         raise RuntimeError('Some versions of the Intel compiler generate incorrect code on f2cblaslapack with the option -no-prec-div\nRun configure without this option')
       g.write(line)
       line = f.readline()
     f.close()

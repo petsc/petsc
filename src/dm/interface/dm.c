@@ -107,7 +107,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
-  ierr = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
+  ierr = DMCreate(PetscObjectComm((PetscObject) dm), newdm);CHKERRQ(ierr);
   ierr = PetscFree((*newdm)->labels);CHKERRQ(ierr);
   dm->labels->refct++;
   (*newdm)->labels = dm->labels;
@@ -117,7 +117,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   if (dm->ops->clone) {
     ierr = (*dm->ops->clone)(dm, newdm);CHKERRQ(ierr);
   }
-  (*newdm)->setupcalled = PETSC_TRUE;
+  (*newdm)->setupcalled = dm->setupcalled;
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = DMSetPointSF(*newdm, sf);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
@@ -132,6 +132,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
     if (pEnd >= 0) {
       ierr = DMClone(dm->coordinateDM, &ncdm);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(*newdm, ncdm);CHKERRQ(ierr);
+      ierr = DMSetDefaultSection(ncdm, cs);CHKERRQ(ierr);
       ierr = DMDestroy(&ncdm);CHKERRQ(ierr);
     }
   }
@@ -6033,7 +6034,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
 
   Level: developer
 
-.seealso: DMProjectFunction(), DMPlexComputeL2FieldDiff(), DMComputeL2GradientDiff()
+.seealso: DMProjectFunction(), DMComputeL2FieldDiff(), DMComputeL2GradientDiff()
 @*/
 PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
@@ -6076,6 +6077,37 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
   PetscValidHeaderSpecific(X,VEC_CLASSID,5);
   if (!dm->ops->computel2gradientdiff) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMComputeL2GradientDiff",((PetscObject)dm)->type_name);
   ierr = (dm->ops->computel2gradientdiff)(dm,time,funcs,ctxs,X,n,diff);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComputeL2FieldDiff"
+/*@C
+  DMComputeL2FieldDiff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h, separated into field components.
+
+  Input Parameters:
++ dm    - The DM
+. time  - The time
+. funcs - The functions to evaluate for each field component
+. ctxs  - Optional array of contexts to pass to each function, or NULL.
+- X     - The coefficient vector u_h
+
+  Output Parameter:
+. diff - The array of differences, ||u^f - u^f_h||_2
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMComputeL2FieldDiff(), DMComputeL2GradientDiff()
+@*/
+PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal diff[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,5);
+  if (!dm->ops->computel2fielddiff) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMComputeL2FieldDiff",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->computel2fielddiff)(dm,time,funcs,ctxs,X,diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

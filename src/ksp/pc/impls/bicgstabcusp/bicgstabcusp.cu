@@ -119,7 +119,7 @@ static PetscErrorCode PCSetUp_BiCGStabCUSP(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles CUSP matrices");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles SEQAIJCUSP matrices");
   try {
     ierr      = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct = (Mat_SeqAIJCUSP*)(pc->pmat->spptr);

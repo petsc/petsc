@@ -69,6 +69,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_FALSE, PETSC_TRUE, &gLocSection);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(sfEmbed, section, remoteOffsets, gLocSection, &sfField);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfEmbed);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&gLocSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionDist);CHKERRQ(ierr);

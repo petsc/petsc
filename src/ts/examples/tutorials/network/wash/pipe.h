@@ -39,7 +39,7 @@ typedef struct _p_Pipe *Pipe;
 
 extern PetscErrorCode PipeCreate(MPI_Comm,Pipe*);
 extern PetscErrorCode PipeDestroy(Pipe*);
-extern PetscErrorCode PipeSetParameters(Pipe,PetscScalar,PetscInt,PetscScalar,PetscScalar,PetscScalar);
+extern PetscErrorCode PipeSetParameters(Pipe,PetscReal,PetscInt,PetscReal,PetscReal,PetscReal);
 extern PetscErrorCode PipeSetUp(Pipe);
 
 extern PetscErrorCode PipeComputeSteadyState(Pipe,PetscScalar,PetscScalar);

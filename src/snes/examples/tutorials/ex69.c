@@ -3417,7 +3417,7 @@ int main(int argc, char **argv)
   ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
   ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2FieldDiff(dm, 0.0, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
+  ierr = DMComputeL2FieldDiff(dm, 0.0, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);

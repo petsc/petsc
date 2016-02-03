@@ -498,6 +498,7 @@ getautoconfargs:
 .F.PETSc .F90.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
+          grep -v "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_" | \
           grep -v "warning: In-place macro substitution leaves line truncated" | \
           grep -v "Unused external reference" | \
           grep -v "D4024 : unrecognized" | \

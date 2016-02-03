@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Original matrix\n");CHKERRQ(ierr);
   ierr = MatView(mat,viewer);CHKERRQ(ierr);
 

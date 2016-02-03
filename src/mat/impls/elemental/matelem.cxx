@@ -1284,7 +1284,9 @@ PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::U
 
    Level: beginner
 
-   References: Elemental Users' Guide
+   References:
+.      Elemental Users' Guide
+
 @*/
 PetscErrorCode MatElementalHermitianGenDefEig(El::Pencil type,El::UpperOrLower uplo,Mat A,Mat B,Mat *evals,Mat *evec,El::SortType sort,El::HermitianEigSubset<PetscElemScalar> subset,const El::HermitianEigCtrl<PetscElemScalar> ctrl)
 {

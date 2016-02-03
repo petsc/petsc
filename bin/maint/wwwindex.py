@@ -203,16 +203,16 @@ def modifylevel(filename,secname):
 # Go through each manpage file, present in dirname,
 # and create and return a table for it, wrt levels specified.
 def createtable(dirname,levels,secname):
-      fd = os.popen('ls '+ dirname + '/*.html')
-      buf = fd.read()
-      if buf == '':
+      htmlfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.html')]
+      htmlfiles.sort()
+      if htmlfiles == []:
             print 'Error! Empty directory:',dirname
             return None
 
       table = []
       for level in levels: table.append([])
 
-      for filename in split(strip(buf),'\n'):
+      for filename in htmlfiles:
             level = modifylevel(filename,secname)
             #if not level: continue
             if lower(level) in levels:
@@ -226,13 +226,13 @@ def createtable(dirname,levels,secname):
 # the union list.
 
 def addtolist(dirname,singlelist):
-      fd = os.popen('ls '+ dirname + '/*.html')
-      buf = fd.read()
-      if buf == '':
+      htmlfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.html')]
+      htmlfiles.sort()
+      if htmlfiles == []:
             print 'Error! Empty directory:',dirname
             return None
 
-      for filename in split(strip(buf),'\n'):
+      for filename in htmlfiles:
             singlelist.append(filename)
 
       return singlelist

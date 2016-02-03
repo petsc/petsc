@@ -150,10 +150,8 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
           Support only for left preconditioning.
 
    References:
-   Methods of Conjugate Gradients for Solving Linear Systems, Magnus R. Hestenes and Eduard Stiefel,
+.   1. - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems, 
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
-   pp. 409--436.
-
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
 M*/

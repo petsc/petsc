@@ -77,7 +77,7 @@ extern PetscBool MatRegisterAllCalled;
 
 .keywords: KSP, register, all
 
-.seealso:  MatRegisterDestroy()
+.seealso:  MatRegister()
 @*/
 PetscErrorCode  MatRegisterAll(void)
 {

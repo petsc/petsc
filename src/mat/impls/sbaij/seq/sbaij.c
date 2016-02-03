@@ -2018,6 +2018,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
 
    Input Parameters:
 +  B - the matrix
+.  bs - size of block, the blocks are ALWAYS square. 
 .  i - the indices into j for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
