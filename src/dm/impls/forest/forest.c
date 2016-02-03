@@ -38,6 +38,8 @@ PETSC_EXTERN PetscErrorCode DMForestTemplate(DM dm, DM tdm)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMInitialize_Forest(DM dm);
+
 #undef __FUNCT__
 #define __FUNCT__ "DMClone_Forest"
 PETSC_EXTERN PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
@@ -51,6 +53,7 @@ PETSC_EXTERN PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
   (*newdm)->data = forest;
   ierr = PetscObjectGetType((PetscObject) dm, &type);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) *newdm, type);CHKERRQ(ierr);
+  ierr = DMInitialize_Forest(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

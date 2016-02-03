@@ -2718,13 +2718,10 @@ static PetscErrorCode DMInitialize_pforest(DM dm);
 #define __FUNCT__ _pforest_string(DMClone_pforest)
 static PetscErrorCode DMClone_pforest(DM dm, DM *newdm)
 {
-  DM_Forest     *forest = (DM_Forest *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  forest->refct++;
-  (*newdm)->data = forest;
-  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMPFOREST);CHKERRQ(ierr);
+  ierr = DMClone_Forest(dm,newdm);CHKERRQ(ierr);
   ierr = DMInitialize_pforest(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
