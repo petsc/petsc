@@ -602,6 +602,8 @@ prepend-path PATH %s
     import sys
     self.cmakeboot_success = False
     if sys.version_info >= (2,4) and hasattr(self.cmake,'cmake'):
+      oldRead = self.argDB.readonly
+      self.argDB.readonly = True
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
@@ -609,6 +611,7 @@ prepend-path PATH %s
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
+      self.argDB.readonly = oldRead
       if self.cmakeboot_success:
         if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
           self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
