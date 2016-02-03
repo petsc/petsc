@@ -91,9 +91,9 @@ int main(int argc,char **args)
   ierr = PetscObjectGetComm((PetscObject)Credundant,&subcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     
-  if (subsize==1 && flg_mat) {
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"\n[%d] Credundant:\n",rank);
-    ierr = MatView(Credundant,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  if (subsize==2 && flg_mat) {
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(subcomm),"\n[%d] Credundant:\n",rank);
+    ierr = MatView(Credundant,PETSC_VIEWER_STDOUT_(subcomm));CHKERRQ(ierr);
   }
   ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
    
