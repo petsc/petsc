@@ -548,7 +548,6 @@ static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,Petsc
   PetscFunctionBeginUser;
   ru2  = DotDIM(x->ru,x->ru);
   ru2 /= x->r;
-  /* kinematic dof = params[0] */
   (*p)=(x->E - 0.5*ru2)*(pars[EULER_PAR_GAMMA] - 1.0); /* e rho (gamma-1) */
   PetscFunctionReturn(0);
 }
@@ -561,7 +560,7 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *pars,const EulerNode *x,P
 
   PetscFunctionBeginUser;
   Pressure_PG(pars,x,&p);
-  if (p<0.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",p); 
+  if (p<0.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",p);
   /* pars[EULER_PAR_GAMMA] = heat capacity ratio */
   (*c)=PetscSqrtScalar(pars[EULER_PAR_GAMMA]*p/x->r);
   PetscFunctionReturn(0);
@@ -600,7 +599,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   PetscInt    i;
   const EulerNode *xI = (const EulerNode*)a_xI;
   EulerNode       *xG = (EulerNode*)a_xG;
-PetscPrintf(PETSC_COMM_WORLD,"%s HERE !!!!!!!!!!\n",__FUNCT__);
+
   PetscFunctionBeginUser;
   xG->r = xI->r;           // ghost cell density - same
   xG->E = xI->E;           // ghost cell energy - same
@@ -609,7 +608,7 @@ PetscPrintf(PETSC_COMM_WORLD,"%s HERE !!!!!!!!!!\n",__FUNCT__);
     xG->ru[1] = -xI->ru[1]; // reflect perp to t/b wall
   }
   else { // sides
-    for (i=1; i<DIM; i++) xG->ru[i] = xI->ru[i]; // copy
+    for (i=0; i<DIM; i++) xG->ru[i] = xI->ru[i]; // copy
   }
   PetscFunctionReturn(0);
 }
