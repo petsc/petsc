@@ -119,6 +119,7 @@ PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal**,const PetscRea
 PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[],const PetscReal[],const DMBoundaryType[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate(DM, const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinates(DM);
+PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalized(DM,PetscBool*);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);

@@ -4535,6 +4535,62 @@ PETSC_EXTERN PetscErrorCode DMPlexVecGetClosure(DM, PetscSection, Vec, PetscInt,
 PETSC_EXTERN PetscErrorCode DMPlexVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetCoordinatesLocalized"
+/*@
+  DMGetCoordinatesLocalized - Check if the DM coordinates have been localized for cells
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+  areLocalized - True if localized
+
+  Level: developer
+
+.seealso: DMLocalizeCoordinates()
+@*/
+PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
+{
+  DM             cdm;
+  PetscSection   coordSection;
+  PetscInt       cStart, cEnd, c, sStart, sEnd, dof;
+  PetscBool      alreadyLocalized, alreadyLocalizedGlobal;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!dm->maxCell) PetscFunctionReturn(0);
+  /* We need some generic way of refering to cells/vertices */
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  {
+    PetscBool isplex;
+
+    ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isplex);CHKERRQ(ierr);
+    if (isplex) {
+      ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
+  }
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection,&sStart,&sEnd);CHKERRQ(ierr);
+  alreadyLocalized = alreadyLocalizedGlobal = PETSC_TRUE;
+  for (c = cStart; c < cEnd; ++c) {
+    if (c < sStart || c >= sEnd) {
+      alreadyLocalized = PETSC_FALSE;
+      break;
+    }
+    ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+    if (!dof) {
+      alreadyLocalized = PETSC_FALSE;
+      break;
+    }
+  }
+  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  *areLocalized = alreadyLocalizedGlobal;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLocalizeCoordinates"
 /*@
   DMLocalizeCoordinates - If a mesh is periodic, create local coordinates for each cell
