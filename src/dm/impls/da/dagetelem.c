@@ -206,9 +206,12 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 .     nen - number of element nodes
 -     e - the local indices of the elements' vertices
 
+   Notes:
+     Call DMDARestoreElements() once you have finished accessing the elements.
+
    Level: intermediate
 
-.seealso: DMDAElementType, DMDASetElementType(), DMDARestoreElements(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
+.seealso: DMDAElementType, DMDASetElementType(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetElements"
@@ -234,7 +237,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 #undef __FUNCT__
 #define __FUNCT__ "DMDARestoreElements"
 /*@C
-      DMDARestoreElements - Returns an array containing the indices (in local coordinates)
+      DMDARestoreElements - Restores an array containing the indices (in local coordinates)
                  of all the local elements obtained with DMDAGetElements()
 
     Not Collective
