@@ -521,8 +521,9 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   PetscScalar p0,gamma;
   PetscFunctionBeginUser;
   if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
-  for (i=0; i<DIM; i++) uu->ru[i] = 0.0; // zero out initial velocity
 
+  for (i=0; i<DIM; i++) uu->ru[i] = 0.0; // zero out initial velocity
+  /* set E and rho */
   gamma = eu->pars[EULER_PAR_GAMMA];
   p0 = 1.;
   /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
