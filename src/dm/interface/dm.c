@@ -3012,6 +3012,13 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
 foundconv:
     ierr = PetscLogEventBegin(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
     ierr = (*conv)(dm,newtype,M);CHKERRQ(ierr);
+    /* Things that are independent of DM type: We should consult DMClone() here */
+    if (dm->maxCell) {
+      const PetscReal *maxCell, *L;
+      const DMBoundaryType *bd;
+      ierr = DMGetPeriodicity(dm, &maxCell, &L, &bd);CHKERRQ(ierr);
+      ierr = DMSetPeriodicity(*M,  maxCell,  L,  bd);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventEnd(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject) *M);CHKERRQ(ierr);
