@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.hghash            = '611092f80ddb'
-    self.download          = ['ssh://hg@bitbucket.org/pflotran/pflotran-dev']
+    self.download          = ['hg://https://bitbucket.org/pflotran/pflotran-dev']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
