@@ -1786,6 +1786,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
 PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *refdm)
 {
   DM             rdm;
+  Vec            coords;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -1859,7 +1860,27 @@ PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool 
   }
   *refdm = NULL;
   ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(rdm, *refdm);CHKERRQ(ierr);
+  if (rdm->coordinateDM) {
+    DM           ncdm;
+    PetscSection cs;
+    PetscInt     pEnd = -1;
+
+    ierr = DMGetDefaultSection(rdm->coordinateDM, &cs);CHKERRQ(ierr);
+    if (cs) {ierr = PetscSectionGetChart(cs, NULL, &pEnd);CHKERRQ(ierr);}
+    if (pEnd >= 0) {
+      ierr = DMClone(rdm->coordinateDM, &ncdm);CHKERRQ(ierr);
+      ierr = DMSetCoordinateDM(*refdm, ncdm);CHKERRQ(ierr);
+      ierr = DMSetDefaultSection(ncdm, cs);CHKERRQ(ierr);
+      ierr = DMDestroy(&ncdm);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMGetCoordinatesLocal(rdm, &coords);CHKERRQ(ierr);
+  if (coords) {
+    ierr = DMSetCoordinatesLocal(*refdm, coords);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetCoordinates(rdm, &coords);CHKERRQ(ierr);
+    if (coords) {ierr = DMSetCoordinates(*refdm, coords);CHKERRQ(ierr);}
+  }
   ierr = DMDestroy(&rdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
