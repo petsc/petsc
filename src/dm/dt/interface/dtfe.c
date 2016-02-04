@@ -1654,6 +1654,58 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceApplyFVM"
+/*@C
+  PetscDualSpaceApplyFVM - Apply a functional from the dual space basis to an input function
+
+  Input Parameters:
++ sp      - The PetscDualSpace object
+. f       - The basis functional index
+. time    - The time
+. geom    - A context with geometric information for this cell, we currently just use the centroid
+. numComp - The number of components for the function
+. func    - The input function
+- ctx     - A context for the function
+
+  Output Parameter:
+. value   - numComp output values
+
+  Note: The calling sequence for the callback func is given by:
+
+$ func(PetscInt dim, PetscReal time, const PetscReal x[],
+$      PetscInt numComponents, PetscScalar values[], void *ctx)
+
+  Level: developer
+
+.seealso: PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal time, PetscFVCellGeom *geom, PetscInt numComp, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
+{
+  DM               dm;
+  PetscQuadrature  quad;
+  PetscScalar     *val;
+  PetscInt         dimEmbed, q, c;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(value, 5);
+  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetFunctional(sp, f, &quad);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  for (c = 0; c < numComp; ++c) value[c] = 0.0;
+  for (q = 0; q < quad->numPoints; ++q) {
+    ierr = (*func)(dimEmbed, time, geom->centroid, numComp, val, ctx);CHKERRQ(ierr);
+    for (c = 0; c < numComp; ++c) {
+      value[c] += val[c]*quad->weights[q];
+    }
+  }
+  ierr = DMRestoreWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetHeightSubspace"
 /*@
   PetscDualSpaceGetHeightSubspace - Get the subset of the dual space basis that is supported on a mesh point of a given height.

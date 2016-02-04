@@ -95,4 +95,6 @@ PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscDS, PetscI
 
 PETSC_EXTERN PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV, PetscInt);
 
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace, PetscInt, PetscReal, PetscFVCellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+
 #endif
