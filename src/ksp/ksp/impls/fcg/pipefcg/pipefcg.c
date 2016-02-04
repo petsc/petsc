@@ -383,7 +383,7 @@ PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   if(pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD){
     truncstr = "Using standard truncation strategy";
   } else if(pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){
-    truncstr = "Using truncation-restart strategy";
+    truncstr = "Using Notay's truncation strategy";
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCD truncation strategy");
   }
@@ -608,11 +608,7 @@ PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KS
   if (flg) ierr = KSPPIPEFCGSetMmax(ksp,mmax);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_pipefcg_nprealloc","Number of directions to preallocate","KSPPIPEFCGSetNprealloc",pipefcg->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPPIPEFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
-  ierr = PetscOptionsBoolGroupBegin("-ksp_pipefcg_truncation","Use all stored vectors to orthogonalize","KSPPIPEFCGSetTruncationType",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEFCGSetTruncationType(ksp,KSP_FCD_TRUNC_TYPE_STANDARD);CHKERRQ(ierr); }
-  ierr = PetscOptionsBoolGroupEnd("-ksp_pipefcg_truncation_restart","Collect mmax previous directions to orthogonalize then restart","KSPPIPEFCGSetTruncationType",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEFCGSetTruncationType(ksp,KSP_FCD_TRUNC_TYPE_NOTAY);CHKERRQ(ierr); }
-
+  ierr = PetscOptionsEnum("-ksp_pipefcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)pipefcg->truncstrat,(PetscEnum*)&pipefcg->truncstrat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -7,8 +7,6 @@
 extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
 extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 
-const char *const KSPFCGTruncationTypes[]     = {"STANDARD","NOTAY","KSPFCDTrunctionTypes","KSP_FCD_TRUNC_TYPE_",0};
-
 #define KSPFCG_DEFAULT_MMAX 30          /* maximum number of search directions to keep */
 #define KSPFCG_DEFAULT_NPREALLOC 10     /* number of search directions to preallocate */
 #define KSPFCG_DEFAULT_VECB 5           /* number of search directions to allocate each time new direction vectors are needed */
@@ -537,7 +535,7 @@ PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ks
   if (flg) { 
     ierr = KSPFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); 
   }
-  ierr = PetscOptionsEnum("-ksp_fcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCGTruncationTypes,(PetscEnum)fcg->truncstrat,(PetscEnum*)&fcg->truncstrat,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-ksp_fcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)fcg->truncstrat,(PetscEnum*)&fcg->truncstrat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

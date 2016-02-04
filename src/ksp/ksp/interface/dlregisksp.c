@@ -107,6 +107,7 @@ const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_PCSETUP_FAILED","DI
                                                    "CONVERGED_CG_NEG_CURVE","CONVERGED_CG_CONSTRAINED","CONVERGED_STEP_LENGTH",
                                                    "CONVERGED_HAPPY_BREAKDOWN","CONVERGED_ATOL_NORMAL","KSPConvergedReason","KSP_",0};
 const char *const*KSPConvergedReasons = KSPConvergedReasons_Shifted + 11;
+const char *const KSPFCDTruncationTypes[] = {"STANDARD","NOTAY","KSPFCDTruncationTypes","KSP_FCD_TRUNC_TYPE_",0};
 
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
