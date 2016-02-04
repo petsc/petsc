@@ -287,6 +287,8 @@ PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeCostIntegrand(TS,PetscReal,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSAdjointCostIntegral(TS);
+PETSC_EXTERN PetscErrorCode TSForwardCostIntegral(TS);
 
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
