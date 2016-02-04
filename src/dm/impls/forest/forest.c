@@ -726,6 +726,18 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMCreateSubDM_Forest"
+PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (subdm) {ierr = DMClone(dm, subdm);CHKERRQ(ierr);}
+  ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMInitialize_Forest"
 static PetscErrorCode DMInitialize_Forest(DM dm)
 {
@@ -737,6 +749,7 @@ static PetscErrorCode DMInitialize_Forest(DM dm)
   dm->ops->clone          = DMClone_Forest;
   dm->ops->setfromoptions = DMSetFromOptions_Forest;
   dm->ops->destroy        = DMDestroy_Forest;
+  dm->ops->createsubdm    = DMCreateSubDM_Forest;
   PetscFunctionReturn(0);
 }
 
