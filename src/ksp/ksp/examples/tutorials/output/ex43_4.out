@@ -35,26 +35,15 @@
  33 KSP Residual norm 1.50126e-07 
  34 KSP Residual norm 7.81743e-08 
  35 KSP Residual norm 4.73629e-08 
- 36 KSP Residual norm 2.19091e-08 
- 37 KSP Residual norm 1.15163e-08 
- 38 KSP Residual norm 8.11076e-09 
- 39 KSP Residual norm 3.42024e-09 
- 40 KSP Residual norm 1.91859e-09 
- 41 KSP Residual norm 9.766e-10 
- 42 KSP Residual norm 4.466e-10 
- 43 KSP Residual norm 2.374e-10 
- 44 KSP Residual norm 1.205e-10 
- 45 KSP Residual norm 5.440e-11 
- 46 KSP Residual norm 2.512e-11 
 KSP Object:(stokes_) 4 MPI processes
   type: pipegcr
     PIPEGCR: max previous directions = 60
     PIPEGCR: preallocated 5 directions
-    PIPEGCR: Using truncation-restart strategy
+    PIPEGCR: Using Notay's truncation strategy
     PIPEGCR: w unrolling = 1 
     PIPEGCR: restarts performed = 0 
   maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using NATURAL norm type for convergence test
 PC Object:(stokes_) 4 MPI processes
