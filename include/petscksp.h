@@ -170,16 +170,6 @@ E*/
 typedef enum {KSP_FCD_TRUNC_TYPE_STANDARD,KSP_FCD_TRUNC_TYPE_NOTAY} KSPFCDTruncationType;
 PETSC_EXTERN const char *const KSPFCDTruncationTypes[];
 
-#define KSPFCDGetNumOldDirections(ctx,i,mi) ({                                                    \
-  if(ctx->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){                                                \
-    mi = ((i-1) % ctx->mmax)+1;                                                                   \
-  } else if (ctx->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD)                                      \
-    mi = ctx->mmax;                                                                               \
- else {                                                                                           \
-   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unrecognized Truncation Strategy");CHKERRQ(ierr); \
-  }                                                                                               \
-})
-
 PETSC_EXTERN PetscErrorCode KSPFCGSetMmax(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPFCGGetMmax(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPFCGSetNprealloc(KSP,PetscInt);

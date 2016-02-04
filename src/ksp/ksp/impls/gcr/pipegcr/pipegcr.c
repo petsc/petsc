@@ -156,7 +156,16 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     eta = pipegcr->etas+idx;
 
     /* number of old directions to orthogonalize against */
-    KSPFCDGetNumOldDirections(pipegcr,i,mi); /* This is a macro */
+    switch(pipegcr->truncstrat){
+      case KSP_FCD_TRUNC_TYPE_STANDARD:
+        mi = pipegcr->mmax;
+        break;
+      case KSP_FCD_TRUNC_TYPE_NOTAY:
+        mi = ((i-1) % pipegcr->mmax)+1;
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unrecognized Truncation Strategy");
+    }
 
     /* Pick old p,s,q,zeta in a way suitable for VecMDot */
     for(k=PetscMax(0,i-mi),j=0;k<i;j++,k++){

@@ -168,7 +168,16 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     Ccurr = fcg->Cvecs[idx];
 
     /* number of old directions to orthogonalize against */
-    KSPFCDGetNumOldDirections(fcg,i,mi); /* This is a macro */
+    switch(fcg->truncstrat){
+      case KSP_FCD_TRUNC_TYPE_STANDARD:
+        mi = fcg->mmax;
+        break;
+      case KSP_FCD_TRUNC_TYPE_NOTAY:
+        mi = ((i-1) % fcg->mmax)+1;
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unrecognized Truncation Strategy");
+    }
 
     /* Compute a new column of P (Currently does not support modified G-S or iterative refinement)*/
     ierr = VecCopy(Z,Pcurr);CHKERRQ(ierr);
