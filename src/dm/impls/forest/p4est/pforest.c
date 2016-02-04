@@ -41,6 +41,7 @@
 #define DMForestTemplate_pforest              _append_pforest(DMForestTemplate)
 #define DMSetUp_pforest                       _append_pforest(DMSetUp)
 #define DMView_pforest                        _append_pforest(DMView)
+#define DMView_ASCII_pforest                  _append_pforest(DMView_ASCII)
 #define DMView_VTK_pforest                    _append_pforest(DMView_VTK)
 #define DM_Forest_pforest                     _append_pforest(DM_Forest)
 #define DMFTopology_pforest                   _append_pforest(DMFTopology)
@@ -494,6 +495,38 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMView_ASCII_pforest)
+static PetscErrorCode DMView_ASCII_pforest(PetscObject odm, PetscViewer viewer)
+{
+  DM                dm       = (DM) odm;
+  DM_Forest         *forest  = (DM_Forest *) dm->data;
+  DM_Forest_pforest *pforest = (DM_Forest_pforest *) forest->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  switch (viewer->format) {
+  case PETSC_VIEWER_DEFAULT:
+  case PETSC_VIEWER_ASCII_INFO:
+  case PETSC_VIEWER_ASCII_INFO_DETAIL:
+  {
+    PetscInt    dim;
+    const char *name;
+
+    ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    if (name) {ierr = PetscViewerASCIIPrintf(viewer, "Forest %s in %D dimensions:\n", name, dim);CHKERRQ(ierr);}
+    else      {ierr = PetscViewerASCIIPrintf(viewer, "Forest in %D dimensions:\n", dim);CHKERRQ(ierr);}
+  }
+    break;
+  default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMView_VTK_pforest)
 static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
 {
@@ -545,17 +578,19 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
 #define __FUNCT__ _pforest_string(DMView_pforest)
 static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
 {
-  PetscBool      isvtk;
+  PetscBool      isascii, isvtk;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
-  if (isvtk) {
+  if (isascii) {
+    ierr = DMView_ASCII_pforest((PetscObject) dm,viewer);CHKERRQ(ierr);
+  } else if (isvtk) {
     ierr = DMView_VTK_pforest((PetscObject) dm,viewer);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     SETERRQ(PetscObjectComm((PetscObject) dm),PETSC_ERR_SUP,"Non-vtk viewers not implemented yet");
   }
   PetscFunctionReturn(0);
