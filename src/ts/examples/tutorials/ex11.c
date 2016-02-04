@@ -1216,7 +1216,7 @@ static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const Pet
 
   PetscFunctionBegin;
   mod  = (Model) modctx;
-  ierr = (mod->solution)(mod,time,x,u,mod->solutionctx);CHKERRQ(ierr);
+  ierr = (*mod->solution)(mod, time, x, u, mod->solutionctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
