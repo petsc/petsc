@@ -1,6 +1,7 @@
 static char help[] = "Create and view a forest mesh\n\n";
 
 #include <petscdmforest.h>
+#include <petscoptions.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -15,7 +16,9 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
   ierr = PetscStrncpy(typeString,DMFOREST,256);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-dm_type",typeString,256,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_type","The type of the dm",NULL,DMFOREST,typeString,sizeof(typeString),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = DMSetType(dm,(DMType) typeString);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);

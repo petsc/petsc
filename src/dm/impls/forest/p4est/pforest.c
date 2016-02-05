@@ -68,6 +68,139 @@
 #define VecLoad_pforest                       _append_pforest(VecLoad)
 #define VecLoad_pforest_Native                _infix_pforest(VecLoad,_Native)
 
+typedef enum {PATTERN_HASH,PATTERN_FRACTAL,PATTERN_CORNER,PATTERN_CENTER,PATTERN_COUNT} DMRefinePattern;
+static const char *DMRefinePatternName[PATTERN_COUNT] = {"hash","fractal","corner","center"};
+
+typedef struct _DMRefinePatternCtx
+{
+  PetscInt  corner;
+  PetscBool fractal[P4EST_CHILDREN];
+  PetscReal hashLikelihood;
+  PetscInt  maxLevel;
+  p4est_refine_t refine_fn;
+}
+DMRefinePatternCtx;
+
+static int DMRefinePattern_Corner(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
+{
+  p4est_quadrant_t   root, rootcorner;
+  DMRefinePatternCtx *ctx;
+
+  ctx = (DMRefinePatternCtx *) p4est->user_pointer;
+  if (quadrant->level >= ctx->maxLevel) {
+    return 0;
+  }
+
+  memset(&root,0,sizeof(p4est_quadrant_t));
+  p4est_quadrant_corner_descendant(&root,&rootcorner,ctx->corner,quadrant->level);
+  if (p4est_quadrant_is_equal(quadrant,&rootcorner)) {
+    return 1;
+  }
+  return 0;
+}
+
+static int DMRefinePattern_Center(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
+{
+  int                cid;
+  p4est_quadrant_t   ancestor, ancestorcorner;
+  DMRefinePatternCtx *ctx;
+
+  ctx = (DMRefinePatternCtx *) p4est->user_pointer;
+  if (quadrant->level >= ctx->maxLevel) {
+    return 0;
+  }
+  if (quadrant->level <= 1) {
+    return 1;
+  }
+
+  p4est_quadrant_ancestor(quadrant,1,&ancestor);
+  cid = p4est_quadrant_child_id(&ancestor);
+  p4est_quadrant_corner_descendant(&ancestor,&ancestorcorner,P4EST_CHILDREN - 1 - cid,quadrant->level);
+  if (p4est_quadrant_is_equal(quadrant,&ancestorcorner)) {
+    return 1;
+  }
+  return 0;
+}
+
+static int DMRefinePattern_Fractal(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
+{
+  int                cid;
+  DMRefinePatternCtx *ctx;
+
+  ctx = (DMRefinePatternCtx *) p4est->user_pointer;
+  if (quadrant->level >= ctx->maxLevel) {
+    return 0;
+  }
+  if (!quadrant->level) {
+    return 1;
+  }
+  cid = p4est_quadrant_child_id(quadrant);
+  if (ctx->fractal[cid ^ ((int) (quadrant->level % P4EST_CHILDREN))]) {
+    return 1;
+  }
+  return 0;
+}
+
+/* simplified from MurmurHash3 by Austin Appleby */
+#define DMPROT32(x, y) ((x << y) | (x >> (32 - y)))
+static uint32_t DMPforestHash(const uint32_t *blocks, uint32_t nblocks) {
+  uint32_t c1 = 0xcc9e2d51;
+  uint32_t c2 = 0x1b873593;
+  uint32_t r1 = 15;
+  uint32_t r2 = 13;
+  uint32_t m = 5;
+  uint32_t n = 0xe6546b64;
+  uint32_t hash = 0;
+  int      len = nblocks * 4;
+  int      i;
+
+  for (i = 0; i < nblocks; i++) {
+    uint32_t k;
+
+    k = blocks[i];
+    k *= c1;
+    k = DMPROT32(k, r1);
+    k *= c2;
+
+    hash ^= k;
+    hash = DMPROT32(hash, r2) * m + n;
+  }
+
+  hash ^= len;
+  hash ^= (hash >> 16);
+  hash *= 0x85ebca6b;
+  hash ^= (hash >> 13);
+  hash *= 0xc2b2ae35;
+  hash ^= (hash >> 16);
+
+  return hash;
+}
+
+static int DMRefinePattern_Hash(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
+{
+  uint32_t           data[5];
+  uint32_t           result;
+  DMRefinePatternCtx *ctx;
+
+  ctx = (DMRefinePatternCtx *) p4est->user_pointer;
+  if (quadrant->level >= ctx->maxLevel) {
+    return 0;
+  }
+  data[0] = ((uint32_t) quadrant->level) << 24;
+  data[1] = (uint32_t) which_tree;
+  data[2] = (uint32_t) quadrant->x;
+  data[3] = (uint32_t) quadrant->y;
+#if defined(P4_TO_P8)
+  data[4] = (uint32_t) quadrant->z;
+#endif
+
+  result = DMPforestHash(data,2+P4EST_DIM);
+  if (((double) result / (double) UINT32_MAX) < ctx->hashLikelihood) {
+    return 1;
+  }
+  return 0;
+}
+
 static PetscErrorCode DMConvert_pforest_plex(DM,DMType,DM*);
 
 typedef struct {
@@ -454,6 +587,67 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
                                                              0,           /* we don't allocate any per quadrant data */
                                                              NULL,        /* there is no special quadrant initialization */
                                                              (void *)dm)); /* this dm is the user context */
+    if (forest->setFromOptions) {
+      PetscBool       flgPattern, flgFractal;
+      PetscInt        corner = 0;
+      PetscInt        corners[P4EST_CHILDREN], ncorner = P4EST_CHILDREN;
+      PetscReal       likelihood = 1./ P4EST_DIM;
+      PetscInt        pattern;
+      const char      *prefix;
+
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
+      ierr = PetscOptionsGetEList(((PetscObject)dm)->options,prefix,"-dm_p4est_refine_pattern",DMRefinePatternName,PATTERN_COUNT,&pattern,&flgPattern);CHKERRQ(ierr);
+      ierr = PetscOptionsGetInt(((PetscObject)dm)->options,prefix,"-dm_p4est_refine_corner",&corner,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_refine_fractal_corners",corners,&ncorner,&flgFractal);CHKERRQ(ierr);
+      ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_refine_hash_likelihood",&likelihood,NULL);CHKERRQ(ierr);
+
+      if (flgPattern) {
+        DMRefinePatternCtx *ctx;
+        PetscInt           maxLevel;
+
+        ierr = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
+        ierr = PetscNewLog(dm,&ctx);CHKERRQ(ierr);
+        ctx->maxLevel = PetscMin(maxLevel,P4EST_QMAXLEVEL);
+        switch (pattern) {
+        case PATTERN_HASH:
+          ctx->refine_fn      = DMRefinePattern_Hash;
+          ctx->hashLikelihood = likelihood;
+          break;
+        case PATTERN_CORNER:
+          ctx->corner    = corner;
+          ctx->refine_fn = DMRefinePattern_Corner;
+          break;
+        case PATTERN_CENTER:
+          ctx->refine_fn = DMRefinePattern_Center;
+          break;
+        case PATTERN_FRACTAL:
+          if (flgFractal) {
+            PetscInt i;
+
+            for (i = 0; i < ncorner; i++) {
+              ctx->fractal[corners[i]] = 1;
+            }
+          }
+          else {
+#if !defined (P4_TO_P8)
+            ctx->fractal[0] = ctx->fractal[1] = ctx->fractal[2] = 1;
+#else
+            ctx->fractal[0] = ctx->fractal[3] = ctx->fractal[5] = ctx->fractal[6] = 1;
+#endif
+          }
+          ctx->refine_fn = DMRefinePattern_Fractal;
+          break;
+        default:
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Not a valid refinement pattern\n");
+        }
+
+        pforest->forest->user_pointer = (void *) ctx;
+        PetscStackCallP4est(p4est_refine,(pforest->forest,1,ctx->refine_fn,NULL));
+        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        ierr = PetscFree(ctx);CHKERRQ(ierr);
+        pforest->forest->user_pointer = (void *) dm;
+      }
+    }
     if (initLevel > minLevel) {
       pforest->coarsen_hierarchy = PETSC_TRUE;
     }
@@ -499,8 +693,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 static PetscErrorCode DMView_ASCII_pforest(PetscObject odm, PetscViewer viewer)
 {
   DM                dm       = (DM) odm;
-  DM_Forest         *forest  = (DM_Forest *) dm->data;
-  DM_Forest_pforest *pforest = (DM_Forest_pforest *) forest->data;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
