@@ -220,7 +220,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 {
   PetscInt       dim;
   PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA          *dd = (DM_DA*)dm->data;
   
   PetscFunctionBegin;
   if (dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
