@@ -154,7 +154,6 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveEnum(da,etype,2);
-  if (etype == DMDA_ELEMENT_Q1 && dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Q1 elements require you use a stencil type of DMDA_STENCIL_BOX");
   if (dd->elementtype != etype) {
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 
@@ -221,8 +220,10 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 {
   PetscInt       dim;
   PetscErrorCode ierr;
-
+  DM_DA          *dd = (DM_DA*)da->data;
+  
   PetscFunctionBegin;
+  if (dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim==-1) {
     *nel = 0; *nen = 0; *e = NULL;
