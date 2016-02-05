@@ -208,6 +208,10 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 
    Level: intermediate
 
+   Notes: Each process uniquely owns a subset of the elements. That is no element is owned by two or more processes. 
+
+          If on each process you integrate over its owned elements and use ADD_VALUES in Vec/MatSetValuesLocal() then you'll obtain the correct result.
+
 .seealso: DMDAElementType, DMDASetElementType(), DMDARestoreElements(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
 #undef __FUNCT__
@@ -234,8 +238,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 #undef __FUNCT__
 #define __FUNCT__ "DMDARestoreElements"
 /*@C
-      DMDARestoreElements - Returns an array containing the indices (in local coordinates)
-                 of all the local elements obtained with DMDAGetElements()
+      DMDARestoreElements - Restores the array obtained with DMDAGetElements()
 
     Not Collective
 
@@ -246,6 +249,10 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 -     e - the local indices of the elements' vertices
 
    Level: intermediate
+
+   Note: You should not access these values after you have called this routine.
+
+         This returns signals the DMDA object that you no longer need access to the array information.
 
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements()
 @*/
