@@ -631,18 +631,21 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
 static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_Euler   *eu = (Physics_Euler*)phys->data;
-  PetscScalar     cL,cR,speed;
+  PetscScalar     cL,cR,speed,velL,velR;
   const EulerNode *uL = (const EulerNode*)xL,*uR = (const EulerNode*)xR;
   EulerNode       fL,fR;
   PetscInt        i;
   PetscErrorCode  ierr;
   //PetscPrintf(PETSC_COMM_WORLD,"%s N=%D Coord=%g,%g\n",__FUNCT__,Nf,qp[0],qp[1]);
-  if (uL->r < 0 || uR->r < 0) {for (i=0; i<2+dim; i++) flux[i] = NAN; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative"); */
+  if (uL->r < 0 || uR->r < 0) exit(17);
   EulerFlux(phys,n,uL,&fL);
   EulerFlux(phys,n,uR,&fR);
   ierr = eu->sound(eu->pars,uL,&cL);if (ierr) exit(13);
   ierr = eu->sound(eu->pars,uR,&cR);if (ierr) exit(13);
-  speed = PetscMax(cL,cR)+PetscMax(PetscAbsScalar(DotDIM(uL->ru,n)/NormDIM(n)),PetscAbsScalar(DotDIM(uR->ru,n)/NormDIM(n)));
+  velL = DotDIM(uL->ru,n)/uL->r;
+  velR = DotDIM(uR->ru,n)/uR->r;
+  // speed = PetscMax(cL,cR)+PetscMax(PetscAbsScalar(DotDIM(uL->ru,n)/NormDIM(n)),PetscAbsScalar(DotDIM(uR->ru,n)/NormDIM(n)));
+  speed = PetscMax(PetscAbsScalar(velR)+cL,PetscAbsScalar(velL)+cR);
   for (i=0; i<2+dim; i++) flux[i] = 0.5*(fL.vals[i]+fR.vals[i])+0.5*speed*(xL[i]-xR[i]);
 }
 
@@ -1267,6 +1270,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
+
   if (stepnum >= 0) {           /* No summary for final time */
     Model             mod = user->model;
     PetscInt          c,cStart,cEnd,fcount,i;
