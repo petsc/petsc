@@ -252,7 +252,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 
    Note: You should not access these values after you have called this routine.
 
-         This returns signals the DMDA object that you no longer need access to the array information.
+         This restore signals the DMDA object that you no longer need access to the array information.
 
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements()
 @*/
