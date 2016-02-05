@@ -19,12 +19,13 @@ struct _PetscViewerOps {
    PetscErrorCode (*setup)(PetscViewer);
 };
 
+#define PETSCVIEWERFORMATPUSHESMAX 25
 /*
    Defines the viewer data structure.
 */
 struct _p_PetscViewer {
   PETSCHEADER(struct _PetscViewerOps);
-  PetscViewerFormat format,formats[10];
+  PetscViewerFormat format,formats[PETSCVIEWERFORMATPUSHESMAX];
   int               iformat;   /* number of formats that have been pushed on formats[] stack */
   void              *data;
   PetscBool         setupcalled;

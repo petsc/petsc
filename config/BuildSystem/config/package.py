@@ -569,6 +569,7 @@ class Package(config.base.Configure):
 
     retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     retriever.setup()
+    retriever.saveLog()
     self.logPrint('Downloading '+self.name)
     # check if its http://ftp.mcs - and add ftp://ftp.mcs as fallback
     download_urls = []
@@ -591,6 +592,7 @@ class Package(config.base.Configure):
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
         pkgdir = self.getDir()
+        self.logWrite(retriever.restoreLog())
         if not pkgdir:
           raise RuntimeError('Unable to download '+self.PACKAGE)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
@@ -598,6 +600,7 @@ class Package(config.base.Configure):
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
         err += str(e)
+    self.logWrite(retriever.restoreLog())
     raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
 
   def Install(self):

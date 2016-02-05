@@ -41,7 +41,7 @@ class Retriever(logger.Logger):
     if not authUrl:
       raise RuntimeError('Url is empty')
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(authUrl)
-    return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+location)
+    return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+location, log = self.log)
 
   def genericRetrieve(self, url, root, package):
     '''Fetch the gzipped tarfile indicated by url and expand it into root
@@ -70,7 +70,7 @@ class Retriever(logger.Logger):
       if os.path.isdir(newgitrepo): shutil.rmtree(newgitrepo)
       if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
 
-      config.base.Configure.executeShellCommand(self.sourceControl.git+' clone '+dir+' '+newgitrepo)
+      config.base.Configure.executeShellCommand(self.sourceControl.git+' clone '+dir+' '+newgitrepo, log = self.log)
       return
 
     if url.startswith('hg://'):
@@ -187,7 +187,7 @@ Downloaded package %s from: %s is not a tarball.
       raise RuntimeError('Cannot retrieve a SVN repository since svn was not found')
     self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via svn', 3, 'install')
     try:
-      config.base.Configure.executeShellCommand(self.sourceControl.svn+' checkout http'+url[3:]+' '+os.path.join(root, name))
+      config.base.Configure.executeShellCommand(self.sourceControl.svn+' checkout http'+url[3:]+' '+os.path.join(root, name), log = self.log)
     except RuntimeError:
       pass
 

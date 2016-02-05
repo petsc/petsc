@@ -320,7 +320,7 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
   PetscFunctionBegin;
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerSetFormat(viewer,format);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,monitor,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

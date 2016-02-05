@@ -178,8 +178,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(NULL,NULL,"-matlab_view",&flg);CHKERRQ(ierr);
   if (flg) { /* print solution into a MATLAB file */
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(global,viewfile);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewfile);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewfile);CHKERRQ(ierr);
   }
 

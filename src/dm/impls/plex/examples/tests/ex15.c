@@ -86,6 +86,7 @@ int main(int argc, char **argv)
     ierr = PetscViewerHDF5Open(comm, "V.h5", FILE_MODE_READ, &hdf5Viewer);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(hdf5Viewer, PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
     ierr = VecLoad(rv, hdf5Viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(hdf5Viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&hdf5Viewer);CHKERRQ(ierr);
     if (verbose) {
       PetscInt size, bs;

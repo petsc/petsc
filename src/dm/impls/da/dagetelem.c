@@ -154,6 +154,7 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveEnum(da,etype,2);
+  if (etype == DMDA_ELEMENT_Q1 && dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Q1 elements require you use a stencil type of DMDA_STENCIL_BOX");
   if (dd->elementtype != etype) {
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 
@@ -208,6 +209,10 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 
    Level: intermediate
 
+   Notes: Each process uniquely owns a subset of the elements. That is no element is owned by two or more processes. 
+
+          If on each process you integrate over its owned elements and use ADD_VALUES in Vec/MatSetValuesLocal() then you'll obtain the correct result.
+
 .seealso: DMDAElementType, DMDASetElementType(), DMDARestoreElements(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
 #undef __FUNCT__
@@ -234,8 +239,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 #undef __FUNCT__
 #define __FUNCT__ "DMDARestoreElements"
 /*@C
-      DMDARestoreElements - Returns an array containing the indices (in local coordinates)
-                 of all the local elements obtained with DMDAGetElements()
+      DMDARestoreElements - Restores the array obtained with DMDAGetElements()
 
     Not Collective
 
@@ -247,6 +251,10 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 
    Level: intermediate
 
+   Note: You should not access these values after you have called this routine.
+
+         This restore signals the DMDA object that you no longer need access to the array information.
+
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements()
 @*/
 PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
@@ -256,6 +264,8 @@ PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const Pets
   PetscValidIntPointer(nel,2);
   PetscValidIntPointer(nen,3);
   PetscValidPointer(e,4);
-  /* XXX */
+  *nel = 0;
+  *nen = -1;
+  *e = NULL;
   PetscFunctionReturn(0);
 }
