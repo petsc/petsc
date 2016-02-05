@@ -154,6 +154,7 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveEnum(da,etype,2);
+  if (etype == DMDA_ELEMENT_Q1 && dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Q1 elements require you use a stencil type of DMDA_STENCIL_BOX");
   if (dd->elementtype != etype) {
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 
