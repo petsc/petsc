@@ -1141,7 +1141,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
     ierr  = VecDestroy(&ilink->y);CHKERRQ(ierr);
     ierr  = VecDestroy(&ilink->z);CHKERRQ(ierr);
     ierr  = VecScatterDestroy(&ilink->sctx);CHKERRQ(ierr);
-    if (!ilink->is_orig) {             // save the original IS
+    if (!ilink->is_orig) {             /* save the original IS */
       ierr = PetscObjectReference((PetscObject)ilink->is);CHKERRQ(ierr);
       ilink->is_orig = ilink->is;
     }
@@ -1391,6 +1391,7 @@ static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
   size -= localsize;
   while(ilink) {
     IS isrl,isr;
+    PC subpc;
     if (jac->reset) {
       ierr = ISEmbed(ilink->is_orig, isy, PETSC_TRUE, &isrl);CHKERRQ(ierr);
     } else {
@@ -1411,7 +1412,6 @@ static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
     ierr          = ISDestroy(&ilink->is_col);CHKERRQ(ierr);
     ilink->is_col = isr;
     ierr          = ISDestroy(&isr);CHKERRQ(ierr);
-    PC subpc;
     ierr          = KSPGetPC(ilink->ksp, &subpc);CHKERRQ(ierr);
     ierr          = PetscObjectTypeCompare((PetscObject)subpc,PCFIELDSPLIT,&flg);CHKERRQ(ierr);
     if(flg) {
