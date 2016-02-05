@@ -256,6 +256,8 @@ PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const Pets
   PetscValidIntPointer(nel,2);
   PetscValidIntPointer(nen,3);
   PetscValidPointer(e,4);
-  /* XXX */
+  *nel = 0;
+  *nen = -1;
+  *e = NULL;
   PetscFunctionReturn(0);
 }
