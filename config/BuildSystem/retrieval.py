@@ -72,6 +72,25 @@ class Retriever(logger.Logger):
 
       config.base.Configure.executeShellCommand(self.sourceControl.git+' clone '+dir+' '+newgitrepo, log = self.log)
       return
+
+    if url.startswith('hg://'):
+      if not hasattr(self.sourceControl, 'hg'): return
+
+      newgitrepo = os.path.join(root,'hg.'+package)
+      if os.path.isdir(newgitrepo): shutil.rmtree(newgitrepo)
+      if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
+      config.base.Configure.executeShellCommand(self.sourceControl.hg+' clone '+url[5:]+' '+newgitrepo)
+      return
+
+    if url.startswith('ssh://hg@'):
+      if not hasattr(self.sourceControl, 'hg'): return
+
+      newgitrepo = os.path.join(root,'hg.'+package)
+      if os.path.isdir(newgitrepo): shutil.rmtree(newgitrepo)
+      if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
+      config.base.Configure.executeShellCommand(self.sourceControl.hg+' clone '+url+' '+newgitrepo)
+      return
+      
     # get the tarball file name from the URL
     filename = os.path.basename(urlparse.urlparse(url)[2])
     localFile = os.path.join(root,'_d_'+filename)

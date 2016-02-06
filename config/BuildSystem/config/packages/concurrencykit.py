@@ -25,10 +25,8 @@ class Configure(config.package.GNUPackage):
     if not ((self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']):
       args.append('--without-pic')
 
-    # configure errors out on certain standard configure arguments
-    rejects = ['--disable-cxx','--disable-fortran', '--disable-fc','--disable-f77','--disable-f90']
-    self.logPrint('ConcurrencyKit is rejecting configure arguments '+str(rejects))
-    return [arg for arg in args if not arg in rejects]
+    # Concurrency configure errors out on certain standard configure arguments
+    return self.rmArgs(args,['--disable-cxx','--disable-fortran', '--disable-fc','--disable-f77','--disable-f90'])
 
   def checkForCorrectness(self):
     include = '#include <ck_spinlock.h>'
