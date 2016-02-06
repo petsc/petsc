@@ -34,4 +34,13 @@ typedef struct _p_PetscDualSpace *PetscDualSpace;
 S*/
 typedef struct _p_PetscFE *PetscFE;
 
+/*MC
+  PetscFEJacobianType - indicated which pointwise functions should be used to fill the Jacobian matrix
+
+  Level: intermediate
+
+.seealso: PetscFEIntegrateJacobian()
+M*/
+typedef enum { PETSCFE_JACOBIAN, PETSCFE_JACOBIAN_PRE, PETSCFE_JACOBIAN_DYN } PetscFEJacobianType;
+
 #endif
