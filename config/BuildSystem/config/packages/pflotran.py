@@ -60,6 +60,16 @@ class Configure(config.package.GNUPackage):
         self.log.write(output+err)
       except RuntimeError, e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
+    elif not self.argDB['with-batch']:
+      try:
+        self.logPrintBox('Testing PETSc; this may take several minutes')
+        output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        output = output+err
+        self.log.write(output)
+        if output.find('error') > -1 or output.find('Error') > -1:
+          raise RuntimeError('Error running make test on PETSc: '+output)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make test on PETSc: '+str(e))
 
   def postProcess(self):
     self.compilePETSc()
