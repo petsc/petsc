@@ -74,8 +74,8 @@ class Configure(config.package.CMakePackage):
 
     args.append('-DTrilinos_INSTALL_PREFIX:PATH='+os.path.dirname(self.trilinos.include[0]))
 
-    args.append('-DUnitTest_LIBRARIES=/usr/local')
-    args.append('-DUnitTest_INCLUDE_DIRS=/usr/local')    
+    args.append('-DUnitTest_LIBRARIES=/homes/petsc/soft/linux-Ubuntu_12.04-x86_64/unittest-cpp-1.4/lib')
+    args.append('-DUnitTest_INCLUDE_DIRS=/homes/petsc/soft/linux-Ubuntu_12.04-x86_64/unittest-cpp-1.4/include')    
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
