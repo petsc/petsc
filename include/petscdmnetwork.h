@@ -34,6 +34,8 @@ PETSC_EXTERN PetscErrorCode DMNetworkDistribute(DM, PetscInt,DM*);
 PETSC_EXTERN PetscErrorCode DMNetworkGetSupportingEdges(DM, PetscInt, PetscInt*, const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMNetworkGetConnectedNodes(DM, PetscInt, const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMNetworkIsGhostVertex(DM, PetscInt, PetscBool*);
+PETSC_EXTERN PetscErrorCode DMNetworkElementSetMatrix(DM,PetscInt,Mat);
+PETSC_EXTERN PetscErrorCode DMNetworkCreateJacobian(DM,PetscBool);
 
 typedef struct _p_DMNetworkMonitorList *DMNetworkMonitorList;
 struct _p_DMNetworkMonitorList

@@ -21,7 +21,7 @@ struct _p_DMNetworkComponentValue {
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct {
-  char name[20];
+  char     name[20];
   PetscInt size;
 }DMNetworkComponent PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
@@ -45,6 +45,8 @@ typedef struct {
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
+  PetscBool                         userJacobian;
+  Mat                               *jacobian;
 } DM_Network;
 
 #endif /* _NETWORKIMPL_H */
