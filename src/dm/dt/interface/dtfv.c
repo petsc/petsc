@@ -1425,7 +1425,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVSetComponentName"
-/*@
+/*@C
   PetscFVSetComponentName - Set the name of a component (used in output and viewing)
 
   Logically collective on PetscFV
@@ -1435,7 +1435,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
 - name - the component name
 
   Level: developer
- 
+
 .seealso: PetscFVGetComponentName()
 @*/
 PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *name)
@@ -1450,7 +1450,7 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVGetComponentName"
-/*@
+/*@C
   PetscFVGetComponentName - Get the name of a component (used in output and viewing)
 
   Logically collective on PetscFV
@@ -1462,7 +1462,7 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
 . name - the component name
 
   Level: developer
- 
+
 .seealso: PetscFVSetComponentName()
 @*/
 PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **name)
