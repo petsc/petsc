@@ -4,9 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    #  temporarily use a fork of Alquimia with needed changes in it. Pull request already made to alquimia developers
     self.gitcommit         = 'master'
-    self.download          = ['git://https://git@github.com/petsc/alquimia-dev.git']
+    self.download          = ['git://https://github.com/LBL-EESA/alquimia-dev.git']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
@@ -40,8 +39,6 @@ class Configure(config.package.CMakePackage):
       raise RuntimeError('Alquimia does not support --with-alquimia-include; only --download-alquimia')
     if self.framework.clArgDB.has_key('with-alquimia-lib'):
       raise RuntimeError('Alquimia does not support --with-alquimia-lib; only --download-alquimia')
-    if self.framework.clArgDB.has_key('with-alquimia-shared'):
-      raise RuntimeError('Alquimia does not support --with-alquimia-shared')
 
     self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]
@@ -72,5 +69,15 @@ class Configure(config.package.CMakePackage):
     os.environ['PETSC_DIR']  = self.petscdir.dir
     os.environ['PETSC_ARCH'] = self.arch
     config.package.CMakePackage.Install(self)
+    if not self.argDB['with-batch']:
+      try:
+        self.logPrintBox('Testing Alquimia; this may take several minutes')
+        output,err,ret  = config.package.CMakePackage.executeShellCommand('cd '+os.path.join(self.packageDir,'build')+' && '+self.make.make+' test_install',timeout=50, log = self.log)
+        output = output+err
+        self.log.write(output)
+        if output.find('Failure') > -1:
+          raise RuntimeError('Error running make test on Alquimia: '+output)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make test on Alquimia: '+str(e))
 
 
