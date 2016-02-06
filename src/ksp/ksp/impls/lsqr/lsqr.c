@@ -18,7 +18,21 @@ typedef struct {
   PetscReal rhs_norm;   /* Norm of the right hand side */
 } KSP_LSQR;
 
-extern PetscErrorCode  VecSquare(Vec);
+#undef __FUNCT__
+#define __FUNCT__ "VecSquare"
+static PetscErrorCode  VecSquare(Vec v)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *x;
+  PetscInt       i, n;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &x);CHKERRQ(ierr);
+  for (i = 0; i < n; i++) x[i] *= PetscConj(x[i]);
+  ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_LSQR"
@@ -422,8 +436,6 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
   PetscFunctionReturn(0);
 }
 
-
-
 /*MC
      KSPLSQR - This implements LSQR
 
@@ -435,6 +447,8 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
    Level: beginner
 
    Notes:
+     Supports non-square (rectangular) matrices.
+
      This varient, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
      due to inexact arithematic, it can converge differently. Hence when no preconditioner is used (PCType PCNONE) it automatically reverts to the original algorithm.
 
@@ -485,19 +499,4 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSquare"
-PetscErrorCode  VecSquare(Vec v)
-{
-  PetscErrorCode ierr;
-  PetscScalar    *x;
-  PetscInt       i, n;
-
-  PetscFunctionBegin;
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-  ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-  for (i = 0; i < n; i++) x[i] *= PetscConj(x[i]);
-  ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
