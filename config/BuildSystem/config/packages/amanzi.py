@@ -58,7 +58,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=RELEASE')
       args.append('-DXSDK_ENABLE_DEBUG=NO')
 
-    # Trilinos cmake does not set this variable (as it should) so cmake install does not properly reset the -id and rpath of --prefix installed Trilinos libraries
+    # This is required for CMAKE to properly make shared libraries on Apple
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
     if self.boost.found:
@@ -72,10 +72,10 @@ class Configure(config.package.CMakePackage):
     else:
       raise RuntimeError("Amanzi requires HDF5")
 
-    args.append('-DTrilinos_INSTALL_PREFIX:PATH='+os.path.dirname(self.trilinos.include[0]))
+    args.append('-DTrilinos_DIR:FILEPATH='+os.path.dirname(self.trilinos.include[0]))
 
-    args.append('-DUnitTest_LIBRARIES=/homes/petsc/soft/linux-Ubuntu_12.04-x86_64/unittest-cpp-1.4/lib')
-    args.append('-DUnitTest_INCLUDE_DIRS=/homes/petsc/soft/linux-Ubuntu_12.04-x86_64/unittest-cpp-1.4/include')    
+    args.append('-DUnitTest_LIBRARIES=/usr/local/UnitTest/lib/libUnitTest++.a')
+    args.append('-DUnitTest_INCLUDE_DIRS=/usr/local/UnitTest/include')
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
