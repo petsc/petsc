@@ -706,7 +706,7 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
     ierr = DMAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 1, 0, NULL, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, PETSC_TRUE, "outflow", "Face Sets", 1, 0, NULL, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, PETSC_FALSE, "outflow", "Face Sets", 1, 0, NULL, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

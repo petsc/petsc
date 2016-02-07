@@ -1755,9 +1755,9 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
       ierr = DMGlobalToLocalEnd(dmGrad, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmGrad, &grad);CHKERRQ(ierr);
     }
+    /* Handle non-essential (e.g. outflow) boundary values */
+    ierr = DMPlexInsertBoundaryValues(dm, PETSC_FALSE, locX, time, faceGeometryFVM, cellGeometryFVM, locGrad);CHKERRQ(ierr);
   }
-  /* Handle boundary values */
-  ierr = DMPlexInsertBoundaryValues(dm, locX, time, faceGeometryFVM, cellGeometryFVM, locGrad);CHKERRQ(ierr);
   /* Loop over chunks */
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   numChunks     = 1;
@@ -1996,7 +1996,6 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
-  ierr = DMPlexInsertBoundaryValues(dm, X, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc3(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,numCells*totDim,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc1(numCells*totDim,&elemVecCh);CHKERRQ(ierr);
@@ -2131,6 +2130,34 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexSNESComputeBoundaryFEM"
+/*@
+  DMPlexSNESComputeBoundaryFEM - Form the boundary values for the local input X
+
+  Input Parameters:
++ dm - The mesh
+- user - The user context
+
+  Output Parameter:
+. X  - Local solution
+
+  Level: developer
+
+.seealso: DMPlexComputeJacobianActionFEM()
+@*/
+PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
+{
+  DM             plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, X, PETSC_MIN_REAL, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeJacobian_Internal"
 PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt cEnd, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Mat Jac, Mat JacP,void *user)
 {
@@ -2171,7 +2198,6 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
-  ierr = DMPlexInsertBoundaryValues(dm, X, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc5(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,numCells*totDim*totDim,&elemMat,hasPrec ? numCells*totDim*totDim : 0, &elemMatP,hasDyn ? numCells*totDim*totDim : 0, &elemMatD);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}

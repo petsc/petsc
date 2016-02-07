@@ -783,6 +783,7 @@ int main(int argc, char **argv)
     ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
   }
 
+  ierr = DMSNESSetBoundaryLocal(dm,  (PetscErrorCode (*)(DM,Vec,void*)) DMPlexSNESComputeBoundaryFEM, &user);CHKERRQ(ierr);
   ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*)) DMPlexSNESComputeResidualFEM, &user);CHKERRQ(ierr);
   ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*)) DMPlexSNESComputeJacobianFEM, &user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes, A, J, NULL, NULL);CHKERRQ(ierr);
