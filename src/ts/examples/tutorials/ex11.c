@@ -642,7 +642,7 @@ static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscR
   PetscInt        i;
   PetscErrorCode  ierr;
   PetscFunctionBeginUser;
-  if (1) {
+  if (0) {
     PetscMPIInt    rank;
     MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
     PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s N=%D rho=%g,%g\n",rank,__FUNCT__,Nf,uL->r,uR->r);
