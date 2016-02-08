@@ -271,6 +271,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorFEM(DM, DM, VecScatter *, void 
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBody(DM, MatNullSpace *);
 
+PETSC_EXTERN PetscErrorCode DMPlexSetSNESLocalFEM(DM,void *,void *,void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeJacobianFEM(DM, Vec, Mat, Mat,void *);
