@@ -129,6 +129,47 @@ PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexTSComputeRHSBoundaryFVM"
+/*@
+  DMPlexTSComputeRHSBoundaryFVM - Insert the essential boundary conditions in the local input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. t - The time
+. locX  - Local solution
+- user - The user context
+
+  Level: developer
+
+.seealso: DMPlexComputeJacobianActionFEM()
+@*/
+PetscErrorCode DMPlexTSComputeRHSBoundaryFVM(DM dm, PetscReal time, Vec locX, void *user)
+{
+  DM             plex;
+  Vec            faceGeometryFVM = NULL;
+  PetscInt       Nf, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMGetNumFields(plex,&Nf);CHKERRQ(ierr);
+  for (f = 0; f < Nf; f++) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = DMGetField(plex, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFV_CLASSID) {
+      ierr = DMPlexSNESGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
+      break;
+    }
+  }
+  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexTSComputeRHSFunctionFVM"
 /*@
   DMPlexTSComputeRHSFunctionFVM - Form the local forcing F from the local input X using pointwise functions specified by the user
@@ -164,6 +205,35 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   ierr = DMLocalToGlobalBegin(plex, locF, INSERT_VALUES, F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(plex, locF, INSERT_VALUES, F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(plex, &locF);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexTSComputeIBoundaryFEM"
+/*@
+  DMPlexTSComputeIBoundaryFEM - Insert the essential boundary values for the local input X and/or its time derivative X_t using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. t - The time
+. locX  - Local solution
+. locX_t - Local solution time derivative, or NULL
+- user - The user context
+
+  Level: developer
+
+.seealso: DMPlexComputeJacobianActionFEM()
+@*/
+PetscErrorCode DMPlexTSComputeIBoundaryFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user)
+{
+  DM             plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, NULL, NULL, NULL);CHKERRQ(ierr);
+  /* TODO: locX_t */
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

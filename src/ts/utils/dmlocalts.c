@@ -2,11 +2,15 @@
 #include <petsc/private/tsimpl.h>   /*I "petscts.h" I*/
 
 typedef struct {
+  PetscErrorCode (*iboundarylocal)(DM,PetscReal,Vec,Vec,void*);
   PetscErrorCode (*ifunctionlocal)(DM,PetscReal,Vec,Vec,Vec,void*);
   PetscErrorCode (*ijacobianlocal)(DM,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
+  PetscErrorCode (*rhsboundarylocal)(DM,PetscReal,Vec,void*);
   PetscErrorCode (*rhsfunctionlocal)(DM,PetscReal,Vec,Vec,void*);
+  void *iboundarylocalctx;
   void *ifunctionlocalctx;
   void *ijacobianlocalctx;
+  void *rhsboundarylocalctx;
   void *rhsfunctionlocalctx;
 } DMTS_Local;
 
@@ -71,6 +75,7 @@ static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, V
   ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
   ierr = VecZeroEntries(locX);CHKERRQ(ierr);
   ierr = VecZeroEntries(locX_t);CHKERRQ(ierr);
+  if (dmlocalts->iboundarylocal) {ierr = (*dmlocalts->iboundarylocal)(dm, time, locX, locX_t,dmlocalts->iboundarylocalctx);CHKERRQ(ierr);}
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X_t, INSERT_VALUES, locX_t);CHKERRQ(ierr);
@@ -104,6 +109,7 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = VecZeroEntries(locX);CHKERRQ(ierr);
+  if (dmlocalts->rhsboundarylocal) {ierr = (*dmlocalts->rhsboundarylocal)(dm, time, locX, dmlocalts->rhsboundarylocalctx);CHKERRQ(ierr);}
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
@@ -179,6 +185,45 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMTSSetIBoundaryLocal"
+/*@C
+  DMTSSetIBoundaryLocal - set the function for essential boundary data for a local implicit function evaluation.
+    It should set the essential boundary data for the local portion of the solution X, as well its time derivative X_t (if it is not NULL).
+    Vectors are initialized to zero before this function, so it is only needed for non homogeneous data.
+
+  Note that this function is somewhat optional: boundary data could potentially be inserted by a function passed to
+  DMTSSetIFunctionLocal().  The use case for this function is for discretizations with constraints (see
+  DMGetDefaultConstraints()): this function inserts boundary values before constraint interpolation.
+
+  Logically Collective
+
+  Input Arguments:
++ dm   - DM to associate callback with
+. func - local function evaluation
+- ctx  - context for function evaluation
+
+  Level: intermediate
+
+.seealso: DMTSSetIFunction(), DMTSSetIJacobianLocal()
+@*/
+PetscErrorCode DMTSSetIBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, Vec, void *), void *ctx)
+{
+  DMTS           tdm;
+  DMTS_Local    *dmlocalts;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);CHKERRQ(ierr);
+
+  dmlocalts->iboundarylocal    = func;
+  dmlocalts->iboundarylocalctx = ctx;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMTSSetIFunctionLocal"
 /*@C
   DMTSSetIFunctionLocal - set a local implicit function evaluation function. This function is called with local vector
@@ -248,6 +293,45 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
   dmlocalts->ijacobianlocalctx = ctx;
 
   ierr = DMTSSetIJacobian(dm, TSComputeIJacobian_DMLocal, dmlocalts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetRHSBoundaryLocal"
+/*@C
+  DMTSSetRHSBoundaryLocal - set the function for essential boundary data for a local righthand side function evaluation.
+    It should set the essential boundary data for the local portion of the solution X.
+    Vectors are initialized to zero before this function, so it is only needed for non homogeneous data.
+
+  Note that this function is somewhat optional: boundary data could potentially be inserted by a function passed to
+  DMTSSetRHSFunctionLocal().  The use case for this function is for discretizations with constraints (see
+  DMGetDefaultConstraints()): this function inserts boundary values before constraint interpolation.
+
+  Logically Collective
+
+  Input Arguments:
++ dm   - DM to associate callback with
+. func - local function evaluation
+- ctx  - context for function evaluation
+
+  Level: intermediate
+
+.seealso: DMTSSetRHSFunction()
+@*/
+PetscErrorCode DMTSSetRHSBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal, Vec, void *), void *ctx)
+{
+  DMTS           tdm;
+  DMTS_Local    *dmlocalts;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);CHKERRQ(ierr);
+
+  dmlocalts->rhsboundarylocal    = func;
+  dmlocalts->rhsboundarylocalctx = ctx;
+
   PetscFunctionReturn(0);
 }
 

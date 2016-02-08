@@ -307,8 +307,7 @@ int main(int argc, char **argv)
   ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMSNESSetFunctionLocal(dm, (PetscErrorCode (*)(DM,Vec,Vec,void*)) DMPlexSNESComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*)) DMPlexSNESComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);

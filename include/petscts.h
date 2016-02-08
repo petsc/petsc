@@ -420,8 +420,10 @@ PETSC_EXTERN PetscErrorCode DMTSGetMinRadius(DM,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMTSSetMinRadius(DM,PetscReal);
 PETSC_EXTERN PetscErrorCode DMTSCheckFromOptions(TS, Vec, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **);
 
+PETSC_EXTERN PetscErrorCode DMTSSetIBoundaryLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode DMTSSetRHSBoundaryLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMTSSetRHSFunctionLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,void*),void*);
 
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));

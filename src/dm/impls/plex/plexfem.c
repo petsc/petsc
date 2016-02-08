@@ -599,7 +599,7 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   PetscDS            prob;
   PetscSF            sf;
   DM                 dmFace, dmCell, dmGrad;
-  const PetscScalar *facegeom, *cellgeom, *grad;
+  const PetscScalar *facegeom, *cellgeom = NULL, *grad;
   const PetscInt    *leaves;
   PetscScalar       *x, *fx;
   PetscInt           dim, nleaves, loc, fStart, fEnd, pdim, i;
@@ -614,8 +614,10 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
   ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
-  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  if (cellGeometry) {
+    ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  }
   if (Grad) {
     PetscFV fv;
 
@@ -675,7 +677,9 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
     ierr = DMRestoreWorkArray(dm, pdim, PETSC_SCALAR, &fx);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(Grad, &grad);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  if (cellGeometry) {
+    ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  }
   ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
