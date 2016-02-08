@@ -114,7 +114,7 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     ierr     = KSP_MatMult(ksp,A,q,t);CHKERRQ(ierr);        /* t = Aq   */
   }
   ierr     = VecMDotEnd(w,2,redux,dots);CHKERRQ(ierr);      /* Finish split reduction */
-  delta    = dots[0];
+  delta    = PetscRealPart(dots[0]);
   etas[0]  = delta;
   gamma    = dots[1];
   alpha    = gamma/delta;
@@ -198,7 +198,7 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     /* Finish split reductions for beta_k = (w,s_k), gamma = (w,r), delta = (w,w) */
     ierr = VecMDotEnd(w,j+2,redux,dots);CHKERRQ(ierr);
     gamma = dots[j];
-    delta = dots[j+1];
+    delta = PetscRealPart(dots[j+1]);
 
     /* compute new residual norm.
        this cannot be done before this point so that the natural norm
@@ -233,7 +233,8 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     for(k=PetscMax(0,i-mi),j=0;k<i;j++,k++){
       kdx = k % (pipegcr->mmax+1);
       betas[j] /= -etas[kdx];                               /* betak  /= etak */
-      *eta -= betas[j]*betas[j] * etas[kdx];                /* etaitmp = -betaik^2 * etak */
+      *eta -= ((PetscReal)(PetscAbsScalar(betas[j])*PetscAbsScalar(betas[j]))) * etas[kdx];
+                                                            /* etaitmp = -betaik^2 * etak */
     }
     *eta += delta;                                          /* etai    = delta -betaik^2 * etak */
 

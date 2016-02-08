@@ -96,6 +96,12 @@ PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
 
   PetscFunctionBegin;
 
+  /* We have not checked these routines for use with complex numbers. The inner products
+     are likely not defined correctly for that case */
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
+#endif
+
 #define VecXDot(x,y,a)         (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDot       (x,y,a)   : VecTDot       (x,y,a))
 #define VecXDotBegin(x,y,a)    (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDotBegin  (x,y,a)   : VecTDotBegin  (x,y,a))
 #define VecXDotEnd(x,y,a)      (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDotEnd    (x,y,a)   : VecTDotEnd    (x,y,a))
@@ -143,7 +149,7 @@ PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
   ierr     = VecCopy(N,ZETAcurr);CHKERRQ(ierr);             /* zeta = n */
   ierr     = VecMXDotEnd(Z,2,redux,dots);CHKERRQ(ierr);
   gamma    = dots[0];
-  delta    = dots[1];
+  delta    = PetscRealPart(dots[1]);
   etas[0]  = delta;
   alpha    = gamma/delta;
 
@@ -228,13 +234,14 @@ PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     ierr = KSP_MatMult(ksp,Amat,M,N);CHKERRQ(ierr);         /* n = Am                                      */
     ierr = VecMXDotEnd(Z,j+2,redux,betas);CHKERRQ(ierr);    /* Finish split reductions */
     gamma = betas[j];
-    delta = betas[j+1];
+    delta = PetscRealPart(betas[j+1]);
 
     *eta = 0.;
     for(k=PetscMax(0,i-mi),j=0;k<i;++j,++k){
       kdx = k % (pipefcg->mmax+1);
       betas[j] /= -etas[kdx];                               /* betak  /= etak */
-      *eta -= betas[j]*betas[j] * etas[kdx];                /* etaitmp = -betaik^2 * etak */
+      *eta -= ((PetscReal)(PetscAbsScalar(betas[j])*PetscAbsScalar(betas[j]))) * etas[kdx];
+                                                            /* etaitmp = -betaik^2 * etak */
     }
     *eta += delta;                                          /* etai    = delta -betaik^2 * etak */
     if(*eta < 0.) {

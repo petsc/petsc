@@ -83,8 +83,8 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)(ksp->data);
   PetscReal      res_norm;
-  PetscReal      hapbnd,tt,shift = pipefgmres->shift;
-  PetscScalar    *hh,*hes,*lhh;
+  PetscReal      hapbnd,tt;
+  PetscScalar    *hh,*hes,*lhh,shift = pipefgmres->shift;
   PetscBool      hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
   PetscErrorCode ierr;
   PetscInt       loc_it;                /* local count of # of dir. in Krylov space */
@@ -204,7 +204,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* Finish the dot product, retrieving the extra entry */
     ierr = VecMDotEnd(ZVEC(loc_it),loc_it+2,redux,lhh);CHKERRQ(ierr);
-    tt = lhh[loc_it+1];
+    tt = PetscRealPart(lhh[loc_it+1]);
 
     /* Hessenberg entries, and entries for (naive) classical Graham-Schmidt
       Note that the Hessenberg entries require a shift, as these are for the
@@ -224,7 +224,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* Compute the norm of the un-normalized new direction using the rearranged formula
        Note that these are shifted ("barred") quantities */
-    for(k=0;k<=loc_it;k++) tt -= lhh[k] * lhh[k];
+    for(k=0;k<=loc_it;k++) tt -= ((PetscReal)(PetscAbsScalar(lhh[k]) * PetscAbsScalar(lhh[k])));
     if (tt < 0.0) {
       /* If we detect square root breakdown in the norm, we must restart the algorithm.
          Here this means we simply break the current loop and reconstruct the solution
@@ -235,7 +235,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
       ierr = PetscInfo1(ksp,"Restart due to square root breakdown at it = \n",ksp->its);CHKERRQ(ierr);
       break;
     } else {
-      tt = PetscRealPart(PetscSqrtScalar(tt));
+      tt = PetscSqrtReal(tt);
     }
 
     /* new entry in hessenburg is the 2-norm of our new direction */
@@ -615,10 +615,18 @@ PetscErrorCode KSPView_PIPEFGMRES(KSP ksp,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D\n",pipefgmres->max_k);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",(double)pipefgmres->haptol);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    ierr = PetscViewerASCIIPrintf(viewer," PIPEFGMRES: shift=%g+%gi\n",PetscRealPart(pipefgmres->shift),PetscImaginaryPart(pipefgmres->shift));CHKERRQ(ierr);
+#else
     ierr = PetscViewerASCIIPrintf(viewer," PIPEFGMRES: shift=%g\n",pipefgmres->shift);CHKERRQ(ierr);
+#endif
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"restart %D",pipefgmres->max_k);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    ierr = PetscViewerStringSPrintf(viewer,"   PIPEFGMRES: shift=%g+%gi\n",PetscRealPart(pipefgmres->shift),PetscImaginaryPart(pipefgmres->shift));CHKERRQ(ierr);
+#else
     ierr = PetscViewerStringSPrintf(viewer,"   PIPEFGMRES: shift=%g\n",pipefgmres->shift);CHKERRQ(ierr);
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -714,7 +722,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   pipefgmres->max_k          = PIPEFGMRES_DEFAULT_MAXK;
   pipefgmres->Rsvd           = 0;
   pipefgmres->orthogwork     = 0;
-  pipefgmres->cgstype        = 0;
+  pipefgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
   pipefgmres->shift          = 1.0;
   PetscFunctionReturn(0);
 }
@@ -794,7 +802,7 @@ PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp,PetscScalar shift)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(ksp,shift,2);
+  PetscValidLogicalCollectiveScalar(ksp,shift,2);
   pipefgmres->shift = shift;
   PetscFunctionReturn(0);
 }
