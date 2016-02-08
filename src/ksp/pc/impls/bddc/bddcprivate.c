@@ -795,23 +795,17 @@ PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
       ierr = VecGetLocalSize(matis->y,&n);CHKERRQ(ierr);
       ierr = PetscMalloc2(n,&idxs_ins,n,&vals);CHKERRQ(ierr);
       if (!pcbddc->benign_B0) {
+        PetscInt *nnz;
         ierr = MatCreate(PetscObjectComm((PetscObject)pcbddc->local_mat),&pcbddc->benign_B0);CHKERRQ(ierr);
         ierr = MatSetType(pcbddc->benign_B0,MATAIJ);CHKERRQ(ierr);
         ierr = MatSetSizes(pcbddc->benign_B0,pcbddc->benign_n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-        if (!pcbddc->current_level) {
-          /* this matrix is actually sparse: the nnz pattern is not known unless we do 2 sweeps of the next loop.
-             Setting nnz=100 should be more than enough for the finest level */
-          ierr = MatSeqAIJSetPreallocation(pcbddc->benign_B0,100,NULL);CHKERRQ(ierr);
-        } else {
-          PetscInt *nnz;
-          ierr = PetscMalloc1(pcbddc->benign_n,&nnz);CHKERRQ(ierr);
-          for (i=0;i<pcbddc->benign_n;i++) {
-            ierr = ISGetLocalSize(pcbddc->benign_zerodiag_subs[i],&nnz[i]);CHKERRQ(ierr);
-            nnz[i] = n - nnz[i];
-          }
-          ierr = MatSeqAIJSetPreallocation(pcbddc->benign_B0,0,nnz);CHKERRQ(ierr);
-          ierr = PetscFree(nnz);CHKERRQ(ierr);
+        ierr = PetscMalloc1(pcbddc->benign_n,&nnz);CHKERRQ(ierr);
+        for (i=0;i<pcbddc->benign_n;i++) {
+          ierr = ISGetLocalSize(pcbddc->benign_zerodiag_subs[i],&nnz[i]);CHKERRQ(ierr);
+          nnz[i] = n - nnz[i];
         }
+        ierr = MatSeqAIJSetPreallocation(pcbddc->benign_B0,0,nnz);CHKERRQ(ierr);
+        ierr = PetscFree(nnz);CHKERRQ(ierr);
       }
 
       for (i=0;i<pcbddc->benign_n;i++) {
