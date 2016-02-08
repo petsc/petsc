@@ -1565,6 +1565,7 @@ int main(int argc, char **argv)
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
+  ierr = DMTSSetRHSBoundaryLocal(dm, DMPlexTSComputeRHSBoundaryFVM, user);CHKERRQ(ierr);
   ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
