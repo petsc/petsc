@@ -134,10 +134,6 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     PetscScalar        *work;
     PCBDDCReuseSolvers reuse = pcbddc->sub_schurs->reuse_solver;
 
-    if (!reuse) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot setup shell matrices!");
-    }
-
     /* local mat */
     ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,pcis->n,pcis->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -171,7 +167,19 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     ctx->apply_right = PETSC_FALSE;
     ctx->apply_p0 = PETSC_FALSE;
     ctx->benign_n = pcbddc->benign_n;
-    ctx->benign_zerodiag_subs = reuse->benign_zerodiag_subs;
+    if (reuse) {
+      ctx->benign_zerodiag_subs = reuse->benign_zerodiag_subs;
+    } else { /* TODO: could be optimized for successive solves */
+      ISLocalToGlobalMapping N_to_D;
+      PetscInt               i;
+
+      ierr = ISLocalToGlobalMappingCreateIS(pcis->is_I_local,&N_to_D);CHKERRQ(ierr);
+      ierr = PetscMalloc1(pcbddc->benign_n,&ctx->benign_zerodiag_subs);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->benign_n;i++) {
+        ierr = ISGlobalToLocalMappingApplyIS(N_to_D,IS_GTOLM_DROP,pcbddc->benign_zerodiag_subs[i],&ctx->benign_zerodiag_subs[i]);CHKERRQ(ierr);
+      }
+      ierr = ISLocalToGlobalMappingDestroy(&N_to_D);CHKERRQ(ierr);
+    }
     ctx->A = pcis->A_IB; 
     ctx->work = work;
     ierr = MatSetUp(A_IB);CHKERRQ(ierr);
@@ -184,6 +192,8 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     pcbddc->benign_original_mat = pcis->A_BI;
     pcis->A_BI = A_BI;
   } else {
+    PCBDDCReuseSolvers reuse = pcbddc->sub_schurs->reuse_solver;
+
     ierr = MatShellGetContext(matis->A,&ctx);CHKERRQ(ierr);
     ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
     matis->A = ctx->A;
@@ -191,6 +201,13 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     ierr = MatShellGetContext(pcis->A_IB,&ctx);CHKERRQ(ierr);
     ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
     pcis->A_IB = ctx->A;
+    if (!reuse) {
+      PetscInt i;
+      for (i=0;i<pcbddc->benign_n;i++) {
+        ierr = ISDestroy(&ctx->benign_zerodiag_subs[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(ctx->benign_zerodiag_subs);CHKERRQ(ierr);
+    }
     ierr = PetscFree(ctx->work);CHKERRQ(ierr);
     ierr = PetscFree(ctx);CHKERRQ(ierr);
     ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
