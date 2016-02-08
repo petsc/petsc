@@ -1958,7 +1958,23 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
   /* Loop over domain faces */
   /*   Accumulate fluxes to cells */
   /* TODO Change printFEM to printDisc here */
-  if (mesh->printFEM) {ierr = DMPrintLocalVec(dm, name, mesh->printTol, locF);CHKERRQ(ierr);}
+  if (mesh->printFEM) {
+    Vec         locFbc;
+    PetscInt    pStart, pEnd, p, maxDof;
+    PetscScalar *zeroes;
+
+    ierr = VecDuplicate(locF,&locFbc);CHKERRQ(ierr);
+    ierr = VecCopy(locF,locFbc);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(section,&pStart,&pEnd);CHKERRQ(ierr);
+    ierr = PetscSectionGetMaxDof(section,&maxDof);CHKERRQ(ierr);
+    ierr = PetscCalloc1(maxDof,&zeroes);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      ierr = VecSetValuesSection(locFbc,section,p,zeroes,INSERT_BC_VALUES);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(zeroes);CHKERRQ(ierr);
+    ierr = DMPrintLocalVec(dm, name, mesh->printTol, locFbc);CHKERRQ(ierr);
+    ierr = VecDestroy(&locFbc);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(DMPLEX_ResidualFEM,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
