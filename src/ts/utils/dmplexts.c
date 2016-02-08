@@ -169,6 +169,34 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexTSComputeBoundaryFEM"
+/*@
+  DMPlexTSComputeBoundaryFEM - Form the boundary values for the local input X
+
+  Input Parameters:
++ dm - The mesh
+- user - The user context
+
+  Output Parameter:
+. X  - Local solution
+
+  Level: developer
+
+.seealso: DMPlexSNESComputeBoundaryFEM()
+@*/
+PetscErrorCode DMPlexTSComputeBoundaryFEM(DM dm, Vec X, void *user)
+{
+  DM             plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMTSConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, X, PETSC_MIN_REAL, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexTSComputeIFunctionFEM"
 /*@
   DMPlexTSComputeIFunctionFEM - Form the local residual F from the local input X using pointwise functions specified by the user
