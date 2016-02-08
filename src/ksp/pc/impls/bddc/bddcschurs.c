@@ -7,7 +7,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat,PetscBool,MatReuse,Mat*);
 static PetscErrorCode PCBDDCReuseSolvers_Interior(PC,Vec,Vec);
 static PetscErrorCode PCBDDCReuseSolvers_Correction(PC,Vec,Vec);
 
-
+/* performs S = S + v^2 * a *v_1^T on the lower-triangular part, n the size of the matrix */
 #undef __FUNCT__
 #define __FUNCT__ "SparseRankOneUpdate"
 PETSC_STATIC_INLINE PetscErrorCode SparseRankOneUpdate(PetscScalar *S,PetscInt n,PetscScalar a,PetscScalar *v1,PetscScalar *v2)
@@ -801,7 +801,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     }
     factor_workaround = PETSC_FALSE;
     /* include the primal vertices in the Schur complement */
-    if (exact_schur && sub_schurs->is_vertices && compute_Stilda) {
+    if (exact_schur && sub_schurs->is_vertices && (compute_Stilda || benign_n)) {
       PetscInt n_v;
 
       ierr = ISGetLocalSize(sub_schurs->is_vertices,&n_v);CHKERRQ(ierr);
@@ -827,7 +827,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatSetOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
 
     /* if we actually change the basis for the pressures, LDL^T factors will use a lot of memory
-       more than n^2 instead of n^1.5 or something. This is a workaround */
+       n^2 instead of n^1.5 or something. This is a workaround */
     if (benign_n) {
       Vec                    v;
       ISLocalToGlobalMapping N_to_reor;
@@ -1271,6 +1271,24 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         }
         ierr = MatFactorRestoreSchurComplement(F,&S_tmp);CHKERRQ(ierr);
       }
+    } else if (factor_workaround) { /* we need to eliminate any unneeded coupling */
+      PetscScalar *data;
+      PetscInt    nd = 0;
+
+      if (sub_schurs->is_dir) { /* dirichlet dofs could have different scalings */
+        ierr = ISGetLocalSize(sub_schurs->is_dir,&nd);CHKERRQ(ierr);
+      }
+      ierr = MatFactorGetSchurComplement(F,&S_all);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(S_all,&data);CHKERRQ(ierr);
+      for (i=0;i<size_active_schur;i++) {
+        ierr = PetscMemzero(data+i*size_schur+size_active_schur,(size_schur-size_active_schur)*sizeof(PetscScalar));CHKERRQ(ierr);
+      }
+      for (i=size_active_schur+nd;i<size_schur;i++) {
+        ierr = PetscMemzero(data+i*size_schur+size_active_schur,(size_schur-size_active_schur)*sizeof(PetscScalar));CHKERRQ(ierr);
+        data[i*(size_schur+1)] = PETSC_MAX_REAL;
+      }
+      ierr = MatDenseRestoreArray(S_all,&data);CHKERRQ(ierr);
+      ierr = MatFactorRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
     }
     ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
     ierr = PetscFree(schur_factor);CHKERRQ(ierr);
