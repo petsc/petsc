@@ -2711,12 +2711,17 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   /* DIRICHLET PROBLEM */
   if (dirichlet) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
-    if (pcbddc->benign_n && !pcbddc->benign_change_explicit && pcbddc->dbg_flag) {
-      Mat    A_IIn;
+    if (pcbddc->benign_n && !pcbddc->benign_change_explicit) {
+      if (!sub_schurs->reuse_solver) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented\n");
+      }
+      if (pcbddc->dbg_flag) {
+        Mat    A_IIn;
 
-      ierr = PCBDDCBenignProject(pc,pcis->is_I_local,pcis->is_I_local,&A_IIn);CHKERRQ(ierr);
-      ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
-      pcis->A_II = A_IIn;
+        ierr = PCBDDCBenignProject(pc,pcis->is_I_local,pcis->is_I_local,&A_IIn);CHKERRQ(ierr);
+        ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+        pcis->A_II = A_IIn;
+      }
     }
     if (pcbddc->local_mat->symmetric_set) {
       ierr = MatSetOption(pcis->A_II,MAT_SYMMETRIC,pcbddc->local_mat->symmetric_set);CHKERRQ(ierr);
