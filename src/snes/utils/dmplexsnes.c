@@ -1867,7 +1867,11 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
 
           ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
           ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
-          if (ghost >= 0 || nsupp > 2) continue;
+          if (ghost >= 0) continue;
+          if (nsupp > 2) { /* noop */
+            ++iface;
+            continue;
+          }
           ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
           ierr = DMPlexPointGlobalFieldRef(dm, cells[0], f, fa, &fL);CHKERRQ(ierr);
           ierr = DMPlexPointGlobalFieldRef(dm, cells[1], f, fa, &fR);CHKERRQ(ierr);
@@ -2451,6 +2455,28 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMPlexComputeJacobian_Internal(plex, cStart, cEnd, 0.0, 0.0, X, NULL, Jac, JacP, user);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetSNESLocalFEM"
+/*@
+  DMPlexSetSNESLocalFEM - Use DMPlex's internal FEM routines to compute SNES boundary values, residual, and Jacobian.
+
+  Input Parameters:
++ dm - The DM object
+. boundaryctx - the user context that will be passed to pointwise evaluation of boundary values (see DMAddBoundary())
+. residualctx - the user context that will be passed to pointwise evaluation of finite element residual computations (see PetscDSSetResidual())
+- jacobianctx - the user context that will be passed to pointwise evaluation of finite element Jacobian construction (see PetscDSSetJacobian())
+@*/
+PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx, void *jacobianctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSNESSetBoundaryLocal(dm,DMPlexSNESComputeBoundaryFEM,boundaryctx);CHKERRQ(ierr);
+  ierr = DMSNESSetFunctionLocal(dm,DMPlexSNESComputeResidualFEM,residualctx);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(dm,DMPlexSNESComputeJacobianFEM,jacobianctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

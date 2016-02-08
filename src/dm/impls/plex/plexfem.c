@@ -373,51 +373,46 @@ PetscErrorCode DMProjectFunctionLocal_Plex(DM dm, PetscReal time, PetscErrorCode
   else {
     cellsp = sp;
   }
+  for (f = 0; f < Nf; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      PetscFE fe = (PetscFE) obj;
+
+      hasFE   = PETSC_TRUE;
+      isFE[f] = PETSC_TRUE;
+      ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
+      ierr  = PetscFEGetDualSpace(fe, &cellsp[f]);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      hasFV   = PETSC_TRUE;
+      isFE[f] = PETSC_FALSE;
+      ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
+      ierr = PetscFVGetDualSpace(fv, &cellsp[f]);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+  }
   for (h = 0; h <= maxHeight; h++) {
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
     if (!h) {pStart = cStart; pEnd = cEnd;}
+    if (pEnd <= pStart) continue;
     totDim = 0;
     for (f = 0; f < Nf; ++f) {
-      PetscObject  obj;
-      PetscClassId id;
-
-      ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
-      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-      if (id == PETSCFE_CLASSID) {
-        PetscFE fe = (PetscFE) obj;
-
-        hasFE   = PETSC_TRUE;
-        isFE[f] = PETSC_TRUE;
-        ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
-        if (!h) {
-          ierr  = PetscFEGetDualSpace(fe, &cellsp[f]);CHKERRQ(ierr);
-          sp[f] = cellsp[f];
-          ierr  = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
-        } else {
-          ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], h, &sp[f]);CHKERRQ(ierr);
-          if (!sp[f]) {
-            continue;
-          }
+      if (!h) {
+        sp[f] = cellsp[f];
+      }
+      else {
+        ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], h, &sp[f]);CHKERRQ(ierr);
+        if (!sp[f]) {
+          continue;
         }
-      } else if (id == PETSCFV_CLASSID) {
-        PetscFV fv = (PetscFV) obj;
-
-        hasFV   = PETSC_TRUE;
-        isFE[f] = PETSC_FALSE;
-        if (!h) {
-          ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
-          ierr = PetscFVGetDualSpace(fv, &cellsp[f]);CHKERRQ(ierr);
-          ierr = PetscObjectReference((PetscObject) cellsp[f]);CHKERRQ(ierr);
-          sp[f] = cellsp[f];
-        } else {
-          sp[f] = NULL;
-          continue; /* FV doesn't have fields that can be evaluated at faces, corners, etc. */
-        }
-      } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+      }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim*numComp[f];
     }
-    if (pEnd <= pStart) continue;
     ierr = DMPlexVecGetClosure(dm, section, localX, pStart, &numValues, NULL);CHKERRQ(ierr);
     if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section point closure size %d != dual space dimension %d", numValues, totDim);
     if (!totDim) continue;
@@ -450,13 +445,12 @@ PetscErrorCode DMProjectFunctionLocal_Plex(DM dm, PetscReal time, PetscErrorCode
       ierr = DMPlexVecSetClosure(dm, section, localX, p, values, mode);CHKERRQ(ierr);
     }
     ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-    if (h || !maxHeight) {
+    if (h) {
       for (f = 0; f < Nf; f++) {ierr = PetscDualSpaceDestroy(&sp[f]);CHKERRQ(ierr);}
     }
   }
   ierr = PetscFree3(isFE, sp, numComp);CHKERRQ(ierr);
   if (maxHeight > 0) {
-    for (f = 0; f < Nf; f++) {ierr = PetscDualSpaceDestroy(&cellsp[f]);CHKERRQ(ierr);}
     ierr = PetscFree(cellsp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -599,7 +593,7 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   PetscDS            prob;
   PetscSF            sf;
   DM                 dmFace, dmCell, dmGrad;
-  const PetscScalar *facegeom, *cellgeom, *grad;
+  const PetscScalar *facegeom, *cellgeom = NULL, *grad;
   const PetscInt    *leaves;
   PetscScalar       *x, *fx;
   PetscInt           dim, nleaves, loc, fStart, fEnd, pdim, i;
@@ -614,8 +608,10 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
   ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
-  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  if (cellGeometry) {
+    ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  }
   if (Grad) {
     PetscFV fv;
 
@@ -675,7 +671,9 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
     ierr = DMRestoreWorkArray(dm, pdim, PETSC_SCALAR, &fx);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(Grad, &grad);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  if (cellGeometry) {
+    ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  }
   ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

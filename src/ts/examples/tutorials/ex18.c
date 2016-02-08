@@ -1072,10 +1072,13 @@ int main(int argc, char **argv)
 
     ierr = PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit);CHKERRQ(ierr);
     if (isImplicit) {
+      ierr = DMTSSetIBoundaryLocal(dm, DMPlexTSComputeIBoundaryFEM, &user);CHKERRQ(ierr);
       ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user);CHKERRQ(ierr);
     }
+    ierr = DMTSSetRHSBoundaryLocal(dm, DMPlexTSComputeRHSBoundaryFVM, &user);CHKERRQ(ierr);
     ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, &user);CHKERRQ(ierr);
   } else {
+    ierr = DMTSSetIBoundaryLocal(dm, DMPlexTSComputeIBoundaryFEM, &user);CHKERRQ(ierr);
     ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user);CHKERRQ(ierr);
   }
   if (user.useFV) {ierr = TSMonitorSet(ts, MonitorFunctionals, &user, NULL);CHKERRQ(ierr);}

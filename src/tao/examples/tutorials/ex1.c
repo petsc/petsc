@@ -285,8 +285,7 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
-  ierr = DMSNESSetFunctionLocal(dm, DMPlexSNESComputeResidualFEM, &user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(dm, DMPlexSNESComputeJacobianFEM, &user);CHKERRQ(ierr);
+  ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
