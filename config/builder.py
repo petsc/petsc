@@ -585,6 +585,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                 {'num': 'sw_0', 'numProcs': 1, 'args': ' -ufv_vtk_interval 0 -f %(meshes)s/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy','requires':'exodusii'},
                                                                 # 3D Advection 12
                                                                 {'num': 'adv_0', 'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201', 'requires': 'Broken'},
+                                                                # 2D p4est advection
+                                                                {'num': 'p4est_advec_2d', 'numProcs': 1,'args': '-ufv_vtk_interval 0 -f -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash -dm_forest_maximum_refinement 5','requires':['p4est']},
                                                                 ],
                         'src/ts/examples/tutorials/ex18':      [# 2D harmonic velocity, no porosity 0-7
                                                                 {'num': 'p1p1', 'numProcs': 1, 'args': '-x_bd_type none -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_factor_shift_type nonzero -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check'},
