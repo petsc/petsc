@@ -560,7 +560,7 @@ static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,Petsc
   PetscFunctionBeginUser;
   ru2  = DotDIM(x->ru,x->ru);
   ru2 /= x->r;
-  (*p)=(x->E - 0.5*ru2)*(pars[EULER_PAR_GAMMA] - 1.0); /* e rho (gamma-1) */
+  (*p)=(x->E - 0.5*ru2)*(pars[EULER_PAR_GAMMA] - 1.0); /* (E - rho V^2/2)(gamma-1) = e rho (gamma-1) */
   PetscFunctionReturn(0);
 }
 
@@ -613,6 +613,11 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   EulerNode       *xG = (EulerNode*)a_xG;
 
   PetscFunctionBeginUser;
+  if (0) {
+    PetscMPIInt    rank;
+    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+    PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s HERE !!!!!!!!! xI->r=%g\n",rank,__FUNCT__,xI->r);
+  }
   xG->r = xI->r;           // ghost cell density - same
   xG->E = xI->E;           // ghost cell energy - same
   if (n[1] != 0.) {        // top and bottom
@@ -636,7 +641,12 @@ static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscR
   EulerNode       fL,fR;
   PetscInt        i;
   PetscErrorCode  ierr;
-  //PetscPrintf(PETSC_COMM_WORLD,"%s N=%D Coord=%g,%g\n",__FUNCT__,Nf,qp[0],qp[1]);
+  PetscFunctionBeginUser;
+  if (1) {
+    PetscMPIInt    rank;
+    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+    PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s N=%D rho=%g,%g\n",rank,__FUNCT__,Nf,uL->r,uR->r);
+  }
   if (uL->r < 0 || uR->r < 0) exit(17);
   EulerFlux(phys,n,uL,&fL);
   EulerFlux(phys,n,uR,&fR);
@@ -647,6 +657,7 @@ static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscR
   // speed = PetscMax(cL,cR)+PetscMax(PetscAbsScalar(DotDIM(uL->ru,n)/NormDIM(n)),PetscAbsScalar(DotDIM(uR->ru,n)/NormDIM(n)));
   speed = PetscMax(PetscAbsScalar(velR)+cL,PetscAbsScalar(velL)+cR);
   for (i=0; i<2+dim; i++) flux[i] = 0.5*(fL.vals[i]+fR.vals[i])+0.5*speed*(xL[i]-xR[i]);
+  PetscFunctionReturnVoid();
 }
 
 #undef __FUNCT__
@@ -699,7 +710,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   eu->sound    = SpeedOfSound_PG;
-  phys->maxspeed = eu->pars[EULER_PAR_AMACH]; // speed of shock, not wind???
+  phys->maxspeed = eu->pars[EULER_PAR_AMACH]; // speed of shock
   {
     const PetscInt wallids[] = {100,101,200,300};
     ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
@@ -1401,7 +1412,6 @@ int main(int argc, char **argv)
   ierr = PetscFunctionListAdd(&PhysicsList,"sw"              ,PhysicsCreate_SW);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PhysicsList,"euler"           ,PhysicsCreate_Euler);CHKERRQ(ierr);
 
-
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Mesh Options","");CHKERRQ(ierr);
   {
     cfl  = 0.9 * 4; /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
@@ -1467,6 +1477,18 @@ int main(int argc, char **argv)
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
+  {
+    DM dmDist;
+
+    ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
+    if (dmDist) {
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = dmDist;
+    }
+  }
+
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {
     PetscErrorCode (*physcreate)(DM,Model,Physics,PetscOptionItems*);
@@ -1486,18 +1508,9 @@ int main(int argc, char **argv)
     ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  {
-    DM dmDist;
 
-    ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
-    if (dmDist) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = dmDist;
-    }
-  }
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+
   {
     DM gdm;
 
