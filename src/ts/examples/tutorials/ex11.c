@@ -1497,8 +1497,6 @@ int main(int argc, char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-
   {
     DM dmDist;
 
@@ -1510,6 +1508,8 @@ int main(int argc, char **argv)
       dm   = dmDist;
     }
   }
+
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
   {
     DM gdm;
