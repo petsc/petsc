@@ -194,18 +194,21 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
   PetscFunctionBegin;
   ierr = DMTSConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMGetNumFields(plex, &Nf);CHKERRQ(ierr);
-  for (f = 0; f < Nf; f++) {
-    PetscObject  obj;
-    PetscClassId id;
+  if (!locX_t) {
+    /* This is the RHS part */
+    for (f = 0; f < Nf; f++) {
+      PetscObject  obj;
+      PetscClassId id;
 
-    ierr = DMGetField(plex, f, &obj);CHKERRQ(ierr);
-    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFV_CLASSID) {
-      ierr = DMPlexSNESGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
-      break;
+      ierr = DMGetField(plex, f, &obj);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id == PETSCFV_CLASSID) {
+        ierr = DMPlexSNESGetGeometryFVM(plex, &faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
+        break;
+      }
     }
   }
-  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, faceGeometryFVM, NULL, NULL);CHKERRQ(ierr);
   /* TODO: locX_t */
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
