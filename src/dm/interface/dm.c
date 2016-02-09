@@ -2949,7 +2949,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
 {
   DM             B;
   char           convname[256];
-  PetscBool      sametype, issame;
+  PetscBool      sametype/*, issame */;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2957,8 +2957,12 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
   PetscValidType(dm,1);
   PetscValidPointer(M,3);
   ierr = PetscObjectTypeCompare((PetscObject) dm, newtype, &sametype);CHKERRQ(ierr);
-  ierr = PetscStrcmp(newtype, "same", &issame);CHKERRQ(ierr);
-  {
+  /* ierr = PetscStrcmp(newtype, "same", &issame);CHKERRQ(ierr); */
+  if (sametype) {
+    *M   = dm;
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else {
     PetscErrorCode (*conv)(DM, DMType, DM*) = NULL;
 
     /*
