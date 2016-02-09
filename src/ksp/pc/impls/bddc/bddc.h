@@ -43,6 +43,7 @@ typedef struct {
   PetscInt      *local_primal_ref_mult;
   PetscBool     use_change_of_basis;
   PetscBool     use_change_on_faces;
+  PetscBool     fake_change;
   Mat           ChangeOfBasisMatrix;
   Mat           user_ChangeOfBasisMatrix;
   Mat           new_global_mat;

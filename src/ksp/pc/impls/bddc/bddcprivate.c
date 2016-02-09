@@ -4069,7 +4069,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = MatAssemblyEnd(localChangeOfBasisMatrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     /* assembling of global change of variable */
-    {
+    if (!pcbddc->fake_change) {
       Mat      tmat;
       PetscInt bs;
 
@@ -4091,28 +4091,29 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecReciprocal(pcis->vec1_global);CHKERRQ(ierr);
       ierr = MatDiagonalScale(pcbddc->ChangeOfBasisMatrix,pcis->vec1_global,NULL);CHKERRQ(ierr);
-    }
-    /* check */
-    if (pcbddc->dbg_flag) {
-      PetscReal error;
-      Vec       x,x_change;
 
-      ierr = VecDuplicate(pcis->vec1_global,&x);CHKERRQ(ierr);
-      ierr = VecDuplicate(pcis->vec1_global,&x_change);CHKERRQ(ierr);
-      ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
-      ierr = VecCopy(x,pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = MatMult(localChangeOfBasisMatrix,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcis->vec1_global,x_change);CHKERRQ(ierr);
-      ierr = VecAXPY(x,-1.0,x_change);CHKERRQ(ierr);
-      ierr = VecNorm(x,NORM_INFINITY,&error);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Error global vs local change: %1.6e\n",error);CHKERRQ(ierr);
-      ierr = VecDestroy(&x);CHKERRQ(ierr);
-      ierr = VecDestroy(&x_change);CHKERRQ(ierr);
+      /* check */
+      if (pcbddc->dbg_flag) {
+        PetscReal error;
+        Vec       x,x_change;
+
+        ierr = VecDuplicate(pcis->vec1_global,&x);CHKERRQ(ierr);
+        ierr = VecDuplicate(pcis->vec1_global,&x_change);CHKERRQ(ierr);
+        ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
+        ierr = VecCopy(x,pcis->vec1_global);CHKERRQ(ierr);
+        ierr = VecScatterBegin(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,x,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = MatMult(localChangeOfBasisMatrix,pcis->vec1_N,pcis->vec2_N);CHKERRQ(ierr);
+        ierr = VecScatterBegin(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,pcis->vec2_N,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcis->vec1_global,x_change);CHKERRQ(ierr);
+        ierr = VecAXPY(x,-1.0,x_change);CHKERRQ(ierr);
+        ierr = VecNorm(x,NORM_INFINITY,&error);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Error global vs local change: %1.6e\n",error);CHKERRQ(ierr);
+        ierr = VecDestroy(&x);CHKERRQ(ierr);
+        ierr = VecDestroy(&x_change);CHKERRQ(ierr);
+      }
     }
 
     /* adapt sub_schurs computed (if any) */
@@ -4165,8 +4166,16 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         ierr = VecRestoreArrayRead(pcis->D,&array);CHKERRQ(ierr);
         ierr = ISRestoreIndices(sub_schurs->is_Ej_all,&idxs_all);CHKERRQ(ierr);
         ierr = ISRestoreIndices(is_V_Sall,&idxs_V);CHKERRQ(ierr);
+        if (!pcbddc->fake_change) {
+          ierr = ISDestroy(&is_V_Sall);CHKERRQ(ierr);
+        } else {
+          ierr = ISDestroy(&sub_schurs->change_primal);CHKERRQ(ierr);
+          sub_schurs->change_primal = is_V_Sall;
+          ierr = KSPDestroy(&sub_schurs->change);CHKERRQ(ierr);
+          ierr = KSPCreate(PETSC_COMM_SELF,&sub_schurs->change);CHKERRQ(ierr);
+          ierr = KSPSetOperators(sub_schurs->change,tmat,tmat);CHKERRQ(ierr);
+        }
         ierr = MatDestroy(&tmat);CHKERRQ(ierr);
-        ierr = ISDestroy(&is_V_Sall);CHKERRQ(ierr);
       }
     }
     ierr = MatDestroy(&localChangeOfBasisMatrix);CHKERRQ(ierr);
@@ -6115,6 +6124,45 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       benign_n = 0;
     }
     ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs);CHKERRQ(ierr);
+    /* if the velocities are in the original basis, then we need to eliminate the no-net-flux from the S_Ej
+       we assume that the user has passed in the associated quadrature weights in the near-null space attached to pc->pmat
+       We need to compute the change of basis according to the quadrature weights, and this could not be done, at the moment, without some hacking */
+    if (pcbddc->benign_saddle_point && !pcbddc->use_change_of_basis && !pcbddc->user_ChangeOfBasis) {
+      PC_IS   *pcisf;
+      PC_BDDC *pcbddcf;
+      PC      pcf;
+
+      if (pcbddc->sub_schurs_rebuild) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute change of basis with a different graph");
+      }
+      ierr = PCCreate(PetscObjectComm((PetscObject)pc),&pcf);CHKERRQ(ierr);
+      ierr = PCSetOperators(pcf,pc->mat,pc->pmat);CHKERRQ(ierr);
+      ierr = PCSetType(pcf,PCBDDC);CHKERRQ(ierr);
+      /* hacks */
+      pcisf = (PC_IS*)pcf->data;
+      pcbddcf = (PC_BDDC*)pcf->data;
+      *pcisf = *pcis;
+      ierr = PetscFree(pcbddcf->mat_graph);CHKERRQ(ierr);
+      pcbddcf->mat_graph = pcbddc->mat_graph;
+      ierr = PetscFree(pcbddcf->sub_schurs);CHKERRQ(ierr);
+      pcbddcf->sub_schurs = sub_schurs;
+      pcbddcf->use_faces = PETSC_TRUE;
+      pcbddcf->use_change_of_basis = PETSC_TRUE;
+      pcbddcf->use_change_on_faces = PETSC_TRUE;
+      pcbddcf->use_deluxe_scaling = PETSC_TRUE;
+      pcbddcf->fake_change = PETSC_TRUE;
+      ierr = PCBDDCConstraintsSetUp(pcf);CHKERRQ(ierr);
+      /* free unneeded memory allocated in PCBDDCConstraintsSetUp */
+      pcbddcf->sub_schurs = NULL;
+      ierr = MatDestroy(&pcbddcf->ConstraintMatrix);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&pcbddcf->onearnullspace);CHKERRQ(ierr);
+      ierr = PetscFree2(pcbddcf->local_primal_ref_node,pcbddcf->local_primal_ref_mult);CHKERRQ(ierr);
+      ierr = PetscFree(pcbddcf->primal_indices_local_idxs);CHKERRQ(ierr);
+      ierr = PetscFree(pcbddcf->onearnullvecs_state);CHKERRQ(ierr);
+      ierr = PetscFree(pcf->data);CHKERRQ(ierr);
+      pcf->ops->destroy = NULL;
+      ierr = PCDestroy(&pcf);CHKERRQ(ierr);
+    }
   }
   ierr = MatDestroy(&S_j);CHKERRQ(ierr);
 

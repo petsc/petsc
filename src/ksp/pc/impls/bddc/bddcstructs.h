@@ -114,6 +114,9 @@ struct _PCBDDCSubSchurs {
   PetscBool is_posdef;
   /* data structure to reuse MatFactor with Schur solver */
   PCBDDCReuseSolvers reuse_solver;
+  /* change of variables */
+  IS  change_primal;
+  KSP change;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 
