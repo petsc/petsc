@@ -188,6 +188,7 @@ def chksynonyms():
     # mstk currently cannot build a shared library
     argsAddDownload('mstk',[],['--download-mstk-shared=0'])
     argsAddDownload('ascem-io')
+    argsAddDownload('unittestcpp')
 
   if downloadxsdk:
     # Common external libraries
