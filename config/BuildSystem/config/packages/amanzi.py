@@ -6,7 +6,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = 'origin/master'
     self.download         = ['hg://https://software.lanl.gov/ascem/hg/amanzi-ideas']
-    self.downloadfilename = 'amanzi-ideas'
+    self.downloaddirname  = 'amanzi-ideas'
     self.includes         = []
     self.functions        = []
     self.cxx              = 1
@@ -39,6 +39,7 @@ class Configure(config.package.CMakePackage):
     self.mstk            = framework.require('config.packages.mstk',self)
     self.ascem_io        = framework.require('config.packages.ascem-io',self)
     self.trilinos        = framework.require('config.packages.Trilinos',self)
+    self.unittestcpp     = framework.require('config.packages.unittestcpp',self)
     self.deps            = [self.mpi,self.blasLapack]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
@@ -62,8 +63,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
     if self.boost.found:
-      args.append('-DBOOST_INCLUDEDIR='+self.boost.include[0])
-      args.append('-DBOOST_LIBRARYDIR='+os.path.dirname(self.boost.lib[0]))
+      args.append('-DBOOST_INCLUDEDIR='+os.path.join(self.boost.directory,self.boost.includedir))
+      args.append('-DBOOST_LIBRARYDIR='+os.path.join(self.boost.directory,self.boost.libdir))
     else:
       raise RuntimeError("Amanzi requires Boost")
 
@@ -74,8 +75,8 @@ class Configure(config.package.CMakePackage):
 
     args.append('-DTrilinos_DIR:FILEPATH='+os.path.dirname(self.trilinos.include[0]))
 
-    args.append('-DUnitTest_LIBRARIES=/usr/local/UnitTest/lib/libUnitTest++.a')
-    args.append('-DUnitTest_INCLUDE_DIRS=/usr/local/UnitTest/include')
+    args.append('-DUnitTest_LIBRARIES="'+self.libraries.toStringNoDupes(self.unittestcpp.lib)+'"')
+    args.append('-DUnitTest_INCLUDE_DIRS='+os.path.join(self.unittestcpp.directory,'include','UnitTest++','UnitTest++'))
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')

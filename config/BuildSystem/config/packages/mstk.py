@@ -5,7 +5,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.download         = ['http://software.lanl.gov/ascem/tpls/mstk-2.23.tgz']
-    self.downloadfilename = 'mstk'
+    self.downloaddirname  = 'mstk'
     self.includes         = ['MSTK.h']
     self.liblist          = [['libmstk.a']]
     self.functions        = []

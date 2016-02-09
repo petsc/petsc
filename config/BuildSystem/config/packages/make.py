@@ -49,7 +49,6 @@ class Configure(config.package.GNUPackage):
     if not self.installNeeded(conffile):
       return self.installDir
     ### Configure and Build package
-    self.gitPreInstallCheck()
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)

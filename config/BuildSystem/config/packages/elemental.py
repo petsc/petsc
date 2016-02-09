@@ -11,7 +11,7 @@ class Configure(config.package.CMakePackage):
     self.requirescxx11    = 1
     self.downloadonWindows= 0
     self.hastests         = 1
-    self.downloadfilename = 'Elemental'
+    self.downloaddirname  = 'Elemental'
     return
 
   def setupDependencies(self, framework):

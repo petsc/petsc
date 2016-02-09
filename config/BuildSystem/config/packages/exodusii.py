@@ -6,12 +6,12 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodus-5.24.tar.bz2']
-    self.downloadfilename = 'exodus'
-    self.functions  = ['ex_close']
-    self.includes   = ['exodusII.h']
-    self.includedir = ['include']
-    self.altlibdir  = '.'
+    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodus-5.24.tar.bz2']
+    self.downloaddirname = 'exodus'
+    self.functions       = ['ex_close']
+    self.includes        = ['exodusII.h']
+    self.includedir      = ['include']
+    self.altlibdir       = '.'
     return
 
   def setupDependencies(self, framework):

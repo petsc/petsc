@@ -10,7 +10,7 @@ class Configure(config.package.GNUPackage):
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
     self.download_osx     = ['http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.2.tar.gz']
-    self.downloadfilename = 'mpich'
+    self.downloaddirname  = 'mpich'
     self.skippackagewithoptions = 1
     self.isMPI = 1
     return
