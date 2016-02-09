@@ -1143,11 +1143,13 @@ class GNUPackage(Package):
   def Install(self):
     # hypre had configure inside src directory ugh
     if not os.path.isfile(os.path.join(self.packageDir,'configure')) and not os.path.isfile(os.path.join(self.packageDir,'src','configure')):
-      if not self.programs.autoreconf_flg:
+      if not self.programs.autoreconf:
         raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)!')
+      if not self.programs.libtoolize:
+        raise RuntimeError('libtoolize required for ' + self.PACKAGE+' not found!')
       try:
         self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.programs.autoreconf + ' -fi', timeout=200, log = self.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.programs.libtoolize+' && '+self.programs.autoreconf + ' --force --install', timeout=200, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
 
