@@ -11,9 +11,15 @@ class Configure(config.package.Package):
     self.downloadonWindows = 1
     return
 
+  def consistencyChecks(self):
+    config.package.Package.consistencyChecks(self)
+    if self.argDB.get('download-'+self.downloadname.lower()) and self.setCompilers.isDarwin(self.log):
+      raise RuntimeError('--download-boost does not produce correct shared libraries on Apple. Suggest:\n   brew install boost\nthen run ./configure with --with-boost-dir=/usr/local\n')
+
   def Install(self):
     import shutil
     import os
+
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')
     fd.write(self.installDir)
