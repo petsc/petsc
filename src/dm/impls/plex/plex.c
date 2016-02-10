@@ -3948,7 +3948,7 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
         }
       }
     }
-    foff     += fdof - cfdof;
+    foff     += (setBC ? fdof : (fdof - cfdof));
     foffs[f] += fdof;
   }
   PetscFunctionReturn(0);
