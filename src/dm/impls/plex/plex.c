@@ -3991,8 +3991,12 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
      * into the global matrix anyway) */
     for (p = 0; p < 2*numPoints; p+=2) {
       PetscInt b    = points[p];
-      PetscInt bDof = 0;
+      PetscInt bDof = 0, bSecDof;
 
+      ierr = PetscSectionGetDof(section,b,&bSecDof);CHKERRQ(ierr);
+      if (!bSecDof) {
+        continue;
+      }
       if (b >= aStart && b < aEnd) {
         ierr = PetscSectionGetDof(aSec,b,&bDof);CHKERRQ(ierr);
       }
@@ -4021,8 +4025,7 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
       else {
         /* this point is not constrained */
         newNumPoints++;
-        ierr           = PetscSectionGetDof(section,b,&bDof);CHKERRQ(ierr);
-        newNumIndices += bDof;
+        newNumIndices += bSecDof;
         for (f = 0; f < numFields; ++f) {
           PetscInt fDof;
 
@@ -4066,10 +4069,20 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
 
   /* get workspaces for the point-to-point matrices */
   if (numFields) {
+    PetscInt totalOffset, totalMatOffset;
+
     for (p = 0; p < numPoints; p++) {
       PetscInt b    = points[2*p];
-      PetscInt bDof = 0;
+      PetscInt bDof = 0, bSecDof;
 
+      ierr = PetscSectionGetDof(section,b,&bSecDof);CHKERRQ(ierr);
+      if (!bSecDof) {
+        for (f = 0; f < numFields; f++) {
+          newPointOffsets[f][p + 1] = 0;
+          pointMatOffsets[f][p + 1] = 0;
+        }
+        continue;
+      }
       if (b >= aStart && b < aEnd) {
         ierr = PetscSectionGetDof(aSec, b, &bDof);CHKERRQ(ierr);
       }
@@ -4100,28 +4113,35 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
         }
       }
     }
-    for (f = 0; f < numFields; f++) {
-      newPointOffsets[f][0] = 0;
-      pointMatOffsets[f][0] = 0;
+    for (f = 0, totalOffset = 0, totalMatOffset = 0; f < numFields; f++) {
+      newPointOffsets[f][0] = totalOffset;
+      pointMatOffsets[f][0] = totalMatOffset;
       for (p = 0; p < numPoints; p++) {
         newPointOffsets[f][p+1] += newPointOffsets[f][p];
         pointMatOffsets[f][p+1] += pointMatOffsets[f][p];
       }
+      totalOffset    = newPointOffsets[f][p + 1];
+      totalMatOffset = pointMatOffsets[f][p + 1];
       ierr = DMGetWorkArray(dm,pointMatOffsets[f][numPoints],PETSC_SCALAR,&pointMat[f]);CHKERRQ(ierr);
     }
   }
   else {
     for (p = 0; p < numPoints; p++) {
       PetscInt b    = points[2*p];
-      PetscInt bDof = 0;
+      PetscInt bDof = 0, bSecDof;
 
+      ierr = PetscSectionGetDof(section,b,&bSecDof);CHKERRQ(ierr);
+      if (!bSecDof) {
+        newPointOffsets[0][p + 1] = 0;
+        pointMatOffsets[0][p + 1] = 0;
+        continue;
+      }
       if (b >= aStart && b < aEnd) {
         ierr = PetscSectionGetDof(aSec, b, &bDof);CHKERRQ(ierr);
       }
       if (bDof) {
-        PetscInt dof, bOff, q, allDof = 0;
+        PetscInt bOff, q, allDof = 0;
 
-        ierr = PetscSectionGetDof(section, b, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(aSec, b, &bOff);CHKERRQ(ierr);
         for (q = 0; q < bDof; q++) {
           PetscInt a = anchors[bOff + q], aDof;
@@ -4130,13 +4150,10 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
           allDof += aDof;
         }
         newPointOffsets[0][p+1] = allDof;
-        pointMatOffsets[0][p+1] = dof * allDof;
+        pointMatOffsets[0][p+1] = bSecDof * allDof;
       }
       else {
-        PetscInt dof;
-
-        ierr = PetscSectionGetDof(section, b, &dof);CHKERRQ(ierr);
-        newPointOffsets[0][p+1] = dof;
+        newPointOffsets[0][p+1] = bSecDof;
         pointMatOffsets[0][p+1] = 0;
       }
     }
@@ -4158,8 +4175,12 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
     for (p = 0, newP = 0; p < numPoints; p++) {
       PetscInt b    = points[2*p];
       PetscInt o    = points[2*p+1];
-      PetscInt bDof = 0;
+      PetscInt bDof = 0, bSecDof;
 
+      ierr = PetscSectionGetDof(section, b, &bSecDof);CHKERRQ(ierr);
+      if (!bSecDof) {
+        continue;
+      }
       if (b >= aStart && b < aEnd) {
         ierr = PetscSectionGetDof(aSec, b, &bDof);CHKERRQ(ierr);
       }
@@ -4213,8 +4234,12 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
     for (p = 0; p < numPoints; p++) {
       PetscInt b    = points[2*p];
       PetscInt o    = points[2*p+1];
-      PetscInt bDof = 0;
+      PetscInt bDof = 0, bSecDof;
 
+      ierr = PetscSectionGetDof(section, b, &bSecDof);CHKERRQ(ierr);
+      if (!bSecDof) {
+        continue;
+      }
       if (b >= aStart && b < aEnd) {
         ierr = PetscSectionGetDof(aSec, b, &bDof);CHKERRQ(ierr);
       }
@@ -4261,6 +4286,9 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
         PetscInt dof;
 
         ierr = PetscSectionGetFieldDof(section,b,f,&dof);CHKERRQ(ierr);
+        if (!dof) {
+          continue;
+        }
         if (pointMatOffsets[f][p] < pointMatOffsets[f][p + 1]) {
           PetscInt nCols         = newPointOffsets[f][p+1]-cStart;
           const PetscScalar *mat = pointMat[f] + pointMatOffsets[f][p];
@@ -4294,6 +4322,9 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
       PetscInt dof;
 
       ierr = PetscSectionGetDof(section,b,&dof);CHKERRQ(ierr);
+      if (!dof) {
+        continue;
+      }
       if (pointMatOffsets[0][p] < pointMatOffsets[0][p + 1]) {
         PetscInt nCols         = newPointOffsets[0][p+1]-cStart;
         const PetscScalar *mat = pointMat[0] + pointMatOffsets[0][p];
