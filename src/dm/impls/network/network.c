@@ -663,7 +663,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 #undef __FUNCT__
 #define __FUNCT__ "DMNetworkGetConnectedNodes"
 /*@C
-  DMNetworkGetConnectedNodes - Return the connected edges for this edge point
+  DMNetworkGetConnectedNodes - Return the connected vertices for this edge point
 
   Not Collective
 
@@ -805,9 +805,8 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   PetscInt          eStart,eEnd,vStart,vEnd,rstart,rend,row,row_e,nrows;
   MPI_Comm          comm;
   PetscMPIInt       rank,size;
-  PetscInt          ncols,col,j,e,v,nvar;
+  PetscInt          ncols,col,j,e,v;
   const PetscInt    *cols;
-  const PetscScalar *vals;
   PetscScalar       *zeros,zero = 0.0;
   PetscBool         ghost; 
   Mat               Je;
@@ -881,7 +880,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     ierr = MatSetValues(*J,nrows,rows,ncols,cols_tmp,zeros,INSERT_VALUES);CHKERRQ(ierr);
     ierr = PetscFree2(cols_tmp,zeros);CHKERRQ(ierr);
 
-    /* edge */
+    /* Edges */
     for (row=rstart; row<rend; row++) {
       row_e = row - rstart;
       ierr = MatGetRow(Je,row_e,&ncols,&cols,NULL);CHKERRQ(ierr);
@@ -893,19 +892,45 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     }
   }
 
-  /* vertex */
+  /* Vertices */
+  PetscInt       nedges;
+  const PetscInt *edges;
   for (v=vStart; v<vEnd; v++) {
+    ierr = DMNetworkGetVariableGlobalOffset(dm,v,&rstart);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(dm,v,&nrows);CHKERRQ(ierr);
+
+    PetscInt    rows[nrows];
+    for (j=0; j<nrows; j++) rows[j] = j + rstart;
+
+    /* Get supporting edges */
+    ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
+    //printf("[%d] v-%d nedges %d\n",rank,v,nedges);
+   
+    for (e=0; e<nedges; e++) {
+      PetscInt cstart,*cols_tmp;
+      ierr = DMNetworkGetVariableGlobalOffset(dm,edges[e],&cstart);CHKERRQ(ierr);
+      ierr = DMNetworkGetNumVariables(dm,edges[e],&ncols);CHKERRQ(ierr); 
+      //if (rank == 0 ) {
+      //  printf("edge %d, cstart %d, ncols %d\n",edges[e],cstart,ncols);
+      //}
+
+      ierr = PetscCalloc2(ncols,&cols_tmp,nrows*ncols,&zeros);CHKERRQ(ierr);
+      for (j=0; j<ncols; j++) cols_tmp[j] = j+ cstart;
+      ierr = MatSetValues(*J,nrows,rows,ncols,cols_tmp,zeros,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = PetscFree2(cols_tmp,zeros);CHKERRQ(ierr);
+
+      /* Get connected vertices -- not done yet! */
+    }
+
+    /* Set diagonal blocks for this vertex */
     ierr = DMNetworkIsGhostVertex(dm,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      ierr = DMNetworkGetVariableGlobalOffset(dm,v,&rstart);CHKERRQ(ierr);
-      ierr = DMNetworkGetNumVariables(dm,v,&nvar);CHKERRQ(ierr);
-      rend = rstart + nvar;
-   
-      for (row=rstart; row<rend; row++) {
-        ierr = MatGetRow(Jplex,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-        ierr = MatSetValues(*J,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(Jplex,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-      }
+      PetscInt *cols_tmp,cstart;
+      ierr = PetscCalloc2(nrows,&cols_tmp,nrows*nrows,&zeros);CHKERRQ(ierr);
+      ierr = DMNetworkGetVariableGlobalOffset(dm,v,&cstart);CHKERRQ(ierr);
+      for (j=0; j<nrows; j++) cols_tmp[j] = j+ cstart;
+      ierr = MatSetValues(*J,nrows,rows,nrows,cols_tmp,zeros,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = PetscFree2(cols_tmp,zeros);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
