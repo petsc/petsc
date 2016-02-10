@@ -496,6 +496,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = ISEqual(vi->IS_inact_prev,vi->IS_inact,&isequal);CHKERRQ(ierr);
     if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
+      ierr = PCFieldSplitRestrictIS(pc,vi->IS_inact);CHKERRQ(ierr);
     }
 
     /*      ierr = ISView(vi->IS_inact,0);CHKERRQ(ierr); */
