@@ -4120,8 +4120,8 @@ static PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscI
         newPointOffsets[f][p+1] += newPointOffsets[f][p];
         pointMatOffsets[f][p+1] += pointMatOffsets[f][p];
       }
-      totalOffset    = newPointOffsets[f][p + 1];
-      totalMatOffset = pointMatOffsets[f][p + 1];
+      totalOffset    = newPointOffsets[f][numPoints];
+      totalMatOffset = pointMatOffsets[f][numPoints];
       ierr = DMGetWorkArray(dm,pointMatOffsets[f][numPoints],PETSC_SCALAR,&pointMat[f]);CHKERRQ(ierr);
     }
   }
