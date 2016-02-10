@@ -1418,8 +1418,8 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
   /* submatrices of local problem */
   Mat             A_RV,A_VR,A_VV,local_auxmat2_R;
-  /* submatrices of benign trick */
-  Mat             B0_V = NULL;
+  /* submatrices for benign trick */
+  Mat             B0_R = NULL, B0_V = NULL;
   /* submatrices of local coarse problem */
   Mat             S_VV,S_CV,S_VC,S_CC;
   /* working matrices */
@@ -1623,22 +1623,22 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatCopy(M1,S_CC,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* S_CC can have a different LDA, MatMatSolve doesn't support it */
     ierr = MatDestroy(&M1);CHKERRQ(ierr);
   }
-  /* Get submatrices from subdomain matrix */
+
+  /* Extract B0_R */
   if (pcbddc->benign_n) {
     IS        dummy;
-    Mat       B0_R;
     PetscReal norm;
 
     ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->benign_n,0,1,&dummy);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pcbddc->benign_B0,dummy,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&B0_R);CHKERRQ(ierr);
     ierr = MatNorm(B0_R,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    if (norm > PETSC_SMALL) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! ||B0_R|| = %f (should be numerically 0.)",norm);
+    if (norm < PETSC_SMALL) {
+      ierr = MatDestroy(&B0_R);CHKERRQ(ierr);
     }
-    ierr = MatDestroy(&B0_R);CHKERRQ(ierr);
     ierr = ISDestroy(&dummy);CHKERRQ(ierr);
   }
 
+  /* Get submatrices from subdomain matrix */
   if (n_vertices) {
     IS is_aux;
 
@@ -2014,6 +2014,22 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         for (j=0;j<pcbddc->benign_n;j++) y[n_D*i+p0_lidx_I[j]] = 0.0;
         ierr = MatDenseRestoreArray(pcbddc->coarse_phi_D,&y);CHKERRQ(ierr);
       }
+      if (B0_R) {
+        Vec               benign_proj;
+        const PetscScalar *array;
+        PetscInt          j;
+
+        ierr = MatCreateVecs(B0_R,NULL,&benign_proj);CHKERRQ(ierr);
+        ierr = MatMult(B0_R,pcbddc->vec1_R,benign_proj);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(benign_proj,&array);CHKERRQ(ierr);
+        for (j=0;j<pcbddc->benign_n;j++) {
+          PetscInt primal_idx = pcbddc->local_primal_size - pcbddc->benign_n + j;
+          coarse_submat_vals[primal_idx*pcbddc->local_primal_size+i+n_vertices] = array[j];
+          coarse_submat_vals[(i+n_vertices)*pcbddc->local_primal_size+primal_idx] = array[j];
+        }
+        ierr = VecRestoreArrayRead(benign_proj,&array);CHKERRQ(ierr);
+        ierr = VecDestroy(&benign_proj);CHKERRQ(ierr);
+      }
       ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
     }
   }
@@ -2022,6 +2038,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   }
   ierr = PetscFree(p0_lidx_I);CHKERRQ(ierr);
   ierr = MatDestroy(&B0_V);CHKERRQ(ierr);
+  ierr = MatDestroy(&B0_R);CHKERRQ(ierr);
 
   /* compute other basis functions for non-symmetric problems */
   if (!pcbddc->symmetric_primal) {
@@ -2192,13 +2209,12 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatAXPY(TM1,one,TM4,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatConvert(TM1,MATSEQDENSE,MAT_REUSE_MATRIX,&TM1);CHKERRQ(ierr);
     if (pcbddc->benign_n) {
-      Mat         B0_I,B0_B,B0_BPHI,B0_IPHI;
+      Mat         B0_B,B0_BPHI;
       PetscScalar *data,*data2;
       PetscInt    j;
 
       ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->benign_n,0,1,&is_dummy);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcbddc->benign_B0,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B0_B);
-      ierr = MatGetSubMatrix(pcbddc->benign_B0,is_dummy,pcis->is_I_local,MAT_INITIAL_MATRIX,&B0_I);
+      ierr = MatGetSubMatrix(pcbddc->benign_B0,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B0_B);CHKERRQ(ierr);
       ierr = MatMatMult(B0_B,coarse_phi_B,MAT_INITIAL_MATRIX,1.0,&B0_BPHI);CHKERRQ(ierr);
       ierr = MatConvert(B0_BPHI,MATSEQDENSE,MAT_REUSE_MATRIX,&B0_BPHI);CHKERRQ(ierr);
       ierr = MatDenseGetArray(TM1,&data);CHKERRQ(ierr);
@@ -2215,10 +2231,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = MatDestroy(&B0_B);CHKERRQ(ierr);
       ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
       ierr = MatDestroy(&B0_BPHI);CHKERRQ(ierr);
-      ierr = MatMatMult(B0_I,coarse_phi_D,MAT_INITIAL_MATRIX,1.0,&B0_IPHI);CHKERRQ(ierr);
-      ierr = MatDestroy(&B0_I);CHKERRQ(ierr);
-      ierr = MatNorm(B0_IPHI,NORM_FROBENIUS,&real_value);CHKERRQ(ierr);
-      ierr = MatDestroy(&B0_IPHI);CHKERRQ(ierr);
     }
 #if 0
   {
@@ -6127,7 +6139,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
     /* if the velocities are in the original basis, then we need to eliminate the no-net-flux from the S_Ej
        we assume that the user has passed in the associated quadrature weights in the near-null space attached to pc->pmat
        We need to compute the change of basis according to the quadrature weights, and this could not be done, at the moment, without some hacking */
-    if (pcbddc->benign_saddle_point && !pcbddc->use_change_of_basis && !pcbddc->user_ChangeOfBasis) {
+    if (pcbddc->benign_saddle_point && !pcbddc->use_change_of_basis && !pcbddc->user_ChangeOfBasisMatrix) {
       PC_IS   *pcisf;
       PC_BDDC *pcbddcf;
       PC      pcf;
