@@ -17,6 +17,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-autoreconf=<prog>', nargs.Arg(None, 'autoreconf', 'Specify autoreconf'))
+    help.addArgument('PETSc', '-with-libtoolize=<prog>', nargs.Arg(None, 'libtoolize', 'Specify libtoolize'))
     return
 
   def configureMkdir(self):
@@ -43,7 +44,7 @@ class Configure(config.base.Configure):
 
   def configureAutoreconf(self):
     '''Check for autoreconf'''
-    self.autoreconf_flg = False
+    self.autoreconf = None
     if self.getExecutable(self.argDB['with-autoreconf'], getFullPath = 1,resultName = 'autoreconf',setMakeMacro = 0):
       import shutil,os
       testdir = os.path.join(self.tmpDir, 'autoconfdir')
@@ -56,11 +57,16 @@ class Configure(config.base.Configure):
       fd.close()
       try:
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+testdir+'&&'+self.autoreconf, log = self.log)
-        self.autoreconf_flg = True
         self.logPrint('autoreconf test successful!')
       except RuntimeError, e:
+        self.autoreconf = None
         self.logPrint('autoreconf test error: '+str(e))
       shutil.rmtree(testdir)
+    self.libtoolize = None
+    if not self.getExecutable(self.argDB['with-libtoolize'], getFullPath = 1,resultName = 'libtoolize',setMakeMacro = 0):
+      # it is called blibtoolize on Apple to prevent conflict with Apple's libtool
+      self.getExecutable('glibtoolize', getFullPath = 1,resultName = 'libtoolize',setMakeMacro = 0\
+)
     return
 
   def configurePrograms(self):

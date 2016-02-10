@@ -121,7 +121,7 @@ class Package(config.base.Configure):
     package:      The lowercase name
     PACKAGE:      The uppercase name
     downloadname:     Name for download option (usually name)
-    downloadfilename: name for downloaded file (first part of string) (usually downloadname), this actually seems to be a directory name not a file name
+    downloaddirname: name for downloaded directory (first part of string) (usually downloadname)
     '''
     import sys
     if hasattr(sys.modules.get(self.__module__), '__file__'):
@@ -132,7 +132,7 @@ class Package(config.base.Configure):
     self.package          = self.name.lower()
     self.downloadname     = self.name
     self.pkgname          = self.name
-    self.downloadfilename = self.downloadname;
+    self.downloaddirname  = self.downloadname;
     return
 
   def getDefaultPrecision(self):
@@ -537,14 +537,14 @@ class Package(config.base.Configure):
     pkgdirs = os.listdir(packages)
     gitpkg  = 'git.'+self.package
     hgpkg  = 'hg.'+self.package
-    self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ', '+hgpkg+' or a directory starting with '+str(self.downloadfilename))
+    self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ', '+hgpkg+' or a directory starting with '+str(self.downloaddirname))
     if hasattr(self.sourceControl, 'git') and gitpkg in pkgdirs:
       Dir = gitpkg
     elif hasattr(self.sourceControl, 'hg') and hgpkg in pkgdirs:
       Dir = hgpkg
     else:
       for d in pkgdirs:
-        if d.startswith(self.downloadfilename) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+        if d.startswith(self.downloaddirname) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
           Dir = d
           break
     if Dir:
@@ -554,14 +554,6 @@ class Package(config.base.Configure):
       self.logPrint('Could not locate an existing copy of '+self.PACKAGE+':')
       self.logPrint('  '+str(pkgdirs))
       return
-
-  def gitPreReqCheck(self):
-    '''Check for git prerequisites. This is intended to be overwritten by a subclass'''
-    return 1
-
-  def gitPreInstallCheck(self):
-    '''Perhaps configure need to be built before install. This is intended to be overwritten by a subclass'''
-    return
 
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
@@ -584,9 +576,6 @@ class Package(config.base.Configure):
         if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
         if not hasattr(self.sourceControl, 'git'):
           err += 'Git not found - required for url: '+url+'\n'
-          continue
-        elif not self.gitPreReqCheck():
-          err += 'Git prerequisite check failed for url: '+url+'\n'
           continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
@@ -855,7 +844,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.package          - lowercase name                                [string]
     self.PACKAGE          - uppercase name                                [string]
     self.downloadname     - same as self.name (usage a bit inconsistent)  [string]
-    self.downloadfilename - same as self.name (usage a bit inconsistent)  [string]
+    self.downloaddirname - same as self.name (usage a bit inconsistent)  [string]
   Package subclass typically sets up the following state variables:
     self.download         - url to download source from                   [string]
     self.includes         - names of header files to locate               [list of strings]
@@ -1152,6 +1141,18 @@ class GNUPackage(Package):
     return args
 
   def Install(self):
+    # hypre had configure inside src directory ugh
+    if not os.path.isfile(os.path.join(self.packageDir,'configure')) and not os.path.isfile(os.path.join(self.packageDir,'src','configure')):
+      if not self.programs.autoreconf:
+        raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)!')
+      if not self.programs.libtoolize:
+        raise RuntimeError('libtoolize required for ' + self.PACKAGE+' not found!')
+      try:
+        self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.programs.libtoolize+' && '+self.programs.autoreconf + ' --force --install', timeout=200, log = self.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
+
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
@@ -1163,7 +1164,6 @@ class GNUPackage(Package):
     if not self.installNeeded(conffile):
       return self.installDir
     ### Configure and Build package
-    self.gitPreInstallCheck()
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)

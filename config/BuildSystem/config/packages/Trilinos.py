@@ -4,9 +4,9 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'origin/master'
+    self.gitcommit        = 'trilinos-release-12-6-branch'
     self.download         = ['git://https://github.com/trilinos/trilinos']
-    self.downloadfilename = 'trilinos'
+    self.downloaddirname  = 'trilinos'
     self.includes         = ['Trilinos_version.h']
     self.functions        = ['Zoltan_Create']   # one of the very few C routines in Trilinos
     self.cxx              = 1
