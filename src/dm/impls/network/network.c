@@ -910,16 +910,30 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       PetscInt cstart,*cols_tmp;
       ierr = DMNetworkGetVariableGlobalOffset(dm,edges[e],&cstart);CHKERRQ(ierr);
       ierr = DMNetworkGetNumVariables(dm,edges[e],&ncols);CHKERRQ(ierr); 
-      //if (rank == 0 ) {
-      //  printf("edge %d, cstart %d, ncols %d\n",edges[e],cstart,ncols);
-      //}
 
       ierr = PetscCalloc2(ncols,&cols_tmp,nrows*ncols,&zeros);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) cols_tmp[j] = j+ cstart;
       ierr = MatSetValues(*J,nrows,rows,ncols,cols_tmp,zeros,INSERT_VALUES);CHKERRQ(ierr);
       ierr = PetscFree2(cols_tmp,zeros);CHKERRQ(ierr);
 
-      /* Get connected vertices -- not done yet! */
+      /* Get connected vertices */
+      const PetscInt *cone;
+      PetscInt       vc;
+      ierr = DMNetworkGetConnectedNodes(dm,edges[e],&cone);CHKERRQ(ierr);
+      if (v == cone[0]) {
+        vc = cone[1];
+      } else {
+        vc = cone[0];
+      }
+      ierr = DMNetworkIsGhostVertex(dm,vc,&ghost);CHKERRQ(ierr);
+      ierr = DMNetworkGetVariableGlobalOffset(dm,vc,&cstart);CHKERRQ(ierr);
+      if (ghost) cstart = -(cstart + 1); /* Convert to actual global offset for ghost nodes */
+      ierr = DMNetworkGetNumVariables(dm,vc,&ncols);CHKERRQ(ierr);
+ 
+      ierr = PetscCalloc2(ncols,&cols_tmp,nrows*ncols,&zeros);CHKERRQ(ierr);
+      for (j=0; j<ncols; j++) cols_tmp[j] = j+ cstart;
+      ierr = MatSetValues(*J,nrows,rows,ncols,cols_tmp,zeros,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = PetscFree2(cols_tmp,zeros);CHKERRQ(ierr);
     }
 
     /* Set diagonal blocks for this vertex */
