@@ -1075,10 +1075,10 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.framework.storeSubstitutions(self.framework.argDB)
     self.framework.argDB['configureCache'] = cPickle.dumps(self.framework)
     self.framework.argDB.save(force = True)
-    self.postProcessPackages()
     self.cmakeBoot()
     self.DumpPkgconfig()
     self.DumpModule()
+    self.postProcessPackages()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return
