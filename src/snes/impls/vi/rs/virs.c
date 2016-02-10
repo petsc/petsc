@@ -536,15 +536,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     }
 
     ierr = KSPSolve(snes->ksp,F_inact,Y_inact);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
-    if (kspreason < 0) {
-      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
-        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        break;
-      }
-     }
-
     ierr = VecScatterBegin(scat_act,Y_act,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(scat_act,Y_act,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterBegin(scat_inact,Y_inact,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -565,6 +556,16 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     if (snes->jacobian != snes->jacobian_pre) {
       ierr = MatDestroy(&prejac_inact_inact);CHKERRQ(ierr);
     }
+
+    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
+    if (kspreason < 0) {
+      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
+        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
+        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
+        break;
+      }
+    }
+
     ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
