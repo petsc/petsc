@@ -860,7 +860,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPEGCR;
   ksp->ops->solve          = KSPSolve_PIPEGCR;
