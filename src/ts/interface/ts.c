@@ -2555,6 +2555,7 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 .   rf - routine for evaluating the integrand function
 .   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
 .   drdpf - function that computes the gradients of the r's with respect to p, NULL if not a function of p
+.   fwd － flag indicating whether to evaluate cost integral in the forward run or the adjoint run
 -   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
     Calling sequence of rf:
@@ -2579,9 +2580,10 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
 .seealso: TSAdjointSetRHSJacobian(),TSGetCostGradients(), TSSetCostGradients()
 @*/
-PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
-                                                                  PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
-                                                                  PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost,PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
+                                                          PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
+                                                          PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),
+                                                          PetscBool fwd,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -2590,6 +2592,7 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(
   if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients()");
   if (!ts->numcost) ts->numcost=numcost;
 
+  ts->costintegralfwd  = fwd; /* Evaluate the cost integral in forward run if fwd is true */
   ierr                 = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
   ierr                 = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegrand    = rf;
@@ -3399,7 +3402,6 @@ PetscErrorCode  TSAdjointStep(TS ts)
     }
   } else if (!ts->reason) {
     if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time)         ts->reason = TS_CONVERGED_TIME;
   }
   ts->total_steps--;
   PetscFunctionReturn(0);
@@ -3441,6 +3443,31 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSForwardCostIntegral"
+/*@
+ TSForwardCostIntegral - Evaluate the cost integral in the forward run.
+ 
+ Collective on TS
+ 
+ Input Arguments:
+ .  ts - time stepping context
+ 
+ Level: advanced
+ 
+ Notes:
+ This function cannot be called until TSStep() has been completed.
+ 
+ .seealso: TSSolve(), TSAdjointCostIntegral()
+ @*/
+PetscErrorCode TSForwardCostIntegral(TS ts)
+{
+    PetscErrorCode ierr;
+    PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+    if (!ts->ops->forwardintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the forward run",((PetscObject)ts)->type_name);
+    ierr = (*ts->ops->forwardintegral)(ts);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSolve"
@@ -3509,19 +3536,21 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-    if (ts->vec_costintegral) ts->costintegralfwd=PETSC_TRUE;
     if(ts->event) {
       ierr = TSEventMonitorInitialize(ts);CHKERRQ(ierr);
     }
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
+      if (!ts->steprollback && ts->vec_costintegral && ts->costintegralfwd) {
+        ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
+      }
       if (ts->event) {
-	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
+        ierr = TSEventMonitor(ts);CHKERRQ(ierr);
       }
       if(!ts->steprollback) {
-	ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-	ierr = TSPostStep(ts);CHKERRQ(ierr);
+        ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+        ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
@@ -3544,6 +3573,32 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointCostIntegral"
+/*@
+ TSAdjointCostIntegral - Evaluate the cost integral in the adjoint run.
+ 
+ Collective on TS
+ 
+ Input Arguments:
+ .  ts - time stepping context
+ 
+ Level: advanced
+ 
+ Notes:
+ This function cannot be called until TSAdjointStep() has been completed.
+ 
+ .seealso: TSAdjointSolve(), TSAdjointStep
+ @*/
+PetscErrorCode TSAdjointCostIntegral(TS ts)
+{
+    PetscErrorCode ierr;
+    PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+    if (!ts->ops->adjointintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the adjoint run",((PetscObject)ts)->type_name);
+    ierr = (*ts->ops->adjointintegral)(ts);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -3596,6 +3651,9 @@ PetscErrorCode TSAdjointSolve(TS ts)
       ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);
     }
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
+    if (ts->vec_costintegral && !ts->costintegralfwd) {
+      ierr = TSAdjointCostIntegral(ts);CHKERRQ(ierr);
+    }
   }
   ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
   ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
