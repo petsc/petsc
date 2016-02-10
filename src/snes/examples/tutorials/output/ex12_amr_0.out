@@ -1,0 +1,54 @@
+Initial guess
+Vec Object:potential 5 MPI processes
+  type: mpi
+Process [0]
+0.625
+Process [1]
+Process [2]
+0.8125
+1.125
+Process [3]
+0.3125
+0.125
+Process [4]
+0.5
+0.3125
+0.8125
+0.625
+L_2 Error: 0.03125
+Initial Residual
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+0.
+Process [1]
+Process [2]
+0.
+0.
+Process [3]
+0.
+0.
+Process [4]
+0.
+0.
+0.
+0.
+L_2 Residual: 0.
+Au - b = Au + F(0)
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+0.
+Process [1]
+Process [2]
+0.
+0.
+Process [3]
+0.
+0.
+Process [4]
+0.
+0.
+0.
+0.
+Linear L_2 Residual: 0.
