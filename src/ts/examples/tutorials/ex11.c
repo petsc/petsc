@@ -95,6 +95,7 @@ struct _n_Model {
   SolutionFunction solution;
   void             *solutionctx;
   PetscReal        maxspeed;    /* estimate of global maximum speed (for CFL calculation) */
+  PetscReal        bounds[2*DIM];
 };
 
 struct _n_User {
@@ -485,7 +486,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
 /*  gas2=2.D0*gamma/(gamma+1.D0) */
 /*  rho1=rho*(p1/press+gas1)/(gas1*p1/press+1.D0) */
 /*  u1=((rho1-rho)*dsqrt(gamma*press/rho)*amach)/rho1 */
-typedef enum {EULER_PAR_GAMMA,EULER_PAR_RHOR,EULER_PAR_AMACH,EULER_PAR_ITANA,EULER_PAR_LX2,EULER_PAR_SIZE} EulerParamIdx;
+typedef enum {EULER_PAR_GAMMA,EULER_PAR_RHOR,EULER_PAR_AMACH,EULER_PAR_ITANA,EULER_PAR_SIZE} EulerParamIdx;
 typedef enum {EULER_IV_SHOCK,EULER_SS_SHOCK} EulerType;
 typedef struct {
   PetscScalar vals[0];
@@ -526,27 +527,41 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   /* set E and rho */
   gamma = eu->pars[EULER_PAR_GAMMA];
   p0 = 1.;
-  /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
-  if (x[0] < eu->pars[EULER_PAR_LX2] + x[1]*eu->pars[EULER_PAR_ITANA]) {
-    if (x[0] < eu->pars[EULER_PAR_LX2]/2.0) { // left of shock (1)
-      PetscScalar amach,rho,press,gas1,p1;
-      amach = eu->pars[EULER_PAR_AMACH];
-      rho = 1.;
-      press = p0;
-      p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
-      gas1 = (gamma-1.0)/(gamma+1.0);
-      uu->r = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
-      uu->ru[0]   = ((uu->r - rho)*sqrt(gamma*press/rho)*amach)/uu->r;
-      uu->E = p1/(gamma-1.0) + .5*uu->r*uu->ru[0]*uu->ru[0];
+  
+  if (0) { // shock tube
+    if (x[0] < mod->bounds[1]/2.) { // left of shock
+      // For (x<x0) set (rho,u,p)=(8,0,10) and for (x>x0) set (rho,u,p)=(1,0,1).
+      uu->r = 8.;
+      p0 = 10.;
     }
-    else { // left of discontinuity (0)
-      uu->r = 1.; // rho = 1
+    else {
+      uu->r = 1.;
+    }
+    uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity
+  }
+  else {
+    /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
+    if (x[0] < mod->bounds[1]/2. + x[1]*eu->pars[EULER_PAR_ITANA]) {
+      if (x[0] < mod->bounds[1]/4.) { // left of shock (1)
+        PetscScalar amach,rho,press,gas1,p1;
+        amach = eu->pars[EULER_PAR_AMACH];
+        rho = 1.;
+        press = p0;
+        p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
+        gas1 = (gamma-1.0)/(gamma+1.0);
+        uu->r = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
+        uu->ru[0]   = ((uu->r - rho)*sqrt(gamma*press/rho)*amach)/uu->r;
+        uu->E = p1/(gamma-1.0) + .5*uu->r*uu->ru[0]*uu->ru[0];
+      }
+      else { // left of discontinuity (0)
+        uu->r = 1.; // rho = 1
+        uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity right of shock
+      }
+    }
+    else { // right of discontinuity (2)
+      uu->r = eu->pars[EULER_PAR_RHOR];
       uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity right of shock
     }
-  }
-  else { // right of discontinuity (2)
-    uu->r = eu->pars[EULER_PAR_RHOR];
-    uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity right of shock
   }
   PetscFunctionReturn(0);
 }
@@ -556,11 +571,9 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
 static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,PetscScalar *p)
 {
   PetscScalar ru2;
-
   PetscFunctionBeginUser;
   ru2  = DotDIM(x->ru,x->ru);
-  ru2 /= x->r;
-  (*p)=(x->E - 0.5*ru2)*(pars[EULER_PAR_GAMMA] - 1.0); /* (E - rho V^2/2)(gamma-1) = e rho (gamma-1) */
+  (*p)=(x->E - 0.5*ru2/x->r)*(pars[EULER_PAR_GAMMA] - 1.0); /* (E - rho V^2/2)(gamma-1) = e rho (gamma-1) */
   PetscFunctionReturn(0);
 }
 
@@ -596,8 +609,8 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
   PetscFunctionBeginUser;
   Pressure_PG(eu->pars,x,&p);
   nu = DotDIM(x->ru,n);
-  f->r = nu;   // rho u
-  nu /= x->r;  // u
+  f->r = nu;   // A rho u
+  nu /= x->r;  // A u
   for (i=0; i<DIM; i++) f->ru[i] = nu * x->ru[i] + n[i]*p;  // r u^2 + p
   f->E = nu * (x->E + p); // u(e+p)
   PetscFunctionReturn(0);
@@ -633,30 +646,38 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
 /* PetscReal* => EulerNode* conversion */
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Euler_Rusanov"
-static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
+static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n,
+                                         const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_Euler   *eu = (Physics_Euler*)phys->data;
-  PetscScalar     cL,cR,speed,velL,velR;
+  PetscReal       cL,cR,speed,velL,velR,nn[DIM],s2;
   const EulerNode *uL = (const EulerNode*)xL,*uR = (const EulerNode*)xR;
   EulerNode       fL,fR;
   PetscInt        i;
   PetscErrorCode  ierr;
   PetscFunctionBeginUser;
-  if (0) {
+  if (uL->r!=uL->r) {
     PetscMPIInt    rank;
     MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-    PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s N=%D rho=%g,%g\n",rank,__FUNCT__,Nf,uL->r,uR->r);
+    // PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s rho=%g,%g\n",rank,__FUNCT__,uL->r,uR->r);
+    PetscFunctionReturnVoid();
   }
   if (uL->r < 0 || uR->r < 0) exit(17);
-  EulerFlux(phys,n,uL,&fL);
-  EulerFlux(phys,n,uR,&fR);
+  for (i=0,s2=0.; i<DIM; i++) {
+    nn[i] = n[i];
+    s2 += nn[i]*nn[i];
+  }
+  s2 = PetscSqrtReal(s2); // |n|_2 = sum(n^2)^1/2
+  for (i=0.; i<DIM; i++) nn[i] /= s2;
+  // PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s nn=%g,%g area=%g\n",-1,__FUNCT__,nn[0],nn[1],s2);
+  EulerFlux(phys,nn,uL,&fL);
+  EulerFlux(phys,nn,uR,&fR);
   ierr = eu->sound(eu->pars,uL,&cL);if (ierr) exit(13);
   ierr = eu->sound(eu->pars,uR,&cR);if (ierr) exit(13);
-  velL = DotDIM(uL->ru,n)/uL->r;
-  velR = DotDIM(uR->ru,n)/uR->r;
-  // speed = PetscMax(cL,cR)+PetscMax(PetscAbsScalar(DotDIM(uL->ru,n)/NormDIM(n)),PetscAbsScalar(DotDIM(uR->ru,n)/NormDIM(n)));
-  speed = PetscMax(PetscAbsScalar(velR)+cL,PetscAbsScalar(velL)+cR);
-  for (i=0; i<2+dim; i++) flux[i] = 0.5*(fL.vals[i]+fR.vals[i])+0.5*speed*(xL[i]-xR[i]);
+  velL = DotDIM(uL->ru,nn)/uL->r;
+  velR = DotDIM(uR->ru,nn)/uR->r;
+  speed = PetscMax(PetscAbsScalar(velR) + cR,PetscAbsScalar(velL) + cL);
+  for (i=0; i<2+dim; i++) flux[i] = 0.5*((fL.vals[i]+fR.vals[i]) + speed*(xL[i] - xR[i]))*s2;
   PetscFunctionReturnVoid();
 }
 
@@ -699,7 +720,6 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
     eu->pars[EULER_PAR_AMACH] = 2.02;
     eu->pars[EULER_PAR_RHOR] = 3.0;
     eu->pars[EULER_PAR_ITANA] = 0.57735026918963; /* angle of Euler self similar (SS) shock */
-    eu->pars[EULER_PAR_LX2] = 12.; // needs to come from -grid_bounds somehow!!!
     ierr = PetscOptionsReal("-eu_gamma","Heat capacity ratio","",eu->pars[EULER_PAR_GAMMA],&eu->pars[EULER_PAR_GAMMA],NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-eu_amach","Shock speed (Mach)","",eu->pars[EULER_PAR_AMACH],&eu->pars[EULER_PAR_AMACH],NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-eu_rho2","Density right of discontinuity","",eu->pars[EULER_PAR_RHOR],&eu->pars[EULER_PAR_RHOR],NULL);CHKERRQ(ierr);
@@ -1434,14 +1454,13 @@ int main(int argc, char **argv)
     dim  = 2;
     if (!len) { /* a null name means just do a hex box */
       PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
-      PetscReal bounds[6] = {0.,1.,0.,1.,0.,1.};
       PetscBool flg1, flg2;
-      PetscInt nret1 = 3;
+      PetscInt i,nret1 = 3;
       PetscInt nret2 = 6;
-
+      for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
       ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
       ierr = PetscOptionsIntArray("-grid_size","number of cells in each direction","",cells,&nret1,&flg1);CHKERRQ(ierr);
-      ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (e.g., x_min,x_max,y_min,y_max","",bounds,&nret2,&flg2);CHKERRQ(ierr);
+      ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (e.g., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
       if (flg1) {
         dim = nret1;
@@ -1463,7 +1482,7 @@ int main(int argc, char **argv)
 
           PetscScalar *coord = &coords[i];
           for (j = 0; j < dimEmbed; j++) {
-            coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
+            coord[j] = mod->bounds[2 * j] + coord[j] * (mod->bounds[2 * j + 1] - mod->bounds[2 * j]);
           }
         }
         ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
