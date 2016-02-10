@@ -21,7 +21,7 @@ row 17: (17, 4.)
 
 [0] Credundant:
 Mat Object: 2 MPI processes
-  type: seqsbaij
+  type: mpisbaij
 row 0: (0, 4.)  (1, -1.)  (6, -1.) 
 row 1: (1, 4.)  (2, -1.)  (7, -1.) 
 row 2: (2, 4.)  (3, -1.)  (8, -1.) 
