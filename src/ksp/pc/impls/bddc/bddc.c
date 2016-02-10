@@ -1427,7 +1427,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires the iteration matrix to be of type MATIS");
   }
   if (pcbddc->benign_saddle_point && pc->mat != pc->pmat) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires the Amat == Pmat");
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner with benign subspace trick requires Amat == Pmat");
   }
 
   /* Get stdout for dbg */

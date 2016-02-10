@@ -131,6 +131,7 @@ struct _PCBDDCDeluxeScaling {
   Vec             seq_work2;
   Mat             seq_mat;
   KSP             seq_ksp;
+  KSP             change;
 };
 typedef struct _PCBDDCDeluxeScaling *PCBDDCDeluxeScaling;
 

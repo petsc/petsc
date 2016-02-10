@@ -2829,15 +2829,14 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
         ierr = MatConvert(pcbddc->local_mat,MATSEQBAIJ,MAT_REUSE_MATRIX,&pcbddc->local_mat);CHKERRQ(ierr);
       }
     }
-    ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
+    if (pcbddc->benign_n && !pcbddc->benign_change_explicit && pcbddc->dbg_flag) {
+      ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
+      ierr = PCBDDCBenignProject(pc,pcbddc->is_R_local,pcbddc->is_R_local,&A_RR);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
+    }
     if (pcbddc->local_mat->symmetric_set) {
       ierr = MatSetOption(A_RR,MAT_SYMMETRIC,pcbddc->local_mat->symmetric_set);CHKERRQ(ierr);
-    }
-    if (pcbddc->benign_n && !pcbddc->benign_change_explicit && pcbddc->dbg_flag) {
-      Mat A_RRn;
-      ierr = PCBDDCBenignProject(pc,pcbddc->is_R_local,pcbddc->is_R_local,&A_RRn);CHKERRQ(ierr);
-      ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
-      A_RR = A_RRn;
     }
     if (!pcbddc->ksp_R) { /* create object if not present */
       ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_R);CHKERRQ(ierr);
@@ -4181,11 +4180,38 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         if (!pcbddc->fake_change) {
           ierr = ISDestroy(&is_V_Sall);CHKERRQ(ierr);
         } else {
-          ierr = ISDestroy(&sub_schurs->change_primal);CHKERRQ(ierr);
-          sub_schurs->change_primal = is_V_Sall;
-          ierr = KSPDestroy(&sub_schurs->change);CHKERRQ(ierr);
-          ierr = KSPCreate(PETSC_COMM_SELF,&sub_schurs->change);CHKERRQ(ierr);
-          ierr = KSPSetOperators(sub_schurs->change,tmat,tmat);CHKERRQ(ierr);
+          if (!sub_schurs->change_primal) {
+            sub_schurs->change_primal = is_V_Sall;
+          } else {
+#if defined(PETSC_USE_DEBUG)
+            IS       ist;
+            PetscInt n;
+
+            ierr = ISDifference(sub_schurs->change_primal,is_V_Sall,&ist);CHKERRQ(ierr);
+            ierr = ISGetLocalSize(ist,&n);CHKERRQ(ierr);
+            if (n) {
+              SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented");
+            }
+            ierr = ISDestroy(&ist);CHKERRQ(ierr);
+#endif
+            ierr = ISDestroy(&is_V_Sall);CHKERRQ(ierr);
+          }
+          if (!sub_schurs->change) {
+            ierr = KSPCreate(PETSC_COMM_SELF,&sub_schurs->change);CHKERRQ(ierr);
+            ierr = KSPSetOperators(sub_schurs->change,tmat,tmat);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+          } else {
+            Mat       At;
+            PetscReal norm;
+
+            ierr = KSPGetOperators(sub_schurs->change,&At,NULL);CHKERRQ(ierr);
+            ierr = MatAXPY(tmat,-1.,At,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+            ierr = MatNorm(tmat,NORM_INFINITY,&norm);CHKERRQ(ierr);
+            if (norm > PETSC_SMALL) {
+              SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented");
+            }
+#endif
+          }
         }
         ierr = MatDestroy(&tmat);CHKERRQ(ierr);
       }
