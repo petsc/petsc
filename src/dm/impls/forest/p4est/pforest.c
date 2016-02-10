@@ -37,6 +37,7 @@
 #define DMInitialize_pforest                  _append_pforest(DMInitialize)
 #define DMCreate_pforest                      _append_pforest(DMCreate)
 #define DMClone_pforest                       _append_pforest(DMClone)
+#define DMCoarsen_pforest                     _append_pforest(DMCoarsen)
 #define DMForestDestroy_pforest               _append_pforest(DMForestDestroy)
 #define DMForestTemplate_pforest              _append_pforest(DMForestTemplate)
 #define DMSetUp_pforest                       _append_pforest(DMSetUp)
@@ -2728,6 +2729,41 @@ static PetscErrorCode DMPforestGetPlex(DM dm,DM *plex)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMCoarsen_pforest)
+static PetscErrorCode DMCoarsen_pforest(DM dm, MPI_Comm comm, DM *dmc)
+{
+  DM             coarseDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  {
+    PetscMPIInt mpiComparison;
+    MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
+
+    ierr = MPI_Comm_compare(comm, dmcomm, &mpiComparison);CHKERRQ(ierr);
+    if (mpiComparison != MPI_IDENT && mpiComparison != MPI_CONGRUENT) {
+      SETERRQ(dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
+    }
+  }
+  ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);
+  if (!coarseDM) {
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for coarsening on the fly yet");
+  }
+  {
+    void *ctx;
+    PetscDS ds;
+
+    ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
+    ierr = DMSetApplicationContext(coarseDM,ctx);CHKERRQ(ierr);
+    ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+    ierr = DMSetDS(coarseDM,ds);CHKERRQ(ierr);
+    ierr = DMCopyBoundary(dm,coarseDM);CHKERRQ(ierr);
+  }
+  *dmc = coarseDM;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateCoordinateDM_pforest)
 static PetscErrorCode DMCreateCoordinateDM_pforest(DM dm,DM *cdm)
 {
@@ -2999,6 +3035,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->setup                     = DMSetUp_pforest;
   dm->ops->view                      = DMView_pforest;
   dm->ops->clone                     = DMClone_pforest;
+  dm->ops->coarsen                   = DMCoarsen_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
