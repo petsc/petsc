@@ -1350,6 +1350,9 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
                              17,     21,
                                  18, 23,
                                      19};
+    PetscInt ident[25] = {0, 0, 0, 0,
+                          1, 1, 2, 2, 3, 3, 4, 4, 0, 0, 0, 0,
+                          5, 6, 7, 8, 1, 2, 3, 4, 0};
 #else
     PetscInt nPoints = 125;
     PetscInt perm[125] = {0, 1, 2, 3, 4, 5, 6, 7,
@@ -1377,6 +1380,17 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
                                                    103,      113,
                                                         104, 109,
                                                              105};
+    PetscInt ident[125] = {0, 0, 0, 0, 0, 0, 0, 0,
+                           1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6,
+                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                           7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18,
+                           1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6,
+                           0, 0, 0, 0, 0, 0,
+                           19, 20, 21, 22, 23, 24, 25, 26,
+                           7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+                           1, 2, 3, 4, 5, 6,
+                           0};
+
 #endif
     IS permIS;
     DM dmPerm;
@@ -1388,9 +1402,19 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
       dmRefined = dmPerm;
     }
     ierr = ISDestroy(&permIS);CHKERRQ(ierr);
+    {
+      PetscInt p;
+      ierr = DMCreateLabel(dmRoot,"identity");CHKERRQ(ierr);
+      ierr = DMCreateLabel(dmRefined,"identity");CHKERRQ(ierr);
+      for (p = 0; p < P4EST_INSUL; p++) {
+        DMSetLabelValue(dmRoot,"identity",p,p);CHKERRQ(ierr);
+      }
+      for (p = 0; p < nPoints; p++) {
+        DMSetLabelValue(dmRefined,"identity",p,ident[p]);CHKERRQ(ierr);
+      }
+    }
   }
-  ierr = DMViewFromOptions(dmRoot,NULL,"-dm_root_view");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dmRefined,NULL,"-dm_refined_view");CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceTree_Union(dmRoot,dmRefined,"identity",dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dmRefined);CHKERRQ(ierr);
   ierr = DMDestroy(&dmRoot);CHKERRQ(ierr);
   PetscStackCallP4est(p4est_destroy,(refined));
@@ -2678,7 +2702,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     leaves            = sc_array_new(sizeof (p4est_locidx_t));
     remotes           = sc_array_new(2 * sizeof (p4est_locidx_t));
 
-    PetscStackCallP4est(p4est_get_plex_data_ext,(pforest->forest,&pforest->ghost,&pforest->lnodes,ctype,(int)overlap,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes));
+    PetscStackCallP4est(p4est_get_plex_data_ext,(pforest->forest,&pforest->ghost,&pforest->lnodes,ctype,(int)overlap,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes,1));
 
     pforest->cLocalStart = (PetscInt) first_local_quad;
     pforest->cLocalEnd   = pforest->cLocalStart + (PetscInt) pforest->forest->local_num_quadrants;
@@ -2697,7 +2721,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMSetCoordinateDim(newPlex,coordDim);CHKERRQ(ierr);
     ierr = DMPlexCreateFromDAG(newPlex,P4EST_DIM,(PetscInt *)points_per_dim->array,(PetscInt *)cone_sizes->array,(PetscInt *)cones->array,(PetscInt *)cone_orientations->array,(PetscScalar *)coords->array);CHKERRQ(ierr);
     ierr = PetscSFCreate(comm,&pointSF);CHKERRQ(ierr);
-    ierr = DMPlexCreateDefaultReferenceTree(comm,P4EST_DIM,PETSC_FALSE,&refTree);CHKERRQ(ierr);
+    ierr = DMCreateReferenceTree_pforest(comm,&refTree);CHKERRQ(ierr);
     ierr = DMPlexSetReferenceTree(newPlex,refTree);CHKERRQ(ierr);
     ierr = DMDestroy(&refTree);CHKERRQ(ierr);
     ierr = PetscSectionCreate(comm,&parentSection);CHKERRQ(ierr);
