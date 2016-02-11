@@ -681,6 +681,18 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
   if (flg) {
     ierr = DMForestSetPartitionOverlap(dm,overlap);CHKERRQ(ierr);
   }
+#if 0
+  ierr = PetscOptionsInt("-dm_refine","equivalent to -dm_forest_set_minimum_refinement and -dm_forest_set_initial_refinement with the same value",NULL,minRefinement,&minRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMinimumRefinement(dm,minRefinement);CHKERRQ(ierr);
+    ierr = DMForestSetInitialRefinement(dm,minRefinement);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-dm_refine_hierarchy","equivalent to -dm_forest_set_minimum_refinement 0 and -dm_forest_set_initial_refinement",NULL,initRefinement,&initRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMinimumRefinement(dm,0);CHKERRQ(ierr);
+    ierr = DMForestSetInitialRefinement(dm,initRefinement);CHKERRQ(ierr);
+  }
+#endif
   ierr = DMForestGetMinimumRefinement(dm,&minRefinement);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_forest_minimum_refinement","set the minimum level of refinement in the forest","DMForestSetMinimumRefinement",minRefinement,&minRefinement,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -710,16 +722,6 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
   ierr = PetscOptionsReal("-dm_forest_cell_weight_factor","multiplying weight factor for cell refinement","DMForestSetCellWeightFactor",weightsFactor,&weightsFactor,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DMForestSetCellWeightFactor(dm,weightsFactor);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsInt("-dm_refine","equivalent to -dm_forest_set_minimum_refinement and -dm_forest_set_initial_refinement with the same value",NULL,minRefinement,&minRefinement,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DMForestSetMinimumRefinement(dm,minRefinement);CHKERRQ(ierr);
-    ierr = DMForestSetInitialRefinement(dm,minRefinement);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsInt("-dm_refine_hierarchy","equivalent to -dm_forest_set_minimum_refinement 0 and -dm_forest_set_initial_refinement",NULL,initRefinement,&initRefinement,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DMForestSetMinimumRefinement(dm,0);CHKERRQ(ierr);
-    ierr = DMForestSetInitialRefinement(dm,initRefinement);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
