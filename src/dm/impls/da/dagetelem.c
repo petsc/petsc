@@ -208,11 +208,14 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 
    Level: intermediate
 
-   Notes: Each process uniquely owns a subset of the elements. That is no element is owned by two or more processes. 
+   Notes:
+     Call DMDARestoreElements() once you have finished accessing the elements.
 
-          If on each process you integrate over its owned elements and use ADD_VALUES in Vec/MatSetValuesLocal() then you'll obtain the correct result.
+     Each process uniquely owns a subset of the elements. That is no element is owned by two or more processes.
 
-.seealso: DMDAElementType, DMDASetElementType(), DMDARestoreElements(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
+     If on each process you integrate over its owned elements and use ADD_VALUES in Vec/MatSetValuesLocal() then you'll obtain the correct result.
+
+.seealso: DMDAElementType, DMDASetElementType(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetElements"
