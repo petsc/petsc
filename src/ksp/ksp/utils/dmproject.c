@@ -126,6 +126,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
       }
       ierr = DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
       ierr = DMProjectFunctionLocal(dm,0.0,func,ctx,INSERT_ALL_VALUES,mask);CHKERRQ(ierr);
+      ierr = DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
       ierr = PetscFree2(func, ctx);CHKERRQ(ierr);
     } else {
       ierr = PetscObjectReference((PetscObject)mask);CHKERRQ(ierr);
