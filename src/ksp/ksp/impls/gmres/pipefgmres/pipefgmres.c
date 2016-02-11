@@ -102,6 +102,8 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
 #endif
 
+  if (itcount) *itcount = 0;
+
   /* Assign simpler names to these vectors, allocated as pipelining workspace */
   Q = VEC_Q;
   W = VEC_W;
