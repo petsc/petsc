@@ -813,27 +813,59 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
 
   PetscFunctionBegin;
   ierr = DMCreateMatrix(network->plex,&Jplex);CHKERRQ(ierr);
+  //ierr = MatView(Jplex,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   if (!network->userJacobian) {
     ierr = MatSetDM(Jplex,dm);CHKERRQ(ierr);
     *J   = Jplex;
     PetscFunctionReturn(0);
   }
 
-  /* Replace dense blocks of Jplex with user-provided Jacobian for individual edges/vertices */
-  ierr = PetscObjectGetComm((PetscObject)Jplex,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  ierr = MatGetOwnershipRange(Jplex,&rstart,&rend);CHKERRQ(ierr);
   ierr = DMNetworkGetEdgeRange(dm,&eStart,&eEnd);CHKERRQ(ierr);
   ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
-  //printf("[%d] Jplex rstart/rend %d %d\n",rank,rstart,rend);
+
+  /* Collect info for preallocations */
+  PetscInt       m,*dnnz,*onnz;
+  PetscSection   sectionGlobal;
+  ierr = DMGetDefaultGlobalSection(network->plex,&sectionGlobal);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal,&m);CHKERRQ(ierr);
+
+  ierr = PetscMalloc2(m,&dnnz,m,&onnz);CHKERRQ(ierr);
+  for (e=eStart; e<eEnd; e++) {
+    ierr = DMNetworkGetVariableOffset(dm,e,&rstart);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(dm,e,&ncols);CHKERRQ(ierr);
+    for (row = rstart; row < rstart+ncols; row++) {
+      dnnz[row] = ncols;
+      onnz[row] = 0;
+      //printf("[%d] row %d\n",rank,row);
+    }
+  }
+  for (v=vStart; v<vEnd; v++) {
+    ierr = DMNetworkIsGhostVertex(dm,v,&ghost);CHKERRQ(ierr);
+    if (!ghost) {
+      ierr = DMNetworkGetVariableOffset(dm,v,&rstart);CHKERRQ(ierr);
+      ierr = DMNetworkGetNumVariables(dm,v,&ncols);CHKERRQ(ierr);
+      for (row = rstart; row < rstart+ncols; row++) {
+        dnnz[row] = ncols;
+        onnz[row] = 0;
+        //printf("[%d] row %d\n",rank,row);
+      }
+    }
+  }
 
   ierr = MatCreate(comm,J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J,Jplex->rmap->n,Jplex->cmap->n,Jplex->rmap->N,Jplex->cmap->N);CHKERRQ(ierr);  
-  ierr = MatSetBlockSizesFromMats(*J,Jplex,Jplex);CHKERRQ(ierr);
-  ierr = MatSetType(*J,((PetscObject)Jplex)->type_name);CHKERRQ(ierr);
-  ierr = MatSetUp(*J);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);  
+  ierr = MatSetType(*J,MATAIJ);CHKERRQ(ierr);
+
+  ierr = MatSeqAIJSetPreallocation(*J,0,dnnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*J,0,dnnz,0,onnz);CHKERRQ(ierr);
+  ierr = MatSetOption(*J,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+
+  ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
+  ierr = PetscFree2(dnnz,onnz);CHKERRQ(ierr);
 
   for (e=eStart; e<eEnd; e++) {
     Je = network->jacobian[e];
@@ -896,7 +928,9 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   PetscInt       nedges;
   const PetscInt *edges;
   for (v=vStart; v<vEnd; v++) {
+    ierr = DMNetworkIsGhostVertex(dm,v,&ghost);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableGlobalOffset(dm,v,&rstart);CHKERRQ(ierr);
+    if (ghost) rstart = -(rstart + 1); /* Convert to actual global offset for ghost nodes */
     ierr = DMNetworkGetNumVariables(dm,v,&nrows);CHKERRQ(ierr);
 
     PetscInt    rows[nrows];
@@ -904,7 +938,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
 
     /* Get supporting edges */
     ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
-    //printf("[%d] v-%d nedges %d\n",rank,v,nedges);
+    //printf("[%d] v%d nedges %d\n",rank,v,nedges);
    
     for (e=0; e<nedges; e++) {
       PetscInt cstart,*cols_tmp;
@@ -920,11 +954,8 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       const PetscInt *cone;
       PetscInt       vc;
       ierr = DMNetworkGetConnectedNodes(dm,edges[e],&cone);CHKERRQ(ierr);
-      if (v == cone[0]) {
-        vc = cone[1];
-      } else {
-        vc = cone[0];
-      }
+      vc = (v == cone[0]) ? cone[1]:cone[0];
+   
       ierr = DMNetworkIsGhostVertex(dm,vc,&ghost);CHKERRQ(ierr);
       ierr = DMNetworkGetVariableGlobalOffset(dm,vc,&cstart);CHKERRQ(ierr);
       if (ghost) cstart = -(cstart + 1); /* Convert to actual global offset for ghost nodes */
@@ -949,8 +980,10 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  //ierr = MatView(*J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#if 0
+  if (!rank) printf("\nMatrix J:\n");
+  ierr = MatView(*J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
   ierr = MatDestroy(&Jplex);CHKERRQ(ierr);
   ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
