@@ -114,6 +114,7 @@ typedef struct {
   PetscBool           use_deluxe_scaling;
   PCBDDCDeluxeScaling deluxe_ctx;
   PetscBool           faster_deluxe;
+  PetscBool           deluxe_zerorows;
 
   /* schur complements on interface's subsets */
   PCBDDCSubSchurs sub_schurs;
@@ -125,6 +126,7 @@ typedef struct {
 
   /* adaptive selection of constraints */
   PetscBool    adaptive_selection;
+  PetscBool    adaptive_userdefined;
   PetscReal    adaptive_threshold;
   PetscInt     adaptive_nmin;
   PetscInt     adaptive_nmax;
