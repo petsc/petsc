@@ -1292,6 +1292,143 @@ static PetscErrorCode P4estToPlex_Local(p4est_t *p4est, DM * plex)
   PetscFunctionReturn(0);
 }
 
+#define DMReferenceTreeGetChildSymmetry_pforest _append_pforest(DMReferenceTreeGetChildSymmetry)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMReferenceTreeGetChildSymmetry_pforest)
+static PetscErrorCode DMReferenceTreeGetChildSymmetry_pforest(DM dm, PetscInt parent, PetscInt parentOrientA, PetscInt childOrientA, PetscInt childA, PetscInt parentOrientB, PetscInt *childOrientB,
+                                                              PetscInt *childB)
+{
+  PetscInt       coneSize, dStart, dEnd, vStart, vEnd, dim, ABswap, oAvert, oBvert, ABswapVert;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (parentOrientA == parentOrientB) {
+    if (childOrientB) *childOrientB = childOrientA;
+    if (childB) *childB = childA;
+    PetscFunctionReturn(0);
+  }
+  ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
+  if (childA >= vStart && childA < vEnd) { /* vertices (always in the middle) are invarient under rotation */
+    if (childOrientB) *childOrientB = 0;
+    if (childB) *childB = childA;
+    PetscFunctionReturn(0);
+  }
+  for (dim = 0; dim < 3; dim++) {
+    ierr = DMPlexGetDepthStratum(dm,dim,&dStart,&dEnd);CHKERRQ(ierr);
+    if (parent >= dStart && parent <= dEnd) {
+      break;
+    }
+  }
+  if (dim > 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot perform child symmetry for %d-cells",dim);
+  if (!dim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A vertex has no children");
+  if (childA < dStart || childA >= dEnd) { /* a 1-cell in a 2-cell */
+    /* this is a lower-dimensional child: bootstrap */
+    PetscInt size, i, sA = -1, sB, sOrientB, sConeSize;
+    const PetscInt *supp, *coneA, *coneB, *oA, *oB;
+
+    ierr = DMPlexGetSupportSize(dm,childA,&size);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm,childA,&supp);CHKERRQ(ierr);
+
+    /* find a point sA in supp(childA) that has the same parent */
+    for (i = 0; i < size; i++) {
+      PetscInt sParent;
+
+      sA   = supp[i];
+      if (sA == parent) continue;
+      ierr = DMPlexGetTreeParent(dm,sA,&sParent,NULL);CHKERRQ(ierr);
+      if (sParent == parent) {
+        break;
+      }
+    }
+    if (i == size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"could not find support in children");
+    /* find out which point sB is in an equivalent position to sA under
+     * parentOrientB */
+    ierr = DMReferenceTreeGetChildSymmetry_pforest(dm,parent,parentOrientA,0,sA,parentOrientB,&sOrientB,&sB);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm,sA,&sConeSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm,sA,&coneA);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm,sB,&coneB);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm,sA,&oA);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm,sB,&oB);CHKERRQ(ierr);
+    /* step through the cone of sA in natural order */
+    for (i = 0; i < sConeSize; i++) {
+      if (coneA[i] == childA) {
+        /* if childA is at position i in coneA,
+         * then we want the point that is at sOrientB*i in coneB */
+        PetscInt j = (sOrientB >= 0) ? ((sOrientB + i) % sConeSize) : ((sConeSize -(sOrientB+1) - i) % sConeSize);
+        if (childB) *childB = coneB[j];
+        if (childOrientB) {
+          PetscInt oBtrue;
+
+          ierr          = DMPlexGetConeSize(dm,childA,&coneSize);CHKERRQ(ierr);
+          /* compose sOrientB and oB[j] */
+          if (coneSize != 0 && coneSize != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
+          /* we may have to flip an edge */
+          oBtrue        = coneSize ? ((sOrientB >= 0) ? oB[j] : -(oB[j] + 2)) : 0;
+          ABswap        = DihedralSwap(coneSize,oA[i],oBtrue);CHKERRQ(ierr);
+          *childOrientB = DihedralCompose(coneSize,childOrientA,ABswap);
+        }
+        break;
+      }
+    }
+    if (i == sConeSize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"support cone mismatch");
+    PetscFunctionReturn(0);
+  }
+  /* get the cone size and symmetry swap */
+  ierr   = DMPlexGetConeSize(dm,parent,&coneSize);CHKERRQ(ierr);
+  ABswap = DihedralSwap(coneSize, parentOrientA, parentOrientB);
+  if (dim == 2) {
+    /* orientations refer to cones: we want them to refer to vertices:
+     * if it's a rotation, they are the same, but if the order is reversed, a
+     * permutation that puts side i first does *not* put vertex i first */
+    oAvert     = (parentOrientA >= 0) ? parentOrientA : -((-parentOrientA % coneSize) + 1);
+    oBvert     = (parentOrientB >= 0) ? parentOrientB : -((-parentOrientB % coneSize) + 1);
+    ABswapVert = DihedralSwap(coneSize, oAvert, oBvert);
+  }
+  else {
+    oAvert     = parentOrientA;
+    oBvert     = parentOrientB;
+    ABswapVert = ABswap;
+  }
+  if (childB) {
+    /* assume that each child corresponds to a vertex, in the same order */
+    PetscInt p, posA = -1, numChildren, i;
+    const PetscInt *children;
+
+    /* count which position the child is in */
+    ierr = DMPlexGetTreeChildren(dm,parent,&numChildren,&children);CHKERRQ(ierr);
+    for (i = 0; i < numChildren; i++) {
+      p = children[i];
+      if (p == childA) {
+        if (dim == 1) {
+          posA = i;
+        }
+        else { /* 2D Morton to rotation */
+          posA = (i & 2) ? (i ^ 1) : i;
+        }
+        break;
+      }
+    }
+    if (posA >= coneSize) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find childA in children of parent");
+    }
+    else {
+      /* figure out position B by applying ABswapVert */
+      PetscInt posB, childIdB;
+
+      posB = (ABswapVert >= 0) ? ((ABswapVert + posA) % coneSize) : ((coneSize -(ABswapVert + 1) - posA) % coneSize);
+      if (dim == 1) {
+        childIdB = posB;
+      }
+      else { /* 2D rotation to Morton */
+        childIdB = (posB & 2) ? (posB ^ 1) : posB;
+      }
+      if (childB) *childB = children[childIdB];
+    }
+  }
+  if (childOrientB) *childOrientB = DihedralCompose(coneSize,childOrientA,ABswap);
+  PetscFunctionReturn(0);
+}
+
 #define DMCreateReferenceTree_pforest _append_pforest(DMCreateReferenceTree)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateReferenceTree_pforest)
@@ -1300,6 +1437,7 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   p4est_connectivity_t *refcube;
   p4est_t        *root, *refined;
   DM             dmRoot, dmRefined;
+  DM_Plex        *mesh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1395,6 +1533,8 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
     }
   }
   ierr = DMPlexCreateReferenceTree_Union(dmRoot,dmRefined,"identity",dm);CHKERRQ(ierr);
+  mesh = (DM_Plex *) (*dm)->data;
+  mesh->getchildsymmetry = DMReferenceTreeGetChildSymmetry_pforest;
   ierr = DMDestroy(&dmRefined);CHKERRQ(ierr);
   ierr = DMDestroy(&dmRoot);CHKERRQ(ierr);
   PetscStackCallP4est(p4est_destroy,(refined));
