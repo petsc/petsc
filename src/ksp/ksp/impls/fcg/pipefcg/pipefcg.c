@@ -605,7 +605,7 @@ PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
 PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_PIPEFCG    *pipefcg=(KSP_PIPEFCG*)ksp->data;;
+  KSP_PIPEFCG    *pipefcg=(KSP_PIPEFCG*)ksp->data;
   PetscInt       mmax,nprealloc;
   PetscBool      flg;
 
