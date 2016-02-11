@@ -771,7 +771,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     Mat         A;
     Vec         *benign_AIIm1_ones = NULL;
     IS          is_A_all,*is_p_r = NULL;
-    PetscScalar *work,*S_data,*schur_factor,*cs_AIB = NULL;
+    PetscScalar *work,*S_data,*schur_factor,*cs_AIB = NULL, infty = PETSC_MAX_REAL;
     PetscInt    n,n_I,*dummy_idx,size_schur,size_active_schur,cum,cum2;
     PetscBool   economic,solver_S,S_lower_triangular = PETSC_FALSE,factor_workaround;
     char        solver[256];
@@ -1106,10 +1106,16 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
         if (!use_getr) { /* TODO add sytrf/i for symmetric non hermitian */
+          PetscInt k;
           PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,work,&B_N,&B_ierr));
           if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
           PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,work,&B_N,&B_ierr));
           if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+          for (k=0;k<subset_size;k++) {
+            for (j=k;j<subset_size;j++) {
+              work[j*subset_size+k] = work[k*subset_size+j];
+            }
+          }
         } else {
           PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,work,&B_N,pivots,&B_ierr));
           if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
@@ -1207,6 +1213,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             for (k=0;k<subset_size;k++) {
               for (j=k;j<subset_size;j++) {
                 work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
+                work[j*subset_size+k] = work[k*subset_size+j];
               }
             }
           } else { /* copy to workspace */
@@ -1263,7 +1270,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           /* workaround: since I cannot modify the matrices used inside the solvers for the forward and backward substitutions,
              set the diagonal entry of the Schur factor to a very large value */
           for (i=size_active_schur+nd;i<size_schur;i++) {
-            data[i*(size_schur+1)] = PETSC_MAX_REAL;
+            data[i*(size_schur+1)] = infty;
           }
           ierr = MatDenseRestoreArray(S_tmp,&data);CHKERRQ(ierr);
         } else {
@@ -1285,7 +1292,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       }
       for (i=size_active_schur+nd;i<size_schur;i++) {
         ierr = PetscMemzero(data+i*size_schur+size_active_schur,(size_schur-size_active_schur)*sizeof(PetscScalar));CHKERRQ(ierr);
-        data[i*(size_schur+1)] = PETSC_MAX_REAL;
+        data[i*(size_schur+1)] = infty;
       }
       ierr = MatDenseRestoreArray(S_all,&data);CHKERRQ(ierr);
       ierr = MatFactorRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
