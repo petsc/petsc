@@ -256,6 +256,47 @@ alldone:
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMHasNamedGlobalVector"
+/*@C
+   DMHasNamedGlobalVector - check for a named, persistent global vector
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to hold named vectors
+-  name - unique name for Vec
+
+   Output Arguments:
+.  exists - true if the vector was previously created
+
+   Level: developer
+
+   Note: If a Vec with the given name does not exist, it is created.
+
+.seealso: DMGetNamedGlobalVector(),DMRestoreNamedLocalVector()
+@*/
+PetscErrorCode DMHasNamedGlobalVector(DM dm,const char *name,PetscBool *exists)
+{
+  PetscErrorCode ierr;
+  DMNamedVecLink link;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(exists,3);
+  *exists = PETSC_FALSE;
+  for (link=dm->namedglobal; link; link=link->next) {
+    PetscBool match;
+    ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
+    if (match) {
+      *exists = PETSC_TRUE;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGetNamedGlobalVector"
 /*@C
    DMGetNamedGlobalVector - get access to a named, persistent global vector
@@ -346,6 +387,47 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMHasNamedLocalVector"
+/*@C
+   DMHasNamedLocalVector - check for a named, persistent local vector
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to hold named vectors
+-  name - unique name for Vec
+
+   Output Arguments:
+.  exists - true if the vector was previously created
+
+   Level: developer
+
+   Note: If a Vec with the given name does not exist, it is created.
+
+.seealso: DMGetNamedGlobalVector(),DMRestoreNamedLocalVector()
+@*/
+PetscErrorCode DMHasNamedLocalVector(DM dm,const char *name,PetscBool *exists)
+{
+  PetscErrorCode ierr;
+  DMNamedVecLink link;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(exists,3);
+  *exists = PETSC_FALSE;
+  for (link=dm->namedlocal; link; link=link->next) {
+    PetscBool match;
+    ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
+    if (match) {
+      *exists = PETSC_TRUE;
+      break;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
