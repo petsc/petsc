@@ -1,3 +1,4 @@
+#include <petscds.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/dmforestimpl.h>
 #include <petsc/private/dmpleximpl.h>
@@ -38,8 +39,10 @@
 #define DMCreate_pforest                      _append_pforest(DMCreate)
 #define DMClone_pforest                       _append_pforest(DMClone)
 #define DMCoarsen_pforest                     _append_pforest(DMCoarsen)
+#define DMCreateInterpolation_pforest         _append_pforest(DMCreateInterpolation)
 #define DMForestDestroy_pforest               _append_pforest(DMForestDestroy)
 #define DMForestTemplate_pforest              _append_pforest(DMForestTemplate)
+#define DMCreateReferenceTree_pforest         _append_pforest(DMCreateReferenceTree)
 #define DMSetUp_pforest                       _append_pforest(DMSetUp)
 #define DMView_pforest                        _append_pforest(DMView)
 #define DMView_ASCII_pforest                  _append_pforest(DMView_ASCII)
@@ -1262,6 +1265,137 @@ static PetscErrorCode locidx_pair_to_PetscSFNode (sc_array_t * array)
   sc_array_init_size (array, sizeof (PetscSFNode), count);
   sc_array_copy (array, newarray);
   sc_array_destroy (newarray);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "P4estToPlex_Local"
+static PetscErrorCode P4estToPlex_Local(p4est_t *p4est, DM * plex)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  {
+    sc_array_t     *points_per_dim    = sc_array_new(sizeof (p4est_locidx_t));
+    sc_array_t     *cone_sizes        = sc_array_new(sizeof (p4est_locidx_t));
+    sc_array_t     *cones             = sc_array_new(sizeof (p4est_locidx_t));
+    sc_array_t     *cone_orientations = sc_array_new(sizeof (p4est_locidx_t));
+    sc_array_t     *coords            = sc_array_new(3 * sizeof (double));
+    sc_array_t     *children          = sc_array_new(sizeof (p4est_locidx_t));
+    sc_array_t     *parents           = sc_array_new(sizeof (p4est_locidx_t));
+    sc_array_t     *childids          = sc_array_new(sizeof (p4est_locidx_t));
+    sc_array_t     *leaves            = sc_array_new(sizeof (p4est_locidx_t));
+    sc_array_t     *remotes           = sc_array_new(2 * sizeof (p4est_locidx_t));
+    p4est_locidx_t first_local_quad;
+
+    PetscStackCallP4est(p4est_get_plex_data,(p4est,P4EST_CONNECT_FULL,0,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes));
+
+    ierr = locidx_to_PetscInt(points_per_dim);CHKERRQ(ierr);
+    ierr = locidx_to_PetscInt(cone_sizes);CHKERRQ(ierr);
+    ierr = locidx_to_PetscInt(cones);CHKERRQ(ierr);
+    ierr = locidx_to_PetscInt(cone_orientations);CHKERRQ(ierr);
+    ierr = coords_double_to_PetscScalar(coords, P4EST_DIM);CHKERRQ(ierr);
+
+    ierr = DMPlexCreate(PETSC_COMM_SELF,plex);CHKERRQ(ierr);
+    ierr = DMSetDimension(*plex,P4EST_DIM);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromDAG(*plex,P4EST_DIM,(PetscInt *)points_per_dim->array,(PetscInt *)cone_sizes->array,(PetscInt *)cones->array,(PetscInt *)cone_orientations->array,(PetscScalar *)coords->array);CHKERRQ(ierr);
+    sc_array_destroy (points_per_dim);
+    sc_array_destroy (cone_sizes);
+    sc_array_destroy (cones);
+    sc_array_destroy (cone_orientations);
+    sc_array_destroy (coords);
+    sc_array_destroy (children);
+    sc_array_destroy (parents);
+    sc_array_destroy (childids);
+    sc_array_destroy (leaves);
+    sc_array_destroy (remotes);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMCreateReferenceTree_pforest)
+static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
+{
+  p4est_connectivity_t *refcube;
+  p4est_t        *root, *refined;
+  DM             dmRoot, dmRefined;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscStackCallP4estReturn(refcube,p4est_connectivity_new_byname,("unit"));
+  { /* [-1,1]^d geometry */
+    PetscInt i, j;
+
+    for(i = 0; i < P4EST_CHILDREN; i++) {
+      for (j = 0; j < 3; j++) {
+        refcube->vertices[3 * i + j] *= 2.;
+        refcube->vertices[3 * i + j] -= 1.;
+      }
+    }
+  }
+  PetscStackCallP4estReturn(root,p4est_new,(PETSC_COMM_SELF,refcube,0,NULL,NULL));
+  PetscStackCallP4estReturn(refined,p4est_new_ext,(PETSC_COMM_SELF,refcube,0,1,1,0,NULL,NULL));
+  ierr = P4estToPlex_Local(root,&dmRoot);CHKERRQ(ierr);
+  ierr = P4estToPlex_Local(refined,&dmRefined);CHKERRQ(ierr);
+  {
+#if !defined(P4_TO_P8)
+    PetscInt nPoints = 25;
+    PetscInt perm[25] = {0, 1, 2, 3,
+                          4, 12, 8, 14,
+                              6, 9, 15,
+                          5, 13,    10,
+                              7,    11,
+                         16, 22, 20, 24,
+                             17,     21,
+                                 18, 23,
+                                     19};
+#else
+    PetscInt nPoints = 125;
+    PetscInt perm[125] = {0, 1, 2, 3, 4, 5, 6, 7,
+                           8, 32, 16, 36, 24, 40,
+                              12, 17, 37, 25, 41,
+                           9, 33,     20, 26, 42,
+                              13,     21, 27, 43,
+                          10, 34, 18, 38,     28,
+                              14, 19, 39,     29,
+                          11, 35,     22,     30,
+                              15,     23,     31,
+                          44, 84, 76, 92, 52, 86, 68, 94, 60, 78, 70, 96,
+                          45, 85, 77, 93,     54,     72,     62,     74,
+                              46,     80, 53, 87, 69, 95,         64, 82,
+                              47,     81,     55,     73,             66,
+                                  48, 88,         56, 90, 61, 79, 71, 97,
+                                  49, 89,             58,     63,     75,
+                                      50,         57, 91,         65, 83,
+                                      51,             59,             67,
+                           98, 106, 110, 122, 114, 120, 118, 124,
+                                99,      111,      115,      119,
+                                    100, 107,           116, 121,
+                                         101,                117,
+                                              102, 108, 112, 123,
+                                                   103,      113,
+                                                        104, 109,
+                                                             105};
+#endif
+    IS permIS;
+    DM dmPerm;
+
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,nPoints,perm,PETSC_USE_POINTER,&permIS);CHKERRQ(ierr);
+    ierr = DMPlexPermute(dmRefined,permIS,&dmPerm);CHKERRQ(ierr);
+    if (dmPerm) {
+      ierr = DMDestroy(&dmRefined);CHKERRQ(ierr);
+      dmRefined = dmPerm;
+    }
+    ierr = ISDestroy(&permIS);CHKERRQ(ierr);
+  }
+  ierr = DMViewFromOptions(dmRoot,NULL,"-dm_root_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dmRefined,NULL,"-dm_refined_view");CHKERRQ(ierr);
+  ierr = DMDestroy(&dmRefined);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmRoot);CHKERRQ(ierr);
+  PetscStackCallP4est(p4est_destroy,(refined));
+  PetscStackCallP4est(p4est_destroy,(root));
+  PetscStackCallP4est(p4est_connectivity_destroy,(refcube));
   PetscFunctionReturn(0);
 }
 
