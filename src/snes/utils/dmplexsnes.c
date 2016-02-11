@@ -1543,9 +1543,13 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Vec
     const PetscInt *values;
     PetscInt        field, numValues, numPoints, p, dep, numFaces;
     PetscBool       isEssential;
+    PetscObject     obj;
+    PetscClassId    id;
 
     ierr = DMGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
-    if (isEssential) continue;
+    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if ((id != PETSCFE_CLASSID) || isEssential) continue;
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     ierr = DMLabelGetStratumSize(label, 1, &numPoints);CHKERRQ(ierr);
@@ -2336,9 +2340,13 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     const PetscInt *values;
     PetscInt        field, numValues, numPoints, p, dep, numFaces;
     PetscBool       isEssential;
+    PetscObject     obj;
+    PetscClassId    id;
 
     ierr = DMGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
-    if (isEssential) continue;
+    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if ((id != PETSCFE_CLASSID) || isEssential) continue;
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     ierr = DMLabelGetStratumSize(label, 1, &numPoints);CHKERRQ(ierr);
