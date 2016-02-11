@@ -35,8 +35,6 @@
 #include <p8est_algorithms.h>
 #endif
 
-#define DMCreateInterpolation_pforest         _append_pforest(DMCreateInterpolation)
-
 typedef enum {PATTERN_HASH,PATTERN_FRACTAL,PATTERN_CORNER,PATTERN_CENTER,PATTERN_COUNT} DMRefinePattern;
 static const char *DMRefinePatternName[PATTERN_COUNT] = {"hash","fractal","corner","center"};
 
@@ -1818,7 +1816,7 @@ static void DMPforestMaxSFNode(void *a, void *b, PetscMPIInt *len, MPI_Datatype 
 #undef __FUNCT__
 #define __FUNCT__ "DMPforestGetTransferSF_Internal"
 /* children are sf leaves of parents */
-static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const PetscInt dofPerDim[], PetscSF *sf, PetscBool transferIdent)
+static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const PetscInt dofPerDim[], PetscSF *sf, PetscBool transferIdent, PetscInt *childIds[])
 {
   MPI_Comm          comm;
   PetscMPIInt       rank, size;
@@ -1990,7 +1988,11 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     PetscInt cLocalStartF;
     PetscSF  pointSF;
     PetscSFNode *roots;
-    DM       plexF;
+    DM       plexF, refTree = NULL;
+    DMLabel  canonical;
+    PetscInt *childClosures[P4EST_CHILDREN] = {NULL};
+    PetscInt *rootClosure = NULL;
+    PetscInt *cids = NULL;
 
     ierr = DMPforestGetPlex(fine,&plexF);CHKERRQ(ierr);
     ierr = DMPlexGetChart(plexF,&pStartF,&pEndF);CHKERRQ(ierr);
@@ -1999,6 +2001,20 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     for (p = pStartF; p < pEndF; p++) {
       roots[p-pStartF].rank  = -1;
       roots[p-pStartF].index = -1;
+    }
+    if (childIds) {
+      PetscInt child;
+
+      ierr = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
+      for (p = pStartF; p < pEndF; p++) {
+        cids[p - pStartF] = -1;
+      }
+      ierr = DMPlexGetReferenceTree(plexF,&refTree);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(refTree,0,PETSC_TRUE,NULL,&rootClosure);CHKERRQ(ierr);
+      for (child = 0; child < P4EST_CHILDREN; child++) { /* get the closures of the child cells in the reference tree */
+        ierr = DMPlexGetTransitiveClosure(refTree,child+1,PETSC_TRUE,NULL,&childClosures[child]);CHKERRQ(ierr);
+      }
+      ierr = DMGetLabel(refTree,"canonical",&canonical);CHKERRQ(ierr);
     }
     cLocalStartF = pforestF->cLocalStart;
     for (t = fltF; t <= lltF; t++) {
@@ -2038,6 +2054,48 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
           }
         }
         else {
+          if (childIds) {
+            PetscInt cl;
+            PetscInt *pointClosure = NULL;
+            int cid;
+
+            if (quadCoarse->level < quad->level - 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Recursive child ids not implemented");
+            PetscStackCallP4estReturn(cid,p4est_quadrant_child_id,(quad));
+            ierr = DMPlexGetTransitiveClosure(plexF,c,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
+            for (cl = 0; cl < P4EST_INSUL; cl++) {
+              PetscInt point = childClosures[cid][2 * cl];
+              PetscInt ornt  = childClosures[cid][2 * cl + 1];
+              PetscInt newcid = -1;
+              if (!cl) {
+                newcid = cid + 1;
+              } else {
+                PetscInt rcl, parent, parentOrnt;
+
+                ierr = DMPlexGetTreeParent(refTree,point,&parent,NULL);CHKERRQ(ierr);
+                if (parent == point) {
+                  newcid = -1;
+                }
+                else if (!parent) { /* in the root */
+                  newcid = point;
+                }
+                else {
+                  for (rcl = 1; rcl < P4EST_INSUL; rcl++) {
+                    if (rootClosure[2 * rcl] == parent) {
+                      parentOrnt = rootClosure[2 * rcl + 1];
+                      break;
+                    }
+                  }
+                  if (rcl >= P4EST_INSUL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Couldn't find parent in root closure");
+                  ierr = DMPlexReferenceTreeGetChildSymmetry(refTree,parent,parentOrnt,ornt,point,pointClosure[2 * rcl + 1],NULL,&newcid);CHKERRQ(ierr);
+                }
+              }
+              if (canonical && newcid >= 0) {
+                ierr = DMLabelGetValue(canonical,newcid,&newcid);CHKERRQ(ierr);
+              }
+              cids[pointClosure[2 * cl]] = newcid;
+            }
+            ierr = DMPlexRestoreTransitiveClosure(plexF,c,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
+          }
           p4est_qcoord_t coarseBound[2][P4EST_DIM] = {{quadCoarse->x,quadCoarse->y,
 #if defined(P4_TO_P8)
                                                    quadCoarse->z
@@ -2226,6 +2284,16 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
       ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&pointTransferSF);CHKERRQ(ierr);
     }
+    if (childIds) {
+      PetscInt child;
+
+      ierr = DMPlexGetReferenceTree(plexF,&refTree);CHKERRQ(ierr);
+      *childIds = cids;
+      for (child = 0; child < P4EST_CHILDREN; child++) {
+        ierr = DMPlexRestoreTransitiveClosure(refTree,child+1,PETSC_TRUE,NULL,&childClosures[child]);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(refTree,0,PETSC_TRUE,NULL,&rootClosure);CHKERRQ(ierr);
+    }
   }
   ierr = PetscFree2(treeQuads,treeQuadCounts);CHKERRQ(ierr);
   ierr = PetscFree(coverQuads);CHKERRQ(ierr);
@@ -2246,10 +2314,10 @@ static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofP
 
   PetscFunctionBegin;
   if (sfAtoB) {
-    ierr = DMPforestGetTransferSF_Internal(dmA,dmB,dofPerDim,sfAtoB,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPforestGetTransferSF_Internal(dmA,dmB,dofPerDim,sfAtoB,PETSC_TRUE,NULL);CHKERRQ(ierr);
   }
   if (sfBtoA) {
-    ierr = DMPforestGetTransferSF_Internal(dmB,dmA,dofPerDim,sfBtoA,(sfAtoB == NULL));CHKERRQ(ierr);
+    ierr = DMPforestGetTransferSF_Internal(dmB,dmA,dofPerDim,sfBtoA,(sfAtoB == NULL),NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3042,6 +3110,45 @@ static PetscErrorCode DMCoarsen_pforest(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionReturn(0);
 }
 
+#define DMCreateInterpolation_pforest         _append_pforest(DMCreateInterpolation)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMCreateInterpolation_pforest)
+static PetscErrorCode DMCreateInterpolation_pforest (DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling)
+{
+  PetscSection   gsc, gsf;
+  PetscInt       m, n;
+  DM             cdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
+
+  ierr = MatCreate(PetscObjectComm((PetscObject) dmFine), interpolation);CHKERRQ(ierr);
+  ierr = MatSetSizes(*interpolation, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*interpolation, dmCoarse->mattype);CHKERRQ(ierr);
+
+  ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
+  if (cdm != dmCoarse) {
+    SETERRQ(PetscObjectComm((PetscObject)dmFine),PETSC_ERR_SUP,"Only interpolation to coarse DM for now");
+  }
+  {
+    PetscSF sf;
+    PetscInt *cids;
+    PetscInt dofPerDim[4] = {1,1,1,1};
+
+    ierr = DMPforestGetTransferSF_Internal(dmCoarse, dmFine, dofPerDim, &sf, PETSC_TRUE, &cids);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    ierr = PetscFree(cids);
+  }
+  ierr = MatViewFromOptions(*interpolation, NULL, "-interp_mat_view");CHKERRQ(ierr);
+  /* Use naive scaling */
+  ierr = DMCreateInterpolationScale(dmCoarse, dmFine, *interpolation, scaling);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #define DMCreateCoordinateDM_pforest _append_pforest(DMCreateCoordinateDM)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateCoordinateDM_pforest)
@@ -3333,6 +3440,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->view                      = DMView_pforest;
   dm->ops->clone                     = DMClone_pforest;
   dm->ops->coarsen                   = DMCoarsen_pforest;
+  dm->ops->createinterpolation       = DMCreateInterpolation_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
