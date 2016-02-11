@@ -221,30 +221,11 @@ PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, Petsc
 static PetscErrorCode DMPlexSetTree_Internal(DM,PetscSection,PetscInt*,PetscInt*,PetscBool,PetscBool);
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateDefaultReferenceTree"
-/*@
-  DMPlexCreateDefaultReferenceTree - create a reference tree for isotropic hierarchical mesh refinement.
-
-  Collective on comm
-
-  Input Parameters:
-+ comm    - the MPI communicator
-. dim     - the spatial dimension
-- simplex - Flag for simplex, otherwise use a tensor-product cell
-
-  Output Parameters:
-. ref     - the reference tree DMPlex object
-
-  Level: intermediate
-
-.keywords: reference cell
-.seealso: DMPlexSetReferenceTree(), DMPlexGetReferenceTree()
-@*/
-PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *ref)
+#define __FUNCT__ "DMPlexCreateReferenceTree_Union"
+PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelName, DM *ref)
 {
-  DM_Plex       *mesh;
-  DM             K, Kref;
-  PetscInt       p, pStart, pEnd, pRefStart, pRefEnd, d, offset, parentSize, *parents, *childIDs;
+  MPI_Comm       comm;
+  PetscInt       dim, p, pStart, pEnd, pRefStart, pRefEnd, d, offset, parentSize, *parents, *childIDs;
   PetscInt      *permvals, *unionCones, *coneSizes, *unionOrientations, numUnionPoints, *numDimPoints, numCones, numVerts;
   DMLabel        identity, identityRef;
   PetscSection   unionSection, unionConeSection, parentSection;
@@ -253,23 +234,11 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if 1
-  comm = PETSC_COMM_SELF;
-#endif
-  /* create a reference element */
-  ierr = DMPlexCreateReferenceCell(comm, dim, simplex, &K);CHKERRQ(ierr);
-  ierr = DMCreateLabel(K, "identity");CHKERRQ(ierr);
-  ierr = DMGetLabel(K, "identity", &identity);CHKERRQ(ierr);
+  comm = PetscObjectComm((PetscObject)K);
+  ierr = DMGetDimension(K, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetChart(K, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; p++) {
-    ierr = DMLabelSetValue(identity, p, p);CHKERRQ(ierr);
-  }
-  /* refine it */
-  ierr = DMRefine(K,comm,&Kref);CHKERRQ(ierr);
-
-  /* the reference tree is the union of these two, without duplicating
-   * points that appear in both */
-  ierr = DMGetLabel(Kref, "identity", &identityRef);CHKERRQ(ierr);
+  ierr = DMGetLabel(K, labelName, &identity);CHKERRQ(ierr);
+  ierr = DMGetLabel(Kref, labelName, &identityRef);CHKERRQ(ierr);
   ierr = DMPlexGetChart(Kref, &pRefStart, &pRefEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &unionSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(unionSection, 0, (pEnd - pStart) + (pRefEnd - pRefStart));CHKERRQ(ierr);
@@ -463,8 +432,6 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
     }
   }
   ierr = DMPlexSetTree_Internal(*ref,parentSection,parents,childIDs,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
-  mesh = (DM_Plex *) (*ref)->data;
-  mesh->getchildsymmetry = DMPlexReferenceTreeGetChildSymmetry_Default;
   ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
   ierr = PetscFree2(parents,childIDs);CHKERRQ(ierr);
 
@@ -475,6 +442,57 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   ierr = PetscFree(unionCoords);CHKERRQ(ierr);
   ierr = PetscFree2(unionCones,unionOrientations);CHKERRQ(ierr);
   ierr = PetscFree2(coneSizes,numDimPoints);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateDefaultReferenceTree"
+/*@
+  DMPlexCreateDefaultReferenceTree - create a reference tree for isotropic hierarchical mesh refinement.
+
+  Collective on comm
+
+  Input Parameters:
++ comm    - the MPI communicator
+. dim     - the spatial dimension
+- simplex - Flag for simplex, otherwise use a tensor-product cell
+
+  Output Parameters:
+. ref     - the reference tree DMPlex object
+
+  Level: intermediate
+
+.keywords: reference cell
+.seealso: DMPlexSetReferenceTree(), DMPlexGetReferenceTree()
+@*/
+PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *ref)
+{
+  DM_Plex       *mesh;
+  DM             K, Kref;
+  PetscInt       p, pStart, pEnd;
+  DMLabel        identity;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#if 1
+  comm = PETSC_COMM_SELF;
+#endif
+  /* create a reference element */
+  ierr = DMPlexCreateReferenceCell(comm, dim, simplex, &K);CHKERRQ(ierr);
+  ierr = DMCreateLabel(K, "identity");CHKERRQ(ierr);
+  ierr = DMGetLabel(K, "identity", &identity);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(K, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    ierr = DMLabelSetValue(identity, p, p);CHKERRQ(ierr);
+  }
+  /* refine it */
+  ierr = DMRefine(K,comm,&Kref);CHKERRQ(ierr);
+
+  /* the reference tree is the union of these two, without duplicating
+   * points that appear in both */
+  ierr = DMPlexCreateReferenceTree_Union(K, Kref, "identity", ref);CHKERRQ(ierr);
+  mesh = (DM_Plex *) (*ref)->data;
+  mesh->getchildsymmetry = DMPlexReferenceTreeGetChildSymmetry_Default;
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
