@@ -110,17 +110,24 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
     }
   }
   else {
-    ierr = PetscObjectQuery((PetscObject)dm,"_DMGlobalToLocalSolve_mask",(PetscObject *)&mask);CHKERRQ(ierr);
-    if (!mask) {
-      PetscErrorCode     (*func[1]) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-      void *ctx[1] = {NULL};
+    PetscBool hasMask;
 
-      func[0] = DMGlobalToLocalSolve_project1;
-      ierr = DMCreateLocalVector(dm,&mask);CHKERRQ(ierr);
+    ierr = DMHasNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &hasMask);CHKERRQ(ierr);
+    if (!hasMask) {
+      PetscErrorCode (**func) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+      void            **ctx;
+      PetscInt          Nf, f;
+
+      ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+      ierr = PetscMalloc2(Nf, &func, Nf, &ctx);CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {
+        func[f] = DMGlobalToLocalSolve_project1;
+        ctx[f]  = NULL;
+      }
+      ierr = DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
       ierr = DMProjectFunctionLocal(dm,0.0,func,ctx,INSERT_ALL_VALUES,mask);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)dm,"_DMGlobalToLocalSolve_mask",(PetscObject)mask);CHKERRQ(ierr);
-    }
-    else {
+      ierr = PetscFree2(func, ctx);CHKERRQ(ierr);
+    } else {
       ierr = PetscObjectReference((PetscObject)mask);CHKERRQ(ierr);
     }
   }
