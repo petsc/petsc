@@ -324,21 +324,35 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   PetscSection   coordSection, newCoordSection;
   Vec            coordinates, newCoordinates;
   PetscScalar   *coords, *newCoords;
-  PetscInt       coordSize;
-  PetscInt       dim, depth = 0, vStart, vEnd, vStartNew, vEndNew, v;
+  PetscInt       coordSize, sStart, sEnd;
+  PetscInt       dim, depth = 0, cStart, cEnd, cStartNew, cEndNew, c, vStart, vEnd, vStartNew, vEndNew, v;
+  PetscBool      hasCells;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   /* Step 8: Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmNew, 0, &vStartNew, &vEndNew);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dmNew, 0, &cStartNew, &cEndNew);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(newCoordSection, vStartNew, vEndNew);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection, &sStart, &sEnd);CHKERRQ(ierr);
+  hasCells = sStart == cStart ? PETSC_TRUE : PETSC_FALSE;
+  ierr = PetscSectionSetChart(newCoordSection, hasCells ? cStartNew : vStartNew, vEndNew);CHKERRQ(ierr);
+  if (hasCells) {
+    for (c = cStart; c < cEnd; ++c) {
+      PetscInt cNew = DMPlexShiftPoint_Internal(c, depth, depthShift), dof;
+
+      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(newCoordSection, cNew, dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(newCoordSection, cNew, 0, dof);CHKERRQ(ierr);
+    }
+  }
   for (v = vStartNew; v < vEndNew; ++v) {
     ierr = PetscSectionSetDof(newCoordSection, v, dim);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldDof(newCoordSection, v, 0, dim);CHKERRQ(ierr);
@@ -355,15 +369,23 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(newCoordinates, &newCoords);CHKERRQ(ierr);
+  if (hasCells) {
+    for (c = cStart; c < cEnd; ++c) {
+      PetscInt cNew = DMPlexShiftPoint_Internal(c, depth, depthShift), dof, off, noff, d;
+
+      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, c, &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(newCoordSection, cNew, &noff);CHKERRQ(ierr);
+      for (d = 0; d < dof; ++d) newCoords[noff+d] = coords[off+d];
+    }
+  }
   for (v = vStart; v < vEnd; ++v) {
     PetscInt dof, off, noff, d;
 
     ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(newCoordSection, DMPlexShiftPoint_Internal(v, depth, depthShift), &noff);CHKERRQ(ierr);
-    for (d = 0; d < dof; ++d) {
-      newCoords[noff+d] = coords[off+d];
-    }
+    for (d = 0; d < dof; ++d) newCoords[noff+d] = coords[off+d];
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(newCoordinates, &newCoords);CHKERRQ(ierr);
