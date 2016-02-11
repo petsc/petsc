@@ -146,7 +146,6 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   if (mask) {ierr = VecPointwiseMult(x,mask,x);CHKERRQ(ierr);}
   ierr = DMLocalToGlobalBegin(dm,x,ADD_VALUES,global);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,x,ADD_VALUES,global);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,global,y);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm,&global);CHKERRQ(ierr);
   /* clean up */
