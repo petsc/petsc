@@ -784,12 +784,29 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPforestGetPlex(DM,DM*);
+
+#define DMView_HDF5_pforest _append_pforest(DMView_HDF5)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMView_HDF5_pforest)
+static PetscErrorCode DMView_HDF5_pforest(DM dm, PetscViewer viewer)
+{
+  DM             plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(dm, &plex);CHKERRQ(ierr);
+  ierr = DMView(plex, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #define DMView_pforest _append_pforest(DMView)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMView_pforest)
 static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
 {
-  PetscBool      isascii, isvtk;
+  PetscBool      isascii, isvtk, ishdf5;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -797,12 +814,15 @@ static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
   if (isascii) {
     ierr = DMView_ASCII_pforest((PetscObject) dm,viewer);CHKERRQ(ierr);
   } else if (isvtk) {
     ierr = DMView_VTK_pforest((PetscObject) dm,viewer);CHKERRQ(ierr);
+  } else if (ishdf5) {
+    ierr = DMView_HDF5_pforest(dm, viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(PetscObjectComm((PetscObject) dm),PETSC_ERR_SUP,"Non-vtk viewers not implemented yet");
+    SETERRQ(PetscObjectComm((PetscObject) dm),PETSC_ERR_SUP,"Viewer not supported (not VTK or HDF5)");
   }
   PetscFunctionReturn(0);
 }
@@ -1745,8 +1765,6 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
   ierr = PetscFree2(recv,recvReqs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-static PetscErrorCode DMPforestGetPlex(DM,DM*);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPforestGetCellSFNodes"
