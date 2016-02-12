@@ -523,45 +523,32 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   PetscFunctionBeginUser;
   if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
 
-  for (i=0; i<DIM; i++) uu->ru[i] = 0.0; // zero out initial velocity
+  for (i=0; i<DIM; i++) uu->ru[i] = 0.0; /* zero out initial velocity */
   /* set E and rho */
   gamma = eu->pars[EULER_PAR_GAMMA];
   p0 = 1.;
-  
-  if (0) { // shock tube
-    if (x[0] < mod->bounds[1]/2.) { // left of shock
-      // For (x<x0) set (rho,u,p)=(8,0,10) and for (x>x0) set (rho,u,p)=(1,0,1).
-      uu->r = 8.;
-      p0 = 10.;
+
+  /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
+  if (x[0] < mod->bounds[1]/2. + x[1]*eu->pars[EULER_PAR_ITANA]) {
+    if (x[0] < mod->bounds[1]/4.) { /* left of shock (1) */
+      PetscScalar amach,rho,press,gas1,p1;
+      amach = eu->pars[EULER_PAR_AMACH];
+      rho = 1.;
+      press = p0;
+      p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
+      gas1 = (gamma-1.0)/(gamma+1.0);
+      uu->r = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
+      uu->ru[0]   = ((uu->r - rho)*sqrt(gamma*press/rho)*amach)/uu->r;
+      uu->E = p1/(gamma-1.0) + .5*uu->r*uu->ru[0]*uu->ru[0];
     }
-    else {
-      uu->r = 1.;
+    else { /* left of discontinuity (0) */
+      uu->r = 1.; /* rho = 1 */
+      uu->E = p0/(gamma-1.0); /* + .5*s_rho0*s_u0*s_u0; zero velocity right of shock */
     }
-    uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity
   }
-  else {
-    /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
-    if (x[0] < mod->bounds[1]/2. + x[1]*eu->pars[EULER_PAR_ITANA]) {
-      if (x[0] < mod->bounds[1]/4.) { // left of shock (1)
-        PetscScalar amach,rho,press,gas1,p1;
-        amach = eu->pars[EULER_PAR_AMACH];
-        rho = 1.;
-        press = p0;
-        p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
-        gas1 = (gamma-1.0)/(gamma+1.0);
-        uu->r = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
-        uu->ru[0]   = ((uu->r - rho)*sqrt(gamma*press/rho)*amach)/uu->r;
-        uu->E = p1/(gamma-1.0) + .5*uu->r*uu->ru[0]*uu->ru[0];
-      }
-      else { // left of discontinuity (0)
-        uu->r = 1.; // rho = 1
-        uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity right of shock
-      }
-    }
-    else { // right of discontinuity (2)
-      uu->r = eu->pars[EULER_PAR_RHOR];
-      uu->E = p0/(gamma-1.0); // + .5*s_rho0*s_u0*s_u0; zero velocity right of shock
-    }
+  else { /* right of discontinuity (2) */
+    uu->r = eu->pars[EULER_PAR_RHOR];
+    uu->E = p0/(gamma-1.0); /* + .5*s_rho0*s_u0*s_u0; zero velocity right of shock */
   }
   PetscFunctionReturn(0);
 }
@@ -609,10 +596,10 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
   PetscFunctionBeginUser;
   Pressure_PG(eu->pars,x,&p);
   nu = DotDIM(x->ru,n);
-  f->r = nu;   // A rho u
-  nu /= x->r;  // A u
-  for (i=0; i<DIM; i++) f->ru[i] = nu * x->ru[i] + n[i]*p;  // r u^2 + p
-  f->E = nu * (x->E + p); // u(e+p)
+  f->r = nu;   /* A rho u */
+  nu /= x->r;  /* A u */
+  for (i=0; i<DIM; i++) f->ru[i] = nu * x->ru[i] + n[i]*p;  /* r u^2 + p */
+  f->E = nu * (x->E + p); /* u(e+p) */
   PetscFunctionReturn(0);
 }
 
@@ -631,14 +618,14 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
     MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
     PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s HERE !!!!!!!!! xI->r=%g\n",rank,__FUNCT__,xI->r);
   }
-  xG->r = xI->r;           // ghost cell density - same
-  xG->E = xI->E;           // ghost cell energy - same
-  if (n[1] != 0.) {        // top and bottom
-    xG->ru[0] =  xI->ru[0]; // copy tang to wall
-    xG->ru[1] = -xI->ru[1]; // reflect perp to t/b wall
+  xG->r = xI->r;           /* ghost cell density - same */
+  xG->E = xI->E;           /* ghost cell energy - same */
+  if (n[1] != 0.) {        /* top and bottom */
+    xG->ru[0] =  xI->ru[0]; /* copy tang to wall */
+    xG->ru[1] = -xI->ru[1]; /* reflect perp to t/b wall */
   }
-  else { // sides
-    for (i=0; i<DIM; i++) xG->ru[i] = xI->ru[i]; // copy
+  else { /* sides */
+    for (i=0; i<DIM; i++) xG->ru[i] = xI->ru[i]; /* copy */
   }
   PetscFunctionReturn(0);
 }
@@ -656,20 +643,13 @@ static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscR
   PetscInt        i;
   PetscErrorCode  ierr;
   PetscFunctionBeginUser;
-  if (uL->r!=uL->r) {
-    PetscMPIInt    rank;
-    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-    // PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s rho=%g,%g\n",rank,__FUNCT__,uL->r,uR->r);
-    PetscFunctionReturnVoid();
-  }
-  if (uL->r < 0 || uR->r < 0) exit(17);
+
   for (i=0,s2=0.; i<DIM; i++) {
     nn[i] = n[i];
     s2 += nn[i]*nn[i];
   }
-  s2 = PetscSqrtReal(s2); // |n|_2 = sum(n^2)^1/2
+  s2 = PetscSqrtReal(s2); /* |n|_2 = sum(n^2)^1/2 */
   for (i=0.; i<DIM; i++) nn[i] /= s2;
-  // PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s nn=%g,%g area=%g\n",-1,__FUNCT__,nn[0],nn[1],s2);
   EulerFlux(phys,nn,uL,&fL);
   EulerFlux(phys,nn,uR,&fR);
   ierr = eu->sound(eu->pars,uL,&cL);if (ierr) exit(13);
@@ -715,7 +695,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
   {
     PetscReal alpha;
-    eu->type = EULER_IV_SHOCK; // generalize later...
+    eu->type = EULER_IV_SHOCK; /* generalize later... */
     eu->pars[EULER_PAR_GAMMA] = 1.4;
     eu->pars[EULER_PAR_AMACH] = 2.02;
     eu->pars[EULER_PAR_RHOR] = 3.0;
@@ -730,7 +710,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   eu->sound    = SpeedOfSound_PG;
-  phys->maxspeed = eu->pars[EULER_PAR_AMACH]; // speed of shock
+  phys->maxspeed = eu->pars[EULER_PAR_AMACH]; /* speed of shock */
   {
     const PetscInt wallids[] = {100,101,200,300};
     ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
@@ -1448,16 +1428,15 @@ int main(int argc, char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   {
-    size_t len;
-
+    size_t len,i;
+    for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
     ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
     dim  = 2;
     if (!len) { /* a null name means just do a hex box */
       PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
       PetscBool flg1, flg2;
-      PetscInt i,nret1 = DIM;
+      PetscInt nret1 = DIM;
       PetscInt nret2 = 2*DIM;
-      for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
       ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
       ierr = PetscOptionsIntArray("-grid_size","number of cells in each direction","",cells,&nret1,&flg1);CHKERRQ(ierr);
       ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (e.g., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2);CHKERRQ(ierr);
