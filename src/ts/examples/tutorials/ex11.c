@@ -1455,8 +1455,8 @@ int main(int argc, char **argv)
     if (!len) { /* a null name means just do a hex box */
       PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
       PetscBool flg1, flg2;
-      PetscInt i,nret1 = 3;
-      PetscInt nret2 = 6;
+      PetscInt i,nret1 = DIM;
+      PetscInt nret2 = 2*DIM;
       for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
       ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
       ierr = PetscOptionsIntArray("-grid_size","number of cells in each direction","",cells,&nret1,&flg1);CHKERRQ(ierr);
@@ -1464,6 +1464,7 @@ int main(int argc, char **argv)
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
       if (flg1) {
         dim = nret1;
+        if (dim != 2) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D",dim);CHKERRQ(ierr);
       }
       ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, &dm);CHKERRQ(ierr);
       if (flg2) {
