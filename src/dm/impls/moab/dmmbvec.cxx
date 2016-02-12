@@ -454,8 +454,8 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
   vmoab->is_native_vec=(gnative_vec>0?PETSC_TRUE:PETSC_FALSE);
 
   if (!vmoab->is_native_vec) {
-    merr = mbiface->tag_get_name(tag, ttname);
-    if (!ttname.length() && merr !=moab::MB_SUCCESS) {
+    if (tag != 0) merr = mbiface->tag_get_name(tag, ttname);
+    if (!ttname.length() || merr !=moab::MB_SUCCESS) {
       /* get the new name for the anonymous MOABVec -> the tag_name will be destroyed along with Tag */
       char *tag_name = NULL;
       ierr = DMVecCreateTagName_Moab_Private(pcomm,&tag_name);CHKERRQ(ierr);

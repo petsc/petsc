@@ -122,10 +122,10 @@ int main(int argc, char **argv)
       for (i=1; i<=user.nlevels; i++) {
         if (user.debug) PetscPrintf(PETSC_COMM_WORLD, "Level %D\n", i);
         ierr = DMRefine(dmhierarchy[i-1],MPI_COMM_NULL,&dmhierarchy[i]);CHKERRQ(ierr);
-        ierr = DMCreateInterpolation(dmhierarchy[i-1],dmhierarchy[i],&R,NULL);CHKERRQ(ierr);
+        //ierr = DMCreateInterpolation(dmhierarchy[i-1],dmhierarchy[i],&R,NULL);CHKERRQ(ierr);
         if (user.debug) {
           ierr = DMView(dmhierarchy[i], 0);CHKERRQ(ierr);
-          ierr = MatView(R,0);CHKERRQ(ierr);
+          //ierr = MatView(R,0);CHKERRQ(ierr);
         }
         /* Solvers could now set operator "R" to the multigrid PC object for level i 
             PCMGSetInterpolation(pc,i,R)

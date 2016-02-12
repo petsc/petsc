@@ -49,18 +49,32 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
   dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core*>(dmmoab->mbiface), dmmoab->pcomm, dmmoab->fileset);
 
   ierr = PetscMalloc1(nlevels+1,&dmmoab->hsets);CHKERRQ(ierr);
+  hsets.resize(nlevels+1);
 
   /* generate the mesh hierarchy */
-  merr = dmmoab->hierarchy->generate_mesh_hierarchy(pdegrees, nlevels, hsets);MBERRNM(merr);
+  merr = dmmoab->hierarchy->generate_mesh_hierarchy(nlevels, pdegrees, hsets);MBERRNM(merr);
 
-  PetscInfo2(NULL, "Exchanging ghost cells (dim %d) with %d rings\n",dmmoab->dim,dmmoab->nghostrings);
-  for (i=0; i<=nlevels; i++) {
-    /* resolve the shared entities by exchanging information to adjacent processors */
-    merr = dmmoab->pcomm->exchange_ghost_cells(dmmoab->dim,0,dmmoab->nghostrings,dmmoab->dim,true,false,&hsets[i]);MBERRV(dmmoab->mbiface,merr);
+  merr = dmmoab->hierarchy->exchange_ghosts(hsets, dmmoab->nghostrings);MBERRNM(merr);
 
-    dmmoab->hsets[i]=hsets[i];
+  /* copy the mesh sets for nested refinement hierarchy */
+  for (i=0; i<=nlevels; i++)
+      dmmoab->hsets[i]=hsets[i];
+
+  if (dmmoab->nghostrings && false) {
+    PetscInfo2(NULL, "Exchanging ghost cells (dim %d) with %d rings\n",dmmoab->dim,dmmoab->nghostrings);
+    // for (i=1; i<=nlevels; i++) {
+    //   /* resolve the shared entities by exchanging information to adjacent processors */
+    //   merr = dmmoab->pcomm->exchange_ghost_cells(dmmoab->dim,0,dmmoab->nghostrings,dmmoab->dim,true,false,&hsets[i]);MBERRV(dmmoab->mbiface,merr);
+    // }
+    merr = dmmoab->pcomm->exchange_ghost_cells(dmmoab->dim,0,dmmoab->nghostrings,dmmoab->dim,true,false);MBERRV(dmmoab->mbiface,merr);
+
+    // moab::Range vtxall, elmsall;
+    // merr = dmmoab->mbiface->get_entities_by_dimension(0, 0, vtxall, true);MBERRNM(merr);
+    // merr = dmmoab->mbiface->get_entities_by_dimension(0, dmmoab->dim, elmsall, true);MBERRNM(merr);
+    
   }
 
+  hsets.clear();
   if (!ldegrees) {
     ierr = PetscFree(pdegrees);CHKERRQ(ierr);
   }
@@ -180,18 +194,19 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   nlghsiz1 = (dmb1->nloc+dmb1->nghost)*dmb1->numFields;
   nlghsiz2 = (dmb2->nloc+dmb2->nghost)*dmb2->numFields;
 
-  PetscInfo4(dm1,"Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n",dmb1->nloc,dmb2->nloc,dmb1->hlevel,dmb2->hlevel);
+  int rank = dmb1->pcomm->rank();
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)dm1), interpl);CHKERRQ(ierr);
-  ierr = MatSetType(*interpl, dm1->mattype);CHKERRQ(ierr);
-  ierr = MatSetSizes(*interpl, nlsiz2, nlsiz1, ngsiz2, ngsiz1);CHKERRQ(ierr);
+  PetscInfo4(dm1,"Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n",ngsiz2,ngsiz1,dmb1->hlevel,dmb2->hlevel);
 
-  /* TODO: This is a hack for the rectangular system - decipher NNZ pattern better */
-  ierr = MatSetFromOptions(*interpl);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_SELF, "[%d] Local matrix: %D X %D\n", rank, nlsiz2, nlsiz1);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
   ierr = PetscCalloc2(nlghsiz2,&nnz,nlghsiz2,&onz);CHKERRQ(ierr);
 
+  PetscPrintf(PETSC_COMM_SELF, "[%d] Coarse Local elements: %D, vertices: %D\n", rank, dmb1->elocal->size(), dmb1->vlocal->size());
+  PetscPrintf(PETSC_COMM_SELF, "[%d] Fine   Local elements: %D, vertices: %D\n", rank, dmb2->elocal->size(), dmb2->vlocal->size());
+  PetscPrintf(PETSC_COMM_SELF, "[%d] Sequence Start: %D, End: %D\n", rank, dmb2->seqstart, dmb2->seqend);
+  
   /* Loop through the local elements and compute the relation between the current parent and the refined_level. */
   for(moab::Range::iterator iter = dmb1->elocal->begin(); iter!= dmb1->elocal->end(); iter++) {
 
@@ -206,37 +221,49 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
     merr = dmb1->hierarchy->get_connectivity(ehandle, dmb1->hlevel, connp);MBERRNM(merr);
     for (unsigned ic=0; ic < children.size(); ic++) {
       std::vector<moab::EntityHandle> tconnc;
-      /* Get coordinates of the parent vertices in canonical order */
+      /* Get handles of the parent vertices in canonical order and intersect */
       merr = dmb2->hierarchy->get_connectivity(children[ic], dmb2->hlevel, tconnc);MBERRNM(merr);
       for (unsigned tc=0; tc<tconnc.size(); tc++) {
         if (std::find(connc.begin(), connc.end(), tconnc[tc]) == connc.end())
           connc.push_back(tconnc[tc]);
       }
     }
+    //PetscPrintf(PETSC_COMM_SELF, "[%d] EntityHandle %d, children = %d, total intersection = %d\n", rank, ehandle, children.size(), connc.size());
 
     std::vector<int> dofsp(connp.size()), dofsc(connc.size());
     /* TODO: specific to scalar system - use GetDofs */
     //ierr = DMMoabGetFieldDofs(dm1, connp.size(), &connp[0], 0, &dofsp[0]);CHKERRQ(ierr);
     ierr = DMMoabGetFieldDofsLocal(dm2, connc.size(), &connc[0], 0, &dofsc[0]);CHKERRQ(ierr);
 
+    //PetscPrintf(PETSC_COMM_SELF, "[%d] EntityHandle %d, dofs [4] = %d, %d, %d, %d\n", rank, ehandle, dofsc[0], dofsc[1], dofsc[2], dofsc[3]);
+    // if (rank == 1) {
+    //   for (unsigned tp=0;tp<connc.size(); tp++)
+    //     PetscPrintf(PETSC_COMM_SELF, "[%d] EntityHandle %d \t %d  -- dofs [%d] = %d, %d\n", rank, ehandle, connc[tp]-dmb2->seqstart, tp, dmb2->gidmap[(PetscInt)connc[tp]-dmb2->seqstart], dofsc[tp]);
+    // }
     for (unsigned tp=0;tp<connp.size(); tp++) {
       // ierr = MatSetValues(*interpl, connc.size(), &dofsc[0], 1, &dofsp[i], &values_phi[0], ADD_VALUES);CHKERRQ(ierr);
       if (dmb1->vowned->find(connp[tp]) != dmb1->vowned->end()) {
-        for (unsigned tc=0;tc<connc.size(); tc++) nnz[dofsc[tc]]++;
+        for (unsigned tc=0;tc<connc.size(); tc++) {
+          nnz[dofsc[tc]]++;
+          //PetscPrintf(PETSC_COMM_SELF, "[%d] Found nnz coupling for %D = %d\n", rank, connp[tp], dofsc[tc]);
+        }
       }
       else if (dmb1->vghost->find(connp[tp]) != dmb1->vghost->end()) {
-        for (unsigned tc=0;tc<connc.size(); tc++) onz[dofsc[tc]]++;
+        for (unsigned tc=0;tc<connc.size(); tc++) {
+          onz[dofsc[tc]]++;
+          //PetscPrintf(PETSC_COMM_SELF, "[%d] Found onz coupling for %D = %d\n", rank, connp[tp], dofsc[tc]);
+        }
       }
-      else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid entity in parent level %D\n", connc[tp]);
+      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid entity in parent level %D\n", connc[tp]);
     }
-    for(int tc = 0; tc < connc.size(); tc++) {
+    for(unsigned tc = 0; tc < connc.size(); tc++) {
       if (dmb2->vowned->find(connc[tc]) != dmb2->vowned->end()) nnz[dofsc[tc]]++;
       else if (dmb2->vghost->find(connc[tc]) != dmb2->vghost->end()) onz[dofsc[tc]]++;
       else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid entity in child level %D\n", connc[tc]);
     }
   }
 
-  /*
+/*
   int i=0;
   std::vector<moab::EntityHandle> adjs;
   for(moab::Range::iterator iter = dmb1->vowned->begin(); iter!= dmb1->vowned->end(); iter++, i++) {
@@ -244,14 +271,17 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
     nnz[i] -= adjs.size();
     adjs.clear();
   }
+  i=0;
   for(moab::Range::iterator iter = dmb1->vghost->begin(); iter!= dmb1->vghost->end(); iter++, i++) {
     //merr = dmb1->hierarchy->get_adjacencies(&(*iter), 1, 0, false, adjs, moab::Interface::UNION);MBERRNM(merr);
     merr = dmb1->hierarchy->get_adjacencies(*iter, 0, adjs);MBERRNM(merr);
     onz[i] -= adjs.size();
     adjs.clear();
   }
-  */
+*/
 
+  PetscInt* ldofs = dmb2->lidmap;
+  PetscInt* gdofs = dmb2->gidmap;
   ionz=onz[0];
   innz=nnz[0];
   for (int tc=0; tc < nlsiz2; tc++) {
@@ -261,19 +291,35 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 
     innz = (innz < nnz[tc] ? nnz[tc] : innz);
     ionz = (ionz < onz[tc] ? onz[tc] : ionz);
-    //PetscPrintf(PETSC_COMM_SELF, "[%D] NNZ = %D, ONZ = %D\n", tc, nnz[tc], onz[tc]);
+    PetscPrintf(PETSC_COMM_SELF, "[%D]: %D NNZ = %D, ONZ = %D\n", rank, gdofs[ldofs[tc]], nnz[tc], onz[tc]);
   }
-  //PetscPrintf(PETSC_COMM_SELF, "Final: INNZ = %D, IONZ = %D\n", innz, ionz);
+  PetscPrintf(PETSC_COMM_SELF, "[%D]: Final: INNZ = %D, IONZ = %D\n", rank, innz, ionz);
 
+  MPI_Barrier(PETSC_COMM_WORLD);
+
+  /* create interpolation matrix */
+  PetscPrintf(PETSC_COMM_SELF, "[%D]: Creating matrix\n", rank);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm2), interpl);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_SELF, "[%D]: set sizes\n", rank);
+  ierr = MatSetSizes(*interpl, nlsiz2, ngsiz1, ngsiz2, ngsiz1);CHKERRQ(ierr);
+  //ierr = MatSetType(*interpl, dm1->mattype);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_SELF, "[%D]: set type\n", rank);
+  ierr = MatSetType(*interpl,MATAIJ);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_SELF, "[%D]: set from opts\n", rank);
+  ierr = MatSetFromOptions(*interpl);CHKERRQ(ierr);
+
+  PetscPrintf(PETSC_COMM_SELF, "[%D]: Setting prealloc\n", rank);
   ierr = MatSeqAIJSetPreallocation(*interpl,innz,nnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*interpl,innz,nnz,ionz,onz);CHKERRQ(ierr);
+  //ierr = MatMPIAIJSetPreallocation(*interpl,innz,0,ionz,0);CHKERRQ(ierr);
 
+  PetscPrintf(PETSC_COMM_SELF, "[%D]: Cleaning arrays\n", rank);
   /* clean up temporary memory */
   ierr = PetscFree2(nnz,onz);CHKERRQ(ierr);
 
   /* set up internal matrix data-structures */
   ierr = MatSetUp(*interpl);CHKERRQ(ierr);
-  ierr = MatZeroEntries(*interpl);CHKERRQ(ierr);
+  //ierr = MatZeroEntries(*interpl);CHKERRQ(ierr);
 
   ierr = DMGetDimension(dm1, &dim);CHKERRQ(ierr);
 
@@ -460,6 +506,7 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
   dd2->mbiface = dmb->mbiface;
   dd2->pcomm = dmb->pcomm;
   dd2->icreatedinstance = PETSC_FALSE;
+  dd2->nghostrings=dmb->nghostrings;
 
   /* set the new level based on refinement/coarsening */
   if (refine) {

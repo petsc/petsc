@@ -311,7 +311,6 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
 {
   PetscInt fraction=0,remainder=0;
   PetscFunctionBegin;
-  if(nele<nprocs) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
   /* Initialize all genCtx data */
   genCtx.dim=dim;
   genCtx.simplex=simplex;
@@ -521,6 +520,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   PetscOptionsEnd();
 
   ierr = DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele);CHKERRQ(ierr);
+
+  //if(nele<nprocs) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
 
   /* Lets check for some valid input */
   if (genCtx.dim < 1 || genCtx.dim > 3) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid topological dimension specified: %d.\n",genCtx.dim);

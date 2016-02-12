@@ -990,7 +990,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
     /* filter all the non-owned and shared entities out of the list */
     adjs = moab::subtract(*dmmoab->vlocal, *dmmoab->vowned);
-    merr = dmmoab->pcomm->filter_pstatus(adjs,PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
+    merr = dmmoab->pcomm->filter_pstatus(adjs,PSTATUS_GHOST|PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
     adjs = moab::subtract(adjs, *dmmoab->vghost);
     *dmmoab->vlocal = moab::subtract(*dmmoab->vlocal, adjs);
 
