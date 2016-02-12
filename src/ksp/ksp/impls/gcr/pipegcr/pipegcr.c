@@ -85,9 +85,7 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
   p = pipegcr->pvecs[0];
   s = pipegcr->svecs[0];
   q = pipegcr->qvecs[0];
-  if (pipegcr->unroll_w) {
-    t = pipegcr->tvecs[0];
-  }
+  t = pipegcr->unroll_w ? pipegcr->tvecs[0] : NULL;
 
   redux = pipegcr->redux;
   dots  = pipegcr->dots;
