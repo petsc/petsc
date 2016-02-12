@@ -4768,10 +4768,13 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
     PetscFunctionReturn(0);
   }
   if (!dm->dmBC) {
+    PetscDS      ds;
     PetscSection newSection, gsection;
     PetscSF      sf;
 
     ierr = DMClone(dm, &dm->dmBC);CHKERRQ(ierr);
+    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+    ierr = DMSetDS(dm->dmBC, ds);CHKERRQ(ierr);
     ierr = PetscSectionClone(section, &newSection);CHKERRQ(ierr);
     ierr = DMSetDefaultSection(dm->dmBC, newSection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&newSection);CHKERRQ(ierr);
