@@ -87,8 +87,8 @@ static PetscErrorCode PCBDDCSetChangeOfBasisMat_BDDC(PC pc, Mat change)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)change);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
   pcbddc->user_ChangeOfBasisMatrix = change;
   PetscFunctionReturn(0);
 }
@@ -145,14 +145,18 @@ PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change)
 static PetscErrorCode PCBDDCSetPrimalVerticesIS_BDDC(PC pc, IS PrimalVertices)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscBool      isequal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)PrimalVertices);CHKERRQ(ierr);
+  if (pcbddc->user_primal_vertices) {
+    ierr = ISEqual(PrimalVertices,pcbddc->user_primal_vertices,&isequal);CHKERRQ(ierr);
+  }
   ierr = ISDestroy(&pcbddc->user_primal_vertices);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)PrimalVertices);CHKERRQ(ierr);
   pcbddc->user_primal_vertices = PrimalVertices;
-  pcbddc->recompute_topography = PETSC_TRUE;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -190,14 +194,18 @@ PetscErrorCode PCBDDCSetPrimalVerticesIS(PC pc, IS PrimalVertices)
 static PetscErrorCode PCBDDCSetPrimalVerticesLocalIS_BDDC(PC pc, IS PrimalVertices)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscBool      isequal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)PrimalVertices);CHKERRQ(ierr);
+  if (pcbddc->user_primal_vertices_local) {
+    ierr = ISEqual(PrimalVertices,pcbddc->user_primal_vertices_local,&isequal);CHKERRQ(ierr);
+  }
   ierr = ISDestroy(&pcbddc->user_primal_vertices);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)PrimalVertices);CHKERRQ(ierr);
   pcbddc->user_primal_vertices_local = PrimalVertices;
-  pcbddc->recompute_topography = PETSC_TRUE;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -414,16 +422,20 @@ PetscErrorCode PCBDDCSetNullSpace(PC pc,MatNullSpace NullSpace)
 #define __FUNCT__ "PCBDDCSetDirichletBoundaries_BDDC"
 static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBoundaries)
 {
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscBool      isequal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)DirichletBoundaries);CHKERRQ(ierr);
+  if (pcbddc->DirichletBoundaries) {
+    ierr = ISEqual(DirichletBoundaries,pcbddc->DirichletBoundaries,&isequal);CHKERRQ(ierr);
+  }
   /* last user setting takes precendence -> destroy any other customization */
   ierr = ISDestroy(&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)DirichletBoundaries);CHKERRQ(ierr);
   pcbddc->DirichletBoundaries = DirichletBoundaries;
-  pcbddc->recompute_topography = PETSC_TRUE;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -462,16 +474,20 @@ PetscErrorCode PCBDDCSetDirichletBoundaries(PC pc,IS DirichletBoundaries)
 #define __FUNCT__ "PCBDDCSetDirichletBoundariesLocal_BDDC"
 static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc,IS DirichletBoundaries)
 {
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscBool      isequal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)DirichletBoundaries);CHKERRQ(ierr);
+  if (pcbddc->DirichletBoundariesLocal) {
+    ierr = ISEqual(DirichletBoundaries,pcbddc->DirichletBoundariesLocal,&isequal);CHKERRQ(ierr);
+  }
   /* last user setting takes precendence -> destroy any other customization */
   ierr = ISDestroy(&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)DirichletBoundaries);CHKERRQ(ierr);
   pcbddc->DirichletBoundariesLocal = DirichletBoundaries;
-  pcbddc->recompute_topography = PETSC_TRUE;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -509,16 +525,20 @@ PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC pc,IS DirichletBoundaries)
 #define __FUNCT__ "PCBDDCSetNeumannBoundaries_BDDC"
 static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries)
 {
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscBool      isequal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
+  if (pcbddc->NeumannBoundaries) {
+    ierr = ISEqual(NeumannBoundaries,pcbddc->NeumannBoundaries,&isequal);CHKERRQ(ierr);
+  }
   /* last user setting takes precendence -> destroy any other customization */
   ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
   pcbddc->NeumannBoundaries = NeumannBoundaries;
-  pcbddc->recompute_topography = PETSC_TRUE;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -557,16 +577,20 @@ PetscErrorCode PCBDDCSetNeumannBoundaries(PC pc,IS NeumannBoundaries)
 #define __FUNCT__ "PCBDDCSetNeumannBoundariesLocal_BDDC"
 static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc,IS NeumannBoundaries)
 {
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscBool      isequal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
+  if (pcbddc->NeumannBoundariesLocal) {
+    ierr = ISEqual(NeumannBoundaries,pcbddc->NeumannBoundariesLocal,&isequal);CHKERRQ(ierr);
+  }
   /* last user setting takes precendence -> destroy any other customization */
   ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
   pcbddc->NeumannBoundariesLocal = NeumannBoundaries;
-  pcbddc->recompute_topography = PETSC_TRUE;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -776,23 +800,32 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PCBDDCGraph    mat_graph = pcbddc->mat_graph;
+  PetscBool      same_data = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* free old CSR */
-  ierr = PCBDDCGraphResetCSR(mat_graph);CHKERRQ(ierr);
-  /* TODO: PCBDDCGraphSetAdjacency */
-  /* get CSR into graph structure */
-  if (copymode == PETSC_COPY_VALUES) {
-    ierr = PetscMalloc1(nvtxs+1,&mat_graph->xadj);CHKERRQ(ierr);
-    ierr = PetscMalloc1(xadj[nvtxs],&mat_graph->adjncy);CHKERRQ(ierr);
-    ierr = PetscMemcpy(mat_graph->xadj,xadj,(nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(mat_graph->adjncy,adjncy,xadj[nvtxs]*sizeof(PetscInt));CHKERRQ(ierr);
-  } else if (copymode == PETSC_OWN_POINTER) {
-    mat_graph->xadj = (PetscInt*)xadj;
-    mat_graph->adjncy = (PetscInt*)adjncy;
+  if (mat_graph->nvtxs_csr == nvtxs) {
+    if (mat_graph->xadj == xadj && mat_graph->adjncy == adjncy) same_data = PETSC_TRUE;
+    if (!same_data && mat_graph->xadj[nvtxs] == xadj[nvtxs]) {
+      ierr = PetscMemcmp(adjncy,mat_graph->adjncy,nvtxs*sizeof(PetscInt),&same_data);CHKERRQ(ierr);
+    }
   }
-  mat_graph->nvtxs_csr = nvtxs;
+  if (!same_data) {
+    /* free old CSR */
+    ierr = PCBDDCGraphResetCSR(mat_graph);CHKERRQ(ierr);
+    /* get CSR into graph structure */
+    if (copymode == PETSC_COPY_VALUES) {
+      ierr = PetscMalloc1(nvtxs+1,&mat_graph->xadj);CHKERRQ(ierr);
+      ierr = PetscMalloc1(xadj[nvtxs],&mat_graph->adjncy);CHKERRQ(ierr);
+      ierr = PetscMemcpy(mat_graph->xadj,xadj,(nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemcpy(mat_graph->adjncy,adjncy,xadj[nvtxs]*sizeof(PetscInt));CHKERRQ(ierr);
+    } else if (copymode == PETSC_OWN_POINTER) {
+      mat_graph->xadj = (PetscInt*)xadj;
+      mat_graph->adjncy = (PetscInt*)adjncy;
+    }
+    mat_graph->nvtxs_csr = nvtxs;
+    pcbddc->recompute_topography = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -842,11 +875,23 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
 #define __FUNCT__ "PCBDDCSetDofsSplittingLocal_BDDC"
 static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc,PetscInt n_is, IS ISForDofs[])
 {
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
-  PetscInt i;
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscInt       i;
+  PetscBool      isequal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (pcbddc->n_ISForDofsLocal == n_is) {
+    for (i=0;i<n_is;i++) {
+      PetscBool isequalt;
+      ierr = ISEqual(ISForDofs[i],pcbddc->ISForDofsLocal[i],&isequalt);CHKERRQ(ierr);
+      if (!isequalt) break;
+    }
+    if (i == n_is) isequal = PETSC_TRUE;
+  }
+  for (i=0;i<n_is;i++) {
+    ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
+  }
   /* Destroy ISes if they were already set */
   for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
     ierr = ISDestroy(&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
@@ -863,12 +908,11 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc,PetscInt n_is, IS I
     ierr = PetscMalloc1(n_is,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
   }
   for (i=0;i<n_is;i++) {
-    ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
-    pcbddc->ISForDofsLocal[i]=ISForDofs[i];
+    pcbddc->ISForDofsLocal[i] = ISForDofs[i];
   }
-  pcbddc->n_ISForDofsLocal=n_is;
+  pcbddc->n_ISForDofsLocal = n_is;
   if (n_is) pcbddc->user_provided_isfordofs = PETSC_TRUE;
-  pcbddc->recompute_topography = PETSC_TRUE;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -912,11 +956,23 @@ PetscErrorCode PCBDDCSetDofsSplittingLocal(PC pc,PetscInt n_is, IS ISForDofs[])
 #define __FUNCT__ "PCBDDCSetDofsSplitting_BDDC"
 static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForDofs[])
 {
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
-  PetscInt i;
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscInt       i;
+  PetscBool      isequal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (pcbddc->n_ISForDofs == n_is) {
+    for (i=0;i<n_is;i++) {
+      PetscBool isequalt;
+      ierr = ISEqual(ISForDofs[i],pcbddc->ISForDofs[i],&isequalt);CHKERRQ(ierr);
+      if (!isequalt) break;
+    }
+    if (i == n_is) isequal = PETSC_TRUE;
+  }
+  for (i=0;i<n_is;i++) {
+    ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
+  }
   /* Destroy ISes if they were already set */
   for (i=0;i<pcbddc->n_ISForDofs;i++) {
     ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
@@ -933,12 +989,11 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
     ierr = PetscMalloc1(n_is,&pcbddc->ISForDofs);CHKERRQ(ierr);
   }
   for (i=0;i<n_is;i++) {
-    ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
-    pcbddc->ISForDofs[i]=ISForDofs[i];
+    pcbddc->ISForDofs[i] = ISForDofs[i];
   }
-  pcbddc->n_ISForDofs=n_is;
+  pcbddc->n_ISForDofs = n_is;
   if (n_is) pcbddc->user_provided_isfordofs = PETSC_TRUE;
-  pcbddc->recompute_topography = PETSC_TRUE;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1409,6 +1464,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->recompute_topography) {
     computetopography = PETSC_TRUE;
   }
+  pcbddc->recompute_topography = computetopography;
   computeconstraintsmatrix = PETSC_FALSE;
 
   /* check parameters' compatibility */
@@ -1625,6 +1681,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     /* SetUp Scaling operator */
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
+  pcbddc->recompute_topography = PETSC_FALSE;
 
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
