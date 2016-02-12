@@ -2986,7 +2986,9 @@ PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const
 #define __FUNCT__ "DMCreateCoordinateDM_Plex"
 PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
 {
-  PetscSection   section;
+  PetscSection   section, s;
+  Mat            m;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2994,6 +2996,11 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*cdm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_SELF, &s);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF, &m);CHKERRQ(ierr);
+  ierr = DMSetDefaultConstraints(*cdm, s, m);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
+  ierr = MatDestroy(&m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
