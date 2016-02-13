@@ -490,6 +490,10 @@ class Package(config.base.Configure):
         return 1
     return 0
 
+  def gitPreReqCheck(self):
+    '''Some packages may need addition prerequisites if the package comes from a git repository'''
+    return 1
+
   def updatehgDir(self):
     '''Checkout the correct hash'''
     if hasattr(self.sourceControl, 'hg') and (self.packageDir == os.path.join(self.externalPackagesDir,'hg.'+self.package)):
@@ -575,7 +579,12 @@ class Package(config.base.Configure):
       if url.startswith('git://'):
         if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
         if not hasattr(self.sourceControl, 'git'):
+          self.logPrint('Git not found - required for url: '+url+'\n')
           err += 'Git not found - required for url: '+url+'\n'
+          continue
+        elif not self.gitPreReqCheck():
+          err += 'Git prerequisite check failed for url: '+url+'\n'
+          self.logPrint('Git prerequisite check failed - required for url: '+url+'\n')
           continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
