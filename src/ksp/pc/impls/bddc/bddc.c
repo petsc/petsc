@@ -1520,7 +1520,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->benign_saddle_point) {
     PC_IS* pcis = (PC_IS*)pc->data;
 
-    if (pcbddc->user_ChangeOfBasisMatrix || pcbddc->use_change_of_basis) pcbddc->benign_change_explicit = PETSC_TRUE;
+    if (pcbddc->user_ChangeOfBasisMatrix || pcbddc->use_change_of_basis || !computesubschurs) pcbddc->benign_change_explicit = PETSC_TRUE;
     /* detect local saddle point and change the basis in pcbddc->local_mat */
     ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
     /* pop B0 mat from local mat */
