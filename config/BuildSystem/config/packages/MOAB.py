@@ -27,7 +27,7 @@ class Configure(config.package.GNUPackage):
 
   def gitPreReqCheck(self):
     '''MOAB from the git repository needs the GNU autotools'''
-    return self.programs.autoreconf and self.programs.librarize
+    return self.programs.autoreconf and self.programs.libtoolize
 
   def formGNUConfigureArgs(self):
     '''Add MOAB specific configure arguments'''
