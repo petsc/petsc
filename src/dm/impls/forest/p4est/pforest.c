@@ -2107,10 +2107,12 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
                   ierr = DMPlexReferenceTreeGetChildSymmetry(refTree,parent,parentOrnt,ornt,point,pointClosure[2 * rcl + 1],NULL,&newcid);CHKERRQ(ierr);
                 }
               }
-              if (canonical && newcid >= 0) {
-                ierr = DMLabelGetValue(canonical,newcid,&newcid);CHKERRQ(ierr);
+              if (newcid >= 0) {
+                if (canonical) {
+                  ierr = DMLabelGetValue(canonical,newcid,&newcid);CHKERRQ(ierr);
+                }
+                cids[pointClosure[2 * cl] - pStartF] = newcid;
               }
-              cids[pointClosure[2 * cl]] = newcid;
             }
             ierr = DMPlexRestoreTransitiveClosure(plexF,c,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
           }
@@ -2303,9 +2305,13 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
       ierr = PetscSFDestroy(&pointTransferSF);CHKERRQ(ierr);
     }
     if (childIds) {
+      PetscSF  sf;
       PetscInt child;
 
       ierr = DMPlexGetReferenceTree(plexF,&refTree);CHKERRQ(ierr);
+      ierr = DMGetPointSF(plexF,&sf);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(sf,MPIU_INT,cids,cids,MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf,MPIU_INT,cids,cids,MPIU_MAX);CHKERRQ(ierr);
       *childIds = cids;
       for (child = 0; child < P4EST_CHILDREN; child++) {
         ierr = DMPlexRestoreTransitiveClosure(refTree,child+1,PETSC_TRUE,NULL,&childClosures[child]);CHKERRQ(ierr);
@@ -3128,7 +3134,7 @@ static PetscErrorCode DMCoarsen_pforest(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionReturn(0);
 }
 
-#define DMCreateInterpolation_pforest         _append_pforest(DMCreateInterpolation)
+#define DMCreateInterpolation_pforest _append_pforest(DMCreateInterpolation)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateInterpolation_pforest)
 static PetscErrorCode DMCreateInterpolation_pforest (DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling)
@@ -3153,11 +3159,15 @@ static PetscErrorCode DMCreateInterpolation_pforest (DM dmCoarse, DM dmFine, Mat
     SETERRQ(PetscObjectComm((PetscObject)dmFine),PETSC_ERR_SUP,"Only interpolation to coarse DM for now");
   }
   {
-    PetscSF sf;
-    PetscInt *cids;
-    PetscInt dofPerDim[4] = {1,1,1,1};
+    DM           plexF, plexC;
+    PetscSF      sf;
+    PetscInt     *cids;
+    PetscInt     dofPerDim[4] = {1,1,1,1};
 
+    ierr = DMPforestGetPlex(dmCoarse,&plexC);CHKERRQ(ierr);
+    ierr = DMPforestGetPlex(dmFine,&plexF);CHKERRQ(ierr);
     ierr = DMPforestGetTransferSF_Internal(dmCoarse, dmFine, dofPerDim, &sf, PETSC_TRUE, &cids);CHKERRQ(ierr);
+    ierr = DMPlexComputeInterpolatorTree(plexC, plexF, sf, cids, *interpolation);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
     ierr = PetscFree(cids);
   }
