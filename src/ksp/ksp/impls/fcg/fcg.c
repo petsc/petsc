@@ -404,7 +404,7 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
   Level: advanced
 
   Options Database:
-. -ksp_fcg_nprealloc <N>
+. -ksp_fcg_nprealloc <N> - number of directions to preallocate
 
 .seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGGetNprealloc()
 @*/
@@ -432,9 +432,6 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 
    Output Parameter:
 .  nprealloc - the number of directions preallocated
-
-  Options Database:
-. -ksp_fcg_nprealloc <N>
 
    Level: advanced
 
@@ -469,7 +466,7 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Level: intermediate
 
   Options Database:
-. -ksp_fcg_truncation_type <standard, notay>
+. -ksp_fcg_truncation_type <standard, notay> - specify how many of its stored previous directions FCG uses during orthoganalization
 
   .seealso: KSPFCDTruncationType, KSPFCGGetTruncationType
 @*/
@@ -496,9 +493,6 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
 
    Output Parameter:
 .  truncstrat - the strategy type
-
-  Options Database:
-. -ksp_fcg_truncation_type <standard, notay>
 
    Level: intermediate
 
@@ -544,9 +538,9 @@ PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ks
       KSPFCG - Implements the Flexible Conjugate Gradient method (FCG)
 
   Options Database Keys:
-+   -ksp_fcg_mmax <N>
-.   -ksp_fcg_nprealloc <N>
--   -ksp_fcg_truncation_type <standard,notay>
++   -ksp_fcg_mmax <N>  - maximum number of search directions
+.   -ksp_fcg_nprealloc <N> - number of directions to preallocate
+-   -ksp_fcg_truncation_type <standard,notay> - truncation approach for directions
 
     Contributed by Patrick Sanan
 

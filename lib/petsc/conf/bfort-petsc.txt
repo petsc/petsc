@@ -6,7 +6,7 @@ native DMBoundaryType
 native PetscDrawMarkerType
 native ISGlobalToLocalMappingType
 native ISColoringType
-native KSPFCGTruncationType
+native KSPFCDTruncationType
 native KSPGMRESCGSRefinementType
 native KSPNormType
 native KSPCGType
