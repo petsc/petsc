@@ -115,12 +115,11 @@ class Configure(config.base.Configure):
       if arg.startswith('--download-') and arg.find('=') > -1:
         pname = arg[11:arg.find('=')]
         if not hasattr(self,pname):
-          self.framework.logPrint('User is registering a new package: '+arg)
           dname = os.path.dirname(arg[arg.find('=')+1:])
-          if not os.path.isfile(os.path.join(dname,pname+'.py')):
-            raise RuntimeError('You provided --download-'+pname+' but there is no '+pname+'.py file in the directory '+dname+' provided')
-          sys.path.append(dname)
-          self.registerPythonFile(pname+'.py','')
+          if os.path.isdir(dname) and not os.path.isfile(os.path.join(dname,pname+'.py')):
+            self.framework.logPrint('User is registering a new package: '+arg)
+            sys.path.append(dname)
+            self.registerPythonFile(pname+'.py','')
 
     # test for a variety of basic headers and functions
     headersC = map(lambda name: name+'.h', ['setjmp','dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
