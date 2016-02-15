@@ -2988,7 +2988,6 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
 {
   PetscSection   section, s;
   Mat            m;
-  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4564,7 +4563,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
     if (outOffsets) {
       PetscInt f;
 
-      for (f = 0; f < Nf; f++) {
+      for (f = 0; f <= Nf; f++) {
         outOffsets[f] = offsets[f];
       }
     }
@@ -4593,7 +4592,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexRestoreClosureIndices"
-PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSection globalSection, PetscInt point, PetscInt *numIndices, PetscInt **indices)
+PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSection globalSection, PetscInt point, PetscInt *numIndices, PetscInt **indices,PetscInt *outOffsets)
 {
   PetscErrorCode ierr;
 

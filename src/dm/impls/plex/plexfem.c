@@ -1562,7 +1562,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           if (key.j < 0) continue;
           /* Get indices for coarse elements */
           for (ccell = 0; ccell < numCoarseCells; ++ccell) {
-            ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
+            ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices, NULL);CHKERRQ(ierr);
             for (c = 0; c < numCIndices; ++c) {
               key.k = cindices[c];
               if (key.k < 0) continue;
@@ -1573,14 +1573,14 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
                 else                                     ++onz[key.j-rStart];
               }
             }
-            ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices);CHKERRQ(ierr);CHKERRQ(ierr);
+            ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices, NULL);CHKERRQ(ierr);
           }
         }
         ierr = ISRestoreIndices(coarseCellIS, &coarseCells);CHKERRQ(ierr);
         ierr = ISDestroy(&coarseCellIS);CHKERRQ(ierr);
         ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
       }
-      ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
     }
   }
   ierr = PetscHashJKDestroy(&ht);CHKERRQ(ierr);
@@ -1672,14 +1672,14 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           /* Update interpolator */
           if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(cell, name, Nc, numCIndices, elemMat);CHKERRQ(ierr);}
           ierr = MatSetValues(In, Nc, &findices[i*Nc], numCIndices, cindices, elemMat, INSERT_VALUES);CHKERRQ(ierr);
-          ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices);CHKERRQ(ierr);CHKERRQ(ierr);
+          ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices, NULL);CHKERRQ(ierr);
         }
         ierr = VecRestoreArray(pointVec, &pV);CHKERRQ(ierr);
         ierr = ISRestoreIndices(coarseCellIS, &coarseCells);CHKERRQ(ierr);
         ierr = ISDestroy(&coarseCellIS);CHKERRQ(ierr);
         ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
       }
-      ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
