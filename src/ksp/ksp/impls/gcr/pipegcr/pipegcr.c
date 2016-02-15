@@ -395,8 +395,7 @@ PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
     note that mmax is the number of previous directions, so we add 1 for the current direction */
   ierr = PetscMalloc6(pipegcr->mmax+1,&(pipegcr->pvecs),pipegcr->mmax+1,&(pipegcr->ppvecs),pipegcr->mmax+1,&(pipegcr->svecs), pipegcr->mmax+1,&(pipegcr->psvecs),pipegcr->mmax+1,&(pipegcr->qvecs),pipegcr->mmax+1,&(pipegcr->pqvecs));CHKERRQ(ierr);
   if (pipegcr->unroll_w) {
-    ierr = PetscMalloc2(pipegcr->mmax+1,&(pipegcr->tvecs),pipegcr->mmax+1,&(pipegcr->ptvecs));CHKERRQ(ierr);
-    ierr = PetscMalloc1(pipegcr->mmax+2,&(pipegcr->told));CHKERRQ(ierr);
+    ierr = PetscMalloc3(pipegcr->mmax+1,&(pipegcr->tvecs),pipegcr->mmax+1,&(pipegcr->ptvecs),pipegcr->mmax+2,&(pipegcr->told));CHKERRQ(ierr);
   }
   ierr = PetscMalloc4(pipegcr->mmax+2,&(pipegcr->pold),pipegcr->mmax+2,&(pipegcr->sold),pipegcr->mmax+2,&(pipegcr->qold),pipegcr->mmax+2,&(pipegcr->chunksizes));CHKERRQ(ierr);
   ierr = PetscMalloc3(pipegcr->mmax+2,&(pipegcr->dots),pipegcr->mmax+1,&(pipegcr->etas),pipegcr->mmax+2,&(pipegcr->redux));CHKERRQ(ierr); 
@@ -459,10 +458,10 @@ PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   }
 
   ierr = PetscFree6(pipegcr->pvecs,pipegcr->ppvecs,pipegcr->svecs,pipegcr->psvecs,pipegcr->qvecs,pipegcr->pqvecs);CHKERRQ(ierr);
-  ierr = PetscFree5(pipegcr->pold,pipegcr->sold,pipegcr->qold,pipegcr->told,pipegcr->chunksizes);CHKERRQ(ierr);
+  ierr = PetscFree4(pipegcr->pold,pipegcr->sold,pipegcr->qold,pipegcr->chunksizes);CHKERRQ(ierr);
   ierr = PetscFree3(pipegcr->dots,pipegcr->etas,pipegcr->redux);CHKERRQ(ierr);
   if (pipegcr->unroll_w) {
-    ierr = PetscFree2(pipegcr->tvecs,pipegcr->ptvecs);CHKERRQ(ierr);
+    ierr = PetscFree3(pipegcr->tvecs,pipegcr->ptvecs,pipegcr->told);CHKERRQ(ierr);
   }
 
   ierr = KSPReset_PIPEGCR(ksp);CHKERRQ(ierr);
