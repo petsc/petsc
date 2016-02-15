@@ -45,8 +45,8 @@ typedef struct {
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
-  PetscBool                         userJacobian;  /* Global flag for using user's sub Jacobians */
-  Mat                               *jacobian;     /* Pointer array to hold local sub Jacobians */
+  PetscBool                         userEdgeJacobian,userVertexJacobian;  /* Global flag for using user's sub Jacobians */
+  Mat                               *Je,*Jv;  /* Pointer array to hold local sub Jacobians for edges and vertices */
 } DM_Network;
 
 #endif /* _NETWORKIMPL_H */
