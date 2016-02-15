@@ -40,10 +40,13 @@ typedef struct {
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
   Vec          *VecDeltaLam;     /* Increment of the adjoint sensitivity w.r.t IC at stage*/ 
   Vec          *VecDeltaMu;      /* Increment of the adjoint sensitivity w.r.t P at stage*/ 
-  Vec          *VecSensiTemp;    /* Vector to be timed with Jacobian transpose*/ 
+  Vec          *VecSensiTemp;    /* Vector to be timed with Jacobian transpose*/
+  Vec          VecCostIntegral0;          /* backup for roll-backs due to events */
   PetscScalar  *work;            /* Scalar work */
   PetscReal    stage_time;
   TSStepStatus status;
+  PetscReal    ptime;
+  PetscReal    time_step;
 } TS_RK;
 
 /*MC
@@ -394,6 +397,9 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*(tab->bembed[j] - tab->b[j]);
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
+      if (ts->vec_costintegral && ts->costintegralfwd) {
+        ierr = VecCopy(rk->VecCostIntegral0,ts->vec_costintegral);CHKERRQ(ierr);
+      }
     }
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -401,6 +407,50 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
 unavailable:
   if (done) *done = PETSC_FALSE;
   else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"RK '%s' of order %D cannot evaluate step at order %D",tab->name,tab->order,order);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSForwardCostIntegral_RK"
+static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
+{
+  TS_RK           *rk = (TS_RK*)ts->data;
+  RKTableau       tab = rk->tableau;
+  const PetscInt  s = tab->s;
+  const PetscReal *b = tab->b,*c = tab->c;
+  Vec             *Y = rk->Y;
+  PetscInt        i;
+  PetscErrorCode  ierr;
+    
+  PetscFunctionBegin;
+  /* backup cost integral */
+  ierr = VecCopy(ts->vec_costintegral,rk->VecCostIntegral0);CHKERRQ(ierr);
+  for (i=s-1; i>=0; i--) {
+    /* Evolve ts->vec_costintegral to compute integrals */
+    ierr = TSAdjointComputeCostIntegrand(ts,rk->ptime+rk->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = VecAXPY(ts->vec_costintegral,rk->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointCostIntegral_RK"
+static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
+{
+  TS_RK           *rk = (TS_RK*)ts->data;
+  RKTableau       tab = rk->tableau;
+  const PetscInt  s = tab->s;
+  const PetscReal *b = tab->b,*c = tab->c;
+  Vec             *Y = rk->Y;
+  PetscInt        i;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  for (i=s-1; i>=0; i--) {
+    /* Evolve ts->vec_costintegral to compute integrals */
+    ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime-ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -454,14 +504,10 @@ static PetscErrorCode TSStep_RK(TS ts)
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
     if (accept) {
-      if (ts->costintegralfwd) {
-        /* Evolve ts->vec_costintegral to compute integrals */
-        for (i=0; i<s; i++) {
-          ierr = TSAdjointComputeCostIntegrand(ts,t+h*c[i],Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
-          ierr = VecAXPY(ts->vec_costintegral,h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
-        }
+      if (ts->costintegralfwd) { /* Save the info for the later use in cost integral evaluation*/
+        rk->ptime     = ts->ptime;
+        rk->time_step = ts->time_step;
       }
-
       /* ignore next_scheme for now */
       ts->ptime    += ts->time_step;
       ts->time_step = next_time_step;
@@ -536,11 +582,6 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
     ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,rk->stage_time,Y[i],ts->vecs_drdy);CHKERRQ(ierr);
-      if (!ts->costintegralfwd) {
-        /* Evolve ts->vec_costintegral to compute integrals */
-        ierr = TSAdjointComputeCostIntegrand(ts,rk->stage_time,Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
-        ierr = VecAXPY(ts->vec_costintegral,-h*b[i],ts->vec_costintegrand);CHKERRQ(ierr);   
-      }
     }
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
@@ -572,7 +613,6 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
       ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
     }
   }
-  ts->ptime += ts->time_step;
   ts->steps++;
   rk->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
@@ -631,6 +671,9 @@ static PetscErrorCode TSReset_RK(TS ts)
   s    = rk->tableau->s;
   ierr = VecDestroyVecs(s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&rk->YdotRHS);CHKERRQ(ierr);
+  if (rk->VecCostIntegral0) {
+    ierr = VecDestroy(&rk->VecCostIntegral0);CHKERRQ(ierr);
+  }
   ierr = VecDestroyVecs(s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->numcost,&rk->VecSensiTemp);CHKERRQ(ierr);
@@ -724,6 +767,9 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   DM             dm;
 
   PetscFunctionBegin;
+  if (!rk->VecCostIntegral0 && ts->vec_costintegral && ts->costintegralfwd) { /* back up cost integral */
+    ierr = VecDuplicate(ts->vec_costintegral,&rk->VecCostIntegral0);CHKERRQ(ierr);
+  }
   if (!rk->tableau) {
     ierr = TSRKSetType(ts,TSRKDefault);CHKERRQ(ierr);
   }
@@ -974,6 +1020,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_RK;
   ts->ops->getstages      = TSGetStages_RK;
   ts->ops->adjointstep    = TSAdjointStep_RK;
+    
+  ts->ops->adjointintegral = TSAdjointCostIntegral_RK;
+  ts->ops->forwardintegral = TSForwardCostIntegral_RK;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

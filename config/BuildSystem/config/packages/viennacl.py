@@ -4,13 +4,13 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://downloads.sourceforge.net/project/viennacl/1.7.x/ViennaCL-1.7.0.tar.gz',
-                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ViennaCL-1.7.0.tar.gz' ]
-    self.downloadfilename = str('ViennaCL-1.7.0')
-    self.includes        = ['viennacl/forwards.h']
-    self.cxx             = 1
+    self.download          = ['http://downloads.sourceforge.net/project/viennacl/1.7.x/ViennaCL-1.7.0.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ViennaCL-1.7.0.tar.gz' ]
+    self.downloaddirname   = str('ViennaCL-1.7.0')
+    self.includes          = ['viennacl/forwards.h']
+    self.cxx               = 1
     self.downloadonWindows = 1
-    self.complex          = 0
+    self.complex           = 0
     return
 
   def setupDependencies(self, framework):

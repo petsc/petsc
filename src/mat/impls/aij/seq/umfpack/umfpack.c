@@ -121,8 +121,10 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   const PetscScalar *ba;
   PetscErrorCode    ierr;
   PetscInt          *ai = a->i,*aj = a->j,status;
+  static PetscBool  cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("@article{davis2004algorithm,\n  title={Algorithm 832: {UMFPACK} V4.3---An Unsymmetric-Pattern Multifrontal Method},\n  author={Davis, Timothy A},\n  journal={ACM Transactions on Mathematical Software (TOMS)},\n  volume={30},\n  number={2},\n  pages={196--199},\n  year={2004},\n  publisher={ACM}\n}\n",&cite);CHKERRQ(ierr);
   /* solve Ax = b by umfpack_*_wsolve */
   /* ----------------------------------*/
 

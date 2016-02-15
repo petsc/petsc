@@ -2,7 +2,6 @@
 
 configure_options = [
   '--with-debugging=0',
-  '--download-fblaslapack=1',
   '--download-hypre=1',
   '--download-metis=1',
   '--download-parmetis=1',
@@ -12,7 +11,7 @@ configure_options = [
   '--with-clanguage=C++',
   '--with-cxx-dialect=C++11',
   '--download-sowing=1',
-  '--download-boost=1',
+  '--with-boost-dir=/usr/local',
   '--download-cmake=1'
   ]
 

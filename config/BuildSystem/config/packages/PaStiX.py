@@ -9,7 +9,7 @@ class Configure(config.package.Package):
                             ['libpastix.a','libpthread.a','librt.a']]
     self.functions        = ['pastix']
     self.includes         = ['pastix.h']
-    self.downloadfilename = 'pastix'
+    self.downloaddirname  = 'pastix'
     self.fc               = 1
     self.hastests         = 1
     self.hastestsdatafiles= 1

@@ -1,7 +1,9 @@
 import config.base
 
 import os
+import sys
 import re
+import cPickle
 
 # The sorted() builtin is not available with python-2.3
 try: sorted
@@ -44,6 +46,22 @@ class Configure(config.base.Configure):
 
     return
 
+  def registerPythonFile(self,filename,directory):
+    ''' Add a python file to the framework and registers its headerprefix, ... externalpackagedir
+        directory is the directory where the file relative to the BuildSystem or config path in python notation with . '''
+    (utilityName, ext) = os.path.splitext(filename)
+    if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+      if directory: directory = directory+'.'
+      utilityObj                             = self.framework.require(directory+utilityName, self)
+      utilityObj.headerPrefix                = self.headerPrefix
+      utilityObj.archProvider                = self.arch
+      utilityObj.languageProvider            = self.languages
+      utilityObj.installDirProvider          = self.installdir
+      utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+      utilityObj.precisionProvider           = self.scalartypes
+      utilityObj.indexProvider               = self.indexTypes
+      setattr(self, utilityName.lower(), utilityObj)
+
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.programs      = framework.require('config.programs',           self)
@@ -52,6 +70,8 @@ class Configure(config.base.Configure):
     self.arch          = framework.require('PETSc.options.arch',        self.setCompilers)
     self.petscdir      = framework.require('PETSc.options.petscdir',    self.arch)
     self.installdir    = framework.require('PETSc.options.installDir',  self)
+    self.scalartypes   = framework.require('PETSc.options.scalarTypes', self)
+    self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
     self.debugging     = framework.require('PETSc.options.debugging',   self.compilers)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
@@ -68,40 +88,14 @@ class Configure(config.base.Configure):
     self.mpi           = framework.require('config.packages.MPI',self)
 
     for utility in os.listdir(os.path.join('config','PETSc','options')):
-      (utilityName, ext) = os.path.splitext(utility)
-      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-        utilityObj                    = self.framework.require('PETSc.options.'+utilityName, self)
-        utilityObj.headerPrefix       = self.headerPrefix
-        utilityObj.archProvider       = self.arch
-        utilityObj.languageProvider   = self.languages
-        utilityObj.installDirProvider = self.installdir
-        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
-        setattr(self, utilityName.lower(), utilityObj)
+      self.registerPythonFile(utility,'PETSc.options')
 
     for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
-      (utilityName, ext) = os.path.splitext(utility)
-      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-        utilityObj                    = self.framework.require('config.utilities.'+utilityName, self)
-        utilityObj.headerPrefix       = self.headerPrefix
-        utilityObj.archProvider       = self.arch
-        utilityObj.languageProvider   = self.languages
-        utilityObj.installDirProvider = self.installdir
-        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
-        setattr(self, utilityName.lower(), utilityObj)
+      self.registerPythonFile(utility,'config.utilities')
 
-    if os.path.isdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
-      for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
-        (packageName, ext) = os.path.splitext(package)
-        if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__' and not packageName == 'PETSc':
-          packageObj                    = framework.require('config.packages.'+packageName, self)
-          packageObj.headerPrefix       = self.headerPrefix
-          packageObj.archProvider       = self.arch
-          packageObj.languageProvider   = self.languages
-          packageObj.precisionProvider  = self.scalartypes
-          packageObj.indexProvider      = self.indexTypes
-          packageObj.installDirProvider = self.installdir
-          packageObj.externalPackagesDirProvider = self.externalpackagesdir
-          setattr(self, packageName.lower(), packageObj)
+    for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+      self.registerPythonFile(package,'config.packages')
+
     # Force blaslapack and opencl to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.options.scalarTypes', self.f2cblaslapack)
     framework.require('PETSc.options.scalarTypes', self.fblaslapack)
@@ -115,8 +109,19 @@ class Configure(config.base.Configure):
     self.headers.headerPrefix    = self.headerPrefix
     self.functions.headerPrefix  = self.headerPrefix
     self.libraries.headerPrefix  = self.headerPrefix
-    self.blaslapack.headerPrefix = self.headerPrefix
-    self.mpi.headerPrefix        = self.headerPrefix
+
+    # Look for any user provided --download-xxx=directory packages
+    for arg in sys.argv:
+      if arg.startswith('--download-') and arg.find('=') > -1:
+        pname = arg[11:arg.find('=')]
+        if not hasattr(self,pname):
+          dname = os.path.dirname(arg[arg.find('=')+1:])
+          if os.path.isdir(dname) and not os.path.isfile(os.path.join(dname,pname+'.py')):
+            self.framework.logPrint('User is registering a new package: '+arg)
+            sys.path.append(dname)
+            self.registerPythonFile(pname+'.py','')
+
+    # test for a variety of basic headers and functions
     headersC = map(lambda name: name+'.h', ['setjmp','dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
@@ -349,7 +354,7 @@ prepend-path PATH %s
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
-      libs.extend(i.lib)
+      if i.linkedbypetsc: libs.extend(i.lib)
       self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
@@ -565,8 +570,9 @@ prepend-path PATH %s
       includes  = []
       libvars   = []
       for pkg in self.framework.packages:
-        extendby(pkg.lib)
-        uniqextend(includes,pkg.include)
+        if pkg.linkedbypetsc:
+          extendby(pkg.lib)
+          uniqextend(includes,pkg.include)
       extendby(self.libraries.math)
       extendby(self.libraries.rt)
       extendby(self.compilers.flibs)
@@ -604,6 +610,8 @@ prepend-path PATH %s
     import sys
     self.cmakeboot_success = False
     if sys.version_info >= (2,4) and hasattr(self.cmake,'cmake'):
+      oldRead = self.argDB.readonly
+      self.argDB.readonly = True
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
@@ -611,6 +619,7 @@ prepend-path PATH %s
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
+      self.argDB.readonly = oldRead
       if self.cmakeboot_success:
         if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
           self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
@@ -1015,6 +1024,11 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     if postPackages:
       # ctetgen needs petsc conf files. so attempt to create them early
       self.framework.dumpConfFiles()
+      # tacky fix for dependency of Aluimia on Pflotran; requested via petsc-dev Matt provide a correct fix
+      for i in postPackages:
+        if i.name.upper() in ['PFLOTRAN']:
+          i.postProcess()
+          postPackages.remove(i)
       for i in postPackages: i.postProcess()
     return
 
@@ -1059,12 +1073,16 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()
-    self.postProcessPackages()
     self.dumpCMakeConfig()
     self.dumpCMakeLists()
+    # need to save the current state of BuildSystem so that postProcess() packages can read it in and perhaps run make install
+    self.framework.storeSubstitutions(self.framework.argDB)
+    self.framework.argDB['configureCache'] = cPickle.dumps(self.framework)
+    self.framework.argDB.save(force = True)
     self.cmakeBoot()
     self.DumpPkgconfig()
     self.DumpModule()
+    self.postProcessPackages()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return

@@ -19,9 +19,9 @@ row 15: (9, -1.)  (14, -1.)  (15, 4.)  (16, -1.)
 row 16: (10, -1.)  (15, -1.)  (16, 4.)  (17, -1.) 
 row 17: (11, -1.)  (16, -1.)  (17, 4.) 
 
-[1] Credundant:
-Mat Object: 1 MPI processes
-  type: seqbaij
+[0] Credundant:
+Mat Object: 2 MPI processes
+  type: mpibaij
 row 0: (0, 4.)  (1, -1.)  (6, -1.) 
 row 1: (0, -1.)  (1, 4.)  (2, -1.)  (7, -1.) 
 row 2: (1, -1.)  (2, 4.)  (3, -1.)  (8, -1.) 

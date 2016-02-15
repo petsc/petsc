@@ -1372,7 +1372,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   ierr = TSSetCostIntegrand(ts,1,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_FALSE,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSetSteps(ts,steps3);CHKERRQ(ierr);
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);

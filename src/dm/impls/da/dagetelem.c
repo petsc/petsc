@@ -208,7 +208,14 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 
    Level: intermediate
 
-.seealso: DMDAElementType, DMDASetElementType(), DMDARestoreElements(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
+   Notes:
+     Call DMDARestoreElements() once you have finished accessing the elements.
+
+     Each process uniquely owns a subset of the elements. That is no element is owned by two or more processes.
+
+     If on each process you integrate over its owned elements and use ADD_VALUES in Vec/MatSetValuesLocal() then you'll obtain the correct result.
+
+.seealso: DMDAElementType, DMDASetElementType(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetElements"
@@ -216,8 +223,10 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 {
   PetscInt       dim;
   PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
+  if (dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim==-1) {
     *nel = 0; *nen = 0; *e = NULL;
@@ -234,8 +243,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 #undef __FUNCT__
 #define __FUNCT__ "DMDARestoreElements"
 /*@C
-      DMDARestoreElements - Returns an array containing the indices (in local coordinates)
-                 of all the local elements obtained with DMDAGetElements()
+      DMDARestoreElements - Restores the array obtained with DMDAGetElements()
 
     Not Collective
 
@@ -247,6 +255,10 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 
    Level: intermediate
 
+   Note: You should not access these values after you have called this routine.
+
+         This restore signals the DMDA object that you no longer need access to the array information.
+
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements()
 @*/
 PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
@@ -256,6 +268,8 @@ PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const Pets
   PetscValidIntPointer(nel,2);
   PetscValidIntPointer(nen,3);
   PetscValidPointer(e,4);
-  /* XXX */
+  *nel = 0;
+  *nen = -1;
+  *e = NULL;
   PetscFunctionReturn(0);
 }

@@ -128,12 +128,30 @@ def chkenable():
         if tail == '1': tail = '0'
         sys.argv[l] = head.replace('without-','with-')+'='+tail
 
+def argsAddDownload(value,deps = [],options = []):
+  # Adds --download-value to args if the command line DOES NOT already has --with-value or --download-value in it
+  # this is to prevent introducing conflicting arguments to ones that already exist
+  for i in sys.argv:
+    if i.startswith('--with-'+value): return
+    if i.startswith('--download-'+value) and not i.startswith('--download-'+value+'-commit'): return
+  sys.argv.append('--download-'+value)
+  for i in deps:
+    argsAddDownload(i)
+  for i in options:
+    sys.argv.append(i)
 
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
+  downloadxsdk = 0
+  downloadideas = 0
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
 
+    if name.startswith('--download-xsdk'):
+      downloadxsdk = 1
+
+    if name.startswith('--download-ideas'):
+      downloadideas = 1
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
       if name.find('=') == -1:
@@ -162,6 +180,28 @@ def chksynonyms():
       head,tail = name.split('=',1)
       if tail.find('quad')>=0:
         sys.argv[l]='--with-precision=__float128'
+
+  if downloadideas:
+    downloadxsdk = 1
+    argsAddDownload('pflotran')
+    argsAddDownload('alquimia')
+    # mstk currently cannot build a shared library
+    argsAddDownload('mstk',[],['--download-mstk-shared=0'])
+    argsAddDownload('ascem-io')
+    argsAddDownload('unittestcpp')
+
+  if downloadxsdk:
+    # Common external libraries
+    argsAddDownload('hdf5')
+    argsAddDownload('netcdf')
+    argsAddDownload('exodusii')
+    argsAddDownload('metis')
+
+    argsAddDownload('superlu_dist',['parmetis'])
+
+    argsAddDownload('hypre')
+
+    argsAddDownload('trilinos',['boost'],['--with-cxx-dialect=C++11'])
 
 
 def chkwinf90():
