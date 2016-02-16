@@ -4477,7 +4477,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   else {
     ierr = DMRestoreWorkArray(dm,2*newNumPoints,PETSC_INT,&newPoints);CHKERRQ(ierr);
   }
-  if (*outValues) {
+  if (outValues) {
     *outValues = newValues;
   }
   for (f = 0; f <= numFields; f++) {
