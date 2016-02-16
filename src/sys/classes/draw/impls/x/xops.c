@@ -590,6 +590,7 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   if (!win) PetscFunctionReturn(0);
   ierr = PetscFree(win->font);CHKERRQ(ierr);
   if (win->disp) {
