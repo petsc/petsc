@@ -450,13 +450,14 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
   else range = userrange;
   if(!range) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Input range cannot be empty or call DMSetUp first.");
 
+#ifndef USE_NATIVE_PETSCVEC
   /* If the tag data is in a single sequence, use PETSc native vector since tag_iterate isn't useful anymore */
   lnative_vec=(range->psize()-1);
-
-#if 0
-//  lnative_vec=1; /* NOTE: Testing PETSc vector: will force to create native vector all the time */
+#else
+  lnative_vec=1; /* NOTE: Testing PETSc vector: will force to create native vector all the time */
 //  lnative_vec=0; /* NOTE: Testing MOAB vector: will force to create MOAB tag_iterate based vector all the time */
 #endif
+
 #ifdef MOAB_HAVE_MPI
   ierr = MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, (((PetscObject)dm)->comm));CHKERRQ(ierr);
 #else
@@ -468,8 +469,9 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
   vmoab->is_native_vec=(gnative_vec>0?PETSC_TRUE:PETSC_FALSE);
 
   if (!vmoab->is_native_vec) {
+    merr = moab::MB_SUCCESS;
     if (tag != 0) merr = mbiface->tag_get_name(tag, ttname);
-    if (!ttname.length() || merr !=moab::MB_SUCCESS) {
+    if (!ttname.length() || merr != moab::MB_SUCCESS) {
       /* get the new name for the anonymous MOABVec -> the tag_name will be destroyed along with Tag */
       char *tag_name = NULL;
 #ifdef MOAB_HAVE_MPI
@@ -580,9 +582,9 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
  *        the character array.
  */
 #ifdef MOAB_HAVE_MPI
-PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface  *mbiface, moab::ParallelComm *pcomm,char** tag_name)
+PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, moab::ParallelComm *pcomm, char** tag_name)
 #else
-PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface  *mbiface, char** tag_name)
+PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char** tag_name)
 #endif
 {
   moab::ErrorCode mberr;

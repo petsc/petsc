@@ -22,6 +22,12 @@ or pure Neumman boundary conditions
 Usage:
     ./ex36 -bc_type dirichlet -nu .01 -rho .01 -file input/quad_2p.h5m -dmmb_rw_dbg 0 -n 50
 
+Sovle the Laplace-Beltrami equations on the manifold surface of a volume ?
+https://www.dealii.org/developer/doxygen/deal.II/step_38.html
+
+OR
+
+http://www.maths.manchester.ac.uk/~mheil/doc/poisson/eighth_sphere_poisson/html/index.html
 */
 
 static char help[] = "\
@@ -78,8 +84,7 @@ int main(int argc,char **argv)
   MPI_Comm_size(PETSC_COMM_WORLD,&np);
 
   ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex36.cxx");
-  user.dim    = 3;
-  //ierr        = PetscOptionsInt("-dim", "The dimension of the problem", "ex36.cxx", user.dim, &user.dim, NULL);CHKERRQ(ierr);
+  user.dim    = 3; /* 3-Dimensional problem */
   user.n      = 2;
   ierr        = PetscOptionsInt("-n", "The elements in each direction", "ex36.cxx", user.n, &user.n, NULL);CHKERRQ(ierr);
   user.nlevels= 2;
@@ -191,9 +196,6 @@ int main(int argc,char **argv)
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
-  //VecView(b,0);
-  //VecView(x,0);
-
   if (error) {
     ierr = DMGetGlobalVector(dmref, &errv);CHKERRQ(ierr);
     ierr = ComputeDiscreteL2Error(ksp, errv, &user);CHKERRQ(ierr);
@@ -270,23 +272,6 @@ double ForcingFunction(PetscReal coords[3], UserContext* user)
 #if (PROBLEM == 1)
   return exact;
 #else
-  /*
-  const PetscReal eps = 1.e-6;
-
-  const PetscReal uxx = (exact_solution(coords[0]-eps,coords[1],coords[2]) +
-                    exact_solution(coords[0]+eps,coords[1],coords[2]) +
-                    -2.*exact)/eps/eps;
-
-  const PetscReal uyy = (exact_solution(coords[0],coords[1]-eps,coords[2]) +
-                    exact_solution(coords[0],coords[1]+eps,coords[2]) +
-                    -2.*exact)/eps/eps;
-
-  const PetscReal uzz = (exact_solution(coords[0],coords[1],coords[2]-eps) +
-                    exact_solution(coords[0],coords[1],coords[2]+eps) +
-                    -2.*exact)/eps/eps;
-  return - (uxx + uyy + uzz);
-  */
-  //return 1.0;
   return 3.0*PETSC_PI*PETSC_PI*exact;
 #endif
 }
@@ -349,10 +334,6 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 
     /* check if element is on the boundary */
     ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
-    //ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry);CHKERRQ(ierr);
-    //elem_on_boundary=PETSC_FALSE;
-    //for (i=0; i< user->VPERE; ++i)
-    //  if (dbdry[i]) elem_on_boundary=PETSC_TRUE;
 
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
@@ -367,13 +348,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
         }
       }
     }
-#if 0
-    PetscPrintf(PETSC_COMM_WORLD,"Local vector %d\n\t", ehandle);
-    for (i=0; i < user->VPERE; ++i) {
-      PetscPrintf(PETSC_COMM_WORLD,"%g ", localv[i]);
-    }
-    PetscPrintf(PETSC_COMM_WORLD,"\n");
-#endif
+
     /* set the values directly into appropriate locations. Can alternately use VecSetValues */
     ierr = VecSetValuesLocal(b, user->VPERE, dof_indices, localv, ADD_VALUES);CHKERRQ(ierr);
   }
@@ -391,7 +366,6 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
   /* Restore vectors */
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-  // VecView(b,0);
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +434,6 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
     }
 
     /* check if element is on the boundary */
-    //ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
     ierr = DMMoabCheckBoundaryVertices(dm,user->VPERE,connect,dbdry);CHKERRQ(ierr);
     elem_on_boundary=PETSC_FALSE;
     for (i=0; i < user->VPERE; ++i)
@@ -485,16 +458,6 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
       }
     }
 
-#if 0
-    PetscPrintf(PETSC_COMM_WORLD,"Local matrix %d\n\t", ehandle);
-    for (i=0; i < user->VPERE; ++i) {
-      for (j=0; j < user->VPERE; ++j) {
-        PetscPrintf(PETSC_COMM_WORLD,"%g ", array[i*user->VPERE+j]);
-      }
-      PetscPrintf(PETSC_COMM_WORLD,"\n\t");
-    }
-    PetscPrintf(PETSC_COMM_WORLD,"\n");
-#endif
     /* set the values directly into appropriate locations. Can alternately use VecSetValues */
     ierr = MatSetValuesLocal(jac, user->VPERE, dof_indices, user->VPERE, dof_indices, array, ADD_VALUES);CHKERRQ(ierr);
   }
@@ -509,7 +472,6 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
     ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
-  //MatView(jac,0);
   PetscFunctionReturn(0);
 }
 
