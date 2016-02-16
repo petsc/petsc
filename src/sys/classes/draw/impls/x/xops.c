@@ -592,9 +592,22 @@ static PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
   if (!XiWin) PetscFunctionReturn(0);
   ierr = PetscFree(XiWin->font);CHKERRQ(ierr);
   if (XiWin->disp) {
+#if defined(PETSC_HAVE_SETJMP_H)
+    jmp_buf              jmpbuf;
+    PetscXIOErrorHandler xioerrhdl;
+    ierr = PetscMemcpy(&jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(jmpbuf));CHKERRQ(ierr);
+    xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump);
+    if (!setjmp(PetscXIOErrorHandlerJumpBuf))
+#endif
+    {
       XFreeGC(XiWin->disp,XiWin->gc.set);
       XCloseDisplay(XiWin->disp);
-      XiWin->disp = NULL;
+    }
+    XiWin->disp = NULL;
+#if defined(PETSC_HAVE_SETJMP_H)
+    (void)PetscSetXIOErrorHandler(xioerrhdl);
+    ierr = PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&jmpbuf,sizeof(jmpbuf));CHKERRQ(ierr);
+#endif
   }
   PetscFunctionReturn(0);
 }
