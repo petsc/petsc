@@ -674,7 +674,11 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   (*sdraw)->port_xr = draw->port_xr;
   (*sdraw)->port_yl = draw->port_yl;
   (*sdraw)->port_yr = draw->port_yr;
-  (*sdraw)->popup   = draw->popup;
+
+  if (draw->popup) {
+    ierr = PetscObjectReference((PetscObject)draw->popup);CHKERRQ(ierr);
+    (*sdraw)->popup = draw->popup;
+  }
 
   /* actually create and open the window */
   ierr = PetscNew(&sXwin);CHKERRQ(ierr);
