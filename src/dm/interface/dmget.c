@@ -210,6 +210,43 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMClearLocalVectors"
+/*@
+   DMClearLocalVectors - Destroys all the local vectors that have been stashed in this DM
+
+   Collective on DM
+
+   Input Parameter:
+.  dm - the distributed array
+
+   Level: developer
+
+.keywords: distributed array, create, Local, vector
+
+.seealso: DMCreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMLocalToLocalBegin(),
+          DMLocalToLocalEnd(), DMLocalToLocalBegin(), DMCreateLocalVector(), DMRestoreLocalVector()
+          VecStrideMax(), VecStrideMin(), VecStrideNorm()
+
+@*/
+PetscErrorCode  DMClearLocalVectors(DM dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    Vec g;
+    if (dm->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
+    g = dm->localin[i];
+    dm->localin[i] = NULL;
+    ierr = VecDestroy(&g);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMRestoreGlobalVector"
 /*@
    DMRestoreGlobalVector - Returns a Seq PETSc vector that

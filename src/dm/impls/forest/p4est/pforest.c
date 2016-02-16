@@ -1565,7 +1565,8 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
 #define __FUNCT__ "DMShareDiscretization"
 static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
 {
-  PetscDS        ds;
+  PetscDS        ds, dsB;
+  PetscBool      newDS;
   void           *ctx;
   PetscErrorCode ierr;
 
@@ -1573,17 +1574,29 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   ierr = DMGetApplicationContext(dmA,&ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dmB,ctx);CHKERRQ(ierr);
   ierr = DMGetDS(dmA,&ds);CHKERRQ(ierr);
+  ierr = DMGetDS(dmB,&dsB);CHKERRQ(ierr);
+  newDS = (ds != dsB);
   ierr = DMSetDS(dmB,ds);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)dmA->defaultSection);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&(dmB->defaultSection));CHKERRQ(ierr);
-  dmB->defaultSection = dmA->defaultSection;
-  ierr = PetscObjectReference((PetscObject)dmA->defaultGlobalSection);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&(dmB->defaultGlobalSection));CHKERRQ(ierr);
-  dmB->defaultGlobalSection = dmA->defaultGlobalSection;
-  if (dmA->map) {ierr = PetscLayoutReference(dmA->map,&dmB->map);CHKERRQ(ierr);}
-  ierr = PetscObjectReference((PetscObject)dmA->defaultSF);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&dmB->defaultSF);CHKERRQ(ierr);
-  dmB->defaultSF = dmA->defaultSF;
+  if (newDS) {
+    ierr = DMClearGlobalVectors(dmB);CHKERRQ(ierr);
+    ierr = DMClearLocalVectors(dmB);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)dmA->defaultSection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&(dmB->defaultSection));CHKERRQ(ierr);
+    dmB->defaultSection = dmA->defaultSection;
+    ierr = PetscObjectReference((PetscObject)dmA->defaultConstraintSection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&(dmB->defaultConstraintSection));CHKERRQ(ierr);
+    dmB->defaultConstraintSection = dmA->defaultConstraintSection;
+    ierr = PetscObjectReference((PetscObject)dmA->defaultConstraintMat);CHKERRQ(ierr);
+    ierr = MatDestroy(&(dmB->defaultConstraintMat));CHKERRQ(ierr);
+    dmB->defaultConstraintMat = dmA->defaultConstraintMat;
+    ierr = PetscObjectReference((PetscObject)dmA->defaultGlobalSection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&(dmB->defaultGlobalSection));CHKERRQ(ierr);
+    dmB->defaultGlobalSection = dmA->defaultGlobalSection;
+    ierr = PetscObjectReference((PetscObject)dmA->defaultSF);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&dmB->defaultSF);CHKERRQ(ierr);
+    dmB->defaultSF = dmA->defaultSF;
+    if (dmA->map) {ierr = PetscLayoutReference(dmA->map,&dmB->map);CHKERRQ(ierr);}
+  }
   dmA->boundary->refct++;
   ierr = DMBoundaryDestroy(&(dmB->boundary));CHKERRQ(ierr);
   dmB->boundary = dmA->boundary;
@@ -3471,8 +3484,8 @@ static PetscErrorCode DMForestCreateCellChart_pforest(DM dm, PetscInt *cStart, P
 
   PetscFunctionBegin;
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,0,&cS,&cE);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm,&cEInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(plex,0,&cS,&cE);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(plex,&cEInterior,NULL,NULL,NULL);CHKERRQ(ierr);
   cE = cEInterior < 0 ? cE : cEInterior;
   *cStart = cS;
   *cEnd = cE;
