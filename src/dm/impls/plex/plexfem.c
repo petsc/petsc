@@ -1090,26 +1090,27 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
       void * const ctx = ctxs ? ctxs[field] : NULL;
       PetscInt     Nb, Nc, q, fc;
 
-      if (!funcs[field]) continue;
       ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
       else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
-      for (q = 0; q < numQuadPoints; ++q) {
-        CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], coords);
-        ierr = (*funcs[field])(dim, time, coords, Nc, funcVal, ctx);CHKERRQ(ierr);
-        if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
-        else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
-        else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
-        for (fc = 0; fc < Nc; ++fc) {
-          elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*quadWeights[q]*detJ;
+      if (funcs[field]) {
+        for (q = 0; q < numQuadPoints; ++q) {
+          CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], coords);
+          ierr = (*funcs[field])(dim, time, coords, Nc, funcVal, ctx);CHKERRQ(ierr);
+          if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
+          else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
+          else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+          for (fc = 0; fc < Nc; ++fc) {
+            elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*quadWeights[q]*detJ;
+          }
         }
       }
       fieldOffset += Nb*Nc;
     }
     ierr = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
-    ierr = VecSetValuesSection(D, section, c, &elemDiff, ADD_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValue(D, c - cStart, elemDiff, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree6(funcVal,interpolant,coords,v0,J,invJ);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
