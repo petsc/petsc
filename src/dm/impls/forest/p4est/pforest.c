@@ -3460,6 +3460,25 @@ static PetscErrorCode DMClone_pforest(DM dm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
+#define DMForestCreateCellChart_pforest _append_pforest(DMForestCreateCellChart)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMForestCreateCellChart_pforest)
+static PetscErrorCode DMForestCreateCellChart_pforest(DM dm, PetscInt *cStart, PetscInt *cEnd)
+{
+  DM             plex;
+  PetscInt       cS, cE, cEInterior;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm,0,&cS,&cE);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm,&cEInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+  cE = cEInterior < 0 ? cE : cEInterior;
+  *cStart = cS;
+  *cEnd = cE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMInitialize_pforest)
 static PetscErrorCode DMInitialize_pforest(DM dm)
@@ -3521,6 +3540,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   forest->data                      = pforest;
   forest->destroy                   = DMForestDestroy_pforest;
   forest->ftemplate                 = DMForestTemplate_pforest;
+  forest->createcellchart           = DMForestCreateCellChart_pforest;
   pforest->topo                     = NULL;
   pforest->forest                   = NULL;
   pforest->ghost                    = NULL;

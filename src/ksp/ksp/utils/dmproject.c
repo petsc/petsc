@@ -128,9 +128,8 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
       ierr = DMProjectFunctionLocal(dm,0.0,func,ctx,INSERT_ALL_VALUES,mask);CHKERRQ(ierr);
       ierr = DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
       ierr = PetscFree2(func, ctx);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectReference((PetscObject)mask);CHKERRQ(ierr);
     }
+    ierr = DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
   }
   ctx.dm   = dm;
   ctx.mask = mask;
@@ -157,9 +156,15 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   ierr = KSPSolve(ksp,global,y);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm,&global);CHKERRQ(ierr);
   /* clean up */
-  ierr = VecDestroy(&mask);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&CtC);CHKERRQ(ierr);
+  if (isPlex) {
+    ierr = VecDestroy(&mask);CHKERRQ(ierr);
+  }
+  else {
+    ierr = DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 

@@ -524,13 +524,11 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
         PetscFE fe = (PetscFE) obj;
 
         ierr = PetscFEGetDualSpace(fe, &sp[f]);CHKERRQ(ierr);
-        ierr  = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe, &Ncf[f]);CHKERRQ(ierr);
       } else if (id == PETSCFV_CLASSID) {
         PetscFV fv = (PetscFV) obj;
 
         ierr = PetscFVGetNumComponents(fv, &Ncf[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
@@ -558,9 +556,8 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
     if (dmAux) {ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, A, c, NULL, &coefficientsAux);CHKERRQ(ierr);}
     ierr = DMPlexVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
   }
-  ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
-  for (f = 0; f < Nf; f++) {ierr = PetscDualSpaceDestroy(&sp[f]);CHKERRQ(ierr);}
+  ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscFree2(sp, Ncf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1023,7 +1020,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   Input Parameters:
 + dm    - The DM
 . time  - The time
-. funcs - The functions to evaluate for each field component
+. funcs - The functions to evaluate for each field component: NULL means that component does not contribute to error calculation
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
 - X     - The coefficient vector u_h
 
@@ -1093,6 +1090,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
       void * const ctx = ctxs ? ctxs[field] : NULL;
       PetscInt     Nb, Nc, q, fc;
 
+      if (!funcs[field]) continue;
       ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
