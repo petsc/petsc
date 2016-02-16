@@ -174,7 +174,7 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (l <= 0 || mg->nlevels <= l) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
   if (!mglevels[l]->interpolate) {
-    if (!mglevels[l]->restrct) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInterpolation() or PCMGSetInterpolation()");
+    if (!mglevels[l]->restrct) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInterpolation() or PCMGSetRestriction()");
     ierr = PCMGSetInterpolation(pc,l,mglevels[l]->restrct);CHKERRQ(ierr);
   }
   *mat = mglevels[l]->interpolate;
