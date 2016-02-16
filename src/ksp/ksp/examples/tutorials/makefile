@@ -1128,7 +1128,7 @@ runex49_5:
 
 # hyper has some valgrind serious bus in it for vec_interp_variant hence this crashes on some systems, waiting for hypre team to fix
 runex49_hypre_nullspace:
-	-@${MPIEXEC} ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre  -elas_pc_hypre_boomeramg_nodal_coarsen  6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_ksp_view > ex49_hypre_nullspace.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre  -elas_pc_hypre_boomeramg_nodal_coarsen  6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_ksp_view > ex49_hypre_nullspace.tmp 2>&1; \
 	   ${DIFF} output/ex49_hypre_nullspace.out ex49_hypre_nullspace.tmp || printf "${PWD}\nPossible problem with ex49_hypre_nullspace, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_hypre_nullspace.tmp
 
@@ -1301,13 +1301,12 @@ runex62_valgrind:
 
 runex62:
 	-@${MPIEXEC} -n ${NP} ./ex62 -M $M -N $N -print_error ${ARGS}
-	
+
 runex62_hp:
 	-@${MPIEXEC} -n 4 ./ex62  -M 7  -N 9  -pc_gasm_overlap  1  -sub_pc_type lu  -sub_pc_factor_mat_solver_package superlu_dist  -ksp_monitor -print_error  -pc_gasm_total_subdomains 2 -pc_gasm_use_hierachical_partitioning 1 > ex62.tmp 2>&1;	  \
 	   if (${DIFF} output/ex62.out ex62.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex62, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex62.tmp	   
-
+	   ${RM} -f ex62.tmp
 
 runex62_2D:
 	-@${MPIEXEC} -n ${NP} ./ex62 -M $M -N $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS}
