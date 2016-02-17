@@ -2507,7 +2507,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         PetscInt *rowIndices, *colIndices, a, aDof, aOff;
 
         numRowIndices = matSize / numColIndices;
-        if (!numRowIndices != dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Miscounted dofs");
+        if (numRowIndices != dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Miscounted dofs");
         ierr = DMGetWorkArray(coarse,numRowIndices,PETSC_INT,&rowIndices);CHKERRQ(ierr);
         ierr = DMGetWorkArray(coarse,numColIndices,PETSC_INT,&colIndices);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(cSec,p,&cOff);CHKERRQ(ierr);
