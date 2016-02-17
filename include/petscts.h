@@ -254,9 +254,10 @@ typedef struct _p_TSTrajectory* TSTrajectory;
 .seealso: TSSetType(), TS, TSRegister(), TSTrajectoryCreate(), TSTrajectorySetType()
 J*/
 typedef const char* TSTrajectoryType;
-#define TSTRAJECTORYBASIC      "basic"
-#define TSTRAJECTORYSINGLEFILE "singlefile"
-#define TSTRAJECTORYMEMORY     "memory"
+#define TSTRAJECTORYBASIC         "basic"
+#define TSTRAJECTORYSINGLEFILE    "singlefile"
+#define TSTRAJECTORYMEMORY        "memory"
+#define TSTRAJECTORYVISUALIZATION "visualization"
 
 PETSC_EXTERN PetscFunctionList TSTrajectoryList;
 PETSC_EXTERN PetscClassId      TSTRAJECTORY_CLASSID;
