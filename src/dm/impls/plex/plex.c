@@ -5533,8 +5533,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     }
     if (!duplicate && (isFE[field])) {
       /* don't complete cells, which are just present to give orientation to the boundary */
-      ierr = DMPlexLabelComplete_Internal(dm, label, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = DMPlexLabelAddCells(dm, label);CHKERRQ(ierr);
+      ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
     }
     /* Filter out cells, if you actually want to constrain cells you need to do things by hand right now */
     if (isEssential) {

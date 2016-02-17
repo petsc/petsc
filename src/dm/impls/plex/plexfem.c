@@ -708,7 +708,9 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
       if (!isEssential) continue; /* for FEM, there is no insertion to be done for non-essential boundary conditions */
+      ierr = DMPlexLabelAddCells(dm,label);CHKERRQ(ierr);
       ierr = DMPlexInsertBoundaryValues_FEM_Internal(dm, time, field, label, numids, ids, (PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
+      ierr = DMPlexLabelClearCells(dm,label);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       if (!faceGeomFVM) continue;
       ierr = DMPlexInsertBoundaryValues_FVM_Internal(dm, time, faceGeomFVM, cellGeomFVM, gradFVM,
