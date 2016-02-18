@@ -804,7 +804,7 @@ PetscErrorCode DMNetworkEdgeSetMatrix(DM dm,PetscInt p,Mat J[])
 #undef __FUNCT__
 #define __FUNCT__ "DMNetworkVertexSetMatrix"
 /*@
-    DMNetworkVetexSetMatrix - Sets user-provided Jacobian matrix for this vertex to the network
+    DMNetworkVertexSetMatrix - Sets user-provided Jacobian matrix for this vertex to the network
 
     Not Collective
 
