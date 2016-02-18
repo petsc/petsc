@@ -115,8 +115,8 @@ struct _PCBDDCSubSchurs {
   /* data structure to reuse MatFactor with Schur solver */
   PCBDDCReuseSolvers reuse_solver;
   /* change of variables */
-  IS  change_primal;
-  KSP change;
+  KSP       *change;
+  PetscBool change_with_qr;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 
@@ -126,12 +126,15 @@ struct _PCBDDCDeluxeScaling {
   PetscInt        n_simple;
   PetscInt*       idx_simple_B;
   /* handle deluxe problems  */
-  VecScatter      seq_scctx;
-  Vec             seq_work1;
-  Vec             seq_work2;
-  Mat             seq_mat;
-  KSP             seq_ksp;
-  KSP             change;
+  PetscInt        seq_n;
+  PetscScalar     *workspace;
+  VecScatter      *seq_scctx;
+  Vec             *seq_work1;
+  Vec             *seq_work2;
+  Mat             *seq_mat;
+  Mat             *seq_mat_inv_sum;
+  KSP             *change;
+  PetscBool       change_with_qr;
 };
 typedef struct _PCBDDCDeluxeScaling *PCBDDCDeluxeScaling;
 
