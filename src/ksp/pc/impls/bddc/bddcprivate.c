@@ -4275,7 +4275,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PC_BDDC     *pcbddc = (PC_BDDC*)pc->data;
   PC_IS       *pcis = (PC_IS*)pc->data;
   Mat_IS      *matis  = (Mat_IS*)pc->pmat->data;
-  PetscInt    ierr,i,vertex_size,N;
+  PetscInt    ierr,i,N;
   PetscViewer viewer=pcbddc->dbg_viewer;
 
   PetscFunctionBegin;
@@ -4308,7 +4308,6 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   }
 
   /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal */
-  vertex_size = 1;
   if (pcbddc->user_provided_isfordofs) {
     if (pcbddc->n_ISForDofs) { /* need to convert from global to local and remove references to global dofs splitting */
       ierr = PetscMalloc1(pcbddc->n_ISForDofs,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
@@ -4320,8 +4319,6 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       pcbddc->n_ISForDofs = 0;
       ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
     }
-    /* mat block size as vertex size (used for elasticity with rigid body modes as nearnullspace) */
-    ierr = MatGetBlockSize(matis->A,&vertex_size);CHKERRQ(ierr);
   } else {
     if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering */
       ierr = MatGetBlockSize(pc->pmat,&pcbddc->n_ISForDofsLocal);CHKERRQ(ierr);
@@ -4342,7 +4339,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   if (!pcbddc->user_primal_vertices_local && pcbddc->user_primal_vertices) { /* need to convert from global to local */
     ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->user_primal_vertices,&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
   }
-  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
+  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,pcbddc->vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
 
   /* attach info on disconnected subdomains if present */
   if (pcbddc->n_local_subs) {

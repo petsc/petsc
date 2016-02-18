@@ -103,6 +103,7 @@ typedef struct {
   IS                  coarse_subassembling_init;
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
+  PetscInt            vertex_size;
 
   /* local disconnected subdomains */
   PetscBool detect_disconnected;
