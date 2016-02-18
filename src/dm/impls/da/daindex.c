@@ -53,7 +53,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetAOType"
-/*@
+/*@C
    DMDASetAOType - Sets the type of application ordering for a distributed array.
 
    Collective on DMDA
