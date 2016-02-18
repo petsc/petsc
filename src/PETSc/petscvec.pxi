@@ -123,6 +123,7 @@ cdef extern from * nogil:
     int VecPointwiseDivide(PetscVec,PetscVec,PetscVec)
     int VecMaxPointwiseDivide(PetscVec,PetscVec,PetscReal*)
     int VecShift(PetscVec,PetscScalar)
+    int VecChop(PetscVec,PetscReal)
     int VecReciprocal(PetscVec)
     int VecPermute(PetscVec,PetscIS,PetscBool)
     int VecExp(PetscVec)

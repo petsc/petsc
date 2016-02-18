@@ -597,6 +597,10 @@ cdef class Vec(Object):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecShift(self.vec, sval) )
 
+    def chop(self, tol):
+        cdef PetscReal rval = asReal(tol)
+        CHKERR( VecChop(self.vec, rval) )
+
     def swap(self, Vec vec not None):
         CHKERR( VecSwap(self.vec, vec.vec) )
 
