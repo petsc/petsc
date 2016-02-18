@@ -1,25 +1,16 @@
-
 #include <petsc/private/fortranimpl.h>
 #include <petscdmda.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmdagetglobalindices_          DMDAGETGLOBALINDICES
-#define dmdarestoreglobalindices_      DMDARESTOREGLOBALINDICES
+#define dmdasetaotype_                 DMDASETAOTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmdagetglobalindices_          dmdagetglobalindices
-#define dmdarestoreglobalindices_      dmdarestoreglobalindices
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL dmdagetglobalindices_(DM *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL  dmdasetaotype_(DM *da,CHAR type PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len) )
 {
-  const PetscInt *idx;
-  *ierr = DMDAGetGlobalIndices(*da,n,&idx);
-  *ia   = PetscIntAddressToFortran(indices,idx);
+  char *t;
+  FIXCHAR(type,len,t);
+  *ierr = DMDASetAOType(*da,t);
+  FREECHAR(type,t);
 }
-
-PETSC_EXTERN void PETSC_STDCALL dmdarestoreglobalindices_(DM *da,PetscInt *n,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
-{
-  const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
-  *ierr = DMDARestoreGlobalIndices(*da,n,&lx);
-}
-
