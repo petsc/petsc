@@ -824,27 +824,29 @@ PetscErrorCode DMNetworkVertexSetMatrix(DM dm,PetscInt p,Mat J[])
 {
   PetscErrorCode ierr;
   DM_Network     *network=(DM_Network*)dm->data;
-  PetscInt       i,v,vStart,vEnd,*vptr,nedges,nedges_total;
+  PetscInt       i,*vptr,nedges,vStart,vEnd;
   const PetscInt *edges;
 
   PetscFunctionBegin;
   if (!network->userVertexJacobian) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"Must call DMNetworkHasJacobian() collectively before calling DMNetworkVertexSetMatrix");
 
   ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
+
   if (!network->Jv) {
+    PetscInt nNodes = network->nNodes,nedges_total;
     /* count nvertex_total */
     nedges_total = 0;
     ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
-    ierr = PetscMalloc1(vEnd-vStart+1,&vptr);CHKERRQ(ierr);
-    i       = 1;
+    ierr = PetscMalloc1(nNodes+1,&vptr);CHKERRQ(ierr);
+   
     vptr[0] = 0;
-    for (v=vStart; v<vEnd; v++) {
-      ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
+    for (i=0; i<nNodes; i++) {
+      ierr = DMNetworkGetSupportingEdges(dm,i+vStart,&nedges,&edges);CHKERRQ(ierr);
       nedges_total += nedges;
-      vptr[i] = vptr[i-1] + 2*nedges + 1; i++;
+      vptr[i+1] = vptr[i] + 2*nedges + 1; 
     }
 
-    ierr = PetscCalloc1(2*nedges_total+network->nNodes,&network->Jv);CHKERRQ(ierr);
+    ierr = PetscCalloc1(2*nedges_total+nNodes,&network->Jv);CHKERRQ(ierr);
     network->Jvptr = vptr;
   }
 
@@ -902,6 +904,7 @@ PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,Pets
 PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (Ju) {
     ierr = MatSetUserblock_private(Ju,nrows,rows,ncols,cstart,J);CHKERRQ(ierr);

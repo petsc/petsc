@@ -45,9 +45,15 @@ typedef struct {
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
+
   PetscBool                         userEdgeJacobian,userVertexJacobian;  /* Global flag for using user's sub Jacobians */
-  Mat                               *Je,*Jv;  /* Pointer array to hold local sub Jacobians for edges and vertices */
-  PetscInt                          *Jvptr;   /* index of Jv for v-th vertex */
+  Mat                               *Je;  /* Pointer array to hold local sub Jacobians for edges, 3 elements for an edge */
+  Mat                               *Jv;  /* Pointer array to hold local sub Jacobians for vertices, 1+2*nsupportedges for a vertex */
+  PetscInt                          *Jvptr;   /* index of Jv for v-th vertex
+                                              Jvpt[v-vStart]:    Jacobian(v,v)
+                                              Jvpt[v-vStart]+2i+1: Jacobian(v,e[i]),   e[i]: i-th supporting edge
+                                              Jvpt[v-vStart]+2i+2: Jacobian(v,vc[i]), vc[i]: i-th connected vertex
+                                              */
 } DM_Network;
 
 #endif /* _NETWORKIMPL_H */
