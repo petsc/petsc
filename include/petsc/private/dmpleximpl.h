@@ -204,6 +204,8 @@ PETSC_EXTERN PetscErrorCode DMPlexLabelComplete_Internal(DM,DMLabel,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM,DM,const char *,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM,DM,PetscSF,PetscInt *,Mat);
 PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM,PetscSection,PetscInt,PetscInt,const PetscInt*,const PetscScalar*,PetscInt*,PetscInt*,PetscInt**,PetscScalar**,PetscInt*,PetscBool);
+PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,PetscInt,PetscInt []);
+PETSC_EXTERN PetscErrorCode indicesPointFields_private(PetscSection,PetscInt,PetscInt,PetscInt [],PetscBool,PetscInt,PetscInt []);
 
 #undef __FUNCT__
 #define __FUNCT__ "DihedralInvert"

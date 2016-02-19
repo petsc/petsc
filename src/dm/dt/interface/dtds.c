@@ -947,7 +947,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS prob, PetscInt f,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidFunction(obj, 2);
+  if (obj) PetscValidFunction(obj, 2);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   prob->obj[f] = obj;
@@ -1720,7 +1720,7 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidFunction(r, 3);
+  if (r) PetscValidFunction(r, 3);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   prob->r[f] = r;
