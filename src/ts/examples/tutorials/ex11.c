@@ -1463,9 +1463,15 @@ int main(int argc, char **argv)
           PetscScalar *coord = &coords[i];
           for (j = 0; j < dimEmbed; j++) {
             coord[j] = mod->bounds[2 * j] + coord[j] * (mod->bounds[2 * j + 1] - mod->bounds[2 * j]);
-            if (dim==2 && coord[j]==mod->bounds[3] && j==0 && i==8 && cells[0]==2 && cells[1]==1 && 0) {
-              coord[j] *= (1.57735026918963); /* hack to get 60 deg skewed mesh */
-              PetscPrintf(PETSC_COMM_WORLD,"Change coord[%d] to %g, i=%d\n",j,coord[j],i);
+            if (dim==2 && cells[1]==1 && j==0 && 0) {
+              if (cells[0]==2 && coord[j]==mod->bounds[3] && i==8) {
+                coord[j] *= (1.57735026918963); /* hack to get 60 deg skewed mesh */
+              }
+              else if (cells[0]==3) {
+                if(i==2 || i==10) coord[j] = mod->bounds[1]/4.;
+                else if (i==4) coord[j] = mod->bounds[1]/2.;
+                else if (i==12) coord[j] = 1.57735026918963*mod->bounds[1]/2.;
+              }
             }
           }
         }
