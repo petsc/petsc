@@ -347,6 +347,15 @@ cdef extern from * nogil:
     int MatGetInertia(PetscMat,PetscInt*,PetscInt*,PetscInt*)
     int MatSetUnfactored(PetscMat)
 
+    int MatMumpsSetIcntl(PetscMat,PetscInt,PetscInt)
+    int MatMumpsGetIcntl(PetscMat,PetscInt,PetscInt*)
+    int MatMumpsSetCntl(PetscMat,PetscInt,PetscReal)
+    int MatMumpsGetCntl(PetscMat,PetscInt,PetscReal*)
+    int MatMumpsGetInfo(PetscMat,PetscInt,PetscInt*)
+    int MatMumpsGetInfog(PetscMat,PetscInt,PetscInt*)
+    int MatMumpsGetRinfo(PetscMat,PetscInt,PetscReal*)
+    int MatMumpsGetRinfog(PetscMat,PetscInt,PetscReal*)
+
     int MatForwardSolve(PetscMat,PetscVec,PetscVec)
     int MatBackwardSolve(PetscMat,PetscVec,PetscVec)
     int MatSolve(PetscMat,PetscVec,PetscVec)
