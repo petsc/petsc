@@ -529,9 +529,11 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   p0 = 1.;
 
   /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
-  if (x[0] < mod->bounds[1]/2. + x[1]*eu->pars[EULER_PAR_ITANA]) {
-    if (x[0] < mod->bounds[1]/4.) { /* left of shock (1) */
-      PetscScalar amach,rho,press,gas1,p1;
+  /* if (x[0] < mod->bounds[1]/2. + x[1]*eu->pars[EULER_PAR_ITANA]) { */
+  /*   if (x[0] < mod->bounds[1]/4.) { /\* left of shock (1) *\/ */
+  if (x[0] < 0.0+ x[1]*eu->pars[EULER_PAR_ITANA]) {
+    if (x[0] < -0.5) { /* left of shock (1) */ 
+     PetscScalar amach,rho,press,gas1,p1;
       amach = eu->pars[EULER_PAR_AMACH];
       rho = 1.;
       press = p0;
@@ -662,8 +664,8 @@ static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscR
   }
   else {
     int dim = DIM;
-    godunovflux(xL, xR, flux, nn, &dim, &eu->pars[EULER_PAR_GAMMA]);
-    for (i=0; i<2+dim; i++) flux[i] *= s2;
+    int iwave = godunovflux(xL, xR, flux, nn, &dim, &eu->pars[EULER_PAR_GAMMA]);
+     for (i=0; i<2+dim; i++) flux[i] *= s2;
   }
   PetscFunctionReturnVoid();
 }
@@ -1747,7 +1749,6 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    iwave = 200;
 	}
     }
-PetscPrintf(PETSC_COMM_SELF,"[%d]%s iwave=%d\n",0,__FUNCT__,iwave);
     if (iwave == 100) {
 /*     1-wave: rarefaction wave, 3-wave: rarefaction wave */
 /*     case (100) */
@@ -1769,10 +1770,7 @@ PetscPrintf(PETSC_COMM_SELF,"[%d]%s iwave=%d\n",0,__FUNCT__,iwave);
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(*pstar,smallp);
 	    if (PetscAbsScalar(dpstar) / *pstar <= 1e-8) {
-PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s dpstar=%g *pstar=%g zl=%g zr=%g ustarr=%g ustarl=%g\n",0,__FUNCT__,dpstar,*pstar,zl,zr,ustarr,ustarl);
-PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s uxl=%g uxr=%g gascl4=%g gascr4=%g cstarl=%g cl=%g cstarr=%g cr=%g\n",0,__FUNCT__,*uxl,*uxr,gascl4,gascr4,cstarl,cl,cstarr,cr);
- PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s cstarl: sqrt(gaml=%g * pstar=%g / rstarl=%g). cl: sqrt(gaml=%g * pl=%g / rl=%g)\n",0,__FUNCT__,*gaml,*pstar,*rstarl,*gaml,*pl,*rl);
-              exit(17);
+              //break;
 	    }
 	}
 /*     1-wave: shock wave, 3-wave: rarefaction wave */
@@ -1796,7 +1794,7 @@ PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s uxl=%g uxr=%g gascl4=%g gascr4=%g cstarl=%
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(*pstar,smallp);
 	    if (PetscAbsScalar(dpstar) / *pstar <= 1e-8) {
-              exit(18);
+              //break;
 	    }
 	}
 /*     1-wave: shock wave, 3-wave: shock */
@@ -1820,7 +1818,7 @@ PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s uxl=%g uxr=%g gascl4=%g gascr4=%g cstarl=%
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(*pstar,smallp);
 	    if (PetscAbsScalar(dpstar) / *pstar <= 1e-8) {
-              exit(20);
+              //break;
 	    }
 	}
 /*     1-wave: rarefaction wave, 3-wave: shock */
@@ -1844,7 +1842,7 @@ PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s uxl=%g uxr=%g gascl4=%g gascr4=%g cstarl=%
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(*pstar,smallp);
 	    if (PetscAbsScalar(dpstar) / *pstar <= 1e-8) {
-		exit(19);
+	      //break;
 	    }
 	}
     }
@@ -1862,15 +1860,14 @@ PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s uxl=%g uxr=%g gascl4=%g gascr4=%g cstarl=%
 	*rstarr = ((*gamr + 1.) * pst + *gamr - 1.) / ((*gamr - 1.) * pst + *
 		gamr + 1.) * *rr;
     }
-
-    return 0;
+    return iwave;
 } /* riem1mdt_ */
 
-int sign(int x)
+double sign(double x)
 {
-    if(x > 0) return 1;
-    if(x < 0) return -1;
-    return 0;
+    if(x > 0) return 1.0;
+    if(x < 0) return -1.0;
+    return 0.0;
 }
 /*        Riemann Solver */
 /* -------------------------------------------------------------------- */
@@ -1909,8 +1906,9 @@ int sign(int x)
 	}
 	return 0;
     }
-    riem1mdt_(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, 
+    int iwave = riem1mdt_(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, 
 	    &ustar);
+
     x2 = *xcen + ustar * *dtt;
     d__1 = *xp - x2;
     sgn0 = sign(d__1);
@@ -1962,7 +1960,6 @@ int sign(int x)
     *px = cvmgm_(px, &pstar, &d__1);
     d__1 = sgn0 * (xstar - *xp);
     *uxm = cvmgm_(uxm, &ustar, &d__1);
-
     if (*xp >= x2) {
 	*utx = *utr;
 	*ubx = *ubr;
@@ -1972,7 +1969,7 @@ int sign(int x)
 	*ubx = *ubl;
 	*rho1 = *rho1l;
     }
-    return 0;
+    return iwave;
 } /* riemannsolver_ */
 
 
@@ -2085,7 +2082,7 @@ int godunovflux(const PetscScalar *ul, const PetscScalar *ur,
     rho1l = rl;
     rho1r = rr;
 
-    riemannsolver_(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
+    int iwave = riemannsolver_(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
 	    rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
 	    pm, &utm, &ubm, &gamm, &rho1m);
 
@@ -2121,6 +2118,6 @@ int godunovflux(const PetscScalar *ul, const PetscScalar *ur,
 /* $$$            write(999,*) 'ub',ubl,ubr,ubm */
 /* $$$            write(999,*) */
 /* $$$         endif */
-    return 0;
+    return iwave;
 } /* godunovflux_ */
 
