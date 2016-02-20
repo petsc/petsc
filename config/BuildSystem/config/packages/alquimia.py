@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'master'
+    self.gitcommit         = 'v1.0'
     self.download          = ['git://https://github.com/LBL-EESA/alquimia-dev.git']
     self.functions         = []
     self.includes          = []
