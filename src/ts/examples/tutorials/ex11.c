@@ -477,15 +477,6 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
 /* On initial‐value and self‐similar solutions of the compressible Euler equations */
 /* Ravi Samtaney and D. I. Pullin */
 /* Phys. Fluids 8, 2650 (1996); http://dx.doi.org/10.1063/1.869050 */
-/* initial conditions */
-/*  amach=2.0D0 */
-/*  rho=rho0=1 */
-/*  press=p0=1 */
-/*  p1=press*(1.0D0+2.D0*gamma/(gamma+1.D0)*(amach*amach-1.D0)) */
-/*  gas1=(gamma-1.D0)/(gamma+1.D0) */
-/*  gas2=2.D0*gamma/(gamma+1.D0) */
-/*  rho1=rho*(p1/press+gas1)/(gas1*p1/press+1.D0) */
-/*  u1=((rho1-rho)*dsqrt(gamma*press/rho)*amach)/rho1 */
 typedef enum {EULER_PAR_GAMMA,EULER_PAR_RHOR,EULER_PAR_AMACH,EULER_PAR_ITANA,EULER_PAR_SIZE} EulerParamIdx;
 typedef enum {EULER_IV_SHOCK,EULER_SS_SHOCK} EulerType;
 typedef struct {
@@ -529,10 +520,8 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   p0 = 1.;
 
   /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
-  /* if (x[0] < mod->bounds[1]/2. + x[1]*eu->pars[EULER_PAR_ITANA]) { */
-  /*   if (x[0] < mod->bounds[1]/4.) { /\* left of shock (1) *\/ */
   if (x[0] < 0.0+ x[1]*eu->pars[EULER_PAR_ITANA]) {
-    if (x[0] < -0.5) { /* left of shock (1) */ 
+    if (x[0] < -0.5) { /* left of shock (1) */
      PetscScalar amach,rho,press,gas1,p1;
       amach = eu->pars[EULER_PAR_AMACH];
       rho = 1.;
@@ -545,12 +534,12 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
     }
     else { /* left of discontinuity (0) */
       uu->r = 1.; /* rho = 1 */
-      uu->E = p0/(gamma-1.0); /* + .5*s_rho0*s_u0*s_u0; zero velocity right of shock */
+      uu->E = p0/(gamma-1.0);
     }
   }
   else { /* right of discontinuity (2) */
     uu->r = eu->pars[EULER_PAR_RHOR];
-    uu->E = p0/(gamma-1.0); /* + .5*s_rho0*s_u0*s_u0; zero velocity right of shock */
+    uu->E = p0/(gamma-1.0);
   }
   PetscFunctionReturn(0);
 }
@@ -634,8 +623,8 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
 int godunovflux( const PetscScalar *ul, const PetscScalar *ur, PetscScalar *flux, const PetscReal *nn, const int *ndim, const PetscReal *gamma);
 /* PetscReal* => EulerNode* conversion */
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsRiemann_Euler_Rusanov"
-static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n,
+#define __FUNCT__ "PhysicsRiemann_Euler_Godunov"
+static void PhysicsRiemann_Euler_Godunov(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n,
                                          const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_Euler   *eu = (Physics_Euler*)phys->data;
@@ -664,8 +653,9 @@ static void PhysicsRiemann_Euler_Rusanov(PetscInt dim, PetscInt Nf, const PetscR
   }
   else {
     int dim = DIM;
-    int iwave = godunovflux(xL, xR, flux, nn, &dim, &eu->pars[EULER_PAR_GAMMA]);
-     for (i=0; i<2+dim; i++) flux[i] *= s2;
+    /* int iwave =  */
+    godunovflux(xL, xR, flux, nn, &dim, &eu->pars[EULER_PAR_GAMMA]);
+    for (i=0; i<2+dim; i++) flux[i] *= s2;
   }
   PetscFunctionReturnVoid();
 }
@@ -698,7 +688,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
-  phys->riemann = (PetscRiemannFunc) PhysicsRiemann_Euler_Rusanov;
+  phys->riemann = (PetscRiemannFunc) PhysicsRiemann_Euler_Godunov;
   ierr = PetscNew(&eu);CHKERRQ(ierr);
   phys->data    = eu;
   ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
@@ -1646,7 +1636,6 @@ int main(int argc, char **argv)
 }
 
 /* Godunov fluxs */
-
 PetscScalar cvmgp_(PetscScalar *a, PetscScalar *b, PetscScalar *test)
 {
     /* System generated locals */
@@ -1676,6 +1665,7 @@ L10:
     ret_val = *a;
     return ret_val;
 } /* cvmgm_ */
+
 #undef __FUNCT__
 #define __FUNCT__ "riem1mdt_"
 int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar *pl,
@@ -1695,8 +1685,7 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     static int i0;
     static PetscScalar cl, cr, wl, zl, wr, zr, pst, durl, skpr1, skpr2;
     static int iwave;
-    static PetscScalar csqrl, csqrr, gascl1, gascl2, gascl3, gascl4, gascr1, 
-	    gascr2, gascr3, gascr4, cstarl, dpstar, cstarr;
+    static PetscScalar csqrl, csqrr, gascl1, gascl2, gascl3, gascl4, gascr1, gascr2, gascr3, gascr4, cstarl, dpstar, cstarr;
     static int iterno;
     static PetscScalar ustarl, ustarr, rarepr1, rarepr2;
 
@@ -1722,13 +1711,11 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     *pstar = (wl * *pr + wr * *pl) / (wl + wr);
     *pstar = PetscMax(*pstar,smallp);
     pst = *pl / *pr;
-    skpr1 = cr * (pst - 1.) * sqrt(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * 
-	    pst)));
+    skpr1 = cr * (pst - 1.) * sqrt(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
     d__1 = (*gamr - 1.) / (*gamr * 2.);
     rarepr2 = gascr4 * 2. * cr * (1. - PetscPowScalar(pst, d__1));
     pst = *pr / *pl;
-    skpr2 = cl * (pst - 1.) * sqrt(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * 
-	    pst)));
+    skpr2 = cl * (pst - 1.) * sqrt(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
     d__1 = (*gaml - 1.) / (*gaml * 2.);
     rarepr1 = gascl4 * 2. * cl * (1. - PetscPowScalar(pst, d__1));
     durl = *uxr - *uxl;
@@ -1779,11 +1766,8 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	i__1 = iterno;
 	for (i0 = 1; i0 <= i__1; ++i0) {
 	    pst = *pstar / *pl;
-	    ustarl = *uxl - (pst - 1.) * cl * sqrt(2. / (*gaml * (*gaml - 1. 
-		    + (*gaml + 1.) * pst)));
-	    zl = *pl / cl * sqrt(*gaml * 2. * (*gaml - 1. + (*gaml + 1.) * 
-		    pst)) * (*gaml - 1. + (*gaml + 1.) * pst) / (*gaml * 3. - 
-		    1. + (*gaml + 1.) * pst);
+	    ustarl = *uxl - (pst - 1.) * cl * sqrt(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
+	    zl = *pl / cl * sqrt(*gaml * 2. * (*gaml - 1. + (*gaml + 1.) * pst)) * (*gaml - 1. + (*gaml + 1.) * pst) / (*gaml * 3. - 1. + (*gaml + 1.) * pst);
 	    d__1 = *pstar / *pr;
 	    d__2 = 1. / *gamr;
 	    *rstarr = *rr * PetscPowScalar(d__1, d__2);
@@ -1803,17 +1787,11 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	i__1 = iterno;
 	for (i0 = 1; i0 <= i__1; ++i0) {
 	    pst = *pstar / *pl;
-	    ustarl = *uxl - (pst - 1.) * cl * sqrt(2. / (*gaml * (*gaml - 1. 
-		    + (*gaml + 1.) * pst)));
-	    zl = *pl / cl * sqrt(*gaml * 2. * (*gaml - 1. + (*gaml + 1.) * 
-		    pst)) * (*gaml - 1. + (*gaml + 1.) * pst) / (*gaml * 3. - 
-		    1. + (*gaml + 1.) * pst);
+	    ustarl = *uxl - (pst - 1.) * cl * sqrt(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
+	    zl = *pl / cl * sqrt(*gaml * 2. * (*gaml - 1. + (*gaml + 1.) * pst)) * (*gaml - 1. + (*gaml + 1.) * pst) / (*gaml * 3. - 1. + (*gaml + 1.) * pst);
 	    pst = *pstar / *pr;
-	    ustarr = *uxr + (pst - 1.) * cr * sqrt(2. / (*gamr * (*gamr - 1. 
-		    + (*gamr + 1.) * pst)));
-	    zr = *pr / cr * sqrt(*gamr * 2. * (*gamr - 1. + (*gamr + 1.) * 
-		    pst)) * (*gamr - 1. + (*gamr + 1.) * pst) / (*gamr * 3. - 
-		    1. + (*gamr + 1.) * pst);
+	    ustarr = *uxr + (pst - 1.) * cr * sqrt(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
+	    zr = *pr / cr * sqrt(*gamr * 2. * (*gamr - 1. + (*gamr + 1.) * pst)) * (*gamr - 1. + (*gamr + 1.) * pst) / (*gamr * 3. - 1. + (*gamr + 1.) * pst);
 	    dpstar = zl * zr * (ustarr - ustarl) / (zl + zr);
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(*pstar,smallp);
@@ -1833,11 +1811,8 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    ustarl = *uxl - gascl4 * 2. * (cstarl - cl);
 	    zl = *rstarl * cstarl;
 	    pst = *pstar / *pr;
-	    ustarr = *uxr + (pst - 1.) * cr * sqrt(2. / (*gamr * (*gamr - 1. 
-		    + (*gamr + 1.) * pst)));
-	    zr = *pr / cr * sqrt(*gamr * 2. * (*gamr - 1. + (*gamr + 1.) * 
-		    pst)) * (*gamr - 1. + (*gamr + 1.) * pst) / (*gamr * 3. - 
-		    1. + (*gamr + 1.) * pst);
+	    ustarr = *uxr + (pst - 1.) * cr * sqrt(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
+	    zr = *pr / cr * sqrt(*gamr * 2. * (*gamr - 1. + (*gamr + 1.) * pst)) * (*gamr - 1. + (*gamr + 1.) * pst) / (*gamr * 3. - 1. + (*gamr + 1.) * pst);
 	    dpstar = zl * zr * (ustarr - ustarl) / (zl + zr);
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(*pstar,smallp);
@@ -1863,7 +1838,7 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     return iwave;
 } /* riem1mdt_ */
 
-double sign(double x)
+PetscScalar sign(PetscScalar x)
 {
     if(x > 0) return 1.0;
     if(x < 0) return -1.0;
@@ -1871,22 +1846,20 @@ double sign(double x)
 }
 /*        Riemann Solver */
 /* -------------------------------------------------------------------- */
-/* Subroutine */ int riemannsolver_(PetscScalar *xcen, PetscScalar *xp, 
-	PetscScalar *dtt, PetscScalar *rl, PetscScalar *uxl, PetscScalar *pl, 
-	PetscScalar *utl, PetscScalar *ubl, PetscScalar *gaml, PetscScalar *rho1l,
-	 PetscScalar *rr, PetscScalar *uxr, PetscScalar *pr, PetscScalar *utr, 
-	PetscScalar *ubr, PetscScalar *gamr, PetscScalar *rho1r, PetscScalar *rx, 
-	PetscScalar *uxm, PetscScalar *px, PetscScalar *utx, PetscScalar *ubx, 
-	PetscScalar *gam, PetscScalar *rho1)
+int riemannsolver_(PetscScalar *xcen, PetscScalar *xp,
+                   PetscScalar *dtt, PetscScalar *rl, PetscScalar *uxl, PetscScalar *pl,
+                   PetscScalar *utl, PetscScalar *ubl, PetscScalar *gaml, PetscScalar *rho1l,
+                   PetscScalar *rr, PetscScalar *uxr, PetscScalar *pr, PetscScalar *utr,
+                   PetscScalar *ubr, PetscScalar *gamr, PetscScalar *rho1r, PetscScalar *rx,
+                   PetscScalar *uxm, PetscScalar *px, PetscScalar *utx, PetscScalar *ubx,
+                   PetscScalar *gam, PetscScalar *rho1)
 {
     /* System generated locals */
     PetscScalar d__1, d__2;
 
     /* Local variables */
-    static PetscScalar s, c0, p0, r0, u0, w0, x0, x2, ri, cx, sgn0, wsp0, 
-	    gasc1, gasc2, gasc3, gasc4;
-    static PetscScalar cstar, pstar, rstar, ustar, xstar, wspst, ushock, 
-	    streng, rstarl, rstarr, rstars;
+    static PetscScalar s, c0, p0, r0, u0, w0, x0, x2, ri, cx, sgn0, wsp0, gasc1, gasc2, gasc3, gasc4;
+    static PetscScalar cstar, pstar, rstar, ustar, xstar, wspst, ushock, streng, rstarl, rstarr, rstars;
 
     if (*rl == *rr && *pr == *pl && *uxl == *uxr && *gaml == *gamr) {
 	*rx = *rl;
@@ -1906,8 +1879,7 @@ double sign(double x)
 	}
 	return 0;
     }
-    int iwave = riem1mdt_(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, 
-	    &ustar);
+    int iwave = riem1mdt_(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, &ustar);
 
     x2 = *xcen + ustar * *dtt;
     d__1 = *xp - x2;
@@ -1972,21 +1944,18 @@ double sign(double x)
     return iwave;
 } /* riemannsolver_ */
 
-
-
-
-/* Subroutine */
-int godunovflux(const PetscScalar *ul, const PetscScalar *ur,
-                PetscScalar *flux, const PetscScalar *nn, const int *ndim, const PetscScalar *gamma)
+int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
+                 PetscScalar *flux, const PetscScalar *nn, const int *ndim,
+                 const PetscScalar *gamma)
 {
     /* System generated locals */
-    int i__1;
+  int i__1,iwave;
     PetscScalar d__1, d__2, d__3;
 
     /* Local variables */
     static int k;
-    static PetscScalar bn[3], fn, ft, tg[3], pl, rl, pm, pr, rr, xp, ubl, ubm, 
-	    ubr, dtt, unm, tmp, utl, utm, uxl, utr, uxr, gaml, gamm, gamr, 
+    static PetscScalar bn[3], fn, ft, tg[3], pl, rl, pm, pr, rr, xp, ubl, ubm,
+	    ubr, dtt, unm, tmp, utl, utm, uxl, utr, uxr, gaml, gamm, gamr,
 	    xcen, rhom, rho1l, rho1m, rho1r;
     /* Parameter adjustments */
     --nn;
@@ -2035,8 +2004,6 @@ int godunovflux(const PetscScalar *ul, const PetscScalar *ur,
 	bn[1] = 0.;
 	bn[2] = 1.;
     }
-/*        write(666,*) nn,tg */
-/*        write(666,*) bn */
     rl = ul[1];
     rr = ur[1];
     uxl = 0.;
@@ -2069,22 +2036,20 @@ int godunovflux(const PetscScalar *ul, const PetscScalar *ur,
     d__2 = utl;
 /* Computing 2nd power */
     d__3 = ubl;
-    pl = (*gamma - 1.) * (ul[*ndim + 2] - rl * .5 * (d__1 * d__1 + d__2 * 
-	    d__2 + d__3 * d__3));
+    pl = (*gamma - 1.) * (ul[*ndim + 2] - rl * .5 * (d__1 * d__1 + d__2 * d__2 + d__3 * d__3));
 /* Computing 2nd power */
     d__1 = uxr;
 /* Computing 2nd power */
     d__2 = utr;
 /* Computing 2nd power */
     d__3 = ubr;
-    pr = (*gamma - 1.) * (ur[*ndim + 2] - rr * .5 * (d__1 * d__1 + d__2 * 
-	    d__2 + d__3 * d__3));
+    pr = (*gamma - 1.) * (ur[*ndim + 2] - rr * .5 * (d__1 * d__1 + d__2 * d__2 + d__3 * d__3));
     rho1l = rl;
     rho1r = rr;
 
-    int iwave = riemannsolver_(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
-	    rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
-	    pm, &utm, &ubm, &gamm, &rho1m);
+    iwave = riemannsolver_(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
+                           rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
+                           pm, &utm, &ubm, &gamm, &rho1m);
 
     flux[1] = rhom * unm;
     fn = rhom * unm * unm + pm;
@@ -2098,26 +2063,7 @@ int godunovflux(const PetscScalar *ul, const PetscScalar *ur,
     if (*ndim == 3) {
 	flux[4] = rhom * unm * ubm;
     }
-    flux[*ndim + 2] = (rhom * .5 * (unm * unm + utm * utm + ubm * ubm) + gamm 
-	    / (gamm - 1.) * pm) * unm;
-/* $$$           if(nn(2).eq.0.D0) then */
-/* $$$            write(888,*) nn, utm */
-/* $$$            write(888,*) 'RHO',rl,rr,rhom */
-/* $$$            write(888,*) 'P',pl,pr,pm */
-/* $$$            write(888,*) 'un',uxl,uxr,unm */
-/* $$$            write(888,*) 'ut',utl,utr,utm */
-/* $$$            write(888,*) 'ub',ubl,ubr,ubm */
-/* $$$            write(888,*) */
-/* $$$         endif */
-/* $$$           if(nn(1).eq.0.D0) then */
-/* $$$            write(999,*) nn, unm */
-/* $$$            write(999,*) 'RHO',rl,rr,rhom */
-/* $$$            write(999,*) 'P',pl,pr,pm */
-/* $$$            write(999,*) 'un',uxl,uxr,unm */
-/* $$$            write(999,*) 'ut',utl,utr,utm */
-/* $$$            write(999,*) 'ub',ubl,ubr,ubm */
-/* $$$            write(999,*) */
-/* $$$         endif */
+    flux[*ndim + 2] = (rhom * .5 * (unm * unm + utm * utm + ubm * ubm) + gamm / (gamm - 1.) * pm) * unm;
     return iwave;
 } /* godunovflux_ */
 
