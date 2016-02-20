@@ -9978,7 +9978,10 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
    The submat always implements MatSetValuesLocal().  If isrow and iscol have the same block size, then
    MatSetValuesBlockedLocal() will also be implemented.
 
-.seealso: MatRestoreLocalSubMatrix(), MatCreateLocalRef()
+   The mat must have had a ISLocalToGlobalMapping provided to it with MatSetLocalToGlobalMapping(). Note that 
+   matrices obtained with DMCreateMat() generally already have the local to global mapping provided.   
+
+.seealso: MatRestoreLocalSubMatrix(), MatCreateLocalRef(), MatSetLocalToGlobalMapping()
 @*/
 PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
 {
@@ -9990,7 +9993,8 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
   PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
   PetscCheckSameComm(isrow,2,iscol,3);
   PetscValidPointer(submat,4);
-
+  if (!mat->rmap->mapping) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
+                                 
   if (mat->ops->getlocalsubmatrix) {
     ierr = (*mat->ops->getlocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);
   } else {
