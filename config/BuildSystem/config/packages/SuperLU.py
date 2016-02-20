@@ -31,10 +31,7 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
 
-    # The handling of BLAS is totally broken in SuperLU, overly complicated and buggy
-    # We override it by directly saying it was found and setting the final value needed
-    args.append('-DBLAS_FOUND=1')
-    args.append('-DBLAS_LIB="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DTPL_BLAS_LIB="'+self.libraries.toString(self.blasLapack.dlib)+'"')
 
     #  Tests are broken on Apple since they depend on a shared library that is not resolved against BLAS
     args.append('-Denable_tests=0')
