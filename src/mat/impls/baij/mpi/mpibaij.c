@@ -1678,10 +1678,12 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
   case MAT_KEEP_NONZERO_PATTERN:
   case MAT_NEW_NONZERO_LOCATION_ERR:
+    MatCheckPreallocated(A,1);
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
   case MAT_ROW_ORIENTED:
+    MatCheckPreallocated(A,1);
     a->roworiented = flg;
 
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
@@ -1700,6 +1702,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
+    MatCheckPreallocated(A,1);
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   default:
