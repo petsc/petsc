@@ -5,7 +5,9 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = 'master'
-    self.download         = ['git://https://github.com/xiaoyeli/superlu']
+    # using fork of Sherry's branch to work around bug in handling of BLAS, pull request made 
+    self.download         = ['git://https://github.com/petsc/superlu']
+#    self.download         = ['git://https://github.com/xiaoyeli/superlu']
 #    self.download         = ['git://https://bitbucket.org/petsc/pkg-superlu.git',
 #                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_5.1.tar.gz']
     self.functions        = ['set_default_options']
@@ -31,7 +33,7 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
 
-    args.append('-DTPL_BLAS_LIB="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
 
     #  Tests are broken on Apple since they depend on a shared library that is not resolved against BLAS
     args.append('-Denable_tests=0')
