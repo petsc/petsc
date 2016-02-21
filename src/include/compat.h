@@ -4,6 +4,7 @@
 #include <petsc.h>
 #include "compat/mpi.h"
 #include "compat/hdf5.h"
+#include "compat/mumps.h"
 #include "compat/hypre.h"
 #include "compat/tao.h"
 
