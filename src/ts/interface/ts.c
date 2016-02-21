@@ -9,7 +9,7 @@
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
 PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
-const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
+const char *const TSExactFinalTimeOptions[] = {"UNSPECIFIED","STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
 
 struct _n_TSMonitorDrawCtx {
   PetscViewer   viewer;
@@ -1775,6 +1775,13 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 +   ts - the time-step context
 -   eftopt - exact final time option
 
+$  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
+$  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
+$  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
+
+   Options Database:
+.   -ts_exact_final_time <stepover,interpolate,matchstep> - select the final step at runtime
+
    Level: beginner
 
 .seealso: TSExactFinalTimeOption
@@ -3317,6 +3324,8 @@ PetscErrorCode  TSStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
+    
   ierr = PetscCitationsRegister("@techreport{tspaper,\n"
                                 "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
                                 "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
@@ -3499,6 +3508,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
+    
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     PetscValidHeaderSpecific(u,VEC_CLASSID,2);
     if (!ts->vec_sol || u == ts->vec_sol) {

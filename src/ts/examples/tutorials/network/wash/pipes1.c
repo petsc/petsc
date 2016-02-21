@@ -721,6 +721,7 @@ int main(int argc,char ** argv)
   ierr = TSSetIFunction(ts,NULL,WASHIFunction,wash);CHKERRQ(ierr);
   
   ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   if (size == 1) {

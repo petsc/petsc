@@ -67,6 +67,7 @@ int main(int argc,char **argv)
   ierr = RHSJacobian(ts,0.0,global,A,A,NULL);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRQ(ierr);
 
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);

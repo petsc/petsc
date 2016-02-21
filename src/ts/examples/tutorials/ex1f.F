@@ -164,6 +164,7 @@
       i1000 = 1000
       tmax  = 1.e12
       call TSSetDuration(ts,i1000,tmax,ierr)
+      call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr)
 
 !
 !      Set any additional options from the options database. This

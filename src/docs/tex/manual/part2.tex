@@ -4910,6 +4910,9 @@ promote the solution form $ u^n $ to $ u^{n+1}. $
 \begin{tabbing}
  TSSetDuration(TS ts,int maxsteps,double maxtime);
 \end{tabbing}
+\begin{tabbing}
+  TSSetExactFinalTime(TS ts,TS\_EXACTFINALTIME\_STEPOVER,TS\_EXACTFINALTIME\_INTERPOLATE,TS\_EXACTFINALTIME\_MATCHSTEP);
+\end{tabbing}
 One performs the request number of time steps with
 \begin{tabbing}
   TSSolve(TS ts,Vec U);
