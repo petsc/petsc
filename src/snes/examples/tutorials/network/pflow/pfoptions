@@ -1,10 +1,7 @@
-# Viewing DM
--dm_view ::ascii_info_detail
-
 # SNES, KSP, and PC options
--snes_view
+#-snes_view
 -snes_type newtonls
--snes_monitor
+-snes_monitor_short
 -snes_atol 1e-8
 -snes_rtol 1e-20
 -snes_linesearch_type basic
@@ -12,3 +9,5 @@
 -pc_type bjacobi
 -sub_pc_type lu
 -sub_pc_factor_mat_ordering_type qmd
+-petscpartitioner_type simple
+

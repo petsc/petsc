@@ -1,14 +1,14 @@
 Vec Object: 2 MPI processes
   type: mpi
 Process [0]
-1
-3
-3
-3
-3
+1.
+3.
+3.
+3.
+3.
 Process [1]
-2
-0
-0
-0
-0
+2.
+0.
+0.
+0.
+0.

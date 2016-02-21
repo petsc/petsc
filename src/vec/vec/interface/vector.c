@@ -528,7 +528,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 -     PETSC_VIEWER_STDOUT_(comm) - for parallel vectors created on MPI communicator comm
 
    You can change the format the vector is printed using the
-   option PetscViewerSetFormat().
+   option PetscViewerPushFormat().
 
    The user can open alternative visualization contexts with
 +    PetscViewerASCIIOpen() - Outputs vector to a specified file
@@ -537,7 +537,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 .    PetscViewerDrawOpen() - Outputs vector to an X window display
 -    PetscViewerSocketOpen() - Outputs vector to Socket viewer
 
-   The user can call PetscViewerSetFormat() to specify the output
+   The user can call PetscViewerPushFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
 +    PETSC_VIEWER_DEFAULT - default, prints vector contents
@@ -806,6 +806,14 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
 .     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
           in ix in calls to VecSetValues() or VecGetValues(). These rows are simply
           ignored.
+-     VEC_SUBSET_OFF_PROC_ENTRIES, which causes VecAssemblyBegin() to assume that the off-process
+          entries will always be a subset (possibly equal) of the off-process entries set on the
+          first assembly.  This reuses the communication pattern, thus avoiding a global reduction.
+          Subsequent assemblies setting off-process values should use the same InsertMode as the
+          first assembly.
+
+   Developer Note:
+   The InsertMode restriction could be removed by packing the stash messages out of place.
 
    Level: intermediate
 
@@ -1275,7 +1283,7 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 .keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
 */
-static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,Vec vec)
+static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,Vec vec)
 {
   PetscBool      opt;
   VecType        defaultType;
@@ -1339,7 +1347,7 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)vec);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)vec);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1817,7 +1825,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   s    = &v->bstash;
 
   /* print block stash */
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %D block size %D\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D ",rank,s->idx[i]);CHKERRQ(ierr);
@@ -1846,15 +1854,14 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-
+  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetVec"
-PetscErrorCode PetscOptionsGetVec(const char prefix[],const char key[],Vec v,PetscBool *set)
+PetscErrorCode PetscOptionsGetVec(PetscOptions options,const char prefix[],const char key[],Vec v,PetscBool *set)
 {
   PetscInt       i,N,rstart,rend;
   PetscErrorCode ierr;
@@ -1866,7 +1873,7 @@ PetscErrorCode PetscOptionsGetVec(const char prefix[],const char key[],Vec v,Pet
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
   ierr = PetscCalloc1(N,&xreal);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(prefix,key,xreal,&N,&iset);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(options,prefix,key,xreal,&N,&iset);CHKERRQ(ierr);
   if (iset) {
     ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];

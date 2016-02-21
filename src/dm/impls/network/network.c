@@ -41,7 +41,7 @@ PetscErrorCode DMNetworkSetSizes(DM dm, PetscInt nV, PetscInt nE, PetscInt NV, P
   if ((network->nEdges >= 0 || network->NEdges >= 0) && (network->nEdges != nE || network->NEdges != NE)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset edge sizes to %D local %D global after previously setting them to %D local %D global",nE,NE,network->nEdges,network->NEdges);
   if (NE < 0 || NV < 0) {
     a[0] = nV; a[1] = nE;
-    ierr = MPI_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     NV = b[0]; NE = b[1];
   }
   network->nNodes = nV;
@@ -111,7 +111,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 
   PetscFunctionBegin;
   if (network->nNodes) {
-    ierr = PetscMalloc1(numCorners*network->nNodes,&vertexcoords);CHKERRQ(ierr);
+    ierr = PetscCalloc1(numCorners*network->nNodes,&vertexcoords);CHKERRQ(ierr);
   }
   ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject)dm),dim,network->nEdges,network->nNodes,numCorners,PETSC_FALSE,network->edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
   if (network->nNodes) {
@@ -127,7 +127,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
-  ierr = PetscMalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
+  ierr = PetscCalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
   for (i = network->pStart; i < network->pEnd; i++) {
     network->header[i].ndata = 0;
     ndata = network->header[i].ndata;
@@ -260,15 +260,15 @@ PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 @*/
 PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,void* compvalue)
 {
-  DM_Network     *network = (DM_Network*)dm->data;
-  DMNetworkComponent component=network->component[componentkey];
-  DMNetworkComponentHeader header=&network->header[p];
-  DMNetworkComponentValue  cvalue=&network->cvalue[p];
-  PetscErrorCode         ierr;
+  DM_Network               *network = (DM_Network*)dm->data;
+  DMNetworkComponent       *component = &network->component[componentkey];
+  DMNetworkComponentHeader header = &network->header[p];
+  DMNetworkComponentValue  cvalue = &network->cvalue[p];
+  PetscErrorCode           ierr;
   
   PetscFunctionBegin;
-  header->size[header->ndata] = component.size;
-  ierr = PetscSectionAddDof(network->DataSection,p,component.size);CHKERRQ(ierr);
+  header->size[header->ndata] = component->size;
+  ierr = PetscSectionAddDof(network->DataSection,p,component->size);CHKERRQ(ierr);
   header->key[header->ndata] = componentkey;
   if (header->ndata != 0) header->offset[header->ndata] = header->offset[header->ndata-1] + header->size[header->ndata-1]; 
 
@@ -341,10 +341,10 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 @*/
 PetscErrorCode DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
 {
-  PetscErrorCode ierr;
-  PetscInt       offsetp;
+  PetscErrorCode           ierr;
+  PetscInt                 offsetp;
   DMNetworkComponentHeader header;
-  DM_Network     *network = (DM_Network*)dm->data;
+  DM_Network               *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
@@ -437,7 +437,35 @@ PetscErrorCode DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMNetworkAddNumVariables"
+#define __FUNCT__ "DMNetworkGetNumVariables"
+/*@ 
+  DMNetworkGetNumVariables - Gets number of variables for a vertex/edge point.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMNetworkObject
+- p    - the vertex/edge point
+
+  Output Parameters:
+. nvar - number of variables
+
+  Level: intermediate
+
+.seealso: DMNetworkAddNumVariables, DMNetworkSddNumVariables
+@*/
+PetscErrorCode DMNetworkGetNumVariables(DM dm,PetscInt p,PetscInt *nvar)
+{
+  PetscErrorCode ierr;
+  DM_Network     *network = (DM_Network*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetDof(network->DofSection,p,nvar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMNetworkSetNumVariables"
 /*@ 
   DMNetworkSetNumVariables - Sets number of variables for a vertex/edge point.
 
@@ -554,7 +582,7 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
   Notes:
   This routine should be called only when using multiple processors.
 
-  Distributes the network with a non-overlapping partitioning of the edges.
+  Distributes the network with <overlap>-overlapping partitioning of the edges.
 
   Level: intermediate
 
@@ -579,7 +607,7 @@ PetscErrorCode DMNetworkDistribute(DM oldDM, PetscInt overlap,DM *distDM)
   ierr = PetscSFDistributeSection(pointsf,oldDMnetwork->DofSection,NULL,newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMnetwork->DataSection);CHKERRQ(ierr);
   /* Distribute data and associated section */
-  ierr = DMPlexDistributeData(newDMnetwork->plex,pointsf,oldDMnetwork->DataSection,MPI_INT,(void*)oldDMnetwork->componentdataarray,newDMnetwork->DataSection,(void**)&newDMnetwork->componentdataarray);CHKERRQ(ierr);
+  ierr = DMPlexDistributeData(newDMnetwork->plex,pointsf,oldDMnetwork->DataSection,MPIU_INT,(void*)oldDMnetwork->componentdataarray,newDMnetwork->DataSection,(void**)&newDMnetwork->componentdataarray);CHKERRQ(ierr);
   /* Destroy point SF */
   ierr = PetscSFDestroy(&pointsf);CHKERRQ(ierr);
   

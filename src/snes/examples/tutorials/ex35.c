@@ -89,7 +89,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
 
   if (use_ngs) {
     ierr = SNESGetNPC(snes,&psnes);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
-  ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
+  ierr = VecSet(b,1.0);CHKERRQ(ierr);
 
   ierr = SNESSetFunction(snes,NULL,MyComputeFunction,NULL);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,NULL,NULL,MyComputeJacobian,NULL);CHKERRQ(ierr);

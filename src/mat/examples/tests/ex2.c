@@ -16,14 +16,14 @@ int main(int argc,char **argv)
   PetscReal      normf,normi,norm1;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsHasName(NULL,"-rectA",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-rectA",&flg);CHKERRQ(ierr);
   if (flg) {n += 2; rect = 1;}
-  ierr = PetscOptionsHasName(NULL,"-rectB",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-rectB",&flg);CHKERRQ(ierr);
   if (flg) {n -= 2; rect = 1;}
 
   /* ------- Assemble matrix, test MatValid() --------- */
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* --------------- Test MatTranspose()  -------------- */
-  ierr = PetscOptionsHasName(NULL,"-in_place",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-in_place",&flg);CHKERRQ(ierr);
   if (!rect && flg) {
     ierr = MatTranspose(mat,MAT_REUSE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   /* ----------------- Test MatAXPY(), MatAYPX()  ----------------- */
   if (mat && !rect) {
     alpha = 1.0;
-    ierr  = PetscOptionsGetScalar(NULL,"-alpha",&alpha,NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetScalar(NULL,NULL,"-alpha",&alpha,NULL);CHKERRQ(ierr);
     ierr  = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A\n");CHKERRQ(ierr);
     ierr  = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr  = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -115,10 +115,10 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&matB);CHKERRQ(ierr);
   }
 
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free data structures */
-  if (mat)  {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
-  if (tmat) {ierr = MatDestroy(&tmat);CHKERRQ(ierr);}
-
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

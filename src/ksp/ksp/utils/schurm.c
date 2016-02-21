@@ -141,7 +141,7 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SchurComplement"
-PetscErrorCode MatSetFromOptions_SchurComplement(PetscOptions *PetscOptionsObject,Mat N)
+PetscErrorCode MatSetFromOptions_SchurComplement(PetscOptionItems *PetscOptionsObject,Mat N)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
   PetscErrorCode      ierr;
@@ -641,8 +641,8 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     before forming inv(diag(A00)).
 
     Sometimes users would like to provide problem-specific data in the Schur complement, usually only for special row
-    and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
-    "MatNestGetSubMat_C" to their function.  If their function needs to fall back to the default implementation, it
+    and column index sets.  In that case, the user should call PetscObjectComposeFunction() on the *S matrix and pass mreuse of MAT_REUSE_MATRIX to set
+    "MatGetSchurComplement_C" to their function.  If their function needs to fall back to the default implementation, it
     should call MatGetSchurComplement_Basic().
 
     Level: advanced
@@ -950,7 +950,7 @@ static PetscBool KSPMatRegisterAllCalled;
 
 .keywords: Mat, KSP, register, all
 
-.seealso: MatRegisterAll(), MatRegisterDestroy(), KSPInitializePackage()
+.seealso: MatRegisterAll(),  KSPInitializePackage()
 @*/
 PetscErrorCode KSPMatRegisterAll()
 {

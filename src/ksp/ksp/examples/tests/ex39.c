@@ -32,16 +32,16 @@ int main(int argc,char **args)
   n1 = 32;
   n2 = 32;
   n3 = 32;
-  ierr = PetscOptionsGetInt(NULL,"-n1",&n1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n2",&n2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n3",&n3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n1",&n1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n2",&n2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n3",&n3,NULL);CHKERRQ(ierr);
 
   h     = 1.0/n1;
   gamma = 4.0/h;
   beta  = 0.01/(h*h);
-  ierr  = PetscOptionsGetReal(NULL,"-h",&h,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetReal(NULL,"-gamma",&gamma,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetReal(NULL,"-beta",&beta,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetReal(NULL,NULL,"-h",&h,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetReal(NULL,NULL,"-gamma",&gamma,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetReal(NULL,NULL,"-beta",&beta,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and set right-hand-side vector.

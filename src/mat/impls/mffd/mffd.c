@@ -61,7 +61,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
   ierr = PetscLogEventRegister("MatMult MF",          MATMFFD_CLASSID,&MATMFFD_Mult);CHKERRQ(ierr);
 
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
     if (className) {
@@ -69,7 +69,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
     if (className) {
@@ -266,12 +266,12 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
     }
     ierr = PetscObjectGetOptionsPrefix((PetscObject)J, &prefix);CHKERRQ(ierr);
 
-    ierr = PetscOptionsHasName(prefix, "-mat_mffd_view_base", &viewbase);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)J)->options,prefix, "-mat_mffd_view_base", &viewbase);CHKERRQ(ierr);
     if (viewbase) {
       ierr = PetscViewerASCIIPrintf(viewer, "Base:\n");CHKERRQ(ierr);
       ierr = VecView(ctx->current_u, viewer);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsHasName(prefix, "-mat_mffd_view_function", &viewfunction);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)J)->options,prefix, "-mat_mffd_view_function", &viewfunction);CHKERRQ(ierr);
     if (viewfunction) {
       ierr = PetscViewerASCIIPrintf(viewer, "Function:\n");CHKERRQ(ierr);
       ierr = VecView(ctx->current_f, viewer);CHKERRQ(ierr);
@@ -346,7 +346,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     PetscFunctionReturn(0);
   }
 
-  if (mat->erroriffpe && PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
+  if (mat->erroriffailure && PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
   if (ctx->checkh) {
     ierr = (*ctx->checkh)(ctx->checkhctx,U,a,&h);CHKERRQ(ierr);
   }
@@ -592,7 +592,7 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MFFD"
-PetscErrorCode  MatSetFromOptions_MFFD(PetscOptions *PetscOptionsObject,Mat mat)
+PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObject,Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;
@@ -659,6 +659,15 @@ PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_MFFD"
+static PetscErrorCode MatMissingDiagonal_MFFD(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /*MC
   MATMFFD - MATMFFD = "mffd" - A matrix free matrix type.
 
@@ -708,16 +717,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
   A->data = mfctx;
 
-  A->ops->mult           = MatMult_MFFD;
-  A->ops->destroy        = MatDestroy_MFFD;
-  A->ops->view           = MatView_MFFD;
-  A->ops->assemblyend    = MatAssemblyEnd_MFFD;
-  A->ops->getdiagonal    = MatGetDiagonal_MFFD;
-  A->ops->scale          = MatScale_MFFD;
-  A->ops->shift          = MatShift_MFFD;
-  A->ops->diagonalscale  = MatDiagonalScale_MFFD;
-  A->ops->diagonalset    = MatDiagonalSet_MFFD;
-  A->ops->setfromoptions = MatSetFromOptions_MFFD;
+  A->ops->mult            = MatMult_MFFD;
+  A->ops->destroy         = MatDestroy_MFFD;
+  A->ops->view            = MatView_MFFD;
+  A->ops->assemblyend     = MatAssemblyEnd_MFFD;
+  A->ops->getdiagonal     = MatGetDiagonal_MFFD;
+  A->ops->scale           = MatScale_MFFD;
+  A->ops->shift           = MatShift_MFFD;
+  A->ops->diagonalscale   = MatDiagonalScale_MFFD;
+  A->ops->diagonalset     = MatDiagonalSet_MFFD;
+  A->ops->setfromoptions  = MatSetFromOptions_MFFD;
+  A->ops->missingdiagonal = MatMissingDiagonal_MFFD;
   A->assembled           = PETSC_TRUE;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
@@ -1217,7 +1227,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   }
   ierr = VecRestoreArray(U,&u_vec);CHKERRQ(ierr);
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&minval,&val,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&minval,&val,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
   if (val <= PetscAbsScalar(*h)) {
     ierr = PetscInfo2(U,"Scaling back h from %g to %g\n",(double)PetscRealPart(*h),(double)(.99*val));CHKERRQ(ierr);
     if (PetscRealPart(*h) > 0.0) *h =  0.99*val;

@@ -1,0 +1,13 @@
+DM Object:Mesh 1 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  0-cells: 8
+  1-cells: 19
+  2-cells: 18
+  3-cells: 6
+Labels:
+  marker: 1 strata of sizes (20)
+  depth: 4 strata of sizes (8, 19, 18, 6)
+Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+Number of SNES iterations = 0
+L_2 Error: 0.416667

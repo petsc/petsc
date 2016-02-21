@@ -90,7 +90,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 4; ++p) {
-    ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;
   PetscFunctionReturn(0);
@@ -117,7 +117,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 5; ++p) {
-    ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;
   PetscFunctionReturn(0);
@@ -144,7 +144,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 6; ++p) {
-    ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;
   PetscFunctionReturn(0);
@@ -173,7 +173,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for(p = 0; p < 12; ++p) {
-    ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
   }
   *newdm = dm;
   PetscFunctionReturn(0);
@@ -238,7 +238,7 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxConeTime;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
@@ -276,7 +276,7 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxClosureTime;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
@@ -320,7 +320,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
   PetscScalar        tmpArray[64];
   PetscScalar       *userArray     = user->reuseArray ? tmpArray : NULL;
   PetscReal          maxTimePerRun = user->maxVecClosureTime;
-  PetscInt           stage;
+  PetscLogStage      stage;
   PetscLogEvent      event;
   PetscEventPerfInfo eventInfo;
   PetscErrorCode     ierr;
@@ -387,7 +387,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(&user);CHKERRQ(ierr);
-  ierr = PetscLogBegin();CHKERRQ(ierr);
+  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_SELF, &user, &dm);CHKERRQ(ierr);
   ierr = TestCone(dm, &user);CHKERRQ(ierr);
   ierr = TestTransitiveClosure(dm, &user);CHKERRQ(ierr);

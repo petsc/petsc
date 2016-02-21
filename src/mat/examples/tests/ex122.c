@@ -15,9 +15,9 @@ int main(int argc,char **argv)
   PetscInt       nza,am,an;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-fill",&fill,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-fill",&fill,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
@@ -46,14 +46,6 @@ int main(int argc,char **argv)
 
   /* Test MatMatMult() */
   ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-
-  /*
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
-  ierr = MatView(C,0);CHKERRQ(ierr);
-  ierr = MatView(B,0);CHKERRQ(ierr);
-  ierr = MatView(A,0);CHKERRQ(ierr);
-  */
-
 
   ierr = MatMatMultSymbolic(B,A,fill,&D);CHKERRQ(ierr);
   for (i=0; i<2; i++) {

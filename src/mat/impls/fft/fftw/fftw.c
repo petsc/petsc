@@ -120,7 +120,11 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
     fftw_execute(fftw->p_forward);
   } else { /* use existing plan */
     if (fftw->finarray != x_array || fftw->foutarray != y_array) { /* use existing plan on new arrays */
+#if defined(PETSC_USE_COMPLEX)
       fftw_execute_dft(fftw->p_forward,(fftw_complex*)x_array,(fftw_complex*)y_array);
+#else
+      fftw_execute_dft_r2c(fftw->p_forward,(double*)x_array,(fftw_complex*)y_array);
+#endif
     } else {
       fftw_execute(fftw->p_forward);
     }
@@ -200,7 +204,11 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
     fftw_execute(fftw->p_backward);CHKERRQ(ierr);
   } else { /* use existing plan */
     if (fftw->binarray != x_array || fftw->boutarray != y_array) { /* use existing plan on new arrays */
+#if defined(PETSC_USE_COMPLEX)
       fftw_execute_dft(fftw->p_backward,(fftw_complex*)x_array,(fftw_complex*)y_array);
+#else
+      fftw_execute_dft_c2r(fftw->p_backward,(fftw_complex*)x_array,(double*)y_array);
+#endif
     } else {
       fftw_execute(fftw->p_backward);CHKERRQ(ierr);
     }

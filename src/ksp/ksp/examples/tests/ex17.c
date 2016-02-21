@@ -23,8 +23,8 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-p",&p,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL);CHKERRQ(ierr);
   switch (p) {
   case 1:  type = TEST_1;      dim = n;   break;
   case 2:  type = TEST_2;      dim = n;   break;
@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   use_random = 1;
   flg        = PETSC_FALSE;
-  ierr       = PetscOptionsGetBool(NULL,"-norandom",&flg,NULL);CHKERRQ(ierr);
+  ierr       = PetscOptionsGetBool(NULL,NULL,"-norandom",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     use_random = 0;
     ierr       = VecSet(u,pfive);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = FormTestMatrix(A,n,type);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-printout",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-printout",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -73,13 +73,17 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Check error */
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g,Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  if (norm >= 1.e-12) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  } else {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %D\n",its);CHKERRQ(ierr);
+  }
 
   /* Free work space */
   ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -150,7 +154,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     PetscRandom rctx;
     PetscReal   h2,sigma1 = 5.0;
     PetscScalar sigma2;
-    ierr = PetscOptionsGetReal(NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(rctx,0.0,PETSC_i);CHKERRQ(ierr);
@@ -184,7 +188,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
      */
     PetscReal   h2,sigma1 = 200.0;
     PetscScalar alpha_h;
-    ierr    = PetscOptionsGetReal(NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
+    ierr    = PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
     h2      = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (PetscReal)(n+1);  /* alpha_h = alpha * h */
     for (Ii=Istart; Ii<Iend; Ii++) {

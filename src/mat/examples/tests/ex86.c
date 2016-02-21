@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
 
   /* Create seqaij matrices of size (n+rank) by n */
   ierr = MatCreate(PETSC_COMM_SELF,&seqmat);CHKERRQ(ierr);

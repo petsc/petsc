@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex12.c ex15.c ex51.c ex65dm.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c  ex7.c ex8.c ex9.c ex10.c ex12.c ex15.c ex51.c ex65dm.c
 EXAMPLESF       = ex11f90.F ex13f90aux.F90 ex13f90.F90
 MANSEC          = DM
 SUBMANSEC       = DMDA
@@ -150,7 +150,7 @@ TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc ex11f90.rm ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_C_COMPLEX	  =
-TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm ex65dm.PETSc ex65dm.rm
+TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex65dm.PETSc ex65dm.rm
 TESTEXAMPLES_13		  =
 TESTEXAMPLES_HDF5         = ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm
 

@@ -84,7 +84,7 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Kaczmarz"
-PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
   PetscErrorCode ierr;
@@ -126,8 +126,8 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
    Notes: In parallel this is block-Jacobi with Kaczmarz inner solve.
 
    References:
-   S. Kaczmarz, “Angenaherte Auflosing von Systemen Linearer Gleichungen”,
-   Bull. Internat. Acad. Polon. Sci. C1. A, pp.335-357, 1937.
+.  1. - S. Kaczmarz, “Angenaherte Auflosing von Systemen Linearer Gleichungen”,
+   Bull. Internat. Acad. Polon. Sci. C1. A, 1937.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 

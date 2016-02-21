@@ -121,8 +121,10 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   const PetscScalar *ba;
   PetscErrorCode    ierr;
   PetscInt          *ai = a->i,*aj = a->j,status;
+  static PetscBool  cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("@article{davis2004algorithm,\n  title={Algorithm 832: {UMFPACK} V4.3---An Unsymmetric-Pattern Multifrontal Method},\n  author={Davis, Timothy A},\n  journal={ACM Transactions on Mathematical Software (TOMS)},\n  volume={30},\n  number={2},\n  pages={196--199},\n  year={2004},\n  publisher={ACM}\n}\n",&cite);CHKERRQ(ierr);
   /* solve Ax = b by umfpack_*_wsolve */
   /* ----------------------------------*/
 
@@ -460,7 +462,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   ierr = PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],NULL);CHKERRQ(ierr);
 
   /* use Petsc mat ordering (note: size is for the transpose, and PETSc r = Umfpack perm_c) */
-  ierr = PetscOptionsHasName(NULL,"-pc_factor_mat_ordering_type",&lu->PetscMatOrdering);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_factor_mat_ordering_type","Ordering to do factorization in","MatGetOrdering",&lu->PetscMatOrdering);CHKERRQ(ierr);
   PetscOptionsEnd();
   *F = B;
   PetscFunctionReturn(0);

@@ -66,7 +66,7 @@ struct _VecOps {
   PetscErrorCode (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Vec,PetscInt,const PetscInt *,const PetscScalar *,InsertMode);
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
-  PetscErrorCode (*setfromoptions)(PetscOptions*,Vec);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
@@ -308,6 +308,8 @@ PETSC_INTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash*,PetscInt);
 PETSC_INTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 PETSC_INTERN PetscErrorCode VecStashScatterBegin_Private(VecStash*,PetscInt*);
 PETSC_INTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,PetscInt**,PetscScalar**,PetscInt*);
+PETSC_INTERN PetscErrorCode VecStashSortCompress_Private(VecStash*);
+PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash*,PetscLayout,PetscMPIInt*,PetscMPIInt**);
 
 /*
   VecStashValue_Private - inserts a single value into the stash.

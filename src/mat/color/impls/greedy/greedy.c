@@ -69,9 +69,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
     md_j = dseq->j;
     mo_i = NULL;
     mo_j = NULL;
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
   if (mo) {
     ierr = VecGetSize(aij->lvec,&no);CHKERRQ(ierr);
@@ -178,7 +176,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
       }
       nd_global=0;
     }
-    ierr = MPI_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
   for (i=0;i<n;i++) {
     colors[i] = (ISColoringValue)lcolors[i];
@@ -251,9 +249,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     rmd_j = dseq->j;
     rmo_i = NULL;
     rmo_j = NULL;
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   if (!gr->symmetric) {
     ierr = MatTranspose(m, MAT_INITIAL_MATRIX, &mt);CHKERRQ(ierr);
     if (isSEQAIJ) {
@@ -448,7 +444,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
       ierr = PetscSFBcastBegin(sf,MPIU_INT,dcolors,ocolors);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(sf,MPIU_INT,dcolors,ocolors);CHKERRQ(ierr);
       /* find the maximum color assigned locally and allocate a mask */
-      ierr = MPI_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
       ierr = PetscMalloc1(mcol_global+1,&colorweights);CHKERRQ(ierr);
       /* check for conflicts */
       for (i=0;i<n;i++) {
@@ -544,7 +540,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         }
       }
     }
-    ierr = MPI_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
   if (mo) {
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
@@ -585,15 +581,13 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
     ierr = GreedyColoringLocalDistanceOne_Private(mc,wts,lperm,colors);CHKERRQ(ierr);
   } else if (mc->dist == 2) {
     ierr = GreedyColoringLocalDistanceTwo_Private(mc,wts,lperm,colors);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_OUTOFRANGE,"Only distance 1 and distance 2 supported by MatColoringGreedy");
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_OUTOFRANGE,"Only distance 1 and distance 2 supported by MatColoringGreedy");
   finalcolor=0;
   for (i=0;i<ncols;i++) {
     if (colors[i] > finalcolor) finalcolor=colors[i];
   }
   finalcolor_global=0;
-  ierr = MPI_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   ierr = PetscLogEventBegin(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
@@ -606,7 +600,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_Greedy"
-PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptions *PetscOptionsObject, MatColoring mc)
+PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOptionsObject, MatColoring mc)
 {
   MC_Greedy     *gr = (MC_Greedy *) mc->data;
   PetscErrorCode ierr;
@@ -637,10 +631,8 @@ PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptions *PetscOptionsObject
    this is done until each column has received a valid color.
 
    References:
-
-   Bozdag et al. "A Parallel Distance-2 Graph Coloring Algorithm for Distributed Memory Computers"
+.  1. - Bozdag et al. "A Parallel Distance 2 Graph Coloring Algorithm for Distributed Memory Computers"
    HPCC'05 Proceedings of the First international conference on High Performance Computing and Communications
-   Pages 796--806
 
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType()
 M*/

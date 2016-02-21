@@ -29,7 +29,7 @@
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BDDC"
-PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;
@@ -38,7 +38,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
   ierr = PetscOptionsHead(PetscOptionsObject,"BDDC options");CHKERRQ(ierr);
   /* Verbose debugging */
   ierr = PetscOptionsInt("-pc_bddc_check_level","Verbose output for PCBDDC (intended for debug)","none",pcbddc->dbg_flag,&pcbddc->dbg_flag,NULL);CHKERRQ(ierr);
-  /* Primal space cumstomization */
+  /* Primal space customization */
   ierr = PetscOptionsBool("-pc_bddc_use_local_mat_graph","Use or not adjacency graph of local mat for interface analysis","none",pcbddc->use_local_adj,&pcbddc->use_local_adj,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_vertices","Use or not corner dofs in coarse space","none",pcbddc->use_vertices,&pcbddc->use_vertices,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_edges","Use or not edge constraints in coarse space","none",pcbddc->use_edges,&pcbddc->use_edges,NULL);CHKERRQ(ierr);
@@ -70,6 +70,63 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "PCView_BDDC"
+static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
+{
+  PC_BDDC              *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode       ierr;
+  PetscBool            isascii,isstring;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+
+  /* In a braindead way, print out anything which the user can control from the command line,
+     cribbing from PCSetFromOptions_BDDC */
+
+  /* Nothing printed for the String viewer */
+
+  /* ASCII viewer */
+  if (isascii) {
+    /* Verbose debugging */
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use verbose output: %d\n",pcbddc->dbg_flag);CHKERRQ(ierr);
+
+    /* Primal space customization */
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use local mat graph: %d\n",pcbddc->use_local_adj);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use vertices: %d\n",pcbddc->use_vertices);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use edges: %d\n",pcbddc->use_edges);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use faces: %d\n",pcbddc->use_faces);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use true near null space: %d\n",pcbddc->use_nnsp_true);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use QR for single constraints on cc: %d\n",pcbddc->use_qr_single);CHKERRQ(ierr);
+
+    /* Change of basis */
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use change of basis on local edge nodes: %d\n",pcbddc->use_change_of_basis);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use change of basis on local face nodes: %d\n",pcbddc->use_change_on_faces);CHKERRQ(ierr);
+
+    /* Switch between M_2 (default) and M_3 preconditioners (as defined by C. Dohrmann in the ref. article) */
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Switch on static condensation ops around the interface preconditioner: %d\n",pcbddc->switch_static);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Coarse problem restribute procs: %d\n",pcbddc->redistribute_coarse);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Multilevel coarsening ratio: %d\n",pcbddc->coarsening_ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Multilevel max levels: %d\n",pcbddc->max_levels);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use estimated eigs for coarse problem: %d\n",pcbddc->use_coarse_estimates);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use deluxe scaling: %d\n",pcbddc->use_deluxe_scaling);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Rebuild interface graph for Schur principal minors: %d\n",pcbddc->sub_schurs_rebuild);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Number of dofs' layers for the computation of principal minors: %d\n",pcbddc->sub_schurs_layers);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use user CSR graph to compute successive layers: %d\n",pcbddc->sub_schurs_use_useradj);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Fast deluxe scaling: %d\n",pcbddc->faster_deluxe);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Adaptive constraint selection threshold: %g\n",pcbddc->adaptive_threshold);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Min constraints / connected component: %d\n",pcbddc->adaptive_nmin);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Max constraints / connected component: %d\n",pcbddc->adaptive_nmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Symmetric computation of primal basis functions: %d\n",pcbddc->symmetric_primal);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Num. Procs. to map coarse adjacency list: %d\n",pcbddc->coarse_adj_red);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetChangeOfBasisMat_BDDC"
@@ -113,20 +170,12 @@ PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change)
     PetscInt rows_c,cols_c,rows,cols;
     ierr = MatGetSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
     ierr = MatGetSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
-    if (rows_c != rows) {
-      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %d != %d",rows_c,rows);
-    }
-    if (cols_c != cols) {
-      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %d != %d",cols_c,cols);
-    }
+    if (rows_c != rows) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %d != %d",rows_c,rows);
+    if (cols_c != cols) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %d != %d",cols_c,cols);
     ierr = MatGetLocalSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
     ierr = MatGetLocalSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
-    if (rows_c != rows) {
-      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %d != %d",rows_c,rows);
-    }
-    if (cols_c != cols) {
-      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %d != %d",cols_c,cols);
-    }
+    if (rows_c != rows) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %d != %d",rows_c,rows);
+    if (cols_c != cols) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %d != %d",cols_c,cols);
   }
   ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisMat_C",(PC,Mat),(pc,change));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -769,9 +818,7 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(xadj,3);
   PetscValidIntPointer(adjncy,4);
-  if (copymode != PETSC_COPY_VALUES && copymode != PETSC_OWN_POINTER) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d in %s\n",copymode,__FUNCT__);
-  }
+  if (copymode != PETSC_COPY_VALUES && copymode != PETSC_OWN_POINTER)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d",copymode);
   ierr = PetscTryMethod(pc,"PCBDDCSetLocalAdjacencyGraph_C",(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode),(pc,nvtxs,xadj,adjncy,copymode));CHKERRQ(ierr);
   /* free arrays if PCBDDC is not the PC type */
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",&f);CHKERRQ(ierr);
@@ -998,10 +1045,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 
       ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
       ierr = VecPointwiseDivide(pcis->vec1_global,rhs,pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = ISGetLocalSize(dirIS,&dirsize);CHKERRQ(ierr);
       ierr = VecGetArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
       ierr = VecGetArrayRead(pcis->vec2_N,&array_diagonal);CHKERRQ(ierr);
@@ -1010,8 +1057,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = ISRestoreIndices(dirIS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
       ierr = VecRestoreArrayRead(pcis->vec2_N,&array_diagonal);CHKERRQ(ierr);
       ierr = VecRestoreArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       pcbddc->rhs_change = PETSC_TRUE;
       ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
     }
@@ -1172,15 +1219,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat_IS*        matis;
   MatNullSpace   nearnullspace;
+  PetscInt       nrows,ncols;
   PetscBool      computetopography,computesolvers,computesubschurs;
   PetscBool      computeconstraintsmatrix;
   PetscBool      new_nearnullspace_provided,ismatis;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis);CHKERRQ(ierr);
-  if (!ismatis) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
-  }
+  if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
+  ierr = MatGetSize(pc->pmat,&nrows,&ncols);CHKERRQ(ierr);
+  if (nrows != ncols) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
   matis = (Mat_IS*)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
@@ -1202,21 +1250,18 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computetopography = PETSC_TRUE;
   }
   computeconstraintsmatrix = PETSC_FALSE;
-  if (pcbddc->adaptive_threshold > 0.0 && !pcbddc->use_deluxe_scaling) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute adaptive constraints without deluxe scaling. Rerun with -pc_bddc_use_deluxe_scaling");
-  }
+  if (pcbddc->adaptive_threshold > 0.0 && !pcbddc->use_deluxe_scaling) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute adaptive constraints without deluxe scaling. Rerun with -pc_bddc_use_deluxe_scaling");
   pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0 && pcbddc->use_deluxe_scaling);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
   computesubschurs = (PetscBool)(pcbddc->adaptive_selection || pcbddc->use_deluxe_scaling);
-  if (pcbddc->faster_deluxe && pcbddc->adaptive_selection && pcbddc->use_change_of_basis) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute faster deluxe if adaptivity and change of basis are both requested. Rerun with -pc_bddc_deluxe_faster false");
-  }
+  if (pcbddc->faster_deluxe && pcbddc->adaptive_selection && pcbddc->use_change_of_basis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute faster deluxe if adaptivity and change of basis are both requested. Rerun with -pc_bddc_deluxe_faster false");
+
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
       pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
-      ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
@@ -2051,7 +2096,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pc->ops->setup               = PCSetUp_BDDC;
   pc->ops->destroy             = PCDestroy_BDDC;
   pc->ops->setfromoptions      = PCSetFromOptions_BDDC;
-  pc->ops->view                = 0;
+  pc->ops->view                = PCView_BDDC;
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;

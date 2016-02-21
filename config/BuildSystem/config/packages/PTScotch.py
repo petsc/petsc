@@ -3,13 +3,14 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://gforge.inria.fr/frs/download.php/file/34099/scotch_6.0.3.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_6.0.3.tar.gz']
-    self.downloadfilename = 'scotch'
-    self.liblist      = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
-    self.functions    = ['SCOTCH_archBuild']
-    self.includes     = ['ptscotch.h']
-    self.needsMath    = 1
+    self.download        = ['http://gforge.inria.fr/frs/download.php/file/34099/scotch_6.0.3.tar.gz',
+                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_6.0.3.tar.gz']
+    self.downloaddirname = 'scotch'
+    self.liblist         = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
+    self.functions       = ['SCOTCH_archBuild']
+    self.includes        = ['ptscotch.h']
+    self.needsMath       = 1
+    self.hastests        = 1
     return
 
   def setupDependencies(self, framework):
@@ -62,7 +63,7 @@ class Configure(config.package.Package):
     self.cflags = self.cflags + ' -DSCOTCH_RENAME -Drestrict="" '
     # this is needed on the Mac, because common2.c includes common.h which DOES NOT include mpi.h because
     # SCOTCH_PTSCOTCH is NOT defined above Mac does not know what clock_gettime() is!
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       self.cflags = self.cflags + ' -DCOMMON_TIMING_OLD'
     if self.indexTypes.integerSize == 64:
       self.cflags = self.cflags + ' -DINTSIZE64'

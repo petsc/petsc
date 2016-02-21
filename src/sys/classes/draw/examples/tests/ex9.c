@@ -22,17 +22,17 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   ierr  = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-width",&w,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-height",&h,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-n",&nn,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-bins",&b,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,"-color",&c,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsHasName(NULL,"-nolabels",&flg);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-width",&w,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-height",&h,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-n",&nn,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-bins",&b,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-color",&c,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsHasName(NULL,NULL,"-nolabels",&flg);CHKERRQ(ierr);
   width = (int) w; height = (int)h; n = (int)nn; bins = (int) b; color = (int) c;
   if (flg) {
     xlabel = (char*)0; toplabel = (char*)0;
   }
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawHGCreate(draw,bins,&hist);CHKERRQ(ierr);
   ierr = PetscDrawHGGetAxis(hist,&axis);CHKERRQ(ierr);
@@ -45,7 +45,6 @@ int main(int argc,char **argv)
   }
   ierr = PetscDrawHGSetColor(hist,color);CHKERRQ(ierr);
   ierr = PetscDrawHGDraw(hist);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawHGDestroy(&hist);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);

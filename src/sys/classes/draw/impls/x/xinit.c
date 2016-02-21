@@ -162,7 +162,7 @@ PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,int x,int
   if (PetscDrawXi_wait_map(XiWin)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Wait for X window failed");
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-draw_virtual",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_virtual",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     XiWin->drw = XCreatePixmap(XiWin->disp,XiWin->win,XiWin->w,XiWin->h,XiWin->depth);
     XDestroyWindow(XiWin->disp,XiWin->win);

@@ -380,8 +380,8 @@ PetscErrorCode  PetscViewerDrawOpen(MPI_Comm comm,const char display[],const cha
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSingleton_Draw"
-PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
+#define __FUNCT__ "PetscViewerGetSubViewer_Draw"
+PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
@@ -389,7 +389,7 @@ PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *svie
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
-  if (vdraw->singleton_made) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get singleton without first restoring previous");
+  if (vdraw->singleton_made) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get SubViewer without first restoring previous");
 
   /* only processor zero can use the PetscViewer draw singleton */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
@@ -408,8 +408,8 @@ PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *svie
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSingleton_Draw"
-PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
+#define __FUNCT__ "PetscViewerRestoreSubViewer_Draw"
+PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
@@ -436,7 +436,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Draw"
-PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptions *PetscOptionsObject,PetscViewer v)
+PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscReal      bounds[16];
@@ -490,8 +490,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   viewer->ops->view             = PetscViewerView_Draw;
   viewer->ops->destroy          = PetscViewerDestroy_Draw;
   viewer->ops->setfromoptions   = PetscViewerSetFromOptions_Draw;
-  viewer->ops->getsingleton     = PetscViewerGetSingleton_Draw;
-  viewer->ops->restoresingleton = PetscViewerRestoreSingleton_Draw;
+  viewer->ops->getsubviewer     = PetscViewerGetSubViewer_Draw;
+  viewer->ops->restoresubviewer = PetscViewerRestoreSubViewer_Draw;
 
   /* these are created on the fly if requested */
   vdraw->draw_max  = 5;

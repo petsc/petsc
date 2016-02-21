@@ -111,7 +111,7 @@ M*/
      This is strongly A-stable with R(infty) = 0.73. The embedded method of order 2 is strongly A-stable with R(infty) = 0.73.
 
      References:
-     Rang and Angermann, New Rosenbrock-W methods of order 3 for partial differential algebraic equations of index 1, 2005.
+.  1. -   Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
      Level: intermediate
 
@@ -126,7 +126,7 @@ M*/
      This is strongly A-stable with R(infty) = 0. The embedded method of order 2 is strongly A-stable with R(infty) = 0.48.
 
      References:
-     Rang and Angermann, New Rosenbrock-W methods of order 3 for partial differential algebraic equations of index 1, 2005.
+.  1. -   Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
      Level: intermediate
 
@@ -141,7 +141,7 @@ M*/
      Both the third order and embedded second order methods are stiffly accurate and L-stable.
 
      References:
-     Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
+.  1. -   Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
      Level: intermediate
 
@@ -159,7 +159,7 @@ M*/
      This method is called ROS3 in the paper.
 
      References:
-     Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
+.  1. -   Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
      Level: intermediate
 
@@ -174,7 +174,7 @@ M*/
      A-stable SPP explicit order 3, 3 stages, CFL 1 (eff = 1/3)
 
      References:
-     Emil Constantinescu
+.     Emil Constantinescu
 
      Level: intermediate
 
@@ -189,7 +189,7 @@ M*/
      L-stable (A-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
 
      References:
-     Emil Constantinescu
+.     Emil Constantinescu
 
      Level: intermediate
 
@@ -204,7 +204,7 @@ M*/
      L-stable (L-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
 
      References:
-     Emil Constantinescu
+.     Emil Constantinescu
 
      Level: intermediate
 
@@ -221,9 +221,8 @@ M*/
      This method does not provide a dense output formula.
 
      References:
-     Kaps and Rentrop, Generalized Runge-Kutta methods of order four with stepsize control for stiff ordinary differential equations, 1979.
-
-     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
++   1. -  Kaps and Rentrop, Generalized Runge Kutta methods of order four with stepsize control for stiff ordinary differential equations, 1979.
+-   2. -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
@@ -242,9 +241,8 @@ M*/
      This method does not provide a dense output formula.
 
      References:
-     Shampine, Implementation of Rosenbrock methods, 1982.
-
-     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
++   1. -  Shampine, Implementation of Rosenbrock methods, 1982.
+-   2. -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
@@ -263,9 +261,8 @@ M*/
      This method does not provide a dense output formula.
 
      References:
-     van Veldhuizen, D-stability and Kaps-Rentrop methods, 1984.
-
-     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
++   1. -  van Veldhuizen, D stability and Kaps Rentrop methods, 1984.
+-   2. -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
@@ -284,7 +281,7 @@ M*/
      This method does not provide a dense output formula.
 
      References:
-     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
+.  1. -   Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
@@ -757,16 +754,16 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
 
   switch (s) {
   case 1: GammaInv[0] = 1./GammaInv[0]; break;
-  case 2: ierr = PetscKernel_A_gets_inverse_A_2(GammaInv,0);CHKERRQ(ierr); break;
-  case 3: ierr = PetscKernel_A_gets_inverse_A_3(GammaInv,0);CHKERRQ(ierr); break;
-  case 4: ierr = PetscKernel_A_gets_inverse_A_4(GammaInv,0);CHKERRQ(ierr); break;
+  case 2: ierr = PetscKernel_A_gets_inverse_A_2(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
+  case 3: ierr = PetscKernel_A_gets_inverse_A_3(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
+  case 4: ierr = PetscKernel_A_gets_inverse_A_4(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   case 5: {
     PetscInt  ipvt5[5];
     MatScalar work5[5*5];
-    ierr = PetscKernel_A_gets_inverse_A_5(GammaInv,ipvt5,work5,0);CHKERRQ(ierr); break;
+    ierr = PetscKernel_A_gets_inverse_A_5(GammaInv,ipvt5,work5,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   }
-  case 6: ierr = PetscKernel_A_gets_inverse_A_6(GammaInv,0);CHKERRQ(ierr); break;
-  case 7: ierr = PetscKernel_A_gets_inverse_A_7(GammaInv,0);CHKERRQ(ierr); break;
+  case 6: ierr = PetscKernel_A_gets_inverse_A_6(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
+  case 7: ierr = PetscKernel_A_gets_inverse_A_7(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for %D stages",s);
   }
   for (i=0; i<s*s; i++) t->GammaInv[i] = PetscRealPart(GammaInv[i]);
@@ -863,7 +860,7 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
   rhs[0]  = one - b3;
   rhs[1]  = one/three - a3*a3*b3;
   rhs[2]  = one/four - a3*a3*a3*b3;
-  ierr    = PetscKernel_A_gets_inverse_A_3(&M[0][0],0);CHKERRQ(ierr);
+  ierr    = PetscKernel_A_gets_inverse_A_3(&M[0][0],0,PETSC_FALSE,NULL);CHKERRQ(ierr);
   b1      = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
   b2      = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
   b4      = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
@@ -876,7 +873,7 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
   M[1][0]      = a4*a4*beta32beta2p-a3*a3*beta4jbetajp; M[1][1] = a2*a2*beta4jbetajp; M[1][2] = -a2*a2*beta32beta2p;
   M[2][0]      = b4*beta43*a3*a3-p43;                   M[2][1] = -b4*beta43*a2*a2;   M[2][2] = 0;
   rhs[0]       = one/two - gamma; rhs[1] = 0; rhs[2] = -a2*a2*p32;
-  ierr         = PetscKernel_A_gets_inverse_A_3(&M[0][0],0);CHKERRQ(ierr);
+  ierr         = PetscKernel_A_gets_inverse_A_3(&M[0][0],0,PETSC_FALSE,NULL);CHKERRQ(ierr);
   beta2p       = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
   beta3p       = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
   beta4p       = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
@@ -963,7 +960,7 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *
   }
   unavailable:
   if (done) *done = PETSC_FALSE;
-  else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Rosenbrock-W '%s' of order %D cannot evaluate step at order %D",tab->name,tab->order,order);
+  else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Rosenbrock-W '%s' of order %D cannot evaluate step at order %D. Consider using -ts_adapt_type none or a different method that has an embedded estimate.",tab->name,tab->order,order);
   PetscFunctionReturn(0);
 }
 
@@ -1046,7 +1043,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
         ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-        ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+        ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,Y[i],&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
       } else {
         Mat J,Jp;
@@ -1406,7 +1403,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RosW"
-static PetscErrorCode TSSetFromOptions_RosW(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;

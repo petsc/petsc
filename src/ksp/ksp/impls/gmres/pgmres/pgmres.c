@@ -60,6 +60,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscFunctionBegin;
   if (itcount) *itcount = 0;
   ierr   = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
+  KSPCheckNorm(ksp,res_norm);
   res    = res_norm;
   *RS(0) = res_norm;
 
@@ -437,7 +438,7 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_PGMRES"
-PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
 

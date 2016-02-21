@@ -1,0 +1,9 @@
+    Linear ksp_sub_ solve did not converge due to DIVERGED_PCSETUP_FAILED iterations 1
+                   PCSETUP_FAILED due to FACTOR_NUMERIC_ZEROPIVOT 
+    Linear ksp_sub_ solve converged due to CONVERGED_ITS iterations 1
+    Linear ksp_sub_ solve converged due to CONVERGED_ITS iterations 1
+  Linear ksp_ solve did not converge due to DIVERGED_PCSETUP_FAILED iterations 0
+                 PCSETUP_FAILED due to SUBPC_ERROR 
+Linear solve did not converge due to DIVERGED_PCSETUP_FAILED iterations 0
+               PCSETUP_FAILED due to SUBPC_ERROR 
+Number of iterations =   0

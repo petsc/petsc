@@ -7,6 +7,7 @@
 #include <petscdmtypes.h>
 #include <petscfetypes.h>
 #include <petscdstypes.h>
+#include <petscdmlabel.h>
 
 PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
@@ -92,6 +93,8 @@ PETSC_EXTERN PetscErrorCode DMConvert(DM,DMType,DM*);
 PETSC_EXTERN PetscErrorCode DMGetDimension(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSetDimension(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetDimPoints(DM,PetscInt,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMGetUseNatural(DM,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMSetUseNatural(DM,PetscBool);
 
 /* Coordinate support */
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
@@ -113,6 +116,8 @@ PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*
 PETSC_EXTERN PetscErrorCode DMSubDomainRestrict(DM,VecScatter,VecScatter,DM);
 
 PETSC_EXTERN PetscErrorCode DMSetOptionsPrefix(DM,const char []);
+PETSC_EXTERN PetscErrorCode DMAppendOptionsPrefix(DM,const char []);
+PETSC_EXTERN PetscErrorCode DMGetOptionsPrefix(DM,const char*[]);
 PETSC_EXTERN PetscErrorCode DMSetVecType(DM,VecType);
 PETSC_EXTERN PetscErrorCode DMGetVecType(DM,VecType*);
 PETSC_EXTERN PetscErrorCode DMSetMatType(DM,MatType);
@@ -198,4 +203,27 @@ PETSC_EXTERN PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo, Vec *)
 PETSC_EXTERN PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo, Vec *);
 PETSC_EXTERN PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo, DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *);
+
+PETSC_EXTERN PetscErrorCode DMCreateLabel(DM, const char []);
+PETSC_EXTERN PetscErrorCode DMGetLabelValue(DM, const char[], PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMSetLabelValue(DM, const char[], PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMClearLabelValue(DM, const char[], PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMGetLabelSize(DM, const char[], PetscInt *);
+PETSC_EXTERN PetscErrorCode DMGetLabelIdIS(DM, const char[], IS *);
+PETSC_EXTERN PetscErrorCode DMGetStratumSize(DM, const char [], PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMGetStratumIS(DM, const char [], PetscInt, IS *);
+PETSC_EXTERN PetscErrorCode DMClearLabelStratum(DM, const char[], PetscInt);
+PETSC_EXTERN PetscErrorCode DMGetLabelOutput(DM, const char[], PetscBool *);
+PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, PetscSF, PetscBool, DMLabel, PetscInt, PetscSection *);
+
+PETSC_EXTERN PetscErrorCode DMGetNumLabels(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMGetLabelName(DM, PetscInt, const char **);
+PETSC_EXTERN PetscErrorCode DMHasLabel(DM, const char [], PetscBool *);
+PETSC_EXTERN PetscErrorCode DMGetLabel(DM, const char *, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMGetLabelByNum(DM, PetscInt, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMAddLabel(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMRemoveLabel(DM, const char [], DMLabel *);
+PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM);
+
 #endif

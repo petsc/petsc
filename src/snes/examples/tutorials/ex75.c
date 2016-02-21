@@ -63,7 +63,7 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   PetscScalar sigma;
   PetscScalar _C1,_C2,_C3,_C4;
   PetscScalar Rp, UU, VV;
-  PetscScalar rho,a,b,r,_aa,_bb,AA,BB,Rm;
+  PetscScalar a,b,r,_aa,_bb,AA,BB,Rm;
   PetscScalar num1,num2,num3,num4,den1;
 
   PetscScalar t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
@@ -490,33 +490,36 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   *sxz *= sin(km*z); /* tzx stress */
   *szz *= cos(km*z); /* szz total stress */
 
-  rho = -sigma*sin(km*z)*cos(kn*x); /* density */
+  /* rho = -sigma*sin(km*z)*cos(kn*x); */ /* density */
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SolKxWrapperV"
-void SolKxWrapperV(const PetscReal x[], PetscScalar v[], void *ctx)
+PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
   PetscReal   B  = 100.0;
   PetscReal   kn = 100*M_PI;
   PetscReal   km = 100*M_PI;
-  PetscScalar vx, vz, p, sxx, sxz, szz;
+  PetscScalar p, sxx, sxz, szz;
 
+  PetscFunctionBeginUser;
   SolKxSolution(x[0], x[1], kn, km, B, &v[0], &v[1], &p, &sxx, &sxz, &szz);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SolKxWrapperP"
-PetscScalar SolKxWrapperP(const PetscReal x[])
+PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
   PetscReal   B  = 100.0;
   PetscReal   kn = 100*M_PI;
   PetscReal   km = 100*M_PI;
-  PetscScalar vx, vz, p, sxx, sxz, szz;
+  PetscScalar vx, vz, sxx, sxz, szz;
 
-  SolKxSolution(x[0], x[1], kn, km, B, &vx, &vz, &p, &sxx, &sxz, &szz);
-  return p;
+  PetscFunctionBeginUser;
+  SolKxSolution(x[0], x[1], kn, km, B, &vx, &vz, &v[0], &sxx, &sxz, &szz);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -558,12 +561,11 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
 #define __FUNCT__ "FEMTest"
 PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
 {
-  DM             dm;
-  Vec            u;
-  PetscViewer    viewer;
-  PetscScalar  (*funcs[2])(const PetscReal x[]) = {SolKxWrapperV, SolKxWrapperP};
-  PetscReal      discError;
-  PetscErrorCode ierr;
+  DM               dm;
+  Vec              u;
+  PetscErrorCode (*funcs[2])(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *) = {SolKxWrapperV, SolKxWrapperP};
+  PetscReal        discError;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (!ctx->fem) PetscFunctionReturn(0);
@@ -572,8 +574,8 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   /* Project solution into FE space */
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2Diff(dm, funcs, NULL, u, &discError);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = DMPlexComputeL2Diff(dm, 0.0, funcs, NULL, u, &discError);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
   /* Cleanup */
   ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);

@@ -13,16 +13,16 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,m = 8,n,rstart,rend,vstart,vend;
   PetscScalar    one = 1.0,negone = -1.0,v,alpha=0.1;
-  PetscReal      norm;
+  PetscReal      norm, tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscBool      flg;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsHasName(NULL,"-rectA",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-rectA",&flg);CHKERRQ(ierr);
   if (flg) n += 2;
-  ierr = PetscOptionsHasName(NULL,"-rectB",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-rectB",&flg);CHKERRQ(ierr);
   if (flg) n -= 2;
 
   /* ---------- Assemble matrix and vectors ----------- */
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,one,z);CHKERRQ(ierr);
   ierr = VecAXPY(x,negone,w);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-8) {
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",(double)norm);CHKERRQ(ierr);
   }
 
@@ -117,7 +117,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,one,u);CHKERRQ(ierr);
   ierr = VecAXPY(y,negone,s);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-8) {
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",(double)norm);CHKERRQ(ierr);
   }
 
@@ -134,7 +134,7 @@ int main(int argc,char **args)
   }
 
   /* -------------------- Test () MatDiagonalScale ------------------ */
-  ierr = PetscOptionsHasName(NULL,"-test_diagonalscale",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-test_diagonalscale",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatDiagonalScale(C,x,y);CHKERRQ(ierr);
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

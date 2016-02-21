@@ -5,6 +5,7 @@
    Include files needed for the CUSP BiCGSTAB preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners
 */
+#define PETSC_SKIP_SPINLOCK
 
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -118,7 +119,7 @@ static PetscErrorCode PCSetUp_BiCGStabCUSP(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles CUSP matrices");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles SEQAIJCUSP matrices");
   try {
     ierr      = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct = (Mat_SeqAIJCUSP*)(pc->pmat->spptr);
@@ -208,7 +209,7 @@ static PetscErrorCode PCDestroy_BiCGStabCUSP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BiCGStabCUSP"
-static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
   PetscErrorCode  ierr;

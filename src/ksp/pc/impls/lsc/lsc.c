@@ -125,7 +125,7 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_LSC"
-static PetscErrorCode PCSetFromOptions_LSC(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_LSC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
   PetscErrorCode ierr;
@@ -211,8 +211,8 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
    Since we do not use the values in Sp, you can still put an assembled matrix there to use normal preconditioners.
 
    References:
-+  Elman, Howle, Shadid, Shuttleworth, and Tuminaro, Block preconditioners based on approximate commutators, 2006.
--  Silvester, Elman, Kay, Wathen, Efficient preconditioning of the linearized Navier-Stokes equations for incompressible flow, 2001.
++  1. - Elman, Howle, Shadid, Shuttleworth, and Tuminaro, Block preconditioners based on approximate commutators, 2006.
+-  2. - Silvester, Elman, Kay, Wathen, Efficient preconditioning of the linearized Navier Stokes equations for incompressible flow, 2001.
 
    Concepts: physics based preconditioners, block preconditioners
 

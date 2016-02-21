@@ -41,9 +41,6 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
-
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %D\n", aomap->N);

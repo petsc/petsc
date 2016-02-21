@@ -5,6 +5,8 @@
 #define VIENNACL_WITH_OPENCL
 
 #include <petscvec.h>
+#include <viennacl/forwards.h>
+#include <viennacl/vector_proxy.hpp>
 #include <viennacl/vector.hpp>
 
 PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, viennacl::vector<PetscScalar> **a);

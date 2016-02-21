@@ -12,21 +12,20 @@ struct _PetscViewerOps {
    PetscErrorCode (*destroy)(PetscViewer);
    PetscErrorCode (*view)(PetscViewer,PetscViewer);
    PetscErrorCode (*flush)(PetscViewer);
-   PetscErrorCode (*getsingleton)(PetscViewer,PetscViewer*);
-   PetscErrorCode (*restoresingleton)(PetscViewer,PetscViewer*);
-   PetscErrorCode (*getsubcomm)(PetscViewer,MPI_Comm,PetscViewer*);
-   PetscErrorCode (*restoresubcomm)(PetscViewer,MPI_Comm,PetscViewer*);
+   PetscErrorCode (*getsubviewer)(PetscViewer,MPI_Comm,PetscViewer*);
+   PetscErrorCode (*restoresubviewer)(PetscViewer,MPI_Comm,PetscViewer*);
    PetscErrorCode (*read)(PetscViewer,void*,PetscInt,PetscInt*,PetscDataType);
-   PetscErrorCode (*setfromoptions)(PetscOptions*,PetscViewer);
+   PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscViewer);
    PetscErrorCode (*setup)(PetscViewer);
 };
 
+#define PETSCVIEWERFORMATPUSHESMAX 25
 /*
    Defines the viewer data structure.
 */
 struct _p_PetscViewer {
   PETSCHEADER(struct _PetscViewerOps);
-  PetscViewerFormat format,formats[10];
+  PetscViewerFormat format,formats[PETSCVIEWERFORMATPUSHESMAX];
   int               iformat;   /* number of formats that have been pushed on formats[] stack */
   void              *data;
   PetscBool         setupcalled;

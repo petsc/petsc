@@ -15,7 +15,7 @@ struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
   PetscErrorCode (*load)(DM,PetscViewer);
   PetscErrorCode (*clone)(DM,DM*);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,DM);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,DM);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createdefaultsection)(DM);
   PetscErrorCode (*createdefaultconstraints)(DM);
@@ -114,6 +114,20 @@ struct _DMWorkLink {
 
 #define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
 
+struct _n_DMLabelLink {
+  DMLabel              label;
+  PetscBool            output;
+  struct _n_DMLabelLink *next;
+};
+typedef struct _n_DMLabelLink *DMLabelLink;
+
+struct _n_DMLabelLinkList {
+  PetscInt refct;
+  DMLabelLink next;
+};
+typedef struct _n_DMLabelLinkList *DMLabelLinkList;
+
+
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
   Vec                     localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
@@ -121,6 +135,8 @@ struct _p_DM {
   DMNamedVecLink          namedglobal;
   DMNamedVecLink          namedlocal;
   DMWorkLink              workin,workout;
+  DMLabelLinkList         labels;            /* Linked list of labels */
+  DMLabel                 depthLabel;        /* Optimized access to depth label */
   void                    *ctx;    /* a user context */
   PetscErrorCode          (*ctxdestroy)(void**);
   Vec                     x;       /* location at which the functions/Jacobian are computed */
@@ -144,6 +160,8 @@ struct _p_DM {
   /* Flexible communication */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
+  PetscSF                 sfNatural;            /* SF mapping to the "natural" ordering */
+  PetscBool               useNatural;           /* Create the natural SF */
   /* Allows a non-standard data layout */
   PetscSection            defaultSection;       /* Layout for local vectors */
   PetscSection            defaultGlobalSection; /* Layout for global vectors */
@@ -171,7 +189,7 @@ struct _p_DM {
   PetscObject             dmksp,dmsnes,dmts;
 };
 
-PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
+PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);

@@ -68,9 +68,9 @@ int main(int argc,char **argv)
   user.boundary     = 0;  /* 0: Drichlet BC; 1: Neumann BC */
   user.viewJacobian = PETSC_FALSE;
 
-  ierr = PetscOptionsGetInt(NULL,"-nstencilpts",&user.nstencilpts,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-boundary",&user.boundary,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nstencilpts",&user.nstencilpts,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-boundary",&user.boundary,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr  = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   Jtype = 0;
-  ierr  = PetscOptionsGetInt(NULL, "-Jtype",&Jtype,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL, "-Jtype",&Jtype,NULL);CHKERRQ(ierr);
   if (Jtype == 0) { /* use user provided Jacobian evaluation routine */
     if (user.nstencilpts != 5) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%D",user.nstencilpts);
     ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
@@ -339,7 +339,7 @@ PetscErrorCode FormInitialSolution(Vec U,void *ptr)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      r = PetscSqrtReal((x-.3)*(x-.5) + (y-.5)*(y-.5));
+      r = PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5));
       if (r < .125) u[j][i] = PetscExpReal(c*r*r*r);
       else u[j][i] = 0.0;
     }

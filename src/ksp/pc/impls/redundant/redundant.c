@@ -34,13 +34,13 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: Not yet setup\n");CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
-      ierr = PetscViewerGetSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubViewer(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
       if (!red->psubcomm->color) { /* only view first redundant pc */
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
         ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(subviewer);CHKERRQ(ierr);
       }
-      ierr = PetscViewerRestoreSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
@@ -288,7 +288,7 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redundant"
-static PetscErrorCode PCSetFromOptions_Redundant(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Redundant(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;

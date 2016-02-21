@@ -3,15 +3,18 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['https://gforge.inria.fr/frs/download.php/file/34392/pastix_5.2.2.20.tar.bz2',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_5.2.2.20.tar.bz2']
-    self.liblist      = [['libpastix.a'],
-                         ['libpastix.a','libpthread.a','librt.a']]
-    self.functions    = ['pastix']
-    self.includes     = ['pastix.h']
-    self.downloadfilename = 'pastix'
-    self.fc           = 1
+    self.download         = ['https://gforge.inria.fr/frs/download.php/file/34392/pastix_5.2.2.20.tar.bz2',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_5.2.2.20.tar.bz2']
+    self.liblist          = [['libpastix.a'],
+                            ['libpastix.a','libpthread.a','librt.a']]
+    self.functions        = ['pastix']
+    self.includes         = ['pastix.h']
+    self.downloaddirname  = 'pastix'
+    self.fc               = 1
+    self.hastests         = 1
+    self.hastestsdatafiles= 1
     return
+
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -28,7 +31,7 @@ class Configure(config.package.Package):
 
     # This one should be the only one needed
     # all other tests for mac should not be useful.
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       g.write('HOSTARCH   = i686_mac\n')
     else:
       g.write('HOSTARCH   = i686_pc_linux\n')
@@ -39,7 +42,7 @@ class Configure(config.package.Package):
     self.setCompilers.pushLanguage('C')
     g.write('CCPROG      = '+self.setCompilers.getCompiler()+'\n')
     # common.c tries to use some silly clock_gettime() routine that Mac doesn't have unless this is set
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       cflags = ' -DX_ARCHi686_mac    '
     else:
       cflags = ''
@@ -56,7 +59,7 @@ class Configure(config.package.Package):
     g.write('LKFOPT      =\n')
     g.write('MKPROG      = '+self.make.make+'\n')
     # PaStiX make system has error where in one location it doesn't pass in CCFOTP
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+' -DX_ARCHi686_mac \n')
     else:
       g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+'\n')
@@ -197,7 +200,7 @@ class Configure(config.package.Package):
 
     g.write('MAKE     = $(MKPROG)\n')
     g.write('CC       = $(MPCCPROG)\n')
-    if self.setCompilers.isDarwin():
+    if self.setCompilers.isDarwin(self.log):
       cflags = ' -DX_ARCHi686_mac    '
     else: cflags = ''
     g.write('CFLAGS   = $(CCFOPT) $(CCTYPES)'+cflags+'\n')

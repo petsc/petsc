@@ -27,13 +27,13 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
 
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   if (axis->hold) PetscFunctionReturn(0);
   axis->xlow = xmin;
   axis->xhigh= xmax;
   axis->ylow = ymin;
   axis->yhigh= ymax;
-
-  ierr = PetscOptionsHasName(((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)axis)->options,((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -58,7 +58,7 @@ PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscR
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
-  if (axis->hold) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   *xmin = axis->xlow;
   *xmax = axis->xhigh;
   *ymin = axis->ylow;

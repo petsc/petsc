@@ -328,7 +328,7 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_CG"
-PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg = (KSP_CG*)ksp->data;
@@ -339,7 +339,7 @@ PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP ksp)
   ierr = PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
                           (PetscEnum*)&cg->type,NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()","KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPIU_Allreduce()","KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -383,7 +383,7 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
    Options Database Keys:
 +   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian, see KSPCGSetType()
 .   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
--   -ksp_cg_single_reduction - performs both inner products needed in the algorithm with a single MPI_Allreduce() call, see KSPCGUseSingleReduction()
+-   -ksp_cg_single_reduction - performs both inner products needed in the algorithm with a single MPIU_Allreduce() call, see KSPCGUseSingleReduction()
 
    Level: beginner
 
@@ -397,9 +397,8 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
    indicate it to the KSP object.
 
    References:
-   Methods of Conjugate Gradients for Solving Linear Systems, Magnus R. Hestenes and Eduard Stiefel,
+.   1. - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
-   pp. 409--436.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG

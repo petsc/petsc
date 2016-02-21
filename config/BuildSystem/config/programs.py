@@ -17,6 +17,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-autoreconf=<prog>', nargs.Arg(None, 'autoreconf', 'Specify autoreconf'))
+    help.addArgument('PETSc', '-with-libtoolize=<prog>', nargs.Arg(None, 'libtoolize', 'Specify libtoolize'))
     return
 
   def configureMkdir(self):
@@ -43,7 +44,7 @@ class Configure(config.base.Configure):
 
   def configureAutoreconf(self):
     '''Check for autoreconf'''
-    self.autoreconf_flg = False
+    self.autoreconf = None
     if self.getExecutable(self.argDB['with-autoreconf'], getFullPath = 1,resultName = 'autoreconf',setMakeMacro = 0):
       import shutil,os
       testdir = os.path.join(self.tmpDir, 'autoconfdir')
@@ -55,12 +56,17 @@ class Configure(config.base.Configure):
       fd.write(accode)
       fd.close()
       try:
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+testdir+'&&'+self.autoreconf)
-        self.autoreconf_flg = True
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+testdir+'&&'+self.autoreconf, log = self.log)
         self.logPrint('autoreconf test successful!')
       except RuntimeError, e:
+        self.autoreconf = None
         self.logPrint('autoreconf test error: '+str(e))
       shutil.rmtree(testdir)
+    self.libtoolize = None
+    if not self.getExecutable(self.argDB['with-libtoolize'], getFullPath = 1,resultName = 'libtoolize',setMakeMacro = 0):
+      # it is called blibtoolize on Apple to prevent conflict with Apple's libtool
+      self.getExecutable('glibtoolize', getFullPath = 1,resultName = 'libtoolize',setMakeMacro = 0\
+)
     return
 
   def configurePrograms(self):
@@ -76,7 +82,7 @@ class Configure(config.base.Configure):
     f.close()
     for sedcmd in [self.sed+' -i',self.sed+' -i ""','perl -pi -e']:
       try:
-        (out,err,status) = Configure.executeShellCommand('%s s/sed/sd/g "%s"'%(sedcmd,sed1))
+        (out,err,status) = Configure.executeShellCommand('%s s/sed/sd/g "%s"'%(sedcmd,sed1), log = self.log)
         self.logPrint('Adding SEDINPLACE cmd: '+sedcmd)
         self.addMakeMacro('SEDINPLACE',sedcmd)
         status = 1
@@ -107,13 +113,13 @@ class Configure(config.base.Configure):
       diff1 = mkfile('diff1','diff\n')
       diff2 = mkfile('diff2','diff  \n')
       try:
-        (out,err,status) = Configure.executeShellCommand('"%s" -w "%s" "%s"' % (self.diff,diff1,diff2))
+        (out,err,status) = Configure.executeShellCommand('"%s" -w "%s" "%s"' % (self.diff,diff1,diff2), log = self.log)
       except RuntimeError:
         status = 1
       os.unlink(diff1)
       os.unlink(diff2)
       if status:
-        (buf,err,status) = Configure.executeShellCommand('/bin/rpm -q diffutils')
+        (buf,err,status) = Configure.executeShellCommand('/bin/rpm -q diffutils', log = self.log)
         if buf.find('diffutils-2.8.1-17.fc8') > -1:
           raise RuntimeError('''\
 *** Fedora 8 Linux with broken diffutils-2.8.1-17.fc8 detected. ****************

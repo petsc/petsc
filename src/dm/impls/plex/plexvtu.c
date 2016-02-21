@@ -67,7 +67,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-  ierr     = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr     = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
 
   countcell = 0;
@@ -79,7 +79,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
     if (hasLabel) {
       PetscInt value;
 
-      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      ierr = DMGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
     startoffset = countconn;
@@ -151,7 +151,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-  ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
 
   hasLabel        = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   piece.nvertices = vEnd - vStart;
@@ -164,7 +164,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     if (hasLabel) {
       PetscInt value;
 
-      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      ierr = DMGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
     ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -344,7 +344,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
             const PetscScalar *xpoint;
             if (hasLabel) {     /* Ignore some cells */
               PetscInt value;
-              ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+              ierr = DMGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
               if (value != 1) continue;
             }
             ierr     = DMPlexPointLocalRead(dm,c,x,&xpoint);CHKERRQ(ierr);

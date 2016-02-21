@@ -122,10 +122,12 @@
       lambda     = 6.0
       mx         = 4
       my         = 4
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',lambda,      &
-     &     flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                        '-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                        '-my',my,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,  &
+     &                         '-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
@@ -164,8 +166,8 @@
 !  for the Jacobian.  See the users manual for a discussion of better
 !  techniques for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
-     &     matrix_free,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
+     &                         '-snes_mf',matrix_free,ierr)
       if (.not. matrix_free) then
         call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER, &
      &        J,ierr)
@@ -176,8 +178,8 @@
 !    efficiently using a coloring of the columns of the matrix.
 !
       fd_coloring = .false.
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_fd_coloring',     &
-     &                    fd_coloring,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+     &                         '-snes_fd_coloring',fd_coloring,ierr)
       if (fd_coloring) then
 
 !
@@ -371,25 +373,25 @@
 
 !  Local variables:
       PetscInt     i,j
-      PetscScalar temp1,temp,hx,hy,one
+      PetscReal temp1,temp,hx,hy,one
 
 !  Set parameters
 
       ierr   = 0
       one    = 1.0
-      hx     = one/(dble(mx-1))
-      hy     = one/(dble(my-1))
+      hx     = one/(mx-1)
+      hy     = one/(my-1)
       temp1  = lambda/(lambda + one)
 
       do 20 j=1,my
-         temp = dble(min(j-1,my-j))*hy
+         temp = min(j-1,my-j)*hy
          do 10 i=1,mx
             if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
               x(i,j) = 0.0
             else
               x(i,j) = temp1 *                                          &
-     &          sqrt(min(dble(min(i-1,mx-i)*hx),dble(temp)))
+     &          sqrt(min(min(i-1,mx-i)*hx,temp))
             endif
  10      continue
  20   continue
@@ -502,8 +504,8 @@
       ierr   = 0
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(mx-1)
-      hy     = one/dble(my-1)
+      hx     = one/(mx-1)
+      hy     = one/(my-1)
       sc     = hx*hy*lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
@@ -643,8 +645,8 @@
       i5     = 5
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(mx-1)
-      hy     = one/dble(my-1)
+      hx     = one/(mx-1)
+      hy     = one/(my-1)
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx

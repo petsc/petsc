@@ -198,7 +198,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
         }
       } else cnt = 0;
 
-      ierr = MPI_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -315,7 +315,7 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
         }
       } else cnt = 0;
 
-      ierr = MPI_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -383,6 +383,20 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
       ierr = PetscInfo1(NULL,"Did not find file %s\n",libname);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
+  }
+
+  if (par && len == 3){
+    size_t llen;
+    ierr = PetscStrlen(libname,&llen);CHKERRQ(ierr);
+    ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
+    llibname[llen-len] = 0;
+    ierr = PetscTestFile(llibname,'r',found);CHKERRQ(ierr);
+    if (*found) {
+      ierr = PetscInfo1(NULL,"Found uncompressed version of file %s\n",llibname);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    } else {
+      ierr = PetscInfo1(NULL,"Did not find uncompressed version of file %s\n",libname);CHKERRQ(ierr);
+    }
   }
 
   /* Determine if all processors share a common /tmp */

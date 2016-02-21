@@ -1,15 +1,14 @@
-
 CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
-EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c \
+EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex18.c ex23.c \
                 ex25.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex34.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
-                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx
+                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
                    ex52f.F ex54f.F ex61f.F90
 MANSEC           = KSP
@@ -308,6 +307,9 @@ ex63: ex63.o  chkopts
 	-${CLINKER} -o ex63 ex63.o  ${PETSC_KSP_LIB}
 	${RM} ex63.o
 
+ex64: ex64.o  chkopts
+	-${CLINKER} -o ex64 ex64.o  ${PETSC_KSP_LIB}
+	${RM} ex64.o
 
 #----------------------------------------------------------------------------
 runex1:
@@ -407,6 +409,11 @@ runex2_fbcgs_2:
            if (${DIFF} output/ex2_fbcgs_2.out ex2.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex2_fbcgs_2, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2.tmp
+runex2_telescope:
+	-@${MPIEXEC} -n 4 ./ex2 -m 100 -n 100 -ksp_converged_reason -pc_type telescope -pc_telescope_reduction_factor 4 -telescope_pc_type bjacobi > ex2.tmp 2>&1; \
+           if (${DIFF} output/ex2_telescope.out ex2.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex2_telescope, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex2.tmp
 runex2_pipecg:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_monitor_short -ksp_type pipecg -m 9 -n 9 > ex2_pipecg.tmp 2>&1; \
 	   ${DIFF} output/ex2_pipecg.out ex2_pipecg.tmp || printf "${PWD}\nPossible problem with ex2_pipecg, diffs above\n=========================================\n"; \
@@ -442,30 +449,45 @@ runex5_5:
 	   else printf "${PWD}\nPossible problem with ex5_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5.tmp
 runex5_redundant_0:
-	-@${MPIEXEC} -n 1 ./ex5 -m 1000 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 > ex5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex5 -m 1000 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi  > ex5.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_redundant_0.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_1:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 > ex5.tmp 2>&1;   \
-	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi  > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_redundant_1.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_2:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 > ex5.tmp 2>&1;   \
-	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_redundant_2.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_3:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 5 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 > ex5.tmp 2>&1;   \
-	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 5 -redundant_ksp_type gmres -redundant_pc_type jacobi  > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_redundant_3.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_4:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 -psubcomm_type interlaced > ex5.tmp 2>&1;   \
-	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -psubcomm_type interlaced > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_redundant_4.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
+runex6:
+	-@${MPIEXEC} -n 1 ./ex6 -ksp_view  > ex6_0.tmp 2>&1; \
+	   if (${DIFF} output/ex6_0.out ex6_0.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6_0, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6_0.tmp
+runex6_1:
+	-@${MPIEXEC} -n 4 ./ex6 -ksp_view > ex6_1.tmp 2>&1; \
+	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6_1.tmp
+runex6_2:
+	-@${MPIEXEC} -n 4 ./ex6 -user_subdomains -ksp_view ${ARGS} > ex6_2.tmp 2>&1; \
+	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6_2.tmp
 runex6f:
 	-@${MPIEXEC} -n 1 ./ex6f -pc_type jacobi -mat_view -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6f_1.out ex6f_1.tmp) then true; \
@@ -482,32 +504,32 @@ runex7_2:
 	   else printf "${PWD}\nPossible problem with ex7_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_2.tmp
 runex7_mpiaijcusp:
-	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -vec_type mpicusp > ex7_mpiaijcusp.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short  -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp > ex7_mpiaijcusp.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusp.out ex7_mpiaijcusp.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusp.tmp
 runex7_mpiaijcusp_2:
-	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -vec_type mpicusp > ex7_mpiaijcusp_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short  -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp > ex7_mpiaijcusp_2.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusp_2.out ex7_mpiaijcusp_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusp_2.tmp
 runex7_mpiaijcusp_simple:
-	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu > ex7_mpiaijcusp_simple.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short  -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu > ex7_mpiaijcusp_simple.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusp_simple.out ex7_mpiaijcusp_simple.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp_simple, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusp_simple.tmp
 runex7_mpiaijcusp_simple_2:
-	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusp -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu > ex7_mpiaijcusp_simple_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short  -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu > ex7_mpiaijcusp_simple_2.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusp_simple_2.out ex7_mpiaijcusp_simple_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp_simple_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusp_simple_2.tmp
 runex7_mpiaijcusparse:
-	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusparse -vec_type mpicusp > ex7_mpiaijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_package cusparse  -vec_type mpicusp > ex7_mpiaijcusparse.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusparse.out ex7_mpiaijcusparse.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusparse, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusparse.tmp
 runex7_mpiaijcusparse_2:
-	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusparse -vec_type mpicusp > ex7_mpiaijcusparse_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_package cusparse  -vec_type mpicusp > ex7_mpiaijcusparse_2.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusparse_2.out ex7_mpiaijcusparse_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusparse_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_mpiaijcusparse_2.tmp
@@ -662,6 +684,32 @@ runex10_17:
 	   if (${DIFF} output/ex10_17.out ex10_17.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_17, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_17.tmp
+runex10_boomeramg_schwarz:
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Schwarz-smoothers -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_schwarz.tmp 2>&1;\
+	   if (${DIFF} output/ex10_boomeramg_schwarz.out ex10_boomeramg_schwarz.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_boomeramg_schwarz, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_boomeramg_schwarz.tmp
+runex10_boomeramg_pilut:
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Pilut -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_pilut.tmp 2>&1;\
+	   if (${DIFF} output/ex10_boomeramg_pilut.out ex10_boomeramg_pilut.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_boomeramg_pilut, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_boomeramg_pilut.tmp
+runex10_boomeramg_parasails:
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2 -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_parasails.tmp 2>&1;\
+	   if (${DIFF} output/ex10_boomeramg_parasails.out ex10_boomeramg_parasails.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_boomeramg_parasails, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_boomeramg_parasails.tmp
+# Euclid has a bug in its handling of MPI communicators resulting in some memory not being freed at conclusion of the run
+runex10_boomeramg_euclid:
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01  -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_euclid.tmp 2>&1;\
+	   if (${DIFF} output/ex10_boomeramg_euclid.out ex10_boomeramg_euclid.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_boomeramg_euclid, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_boomeramg_euclid.tmp
+runex10_boomeramg_euclid_bj:
+	-@${MPIEXEC} -n 2 ./ex10 -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj -f0 ${DATAFILESPATH}/matrices/poisson2.gz > ex10_boomeramg_euclid_bj.tmp 2>&1;\
+	   if (${DIFF} output/ex10_boomeramg_euclid_bj.out ex10_boomeramg_euclid_bj.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_boomeramg_euclid_bj, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_boomeramg_euclid_bj.tmp
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 LEVELS = 0 2 4
@@ -849,10 +897,26 @@ runex10_mpiaijperm:
 	   else printf "${PWD}\nPossible problem with ex10_mpiaijperm, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_mpiaijperm.tmp
 runex10_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse > ex10_aijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_package cusparse -pc_type ilu > ex10_aijcusparse.tmp 2>&1; \
 	   if (${DIFF} output/ex10_aijcusparse.out ex10_aijcusparse.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_aijcusparse, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_aijcusparse.tmp
+runex10_zeropivot:
+	-@${MPIEXEC} -n 3 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_pc_type bjacobi > ex10.tmp 2>&1; \
+	   if (${DIFF} output/ex10_zeropivot.out ex10.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_zeropivot, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10.tmp
+runex10_zeropivot_2:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_pc_bjacobi_blocks 1 > ex10.tmp 2>&1; \
+	   if (${DIFF} output/ex10_zeropivot.out ex10.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_zeropivot_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10.tmp
+runex10_zeropivot_3:
+	-@${MPIEXEC} -n 3 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_converged_reason -ksp_pc_type bjacobi -ksp_sub_ksp_converged_reason > ex10.tmp 2>&1; \
+	   if (${DIFF} output/ex10_zeropivot_3.out ex10.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_zeropivot_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10.tmp
+
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -959,6 +1023,12 @@ runex29_2:
 	   else printf "${PWD}\nPossible problem with ex29_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29_2.tmp
 
+runex29_telescope:
+	-@${MPIEXEC} -n 4 ./ex29 -ksp_monitor_short -da_grid_x 257 -da_grid_y 257 -pc_type mg -pc_mg_galerkin -pc_mg_levels 4 -ksp_type richardson -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -mg_coarse_pc_type telescope -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_galerkin -mg_coarse_telescope_pc_mg_levels 3 -mg_coarse_telescope_mg_levels_ksp_type chebyshev -mg_coarse_telescope_mg_levels_pc_type jacobi -mg_coarse_pc_telescope_reduction_factor 4 > ex29_telescope.tmp 2>&1;	  \
+	   if (${DIFF} output/ex29_telescope.out ex29_telescope.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex29_telescope, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex29_telescope.tmp
+
 runex30:
 	-@${MPIEXEC} -n 1 ./ex30 > ex30_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
@@ -990,30 +1060,30 @@ runex35_2:
 	   ${RM} -f ex35_2.tmp
 
 runex43:
-	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_ksp_rtol 1e-8 -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_1.out ex43_1.tmp || printf "${PWD}\nPossible problem with ex43_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_1.tmp
 
 runex43_2:
-	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_ksp_rtol 1e-8 -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_fieldsplit_u_ksp_type preonly -stokes_fieldsplit_u_pc_type lu -stokes_fieldsplit_p_ksp_type preonly -stokes_fieldsplit_p_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_fieldsplit_u_ksp_type preonly -stokes_fieldsplit_u_pc_type lu -stokes_fieldsplit_p_ksp_type preonly -stokes_fieldsplit_p_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_1.out ex43_2.tmp || printf "${PWD}\nPossible problem with ex43_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_2.tmp
 
 runex43_3:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebyshev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1.e-2 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebyshev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_3.out ex43_3.tmp || printf "${PWD}\nPossible problem with ex43_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_3.tmp
 
 runex43_bjacobi:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_bjacobi, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 runex43_bjacobi_baij:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type baij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type baij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_bjacobi_baij, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 runex43_nested_gmg:
-	-@${MPIEXEC} -n 4 ./ex43 -mx 16 -my 16 -stokes_ksp_type fgmres -stokes_ksp_rtol 1e-8 -stokes_pc_type fieldsplit -stokes_fieldsplit_u_pc_type mg -stokes_fieldsplit_u_pc_mg_levels 5 -stokes_fieldsplit_u_pc_mg_galerkin -stokes_fieldsplit_u_ksp_type cg -stokes_fieldsplit_u_ksp_rtol 1.0e-4 -stokes_fieldsplit_u_mg_levels_pc_type jacobi -solcx_eta0 1.0e4 -stokes_fieldsplit_u_ksp_converged_reason -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -mx 16 -my 16 -stokes_ksp_type fgmres  -stokes_pc_type fieldsplit -stokes_fieldsplit_u_pc_type mg -stokes_fieldsplit_u_pc_mg_levels 5 -stokes_fieldsplit_u_pc_mg_galerkin -stokes_fieldsplit_u_ksp_type cg -stokes_fieldsplit_u_ksp_rtol 1.0e-4 -stokes_fieldsplit_u_mg_levels_pc_type jacobi -solcx_eta0 1.0e4 -stokes_fieldsplit_u_ksp_converged_reason -stokes_ksp_converged_reason -stokes_fieldsplit_p_sub_pc_factor_zeropivot 1.e-8 > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_nested_gmg.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_nested_gmg, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 
@@ -1025,6 +1095,10 @@ runex45_2:
 	-@${MPIEXEC} -n 4 ./ex45 -ksp_monitor_short -da_grid_x 21 -da_grid_y 21 -da_grid_z 21 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_type richardson -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi > ex45_2.tmp 2>&1; \
 	   ${DIFF} output/ex45_2.out ex45_2.tmp || printf "${PWD}\nPossible problem with ex45_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex45_2.tmp
+runex45_telescope:
+	-@${MPIEXEC} -n 4 ./ex45 -ksp_type fgmres -ksp_monitor_short -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi  -pc_mg_levels 2 -da_grid_x 65 -da_grid_y 65 -da_grid_z 65 -mg_coarse_pc_type telescope -mg_coarse_pc_telescope_reduction_factor 4 -mg_coarse_telescope_pc_type mg -mg_coarse_telescope_pc_mg_galerkin -mg_coarse_telescope_pc_mg_levels 3 -mg_coarse_telescope_mg_levels_ksp_type richardson -mg_coarse_telescope_mg_levels_pc_type jacobi   -mg_levels_ksp_type richardson -mg_coarse_telescope_mg_levels_ksp_type richardson -ksp_rtol 1.0e-4  > ex45_telescope.tmp 2>&1; \
+	   ${DIFF} output/ex45_telescope.out ex45_telescope.tmp || printf "${PWD}\nPossible problem with ex45_telescope, diffs above\n=========================================\n"; \
+	   ${RM} -f ex45_telescope.tmp
 runex45f:
 	-@${MPIEXEC} -n 4 ./ex45f -ksp_monitor_short -da_refine 5 -pc_type mg -pc_mg_levels 5 -mg_levels_ksp_type chebyshev -mg_levels_ksp_max_it 2 -mg_levels_pc_type jacobi -ksp_pc_side right > ex45f_1.tmp 2>&1; \
 	   ${DIFF} output/ex45f_1.out ex45f_1.tmp || printf "${PWD}\nPossible problem with ex45f_1, diffs above\n=========================================\n"; \
@@ -1040,17 +1114,17 @@ runex46_aijcusparse:
 		${RM} ex46_aijcusparse.tmp
 
 runex49:
-	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 > ex49_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_rtol 5e-3 -elas_ksp_view  > ex49_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex49_1.out ex49_1.tmp || printf "${PWD}\nPossible problem with ex49_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_1.tmp
 
 runex49_2:
-	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type gcr -elas_pc_type asm -elas_sub_pc_type lu > ex49_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type gcr -elas_pc_type asm -elas_sub_pc_type lu -elas_ksp_rtol 5e-3 > ex49_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex49_2.out ex49_2.tmp || printf "${PWD}\nPossible problem with ex49_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_2.tmp
 
 runex49_3:
-	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 2 -brick_E 1,10,1000,100 -brick_nu 0.4,0.2,0.3,0.1 -brick_span 3 -elas_pc_type asm -elas_sub_pc_type lu > ex49_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 2 -brick_E 1,10,1000,100 -brick_nu 0.4,0.2,0.3,0.1 -brick_span 3 -elas_pc_type asm -elas_sub_pc_type lu -elas_ksp_rtol 5e-3  > ex49_3.tmp 2>&1; \
 	   ${DIFF} output/ex49_3.out ex49_3.tmp || printf "${PWD}\nPossible problem with ex49_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_3.tmp
 
@@ -1060,9 +1134,15 @@ runex49_4:
 	   ${RM} -f ex49_4.tmp
 
 runex49_5:
-	-@${MPIEXEC} -n 3 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type gamg -elas_mg_levels_ksp_type chebyshev -elas_mg_levels_ksp_max_it 1 -elas_mg_levels_ksp_chebyshev_esteig 0.2,1.1 -elas_mg_levels_pc_type jacobi > ex49_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type gamg -elas_mg_levels_ksp_type chebyshev -elas_mg_levels_ksp_max_it 1 -elas_mg_levels_ksp_chebyshev_esteig 0.2,1.1 -elas_mg_levels_pc_type jacobi -elas_pc_gamg_random_no_imaginary_part -elas_pc_gamg_random_no_imaginary_part > ex49_5.tmp 2>&1; \
 	   ${DIFF} output/ex49_5.out ex49_5.tmp || printf "${PWD}\nPossible problem with ex49_5, diffs above\n=========================================\n"; \
 	   ${RM} -f ex49_5.tmp
+
+# hyper has some valgrind serious bus in it for vec_interp_variant hence this crashes on some systems, waiting for hypre team to fix
+runex49_hypre_nullspace:
+	-@${MPIEXEC} ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre  -elas_pc_hypre_boomeramg_nodal_coarsen  6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_ksp_view > ex49_hypre_nullspace.tmp 2>&1; \
+	   ${DIFF} output/ex49_hypre_nullspace.out ex49_hypre_nullspace.tmp || printf "${PWD}\nPossible problem with ex49_hypre_nullspace, diffs above\n=========================================\n"; \
+	   ${RM} -f ex49_hypre_nullspace.tmp
 
 runex50:
 	-@${MPIEXEC} -n 1 ./ex50 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 1 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero -ksp_view  > ex50.tmp 2>&1;         \
@@ -1119,64 +1199,64 @@ runex53_2:
 	   ${RM} -f ex53.tmp
 
 runex54_geo:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_coarse_ksp_type preonly > ex54.tmp 2>&1;	  \
-         ${DIFF} output/ex54_0.out ex54.tmp || printf "${PWD}\nPossible problem with ex54_0.out, diffs above\n=========================================\n"; \
-        ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1;	  \
+         ${DIFF} output/ex54_0.out ex.tmp || printf "${PWD}\nPossible problem with ex54_0.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex54:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
-         ${DIFF} output/ex54_1.out ex54.tmp || printf "${PWD}\nPossible problem with ex54_1.out, diffs above\n======================================\n"; \
-        ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex54_1.out ex.tmp || printf "${PWD}\nPossible problem with ex54_1.out, diffs above\n======================================\n"; \
+        ${RM} -f ex.tmp
 
 runex54_Classical:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
-         ${DIFF} output/ex54_classical.out ex54.tmp || printf "${PWD}\nPossible problem with ex54_Classical, diffs above\n======================================\n"; \
-       ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex54_classical.out ex.tmp || printf "${PWD}\nPossible problem with ex54_classical.out, diffs above\n======================================\n"; \
+       ${RM} -f ex.tmp
 
 runex54f:
-	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_coarse_ksp_type preonly > ex54.tmp 2>&1; \
-         ${DIFF} output/ex54f.out ex54.tmp || printf "${PWD}\nPossible problem with ex54f, diffs above\n======================================\n"; \
-        ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54f -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex54f.out ex.tmp || printf "${PWD}\nPossible problem with ex54f.out, diffs above\n======================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55_geo:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_coarse_ksp_type preonly -ksp_type cg -ksp_norm_type unpreconditioned > ex55.tmp 2>&1;	  \
-         ${DIFF} output/ex55_0.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_geo, diffs above\n=========================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_levels_esteig_ksp_type cg -ksp_type cg -ksp_norm_type unpreconditioned > ex.tmp 2>&1;	  \
+         ${DIFF} output/ex55_0.out ex.tmp || printf "${PWD}\nPossible problem with ex55_0.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55_hypre:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short > ex55.tmp 2>&1;	  \
-         ${DIFF} output/ex55_hypre.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_hypre, diffs above\n=========================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short > ex.tmp 2>&1;	  \
+         ${DIFF} output/ex55_hypre.out ex.tmp || printf "${PWD}\nPossible problem with ex55_hypre, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -mg_coarse_ksp_type preonly > ex55.tmp 2>&1; \
-         ${DIFF} output/ex55_sa.out ex55.tmp || printf "${PWD}\nPossible problem with ex55, diffs above\n=========================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -mg_levels_esteig_ksp_type cg -ksp_rtol 1.e-3 -ksp_monitor > ex.tmp 2>&1; \
+         ${DIFF} output/ex55_sa.out ex.tmp || printf "${PWD}\nPossible problem with ex55_sa.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55_Classical:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -mg_coarse_ksp_type preonly > ex55.tmp 2>&1; \
-         ${DIFF} output/ex55_classical.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_Classical, diffs above\n=========================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex55_classical.out ex.tmp || printf "${PWD}\nPossible problem with ex55_classical.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex55_NC:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_coarse_ksp_type preonly > ex55.tmp 2>&1; \
-         ${DIFF} output/ex55_NC.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_NC, diffs above\n======================================\n"; \
-        ${RM} -f ex55.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+         ${DIFF} output/ex55_NC.out ex.tmp || printf "${PWD}\nPossible problem with ex55_NC.out, diffs above\n======================================\n"; \
+        ${RM} -f ex.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_coarse_ksp_type preonly -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor > ex56.tmp 2>&1; \
-         ${DIFF} output/ex56_0.out ex56.tmp || printf "${PWD}\nPossible problem with ex56, diffs above \n=========================================\n"; \
-         ${RM} -f ex56.tmp
+	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_esteig_ksp_type gmres -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor > ex.tmp 2>&1; \
+         ${DIFF} output/ex56_0.out ex.tmp || printf "${PWD}\nPossible problem with ex56_0.out, diffs above \n=========================================\n"; \
+         ${RM} -f ex.tmp
 
 runex56_ml:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -ksp_monitor_short -mg_coarse_ksp_type preonly > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_ml.out ex56.tmp || printf "${PWD}\nPossible problem with ex56_ml, diffs above\n=========================================\n"; \
-        ${RM} -f ex56.tmp
+	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -ksp_type cg -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1;	\
+         ${DIFF} output/ex56_ml.out ex.tmp || printf "${PWD}\nPossible problem with ex56_ml.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 
 runex56_nns:
-	-@${MPIEXEC} -n 1 ./ex56 -ne 9 -alpha 1.e-3 -ksp_converged_reason -ksp_type cg -ksp_max_it 50 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace -mg_coarse_ksp_type preonly > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_nns.out ex56.tmp || printf "${PWD}\nPossible problem with ex56_nns, diffs above\n=========================================\n"; \
-         ${RM} -f ex56.tmp
+	-@${MPIEXEC} -n 1 ./ex56 -ne 9 -alpha 1.e-3 -ksp_converged_reason -ksp_type cg -ksp_max_it 50 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1;	\
+         ${DIFF} output/ex56_nns.out ex.tmp || printf "${PWD}\nPossible problem with ex56_nns.out, diffs above\n=========================================\n"; \
+         ${RM} -f ex.tmp
 
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
@@ -1196,11 +1276,11 @@ runex59:
 	${DIFF} output/ex59_1.out ex59.tmp || printf "${PWD}\nPossible problem with ex59, diffs above\n=========================================\n"; \
 	${RM} -f ex59.tmp
 runex59_2:
-	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -nex 2 -ney 2 > ex59_2.tmp 2>&1;         \
+	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -nex 6 -ney 6 -ksp_max_it 3 > ex59_2.tmp 2>&1;         \
 	${DIFF} output/ex59_2.out ex59_2.tmp || printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; \
 	${RM} -f ex59_2.tmp
 runex59_3:
-	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 2 -ney 2 -nez 1 > ex59_3.tmp 2>&1;         \
+	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -ksp_max_it 4 > ex59_3.tmp 2>&1;         \
 	${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; \
 	${RM} -f ex59_3.tmp
 runex60:
@@ -1209,10 +1289,16 @@ runex60:
 	   else printf "${PWD}\nPossible problem with with ex60_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex60_1.tmp
 runex60_2:
-	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type fcg -ksp_fcg_mmax 10000 -eta 0.3333 > ex60_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -diagfunc 3 -ksp_type fcg -ksp_fcg_mmax 10000 -eta 0.3333 > ex60_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex60_2.out ex60_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex60_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex60_2.tmp
+
+runex60_3:
+	-@${MPIEXEC} -n 3 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 2 -ksp_type fgmres -eta 0.1 > ex60_3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex60_3.out ex60_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex60_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex60_3.tmp
 
 NP = 1
 M  = 4
@@ -1227,6 +1313,13 @@ runex62_valgrind:
 
 runex62:
 	-@${MPIEXEC} -n ${NP} ./ex62 -M $M -N $N -print_error ${ARGS}
+	
+runex62_hp:
+	-@${MPIEXEC} -n 4 ./ex62  -M 7  -N 9  -pc_gasm_overlap  1  -sub_pc_type lu  -sub_pc_factor_mat_solver_package superlu_dist  -ksp_monitor -print_error  -pc_gasm_total_subdomains 2 -pc_gasm_use_hierachical_partitioning 1 > ex62.tmp 2>&1;	  \
+	   if (${DIFF} output/ex62.out ex62.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex62, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex62.tmp	   
+
 
 runex62_2D:
 	-@${MPIEXEC} -n ${NP} ./ex62 -M $M -N $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS}
@@ -1290,30 +1383,43 @@ runex63_2:
 	   if (${DIFF} output/ex63_2.out ex63_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex63_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex63_2.tmp
+	   
+runex64:
+	-@${MPIEXEC} -n 4 ./ex64  -ksp_monitor -pc_gasm_overlap  1  -sub_pc_type lu  -sub_pc_factor_mat_solver_package superlu_dist    -pc_gasm_total_subdomains 2 > ex64.tmp 2>&1;	  \
+	   if (${DIFF} output/ex64.out ex64.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex64, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex64.tmp	   
+
+
+
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3  \
-                                 runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_fbcgs_2 runex2_pipecg runex2_pipecr runex2_groppcg ex2.rm \
+                                 runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg ex2.rm \
                                  ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
+                                 ex6.PETSc runex6 runex6_1 runex6_2 ex6.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
-                                 ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \
+                                 ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc runex29_telescope ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex42.PETSc ex42.rm \
-                                 ex43.PETSc runex43 runex43_2 runex43_3 runex43_bjacobi runex43_bjacobi_baij runex43_nested_gmg ex43.rm \
-                                 ex45.PETSc runex45 runex45_2 ex45.rm \
+                                 ex43.PETSc runex43 runex43_2 runex43_bjacobi runex43_bjacobi_baij runex43_nested_gmg ex43.rm \
+                                 ex45.PETSc runex45 runex45_2 runex45_telescope ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm ex53.PETSc runex53 ex53.rm \
                                  ex54.PETSc runex54 runex54_Classical ex54.rm ex55.PETSc runex55 runex55_Classical runex55_NC ex55.rm\
                                  ex56.PETSc runex56_nns runex56 ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
-                                 ex60.PETSc runex60 ex60.rm \
+                                 ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm
+TESTEXAMPLES_C_NOTSINGLE       = ex43.PETSc runex43_3 ex43.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
-                                 ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \
-                                 ex22f.rm ex21f.PETSc runex21f ex21f.rm ex45f.PETSc runex45f ex45f.rm
+                                 ex15f.PETSc runex15f ex15f.rm \
+                                  ex45f.PETSc runex45f ex45f.rm
+TESTEXAMPLES_FORTRAN_NOTSINGLE  = ex14f.PETSc runex14f  ex14f.rm  ex22f.PETSc runex22f ex22f.rm ex21f.PETSc runex21f ex21f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_3 ex2.rm \
                                  ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \
@@ -1325,34 +1431,38 @@ TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex1
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
-TESTEXAMPLES_FORTRAN_COMPLEX   = ex11f.PETSc runex11f ex11f.rm
-TESTEXAMPLES_F90	       = ex13f90.PETSc runex13f90 ex13f90.rm
-TESTEXAMPLES_13		       = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
-TESTEXAMPLES_MATLAB_ENGINE     = ex10.PETSc runex10_12  ex10.rm
-TESTEXAMPLES_17		       = ex10.PETSc runex10_11 ex10.rm
-TESTEXAMPLES_18		       = ex2.PETSc runex2_6 ex2.rm
-TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
-TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 ex10.rm
-TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
-TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
-                                 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
-                                 runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
-                                 ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
-TESTEXAMPLES_PASTIX            = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
-				 runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
-                                 ex10.rm
-TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
-TESTEXAMPLES_FFTW              =
-TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm \
-                                 ex52.PETSc runex52_superlu_dist ex52.rm \
-	 			 ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
-TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
-TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
-                                 ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
-                                 runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
-                                 ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
-TESTEXAMPLES_MOAB              = ex35.PETSc runex35 ex35.rm
-TESTEXAMPLES_MOAB_HDF5         = ex35.PETSc runex35_2 ex35.rm
-TESTEXAMPLES_TRILINOS          = ex63.PETSc runex63 runex63_2 ex63.rm
+TESTEXAMPLES_FORTRAN_COMPLEX            = ex11f.PETSc runex11f ex11f.rm
+TESTEXAMPLES_F90	                = ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_13		                = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
+TESTEXAMPLES_MATLAB_ENGINE              = ex10.PETSc runex10_12  ex10.rm
+TESTEXAMPLES_17		                = ex10.PETSc runex10_11 ex10.rm
+TESTEXAMPLES_18		                = ex2.PETSc runex2_6 ex2.rm
+TESTEXAMPLES_SPAI	                = ex10.PETSc runex10_14 ex10.rm
+TESTEXAMPLES_HYPRE	                = ex49.PETSc runex49_hypre_nullspace ex49.rm
+TESTEXAMPLES_HYPRE_DATAFILESPATH        = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut ex10.rm
+TESTEXAMPLES_LUSOL	                = ex10.PETSc runex10_13 ex10.rm
+TESTEXAMPLES_MUMPS                      = ex53.PETSc runex53 runex53_2 ex53.rm \
+                                          ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
+TESTEXAMPLES_MUMPS_DATAFILESPATH        = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
+                                          runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 \
+                                          runex10_mumps_redundant runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 \
+                                          runex10_zeropivot runex10_zeropivot_2 ex10.rm
+TESTEXAMPLES_PASTIX_DATAFILESPATH       = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
+			  	          runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
+                                          ex10.rm
+TESTEXAMPLES_SUPERLU                    = ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
+TESTEXAMPLES_SUPERLU_DATAFILESPATH      = ex10.PETSc runex10_superlu_lu_1 ex10.rm
+TESTEXAMPLES_SUPERLU_DIST               = ex52.PETSc runex52_superlu_dist ex52.rm ex64.PETSc runex64 ex64.rm \
+	 			          ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
+TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
+TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
+TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
+TESTEXAMPLES_CUDA_DATAFILESPATH         = ex10.PETSc runex10_aijcusparse ex10.rm
+TESTEXAMPLES_CUDA                       = ex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+                                          ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
+TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm
+TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm
+TESTEXAMPLES_TRILINOS                   = ex63.PETSc runex63 runex63_2 ex63.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

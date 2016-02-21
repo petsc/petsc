@@ -62,7 +62,7 @@ PetscErrorCode  PetscDrawInitializePackage(void)
   /* Register Constructors */
   ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
     if (className) {
@@ -70,7 +70,7 @@ PetscErrorCode  PetscDrawInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
     if (className) {
@@ -246,6 +246,41 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawDestroy_Private"
+static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
+{
+  PetscBool      match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_X,&match);CHKERRQ(ierr);
+  if (match) {
+#if defined(PETSC_HAVE_POPEN)
+    PetscMPIInt rank;
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+    if (!rank && draw->savefilename && draw->savefilemovie) {
+      char       command[PETSC_MAX_PATH_LEN];
+      const char *fname = draw->savefilename;
+      const char *ext   = draw->savefilenameext;
+      FILE       *fd;
+      ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg  -i %s/%s_%%d%s %s.m4v",fname,fname,ext,fname);CHKERRQ(ierr);
+      ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
+      ierr = PetscPClose(PETSC_COMM_SELF,fd,NULL);CHKERRQ(ierr);
+    }
+    ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
+#endif
+    if (draw->savefinalfilename) {
+      ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
+      draw->savefilecount = 0;
+      ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+    }
+    ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawDestroy"
 /*@
    PetscDrawDestroy - Deletes a draw context.
@@ -271,16 +306,18 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
 
   if ((*draw)->pause == -2) {
     (*draw)->pause = -1;
-
     ierr = PetscDrawPause(*draw);CHKERRQ(ierr);
   }
 
   /* if memory was published then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*draw);CHKERRQ(ierr);
 
+  ierr = PetscDrawDestroy_Private(*draw);CHKERRQ(ierr);
+
   if ((*draw)->ops->destroy) {
     ierr = (*(*draw)->ops->destroy)(*draw);CHKERRQ(ierr);
   }
+  ierr = PetscDrawDestroy(&(*draw)->popup);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->title);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->display);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefilename);CHKERRQ(ierr);
@@ -319,6 +356,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
     ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
     if (*popup) {
       ierr = PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_");CHKERRQ(ierr);
+      (*popup)->pause = 0.0;
       ierr = PetscDrawSetFromOptions(*popup);CHKERRQ(ierr);
     }
   } else *popup = NULL;

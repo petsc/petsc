@@ -136,7 +136,8 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 
    Level: beginner
 
-   References: Sonneveld, 1989.
+   References:
+.     1. - Sonneveld, 1989.
 
    Notes: Does not require a symmetric matrix. Does not apply transpose of the matrix.
         Supports left and right preconditioning, but not symmetric.

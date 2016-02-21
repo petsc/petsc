@@ -227,7 +227,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       if (is->isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
@@ -236,7 +236,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -371,7 +371,7 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
 
   PetscFunctionBegin;
   sub->n     = n;
-  ierr       = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+  ierr       = MPIU_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
   sub->first = first;
   sub->step  = step;
   if (step > 0) {min = first; max = first + step*(n-1);}

@@ -119,7 +119,7 @@ struct _MatOps {
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,void*);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,Mat);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,Mat);
   PetscErrorCode (*multconstrained)(Mat,Vec,Vec);
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
   /*79*/
@@ -226,8 +226,8 @@ PETSC_EXTERN MatBaseName MatBaseNameList;
 */
 PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat, MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
-PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
+PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
 #if defined(PETSC_USE_DEBUG)
@@ -260,6 +260,17 @@ PETSC_EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashS
 PETSC_EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace*);
 
 typedef struct {
+  PetscInt    count;
+} MatStashHeader;
+
+typedef struct {
+  void        *buffer;          /* Of type blocktype, dynamically constructed  */
+  PetscInt    count;
+  char        pending;
+} MatStashFrame;
+
+typedef struct _MatStash MatStash;
+struct _MatStash {
   PetscInt      nmax;                   /* maximum stash size */
   PetscInt      umax;                   /* user specified max-size */
   PetscInt      oldnmax;                /* the nmax value used previously */
@@ -267,6 +278,12 @@ typedef struct {
   PetscInt      bs;                     /* block size of the stash */
   PetscInt      reallocs;               /* preserve the no of mallocs invoked */
   PetscMatStashSpace space_head,space;  /* linked list to hold stashed global row/column numbers and matrix values */
+
+  PetscErrorCode (*ScatterBegin)(Mat,MatStash*,PetscInt*);
+  PetscErrorCode (*ScatterGetMesg)(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
+  PetscErrorCode (*ScatterEnd)(MatStash*);
+  PetscErrorCode (*ScatterDestroy)(MatStash*);
+
   /* The following variables are used for communication */
   MPI_Comm      comm;
   PetscMPIInt   size,rank;
@@ -283,7 +300,34 @@ typedef struct {
   PetscMPIInt   *flg_v;                 /* indicates what messages have arrived so far and from whom */
   PetscBool     reproduce;
   PetscInt      reproduce_count;
-} MatStash;
+
+  /* The following variables are used for BTS communication */
+  PetscBool      subset_off_proc; /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
+  PetscBool      use_status;      /* Use MPI_Status to determine number of items in each message */
+  PetscMPIInt    nsendranks;
+  PetscMPIInt    nrecvranks;
+  PetscMPIInt    *sendranks;
+  PetscMPIInt    *recvranks;
+  MatStashHeader *sendhdr,*recvhdr;
+  MatStashFrame  *sendframes;   /* pointers to the main messages */
+  MatStashFrame  *recvframes;
+  MatStashFrame  *recvframe_active;
+  PetscInt       recvframe_i;     /* index of block within active frame */
+  PetscMPIInt    recvframe_count; /* Count actually sent for current frame */
+  PetscInt       recvcount;       /* Number of receives processed so far */
+  PetscMPIInt    *some_indices;   /* From last call to MPI_Waitsome */
+  MPI_Status     *some_statuses;  /* Statuses from last call to MPI_Waitsome */
+  PetscMPIInt    some_count;      /* Number of requests completed in last call to MPI_Waitsome */
+  PetscMPIInt    some_i;          /* Index of request currently being processed */
+  MPI_Request    *sendreqs;
+  MPI_Request    *recvreqs;
+  PetscSegBuffer segsendblocks;
+  PetscSegBuffer segrecvframe;
+  PetscSegBuffer segrecvblocks;
+  MPI_Datatype   blocktype;
+  size_t         blocktype_size;
+  InsertMode     *insertmode;   /* Pointer to check mat->insertmode and set upon message arrival in case no local values have been set. */
+};
 
 PETSC_INTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
 PETSC_INTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
@@ -344,6 +388,7 @@ struct _p_Mat {
   PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
   PetscBool              symmetric_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
+  PetscBool              subsetoffprocentries;
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
@@ -355,7 +400,8 @@ struct _p_Mat {
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
   Mat_Redundant          *redundant;        /* used by MatCreateRedundantMatrix() */
-  PetscBool              erroriffpe;        /* Generate an error if FPE detected (for example a zero pivot) instead of returning*/  
+  PetscBool              erroriffailure;    /* Generate an error if detected (for example a zero pivot) instead of returning */
+  MatFactorError         errortype;         /* type of error */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
@@ -367,7 +413,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,M
 typedef struct _MatPartitioningOps *MatPartitioningOps;
 struct _MatPartitioningOps {
   PetscErrorCode (*apply)(MatPartitioning,IS*);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,MatPartitioning);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,MatPartitioning);
   PetscErrorCode (*destroy)(MatPartitioning);
   PetscErrorCode (*view)(MatPartitioning,PetscViewer);
 };
@@ -388,7 +434,7 @@ struct _p_MatPartitioning {
 typedef struct _MatCoarsenOps *MatCoarsenOps;
 struct _MatCoarsenOps {
   PetscErrorCode (*apply)(MatCoarsen);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,MatCoarsen);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,MatCoarsen);
   PetscErrorCode (*destroy)(MatCoarsen);
   PetscErrorCode (*view)(MatCoarsen,PetscViewer);
 };
@@ -504,7 +550,7 @@ struct  _p_MatFDColoring{
 typedef struct _MatColoringOps *MatColoringOps;
 struct _MatColoringOps {
   PetscErrorCode (*destroy)(MatColoring);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,MatColoring);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,MatColoring);
   PetscErrorCode (*view)(MatColoring,PetscViewer);
   PetscErrorCode (*apply)(MatColoring,ISColoring*);
   PetscErrorCode (*weights)(MatColoring,PetscReal**,PetscInt**);
@@ -575,7 +621,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (PetscAbsScalar(sctx->pv) <= _zero){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     /* force |diag| > zeropivot*rs */
     if (!sctx->nshift) sctx->shift_amount = info->shiftamount;
     else sctx->shift_amount *= 2.0;
@@ -595,7 +641,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (PetscRealPart(sctx->pv) <= _zero){
+  if (PetscRealPart(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     /* force matfactor to be diagonally dominant */
     if (sctx->nshift == sctx->nshift_max) {
       sctx->shift_fraction = sctx->shift_hi;
@@ -619,7 +665,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
   PetscReal _zero = info->zeropivot;
 
   PetscFunctionBegin;
-  if (PetscAbsScalar(sctx->pv) <= _zero){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
     sctx->pv          += info->shiftamount;
     sctx->shift_amount = 0.0;
     sctx->nshift++;
@@ -630,16 +676,17 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_none"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal      _zero = info->zeropivot;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   sctx->newshift = PETSC_FALSE;
-  if (PetscAbsScalar(sctx->pv) <= _zero) {
-    if (!mat->erroriffpe) {
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
+    if (!mat->erroriffailure) {
       ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
+      fact->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);
@@ -647,7 +694,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,const MatFactorInf
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscErrorCode ierr;
 
@@ -659,7 +706,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
   } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS){
     ierr = MatPivotCheck_inblocks(mat,info,sctx,row);CHKERRQ(ierr);
   } else {
-    ierr = MatPivotCheck_none(mat,info,sctx,row);CHKERRQ(ierr);
+    ierr = MatPivotCheck_none(fact,mat,info,sctx,row);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -923,7 +970,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
     bt        - PetscBT (bitarray) with all bits set to false
 */
 #define PetscIncompleteLLCreate(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt)\
-  (PetscMalloc1(2*nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
+  (PetscIntMultError(2,nlnk,NULL) || PetscMalloc1(2*nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
 
 /*
   Initialize a sorted linked list used for ILU and ICC
@@ -1224,10 +1271,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,PetscInt lnk_max,PetscInt **lnk,PetscBT *bt)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(2*(nlnk_max+2),lnk);CHKERRQ(ierr);
+  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
   ierr = PetscBTCreate(lnk_max,bt);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;         /* number of entries on the list */
@@ -1307,7 +1355,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
   PetscInt       k;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %d, (val,  next)\n",lnk[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %D, (val,  next)\n",lnk[0]);CHKERRQ(ierr);
   for (k=2; k< lnk[0]+2; k++){
     ierr = PetscPrintf(PETSC_COMM_SELF," %D: (%D, %D)\n",2*k,lnk[2*k],lnk[2*k+1]);CHKERRQ(ierr);
   }
@@ -1342,10 +1390,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(2*(nlnk_max+2),lnk);CHKERRQ(ierr);
+  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;               /* number of entries on the list */
   llnk[2] = PETSC_MAX_INT;   /* value in the head node */
@@ -1431,10 +1480,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *ln
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
-  PetscInt       *llnk;
+  PetscInt       *llnk,lsize = 0;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(3*(nlnk_max+3),lnk);CHKERRQ(ierr);
+  ierr = PetscIntMultError(3,nlnk_max+3,&lsize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;   /* nlnk: number of entries on the list */
   llnk[1] = 0;          /* number of integer entries represented in list */

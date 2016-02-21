@@ -176,7 +176,7 @@ static void ConstructQ12D_GNx(PetscScalar GNi[][NODES_PER_EL],PetscScalar GNx[][
     GNx[1][i] = GNi[0][i]*iJ10+GNi[1][i]*iJ11;
   }
 
-  if (det_J != NULL) *det_J = J;
+  if (det_J) *det_J = J;
 }
 
 static void ConstructGaussQuadrature(PetscInt *ngp,PetscScalar gp_xi[][2],PetscScalar gp_weight[])
@@ -206,15 +206,15 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);CHKERRQ(ierr);
 
-  if (mxl != NULL) {
+  if (mxl) {
     *mxl = m;
     if ((sx+m) == M) *mxl = m-1;    /* last proc */
   }
-  if (myl != NULL) {
+  if (myl) {
     *myl = n;
     if ((sy+n) == N) *myl = n-1;  /* last proc */
   }
-  if (mzl != NULL) {
+  if (mzl) {
     *mzl = p;
     if ((sz+p) == P) *mzl = p-1;  /* last proc */
   }
@@ -831,7 +831,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   ierr = DMDASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dy,1.0-0.5*dy,0.0,1.0);CHKERRQ(ierr);
 
   /* define coefficients */
-  ierr = PetscOptionsGetInt(NULL,"-c_str",&coefficient_structure,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-c_str",&coefficient_structure,NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da_prop,&properties);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da_prop,&l_properties);CHKERRQ(ierr);
@@ -880,7 +880,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   }
 
   /* define the coefficients */
-  ierr = PetscOptionsGetBool(NULL,"-use_gp_coords",&use_gp_coords,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_gp_coords",&use_gp_coords,&flg);CHKERRQ(ierr);
 
   for (j = sj; j < sj+ny; j++) {
     for (i = si; i < si+nx; i++) {
@@ -894,8 +894,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
         opts_E  = 1.0;
         opts_nu = 0.33;
-        ierr    = PetscOptionsGetScalar(NULL,"-iso_E",&opts_E,&flg);CHKERRQ(ierr);
-        ierr    = PetscOptionsGetScalar(NULL,"-iso_nu",&opts_nu,&flg);CHKERRQ(ierr);
+        ierr    = PetscOptionsGetScalar(NULL,NULL,"-iso_E",&opts_E,&flg);CHKERRQ(ierr);
+        ierr    = PetscOptionsGetScalar(NULL,NULL,"-iso_nu",&opts_nu,&flg);CHKERRQ(ierr);
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           element_props[j][i].E[p]  = opts_E;
@@ -911,11 +911,11 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
         opts_E0  = opts_E1  = 1.0;
         opts_nu0 = opts_nu1 = 0.333;
         opts_xc  = 0.5;
-        ierr     = PetscOptionsGetScalar(NULL,"-step_E0",&opts_E0,&flg);CHKERRQ(ierr);
-        ierr     = PetscOptionsGetScalar(NULL,"-step_nu0",&opts_nu0,&flg);CHKERRQ(ierr);
-        ierr     = PetscOptionsGetScalar(NULL,"-step_E1",&opts_E1,&flg);CHKERRQ(ierr);
-        ierr     = PetscOptionsGetScalar(NULL,"-step_nu1",&opts_nu1,&flg);CHKERRQ(ierr);
-        ierr     = PetscOptionsGetScalar(NULL,"-step_xc",&opts_xc,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-step_E0",&opts_E0,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-step_nu0",&opts_nu0,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-step_E1",&opts_E1,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-step_nu1",&opts_nu1,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-step_xc",&opts_xc,&flg);CHKERRQ(ierr);
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
@@ -944,18 +944,18 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
         flg        = PETSC_FALSE;
         maxnbricks = 10;
-        ierr       = PetscOptionsGetRealArray(NULL, "-brick_E",values_E,&maxnbricks,&flg);CHKERRQ(ierr);
+        ierr       = PetscOptionsGetRealArray(NULL,NULL, "-brick_E",values_E,&maxnbricks,&flg);CHKERRQ(ierr);
         nbricks    = maxnbricks;
         if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of E values for each brick");CHKERRQ(ierr);
 
         flg        = PETSC_FALSE;
         maxnbricks = 10;
-        ierr       = PetscOptionsGetRealArray(NULL, "-brick_nu",values_nu,&maxnbricks,&flg);CHKERRQ(ierr);
+        ierr       = PetscOptionsGetRealArray(NULL,NULL, "-brick_nu",values_nu,&maxnbricks,&flg);CHKERRQ(ierr);
         if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");CHKERRQ(ierr);
         if (maxnbricks != nbricks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");CHKERRQ(ierr);
 
         span = 1;
-        ierr = PetscOptionsGetInt(NULL,"-brick_span",&span,&flg);CHKERRQ(ierr);
+        ierr = PetscOptionsGetInt(NULL,NULL,"-brick_span",&span,&flg);CHKERRQ(ierr);
 
         /* cycle through the indices so that no two material properties are repeated in lines of x or y */
         jj    = (j/span)%nbricks;
@@ -974,14 +974,14 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
         opts_E0  = opts_E1  = 1.0;
         opts_nu0 = opts_nu1 = 0.333;
-        ierr     = PetscOptionsGetScalar(NULL,"-sponge_E0",&opts_E0,&flg);CHKERRQ(ierr);
-        ierr     = PetscOptionsGetScalar(NULL,"-sponge_nu0",&opts_nu0,&flg);CHKERRQ(ierr);
-        ierr     = PetscOptionsGetScalar(NULL,"-sponge_E1",&opts_E1,&flg);CHKERRQ(ierr);
-        ierr     = PetscOptionsGetScalar(NULL,"-sponge_nu1",&opts_nu1,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-sponge_E0",&opts_E0,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-sponge_nu0",&opts_nu0,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-sponge_E1",&opts_E1,&flg);CHKERRQ(ierr);
+        ierr     = PetscOptionsGetScalar(NULL,NULL,"-sponge_nu1",&opts_nu1,&flg);CHKERRQ(ierr);
 
         opts_t = opts_w = 1;
-        ierr   = PetscOptionsGetInt(NULL,"-sponge_t",&opts_t,&flg);CHKERRQ(ierr);
-        ierr   = PetscOptionsGetInt(NULL,"-sponge_w",&opts_w,&flg);CHKERRQ(ierr);
+        ierr   = PetscOptionsGetInt(NULL,NULL,"-sponge_t",&opts_t,&flg);CHKERRQ(ierr);
+        ierr   = PetscOptionsGetInt(NULL,NULL,"-sponge_w",&opts_w,&flg);CHKERRQ(ierr);
 
         ii = (i)/(opts_t+opts_w+opts_t);
         jj = (j)/(opts_t+opts_w+opts_t);
@@ -1013,7 +1013,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   ierr = DMLocalToGlobalBegin(da_prop,l_properties,ADD_VALUES,properties);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da_prop,l_properties,ADD_VALUES,properties);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-no_view",&no_view,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-no_view",&no_view,NULL);CHKERRQ(ierr);
   if (!no_view) {
     ierr = DMDAViewCoefficientsGnuplot2d(da_prop,properties,"Coeffcients for elasticity eqn.","properties");CHKERRQ(ierr);
     ierr = DMDACoordViewGnuplot2d(elas_da,"mesh");CHKERRQ(ierr);
@@ -1041,7 +1041,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_E);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_E,"elas_");CHKERRQ(ierr);  /* elasticity */
 
-  ierr = PetscOptionsGetBool(NULL,"-use_nonsymbc",&use_nonsymbc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_nonsymbc",&use_nonsymbc,&flg);CHKERRQ(ierr);
   /* solve */
   if (!use_nonsymbc) {
     Mat        AA;
@@ -1103,8 +1103,8 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 
   mx   = my = 10;
-  ierr = PetscOptionsGetInt(NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-my",&my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL);CHKERRQ(ierr);
 
   ierr = solve_elasticity_2d(mx,my);CHKERRQ(ierr);
 
@@ -1269,6 +1269,25 @@ static PetscErrorCode DMDABCApplyCompression(DM elas_da,Mat A,Vec f)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "Orthogonalize"
+static PetscErrorCode Orthogonalize(PetscInt n,Vec *vecs)
+{
+  PetscInt       i,j;
+  PetscScalar    dot;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+  ierr = VecNormalize(vecs[i],PETSC_NULL);CHKERRQ(ierr);
+     for (j=i+1; j<n; j++) {
+       ierr = VecDot(vecs[i],vecs[j],&dot);CHKERRQ(ierr);
+       ierr = VecAXPY(vecs[j],-dot,vecs[i]);CHKERRQ(ierr);
+     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDABCApplySymmetricCompression"
 static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff)
 {
@@ -1327,11 +1346,12 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecScatterEnd(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   {                             /* Constrain near-null space */
-    PetscInt nvecs;
-    const Vec *vecs;
-    Vec *uvecs;
-    PetscBool has_const;
+    PetscInt     nvecs;
+    const        Vec *vecs;
+    Vec          *uvecs;
+    PetscBool    has_const;
     MatNullSpace mnull,unull;
+
     ierr = MatGetNearNullSpace(A,&mnull);CHKERRQ(ierr);
     ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvecs,&vecs);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(*ff,nvecs,&uvecs);CHKERRQ(ierr);
@@ -1339,13 +1359,11 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
       ierr = VecScatterBegin(scat,vecs[i],uvecs[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(scat,vecs[i],uvecs[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
-    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),has_const,nvecs,uvecs,&unull);CHKERRQ(ierr);
+    ierr = Orthogonalize(nvecs,uvecs);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),PETSC_FALSE,nvecs,uvecs,&unull);CHKERRQ(ierr);
     ierr = MatSetNearNullSpace(*AA,unull);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&unull);CHKERRQ(ierr);
-    for (i=0; i<nvecs; i++) {
-      ierr = VecDestroy(&uvecs[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(uvecs);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(nvecs,&uvecs);CHKERRQ(ierr);
   }
 
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);

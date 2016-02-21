@@ -290,6 +290,10 @@ runex11:
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex11_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex11_1.tmp
+runex11_bts:
+	-@${MPIEXEC} -n 2 ./ex11 -vec_assembly_bts > ex11_bts.tmp 2>&1;\
+	   ${DIFF} output/ex11_1.out ex11_bts.tmp || printf "${PWD}\nPossible problem with with ex11_bts, diffs above \n=========================================\n";\
+	   ${RM} ex11_bts.tmp
 runex12:
 	-@${MPIEXEC} -n 2 ./ex12 > ex12_1.tmp 2>&1;\
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \
@@ -331,7 +335,7 @@ runex18:
 	   else printf "${PWD}\nPossible problem with ex18_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex18_1.tmp
 runex19f:
-	-@${MPIEXEC} -n 1 ./ex19f -n 25 > ex19_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex19f  > ex19_1.tmp 2>&1;\
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex19f_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex19_1.tmp
@@ -384,6 +388,22 @@ runex29:
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex29_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex29_1.tmp
+runex29_bts:
+	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts > ex29_bts.tmp 2>&1;\
+	   ${DIFF} output/ex29_1.out ex29_bts.tmp || printf "${PWD}\nPossible problem with with ex29_bts, diffs above \n=========================================\n";\
+	   ${RM} ex29_bts.tmp
+runex29_bts_2:
+	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 2 > ex29_bts_2.tmp 2>&1;\
+	   ${DIFF} output/ex29_1.out ex29_bts_2.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2, diffs above \n=========================================\n";\
+	   ${RM} ex29_bts_2.tmp
+runex29_bts_2_subset:
+	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 2 -subset > ex29_bts_2_subset.tmp 2>&1;\
+	   ${DIFF} output/ex29_1.out ex29_bts_2_subset.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2_subset, diffs above \n=========================================\n";\
+	   ${RM} ex29_bts_2_subset@.tmp
+runex29_bts_2_subset_proper:
+	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 5 -subset > ex29_bts_2_subset_proper.tmp 2>&1;\
+	   ${DIFF} output/ex29_1.out ex29_bts_2_subset_proper.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2_subset_proper, diffs above \n=========================================\n";\
+	   ${RM} ex29_bts_2_subset_proper.tmp
 runex30f:
 	-@${MPIEXEC} -n 4 ./ex30f > ex30f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex30f_1.out ex30f_1.tmp) then true; \
@@ -494,10 +514,11 @@ runex47:
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                               ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
                               runex7 ex7.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 \
-                              ex11.rm ex12.PETSc runex12 ex12.rm  ex14.PETSc runex14 \
+                              runex11_bts ex11.rm ex12.PETSc runex12 ex12.rm  ex14.PETSc runex14 \
                               ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
                               ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
-                              runex29 ex29.rm ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
+                              runex29 runex29_bts runex29_bts_2 runex29_bts_2_subset runex29_bts_2_subset_proper ex29.rm \
+                              ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
                               ex37.PETSc runex37 runex37_2 runex37_3 runex37_4  ex37.rm ex38.PETSc runex38 ex38.rm ex45.PETSc runex45 ex45.rm \
                               ex46.PETSc runex46 runex46_2 runex46_3 runex46_mpiio ex46.rm
 TESTEXAMPLES_C_X	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \

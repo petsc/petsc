@@ -1,4 +1,4 @@
-/* Program usage: mpirun -np <proc> eptorsion2 [-help] [all TAO options] */
+/* Program usage: mpiexec -n <proc> eptorsion2 [-help] [all TAO options] */
 
 /* ----------------------------------------------------------------------
 
@@ -96,9 +96,9 @@ int main(int argc, char **argv)
     Nx = Ny = PETSC_DECIDE;
 
     /* Check for any command line arguments that override defaults */
-    ierr = PetscOptionsGetReal(NULL,"-par",&user.param,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- Elastic-Plastic Torsion Problem -----\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);CHKERRQ(ierr);

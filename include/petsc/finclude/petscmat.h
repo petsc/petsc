@@ -54,6 +54,7 @@
       PetscEnum MAT_UNUSED_NONZERO_LOCATION_ERR
       PetscEnum MAT_SPD
       PetscEnum MAT_NO_OFF_PROC_ENTRIES
+      PetscEnum MAT_SUBSET_OFF_PROC_ENTRIES
       PetscEnum MAT_NO_OFF_PROC_ZERO_ROWS
       PetscEnum MAT_DIAGBLOCK_CSR
       PetscEnum MAT_OFFDIAGBLOCK_CSR
@@ -69,10 +70,8 @@
       PetscEnum MAT_HYB
       PetscEnum MAT_OPTION_MAX
 
-      parameter (MAT_OPTION_MIN=-5)
-      parameter (MAT_NEW_NONZERO_LOCATION_ERR=-4)
-      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=-3)
-      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=-2)
+      parameter (MAT_OPTION_MIN=-3)
+      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=-2)
       parameter (MAT_ROW_ORIENTED=-1)
       parameter (MAT_SYMMETRIC=1)
       parameter (MAT_STRUCTURALLY_SYMMETRIC=2)
@@ -84,7 +83,7 @@
       parameter (MAT_USE_INODES=8)
       parameter (MAT_HERMITIAN=9)
       parameter (MAT_SYMMETRY_ETERNAL=10)
-      parameter (MAT_DUMMY=11)
+      parameter (MAT_NEW_NONZERO_LOCATION_ERR=11)
       parameter (MAT_IGNORE_LOWER_TRIANGULAR=12)
       parameter (MAT_ERROR_LOWER_TRIANGULAR=13)
       parameter (MAT_GETROW_UPPERTRIANGULAR=14)
@@ -92,7 +91,9 @@
       parameter (MAT_NO_OFF_PROC_ZERO_ROWS=16)
       parameter (MAT_NO_OFF_PROC_ENTRIES=17)
       parameter (MAT_NEW_NONZERO_LOCATIONS=18)
-      parameter (MAT_OPTION_MAX=19)
+      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=19)
+      parameter (MAT_SUBSET_OFF_PROC_ENTRIES=20)
+      parameter (MAT_OPTION_MAX=21)
 !
 !  MatFactorShiftType
 !
@@ -104,7 +105,20 @@
       parameter (MAT_SHIFT_NONZERO=1)
       parameter (MAT_SHIFT_POSITIVE_DEFINITE=2)
       parameter (MAT_SHIFT_INBLOCKS=3)
+!
+!  MatFactorError
+!
+      PetscEnum MAT_FACTOR_NOERROR
+      PetscEnum MAT_FACTOR_STRUCT_ZEROPIVOT
+      PetscEnum MAT_FACTOR_NUMERIC_ZEROPIVOT
+      PetscEnum MAT_FACTOR_OUTMEMORY
+      PetscEnum MAT_FACTOR_OTHER
 
+      parameter (MAT_FACTOR_NOERROR=0)
+      parameter (MAT_FACTOR_STRUCT_ZEROPIVOT=1)
+      parameter (MAT_FACTOR_NUMERIC_ZEROPIVOT=2)
+      parameter (MAT_FACTOR_OUTMEMORY=3)
+      parameter (MAT_FACTOR_OTHER=4)
 !
 !  MatDuplicateOption
 !
@@ -150,10 +164,12 @@
       PetscEnum MAT_INITIAL_MATRIX
       PetscEnum MAT_REUSE_MATRIX
       PetscEnum MAT_IGNORE_MATRIX
+      PetscEnum MAT_INPLACE_MATRIX
 
       parameter (MAT_INITIAL_MATRIX=0)
       parameter (MAT_REUSE_MATRIX=1)
       parameter (MAT_IGNORE_MATRIX=2)
+      parameter (MAT_INPLACE_MATRIX=3)
 
 !
 !  MatInfoType

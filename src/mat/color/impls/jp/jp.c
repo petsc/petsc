@@ -23,7 +23,7 @@ PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_JP"
-PetscErrorCode MatColoringSetFromOptions_JP(PetscOptions *PetscOptionsObject,MatColoring mc)
+PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOptionsObject,MatColoring mc)
 {
   PetscErrorCode ierr;
   MC_JP          *jp = (MC_JP*)mc->data;
@@ -461,9 +461,9 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
         if (color[i] > maxcolor_local) maxcolor_local = color[i];
       }
     }
-    ierr = MPI_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
     maxcolor_global=0;
-    ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
   round = 0;
   while (nadded_total < ntotal) {
@@ -484,9 +484,9 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
       }
     }
     maxcolor_global = 0;
-    ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
     nadded_total=0;
-    ierr = MPI_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
     if (nadded_total == nadded_total_old) SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");
     nadded_total_old = nadded_total;
     round++;
@@ -520,7 +520,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
    boundary vertices at each stage that may be assigned colors independently.
 
    References:
-   M. Jones and P. Plassmann, “A parallel graph coloring heuristic,” SIAM Journal on Scientific Computing, vol. 14, no. 3,
+.  1. - M. Jones and P. Plassmann, “A parallel graph coloring heuristic,” SIAM Journal on Scientific Computing, vol. 14, no. 3,
    pp. 654–669, 1993.
 
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType()

@@ -155,16 +155,12 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)M),&size);CHKERRQ(ierr);
-  if (size != 1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parallel matrices");
-  }
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parallel matrices");
   if (reuse == MAT_REUSE_MATRIX) {
     PetscBool Sdense;
 
     ierr = PetscObjectTypeCompare((PetscObject)*S, MATSEQDENSE, &Sdense);CHKERRQ(ierr);
-    if (!Sdense) {
-      SETERRQ(PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"S should dense");
-    }
+    if (!Sdense) SETERRQ(PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"S should dense");
   }
   ierr = MatSchurComplementGetSubMatrices(M, NULL, NULL, &B, &C, &D);CHKERRQ(ierr);
   ierr = MatSchurComplementGetKSP(M, &ksp);CHKERRQ(ierr);
@@ -357,9 +353,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatConvert(Ain,MATSEQAIJ,MAT_INITIAL_MATRIX,&sub_schurs->A);CHKERRQ(ierr);
     }
   }
-  if (compute_Stilda && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"General matrix pencils are not currently supported (%d,%d)",sub_schurs->is_hermitian,sub_schurs->is_posdef);
-  }
+  if (compute_Stilda && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"General matrix pencils are not currently supported (%D,%D)",sub_schurs->is_hermitian,sub_schurs->is_posdef);
 
   ierr = PetscObjectReference((PetscObject)Sin);CHKERRQ(ierr);
   sub_schurs->S = Sin;
@@ -368,9 +362,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
 
   /* preliminary checks */
-  if (!sub_schurs->use_mumps && compute_Stilda) {
-    SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
-  }
+  if (!sub_schurs->use_mumps && compute_Stilda) SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
 
   /* restrict work on active processes */
   color = 0;
@@ -420,9 +412,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     const PetscInt*        idx_B;
     PetscInt               n_I,n_B,n_local_dofs,n_prev_added,j,layer,*local_numbering;
 
-    if (xadj == NULL || adjncy == NULL) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot request layering without adjacency");
-    }
+    if (!xadj || !adjncy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot request layering without adjacency");
     /* get sizes */
     ierr = ISGetLocalSize(sub_schurs->is_I,&n_I);CHKERRQ(ierr);
     ierr = ISGetLocalSize(sub_schurs->is_B,&n_B);CHKERRQ(ierr);
@@ -445,9 +435,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     for (layer=0;layer<nlayers;layer++) {
       PetscInt n_added;
       if (n_local_dofs == n_I+n_B) break;
-      if (n_local_dofs > n_I+n_B) {
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %d. Out of bound access (%d > %d)",layer,n_local_dofs,n_I+n_B);
-      }
+      if (n_local_dofs > n_I+n_B) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %D. Out of bound access (%D > %D)",layer,n_local_dofs,n_I+n_B);
       ierr = PCBDDCAdjGetNextLayer_Private(local_numbering+n_local_dofs,n_prev_added,touched,xadj,adjncy,&n_added);CHKERRQ(ierr);
       n_prev_added = n_added;
       n_local_dofs += n_added;
@@ -555,11 +543,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   ierr = ISDestroy(&all_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets_mult);CHKERRQ(ierr);
   ierr = ISGetLocalSize(all_subsets_n,&i);CHKERRQ(ierr);
-  if (i != local_size) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %d != %d",i,local_size);
-  }
+  if (i != local_size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",i,local_size);
   ierr = ISLocalToGlobalMappingCreateIS(all_subsets_n,&l2gmap_subsets);CHKERRQ(ierr);
-  ierr = MatCreateIS(comm_n,1,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size,l2gmap_subsets,&work_mat);CHKERRQ(ierr);
+  ierr = MatCreateIS(comm_n,1,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size,l2gmap_subsets,NULL,&work_mat);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&l2gmap_subsets);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)work_mat),&global_schur_subsets);CHKERRQ(ierr);
   ierr = MatSetSizes(global_schur_subsets,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size);CHKERRQ(ierr);
@@ -571,9 +557,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     ierr = PetscMalloc1(local_size,&all_local_idx_B);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApply(sub_schurs->BtoNmap,IS_GTOLM_DROP,local_size,all_local_idx_N+extra,&subset_size,all_local_idx_B);CHKERRQ(ierr);
-    if (subset_size != local_size) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in sub_schurs serial (BtoNmap)! %d != %d\n",subset_size,local_size);
-    }
+    if (subset_size != local_size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in sub_schurs serial (BtoNmap)! %D != %D\n",subset_size,local_size);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&sub_schurs->is_Ej_all);CHKERRQ(ierr);
   }
 
@@ -660,9 +644,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           dummy_idx[j]=local_size+j;
         }
         ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented for sparse matrices");
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented for sparse matrices");
       ierr = MatDestroy(&S_Ej);CHKERRQ(ierr);
       ierr = MatDestroy(&S_Ej_expl);CHKERRQ(ierr);
       local_size += subset_size;
@@ -676,7 +658,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     Mat         A;
     IS          is_A_all;
     PetscScalar *work,*S_data;
-    PetscInt    *idxs_schur,n_I,n_I_all,*dummy_idx,size_schur,size_active_schur,cum,cum2;
+    PetscInt    n_I,n_I_all,*dummy_idx,size_schur,size_active_schur,cum,cum2;
     PetscBool   mumps_S;
 
     /* get working mat */
@@ -706,20 +688,17 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatSetOption(A,MAT_SPD,sub_schurs->is_posdef);CHKERRQ(ierr);
 
     if (n_I) {
+      IS is_schur;
+
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
         ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
       } else {
         ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
       }
       /* subsets ordered last */
-      ierr = PetscMalloc1(size_schur,&idxs_schur);CHKERRQ(ierr);
-      for (i=0;i<size_schur;i++) {
-        idxs_schur[i] = n_I+i+1;
-      }
-#if defined(PETSC_HAVE_MUMPS)
-      ierr = MatMumpsSetSchurIndices(F,size_schur,idxs_schur);CHKERRQ(ierr);
-#endif
-      ierr = PetscFree(idxs_schur);CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,n_I,1,&is_schur);CHKERRQ(ierr);
+      ierr = MatFactorSetSchurIS(F,is_schur);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_schur);CHKERRQ(ierr);
 
       /* factorization step */
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
@@ -737,9 +716,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       }
 
       /* get explicit Schur Complement computed during numeric factorization */
-#if defined(PETSC_HAVE_MUMPS)
-      ierr = MatMumpsGetSchurComplement(F,&S_all);CHKERRQ(ierr);
-#endif
+      ierr = MatFactorGetSchurComplement(F,&S_all);CHKERRQ(ierr);
 
       /* we can reuse the solvers if we are not using the economic version */
       ierr = ISGetLocalSize(sub_schurs->is_I,&n_I_all);CHKERRQ(ierr);
@@ -866,11 +843,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     }
     ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_MUMPS)
     if (mumps_S) {
-      ierr = MatMumpsRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
+      ierr = MatFactorRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
     }
-#endif
 
     if (compute_Stilda && size_active_schur) {
       if (sub_schurs->n_subs == 1 && size_schur == size_active_schur) { /* we already computed the inverse */
@@ -878,11 +853,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         for (j=0;j<size_schur;j++) dummy_idx[j] = j;
         ierr = MatSetValues(sub_schurs->sum_S_Ej_tilda_all,size_schur,dummy_idx,size_schur,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
       } else {
-        if (mumps_S) { /* use MatMumps calls to invert S */
-#if defined(PETSC_HAVE_MUMPS)
-          ierr = MatMumpsInvertSchurComplement(F);CHKERRQ(ierr);
-          ierr = MatMumpsGetSchurComplement(F,&S_all);CHKERRQ(ierr);
-#endif
+        if (mumps_S) { /* use MatFactor calls to invert S */
+          ierr = MatFactorInvertSchurComplement(F);CHKERRQ(ierr);
+          ierr = MatFactorGetSchurComplement(F,&S_all);CHKERRQ(ierr);
         } else { /* we need to invert explicitly since we are not using MUMPS for S */
           ierr = MatDenseGetArray(S_all,&S_data);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(size_schur,&B_N);CHKERRQ(ierr);
@@ -930,11 +903,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           cum2 += subset_size*(size_schur + 1);
         }
         ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MUMPS)
         if (mumps_S) {
-          ierr = MatMumpsRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
+          ierr = MatFactorRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
         }
-#endif
       }
     }
     ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
@@ -1043,13 +1014,9 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B,
 
   PetscFunctionBegin;
   ierr = ISSorted(is_I,&is_sorted);CHKERRQ(ierr);
-  if (!is_sorted) {
-    SETERRQ(PetscObjectComm((PetscObject)is_I),PETSC_ERR_PLIB,"IS for I dofs should be shorted");
-  }
+  if (!is_sorted) SETERRQ(PetscObjectComm((PetscObject)is_I),PETSC_ERR_PLIB,"IS for I dofs should be shorted");
   ierr = ISSorted(is_B,&is_sorted);CHKERRQ(ierr);
-  if (!is_sorted) {
-    SETERRQ(PetscObjectComm((PetscObject)is_B),PETSC_ERR_PLIB,"IS for B dofs should be shorted");
-  }
+  if (!is_sorted) SETERRQ(PetscObjectComm((PetscObject)is_B),PETSC_ERR_PLIB,"IS for B dofs should be shorted");
 
   /* reset any previous data */
   ierr = PCBDDCSubSchursReset(sub_schurs);CHKERRQ(ierr);

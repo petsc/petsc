@@ -4,9 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-ml.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-p3.tar.gz']
     self.gitcommit         = 'v6.2-p3'
-    self.giturls           = ['https://bitbucket.org/petsc/pkg-ml.git']
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-p3.tar.gz']
     self.functions         = ['ML_Set_PrintLevel']
     self.includes          = ['ml_include.h']
     self.liblist           = [['libml.a']]
@@ -17,6 +16,8 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     self.requires32bitint  = 1;  # ml uses a combination of "global" indices that can be 64 bit and local indices that are always int therefore it is
                                  # essentially impossible to use ML's 64 bit integer mode with PETSc's --with-64-bit-indices
+    self.needsMath         = 1   # ml test needs the system math library
+    self.hastests          = 1
     return
 
   def setupDependencies(self, framework):

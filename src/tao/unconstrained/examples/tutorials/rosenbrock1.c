@@ -1,4 +1,4 @@
-/* Program usage: mpirun -np 1 rosenbrock1 [-help] [all TAO options] */
+/* Program usage: mpiexec -n 1 rosenbrock1 [-help] [all TAO options] */
 
 /*  Include "petsctao.h" so we can use TAO solvers.  */
 #include <petsctao.h>
@@ -58,8 +58,8 @@ int main(int argc,char **argv)
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0;
   /* Check for command line arguments to override defaults */
-  ierr = PetscOptionsGetInt(NULL,"-n",&user.n,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-alpha",&user.alpha,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg);CHKERRQ(ierr);
 
   /* Allocate vectors for the solution and gradient */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
-  PetscInt       i, nn=user->n/2, ind[2];
+  PetscInt       i, ind[2];
   PetscReal      alpha=user->alpha;
   PetscReal      v[2][2],*x;
   PetscBool      assembled;
@@ -194,6 +194,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
   /* Assemble matrix */
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogFlops(nn*9);CHKERRQ(ierr);
+  ierr = PetscLogFlops(9.0*user->n/2.0);CHKERRQ(ierr);
   return 0;
 }

@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3adj_events.c ex3opt.c ex3opt_fd.c ex5.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3opt.c ex3opt_fd.c ex5.c \
                 ex6.c ex7.c ex8.c ex9adj.c ex9.c ex9opt.c
 EXAMPLESF       =
 EXAMPLESFH      =
@@ -36,15 +36,15 @@ ex3: ex3.o  chkopts
 
 ex3adj: ex3adj.o  chkopts
 	-${CLINKER} -o ex3adj ex3adj.o  ${PETSC_TS_LIB}
-
-ex3adj_events: ex3adj_events.o  chkopts
-	-${CLINKER} -o ex3adj_events ex3adj_events.o  ${PETSC_TS_LIB}
+	${RM} ex3adj.o
 
 ex3opt: ex3opt.o  chkopts
 	-${CLINKER} -o ex3opt ex3opt.o  ${PETSC_LIB}
+	${RM} ex3opt.o
 
 ex3opt_fd: ex3opt_fd.o  chkopts
 	-${CLINKER} -o ex3opt_fd ex3opt_fd.o  ${PETSC_LIB}
+	${RM} ex3opt_fd.o
 
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_TS_LIB}
@@ -72,9 +72,11 @@ ex9: ex9.o  chkopts
 
 ex9adj: ex9adj.o  chkopts
 	-${CLINKER} -o ex9adj ex9adj.o  ${PETSC_TS_LIB}
+	${RM} ex9adj.o
 
 ex9opt: ex9opt.o  chkopts
 	-${CLINKER} -o ex9opt ex9opt.o  ${PETSC_LIB}
+	${RM} ex9opt.o
 
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_TS_LIB}
@@ -165,11 +167,11 @@ ex27: ex27.o chkopts
 
 #---------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_max_steps 10  > ex1_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_1.out ex1_1.tmp || printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1  > ex1_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1  -ts_max_steps 10  > ex1_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_2.out ex1_2.tmp || printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_2.tmp
 
@@ -203,18 +205,13 @@ runex3adj:
 	   ${DIFF} output/ex3adj_1.out ex3adj_1.tmp || printf "${PWD}\nPossible problem with ex3adj_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3adj_1.tmp
 
-runex3adj_events:
-	-@${MPIEXEC} -n 1 ./ex3adj_events -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_events_1.tmp 2>&1;	  \
-	   ${DIFF} output/ex3adj_events_1.out ex3adj_events_1.tmp || printf "${PWD}\nPossible problem with ex3adj_events_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3adj_events_1.tmp
-
 runex3opt:
 	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -tao_monitor > ex3opt_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3opt_1.out ex3opt_1.tmp || printf "${PWD}\nPossible problem with ex3opt_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_1.tmp
 
 runex3opt_fd:
-	-@${MPIEXEC} -n 1 ./ex3opt_fd -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view  > ex3opt_fd_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3opt_fd -tao_max_it 6 -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view  > ex3opt_fd_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3opt_fd_1.out ex3opt_fd_1.tmp || printf "${PWD}\nPossible problem with ex3opt_fd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_fd_1.tmp
 
@@ -279,7 +276,7 @@ runex9adj:
 	   ${RM} -f ex9adj_1.tmp
 
 runex9opt:
-	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -ts_adapt_type none -tao_monitor > ex9opt_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason > ex9opt_1.tmp 2>&1; \
 	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9opt_1, diffs above\n=========================================\n"; \
 	 ${RM} -f ex9opt_1.tmp
 
@@ -417,15 +414,13 @@ clean_files:
 	-@${RM} *.bin; \
 	  ${RM} *.info
 
-TESTEXAMPLES_C_NOCOMPLEX   = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
-                            ex3adj.PETSc runex3adj ex3adj.rm \
-			    ex3adj_events.PETSc runex3adj_events ex3adj_events.rm \
-                            ex3opt.PETSc runex3opt ex3opt.rm \
-                            ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm \
-                            ex5.PETSc ex5.rm \
-                            ex6.PETSc ex6.rm ex7.PETSc  ex7.rm \
-                            ex9adj.PETSc runex9adj ex9adj.rm \
-                            ex9opt.PETSc runex9opt ex9opt.rm
+TESTEXAMPLES_C_NOCOMPLEX          = ex2.PETSc runex2 ex2.rm  \
+                                    ex5.PETSc ex5.rm \
+                                    ex6.PETSc ex6.rm ex7.PETSc  ex7.rm \
+                                    ex9adj.PETSc runex9adj ex9adj.rm \
+                                    ex9opt.PETSc runex9opt ex9opt.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm ex3adj.PETSc runex3adj ex3adj.rm \
+                                    ex3opt.PETSc runex3opt ex3opt.rm ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_C_X_MPIUNI =

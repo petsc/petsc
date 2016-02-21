@@ -1,6 +1,4 @@
-static char help[] = "Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n\
-Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_type rowmax\n\
-See ~petsc/matrices/indefinite/readme \n\n";
+static char help[] = "Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro \n\n";
 
 #include <petscksp.h>
 
@@ -8,23 +6,25 @@ See ~petsc/matrices/indefinite/readme \n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C;
-  PetscScalar none = -1.0;
-  int         ierr,rank,size,its,k;
-  double      err_norm,res_norm;
-  Vec         x,b,u,u_tmp;
-  PC          pc;
-  KSP         ksp;
-  PetscViewer view;
-  char        filein[128];     /* input file name */
+  Mat            C;
+  PetscScalar    none = -1.0;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscInt       its,k;
+  PetscReal      err_norm,res_norm;
+  Vec            x,b,u,u_tmp;
+  PC             pc;
+  KSP            ksp;
+  PetscViewer    view;
+  char           filein[128];     /* input file name */
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  /* Load the binary data file "filein". Set runtime option: -fload filein */
+  /* Load the binary data file "filein". Set runtime option: -f filein */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Load dataset ...\n");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,"-fload",filein,128,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",filein,128,NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filein,FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetType(C,MATMPISBAIJ);CHKERRQ(ierr);
@@ -69,8 +69,6 @@ int main(int argc,char **args)
 
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-    /* ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr); */
-    ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
     /*
     Set runtime options, e.g.,

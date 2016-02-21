@@ -413,7 +413,7 @@ PetscErrorCode TSSSPGetNumStages_SSP(TS ts,PetscInt *nstages)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_SSP"
-static PetscErrorCode TSSetFromOptions_SSP(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_SSP(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   char           tname[256] = TSSSPRKS2;
   TS_SSP         *ssp       = (TS_SSP*)ts->data;
@@ -479,9 +479,8 @@ static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
   Level: beginner
 
   References:
-  Ketcheson, Highly efficient strong stability preserving Runge-Kutta methods with low-storage implementations, SISC, 2008.
-
-  Gottlieb, Ketcheson, and Shu, High order strong stability preserving time discretizations, J Scientific Computing, 2009.
++  1. - Ketcheson, Highly efficient strong stability preserving Runge Kutta methods with low storage implementations, SISC, 2008.
+-  2. - Gottlieb, Ketcheson, and Shu, High order strong stability preserving time discretizations, J Scientific Computing, 2009.
 
 .seealso:  TSCreate(), TS, TSSetType()
 

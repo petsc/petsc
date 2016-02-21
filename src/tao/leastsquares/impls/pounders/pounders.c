@@ -66,7 +66,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = MatAssemblyEnd(mfqP->subH,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = TaoResetStatistics(mfqP->subtao);CHKERRQ(ierr);
-    ierr = TaoSetTolerances(mfqP->subtao,PETSC_DEFAULT,PETSC_DEFAULT,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr);
+    ierr = TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr);
     /* enforce bound constraints -- experimental */
     if (tao->XU && tao->XL) {
       ierr = VecCopy(tao->XU,mfqP->subxu);CHKERRQ(ierr);
@@ -326,7 +326,9 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 
     /* Get svd for L_tmp(:,n+2:np+1) (L_tmp is modified in process) */
     blasint = mfqP->nmodelpoints - mfqP->n;
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&blasint2,&blasint,&mfqP->L_tmp[(mfqP->n+1)*blasint2],&blasint2,mfqP->beta,mfqP->work,&blasn,mfqP->work,&blasn,mfqP->npmaxwork,&blasnmax,&info));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (info != 0) SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine gesvd returned with value %d\n",info);
 
     if (mfqP->beta[PetscMin(blasint,blasint2)-1] > mfqP->theta2) {
@@ -1101,7 +1103,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_POUNDERS"
-static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
@@ -1176,15 +1178,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
-  mfqP->deltamin=1e-3;
-#else
-  if (!tao->fatol_changed) tao->fatol = 1.0e-8;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-8;
-  mfqP->deltamin=1e-6;
-#endif
   mfqP->delta0 = 0.1;
   mfqP->delta = 0.1;
   mfqP->deltamax=1e3;

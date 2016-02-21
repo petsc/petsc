@@ -6,7 +6,7 @@
 # but it can also be run as a stand-alone program. The library paths and
 # flags should have been written to
 #
-#     $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/PETScConfig.cmake
+#     $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/PETScBuildInternal.cmake
 #
 # by configure before running this script.
 

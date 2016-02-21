@@ -31,16 +31,14 @@ static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (armP->memory != NULL) {
-    ierr = PetscFree(armP->memory);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(armP->memory);CHKERRQ(ierr);
   armP->memorySetup = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_Armijo"
-static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
   PetscErrorCode       ierr;

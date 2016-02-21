@@ -1,5 +1,4 @@
-#!/home/petsc/soft/linux-Ubuntu_12.04-x86_64/Python-2.4.6/bin/python2.4
-# Test python2.4 && cmake
+#!/usr/bin/env python
 
 configure_options = [
   '--with-debugging=0',
@@ -30,6 +29,8 @@ configure_options = [
   '--download-petsc4py=1',
   '--download-mpi4py=1',
   '--download-saws',
+  '--download-concurrencykit=1',
+  '--download-revolve=1',
   ]
 
 if __name__ == '__main__':

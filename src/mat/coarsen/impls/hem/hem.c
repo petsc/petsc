@@ -832,7 +832,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         }
         /* recieve requests, send response, clear lists */
         kk     = nactive_edges;
-        ierr   = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr); /* not correct syncronization and global */
+        ierr   = MPIU_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr); /* not correct syncronization and global */
         nSend2 = 0;
         while (1) {
 #define BF_SZ 10000
@@ -1158,9 +1158,10 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] HEM aggregator\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

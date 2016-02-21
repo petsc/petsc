@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist and mumps).\n\
+static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist, mumps and mkl_pardiso).\n\
 Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
 #include <petscmat.h>
@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
@@ -40,7 +40,7 @@ int main(int argc,char **args)
 
   /* Create dense matrix C and X; C holds true solution with identical colums */
   nrhs = 2;
-  ierr = PetscOptionsGetInt(NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   if (!rank) printf("ex125: nrhs %d\n",nrhs);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);*/
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);*/
 
-  ierr = PetscOptionsGetInt(NULL,"-mat_solver_package",&ipack,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_package",&ipack,NULL);CHKERRQ(ierr);
   switch (ipack) {
 #if defined(PETSC_HAVE_SUPERLU)
   case 0:
@@ -113,6 +113,12 @@ int main(int argc,char **args)
       ierr = MatMumpsSetIcntl(F,24,1);CHKERRQ(ierr);
       ierr = MatMumpsSetCntl(F,3,cntl);CHKERRQ(ierr);
     }
+    break;
+#endif
+#if defined(PETSC_HAVE_MKL_PARDISO)
+  case 3:
+    if (!rank) printf(" MKL_PARDISO LU:\n");
+    ierr = MatGetFactor(A,MATSOLVERMKL_PARDISO,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
   default:

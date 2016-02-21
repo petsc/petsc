@@ -25,8 +25,10 @@ ex3: ex3.o  chkopts
 
 #------------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -pc_factor_shift_type positive_definite
-	-@${RM} -f ex1.tmp
+	-@${MPIEXEC} -n 1 ./ex1 -pc_factor_shift_type positive_definite > ex1.tmp 2>&1; \
+	   if (${DIFF} output/ex1_1.out ex1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1.tmp
 
 runex3:
 	-@${MPIEXEC} -n 8 ./ex3 -n 100 -ksp_type cg -pc_type bjacobi -sub_pc_type icc -ksp_rtol 1.e-8 > ex3.tmp 2>&1;	  \

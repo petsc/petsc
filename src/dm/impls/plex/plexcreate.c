@@ -65,7 +65,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
         PetscInt    markerPoints[8]     = {2, 1, 3, 1, 4, 1, 5, 1};
 
         ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-        for (p = 0; p < 4; ++p) {ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+        for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       } else {
         PetscInt    numPoints[2]        = {6, 2};
         PetscInt    coneSize[8]         = {4, 4, 0, 0, 0, 0, 0, 0};
@@ -86,7 +86,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
         PetscInt    markerPoints[10]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1};
 
         ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-        for (p = 0; p < 5; ++p) {ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+        for (p = 0; p < 5; ++p) {ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       } else {
         PetscInt    numPoints[2]         = {12, 2};
         PetscInt    coneSize[14]         = {8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -124,7 +124,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
     ierr = PetscObjectGetName((PetscObject) *newdm, &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)    idm,  name);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(*newdm, idm);CHKERRQ(ierr);
-    ierr = DMPlexCopyLabels(*newdm, idm);CHKERRQ(ierr);
+    ierr = DMCopyLabels(*newdm, idm);CHKERRQ(ierr);
     ierr = DMDestroy(newdm);CHKERRQ(ierr);
     *newdm = idm;
   }
@@ -200,7 +200,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
     markerTop    = 3;
     markerBottom = 1;
@@ -225,16 +225,16 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
         cone[0] = vertex; cone[1] = vertex+edges[0]+1;
         ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vx == edges[0]) {
-          ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
           if (ey == edges[1]-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
           }
         } else if (vx == 0) {
-          ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
           if (ey == edges[1]-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
           }
         }
       }
@@ -248,16 +248,16 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
         cone[0] = vertex; cone[1] = vertex+1;
         ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vy == edges[1]) {
-          ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
           if (ex == edges[0]-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
           }
         } else if (vy == 0) {
-          ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
+          ierr = DMSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
           if (ex == edges[0]-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
           }
         }
       }
@@ -339,7 +339,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
     }
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
     for (v = 0; v < numFaces+numVertices; ++v) {
-      ierr = DMPlexSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
+      ierr = DMSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
     }
 
     /* Side 0 (Top) */
@@ -473,7 +473,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %d not supported",dim);
     break;
   }
-  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
     markerBottom = faceMarkerBottom;
     markerTop    = faceMarkerTop;
@@ -565,12 +565,12 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (fx == numXVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerRight);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", face, markerRight);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", face, faceMarkerRight);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", face, markerRight);CHKERRQ(ierr);
               }
               else if (fx == 0) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerLeft);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", face, markerLeft);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", face, faceMarkerLeft);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", face, markerLeft);CHKERRQ(ierr);
               }
             }
           }
@@ -596,12 +596,12 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (fy == numYVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerBack);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", face, markerBack);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", face, faceMarkerBack);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", face, markerBack);CHKERRQ(ierr);
               }
               else if (fy == 0) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerFront);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", face, markerFront);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", face, faceMarkerFront);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", face, markerFront);CHKERRQ(ierr);
               }
             }
           }
@@ -631,12 +631,12 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (fz == numZVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerTop);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", face, markerTop);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", face, faceMarkerTop);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", face, markerTop);CHKERRQ(ierr);
               }
               else if (fz == 0) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerBottom);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", face, markerBottom);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", face, faceMarkerBottom);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", face, markerBottom);CHKERRQ(ierr);
               }
             }
           }
@@ -658,18 +658,18 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           if (dim == 3) {
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (vx == numXVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerRight);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerRight);CHKERRQ(ierr);
               }
               else if (vx == 0) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerLeft);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerLeft);CHKERRQ(ierr);
               }
             }
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (vy == numYVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerBack);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerBack);CHKERRQ(ierr);
               }
               else if (vy == 0) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerFront);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerFront);CHKERRQ(ierr);
               }
             }
           }
@@ -693,19 +693,19 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           if (dim == 2) {
             if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
               if (vx == numXVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerRight);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", edge, faceMarkerRight);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
                 if (ey == numYEdges-1) {
-                  ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
+                  ierr = DMSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
                 }
               }
               else if (vx == 0) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerLeft);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", edge, faceMarkerLeft);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
                 if (ey == numYEdges-1) {
-                  ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
+                  ierr = DMSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
                 }
               }
             }
@@ -713,18 +713,18 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           else {
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (vx == numXVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerRight);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerRight);CHKERRQ(ierr);
               }
               else if (vx == 0) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerLeft);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerLeft);CHKERRQ(ierr);
               }
             }
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (vz == numZVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerTop);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerTop);CHKERRQ(ierr);
               }
               else if (vz == 0) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerBottom);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerBottom);CHKERRQ(ierr);
               }
             }
           }
@@ -746,19 +746,19 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           if (dim == 2) {
             if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
               if (vy == numYVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerTop);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", edge, faceMarkerTop);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
                 if (ex == numXEdges-1) {
-                  ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
+                  ierr = DMSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
                 }
               }
               else if (vy == 0) {
-                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerBottom);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
-                ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "Face Sets", edge, faceMarkerBottom);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
                 if (ex == numXEdges-1) {
-                  ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
+                  ierr = DMSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
                 }
               }
             }
@@ -766,18 +766,18 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           else {
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (vy == numYVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerBack);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerBack);CHKERRQ(ierr);
               }
               else if (vy == 0) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerFront);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerFront);CHKERRQ(ierr);
               }
             }
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (vz == numZVertices-1) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerTop);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerTop);CHKERRQ(ierr);
               }
               else if (vz == 0) {
-                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerBottom);CHKERRQ(ierr);
+                ierr = DMSetLabelValue(dm, "marker", edge, markerBottom);CHKERRQ(ierr);
               }
             }
           }
@@ -993,6 +993,7 @@ extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened);
 extern PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[]);
+extern PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]);
 extern PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
 extern PetscErrorCode DMSetUp_Plex(DM dm);
 extern PetscErrorCode DMDestroy_Plex(DM dm);
@@ -1029,6 +1030,22 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;
   ((DM_Plex *) dmNew->data)->refct++;
+  dmNew->labels->refct++;
+  if (!--(dm->labels->refct)) {
+    DMLabelLink next = dm->labels->next;
+
+    /* destroy the labels */
+    while (next) {
+      DMLabelLink tmp = next->next;
+
+      ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+      ierr = PetscFree(next);CHKERRQ(ierr);
+      next = tmp;
+    }
+    ierr = PetscFree(dm->labels);CHKERRQ(ierr);
+  }
+  dm->labels = dmNew->labels;
+  dm->depthLabel = dmNew->depthLabel;
   PetscFunctionReturn(0);
 }
 
@@ -1037,15 +1054,26 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 /* Swap dm with the contents of dmNew
    - Swap the DM_Plex structure
    - Swap the coordinates
+   - Swap the point PetscSF
 */
 static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
 {
-  DM             coordDMA, coordDMB;
-  Vec            coordsA,  coordsB;
-  void          *tmp;
-  PetscErrorCode ierr;
+  DM              coordDMA, coordDMB;
+  Vec             coordsA,  coordsB;
+  PetscSF         sfA,      sfB;
+  void            *tmp;
+  DMLabelLinkList listTmp;
+  DMLabel         depthTmp;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetPointSF(dmA, &sfA);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dmB, &sfB);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) sfA);CHKERRQ(ierr);
+  ierr = DMSetPointSF(dmA, sfB);CHKERRQ(ierr);
+  ierr = DMSetPointSF(dmB, sfA);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject) sfA);CHKERRQ(ierr);
+
   ierr = DMGetCoordinateDM(dmA, &coordDMA);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmB, &coordDMB);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) coordDMA);CHKERRQ(ierr);
@@ -1062,12 +1090,18 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   tmp       = dmA->data;
   dmA->data = dmB->data;
   dmB->data = tmp;
+  listTmp   = dmA->labels;
+  dmA->labels = dmB->labels;
+  dmB->labels = listTmp;
+  depthTmp  = dmA->depthLabel;
+  dmA->depthLabel = dmB->depthLabel;
+  dmB->depthLabel = depthTmp;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_NonRefinement_Plex"
-PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsObject,DM dm)
+PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   DMBoundary     b;
@@ -1087,7 +1121,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
     if (flg) {
       DMLabel label;
 
-      ierr = DMPlexGetLabel(dm, b->labelname, &label);CHKERRQ(ierr);
+      ierr = DMGetLabel(dm, b->labelname, &label);CHKERRQ(ierr);
       for (i = 0; i < len; ++i) {
         PetscBool has;
 
@@ -1114,16 +1148,19 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsOb
   ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMView", mesh->printTol, &mesh->printTol, NULL);CHKERRQ(ierr);
+  /* Point Location */
+  ierr = PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMView", PETSC_FALSE, &mesh->useHashLocation, NULL);CHKERRQ(ierr);
   /* Projection behavior */
   ierr = PetscOptionsInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Plex"
-PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
+PetscErrorCode  DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
-  PetscInt       refine = 0, r;
+  PetscInt       refine = 0, coarsen = 0, r;
   PetscBool      isHierarchy;
   PetscErrorCode ierr;
 
@@ -1143,13 +1180,16 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
     ierr = DMPlexSwap_Static(dm, dms[refine-1]);CHKERRQ(ierr);
     if (refine == 1) {
       ierr = DMPlexSetCoarseDM(dm, dms[0]);CHKERRQ(ierr);
+      ierr = DMPlexSetRegularRefinement(dm, PETSC_TRUE);CHKERRQ(ierr);
     } else {
       ierr = DMPlexSetCoarseDM(dm, dms[refine-2]);CHKERRQ(ierr);
+      ierr = DMPlexSetRegularRefinement(dm, PETSC_TRUE);CHKERRQ(ierr);
       ierr = DMPlexSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
+      ierr = DMPlexSetRegularRefinement(dms[0], PETSC_TRUE);CHKERRQ(ierr);
     }
     /* Free DMs */
     for (r = 0; r < refine; ++r) {
-      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
       ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
@@ -1157,14 +1197,40 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
     for (r = 0; r < refine; ++r) {
       DM refinedMesh;
 
-      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
       ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &refinedMesh);CHKERRQ(ierr);
       /* Total hack since we do not pass in a pointer */
       ierr = DMPlexReplace_Static(dm, refinedMesh);CHKERRQ(ierr);
       ierr = DMDestroy(&refinedMesh);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
+  /* Handle DMPlex coarsening */
+  ierr = PetscOptionsInt("-dm_coarsen", "Coarsen the mesh", "DMCreate", coarsen, &coarsen, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_coarsen_hierarchy", "The number of coarsenings", "DMCreate", coarsen, &coarsen, &isHierarchy);CHKERRQ(ierr);
+  if (coarsen && isHierarchy) {
+    DM *dms;
+
+    ierr = PetscMalloc1(coarsen, &dms);CHKERRQ(ierr);
+    ierr = DMCoarsenHierarchy(dm, coarsen, dms);CHKERRQ(ierr);
+    /* Free DMs */
+    for (r = 0; r < coarsen; ++r) {
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+      ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(dms);CHKERRQ(ierr);
+  } else {
+    for (r = 0; r < coarsen; ++r) {
+      DM coarseMesh;
+
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
+      ierr = DMCoarsen(dm, PetscObjectComm((PetscObject) dm), &coarseMesh);CHKERRQ(ierr);
+      /* Total hack since we do not pass in a pointer */
+      ierr = DMPlexReplace_Static(dm, coarseMesh);CHKERRQ(ierr);
+      ierr = DMDestroy(&coarseMesh);CHKERRQ(ierr);
+    }
+  }
+  /* Handle */
+  ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1179,7 +1245,9 @@ static PetscErrorCode DMCreateGlobalVector_Plex(DM dm,Vec *vec)
   ierr = DMCreateGlobalVector_Section_Private(dm,vec);CHKERRQ(ierr);
   /* ierr = VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM);CHKERRQ(ierr); */
   ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_Plex);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_VIEWNATIVE, (void (*)(void)) VecView_Plex_Native);CHKERRQ(ierr);
   ierr = VecSetOperation(*vec, VECOP_LOAD, (void (*)(void)) VecLoad_Plex);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_LOADNATIVE, (void (*)(void)) VecLoad_Plex_Native);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1241,7 +1309,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->refine                          = DMRefine_Plex;
   dm->ops->coarsen                         = DMCoarsen_Plex;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Plex;
-  dm->ops->coarsenhierarchy                = NULL;
+  dm->ops->coarsenhierarchy                = DMCoarsenHierarchy_Plex;
   dm->ops->globaltolocalbegin              = NULL;
   dm->ops->globaltolocalend                = NULL;
   dm->ops->localtoglobalbegin              = NULL;
@@ -1315,8 +1383,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
-  mesh->labels              = NULL;
-  mesh->depthLabel          = NULL;
+  mesh->coarseMesh          = NULL;
+  mesh->regularRefinement   = PETSC_FALSE;
+  mesh->depthState          = -1;
   mesh->globalVertexNumbers = NULL;
   mesh->globalCellNumbers   = NULL;
   mesh->anchorSection       = NULL;
@@ -1636,8 +1705,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extCGNS   = ".cgns";
   const char    *extExodus = ".exo";
   const char    *extFluent = ".cas";
+  const char    *extHDF5   = ".h5";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus, isFluent;
+  PetscBool      isGmsh, isCGNS, isExodus, isFluent, isHDF5;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -1651,6 +1721,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,   5, &isCGNS);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus, 4, &isExodus);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extFluent, 4, &isFluent);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-3)], extHDF5,   3, &isHDF5);CHKERRQ(ierr);
   if (isGmsh) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
@@ -1659,6 +1730,17 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isFluent) {
     ierr = DMPlexCreateFluentFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
+  } else if (isHDF5) {
+    PetscViewer viewer;
+
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMLoad(*dm, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscFunctionReturn(0);
 }

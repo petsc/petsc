@@ -212,8 +212,8 @@
       user%lambda = 6.0
       ione = 1
       nfour = -4
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',             &
-     &     user%lambda,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+     &                        '-par',user%lambda,flg,ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
      &     then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
@@ -303,8 +303,8 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
-     &     matrix_free,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
+     &                         '-snes_mf',matrix_free,ierr)
       if (.not. matrix_free) then
         call DMSetMatType(da,MATAIJ,ierr)
         call DMCreateMatrix(da,J,ierr)
@@ -447,32 +447,32 @@
 
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%xs:user%xe,                                      &
+      PetscScalar  x(user%xs:user%xe,                                         &
      &              user%ys:user%ye)
       PetscErrorCode ierr
 
 !  Local variables:
       PetscInt  i,j
-      PetscScalar   temp1,temp,hx,hy
-      PetscScalar   one
+      PetscReal   temp1,temp,hx,hy
+      PetscReal   one
 
 !  Set parameters
 
       ierr   = 0
       one    = 1.0
-      hx     = one/(dble(user%mx-1))
-      hy     = one/(dble(user%my-1))
+      hx     = one/(user%mx-1)
+      hy     = one/(user%my-1)
       temp1  = user%lambda/(user%lambda + one)
 
       do 20 j=user%ys,user%ye
-         temp = dble(min(j-1,user%my-j))*hy
+         temp = min(j-1,user%my-j)*hy
          do 10 i=user%xs,user%xe
             if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. user%mx .or. j .eq. user%my) then
               x(i,j) = 0.0
             else
               x(i,j) = temp1 *                                          &
-     &          sqrt(min(dble(min(i-1,user%mx-i)*hx),dble(temp)))
+     &          sqrt(min(hx*min(i-1,user%mx-i),temp))
             endif
  10      continue
  20   continue
@@ -515,8 +515,8 @@
 
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(user%mx-1)
-      hy     = one/dble(user%my-1)
+      hx     = one/(user%mx-1)
+      hy     = one/(user%my-1)
       sc     = hx*hy*user%lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
@@ -721,8 +721,8 @@
       ifive  = 5
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(user%mx-1)
-      hy     = one/dble(user%my-1)
+      hx     = one/(user%mx-1)
+      hy     = one/(user%my-1)
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx

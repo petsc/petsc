@@ -150,11 +150,12 @@
 
       call SNESSetFromOptions(snes,ierr)
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+     &                         '-setls',setls,ierr)
 
       if (setls) then
         call SNESGetLineSearch(snes, linesearch, ierr)
-        call SNESLineSearchSetType(linesearch, "shell", ierr)
+        call SNESLineSearchSetType(linesearch, 'shell', ierr)
         call SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,   &
      &PETSC_NULL_OBJECT, ierr)
       endif
@@ -215,7 +216,7 @@
 
 !  Declarations for use with local arrays
 
-      PetscScalar  lx_v(1),lf_v(1)
+      PetscScalar  lx_v(2),lf_v(2)
       PetscOffset  lx_i,lf_i
 
 !  Get pointers to vector data.
@@ -329,7 +330,7 @@
 
       PetscScalar       mone
 
-      mone = -1.0d0
+      mone = -1.0
       call SNESLineSearchGetSNES(linesearch, snes, ierr)
       call SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
       call VecNorm(y,NORM_2,ynorm,ierr)

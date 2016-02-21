@@ -1,4 +1,4 @@
-static char help[] = "Demonstrates using PetscViewerSetFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)\n\n";
+static char help[] = "Demonstrates using PetscViewerPushFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)\n\n";
 
 /*T
    Concepts: viewers
@@ -70,12 +70,13 @@ int main(int argc,char **argv)
      MATLAB using $PETSC_DIR/share/petsc/matlab/PetscReadBinaryMatlab.m
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,params->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_BINARY_MATLAB);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB);CHKERRQ(ierr);
   ierr = PetscBagView(bag,viewer);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"field1");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"field2");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global,"da1");CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* clean up and exit */

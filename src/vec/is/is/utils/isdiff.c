@@ -504,8 +504,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
     lhigh = PetscMax(lhigh,colors[lstart]);
     ++lcount;
   }
-  ierr     = MPI_Allreduce(&llow,&low,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr     = MPI_Allreduce(&lhigh,&high,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr     = MPIU_Allreduce(&llow,&low,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr     = MPIU_Allreduce(&lhigh,&high,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   *listlen = 0;
   if (low <= high) {
     if (lcount > 0) {
@@ -537,7 +537,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
       }
       color = (PetscMPIInt)(colors[lstart] == l);
       /* Check whether a proper subcommunicator exists. */
-      ierr = MPI_Allreduce(&color,&subsize,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&color,&subsize,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
       if (subsize == 1) subcomm = PETSC_COMM_SELF;
       else if (subsize == size) subcomm = comm;
@@ -613,7 +613,8 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   ierr = ISGetIndices(a, &aindices);CHKERRQ(ierr);
   ierr = PetscMalloc1(alen, &cindices);CHKERRQ(ierr);
   if (!drop) gtoltype = IS_GTOLM_MASK;
-  ISGlobalToLocalMappingApply(ltog,gtoltype,alen,aindices,&clen,cindices);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(ltog,gtoltype,alen,aindices,&clen,cindices);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   if (clen != alen) {
     cindices2 = cindices;
     ierr      = PetscMalloc1(clen, &cindices);CHKERRQ(ierr);

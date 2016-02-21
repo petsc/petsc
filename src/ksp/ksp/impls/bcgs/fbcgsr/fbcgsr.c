@@ -111,12 +111,12 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
         tau   += r[j]*rp[j]; /* tau <- (r,rp) */
         sigma += v[j]*rp[j]; /* sigma <- (v,rp) */
       }
-      PetscLogFlops(4.0*N);
+      ierr = PetscLogFlops(4.0*N);CHKERRQ(ierr);
       ierr      = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
       insums[0] = tau;
       insums[1] = sigma;
       ierr      = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-      ierr      = MPI_Allreduce(insums,outsums,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+      ierr      = MPIU_Allreduce(insums,outsums,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
       ierr      = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
       tau       = outsums[0];
       sigma     = outsums[1];
@@ -141,7 +141,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
       xi3 += t[j]*t[j]; /* xi3 <- (t,t) */
       xi4 += t[j]*rp[j]; /* xi4 <- (t,rp) */
     }
-    PetscLogFlops(8.0*N);
+    ierr = PetscLogFlops(8.0*N);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
 
     insums[0] = xi1;
@@ -150,7 +150,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     insums[3] = xi4;
 
     ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-    ierr = MPI_Allreduce(insums,outsums,4,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(insums,outsums,4,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     xi1  = outsums[0];
     xi2  = outsums[1];
@@ -185,7 +185,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
       r[j] = s[j] - omega * t[j]; /* r <- s - omega t */
       p[j] = r[j] + beta * (p[j] - omega * v[j]); /* p <- r + beta * (p - omega v) */
     }
-    PetscLogFlops(6.0*N);
+    ierr = PetscLogFlops(6.0*N);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
   }

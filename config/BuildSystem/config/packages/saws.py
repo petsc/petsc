@@ -5,9 +5,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit = 'master'
-    self.giturls   = ['https://bitbucket.org/saws/saws.git']
-    self.download  = ['https://bitbucket.org/saws/saws/get/master.tar.gz']
+    self.gitcommit = 'origin/master'
+    self.download  = ['git://https://bitbucket.org/saws/saws.git','https://bitbucket.org/saws/saws/get/master.tar.gz']
     self.functions = ['SAWs_Register']
     self.includes  = ['SAWs.h']
     self.liblist   = [['libSAWs.a']]

@@ -44,10 +44,10 @@ PetscInt main(PetscInt argc,char **args)
   ierr     = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
   function = (FuncType) func;
   ierr     = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(NULL,"-view_x",&view_x,NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(NULL,"-view_y",&view_y,NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(NULL,"-view_z",&view_z,NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetIntArray(NULL,"-dim",dim,&ndim,NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(NULL,NULL,"-view_x",&view_x,NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(NULL,NULL,"-view_y",&view_y,NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(NULL,NULL,"-view_z",&view_z,NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetIntArray(NULL,NULL,"-dim",dim,&ndim,NULL);CHKERRQ(ierr);
 
   /* DMDA with the correct fiber dimension */
   ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,

@@ -445,7 +445,7 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_VINEWTONSSLS"
-static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;
@@ -475,9 +475,9 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptions *PetscOptions
    Level: beginner
 
    References:
-   - T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
++  1. -  T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
      algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
-   - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
+-  2. -  T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
 .seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESNEWTONTR, SNESLineSearchSet(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()

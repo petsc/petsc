@@ -3,7 +3,7 @@
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_SSLS"
-PetscErrorCode TaoSetFromOptions_SSLS(PetscOptions *PetscOptionsObject,Tao tao)
+PetscErrorCode TaoSetFromOptions_SSLS(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;

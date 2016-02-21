@@ -37,7 +37,7 @@ class Configure(config.base.Configure):
     self.installSudo        = ''
     self.installSudoMessage = ''
     if self.framework.argDB['prefix']:
-      self.dir = self.framework.argDB['prefix']
+      self.dir = os.path.abspath(self.framework.argDB['prefix'])
       try:
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
@@ -61,7 +61,7 @@ class Configure(config.base.Configure):
       os.remove(self.framework.argDB.saveFilename)
     confdir = os.path.join(dir,'lib','petsc','conf')
     self.framework.argDB.saveFilename = os.path.abspath(os.path.join(confdir, 'RDict.db'))
-    self.framework.logPrint('Changed persistence directory to '+confdir)
+    self.logPrint('Changed persistence directory to '+confdir)
     return
 
   def cleanInstallDir(self):
@@ -81,7 +81,7 @@ class Configure(config.base.Configure):
         os.rename(self.reconfigure_file,self.save_reconfigure_file)
       except Exception, e:
         self.save_reconfigure_file = None
-        self.framework.logPrint('error in saveReconfigure(): '+ str(e))
+        self.logPrint('error in saveReconfigure(): '+ str(e))
     return
 
   def restoreReconfigure(self):
@@ -89,7 +89,7 @@ class Configure(config.base.Configure):
       try:
         os.rename(self.save_reconfigure_file,self.reconfigure_file)
       except Exception, e:
-        self.framework.logPrint('error in restoreReconfigure(): '+ str(e))
+        self.logPrint('error in restoreReconfigure(): '+ str(e))
     return
 
   def configure(self):

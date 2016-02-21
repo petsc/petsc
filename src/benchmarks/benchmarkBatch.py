@@ -15,8 +15,8 @@ echo Starting execution at `date`
 NPROCS=`wc -l < $PBS_NODEFILE`
 echo This job has allocated $NPROCS CPUs
 # execute an MPI program
-echo Executing mpirun -np $NPROCS ex%d %s
-mpirun -np $NPROCS ex%d %s
+echo Executing mpiexec -np $NPROCS ex%d %s
+mpiexec -np $NPROCS ex%d %s
 ''' % (num, (time%86400)/3600, (time%3600)/60, time%60, procs, num, ' '.join(args), num, ' '.join(args))
   namePattern = 'ex%d_%03d.batch'
   for n in range(1000):

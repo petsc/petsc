@@ -137,6 +137,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand48(PetscRandom);
 #if defined(PETSC_HAVE_SPRNG)
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom);
 #endif
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomRegisterAll"
@@ -166,6 +167,7 @@ PetscErrorCode  PetscRandomRegisterAll(void)
 #if defined(PETSC_HAVE_SPRNG)
   ierr = PetscRandomRegister(PETSCSPRNG, PetscRandomCreate_Sprng);CHKERRQ(ierr);
 #endif
+  ierr = PetscRandomRegister(PETSCRANDER48,PetscRandomCreate_Rander48);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

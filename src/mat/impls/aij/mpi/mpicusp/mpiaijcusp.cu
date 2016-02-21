@@ -1,9 +1,8 @@
 #define PETSC_SKIP_COMPLEX
+#define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
-PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
-PETSC_CUDA_EXTERN_C_END
 #include <../src/mat/impls/aij/mpi/mpicusp/mpicuspmatimpl.h>
 
 #undef __FUNCT__
@@ -136,7 +135,7 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
-PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptions *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   MatCUSPStorageFormat format;
   PetscErrorCode       ierr;
@@ -145,6 +144,8 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptions *PetscOptionsObject,Mat
   Mat_MPIAIJCUSP       *cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
 
   PetscFunctionBegin;
+  ierr = MatSetFromOptions_MPIAIJ(PetscOptionsObject,A);CHKERRQ(ierr);
+
   ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
@@ -180,8 +181,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
   PetscFunctionBegin;
   try {
     err = cudaStreamDestroy(cuspStruct->stream);
-    if (err!=cudaSuccess)
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
+    if (err!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
     delete cuspStruct;
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", ex);
@@ -213,8 +213,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
   cuspStruct->diagGPUMatFormat    = MAT_CUSP_CSR;
   cuspStruct->offdiagGPUMatFormat = MAT_CUSP_CSR;
   err = cudaStreamCreate(&(cuspStruct->stream));
-  if (err!=cudaSuccess)
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
+  if (err!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
 
   A->ops->mult           = MatMult_MPIAIJCUSP;
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;

@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_BCGS"
-PetscErrorCode KSPSetFromOptions_BCGS(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_BCGS(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -209,7 +209,8 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
    Notes: See KSPBCGSL for additional stabilization
           Supports left and right preconditioning but not symmetric
 
-   References: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
+   References:
+.    1. -   van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPFBICG, KSPSetPCSide()
 M*/

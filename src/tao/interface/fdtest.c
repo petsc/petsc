@@ -128,7 +128,7 @@ PetscErrorCode TaoDestroy_Test(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_Test"
-static PetscErrorCode TaoSetFromOptions_Test(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_Test(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   Tao_Test        *fd = (Tao_Test *)tao->data;
   PetscErrorCode ierr;

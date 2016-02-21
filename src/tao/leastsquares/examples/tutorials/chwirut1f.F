@@ -1,4 +1,4 @@
-!  Program usage: mpirun -np 1 chwirut1f [-help] [all TAO options]
+!  Program usage: mpiexec -n 1 chwirut1f [-help] [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve a
 !  nonlinear least-squares problem on a single processor.  We minimize the
@@ -53,7 +53,7 @@
 
       external FormFunction
 
-      zero = 0.0d0
+      zero = 0.0
 
 !  Initialize TAO and PETSc
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -108,9 +108,6 @@
       CHKERRQ(ierr)
       call TaoGetConvergenceHistory(tao,nhist,ierr)
       CHKERRQ(ierr)
-      do i=1,nhist
-         print *,hist(i),resid(i)
-      enddo
       call TaoGetConvergedReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'
@@ -208,9 +205,9 @@
       PetscErrorCode  ierr
 
       call VecGetArray(x,x_v,x_i,ierr)
-      x_v(x_i) = 0.15d0
-      x_v(x_i+1) = 0.008d0
-      x_v(x_i+2) = 0.01d0
+      x_v(x_i) = 0.15
+      x_v(x_i+1) = 0.008
+      x_v(x_i+2) = 0.01
       call VecRestoreArray(x,x_v,x_i,ierr)
       return
       end

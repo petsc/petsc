@@ -54,7 +54,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&cperm);CHKERRQ(ierr);
 
   /* create Cperm = rperm*C*icperm */
-  ierr = PetscOptionsGetBool(NULL,"-testmyordering",&TestMyorder,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-testmyordering",&TestMyorder,NULL);CHKERRQ(ierr);
   if (TestMyorder) {
     ierr = MatGetOrdering_myordering(C,MATORDERINGQMD,&rperm,&cperm);CHKERRQ(ierr);
     printf("myordering's rperm:\n");

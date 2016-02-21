@@ -33,7 +33,7 @@
       height = 256
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
+      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      & 'Title',x,y,width,height,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
       call PetscDrawZoom(draw,zoomfunction,PETSC_NULL_INTEGER,ierr)

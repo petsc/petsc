@@ -21,7 +21,7 @@ PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
-PETSC_EXTERN PetscErrorCode PCGetSetUpFailedReason(PC,PetscInt*);
+PETSC_EXTERN PetscErrorCode PCGetSetUpFailedReason(PC,PCFailedReason*);
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplySymmetricLeft(PC,Vec,Vec);
@@ -101,6 +101,8 @@ PETSC_EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]
 PETSC_EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 PETSC_EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(PC,Vec,Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetApplySymmetricLeft(PC,PetscErrorCode (*)(PC,Vec,Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetApplySymmetricRight(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyBA(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyTranspose(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetSetUp(PC,PetscErrorCode (*)(PC));
@@ -205,6 +207,7 @@ PETSC_EXTERN PetscErrorCode PCFieldSplitGetType(PC,PCCompositeType*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetBlockSize(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetIS(PC,const char[],IS);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetIS(PC,const char[],IS*);
+PETSC_EXTERN PetscErrorCode PCFieldSplitRestrictIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetDMSplits(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetDMSplits(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetDiagUseAmat(PC,PetscBool);
@@ -293,6 +296,7 @@ PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainDiagonalScaling(PC,Vec);
 
+PETSC_EXTERN PetscInt PetscMGLevelId;
 PETSC_EXTERN PetscErrorCode PCMGSetType(PC,PCMGType);
 PETSC_EXTERN PetscErrorCode PCMGGetType(PC,PCMGType*);
 PETSC_EXTERN PetscErrorCode PCMGSetLevels(PC,PetscInt,MPI_Comm*);
@@ -319,5 +323,11 @@ PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
+
+PETSC_EXTERN PetscErrorCode PCTelescopeGetReductionFactor(PC,PetscInt*);
+PETSC_EXTERN PetscErrorCode PCTelescopeSetReductionFactor(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreDM(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreDM(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
 
 #endif /* __PETSCPC_H */

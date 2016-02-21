@@ -63,11 +63,11 @@ int main(int argc, char **argv)
   ierr = DMDAGetIerr(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   user.bheight = 0.1;
-  ierr         = PetscOptionsGetScalar(NULL,"-bheight",&user.bheight,&flg);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetScalar(NULL,NULL,"-bheight",&user.bheight,&flg);CHKERRQ(ierr);
 
   user.bmx = user.mx/2; user.bmy = user.my/2;
-  ierr     = PetscOptionsGetInt(NULL,"-bmx",&user.bmx,&flg);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetInt(NULL,"-bmy",&user.bmy,&flg);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(NULL,NULL,"-bmx",&user.bmx,&flg);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(NULL,NULL,"-bmy",&user.bmy,&flg);CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Minimum Surface Area With Plate Problem -----\n");
   PetscPrintf(PETSC_COMM_WORLD,"mx:%d, my:%d, bmx:%d, bmy:%d, height:%4.2f\n",
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
   /* Solve the application */
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-view_sol",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-view_sol",&flg);CHKERRQ(ierr);
   if (flg) { ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
 
   /* Free memory */
@@ -552,22 +552,22 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   /* Scale the boundary if desired */
 
-  ierr = PetscOptionsGetReal(NULL,"-bottom",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-bottom",&scl,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecScale(Bottom, scl);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetReal(NULL,"-top",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-top",&scl,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecScale(Top, scl);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetReal(NULL,"-right",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-right",&scl,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecScale(Right, scl);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetReal(NULL,"-left",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-left",&scl,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecScale(Left, scl);CHKERRQ(ierr);
   }
@@ -596,7 +596,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscScalar    *left,*right,*bottom,*top;
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg);CHKERRQ(ierr);
 
   if (flg && start==0) { /* The zero vector is reasonable */
 
@@ -663,7 +663,7 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
   ierr = DMDAVecGetArray(user->da,XL,&xl);CHKERRQ(ierr);
   ierr = VecSet(XU, ub);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-cylinder",&cylinder);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-cylinder",&cylinder);CHKERRQ(ierr);
   /* Compute the optional lower box */
   if (cylinder) {
     for (i=xs; i< xs+xm; i++) {

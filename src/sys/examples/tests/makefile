@@ -4,9 +4,9 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
-                ex13.c ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
-                ex22.c ex23.c ex24.c ex27.c ex28.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c \
+                ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
+                ex22.c ex23.c ex24.c ex27.c ex28.c ex29.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
@@ -44,6 +44,10 @@ ex6f: ex6f.o chkopts
 ex7: ex7.o chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_SYS_LIB}
 	${RM} -f ex7.o
+
+ex8: ex8.o chkopts
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_SYS_LIB}
+	${RM} -f ex8.o
 
 ex9: ex9.o chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_SYS_LIB}
@@ -107,9 +111,12 @@ ex27: ex27.o chkopts
 ex28: ex28.o chkopts
 	-${CLINKER} -o ex28 ex28.o  ${PETSC_SYS_LIB}
 	${RM} -f ex28.o
+ex29: ex29.o chkopts
+	-${CLINKER} -o ex29 ex29.o  ${PETSC_SYS_LIB}
+	${RM} -f ex29.o
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(main|CreateError|Error Created)" ex1.tmp1 | cut -f1,2,3,4,5 -d" " > ex1.tmp;\
+	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(PETSC ERROR)" ex1.tmp1 | egrep "(main|CreateError|Error Created)" | cut -f1,2,3,4,5 -d" " > ex1.tmp;\
 	if (${DIFF} output/ex1_1.out ex1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1.tmp1 ex1.tmp
@@ -137,6 +144,31 @@ runex7:
 	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7.tmp ex7.tmp
+
+runex8:
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided allreduce > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
+
+runex8_redscatter:
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided redscatter > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_redscatter, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
+
+runex8_ibarrier:
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided ibarrier > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_redscatter, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
+
+runex8_f:
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided_f -build_twosided allreduce > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_f, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
+
+runex8_f_ibarrier:
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided_f -build_twosided ibarrier > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_f, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 > ex10_1.tmp 2>&1;\
@@ -189,7 +221,7 @@ runex28:
 	   ${RM} -f ex28.tmp
 
 
-TESTEXAMPLES_C		       = ex13.PETSc runex13 ex13.rm ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
                                  ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm

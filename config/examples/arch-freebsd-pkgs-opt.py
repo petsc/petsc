@@ -11,7 +11,7 @@ configure_options = [
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',
-  '--download-superlu=1',
+  #'--download-superlu=1',
   #'--download-superlu_dist=1', disabled as superlu_dist now requires gnumake - and this build tests freebsd-make
   '--download-scalapack=1',
   '--download-mumps=1',
@@ -23,6 +23,8 @@ configure_options = [
   #'--download-suitesparse=1', requires gnumake
   '--download-chaco=1',
   '--download-spai=1',
+  '--download-concurrencykit=1',
+  '--download-revolve=1',
   ]
 
 if __name__ == '__main__':
