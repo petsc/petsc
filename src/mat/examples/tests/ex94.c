@@ -256,6 +256,52 @@ int main(int argc,char **args)
       ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 
+    /* Test PtAP ops with P SeqDense and A either SeqAIJ or SeqDense (it assumes MatPtAP_SeqAIJ_SeqAIJ is fine) */
+    if (size == 1) {
+      Mat       Cdensetest,Pdense,Cdense,Adense;
+      PetscReal norm;
+
+      ierr = MatConvert(C,MATSEQDENSE,MAT_INITIAL_MATRIX,&Cdensetest);CHKERRQ(ierr);
+      ierr = MatConvert(P,MATSEQDENSE,MAT_INITIAL_MATRIX,&Pdense);CHKERRQ(ierr);
+
+      /* test with A SeqAIJ */
+      ierr = MatPtAP(A,Pdense,MAT_INITIAL_MATRIX,fill,&Cdense);CHKERRQ(ierr);
+      ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+      if (norm > PETSC_SMALL) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqAIJ and P SeqDense: %g\n",norm);
+      }
+      ierr = MatScale(Cdense,-1.);CHKERRQ(ierr);
+      ierr = MatPtAP(A,Pdense,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
+      ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+      if (norm > PETSC_SMALL) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqAIJ and P SeqDense and MAT_REUSE_MATRIX: %g\n",norm);
+      }
+      ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
+
+      /* test with A SeqDense */
+      ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
+      ierr = MatPtAP(Adense,Pdense,MAT_INITIAL_MATRIX,fill,&Cdense);CHKERRQ(ierr);
+      ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+      if (norm > PETSC_SMALL) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqDense and P SeqDense: %g\n",norm);
+      }
+      ierr = MatScale(Cdense,-1.);CHKERRQ(ierr);
+      ierr = MatPtAP(Adense,Pdense,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
+      ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+      if (norm > PETSC_SMALL) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqDense and P SeqDense and MAT_REUSE_MATRIX: %g\n",norm);
+      }
+      ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
+
+      ierr = MatDestroy(&Cdensetest);CHKERRQ(ierr);
+      ierr = MatDestroy(&Pdense);CHKERRQ(ierr);
+      ierr = MatDestroy(&Adense);CHKERRQ(ierr);
+    }
+
     /* Test MatDuplicate() */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
     ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
