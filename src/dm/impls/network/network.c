@@ -983,6 +983,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   /* Set matrix entries for vertices */
   /*---------------------------------*/
   ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
+  vptr = network->Jvptr;
   for (v=vStart; v<vEnd; v++) {
     /* Get row indices */
     ierr = DMNetworkIsGhostVertex(dm,v,&ghost);CHKERRQ(ierr);
@@ -1001,7 +1002,6 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       ierr = DMNetworkGetVariableGlobalOffset(dm,edges[e],&cstart);CHKERRQ(ierr);
       ierr = DMNetworkGetNumVariables(dm,edges[e],&ncols);CHKERRQ(ierr); 
 
-      vptr = network->Jvptr;
       Juser = network->Jv[vptr[v-vStart]+2*e+1]; /* Jacobian(v,e) */
       ierr = MatSetblock_private(Juser,nrows,rows,ncols,cstart,J);CHKERRQ(ierr);
 
