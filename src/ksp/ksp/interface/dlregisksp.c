@@ -33,6 +33,8 @@ PetscErrorCode  PCFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_0,KSP_Solve_FS_1,KSP_Solve_FS_2,KSP_Solve_FS_3,KSP_Solve_FS_4,KSP_Solve_FS_S,KSP_Solve_FS_L,KSP_Solve_FS_U;
+
 #undef __FUNCT__
 #define __FUNCT__ "PCInitializePackage"
 /*@C
@@ -72,6 +74,16 @@ PetscErrorCode  PCInitializePackage(void)
   ierr = PetscLogEventRegister("PCApplySymmLeft",  PC_CLASSID,&PC_ApplySymmetricLeft);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCApplySymmRight", PC_CLASSID,&PC_ApplySymmetricRight);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCModifySubMatri", PC_CLASSID,&PC_ModifySubMatrices);CHKERRQ(ierr);
+
+  ierr = PetscLogEventRegister("KSPSolve_FS_0",    KSP_CLASSID,&KSP_Solve_FS_0);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSolve_FS_1",    KSP_CLASSID,&KSP_Solve_FS_1);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSolve_FS_2",    KSP_CLASSID,&KSP_Solve_FS_2);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSolve_FS_3",    KSP_CLASSID,&KSP_Solve_FS_3);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSolve_FS_4",    KSP_CLASSID,&KSP_Solve_FS_4);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSolve_FS_Schu", KSP_CLASSID,&KSP_Solve_FS_S);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSolve_FS_Up",   KSP_CLASSID,&KSP_Solve_FS_U);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSolve_FS_Low",  KSP_CLASSID,&KSP_Solve_FS_L);CHKERRQ(ierr);
+
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -160,6 +172,7 @@ PetscErrorCode  KSPInitializePackage(void)
   ierr = PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSetUp",         KSP_CLASSID,&KSP_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSolve",         KSP_CLASSID,&KSP_Solve);CHKERRQ(ierr);
+  
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
