@@ -1297,6 +1297,54 @@ cdef class Mat(Object):
     def setUnfactored(self):
         CHKERR( MatSetUnfactored(self.mat) )
 
+    # MUMPS
+
+    def setMumpsIcntl(self, icntl, ival):
+        cdef PetscInt _icntl = asInt(icntl)
+        cdef PetscInt _ival = asInt(ival)
+        CHKERR( MatMumpsSetIcntl(self.mat, _icntl, _ival) );
+
+    def getMumpsIcntl(self, icntl):
+        cdef PetscInt _icntl = asInt(icntl)
+        cdef PetscInt ival = 0
+        CHKERR( MatMumpsGetIcntl(self.mat, _icntl, &ival) );
+        return toInt(ival)
+
+    def setMumpsCntl(self, icntl, val):
+        cdef PetscInt _icntl = asInt(icntl)
+        cdef PetscReal _val = asReal(val)
+        CHKERR( MatMumpsSetCntl(self.mat, _icntl, _val) );
+
+    def getMumpsCntl(self, icntl):
+        cdef PetscInt _icntl = asInt(icntl)
+        cdef PetscReal val = 0
+        CHKERR( MatMumpsGetCntl(self.mat, _icntl, &val) );
+        return toReal(val)
+
+    def getMumpsInfo(self, icntl):
+        cdef PetscInt _icntl = asInt(icntl)
+        cdef PetscInt ival = 0
+        CHKERR( MatMumpsGetInfo(self.mat, _icntl, &ival) );
+        return toInt(ival)
+
+    def getMumpsInfog(self, icntl):
+        cdef PetscInt _icntl = asInt(icntl)
+        cdef PetscInt ival = 0
+        CHKERR( MatMumpsGetInfog(self.mat, _icntl, &ival) );
+        return toInt(ival)
+
+    def getMumpsRinfo(self, icntl):
+        cdef PetscInt _icntl = asInt(icntl)
+        cdef PetscReal val = 0
+        CHKERR( MatMumpsGetRinfo(self.mat, _icntl, &val) );
+        return toReal(val)
+
+    def getMumpsRinfog(self, icntl):
+        cdef PetscInt _icntl = asInt(icntl)
+        cdef PetscReal val = 0
+        CHKERR( MatMumpsGetRinfog(self.mat, _icntl, &val) );
+        return toReal(val)
+
     # solve
 
     def solveForward(self, Vec b not None, Vec x not None):
