@@ -4248,6 +4248,15 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = ISDestroy(&is_V_Sall);CHKERRQ(ierr);
           ierr = MatDestroy(&tmat);CHKERRQ(ierr);
         }
+        /* destroy any change of basis context in sub_schurs */
+        if (sub_schurs->change) {
+          PetscInt i;
+
+          for (i=0;i<sub_schurs->n_subs;i++) {
+            ierr = KSPDestroy(&sub_schurs->change[i]);CHKERRQ(ierr);
+          }
+          ierr = PetscFree(sub_schurs->change);CHKERRQ(ierr);
+        }
       }
       ierr = MatDestroy(&localChangeOfBasisMatrix);CHKERRQ(ierr);
     } else { /* fake change (get back change of basis into ConstraintMatrix and info on qr) */
