@@ -95,11 +95,14 @@ static PetscErrorCode TSView_Euler(TS ts,PetscViewer viewer)
 #define __FUNCT__ "TSInterpolate_Euler"
 static PetscErrorCode TSInterpolate_Euler(TS ts,PetscReal t,Vec X)
 {
+  TS_Euler       *euler = (TS_Euler*)ts->data;
+  Vec            update = euler->update;
   PetscReal      alpha = (ts->ptime - t)/ts->time_step;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecAXPBY(ts->vec_sol,1.0-alpha,alpha,X);CHKERRQ(ierr);
+  ierr = VecWAXPY(X,-ts->time_step,update,ts->vec_sol);CHKERRQ(ierr);
+  ierr = VecAXPBY(X,1.0-alpha,alpha,ts->vec_sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
