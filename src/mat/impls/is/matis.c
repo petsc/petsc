@@ -14,17 +14,47 @@
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
-static PetscErrorCode MatISComputeSF_Private(Mat);
+#undef __FUNCT__
+#define __FUNCT__ "MatISSetUpSF"
+/*@
+   MatISSetUpSF - Setup star forest object used by MatIS during MatISSetPreallocation.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  A - the matrix
+
+   Level: advanced
+
+   Notes: This function does not be to be called by the user.
+
+.keywords: matrix
+
+.seealso: MatCreate(), MatCreateIS(), MatISSetPreallocation(), MatISGetLocalMat()
+@*/
+PetscErrorCode  MatISSetUpSF(Mat A)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  ierr = PetscTryMethod(A,"MatISSetUpSF_C",(Mat),(A));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
-#define __FUNCT__ "MatISComputeSF_Private"
-static PetscErrorCode MatISComputeSF_Private(Mat B)
+#define __FUNCT__ "MatISSetUpSF_IS"
+static PetscErrorCode MatISSetUpSF_IS(Mat B)
 {
   Mat_IS         *matis = (Mat_IS*)(B->data);
   const PetscInt *gidxs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (matis->sf) {
+    PetscFunctionReturn(0);
+  }
   ierr = MatGetSize(matis->A,&matis->sf_nleaves,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&matis->sf_nroots,NULL);CHKERRQ(ierr);
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)B),&matis->sf);CHKERRQ(ierr);
@@ -96,9 +126,7 @@ PetscErrorCode  MatISSetPreallocation_IS(Mat B,PetscInt d_nz,const PetscInt d_nn
   if (!matis->A) {
     SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"You should first call MatSetLocalToGlobalMapping");
   }
-  if (!matis->sf) { /* setup SF if not yet created and allocate rootdata and leafdata */
-    ierr = MatISComputeSF_Private(B);CHKERRQ(ierr);
-  }
+  ierr = MatISSetUpSF(B);CHKERRQ(ierr);
   if (!d_nnz) {
     for (i=0;i<matis->sf_nroots;i++) matis->sf_rootdata[i] = d_nz;
   } else {
@@ -163,9 +191,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
      An SF reduce is needed to sum up properly on shared rows.
      Note that generally preallocation is not exact, since it overestimates nonzeros
   */
-  if (!matis->sf) { /* setup SF if not yet created and allocate rootdata and leafdata */
-    ierr = MatISComputeSF_Private(A);CHKERRQ(ierr);
-  }
+  ierr = MatISSetUpSF(A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&lrows,&lcols);CHKERRQ(ierr);
   ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)A),lrows,lcols,dnz,onz);CHKERRQ(ierr);
   /* All processes need to compute entire row ownership */
@@ -528,6 +554,7 @@ PetscErrorCode MatDestroy_IS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetMPIXAIJ_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetUpSF_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1095,6 +1122,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetMPIXAIJ_C",MatISGetMPIXAIJ_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetUpSF_C",MatISSetUpSF_IS);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
