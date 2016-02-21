@@ -5692,9 +5692,14 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       coarse_mat_reuse = MAT_INITIAL_MATRIX;
     }
     if (isbddc || isnn) {
-      if (isbddc) { /* currently there's no API for this */
-        PC_BDDC* pcbddc = (PC_BDDC*)pc_temp->data;
-        pcbddc->detect_disconnected = PETSC_TRUE;
+      if (isbddc) { /* currently there are no APIs for these options */
+        PC_BDDC* pcbddc_coarse = (PC_BDDC*)pc_temp->data;
+        pcbddc_coarse->detect_disconnected = PETSC_TRUE;
+        pcbddc_coarse->benign_saddle_point = pcbddc->benign_saddle_point;
+        pcbddc_coarse->benign_compute_nonetflux = pcbddc->benign_compute_nonetflux;
+        if (pcbddc_coarse->benign_compute_nonetflux) {
+          pcbddc_coarse->adaptive_userdefined = PETSC_TRUE;
+        }
       }
       if (pcbddc->coarsening_ratio > 1) {
         if (!pcbddc->coarse_subassembling) { /* subassembling info is not present */
