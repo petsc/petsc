@@ -55,6 +55,7 @@ typedef struct {
   PetscBool     rhs_change;
   /* benign subspace trick */
   PetscBool     benign_saddle_point;
+  PetscBool     benign_compute_nonetflux;
   Mat           benign_change;
   Mat           benign_original_mat;
   IS            *benign_zerodiag_subs;

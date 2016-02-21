@@ -646,6 +646,82 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     have_null = PETSC_FALSE;
   }
 
+  /* no-net-flux */
+  if (pcbddc->benign_compute_nonetflux) {
+    Mat_IS*                matis = (Mat_IS*)(pc->pmat->data);
+    MatNullSpace           near_null_space;
+    ISLocalToGlobalMapping rmap;
+    Vec                    quad_vec;
+    PetscScalar            *pvals;
+    PetscInt               i,np,*dummyins;
+
+    /* create vector to hold quadrature weights */
+    ierr = MatCreateVecs(pc->pmat,&quad_vec,NULL);CHKERRQ(ierr);
+    ierr = VecSet(quad_vec,0.0);CHKERRQ(ierr);
+    ierr = MatGetLocalToGlobalMapping(pc->pmat,&rmap,NULL);CHKERRQ(ierr);
+    ierr = VecSetLocalToGlobalMapping(quad_vec,rmap);CHKERRQ(ierr);
+
+    /* compute B^{(i)T} * 1_p */
+    np = 0;
+    if (zerodiag) {
+      ierr = ISGetLocalSize(zerodiag,&np);CHKERRQ(ierr);
+    } else if (pressures) {
+      ierr = ISGetLocalSize(pressures,&np);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc1(np,&pvals);CHKERRQ(ierr);
+    for (i=0;i<np;i++) pvals[i] = 1.;
+    ierr = VecSet(matis->x,0.);CHKERRQ(ierr);
+    if (np) {
+      const PetscInt *pidxs;
+
+      if (zerodiag) {
+        ierr = ISGetIndices(zerodiag,&pidxs);CHKERRQ(ierr);
+      } else if (pressures) {
+        ierr = ISGetIndices(pressures,&pidxs);CHKERRQ(ierr);
+      }
+      ierr = VecSetValues(matis->x,np,pidxs,pvals,INSERT_VALUES);CHKERRQ(ierr);
+      if (zerodiag) {
+        ierr = ISRestoreIndices(zerodiag,&pidxs);CHKERRQ(ierr);
+      } else if (pressures) {
+        ierr = ISRestoreIndices(pressures,&pidxs);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecAssemblyBegin(matis->x);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(matis->x);CHKERRQ(ierr);
+    ierr = MatMult(matis->A,matis->x,matis->y);CHKERRQ(ierr);
+    ierr = PetscFree(pvals);CHKERRQ(ierr);
+
+    /* decide which of the sharing ranks (per dof) has to insert the values (should just be a matter of having a different orientation) */
+    ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
+    for (i=0;i<matis->sf_nroots;i++) matis->sf_rootdata[i] = -1;
+    for (i=0;i<matis->sf_nleaves;i++) matis->sf_leafdata[i] = PetscGlobalRank;
+    ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_MAX);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_MAX);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+    ierr = VecGetArray(matis->y,&pvals);CHKERRQ(ierr);
+    for (i=0;i<matis->sf_nleaves;i++) {
+      if (PetscGlobalRank != matis->sf_leafdata[i]) {
+        pvals[i] = 0.;
+      }
+    }
+    ierr = PetscMalloc1(matis->sf_nleaves,&dummyins);CHKERRQ(ierr);
+    for (i=0;i<matis->sf_nleaves;i++) dummyins[i] = i;
+    ierr = VecSetValuesLocal(quad_vec,matis->sf_nleaves,dummyins,pvals,ADD_VALUES);CHKERRQ(ierr);
+    ierr = VecRestoreArray(matis->y,&pvals);CHKERRQ(ierr);
+    ierr = PetscFree(dummyins);CHKERRQ(ierr);
+
+    /* assembly quadrature vec and attach near null space to pmat */
+    ierr = VecAssemblyBegin(quad_vec);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(quad_vec);CHKERRQ(ierr);
+    ierr = VecNormalize(quad_vec,NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)pc),PETSC_FALSE,1,&quad_vec,&near_null_space);CHKERRQ(ierr);
+    ierr = VecDestroy(&quad_vec);CHKERRQ(ierr);
+    ierr = MatSetNearNullSpace(pc->pmat,near_null_space);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&near_null_space);CHKERRQ(ierr);
+  }
+
+  /* change of basis and p0 dofs */
   if (has_null_pressures) {
     IS             zerodiagc;
     const PetscInt *idxs,*idxsc;
