@@ -113,42 +113,12 @@ PETSC_STATIC_INLINE PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y
   return prod;
 }
 PETSC_STATIC_INLINE PetscReal NormDIM(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(DotDIM(x,x))); }
-/* PETSC_STATIC_INLINE void axDIM(const PetscScalar a,PetscScalar *x) */
-/* { */
-/*   PetscInt i; */
-/*   for (i=0; i<DIM; i++) x[i] *= a; */
-/* } */
-/* PETSC_STATIC_INLINE void waxDIM(const PetscScalar a,const PetscScalar *x, PetscScalar *w) */
-/* { */
-/*   PetscInt i; */
-/*   for (i=0; i<DIM; i++) w[i] = x[i]*a; */
-/* } */
-/* PETSC_STATIC_INLINE void NormalSplitDIM(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt) */
-/* {                               /\* Split x into normal and tangential components *\/ */
-/*   PetscInt    i; */
-/*   PetscScalar c; */
-/*   c = DotDIM(x,n)/DotDIM(n,n); */
-/*   for (i=0; i<DIM; i++) { */
-/*     xn[i] = c*n[i]; */
-/*     xt[i] = x[i]-xn[i]; */
-/*   } */
-/* } */
 
 PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*y[0] + x[1]*y[1];}
 PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
 PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x); x[0] *= a; x[1] *= a; }
 PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
 PETSC_STATIC_INLINE void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
-
-/* PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscScalar a, const PetscScalar *x, const PetscScalar *y, PetscScalar *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];} */
-/* PETSC_STATIC_INLINE PetscScalar DotD(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscScalar sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;} */
-/* PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscScalar *x) {return PetscSqrtReal(PetscAbsScalar(DotD(dim,x,x)));} */
-
-/* PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt) */
-/* {                               /\* Split x into normal and tangential components *\/ */
-/*   Scale2(Dot2(x,n)/Dot2(n,n),n,xn); */
-/*   Waxpy2(-1,xn,x,xt); */
-/* } */
 
 /******************* Advect ********************/
 typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP} AdvectSolType;
@@ -478,7 +448,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
 /* Ravi Samtaney and D. I. Pullin */
 /* Phys. Fluids 8, 2650 (1996); http://dx.doi.org/10.1063/1.869050 */
 typedef enum {EULER_PAR_GAMMA,EULER_PAR_RHOR,EULER_PAR_AMACH,EULER_PAR_ITANA,EULER_PAR_SIZE} EulerParamIdx;
-typedef enum {EULER_IV_SHOCK,EULER_SS_SHOCK} EulerType;
+typedef enum {EULER_IV_SHOCK,EULER_SS_SHOCK,EULER_SHOCK_TUBE,EULER_ZZ_SHOCK} EulerType;
 typedef struct {
   PetscScalar vals[0];
   PetscScalar r;
@@ -502,6 +472,10 @@ typedef struct {
 static const struct FieldDescription PhysicsFields_Euler[] = {{"Density",1},{"Momentum",DIM},{"Energy",1},{NULL,0}};
 
 /* initial condition */
+/******************* Euler Density Shock ********************/
+/* On initial‐value and self‐similar solutions of the compressible Euler equations */
+/* Ravi Samtaney and D. I. Pullin */
+/* Phys. Fluids 8, 2650 (1996); http://dx.doi.org/10.1063/1.869050 */
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsSolution_Euler"
 static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
