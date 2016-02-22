@@ -74,7 +74,7 @@ def format_time(time_in_seconds):
 
 
 outfile = open(sys.argv[3], "w")
-examples_summary_file = open(sys.argv[2] + "/examples_full.log", "w")
+examples_summary_file = open(sys.argv[2] + "/examples_full_"+sys.argv[1]+".log", "w")
 
 # Static HTML header:
 outfile.write("""
@@ -153,7 +153,7 @@ outfile.write("<center><span style=\"font-size:1.3em; font-weight: bold;\">PETSc
 outfile.write("<center><table>\n");
 
 outfile.write("<tr><th></th><th colspan=\"2\">Configure</th><th></th><th></th> <th colspan=\"3\">Make</th><th></th><th></th> <th colspan=\"2\">Examples</th></tr>\n");
-outfile.write("<tr><th>Arch</th><th>Status</th><th>Duration</th><th></th><th></th> <th>Warnings</th><th>Errors</th><th>Duration</th><th></th><th></th> <th>Problems?</th><th>Duration</th><td><a href=\"examples_full.log\">[all]</a></td></tr>\n");
+outfile.write("<tr><th>Arch</th><th>Status</th><th>Duration</th><th></th><th></th> <th>Warnings</th><th>Errors</th><th>Duration</th><th></th><th></th> <th>Problems?</th><th>Duration</th><td><a href=\"examples_full_"+sys.argv[1]+".log\">[all]</a></td></tr>\n");
 
 num_builds = 0
 
