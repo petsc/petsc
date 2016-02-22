@@ -1482,8 +1482,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex43.PETSc runex43_3 ex43.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm \
-                                 ex23.PETSc runex23_3 ex23.rm \
+TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm \
                                  ex34.PETSc runex34 runex34_2 ex34.rm \
                                  ex43.PETSc runex43_4 runex43_5 ex43.rm \
                                  ex49.PETSc runex49_6 runex49_7 runex49_8 ex49.rm \
