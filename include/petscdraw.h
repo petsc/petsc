@@ -282,7 +282,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseSet(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer,PetscInt,PetscDrawLG*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer,PetscInt,PetscDrawAxis*);
 
-PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
+PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetCmap(const char[],int,unsigned char[],unsigned char[],unsigned char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetGamma(PetscReal);
 
 /*

@@ -191,12 +191,12 @@ PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *w,char *host,char *name,int x
   ierr = PetscDrawSetColormap_X(w,host,(Colormap)0);CHKERRQ(ierr);
 
   ierr = PetscDrawXiDisplayWindow(w,name,x,y,nx,ny,(PetscDrawXiPixVal)0);CHKERRQ(ierr);
-  PetscDrawXiSetGC(w,w->cmapping[1]);
+  PetscDrawXiSetGC(w,w->cmapping[PETSC_DRAW_BLACK]);
   PetscDrawXiSetPixVal(w,w->background);
 
   ierr = PetscDrawXiFontFixed(w,6,10,&w->font);CHKERRQ(ierr);
   if (w->win) {
-    XSetWindowBackground(w->disp,w->win,w->cmapping[0]);
+    XSetWindowBackground(w->disp,w->win,w->cmapping[PETSC_DRAW_WHITE]);
     XFillRectangle(w->disp,w->win,w->gc.set,0,0,nx,ny);
   }
   PetscFunctionReturn(0);
@@ -227,9 +227,9 @@ PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *w,char *host,Window
   XGetGeometry(w->disp,w->win,&root,&d,&d,(unsigned int*)&w->w,(unsigned int*)&w->h,&ud,&ud);
   w->x = w->y = 0;
 
-  PetscDrawXiSetGC(w,w->cmapping[1]);
+  PetscDrawXiSetGC(w,w->cmapping[PETSC_DRAW_BLACK]);
   PetscDrawXiSetPixVal(w,w->background);
-  XSetWindowBackground(w->disp,w->win,w->cmapping[0]);
+  XSetWindowBackground(w->disp,w->win,w->cmapping[PETSC_DRAW_WHITE]);
   ierr = PetscDrawXiFontFixed(w,6,10,&w->font);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
