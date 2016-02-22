@@ -437,6 +437,7 @@ cdef class Mat(Object):
         return self
 
     def createNest(self, mats, isrows=None, iscols=None, comm=None):
+        cdef object mat
         mats = [list(mat) for mat in mats]
         if isrows:
             isrows = list(isrows)
@@ -456,7 +457,7 @@ cdef class Mat(Object):
         cdef PetscMat *cmats   = NULL
         cdef PetscIS  *cisrows = NULL
         cdef PetscIS  *ciscols = NULL
-        cdef object mat, tmp1, tmp2, tmp3
+        cdef object tmp1, tmp2, tmp3
         tmp1 = oarray_p(empty_p(nr*nc), NULL, <void**>&cmats)
         for i from 0 <= i < mr:
             for j from 0 <= j < mc:
