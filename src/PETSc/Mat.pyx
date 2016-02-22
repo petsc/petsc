@@ -456,11 +456,12 @@ cdef class Mat(Object):
         cdef PetscMat *cmats   = NULL
         cdef PetscIS  *cisrows = NULL
         cdef PetscIS  *ciscols = NULL
-        cdef object tmp1, tmp2, tmp3
+        cdef object mat, tmp1, tmp2, tmp3
         tmp1 = oarray_p(empty_p(nr*nc), NULL, <void**>&cmats)
         for i from 0 <= i < mr:
             for j from 0 <= j < mc:
-                cmats[i*mc+j] = (<Mat?>mats[i][j]).mat
+                mat = mats[i][j]
+                cmats[i*mc+j] = (<Mat?>mat).mat if mat is not None else NULL
         if isrows is not None:
             tmp2 = oarray_p(empty_p(nr), NULL, <void**>&cisrows)
             for i from 0 <= i < mr: cisrows[i] = (<IS?>isrows[i]).iset
