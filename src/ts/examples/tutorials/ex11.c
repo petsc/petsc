@@ -443,12 +443,12 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
   PetscFunctionReturn(0);
 }
 
-/******************* Euler Density Shock ********************/
-/* On initial‐value and self‐similar solutions of the compressible Euler equations */
+/******************* Euler Density Shock (EULER_IV_SHOCK,EULER_SS_SHOCK) ********************/
+/* An initial‐value and self‐similar solutions of the compressible Euler equations */
 /* Ravi Samtaney and D. I. Pullin */
 /* Phys. Fluids 8, 2650 (1996); http://dx.doi.org/10.1063/1.869050 */
 typedef enum {EULER_PAR_GAMMA,EULER_PAR_RHOR,EULER_PAR_AMACH,EULER_PAR_ITANA,EULER_PAR_SIZE} EulerParamIdx;
-typedef enum {EULER_IV_SHOCK,EULER_SS_SHOCK,EULER_SHOCK_TUBE,EULER_ZZ_SHOCK} EulerType;
+typedef enum {EULER_IV_SHOCK,EULER_SS_SHOCK,EULER_SHOCK_TUBE,EULER_LINEAR_WAVE} EulerType;
 typedef struct {
   PetscScalar vals[0];
   PetscScalar r;
@@ -472,18 +472,15 @@ typedef struct {
 static const struct FieldDescription PhysicsFields_Euler[] = {{"Density",1},{"Momentum",DIM},{"Energy",1},{NULL,0}};
 
 /* initial condition */
-/******************* Euler Density Shock ********************/
-/* On initial‐value and self‐similar solutions of the compressible Euler equations */
-/* Ravi Samtaney and D. I. Pullin */
-/* Phys. Fluids 8, 2650 (1996); http://dx.doi.org/10.1063/1.869050 */
+int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord[], const PetscReal Lx);
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsSolution_Euler"
-static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
+static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
 {
   PetscInt i;
   Physics         phys = (Physics)ctx;
   Physics_Euler   *eu  = (Physics_Euler*)phys->data;
-  EulerNode *uu   = (EulerNode*)u;
+  EulerNode       *uu  = (EulerNode*)u;
   PetscScalar p0,gamma,c;
   PetscFunctionBeginUser;
   if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
@@ -491,33 +488,54 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   for (i=0; i<DIM; i++) uu->ru[i] = 0.0; /* zero out initial velocity */
   /* set E and rho */
   gamma = eu->pars[EULER_PAR_GAMMA];
-  p0 = 1.;
 
-  /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
-  if (x[0] < 0.0+ x[1]*eu->pars[EULER_PAR_ITANA]) {
-    if (x[0] < -0.5) { /* left of shock (1) */
-     PetscScalar amach,rho,press,gas1,p1;
-      amach = eu->pars[EULER_PAR_AMACH];
-      rho = 1.;
-      press = p0;
-      p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
-      gas1 = (gamma-1.0)/(gamma+1.0);
-      uu->r = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
-      uu->ru[0]   = ((uu->r - rho)*sqrt(gamma*press/rho)*amach);
-      uu->E = p1/(gamma-1.0) + .5/uu->r*uu->ru[0]*uu->ru[0];
+  if (eu->type==EULER_IV_SHOCK || eu->type==EULER_SS_SHOCK) {
+    /******************* Euler Density Shock ********************/
+    /* On initial‐value and self‐similar solutions of the compressible Euler equations */
+    /* Ravi Samtaney and D. I. Pullin */
+    /* Phys. Fluids 8, 2650 (1996); http://dx.doi.org/10.1063/1.869050 */
+    /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
+    p0 = 1.;
+    if (x[0] < 0.0 + x[1]*eu->pars[EULER_PAR_ITANA]) {
+      if (x[0] < mod->bounds[0]*0.5) { /* left of shock (1) */
+        PetscScalar amach,rho,press,gas1,p1;
+        amach = eu->pars[EULER_PAR_AMACH];
+        rho = 1.;
+        press = p0;
+        p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
+        gas1 = (gamma-1.0)/(gamma+1.0);
+        uu->r = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
+        uu->ru[0]   = ((uu->r - rho)*sqrt(gamma*press/rho)*amach);
+        uu->E = p1/(gamma-1.0) + .5/uu->r*uu->ru[0]*uu->ru[0];
+      }
+      else { /* left of discontinuity (0) */
+        uu->r = 1.; /* rho = 1 */
+        uu->E = p0/(gamma-1.0);
+      }
     }
-    else { /* left of discontinuity (0) */
-      uu->r = 1.; /* rho = 1 */
+    else { /* right of discontinuity (2) */
+      uu->r = eu->pars[EULER_PAR_RHOR];
       uu->E = p0/(gamma-1.0);
     }
   }
-  else { /* right of discontinuity (2) */
-    uu->r = eu->pars[EULER_PAR_RHOR];
-    uu->E = p0/(gamma-1.0);
+  else if (eu->type==EULER_SHOCK_TUBE) {
+    /* For (x<x0) set (rho,u,p)=(8,0,10) and for (x>x0) set (rho,u,p)=(1,0,1). Choose x0 to the midpoint of the domain in the x-direction. */
+    if (x[0] < 0.0 ) {
+      uu->r = 8.;
+      uu->E = 10./(gamma-1.);
+    }
+    else {
+      uu->r = 1.;
+      uu->E = 1./(gamma-1.);
+    }
   }
+  else if (eu->type==EULER_LINEAR_WAVE) {
+    initLinearWave(uu,gamma,x,mod->bounds[1]-mod->bounds[0]);
+  }
+  else SETERRQ1(mod->comm,PETSC_ERR_SUP,"Unknown type %d",eu->type);
 
   // set phys->maxspeed: (mod->maxspeed = phys->maxspeed) in main;
-  eu->sound(eu->pars,uu,&c);
+  eu->sound(&gamma,uu,&c);
   c = PetscAbsScalar(uu->ru[0]/uu->r) + c;
   if (c > phys->maxspeed) phys->maxspeed = c;
 
@@ -526,26 +544,26 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "Pressure_PG"
-static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,PetscScalar *p)
+static PetscErrorCode Pressure_PG(const PetscReal gamma,const EulerNode *x,PetscScalar *p)
 {
   PetscScalar ru2;
   PetscFunctionBeginUser;
   ru2  = DotDIM(x->ru,x->ru);
-  (*p)=(x->E - 0.5*ru2/x->r)*(pars[EULER_PAR_GAMMA] - 1.0); /* (E - rho V^2/2)(gamma-1) = e rho (gamma-1) */
+  (*p)=(x->E - 0.5*ru2/x->r)*(gamma - 1.0); /* (E - rho V^2/2)(gamma-1) = e rho (gamma-1) */
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SpeedOfSound_PG"
-static PetscErrorCode SpeedOfSound_PG(const PetscReal *pars,const EulerNode *x,PetscScalar *c)
+static PetscErrorCode SpeedOfSound_PG(const PetscReal *gamma, const EulerNode *x, PetscScalar *c)
 {
   PetscScalar p;
 
   PetscFunctionBeginUser;
-  Pressure_PG(pars,x,&p);
+  Pressure_PG(*gamma,x,&p);
   if (p<0.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",p);
   /* pars[EULER_PAR_GAMMA] = heat capacity ratio */
-  (*c)=PetscSqrtScalar(pars[EULER_PAR_GAMMA]*p/x->r);
+  (*c)=PetscSqrtScalar(*gamma * p / x->r);
   PetscFunctionReturn(0);
 }
 
@@ -565,7 +583,7 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
   PetscInt      i;
 
   PetscFunctionBeginUser;
-  Pressure_PG(eu->pars,x,&p);
+  Pressure_PG(eu->pars[EULER_PAR_GAMMA],x,&p);
   nu = DotDIM(x->ru,n);
   f->r = nu;   /* A rho u */
   nu /= x->r;  /* A u */
@@ -582,13 +600,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   PetscInt    i;
   const EulerNode *xI = (const EulerNode*)a_xI;
   EulerNode       *xG = (EulerNode*)a_xG;
-
   PetscFunctionBeginUser;
-  if (0) {
-    PetscMPIInt    rank;
-    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-    PetscPrintf(PETSC_COMM_SELF,"[%d]\t\t%s HERE !!!!!!!!! xI->r=%g\n",rank,__FUNCT__,xI->r);
-  }
   xG->r = xI->r;           /* ghost cell density - same */
   xG->E = xI->E;           /* ghost cell energy - same */
   if (n[1] != 0.) {        /* top and bottom */
@@ -619,13 +631,13 @@ static void PhysicsRiemann_Euler_Godunov( PetscInt dim, PetscInt Nf, const Petsc
   }
   s2 = PetscSqrtReal(s2); /* |n|_2 = sum(n^2)^1/2 */
   for (i=0.; i<DIM; i++) nn[i] /= s2;
-  if (0) {
+  if (0) { /* Rusanov */
     const EulerNode *uL = (const EulerNode*)xL,*uR = (const EulerNode*)xR;
     EulerNode       fL,fR;
     EulerFlux(phys,nn,uL,&fL);
     EulerFlux(phys,nn,uR,&fR);
-    ierr = eu->sound(eu->pars,uL,&cL);if (ierr) exit(13);
-    ierr = eu->sound(eu->pars,uR,&cR);if (ierr) exit(14);
+    ierr = eu->sound(&eu->pars[EULER_PAR_GAMMA],uL,&cL);if (ierr) exit(13);
+    ierr = eu->sound(&eu->pars[EULER_PAR_GAMMA],uR,&cR);if (ierr) exit(14);
     velL = DotDIM(uL->ru,nn)/uL->r;
     velR = DotDIM(uR->ru,nn)/uR->r;
     speed = PetscMax(PetscAbsScalar(velR) + cR,PetscAbsScalar(velL) + cL);
@@ -654,7 +666,7 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
   f[eu->monitor.Momentum] = NormDIM(x->ru);
   f[eu->monitor.Energy]   = x->E;
   f[eu->monitor.Speed]    = NormDIM(x->ru)/x->r;
-  Pressure_PG(eu->pars, x, &p);
+  Pressure_PG(eu->pars[EULER_PAR_GAMMA], x, &p);
   f[eu->monitor.Pressure] = p;
   PetscFunctionReturn(0);
 }
@@ -674,7 +686,8 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
   {
     PetscReal alpha;
-    eu->type = EULER_IV_SHOCK; /* generalize later... */
+    char type[64] = "linear_wave";
+    PetscBool  isDepth;
     eu->pars[EULER_PAR_GAMMA] = 1.4;
     eu->pars[EULER_PAR_AMACH] = 2.02;
     eu->pars[EULER_PAR_RHOR] = 3.0;
@@ -686,9 +699,26 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
     ierr = PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL);CHKERRQ(ierr);
     if (alpha<=0. || alpha>90.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
     eu->pars[EULER_PAR_ITANA] = 1./tan ( alpha * M_PI / 180.0 );
+    ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
+    ierr = PetscStrcmp(type,"linear_wave", &isDepth);CHKERRQ(ierr);
+    if (isDepth) eu->type = EULER_LINEAR_WAVE;
+    else {
+      if (DIM != 2) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
+      ierr = PetscStrcmp(type,"iv_shock", &isDepth);CHKERRQ(ierr);
+      if (isDepth) eu->type = EULER_IV_SHOCK;
+      else {
+        ierr = PetscStrcmp(type,"ss_shock", &isDepth);CHKERRQ(ierr);
+        if (isDepth) eu->type = EULER_SS_SHOCK;
+        else {
+          ierr = PetscStrcmp(type,"shock_tube", &isDepth);CHKERRQ(ierr);
+          if (isDepth) eu->type = EULER_SHOCK_TUBE;
+          else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown Euler type %s",type);
+        }
+      }
+    }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  eu->sound    = SpeedOfSound_PG;
+  eu->sound = SpeedOfSound_PG;
   phys->maxspeed = 0.; /* will get set in solution */
   {
     const PetscInt wallids[] = {100,101,200,300};
@@ -1411,7 +1441,7 @@ int main(int argc, char **argv)
     size_t len,i;
     for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
     ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
-    dim  = 2;
+    dim = DIM;
     if (!len) { /* a null name means just do a hex box */
       PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
       PetscBool flg1, flg2;
@@ -1423,7 +1453,7 @@ int main(int argc, char **argv)
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
       if (flg1) {
         dim = nret1;
-        if (dim != 2) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D",dim);CHKERRQ(ierr);
+        if (dim != DIM) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D in -grid_size",dim);CHKERRQ(ierr);
       }
       ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, &dm);CHKERRQ(ierr);
       if (flg2) {
@@ -1598,7 +1628,7 @@ int main(int argc, char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(PetscScalar)ftime,nsteps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFunctionListDestroy(&PhysicsList);CHKERRQ(ierr);
@@ -2048,3 +2078,129 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
     return iwave;
 } /* godunovflux_ */
 
+/* Subroutine to set up the initial conditions for the */
+/* Shock Interface interaction or linear wave (Ravi Samtaney,Mark Adams). */
+/* ----------------------------------------------------------------------- */
+int projecteqstate(PetscScalar wc[], const PetscScalar ueq[], const PetscScalar lv[][3])
+{
+  int j,k;
+/*      Wc=matmul(lv,Ueq) 3 vars */
+  for (k = 0; k < 3; ++k) {
+    wc[k] = 0.;
+    for (j = 0; j < 3; ++j) {
+      wc[k] += lv[k][j]*ueq[j];
+    }
+  }
+  return 0;
+}
+/* ----------------------------------------------------------------------- */
+int projecttoprim(PetscScalar v[], const PetscScalar wc[], PetscScalar rv[][3])
+{
+  int k,j;
+  /*      V=matmul(rv,WC) 3 vars */
+  for (k = 0; k < 3; ++k) {
+    v[k] = 0.;
+    for (j = 0; j < 3; ++j) {
+      v[k] += rv[k][j]*wc[j];
+    }
+  }
+  return 0;
+}
+/* ---------------------------------------------------------------------- */
+int eigenvectors(PetscScalar rv[][3], PetscScalar lv[][3], const PetscScalar ueq[], PetscScalar gamma)
+{
+  int j,k;
+  PetscScalar rho,csnd,p0,u;
+
+  /*      lv=0.D0 */
+  /*      rv=0.D0 */
+  for (k = 0; k < 3; ++k) for (j = 0; j < 3; ++j) { lv[k][j] = 0.; rv[k][j] = 0.; }
+  /*  lamda=1.D0 */
+  /* csnd=SoundSpeedFun(Ueq(3),Ueq(1),lamda) */
+  /* rho=Ueq(1) */
+  rho = ueq[0];
+  u = ueq[1];
+  p0 = ueq[2];
+  csnd = PetscSqrtScalar(gamma * p0 / rho);
+  /* lv(1,2)=0.5D0*rho */
+  /* lv(1,3)=-0.5D0/csnd */
+  /* lv(2,1)=csnd */
+  /* lv(2,3)=-1.D0/csnd */
+  /* lv(3,2)=0.5D0*rho */
+  /* lv(3,3)=0.5D0/csnd */
+  lv[0][1] = rho * .5;
+  lv[0][2] = -.5 / csnd;
+  lv[1][0] = csnd;
+  lv[1][2] = -1. / csnd;
+  lv[2][1] = rho * .5;
+  lv[2][2] = .5 / csnd;
+  /* rv(1,1)=-1.D0/csnd */
+  /* rv(2,1)=1.D0/rho */
+  /* rv(3,1)=-csnd */
+  /* rv(1,2)=1.D0/csnd */
+  /* rv(1,3)=1.D0/csnd */
+  /* rv(2,3)=1.D0/rho */
+  /* rv(3,3)=csnd */
+  rv[0][0] = -1. / csnd;
+  rv[1][0] = 1. / rho;
+  rv[2][0] = -csnd;
+  rv[0][1] = 1. / csnd;
+  rv[0][2] = 1. / csnd;
+  rv[1][2] = 1. / rho;
+  rv[2][2] = csnd;
+  return 0;
+}
+
+int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord[], const PetscReal Lx)
+{
+  PetscScalar p0,u0,wcp[3],wc[3];
+  PetscScalar lv[3][3];
+  PetscScalar vp[3];
+  PetscScalar rv[3][3];
+  PetscScalar eps, ueq[3], rho0, twopi;
+
+  /* Function Body */
+  twopi = 2.*M_PI;
+  eps = 1e-4; /* perturbation */
+
+  /* rho0=1000.D0 ! density of water */
+  /* p0=1.01325D5 ! init pressure of 1 atm (?) */
+  /* lamda0=1.D0 */
+  /* c0=SoundSpeedFun(p0,rho0,lamda0) */
+  /* u0=0.D0 */
+  /* Ueq(1)=rho0 */
+  /* Ueq(2)=u0 */
+  /* Ueq(3)=p0 */
+  rho0 = 1e3;   /* density of water */
+  p0 = 101325.; /* init pressure of 1 atm (?) */
+  u0 = 0.;
+  ueq[0] = rho0;
+  ueq[1] = u0;
+  ueq[2] = p0;
+
+  /* Project initial state to characteristic variables */
+  eigenvectors(rv, lv, ueq, gamma);
+  projecteqstate(wc, ueq, lv);
+  projecttoprim(vp, wc, rv);
+  wcp[0] = wc[0];
+  wcp[1] = wc[1];
+  wcp[2] = wc[2] + eps * cos(coord[0] * 8. * twopi / Lx);
+  projecttoprim(vp, wcp, rv);
+  ux->r = vp[0]; /* density */
+  ux->ru[0] = vp[0] * vp[1]; /* x momentum */
+  ux->ru[1] = 0.;
+#if defined DIM > 2
+  if (dim>2) ux->ru[2] = 0.;
+#endif
+  /* E = rho * e + rho * v^2/2 */
+  ux->E = vp[2]/(gamma - 1.) + 0.5*vp[0]*vp[1]*vp[1];
+  /* ux[5] = 0.; */
+  /* ux(i,j,k,1)=vp(1) */
+  /* ux(i,j,k,2)=vp(1)*vp(2) */
+  /* ux(i,j,k,3)=0.D0 */
+  /* ux(i,j,k,4)=0.D0 */
+  /* ux(i,j,k,6)=0.D0 */
+  /* eint = (PetscScalar) internalenergyfun(&vp[2], vp, &lamda0); */
+  /* ux(i,j,k,5)=vp(1)*eint+0.5D0*vp(1)*vp(2)**2 */
+  return 0;
+}
