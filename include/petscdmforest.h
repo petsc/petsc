@@ -105,6 +105,10 @@ PETSC_EXTERN PetscErrorCode DMForestGetCoarseRestrictor(DM,Mat *);
 /* miscellaneous */
 PETSC_EXTERN PetscErrorCode DMForestTemplate(DM,DM);
 
+/* type management */
+PETSC_EXTERN PetscErrorCode DMForestRegisterType(DMType);
+PETSC_EXTERN PetscErrorCode DMIsForest(DM,PetscBool*);
+
 /* p4est */
 PETSC_EXTERN PetscErrorCode DMP4estGetPartitionForCoarsening(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMP4estSetPartitionForCoarsening(DM,PetscBool);

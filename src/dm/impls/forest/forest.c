@@ -2,6 +2,86 @@
 #include <petsc/private/dmimpl.h>       /*I petscdm.h */
 #include <petscsf.h>
 
+PetscBool DMForestPackageInitialized = PETSC_FALSE;
+
+typedef struct _DMForestTypeLink *DMForestTypeLink;
+
+struct _DMForestTypeLink
+{
+  char *name;
+  DMForestTypeLink next;
+};
+
+DMForestTypeLink DMForestTypeList;
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestPackageFinalize"
+static PetscErrorCode DMForestPackageFinalize(void)
+{
+  DMForestTypeLink oldLink, link = DMForestTypeList;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (link) {
+    oldLink = link;
+    ierr = PetscFree(oldLink->name);
+    link = oldLink->next;
+    ierr = PetscFree(oldLink);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestPackageInitialize"
+static PetscErrorCode DMForestPackageInitialize(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (DMForestPackageInitialized) PetscFunctionReturn(0);
+  DMForestPackageInitialized = PETSC_TRUE;
+  ierr = DMForestRegisterType(DMFOREST);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(DMForestPackageFinalize);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestRegisterType"
+PetscErrorCode DMForestRegisterType(DMType name)
+{
+  DMForestTypeLink link;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMForestPackageInitialize();CHKERRQ(ierr);
+  ierr = PetscNew(&link);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
+  link->next = DMForestTypeList;
+  DMForestTypeList = link;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIsForest"
+PetscErrorCode DMIsForest(DM dm, PetscBool *isForest)
+{
+  DMForestTypeLink link = DMForestTypeList;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (link) {
+    PetscBool sameType;
+    ierr = PetscObjectTypeCompare((PetscObject)dm,link->name,&sameType);CHKERRQ(ierr);
+    if (sameType) {
+      *isForest = PETSC_TRUE;
+      PetscFunctionReturn(0);
+    }
+    link = link->next;
+  }
+  *isForest = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMForestTemplate"
 PETSC_EXTERN PetscErrorCode DMForestTemplate(DM dm, DM tdm)

@@ -1,3 +1,4 @@
+#include <petscdmforest.h>
 #include <petsc/private/petscimpl.h>
 #include <p4est_base.h>
 #include "petsc_p4est_package.h"
@@ -103,6 +104,8 @@ PetscErrorCode PetscP4estInitialize(void)
     PetscStackCallP4est(p4est_init,(PetscScLogHandler,pp4est_log_threshold));
     if (p4est_package_id == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"Could not initialize p4est");
   }
+  ierr = DMForestRegisterType(DMP4EST);CHKERRQ(ierr);
+  ierr = DMForestRegisterType(DMP8EST);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscP4estFinalize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
