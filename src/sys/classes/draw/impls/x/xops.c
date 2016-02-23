@@ -393,6 +393,7 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   PetscDraw_X  *win = (PetscDraw_X*)draw->data;
   Window       root,child;
   int          root_x,root_y,px=0,py=0;
+  unsigned int w,h,border,depth;
   unsigned int keys_button;
 
   PetscFunctionBegin;
@@ -430,11 +431,13 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   XFreeCursor(win->disp, cursor);
   XFlush(win->disp);
   XSync(win->disp,False);
+  /* the user may resize the window before pressing the mouse button */
+  XGetGeometry(win->disp,win->win,&root,&root_x,&root_y,&w,&h,&border,&depth);
 
-  if (x_phys) *x_phys = ((double)px)/((double)win->w);
-  if (y_phys) *y_phys = 1.0 - ((double)py)/((double)win->h);
-  if (x_user) *x_user = draw->coor_xl + ((((double)px)/((double)win->w)-draw->port_xl))*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
-  if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)win->h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
+  if (x_phys) *x_phys = ((double)px)/((double)w);
+  if (y_phys) *y_phys = 1.0 - ((double)py)/((double)h);
+  if (x_user) *x_user = draw->coor_xl + ((((double)px)/((double)w)-draw->port_xl))*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
+  if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
   PetscFunctionReturn(0);
 }
 
