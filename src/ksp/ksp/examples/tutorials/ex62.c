@@ -56,8 +56,8 @@ int main(int argc,char **args)
   PetscInt       M,N;                    /* number of subdomains in x- and y- directions */
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscBool      flg;
-  PetscBool      user_set_subdomains;
+  PetscBool      flg=PETSC_FALSE;
+  PetscBool      user_set_subdomains=PETSC_FALSE;
   PetscReal      one,e;
 
   PetscInitialize(&argc,&args,(char*)0,help);
