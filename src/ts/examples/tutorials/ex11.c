@@ -484,7 +484,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   Physics         phys = (Physics)ctx;
   Physics_Euler   *eu  = (Physics_Euler*)phys->data;
   EulerNode *uu   = (EulerNode*)u;
-  PetscScalar p0,gamma;
+  PetscScalar p0,gamma,c;
   PetscFunctionBeginUser;
   if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
 
@@ -515,6 +515,12 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
     uu->r = eu->pars[EULER_PAR_RHOR];
     uu->E = p0/(gamma-1.0);
   }
+
+  // set phys->maxspeed: (mod->maxspeed = phys->maxspeed) in main;
+  eu->sound(eu->pars,uu,&c);
+  c = PetscAbsScalar(uu->ru[0]/uu->r) + c;
+  if (c > phys->maxspeed) phys->maxspeed = c;
+
   PetscFunctionReturn(0);
 }
 
@@ -598,8 +604,8 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur, PetscScalar *flux
 /* PetscReal* => EulerNode* conversion */
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Euler_Godunov"
-static void PhysicsRiemann_Euler_Godunov(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n,
-                                         const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
+static void PhysicsRiemann_Euler_Godunov( PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n,
+                                          const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_Euler   *eu = (Physics_Euler*)phys->data;
   PetscReal       cL,cR,speed,velL,velR,nn[DIM],s2;
@@ -619,7 +625,7 @@ static void PhysicsRiemann_Euler_Godunov(PetscInt dim, PetscInt Nf, const PetscR
     EulerFlux(phys,nn,uL,&fL);
     EulerFlux(phys,nn,uR,&fR);
     ierr = eu->sound(eu->pars,uL,&cL);if (ierr) exit(13);
-    ierr = eu->sound(eu->pars,uR,&cR);if (ierr) exit(13);
+    ierr = eu->sound(eu->pars,uR,&cR);if (ierr) exit(14);
     velL = DotDIM(uL->ru,nn)/uL->r;
     velR = DotDIM(uR->ru,nn)/uR->r;
     speed = PetscMax(PetscAbsScalar(velR) + cR,PetscAbsScalar(velL) + cL);
@@ -683,7 +689,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   eu->sound    = SpeedOfSound_PG;
-  phys->maxspeed = eu->pars[EULER_PAR_AMACH]; /* speed of shock */
+  phys->maxspeed = 0.; /* will get set in solution */
   {
     const PetscInt wallids[] = {100,101,200,300};
     ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
@@ -1368,6 +1374,7 @@ int main(int argc, char **argv)
   PetscBool         vtkCellGeom, splitFaces;
   PetscInt          overlap;
   char              filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
+  char              physname[256]  = "advect";
   PetscErrorCode    ierr;
 
   ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
@@ -1462,18 +1469,15 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {
     PetscErrorCode (*physcreate)(DM,Model,Physics,PetscOptionItems*);
-    char             physname[256]  = "advect";
 
     ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
     ierr = (*physcreate)(dm,mod,phys,PetscOptionsObject);CHKERRQ(ierr);
-    mod->maxspeed = phys->maxspeed;
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
 
-    if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
     if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
     ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
@@ -1584,6 +1588,9 @@ int main(int argc, char **argv)
 
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
+  /* collect max maxspeed from all processes -- todo */
+  mod->maxspeed = phys->maxspeed;
+  if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
   dt   = cfl * minRadius / user->model->maxspeed;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
