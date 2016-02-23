@@ -151,6 +151,7 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   ierr = PetscFree(forest->adaptLabel);CHKERRQ(ierr);
   ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
+  ierr = DMDestroy(&forest->adapt);CHKERRQ(ierr);
   ierr = PetscFree(forest->topology);CHKERRQ(ierr);
   ierr = PetscFree(forest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -222,58 +223,34 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestSetCoarseForest"
-PetscErrorCode DMForestSetCoarseForest(DM dm,DM coarse)
+#define __FUNCT__ "DMForestSetAdaptivityForest"
+PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
 {
+  DM_Forest        *forest;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the coarse forest after setup");
-  ierr = DMSetCoarseDM(dm,coarse);CHKERRQ(ierr);
-  if (coarse) {
-    PetscValidHeaderSpecific(coarse, DM_CLASSID, 2);
-    ierr = DMForestTemplate(coarse,dm);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  forest = (DM_Forest *) dm->data;
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  ierr = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);
+  ierr = DMDestroy(&(forest->adapt));CHKERRQ(ierr);
+  forest->adapt = adapt;
+  ierr = DMForestTemplate(adapt,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestGetCoarseForest"
-PetscErrorCode DMForestGetCoarseForest(DM dm, DM *coarse)
+#define __FUNCT__ "DMForestGetAdaptivityForest"
+PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
 {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetCoarseDM(dm,coarse);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetFineForest"
-PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
-{
-  PetscErrorCode   ierr;
+  DM_Forest        *forest;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the fine forest after setup");
-  ierr = DMSetFineDM(dm,fine);CHKERRQ(ierr);
-  if (fine) {
-    PetscValidHeaderSpecific(fine, DM_CLASSID, 2);
-    ierr = DMForestTemplate(fine,dm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetFineForest"
-PetscErrorCode DMForestGetFineForest(DM dm, DM *fine)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetFineDM(dm,fine);CHKERRQ(ierr);
+  forest = (DM_Forest *) dm->data;
+  *adapt = forest->adapt;
   PetscFunctionReturn(0);
 }
 
@@ -574,19 +551,14 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, const char * adaptLabel)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMForestGetAdaptivityLabel"
-PetscErrorCode DMForestGetAdaptivityLabel(DM dm, DMLabel *label)
+PetscErrorCode DMForestGetAdaptivityLabel(DM dm, const char ** adaptLabel)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->adaptLabel) {
-    ierr = DMGetLabel(dm,forest->adaptLabel,label);CHKERRQ(ierr);
-  }
-  else {
-    *label = NULL;
-  }
+  *adaptLabel = forest->adaptLabel;
   PetscFunctionReturn(0);
 }
 

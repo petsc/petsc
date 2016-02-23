@@ -24,11 +24,9 @@ PETSC_EXTERN PetscErrorCode DMForestGetTopology(DM, DMForestTopology *);
 PETSC_EXTERN PetscErrorCode DMForestSetBaseDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMForestGetBaseDM(DM, DM *);
 
-/* these are forests from which we can adapt */
-PETSC_EXTERN PetscErrorCode DMForestSetCoarseForest(DM, DM);
-PETSC_EXTERN PetscErrorCode DMForestGetCoarseForest(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMForestSetFineForest(DM, DM);
-PETSC_EXTERN PetscErrorCode DMForestGetFineForest(DM, DM *);
+/* this is the forest from which we adapt */
+PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityForest(DM, DM);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityForest(DM, DM *);
 
 /* what we consider adjacent, for the purposes of cell grading, overlap, etc. */
 PETSC_EXTERN PetscErrorCode DMForestSetAdjacencyDimension(DM, PetscInt);
@@ -59,7 +57,7 @@ enum {DM_FOREST_KEEP = 0,
 
 /* flag each cell with an adaptivity count: should match the cell section */
 PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityLabel(DM, const char *);
-PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityLabel(DM, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityLabel(DM, const char **);
 
 /*J
     DMForestAdaptivityStrategy - String with the name of a PETSc DMForest adaptivity strategy

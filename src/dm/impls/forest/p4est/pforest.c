@@ -427,6 +427,16 @@ static int pforest_coarsen_uniform (p4est_t * p4est, p4est_topidx_t which_tree, 
   return 0;
 }
 
+static int pforest_refine_uniform (p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
+{
+  PetscInt maxLevel = *((PetscInt *) p4est->user_pointer);
+
+  if ((PetscInt) quadrant->level < maxLevel) {
+    return 1;
+  }
+  return 0;
+}
+
 #define DMSetUp_pforest _append_pforest(DMSetUp)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMSetUp_pforest)
@@ -434,18 +444,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 {
   DM_Forest         *forest  = (DM_Forest *) dm->data;
   DM_Forest_pforest *pforest = (DM_Forest_pforest *) forest->data;
-  DM                base, coarse, fine, adaptFrom;
+  DM                base, adaptFrom;
   DMForestTopology  topoName;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   /* sanity check */
-  ierr = DMForestGetCoarseForest(dm,&coarse);CHKERRQ(ierr);
-  ierr = DMForestGetFineForest(dm,&fine);CHKERRQ(ierr);
+  ierr = DMForestGetAdaptivityForest(dm,&adaptFrom);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
   ierr = DMForestGetTopology(dm,&topoName);CHKERRQ(ierr);
-  if (coarse && fine)                   SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot adapt from both a coarse and a fine forest");
-  adaptFrom = coarse ? coarse : fine;
   if (!adaptFrom && !base && !topoName) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"A forest needs a topology, a base DM, or a DM to adapt from");
 
   /* === Step 1: DMFTopology === */
@@ -554,13 +561,21 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
   /* === Step 2: get the leaves of the forest === */
   if (adaptFrom) { /* start with the old forest */
+    const char        *adaptName;
+    DMLabel           adaptLabel;
+    PetscInt          defaultValue;
+    PetscInt          numValues;
     DM_Forest         *aforest  = (DM_Forest *) adaptFrom->data;
     DM_Forest_pforest *apforest = (DM_Forest_pforest *) aforest->data;
 
     PetscStackCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
+    ierr = DMForestGetAdaptivityLabel(dm,&adaptName);CHKERRQ(ierr);
+    ierr = DMGetLabel(adaptFrom,adaptName,&adaptLabel);CHKERRQ(ierr);
+    if (!adaptLabel) SETERRQ(PetscObjectComm((PetscObject)adaptFrom),PETSC_ERR_USER,"No adaptivity label found in pre-adaptation forest");
     /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
-    if (fine) { /* coarsen */
-      /* TODO: Non uniform coarsening case?  Recursive?  Flags. */
+    ierr = DMLabelGetNumValues(adaptLabel,&numValues);CHKERRQ(ierr);
+    ierr = DMLabelGetNumValues(adaptLabel,&defaultValue);CHKERRQ(ierr);
+    if (!numValues && defaultValue == DM_FOREST_COARSEN) { /* uniform coarsen */
       PetscInt minLevel;
 
       ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
@@ -568,8 +583,18 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
       pforest->forest->user_pointer = (void *) dm;
     }
-    else { /* refine */
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
+    else if (!numValues && defaultValue == DM_FOREST_REFINE) { /* uniform refine */
+      PetscInt maxLevel;
+
+      ierr = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
+      pforest->forest->user_pointer = (void *) &maxLevel;
+      PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_uniform,NULL));
+      pforest->forest->user_pointer = (void *) dm;
+    }
+    else if (numValues) {
+      PetscInt          *markers;
+
+      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"non-uniform adaptivity not implemented");
     }
     PetscStackCallP4est(p4est_reset_data,(pforest->forest,0,NULL,(void *)dm)); /* this dm is the user context for the new forest */
     {
@@ -682,13 +707,20 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (initLevel > minLevel) {
       DM_Forest_pforest *coarse_pforest;
       DMType type;
+      DMLabel coarsen;
       DM     coarseDM;
 
       ierr = DMCreate(PetscObjectComm((PetscObject)dm),&coarseDM);CHKERRQ(ierr);
       ierr = DMGetType(dm,&type);CHKERRQ(ierr);
       ierr = DMSetType(coarseDM,type);CHKERRQ(ierr);
-      ierr = DMForestSetFineForest(coarseDM,dm);CHKERRQ(ierr);
+      ierr = DMForestTemplate(dm,coarseDM);CHKERRQ(ierr);
+      ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);
+      ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
+      ierr = DMLabelSetDefaultValue(coarsen,DM_FOREST_COARSEN);CHKERRQ(ierr);
+      ierr = DMForestSetAdaptivityForest(coarseDM,dm);CHKERRQ(ierr);
+      ierr = DMForestSetAdaptivityLabel(coarseDM,"coarsen");CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
+      ierr = DMSetFineDM(coarseDM,dm);CHKERRQ(ierr);
       if (forest->setFromOptions) {
         ierr = DMSetFromOptions(coarseDM);CHKERRQ(ierr);
       }
@@ -3139,9 +3171,11 @@ static PetscErrorCode DMCoarsen_pforest(DM dm, MPI_Comm comm, DM *dmc)
   }
   ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);
   if (!coarseDM) {
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for coarsening on the fly yet");
+    DM coarseDM;
+
+    ierr = DMCreate(PetscObjectComm((PetscObject)dm),&coarseDM);CHKERRQ(ierr);
   }
-  {
+  if (coarseDM) {
     void *ctx;
     PetscDS ds;
 

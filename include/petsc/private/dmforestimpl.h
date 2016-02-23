@@ -17,6 +17,7 @@ typedef struct {
   PetscBool                  setFromOptions;
   DMForestTopology           topology;
   DM                         base;
+  DM                         adapt;
   PetscInt                   adjDim;
   PetscInt                   overlap;
   PetscInt                   minRefinement;
