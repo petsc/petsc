@@ -16,7 +16,7 @@
 .   draw - the window to be used
 
     Output Parameters:
-+   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT
++   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT, PETSC_BUTTON_WHEEL_UP, PETSC_BUTTON_WHEEL_DOWN
 .   x_user, y_user - user coordinates of location (user may pass in NULL).
 -   x_phys, y_phys - window coordinates (user may pass in NULL).
 
@@ -55,7 +55,7 @@ PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
 .   draw - the window to be used
 
     Output Parameters:
-+   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT
++   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT, PETSC_BUTTON_WHEEL_UP, PETSC_BUTTON_WHEEL_DOWN
 .   x_user, y_user - user coordinates of location (user may pass in NULL).
 -   x_phys, y_phys - window coordinates (user may pass in NULL).
 

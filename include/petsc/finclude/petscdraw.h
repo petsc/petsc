@@ -75,15 +75,19 @@
       PetscEnum PETSC_BUTTON_LEFT
       PetscEnum PETSC_BUTTON_CENTER
       PetscEnum PETSC_BUTTON_RIGHT
+      PetscEnum PETSC_BUTTON_WHEEL_UP
+      PetscEnum PETSC_BUTTON_WHEEL_DOWN
       PetscEnum PETSC_BUTTON_LEFT_SHIFT
       PetscEnum PETSC_BUTTON_CENTER_SHIFT
       PetscEnum PETSC_BUTTON_RIGHT_SHIFT
 
       parameter (PETSC_BUTTON_NONE = 0,PETSC_BUTTON_LEFT = 1)
       parameter (PETSC_BUTTON_CENTER = 2,PETSC_BUTTON_RIGHT = 3)
-      parameter (PETSC_BUTTON_LEFT_SHIFT = 4)
-      parameter (PETSC_BUTTON_CENTER_SHIFT = 5)
-      parameter (PETSC_BUTTON_RIGHT_SHIFT = 6)
+      parameter (PETSC_BUTTON_WHEEL_UP = 4)
+      parameter (PETSC_BUTTON_WHEEL_DOWN = 5)
+      parameter (PETSC_BUTTON_LEFT_SHIFT = 6)
+      parameter (PETSC_BUTTON_CENTER_SHIFT = 7)
+      parameter (PETSC_BUTTON_RIGHT_SHIFT = 8)
 
 !
 !  End of Fortran include file for the PetscDraw package in PETSc

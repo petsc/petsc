@@ -49,13 +49,18 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
-  w    = xr - xl; xmin = xl; xmax = xr;
-  h    = yr - yl; ymin = yl; ymax = yr;
+  xmin = xl; xmax = xr; w = xr - xl;
+  ymin = yl; ymax = yr; h = yr - yl;
 
   while (button != PETSC_BUTTON_NONE && button != PETSC_BUTTON_RIGHT) {
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-    if (button == PETSC_BUTTON_LEFT)        scale = .5;
-    else if (button == PETSC_BUTTON_CENTER) scale = 2.;
+    switch (button) {
+    case PETSC_BUTTON_LEFT:       scale = 0.5;   break;
+    case PETSC_BUTTON_CENTER:     scale = 2.0;   break;
+    case PETSC_BUTTON_WHEEL_UP:   scale = 8/10.; break;
+    case PETSC_BUTTON_WHEEL_DOWN: scale = 10/8.; break;
+    default:                      scale = 1.0;
+    }
     xl   = scale*(xl + w - xc) + xc - w*scale;
     xr   = scale*(xr - w - xc) + xc + w*scale;
     yl   = scale*(yl + h - yc) + yc - h*scale;

@@ -198,7 +198,10 @@ PETSC_EXTERN PetscErrorCode PetscDrawGetBoundingBox(PetscDraw,PetscReal*,PetscRe
 
 .seealso: PetscDrawGetMouseButton(), PetscDrawSynchronizedGetMouseButton()
 E*/
-typedef enum {PETSC_BUTTON_NONE,PETSC_BUTTON_LEFT,PETSC_BUTTON_CENTER,PETSC_BUTTON_RIGHT,PETSC_BUTTON_LEFT_SHIFT,PETSC_BUTTON_CENTER_SHIFT,PETSC_BUTTON_RIGHT_SHIFT} PetscDrawButton;
+typedef enum { PETSC_BUTTON_NONE = 0,
+               PETSC_BUTTON_LEFT,PETSC_BUTTON_CENTER,PETSC_BUTTON_RIGHT,
+               PETSC_BUTTON_WHEEL_UP,PETSC_BUTTON_WHEEL_DOWN,
+               PETSC_BUTTON_LEFT_SHIFT,PETSC_BUTTON_CENTER_SHIFT,PETSC_BUTTON_RIGHT_SHIFT } PetscDrawButton;
 
 PETSC_EXTERN PetscErrorCode PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);

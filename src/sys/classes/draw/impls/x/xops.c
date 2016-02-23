@@ -419,6 +419,8 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
     if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_RIGHT_SHIFT;
     else                                  *button = PETSC_BUTTON_RIGHT;
     break;
+  case Button4: *button = PETSC_BUTTON_WHEEL_UP;   break;
+  case Button5: *button = PETSC_BUTTON_WHEEL_DOWN; break;
   }
   /* get mouse pointer coordinates */
   XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button);
