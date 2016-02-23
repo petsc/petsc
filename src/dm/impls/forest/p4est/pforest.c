@@ -143,6 +143,12 @@ static uint32_t DMPforestHash(const uint32_t *blocks, uint32_t nblocks) {
   return hash;
 }
 
+#if defined(UINT32_MAX)
+#define DMP4EST_HASH_MAX UINT32_MAX
+#else
+#define DMP4EST_HASH_MAX ((uint32_t) 0xffffffff)
+#endif
+
 static int DMRefinePattern_Hash(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
 {
   uint32_t           data[5];
@@ -162,7 +168,7 @@ static int DMRefinePattern_Hash(p4est_t * p4est, p4est_topidx_t which_tree, p4es
 #endif
 
   result = DMPforestHash(data,2+P4EST_DIM);
-  if (((double) result / (double) UINT32_MAX) < ctx->hashLikelihood) {
+  if (((double) result / (double) DMP4EST_HASH_MAX) < ctx->hashLikelihood) {
     return 1;
   }
   return 0;
@@ -641,14 +647,14 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
             PetscInt i;
 
             for (i = 0; i < ncorner; i++) {
-              ctx->fractal[corners[i]] = 1;
+              ctx->fractal[corners[i]] = PETSC_TRUE;
             }
           }
           else {
 #if !defined (P4_TO_P8)
-            ctx->fractal[0] = ctx->fractal[1] = ctx->fractal[2] = 1;
+            ctx->fractal[0] = ctx->fractal[1] = ctx->fractal[2] = PETSC_TRUE;
 #else
-            ctx->fractal[0] = ctx->fractal[3] = ctx->fractal[5] = ctx->fractal[6] = 1;
+            ctx->fractal[0] = ctx->fractal[3] = ctx->fractal[5] = ctx->fractal[6] = PETSC_TRUE;
 #endif
           }
           ctx->refine_fn = DMRefinePattern_Fractal;
@@ -1575,7 +1581,7 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   ierr = DMSetApplicationContext(dmB,ctx);CHKERRQ(ierr);
   ierr = DMGetDS(dmA,&ds);CHKERRQ(ierr);
   ierr = DMGetDS(dmB,&dsB);CHKERRQ(ierr);
-  newDS = (ds != dsB);
+  newDS = (PetscBool) (ds != dsB);
   ierr = DMSetDS(dmB,ds);CHKERRQ(ierr);
   if (newDS) {
     ierr = DMClearGlobalVectors(dmB);CHKERRQ(ierr);
@@ -2176,8 +2182,8 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
               PetscInt maxDir = PetscMax((direction + 1) % 3,(direction + 2) % 3);
               PetscBool dirTest[2];
 
-              dirTest[0] = (coarseBound[mod % 2][minDir] == fineBound[mod % 2][minDir]);
-              dirTest[1] = (coarseBound[mod / 2][maxDir] == fineBound[mod / 2][maxDir]);
+              dirTest[0] = (PetscBool) (coarseBound[mod % 2][minDir] == fineBound[mod % 2][minDir]);
+              dirTest[1] = (PetscBool) (coarseBound[mod / 2][maxDir] == fineBound[mod / 2][maxDir]);
 
               if (dirTest[0] && dirTest[1]) { /* fine edge falls on coarse edge */
                 coarseEdge = edge;
@@ -2207,7 +2213,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
 #endif
 
               for (m = 0; m < P4EST_DIM; m++) {
-                dirTest[m] = (coarseBound[(vertex >> m) & 1][m] == fineBound[(vertex >> m) & 1][m]);
+                dirTest[m] = (PetscBool) (coarseBound[(vertex >> m) & 1][m] == fineBound[(vertex >> m) & 1][m]);
                 if (dirTest[m]) {
                   numMatch++;
                 }
@@ -2356,7 +2362,7 @@ static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofP
     ierr = DMPforestGetTransferSF_Internal(dmA,dmB,dofPerDim,sfAtoB,PETSC_TRUE,NULL);CHKERRQ(ierr);
   }
   if (sfBtoA) {
-    ierr = DMPforestGetTransferSF_Internal(dmB,dmA,dofPerDim,sfBtoA,(sfAtoB == NULL),NULL);CHKERRQ(ierr);
+    ierr = DMPforestGetTransferSF_Internal(dmB,dmA,dofPerDim,sfBtoA,(PetscBool) (sfAtoB == NULL),NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
