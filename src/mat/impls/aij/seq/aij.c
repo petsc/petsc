@@ -848,7 +848,7 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,j,m = A->rmap->n,color;
-  PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r,maxv = 0.0;
+  PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   PetscViewer       viewer;
   PetscViewerFormat format;
 
@@ -892,23 +892,20 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
     /* use contour shading to indicate magnitude of values */
     /* first determine max of all nonzero values */
     PetscInt  nz = a->nz,count;
+    PetscReal minv = 0.0, maxv = 0.0;
     PetscDraw popup;
-    PetscReal scale;
 
     for (i=0; i<nz; i++) {
       if (PetscAbsScalar(a->a[i]) > maxv) maxv = PetscAbsScalar(a->a[i]);
     }
-    scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/maxv;
     ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {
-      ierr = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);
-    }
+    if (popup) {ierr = PetscDrawScalePopup(popup,minv,maxv);CHKERRQ(ierr);}
     count = 0;
     for (i=0; i<m; i++) {
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for (j=a->i[i]; j<a->i[i+1]; j++) {
         x_l   = a->j[j]; x_r = x_l + 1.0;
-        color = PETSC_DRAW_BASIC_COLORS + (PetscInt)(scale*PetscAbsScalar(a->a[count]));
+        color = PetscDrawRealToColor(PetscAbsScalar(a->a[count]),minv,maxv);
         ierr  = PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
         count++;
       }

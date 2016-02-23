@@ -15,13 +15,6 @@ static PetscReal Peaks(PetscReal x,PetscReal y)
        - 1./3 * Exp(-Pow(x+1,2) - Pow(y,2));
 }
 
-static int Color(PetscReal value,PetscReal v0,PetscReal v1)
-{
-  PetscReal v = PetscClipInterval(value,v0,v1);
-  PetscReal c = (255-PETSC_DRAW_BASIC_COLORS)*(v-v0)/(v1-v0);
-  return PETSC_DRAW_BASIC_COLORS + (int)c;
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -47,8 +40,8 @@ int main(int argc,char **argv)
       PetscReal u = (PetscReal)i/(w-1), x = 6*u-3;
       PetscReal v = (PetscReal)j/(h-1), y = 6*(1-v)-3;
       PetscReal f = Peaks(x,y);
-      int       c = Color(f,-8,+8);
-      ierr = PetscDrawPointPixel(draw,i,j,c);CHKERRQ(ierr);
+      int color = PetscDrawRealToColor(f,-8,+8);
+      ierr = PetscDrawPointPixel(draw,i,j,color);CHKERRQ(ierr);
     }
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);

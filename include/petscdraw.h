@@ -63,6 +63,36 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,PetscObj
 #define PETSC_DRAW_LAVENDERBLUSH   31
 #define PETSC_DRAW_PLUM            32
 
+/*MC
+
+   PetscDrawRealToColor - Maps a real value within an interval to a color.
+   The color is an integer value in the range [PETSC_DRAW_BASIC_COLORS to 255]
+   that can be passed to various drawing routines.
+
+   Synopsis:
+   #include <petscdraw.h>
+   int PetscDrawRealToColor(PetscReal value,PetscReal min,PetscReal max)
+
+   Not Collective
+
+   Input Parameter:
++  value - value to map within the interval [min,max]
+.  min - lower end of interval
+-  max - upper end of interval
+
+   Notes: Values outside the interval [min,max] are clipped.
+
+   Level: intermediate
+
+.seealso: PetscDrawPointPixel(), PetscDrawPoint(), PetscDrawLine(), PetscDrawTriangle(), PetscDrawRectangle()
+
+M*/
+PETSC_STATIC_INLINE int PetscDrawRealToColor(PetscReal value,PetscReal min,PetscReal max)
+{
+  value = PetscClipInterval(value,min,max);
+  return PETSC_DRAW_BASIC_COLORS + (int)((255-PETSC_DRAW_BASIC_COLORS)*(value-min)/(max-min));
+}
+
 PETSC_EXTERN PetscErrorCode PetscDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawOpenGLUT(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 

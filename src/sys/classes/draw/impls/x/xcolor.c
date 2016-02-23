@@ -3,8 +3,7 @@
     Code for managing color the X implementation of the PetscDraw routines.
 
     Currently we default to using cmapping[0 to PETSC_DRAW_BASIC_COLORS-1] for the basic colors and
-  cmapping[DRAW_BASIC_COLORS to 255] for a uniform hue of all the colors. But in the contour
-  plot we only use from PETSC_DRAW_BASIC_COLORS to 240 since the ones beyond that are too dark.
+    cmapping[DRAW_BASIC_COLORS to 255] for countour plots.
 
 */
 #include <../src/sys/classes/draw/impls/x/ximpl.h>

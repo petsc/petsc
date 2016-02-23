@@ -61,7 +61,7 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
   PetscReal      xl = 0.0,yl = 0.0,xr = 2.0,yr = 1.0,value;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
-  int            i,c = PETSC_DRAW_BASIC_COLORS;
+  int            i;
   char           string[32];
 
   PetscFunctionBegin;
@@ -72,9 +72,9 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
   if (!rank) {
     ierr = PetscDrawSetTitle(popup,"Contour Scale");CHKERRQ(ierr);
     for (i=0; i<10; i++) {
+      int c = PetscDrawRealToColor((PetscReal)i/9,0,1);
       ierr = PetscDrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);CHKERRQ(ierr);
       yl += 0.1; yr += 0.1;
-      c = (int)((double)c + (245. - PETSC_DRAW_BASIC_COLORS)/9.);
     }
     for (i=0; i<10; i++) {
       value = min + i*(max-min)/9.0;
@@ -104,7 +104,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
   ZoomCtx        *ctx = (ZoomCtx*)dctx;
 
   PetscFunctionBegin;
-  ierr = PetscDrawTensorContourPatch(win,ctx->m,ctx->n,ctx->x,ctx->y,ctx->max,ctx->min,ctx->v);CHKERRQ(ierr);
+  ierr = PetscDrawTensorContourPatch(win,ctx->m,ctx->n,ctx->x,ctx->y,ctx->min,ctx->max,ctx->v);CHKERRQ(ierr);
   if (ctx->showgrid) {
     for (i=0; i<ctx->m; i++) {
       ierr = PetscDrawLine(win,ctx->x[i],ctx->y[0],ctx->x[i],ctx->y[ctx->n-1],PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -211,10 +211,10 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
    Not Collective
 
    Input Parameters:
-+  win - the window to draw in
++  draw - the draw context
 .  m,n - the number of local mesh points in the x and y direction
 .  x,y - the locations of the local mesh points
-.  max,min - the maximum and minimum value in the entire contour
+.  min,max - the minimum and maximum value in the entire contour
 -  v - the data
 
    Options Database Keys:
@@ -231,22 +231,20 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
 .seealso: PetscDrawTensorContour()
 
 @*/
-PetscErrorCode  PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscReal *v)
+PetscErrorCode  PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal min,PetscReal max,PetscReal *v)
 {
   PetscErrorCode ierr;
   int            c1,c2,c3,c4,i,j;
-  PetscReal      x1,x2,x3,x4,y_1,y2,y3,y4,scale;
+  PetscReal      x1,x2,x3,x4,y_1,y2,y3,y4;
 
   PetscFunctionBegin;
-  scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/(max - min);
-
   /* PetscDraw the contour plot patch */
   for (j=0; j<n-1; j++) {
     for (i=0; i<m-1; i++) {
-      x1 = x[i];  y_1 = y[j]; c1 = (int)(PETSC_DRAW_BASIC_COLORS + scale*(v[i+j*m] - min));
-      x2 = x[i+1];y2 = y_1;   c2 = (int)(PETSC_DRAW_BASIC_COLORS + scale*(v[i+j*m+1]-min));
-      x3 = x2;    y3 = y[j+1];c3 = (int)(PETSC_DRAW_BASIC_COLORS + scale*(v[i+j*m+1+m]-min));
-      x4 = x1;    y4 = y3;    c4 = (int)(PETSC_DRAW_BASIC_COLORS + scale*(v[i+j*m+m]-min));
+      x1 = x[i];   y_1 = y[j];  c1 = PetscDrawRealToColor(v[i+j*m],min,max);
+      x2 = x[i+1]; y2 = y_1;    c2 = PetscDrawRealToColor(v[i+j*m+1],min,max);
+      x3 = x2;     y3 = y[j+1]; c3 = PetscDrawRealToColor(v[i+j*m+1+m],min,max);
+      x4 = x1;     y4 = y3;     c4 = PetscDrawRealToColor(v[i+j*m+m],min,max);
 
       ierr = PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
       ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
