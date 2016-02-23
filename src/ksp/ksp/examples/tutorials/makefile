@@ -970,6 +970,10 @@ runex18_2:
 	-@${MPIEXEC} -n 3 ./ex18 -m 39 -n 18 -ksp_monitor_short -permute rcm > ex18_2.tmp 2>&1; \
 	   ${DIFF} output/ex18_2.out ex18_2.tmp || printf "${PWD}\nPossible problem with ex18_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex18_2.tmp
+runex18_3:
+	-@${MPIEXEC} -n 3 ./ex18 -m 13 -n 17 -ksp_monitor_short -ksp_type cg -ksp_cg_single_reduction > ex18_3.tmp 2>&1; \
+	   ${DIFF} output/ex18_3.out ex18_3.tmp || printf "${PWD}\nPossible problem with ex18_3, diffs above\n=========================================\n"; \
+	   ${RM} -f ex18_3.tmp
 runex21f:
 	-@${MPIEXEC} -n 1 ./ex21f  > ex21f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21f_1.out ex21f_1.tmp) then true; \
@@ -1402,6 +1406,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex6.PETSc runex6 runex6_1 runex6_2 ex6.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
+                                 ex18.PETSc runex18_3 ex18.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc runex29_telescope ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex42.PETSc ex42.rm \
