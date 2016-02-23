@@ -1368,7 +1368,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     }
     ierr = PetscFree4(fmin,fmax,fintegral,ftmp);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4g  |x| %8.4g  %s\n",stepnum,(PetscScalar)time,(PetscScalar)xnorm,ftable ? ftable : "");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : "");CHKERRQ(ierr);
     ierr = PetscFree(ftable);CHKERRQ(ierr);
   }
   if (user->vtkInterval < 1) PetscFunctionReturn(0);

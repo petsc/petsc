@@ -2,6 +2,86 @@
 #include <petsc/private/dmimpl.h>       /*I petscdm.h */
 #include <petscsf.h>
 
+PetscBool DMForestPackageInitialized = PETSC_FALSE;
+
+typedef struct _DMForestTypeLink *DMForestTypeLink;
+
+struct _DMForestTypeLink
+{
+  char *name;
+  DMForestTypeLink next;
+};
+
+DMForestTypeLink DMForestTypeList;
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestPackageFinalize"
+static PetscErrorCode DMForestPackageFinalize(void)
+{
+  DMForestTypeLink oldLink, link = DMForestTypeList;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (link) {
+    oldLink = link;
+    ierr = PetscFree(oldLink->name);
+    link = oldLink->next;
+    ierr = PetscFree(oldLink);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestPackageInitialize"
+static PetscErrorCode DMForestPackageInitialize(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (DMForestPackageInitialized) PetscFunctionReturn(0);
+  DMForestPackageInitialized = PETSC_TRUE;
+  ierr = DMForestRegisterType(DMFOREST);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(DMForestPackageFinalize);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestRegisterType"
+PetscErrorCode DMForestRegisterType(DMType name)
+{
+  DMForestTypeLink link;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMForestPackageInitialize();CHKERRQ(ierr);
+  ierr = PetscNew(&link);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
+  link->next = DMForestTypeList;
+  DMForestTypeList = link;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIsForest"
+PetscErrorCode DMIsForest(DM dm, PetscBool *isForest)
+{
+  DMForestTypeLink link = DMForestTypeList;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (link) {
+    PetscBool sameType;
+    ierr = PetscObjectTypeCompare((PetscObject)dm,link->name,&sameType);CHKERRQ(ierr);
+    if (sameType) {
+      *isForest = PETSC_TRUE;
+      PetscFunctionReturn(0);
+    }
+    link = link->next;
+  }
+  *isForest = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMForestTemplate"
 PETSC_EXTERN PetscErrorCode DMForestTemplate(DM dm, DM tdm)
@@ -68,12 +148,7 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   if (--forest->refct > 0) PetscFunctionReturn(0);
   if (forest->destroy) {ierr = forest->destroy(dm);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&forest->cellSF);CHKERRQ(ierr);
-  if (forest->adaptCopyMode == PETSC_OWN_POINTER) {
-    ierr = PetscFree(forest->adaptMarkers);CHKERRQ(ierr);
-  }
-  if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) {
-    ierr = PetscFree(forest->cellWeights);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(forest->adaptLabel);CHKERRQ(ierr);
   ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
   ierr = PetscFree(forest->topology);CHKERRQ(ierr);
@@ -484,43 +559,34 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestSetAdaptivityMarkers"
-PetscErrorCode DMForestSetAdaptivityMarkers(DM dm, PetscInt markers[], PetscCopyMode copyMode)
+#define __FUNCT__ "DMForestSetAdaptivityLabel"
+PetscErrorCode DMForestSetAdaptivityLabel(DM dm, const char * adaptLabel)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
-  PetscInt       cStart, cEnd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMForestGetCellChart(dm,&cStart,&cEnd);CHKERRQ(ierr);
-  if (cEnd < cStart) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cell chart [%d,%d) is not valid",cStart,cEnd);
-  if (copyMode == PETSC_COPY_VALUES) {
-    if (forest->adaptCopyMode != PETSC_OWN_POINTER || forest->adaptMarkers == markers) {
-      ierr = PetscMalloc1(cEnd-cStart,&forest->adaptMarkers);CHKERRQ(ierr);
-    }
-    ierr = PetscMemcpy(forest->adaptMarkers,markers,(cEnd-cStart)*sizeof(*markers));CHKERRQ(ierr);
-    forest->adaptCopyMode = PETSC_OWN_POINTER;
-    PetscFunctionReturn(0);
-  }
-  if (forest->adaptCopyMode == PETSC_OWN_POINTER) {
-    ierr = PetscFree(forest->adaptMarkers);CHKERRQ(ierr);
-  }
-  forest->adaptMarkers  = markers;
-  forest->adaptCopyMode = copyMode;
+  ierr = PetscFree(forest->adaptLabel);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(adaptLabel,&forest->adaptLabel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdaptivityMarkers"
-PetscErrorCode DMForestGetAdaptivityMarkers(DM dm, PetscInt **markers)
+#define __FUNCT__ "DMForestGetAdaptivityLabel"
+PetscErrorCode DMForestGetAdaptivityLabel(DM dm, DMLabel *label)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(markers,2);
-  *markers = forest->adaptMarkers;
+  if (forest->adaptLabel) {
+    ierr = DMGetLabel(dm,forest->adaptLabel,label);CHKERRQ(ierr);
+  }
+  else {
+    *label = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -780,8 +846,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->cStart              = PETSC_DETERMINE;
   forest->cEnd                = PETSC_DETERMINE;
   forest->cellSF              = 0;
-  forest->adaptMarkers        = NULL;
-  forest->adaptCopyMode       = PETSC_USE_POINTER;
+  forest->adaptLabel          = NULL;
   forest->gradeFactor         = 2;
   forest->cellWeights         = NULL;
   forest->cellWeightsCopyMode = PETSC_USE_POINTER;
