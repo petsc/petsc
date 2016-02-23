@@ -78,6 +78,10 @@ struct _PCBDDCReuseSolvers {
   PetscInt    benign_n;
   IS          *benign_zerodiag_subs;
   PetscScalar *benign_save_vals;
+  Mat         benign_csAIB;
+  Mat         benign_AIIm1ones;
+  Vec         benign_corr_work;
+  Vec         benign_dummy_schur_vec;
 };
 typedef struct _PCBDDCReuseSolvers *PCBDDCReuseSolvers;
 
