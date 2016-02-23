@@ -465,7 +465,6 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
 #define __FUNCT__ "KSPView_CG"
 PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 {
-#if defined(PETSC_USE_COMPLEX)
   KSP_CG         *cg = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -473,9 +472,13 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+#if defined(PETSC_USE_COMPLEX)
     ierr = PetscViewerASCIIPrintf(viewer,"  CG or CGNE: variant %s\n",KSPCGTypes[cg->type]);CHKERRQ(ierr);
-  }
 #endif
+    if (cg->singlereduction) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  CG: using single-reduction variant\n");CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
