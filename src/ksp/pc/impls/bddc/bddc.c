@@ -1214,6 +1214,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       pcbddc->benign_apply_coarse_only = PETSC_FALSE;
       ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PCBDDCBenignGetOrSetP0(pc,pcbddc->benign_vec,PETSC_FALSE);CHKERRQ(ierr);
+    } else {
+      ierr = VecSet(pcbddc->benign_vec,0.);CHKERRQ(ierr);
     }
   }
 
@@ -1274,25 +1276,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (ksp) {
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
-  }
-  if (pcbddc->benign_null) {
-    MatNullSpace null_space;
-    Vec          nullv;
-    PetscBool    isnull;
-    PetscInt     i;
-
-    for (i=0;i<pcbddc->benign_n;i++) pcbddc->benign_p0[i] = 1.;
-    ierr = VecDuplicate(pcis->vec1_global,&nullv);CHKERRQ(ierr);
-    ierr = VecSet(nullv,0.);CHKERRQ(ierr);
-    ierr = PCBDDCBenignGetOrSetP0(pc,nullv,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = VecNormalize(nullv,NULL);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)pc),PETSC_FALSE,1,&nullv,&null_space);CHKERRQ(ierr);
-    ierr = MatNullSpaceTest(null_space,pc->mat,&isnull);CHKERRQ(ierr);
-    if (isnull) {
-      ierr = MatSetNullSpace(pc->mat,null_space);CHKERRQ(ierr);
-    }
-    ierr = MatNullSpaceDestroy(&null_space);CHKERRQ(ierr);
-    ierr = VecDestroy(&nullv);CHKERRQ(ierr);
   }
 
   /* remove nullspace if present */
