@@ -58,8 +58,8 @@ enum {DM_FOREST_KEEP = 0,
       DM_FOREST_RESERVED_ADAPTIVITY_COUNT};
 
 /* flag each cell with an adaptivity count: should match the cell section */
-PETSC_EXTERN PetscErrorCode DMForestSetCellAdaptivityMarkers(DM, PetscInt[], PetscCopyMode);
-PETSC_EXTERN PetscErrorCode DMForestGetCellAdaptivityMarkers(DM, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityLabel(DM, const char *);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityLabel(DM, DMLabel *);
 
 /*J
     DMForestAdaptivityStrategy - String with the name of a PETSc DMForest adaptivity strategy

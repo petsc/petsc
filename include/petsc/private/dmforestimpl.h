@@ -25,8 +25,7 @@ typedef struct {
   PetscInt                   cStart;
   PetscInt                   cEnd;
   PetscSF                    cellSF;
-  PetscInt                   *adaptMarkers;
-  PetscCopyMode              adaptCopyMode;
+  char                       *adaptLabel;
   DMForestAdaptivityStrategy adaptStrategy;
   PetscInt                   gradeFactor;
   PetscReal                  *cellWeights;
