@@ -1004,14 +1004,9 @@ static PetscErrorCode PetscDrawPause_OpenGL(PetscDraw draw)
   PetscFunctionBegin;
   if (draw->pause > 0) PetscSleep(draw->pause);
   else if (draw->pause == -1) {
-    PetscDrawButton button;
-    PetscMPIInt     rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
-      if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
-    }
-    ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+    PetscDrawButton button = PETSC_BUTTON_NONE;
+    ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
+    if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
   }
   PetscFunctionReturn(0);
 }

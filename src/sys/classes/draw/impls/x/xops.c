@@ -452,16 +452,9 @@ static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
   if (!win->win) PetscFunctionReturn(0);
   if (draw->pause > 0) PetscSleep(draw->pause);
   else if (draw->pause == -1) {
-    PetscMPIInt     rank;
     PetscDrawButton button = PETSC_BUTTON_NONE;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscDrawGetMouseButton(draw,&button,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-      if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
-    }
-    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-    ierr = MPI_Bcast(&draw->pause,1,MPIU_REAL,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+    ierr = PetscDrawGetMouseButton(draw,&button,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
   }
   PetscFunctionReturn(0);
 }
