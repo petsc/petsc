@@ -407,6 +407,7 @@ PetscErrorCode DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
 
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(network->GlobalDofSection,p,offsetg);CHKERRQ(ierr);
+  if (*offsetg < 0) *offsetg = -(*offsetg + 1); /* Convert to actual global offset for ghost node */
   PetscFunctionReturn(0);
 }
 
@@ -963,9 +964,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     /* Set matrix entries for conntected vertices */
     ierr = DMNetworkGetConnectedNodes(dm,e,&cone);CHKERRQ(ierr); 
     for (v=0; v<2; v++) {
-      ierr = DMNetworkIsGhostVertex(dm,cone[v],&ghost);CHKERRQ(ierr);
       ierr = DMNetworkGetVariableGlobalOffset(dm,cone[v],&cstart);CHKERRQ(ierr);
-      if (ghost) cstart = -(cstart + 1); /* Convert to actual global offset for ghost nodes */
       ierr = DMNetworkGetNumVariables(dm,cone[v],&ncols);CHKERRQ(ierr);
 
       Juser = network->Je[3*e+1+v]; /* Jacobian(e,v) */
@@ -986,9 +985,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   vptr = network->Jvptr;
   for (v=vStart; v<vEnd; v++) {
     /* Get row indices */
-    ierr = DMNetworkIsGhostVertex(dm,v,&ghost);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableGlobalOffset(dm,v,&rstart);CHKERRQ(ierr);
-    if (ghost) rstart = -(rstart + 1); /* Convert to actual global offset for ghost nodes */
     ierr = DMNetworkGetNumVariables(dm,v,&nrows);CHKERRQ(ierr);
 
     ierr = PetscMalloc1(nrows,&rows);CHKERRQ(ierr);
@@ -1009,9 +1006,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       ierr = DMNetworkGetConnectedNodes(dm,edges[e],&cone);CHKERRQ(ierr);
       vc = (v == cone[0]) ? cone[1]:cone[0];
    
-      ierr = DMNetworkIsGhostVertex(dm,vc,&ghost);CHKERRQ(ierr);
       ierr = DMNetworkGetVariableGlobalOffset(dm,vc,&cstart);CHKERRQ(ierr);
-      if (ghost) cstart = -(cstart + 1); /* Convert to actual global offset for ghost nodes */
       ierr = DMNetworkGetNumVariables(dm,vc,&ncols);CHKERRQ(ierr);
 
       Juser = network->Jv[vptr[v-vStart]+2*e+2]; /* Jacobian(v,vc) */
@@ -1029,10 +1024,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if 0
-  printf("\nMatrix J:\n");
-  ierr = MatView(*J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
+
   ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
