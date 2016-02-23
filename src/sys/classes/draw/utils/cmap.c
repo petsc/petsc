@@ -22,62 +22,53 @@ PetscErrorCode  PetscDrawUtilitySetGamma(PetscReal g)
   PetscFunctionReturn(0);
 }
 
-/*
- * This algorithm is from Foley and van Dam, page 616
- * given
- *   (0:359, 0:100, 0:100).
- *      h       l      s
- * set
- *   (0:255, 0:255, 0:255)
- *      r       g      b
- */
-PETSC_STATIC_INLINE int PetscHlsHelper(int h,int m1,int m2)
+PETSC_STATIC_INLINE double PetscHlsHelper(double m1,double m2,double h)
 {
-  while (h > 360) h = h - 360;
-  while (h < 0)   h = h + 360;
-  if (h < 60)  return m1 + (m2-m1)*h/60;
-  if (h < 180) return m2;
-  if (h < 240) return m1 + (m2-m1)*(240-h)/60;
+  while (h > 1.0) h -= 1.0;
+  while (h < 0.0) h += 1.0;
+  if (h < 1/6.0) return m1 + (m2-m1)*h*6;
+  if (h < 1/2.0) return m2;
+  if (h < 2/3.0) return m1 + (m2-m1)*(2/3.0-h)*6;
   return m1;
 }
 
-PETSC_STATIC_INLINE void PetscHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
+PETSC_STATIC_INLINE void PetscHlsToRgb(double h,double l,double s,double *r,double *g,double *b)
 {
-  int m1,m2;         /* in 0 to 100 */
-
-  if (l <= 50) m2 = l * (100 + s) / 100 ; /* not sure of "/100" */
-  else         m2 = l + s - l*s/100;
-
-  m1 = 2*l - m2;
-  if (!s) {
-    /* ignore h */
-    *r = 255 * l / 100;
-    *g = 255 * l / 100;
-    *b = 255 * l / 100;
+  if (s > 0.0) {
+    double m2 = l <= 0.5 ? l * (1.0+s) : l+s-(l*s);
+    double m1 = 2*l - m2;
+    *r = PetscHlsHelper(m1,m2,h+1/3.);
+    *g = PetscHlsHelper(m1,m2,h);
+    *b = PetscHlsHelper(m1,m2,h-1/3.);
   } else {
-    *r = (255 * PetscHlsHelper(h+120,m1,m2)) / 100;
-    *g = (255 * PetscHlsHelper(h,m1,m2))     / 100;
-    *b = (255 * PetscHlsHelper(h-120,m1,m2)) / 100;
+    /* ignore hue */
+    *r = *g = *b = l;
   }
+}
+
+PETSC_STATIC_INLINE void PetscGammaCorrect(double *r,double *g,double *b)
+{
+  PetscReal igamma = 1/Gamma;
+  *r = (double)PetscPowReal((PetscReal)*r,igamma);
+  *g = (double)PetscPowReal((PetscReal)*g,igamma);
+  *b = (double)PetscPowReal((PetscReal)*b,igamma);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCmap_Hue"
 static PetscErrorCode PetscDrawCmap_Hue(int mapsize, unsigned char R[],unsigned char G[],unsigned char B[])
 {
-  int            i,hue,lightness,saturation;
-  PetscReal      igamma = 1.0 / Gamma;
+  int    i;
+  double maxhue = 212.0/360,lightness = 0.5,saturation = 1.0;
 
   PetscFunctionBegin;
-  hue        = 0;    /* in 0:359 */
-  lightness  = 50;   /* in 0:100 */
-  saturation = 100;  /* in 0:100 */
   for (i=0; i<mapsize; i++) {
-    PetscHlsToRgb(hue,lightness,saturation,&R[i],&G[i],&B[i]);;
-    R[i] = (unsigned char)(PetscFloorReal(255.999*PetscPowReal(((PetscReal)R[i])/255,igamma)));
-    G[i] = (unsigned char)(PetscFloorReal(255.999*PetscPowReal(((PetscReal)G[i])/255,igamma)));
-    B[i] = (unsigned char)(PetscFloorReal(255.999*PetscPowReal(((PetscReal)B[i])/255,igamma)));
-    hue += (359/(mapsize-2));
+    double hue = maxhue*(double)i/(mapsize-1),r,g,b;
+    PetscHlsToRgb(hue,lightness,saturation,&r,&g,&b);
+    PetscGammaCorrect(&r,&g,&b);
+    R[i] = (unsigned char)(255*PetscMin(r,1.0));
+    G[i] = (unsigned char)(255*PetscMin(g,1.0));
+    B[i] = (unsigned char)(255*PetscMin(b,1.0));
   }
   PetscFunctionReturn(0);
 }
