@@ -508,17 +508,20 @@ static PetscErrorCode PetscDrawSetTitle_X(PetscDraw draw,const char title[])
 static PetscErrorCode PetscDrawResizeWindow_X(PetscDraw draw,int w,int h)
 {
   PetscDraw_X    *win = (PetscDraw_X*)draw->data;
-  unsigned int   ww,hh,border,depth;
-  int            x,y;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
-  Window         root;
 
   PetscFunctionBegin;
-  if (win->win) {
+  if (!win->win) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+  if (!rank) {
+    Window       root;
+    int          x,y;
+    unsigned int ww,hh,border,depth;
     XResizeWindow(win->disp,win->win,w,h);
     XGetGeometry(win->disp,win->win,&root,&x,&y,&ww,&hh,&border,&depth);
-    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   }
+  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -566,7 +569,6 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
   /* reset the clipping */
   xl = draw->port_xl; yl = draw->port_yl;
   xr = draw->port_xr; yr = draw->port_yr;
-
   box.x     = (int)(xl*win->w);     box.y      = (int)((1.0-yr)*win->h);
   box.width = (int)((xr-xl)*win->w);box.height = (int)((yr-yl)*win->h);
   XSetClipRectangles(win->disp,win->gc.set,0,0,&box,1,Unsorted);
