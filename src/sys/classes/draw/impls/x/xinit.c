@@ -34,6 +34,8 @@ PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin,char *display_name)
     is set or you use the -display name option\n",display_name);
   }
   XiWin->screen = DefaultScreen(XiWin->disp);
+  XiWin->vis = DefaultVisual(XiWin->disp,XiWin->screen);
+  XiWin->depth = DefaultDepth(XiWin->disp,XiWin->screen);
   PetscFunctionReturn(0);
 }
 
@@ -152,10 +154,10 @@ PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,int x,int
     XFree((void*)windowname.value);
     XFree((void*)iconname.value);
   }
-  /* make the window visible */
-  XSelectInput(XiWin->disp,XiWin->win,ExposureMask | StructureNotifyMask);
-  XMapWindow(XiWin->disp,XiWin->win);
 
+  /* make the window visible */
+  XSelectInput(XiWin->disp,XiWin->win,ExposureMask|StructureNotifyMask);
+  XMapWindow(XiWin->disp,XiWin->win);
 
   /* some window systems are cruel and interfere with the placement of
      windows.  We wait here for the window to be created or to die */
@@ -185,9 +187,6 @@ PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *w,char *host,char *name,int x
   PetscFunctionBegin;
   ierr = PetscDrawXiOpenDisplay(w,host);CHKERRQ(ierr);
 
-  w->vis   = DefaultVisual(w->disp,w->screen);
-  w->depth = DefaultDepth(w->disp,w->screen);
-
   ierr = PetscDrawSetColormap_X(w,host,(Colormap)0);CHKERRQ(ierr);
 
   ierr = PetscDrawXiDisplayWindow(w,name,x,y,nx,ny,(PetscDrawXiPixVal)0);CHKERRQ(ierr);
@@ -216,16 +215,14 @@ PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *w,char *host,Window
   XWindowAttributes attributes;
 
   PetscFunctionBegin;
-  ierr   = PetscDrawXiOpenDisplay(w,host);CHKERRQ(ierr);
+  ierr = PetscDrawXiOpenDisplay(w,host);CHKERRQ(ierr);
+
   w->win = win;
   XGetWindowAttributes(w->disp,w->win,&attributes);
-
-  w->vis   = DefaultVisual(w->disp,w->screen);
-  w->depth = DefaultDepth(w->disp,w->screen);
-  ierr     = PetscDrawSetColormap_X(w,host,attributes.colormap);CHKERRQ(ierr);
-
   XGetGeometry(w->disp,w->win,&root,&d,&d,(unsigned int*)&w->w,(unsigned int*)&w->h,&ud,&ud);
   w->x = w->y = 0;
+
+  ierr = PetscDrawSetColormap_X(w,host,attributes.colormap);CHKERRQ(ierr);
 
   PetscDrawXiSetGC(w,w->cmapping[PETSC_DRAW_BLACK]);
   PetscDrawXiSetPixVal(w,w->background);
