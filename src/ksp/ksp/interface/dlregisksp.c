@@ -35,8 +35,6 @@ PetscErrorCode  PCFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscLogEvent KSP_Solve_FS_0,KSP_Solve_FS_1,KSP_Solve_FS_2,KSP_Solve_FS_3,KSP_Solve_FS_4,KSP_Solve_FS_S,KSP_Solve_FS_L,KSP_Solve_FS_U;
-
 #undef __FUNCT__
 #define __FUNCT__ "PCInitializePackage"
 /*@C
