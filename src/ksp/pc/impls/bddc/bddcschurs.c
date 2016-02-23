@@ -1092,7 +1092,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     }
 
     if (reuse_solvers) {
-      Mat                A_II;
+      Mat                A_II,Afake;
       Vec                vec1_B;
       PCBDDCReuseSolvers msolv_ctx;
 
@@ -1127,8 +1127,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = PCShellSetApplyTranspose(msolv_ctx->interior_solver,PCBDDCReuseSolvers_InteriorTranspose);CHKERRQ(ierr);
 
       /* correction solver */
-      ierr = PCCreate(PetscObjectComm((PetscObject)A),&msolv_ctx->correction_solver);CHKERRQ(ierr);
-      ierr = PCSetOperators(msolv_ctx->correction_solver,A,A);CHKERRQ(ierr);
+      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n_I+size_active_schur,n_I+size_active_schur,0,NULL,&Afake);CHKERRQ(ierr);
+      ierr = PCCreate(PetscObjectComm((PetscObject)Afake),&msolv_ctx->correction_solver);CHKERRQ(ierr);
+      ierr = PCSetOperators(msolv_ctx->correction_solver,Afake,Afake);CHKERRQ(ierr);
+      ierr = MatDestroy(&Afake);CHKERRQ(ierr);
       ierr = PCSetType(msolv_ctx->correction_solver,PCSHELL);CHKERRQ(ierr);
       ierr = PCShellSetContext(msolv_ctx->correction_solver,msolv_ctx);CHKERRQ(ierr);
       ierr = PCShellSetApply(msolv_ctx->correction_solver,PCBDDCReuseSolvers_Correction);CHKERRQ(ierr);

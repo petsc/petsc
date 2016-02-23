@@ -2355,27 +2355,35 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d          matrix error % 1.14e\n",PetscGlobalRank,real_value);CHKERRQ(ierr);
 
     /* check constraints */
+    ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->local_primal_size-pcbddc->benign_n,0,1,&is_dummy);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&C_B);CHKERRQ(ierr);
     if (!pcbddc->benign_n) { /* TODO: add benign case */
-      ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->local_primal_size,0,1,&is_dummy);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&C_B);
       ierr = MatMatMult(C_B,coarse_phi_B,MAT_INITIAL_MATRIX,1.0,&CPHI);CHKERRQ(ierr);
-      ierr = MatCreateVecs(CPHI,&mones,NULL);CHKERRQ(ierr);
+    } else {
+      PetscScalar *data;
+      Mat         tmat;
+      ierr = MatDenseGetArray(pcbddc->coarse_phi_B,&data);CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(PETSC_COMM_SELF,pcis->n_B,pcbddc->local_primal_size-pcbddc->benign_n,data,&tmat);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArray(pcbddc->coarse_phi_B,&data);CHKERRQ(ierr);
+      ierr = MatMatMult(C_B,tmat,MAT_INITIAL_MATRIX,1.0,&CPHI);CHKERRQ(ierr);
+      ierr = MatDestroy(&tmat);CHKERRQ(ierr);
+    }
+    ierr = MatCreateVecs(CPHI,&mones,NULL);CHKERRQ(ierr);
+    ierr = VecSet(mones,-1.0);CHKERRQ(ierr);
+    ierr = MatDiagonalSet(CPHI,mones,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatNorm(CPHI,NORM_FROBENIUS,&real_value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d phi constraints error % 1.14e\n",PetscGlobalRank,real_value);CHKERRQ(ierr);
+    if (!pcbddc->symmetric_primal) {
+      ierr = MatMatMult(C_B,coarse_psi_B,MAT_REUSE_MATRIX,1.0,&CPHI);CHKERRQ(ierr);
       ierr = VecSet(mones,-1.0);CHKERRQ(ierr);
       ierr = MatDiagonalSet(CPHI,mones,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatNorm(CPHI,NORM_FROBENIUS,&real_value);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d phi constraints error % 1.14e\n",PetscGlobalRank,real_value);CHKERRQ(ierr);
-      if (!pcbddc->symmetric_primal) {
-        ierr = MatMatMult(C_B,coarse_psi_B,MAT_REUSE_MATRIX,1.0,&CPHI);CHKERRQ(ierr);
-        ierr = VecSet(mones,-1.0);CHKERRQ(ierr);
-        ierr = MatDiagonalSet(CPHI,mones,ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatNorm(CPHI,NORM_FROBENIUS,&real_value);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d psi constraints error % 1.14e\n",PetscGlobalRank,real_value);CHKERRQ(ierr);
-      }
-      ierr = MatDestroy(&C_B);CHKERRQ(ierr);
-      ierr = MatDestroy(&CPHI);CHKERRQ(ierr);
-      ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
-      ierr = VecDestroy(&mones);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d psi constraints error % 1.14e\n",PetscGlobalRank,real_value);CHKERRQ(ierr);
     }
+    ierr = MatDestroy(&C_B);CHKERRQ(ierr);
+    ierr = MatDestroy(&CPHI);CHKERRQ(ierr);
+    ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
+    ierr = VecDestroy(&mones);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&A_II);CHKERRQ(ierr);
     ierr = MatDestroy(&A_BB);CHKERRQ(ierr);
@@ -2558,19 +2566,14 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   /* TODO: HOW TO WORK WITH BAIJ and SBAIJ and SEQDENSE? */
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   if (isseqaij) {
-    Mat M;
-
-    ierr = MatPtAP(matis->A,new_mat,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
-    ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
-    ierr = MatDestroy(&M);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatPtAP(matis->A,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
   } else {
-    Mat work_mat,M;
+    Mat work_mat;
 
+    ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
     ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
-    ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
-    ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
-    ierr = MatDestroy(&M);CHKERRQ(ierr);
-    ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
+    ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
   }
   if (matis->A->symmetric_set) {
     ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric);CHKERRQ(ierr);
@@ -2899,7 +2902,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     } else { /* first time, so we need to create the matrix */
       reuse = MAT_INITIAL_MATRIX;
     }
-    /* extract A_RR */
+    /* convert pcbddc->local_mat if needed later in PCBDDCSetUpCorrection */
     ierr = MatGetBlockSize(pcbddc->local_mat,&mbs);CHKERRQ(ierr);
     ierr = ISGetBlockSize(pcbddc->is_R_local,&ibs);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pcbddc->local_mat,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
@@ -2918,10 +2921,23 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
         ierr = MatConvert(pcbddc->local_mat,MATSEQBAIJ,MAT_REUSE_MATRIX,&pcbddc->local_mat);CHKERRQ(ierr);
       }
     }
-    if (pcbddc->benign_n && !pcbddc->benign_change_explicit && pcbddc->dbg_flag) {
-      ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
-      ierr = PCBDDCBenignProject(pc,pcbddc->is_R_local,pcbddc->is_R_local,&A_RR);CHKERRQ(ierr);
-    } else {
+    /* extract A_RR */
+    if (sub_schurs->reuse_solver) {
+      PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
+
+      if (pcbddc->dbg_flag) { /* we need A_RR to test the solver later */
+        ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
+        if (reuse_solver->benign_n) { /* we are not using the explicit change of basis on the pressures */
+          ierr = PCBDDCBenignProject(pc,pcbddc->is_R_local,pcbddc->is_R_local,&A_RR);CHKERRQ(ierr);
+        } else {
+          ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_RR);CHKERRQ(ierr);
+        }
+      } else {
+        ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
+        ierr = PCGetOperators(reuse_solver->correction_solver,&A_RR,NULL);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)A_RR);CHKERRQ(ierr);
+      }
+    } else { /* we have to build the neumann solver, so we need to extract the relevant matrix */
       ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
     }
     if (pcbddc->local_mat->symmetric_set) {
