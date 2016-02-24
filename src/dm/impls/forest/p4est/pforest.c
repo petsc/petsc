@@ -465,7 +465,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (!ispforest) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Trying to adapt from %s, which is not %s\n",((PetscObject)adaptFrom)->type_name,DMPFOREST);
     if (!apforest->topo) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The pre-adaptation forest must have a topology");
     ierr = DMSetUp(adaptFrom);CHKERRQ(ierr);
-    ierr = DMForestTemplate(adaptFrom,dm);CHKERRQ(ierr);
     ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
     ierr = DMForestGetTopology(dm,&topoName);CHKERRQ(ierr);
   }
@@ -592,8 +591,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       pforest->forest->user_pointer = (void *) dm;
     }
     else if (numValues) {
-      PetscInt          *markers;
-
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"non-uniform adaptivity not implemented");
     }
     PetscStackCallP4est(p4est_reset_data,(pforest->forest,0,NULL,(void *)dm)); /* this dm is the user context for the new forest */
@@ -706,18 +703,13 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
     if (initLevel > minLevel) {
       DM_Forest_pforest *coarse_pforest;
-      DMType type;
-      DMLabel coarsen;
-      DM     coarseDM;
+      DMLabel           coarsen;
+      DM                coarseDM;
 
-      ierr = DMCreate(PetscObjectComm((PetscObject)dm),&coarseDM);CHKERRQ(ierr);
-      ierr = DMGetType(dm,&type);CHKERRQ(ierr);
-      ierr = DMSetType(coarseDM,type);CHKERRQ(ierr);
-      ierr = DMForestTemplate(dm,coarseDM);CHKERRQ(ierr);
+      ierr = DMForestTemplate(dm,MPI_COMM_NULL,&coarseDM);CHKERRQ(ierr);
       ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);
       ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
       ierr = DMLabelSetDefaultValue(coarsen,DM_FOREST_COARSEN);CHKERRQ(ierr);
-      ierr = DMForestSetAdaptivityForest(coarseDM,dm);CHKERRQ(ierr);
       ierr = DMForestSetAdaptivityLabel(coarseDM,"coarsen");CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
       ierr = DMSetFineDM(coarseDM,dm);CHKERRQ(ierr);

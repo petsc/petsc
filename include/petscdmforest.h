@@ -101,7 +101,7 @@ PETSC_EXTERN PetscErrorCode DMForestGetFineProjector(DM,Mat *);
 PETSC_EXTERN PetscErrorCode DMForestGetCoarseRestrictor(DM,Mat *);
 
 /* miscellaneous */
-PETSC_EXTERN PetscErrorCode DMForestTemplate(DM,DM);
+PETSC_EXTERN PetscErrorCode DMForestTemplate(DM,MPI_Comm,DM*);
 
 /* type management */
 PETSC_EXTERN PetscErrorCode DMForestRegisterType(DMType);
