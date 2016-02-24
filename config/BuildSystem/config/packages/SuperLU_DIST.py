@@ -5,7 +5,8 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = 'origin/master'
-    self.download         = ['git://https://github.com/xiaoyeli/superlu_dist']
+    self.download         = ['git://https://github.com/petsc/superlu_dist']
+#    self.download         = ['git://https://github.com/xiaoyeli/superlu_dist']
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
     self.liblist          = [['libsuperlu_dist.a']]
@@ -14,6 +15,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows= 1
     self.hastests         = 1
     self.hastestsdatafiles= 1
+    self.requirec99flag   = 1 # SuperLU_Dist uses C99 features
     return
 
   def setupHelp(self, help):
@@ -46,19 +48,17 @@ class Configure(config.package.CMakePackage):
     args.append('-DUSE_XSDK_DEFAULTS=YES')
 
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
-    args.append('-DTPL_METIS_LIBRARIES="'+self.libraries.toString(self.metis.lib)+'"')
     args.append('-DTPL_PARMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:])
-    args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib)+'"')    
+    args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib)+'"')
+
+    if self.indexTypes.integerSize == 64:
+      args.append('-DXSDK_INDEX_SIZE=64')
 
     args.append('-Denable_tests=0')
     #  CMake in SuperLU should set this; but like many other packages it does not
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
     return args
-
-# does not yet support 64 bit integers and GPUs
-    #if self.indexTypes.integerSize == 64:
-    #  g.write(' -D_LONGINT')
 
 
  #   if self.framework.argDB['download-superlu_dist-gpu']:
