@@ -172,13 +172,13 @@ PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,char **title)
 
    Level: intermediate
 
-   Note: The title is positioned in the windowing system title bar for the window. Hence it will not be saved with -draw_save 
+   Note: The title is positioned in the windowing system title bar for the window. Hence it will not be saved with -draw_save
    in the image.
 
    A copy of the string is made, so you may destroy the
    title string after calling this routine.
 
-   You can use PetscDrawAxisSetLabels() to indicate a title within the window 
+   You can use PetscDrawAxisSetLabels() to indicate a title within the window
 
 .seealso: PetscDrawGetTitle(), PetscDrawAppendTitle()
 @*/
@@ -234,7 +234,6 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     ierr = PetscFree(draw->title);CHKERRQ(ierr);
-
     draw->title = newtitle;
   } else {
     ierr = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
@@ -430,15 +429,16 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
 
   PetscFunctionBegin;
   ierr = PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps));CHKERRQ(ierr);
-
+  draw->data         = NULL;
   draw->ops->destroy = PetscDrawDestroy_Null;
-  draw->ops->view    = 0;
+  draw->ops->view    = NULL;
+
   draw->pause        = 0.0;
   draw->coor_xl      = 0.0;  draw->coor_xr = 1.0;
   draw->coor_yl      = 0.0;  draw->coor_yr = 1.0;
   draw->port_xl      = 0.0;  draw->port_xr = 1.0;
   draw->port_yl      = 0.0;  draw->port_yr = 1.0;
-  draw->popup        = 0;
+  draw->popup        = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -515,10 +515,3 @@ PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-

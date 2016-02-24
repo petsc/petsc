@@ -3,10 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = draw.c dline.c dlinew.c dlinegw.c dtext.c dtextv.c dtexts.c \
-           dtextgs.c dpoint.c dpoints.c dviewp.c dcoor.c dpause.c dgpause.c \
-           dmarker.c dgcoor.c dbuff.c dsetpause.c dflush.c dsflush.c dclear.c \
-           dsclear.c drect.c dtri.c dmouse.c drawreg.c drawregall.c dellipse.c
+SOURCEC  = draw.c dcoor.c dtext.c dpoint.c dmarker.c dline.c \
+           dpause.c dbuff.c dflush.c dclear.c dmouse.c dviewp.c \
+           dtri.c drect.c dellipse.c drawreg.c drawregall.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsys

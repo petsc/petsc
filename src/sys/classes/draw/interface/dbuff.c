@@ -20,14 +20,14 @@
    Level: advanced
 
 @*/
-PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool  *yes)
+PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool *yes)
 {
   PetscErrorCode ierr;
   PetscBool      isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(yes,2);
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidIntPointer(yes,2);
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) *yes = PETSC_TRUE;
   else            *yes = PETSC_FALSE;

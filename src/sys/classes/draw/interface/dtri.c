@@ -30,13 +30,12 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  if (!draw->ops->triangle) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No triangles with this PetscDrawType");
+  if (!draw->ops->triangle) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing triangles",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawScalePopup"
@@ -125,7 +124,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
    Collective on PetscDraw, but PetscDraw must be sequential
 
    Input Parameters:
-+   win   - the window to draw in
++   draw  - the draw context
 .   m,n   - the global number of mesh points in the x and y directions
 .   xi,yi - the locations of the global mesh points (optional, use NULL
             to indicate uniform spacing on [0,1])
@@ -143,7 +142,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 .seealso: PetscDrawTensorContourPatch()
 
 @*/
-PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
+PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
 {
   PetscErrorCode ierr;
   int            N = m*n;
@@ -155,9 +154,10 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
   ZoomCtx        ctx;
 
   PetscFunctionBegin;
-  ierr = PetscDrawIsNull(win,&isnull);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)win),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"May only be used with single processor PetscDraw");
   if (N <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n %d and m %d must be positive",m,n);
 
@@ -172,11 +172,11 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
   if (ctx.max - ctx.min < 1.e-7) {ctx.min -= 5.e-8; ctx.max += 5.e-8;}
 
   /* PetscDraw the scale window */
-  ierr = PetscDrawGetPopup(win,&popup);CHKERRQ(ierr);
+  ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
   if (popup) {ierr = PetscDrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);}
 
   ctx.showgrid = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)win)->options,NULL,"-draw_contour_grid",&ctx.showgrid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,NULL,"-draw_contour_grid",&ctx.showgrid,NULL);CHKERRQ(ierr);
 
   /* fill up x and y coordinates */
   if (!xi) {
@@ -195,7 +195,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
     for (i=1; i<ctx.n; i++) ctx.y[i] = ctx.y[i-1] + h;
   } else ctx.y = (PetscReal*)yi;
 
-  ierr = PetscDrawZoom(win,PetscDrawTensorContour_Zoom,&ctx);CHKERRQ(ierr);
+  ierr = PetscDrawZoom(draw,PetscDrawTensorContour_Zoom,&ctx);CHKERRQ(ierr);
 
   if (!xin) {ierr = PetscFree(ctx.x);CHKERRQ(ierr);}
   if (!yin) {ierr = PetscFree(ctx.y);CHKERRQ(ierr);}
@@ -238,6 +238,7 @@ PetscErrorCode  PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal
   PetscReal      x1,x2,x3,x4,y_1,y2,y3,y4;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   /* PetscDraw the contour plot patch */
   for (j=0; j<n-1; j++) {
     for (i=0; i<m-1; i++) {
