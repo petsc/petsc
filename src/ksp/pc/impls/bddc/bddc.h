@@ -4,6 +4,8 @@
 #include <../src/ksp/pc/impls/is/pcis.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
+#define NEW 1
+
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
@@ -46,7 +48,8 @@ typedef struct {
   PetscBool     fake_change;
   Mat           ChangeOfBasisMatrix;
   Mat           user_ChangeOfBasisMatrix;
-  Mat           new_global_mat;
+  PetscBool     change_interior;
+  Vec           work_change;
   Vec           original_rhs;
   Vec           temp_solution;
   Mat           local_mat;

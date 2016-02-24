@@ -3,9 +3,6 @@
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
-static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y);
-static PetscErrorCode PCBDDCMatMult_Private(Mat A, Vec x, Vec y);
-
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCBenignMatMult_Private_Private"
 PetscErrorCode PCBDDCBenignMatMult_Private_Private(Mat A, Vec x, Vec y, PetscBool transpose)
@@ -124,38 +121,22 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
 {
   PC_IS                   *pcis = (PC_IS*)pc->data;
   PC_BDDC                 *pcbddc = (PC_BDDC*)pc->data;
-  Mat_IS                  *matis = (Mat_IS*)pc->pmat->data;
   PCBDDCBenignMatMult_ctx ctx;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   if (!restore) {
-    Mat                A,A_IB,A_BI;
+    Mat                A_IB,A_BI;
     PetscScalar        *work;
     PCBDDCReuseSolvers reuse = pcbddc->sub_schurs->reuse_solver;
 
-    /* local mat */
-    ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,pcis->n,pcis->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATSHELL);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A,MATOP_MULT,(void (*)(void))PCBDDCBenignMatMult_Private);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A,MATOP_MULT_TRANSPOSE,(void (*)(void))PCBDDCBenignMatMultTranspose_Private);CHKERRQ(ierr);
-    ierr = PetscNew(&ctx);CHKERRQ(ierr);
-    ierr = MatShellSetContext(A,ctx);CHKERRQ(ierr);
-    ctx->apply_left = PETSC_TRUE;
-    ctx->apply_right = PETSC_TRUE;
-    ctx->apply_p0 = PETSC_TRUE;
-    ctx->benign_n = pcbddc->benign_n;
-    ctx->benign_zerodiag_subs = pcbddc->benign_zerodiag_subs;
-    ctx->A = matis->A;
+    if (pcbddc->benign_original_mat) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Benign original mat has not been restored");
+    }
+    if (!pcbddc->benign_change || !pcbddc->benign_n || pcbddc->benign_change_explicit) {
+      PetscFunctionReturn(0);
+    }
     ierr = PetscMalloc1(pcis->n,&work);CHKERRQ(ierr);
-    ctx->work = work;
-    ierr = MatSetUp(A);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    matis->A = A;
-
-    /* A_IB */
     ierr = MatCreate(PETSC_COMM_SELF,&A_IB);CHKERRQ(ierr);
     ierr = MatSetSizes(A_IB,pcis->n-pcis->n_B,pcis->n_B,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(A_IB,MATSHELL);CHKERRQ(ierr);
@@ -169,6 +150,7 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     ctx->benign_n = pcbddc->benign_n;
     if (reuse) {
       ctx->benign_zerodiag_subs = reuse->benign_zerodiag_subs;
+      ctx->free = PETSC_FALSE;
     } else { /* TODO: could be optimized for successive solves */
       ISLocalToGlobalMapping N_to_D;
       PetscInt               i;
@@ -179,6 +161,7 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
         ierr = ISGlobalToLocalMappingApplyIS(N_to_D,IS_GTOLM_DROP,pcbddc->benign_zerodiag_subs[i],&ctx->benign_zerodiag_subs[i]);CHKERRQ(ierr);
       }
       ierr = ISLocalToGlobalMappingDestroy(&N_to_D);CHKERRQ(ierr);
+      ctx->free = PETSC_TRUE;
     }
     ctx->A = pcis->A_IB; 
     ctx->work = work;
@@ -192,27 +175,25 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     pcbddc->benign_original_mat = pcis->A_BI;
     pcis->A_BI = A_BI;
   } else {
-    PCBDDCReuseSolvers reuse = pcbddc->sub_schurs->reuse_solver;
-
-    ierr = MatShellGetContext(matis->A,&ctx);CHKERRQ(ierr);
-    ierr = MatDestroy(&matis->A);CHKERRQ(ierr);
-    matis->A = ctx->A;
-    ierr = PetscFree(ctx);CHKERRQ(ierr);
+    if (!pcbddc->benign_original_mat) {
+      PetscFunctionReturn(0);
+    }
     ierr = MatShellGetContext(pcis->A_IB,&ctx);CHKERRQ(ierr);
     ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
     pcis->A_IB = ctx->A;
-    if (!reuse) {
+    ctx->A = NULL;
+    ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
+    pcis->A_BI = pcbddc->benign_original_mat;
+    pcbddc->benign_original_mat = NULL;
+    if (ctx->free) {
       PetscInt i;
-      for (i=0;i<pcbddc->benign_n;i++) {
+      for (i=0;i<ctx->benign_n;i++) {
         ierr = ISDestroy(&ctx->benign_zerodiag_subs[i]);CHKERRQ(ierr);
       }
       ierr = PetscFree(ctx->benign_zerodiag_subs);CHKERRQ(ierr);
     }
     ierr = PetscFree(ctx->work);CHKERRQ(ierr);
     ierr = PetscFree(ctx);CHKERRQ(ierr);
-    ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
-    pcis->A_BI = pcbddc->benign_original_mat;
-    pcbddc->benign_original_mat = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -506,7 +487,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   PetscFunctionBegin;
   ierr = PetscSFDestroy(&pcbddc->benign_sf);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_B0);CHKERRQ(ierr);
-  ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
   for (n=0;n<pcbddc->benign_n;n++) {
     ierr = ISDestroy(&pcbddc->benign_zerodiag_subs[n]);CHKERRQ(ierr);
   }
@@ -786,10 +766,12 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     /* project if needed */
     if (pcbddc->benign_change_explicit) {
-      ierr = MatPtAP(pcbddc->local_mat,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&pcbddc->benign_original_mat);CHKERRQ(ierr);
+      Mat M;
+
+      ierr = MatPtAP(pcbddc->local_mat,pcbddc->benign_change,MAT_INITIAL_MATRIX,2.0,&M);CHKERRQ(ierr);
       ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-      ierr = MatSeqAIJCompress(pcbddc->benign_original_mat,&pcbddc->local_mat);CHKERRQ(ierr);
-      ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+      ierr = MatSeqAIJCompress(M,&pcbddc->local_mat);CHKERRQ(ierr);
+      ierr = MatDestroy(&M);CHKERRQ(ierr);
     }
     /* store global idxs for p0 */
     ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,pcbddc->benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_p0_gidx);CHKERRQ(ierr);
@@ -1366,6 +1348,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   PetscFunctionBegin;
   ierr = MatDestroy(&pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcbddc->work_change);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   for (i=0;i<pcbddc->n_local_subs;i++) {
@@ -1415,7 +1398,7 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = ISDestroy(&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->benign_vec);CHKERRQ(ierr);
-  ierr = MatDestroy(&pcbddc->benign_original_mat);CHKERRQ(ierr);
+  ierr = PCBDDCBenignShellMat(pc,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_B0);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&pcbddc->benign_sf);CHKERRQ(ierr);
   if (pcbddc->benign_zerodiag_subs) {
@@ -3924,7 +3907,16 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = MatSetSizes(localChangeOfBasisMatrix,pcis->n,pcis->n,pcis->n,pcis->n);CHKERRQ(ierr);
     /* nonzeros for local mat */
     ierr = PetscMalloc1(pcis->n,&nnz);CHKERRQ(ierr);
-    for (i=0;i<pcis->n;i++) nnz[i]=1;
+    if (!pcbddc->benign_change || pcbddc->fake_change) {
+      for (i=0;i<pcis->n;i++) nnz[i]=1;
+    } else {
+      const PetscInt *ii;
+      PetscInt       n;
+      PetscBool      flg_row;
+      ierr = MatGetRowIJ(pcbddc->benign_change,0,PETSC_FALSE,PETSC_FALSE,&n,&ii,NULL,&flg_row);CHKERRQ(ierr);
+      for (i=0;i<n;i++) nnz[i] = ii[i+1]-ii[i];
+      ierr = MatRestoreRowIJ(pcbddc->benign_change,0,PETSC_FALSE,PETSC_FALSE,&n,&ii,NULL,&flg_row);CHKERRQ(ierr);
+    }
     for (i=n_vertices;i<total_counts_cc;i++) {
       if (PetscBTLookup(change_basis,i)) {
         size_of_constraint = constraints_idxs_ptr[i+1]-constraints_idxs_ptr[i];
@@ -3938,9 +3930,23 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     }
     ierr = MatSeqAIJSetPreallocation(localChangeOfBasisMatrix,0,nnz);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
-    /* Set initial identity in the matrix */
-    for (i=0;i<pcis->n;i++) {
-      ierr = MatSetValue(localChangeOfBasisMatrix,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);
+    /* Set interior change in the matrix */
+    if (!pcbddc->benign_change || pcbddc->fake_change) {
+      for (i=0;i<pcis->n;i++) {
+        ierr = MatSetValue(localChangeOfBasisMatrix,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    } else {
+      const PetscInt *ii,*jj;
+      PetscScalar    *aa;
+      PetscInt       n;
+      PetscBool      flg_row;
+      ierr = MatGetRowIJ(pcbddc->benign_change,0,PETSC_FALSE,PETSC_FALSE,&n,&ii,&jj,&flg_row);CHKERRQ(ierr);
+      ierr = MatSeqAIJGetArray(pcbddc->benign_change,&aa);CHKERRQ(ierr);
+      for (i=0;i<n;i++) {
+        ierr = MatSetValues(localChangeOfBasisMatrix,1,&i,ii[i+1]-ii[i],jj+ii[i],aa+ii[i],INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = MatSeqAIJRestoreArray(pcbddc->benign_change,&aa);CHKERRQ(ierr);
+      ierr = MatRestoreRowIJ(pcbddc->benign_change,0,PETSC_FALSE,PETSC_FALSE,&n,&ii,&jj,&flg_row);CHKERRQ(ierr);
     }
 
     if (pcbddc->dbg_flag) {
@@ -4305,50 +4311,74 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         }
       }
       ierr = MatDestroy(&localChangeOfBasisMatrix);CHKERRQ(ierr);
+      /* determine if any process has changed the pressures locally */
+      if (pcbddc->benign_saddle_point) {
+        PetscBool have_null = (PetscBool)!!pcbddc->benign_change;
+        ierr = MPI_Allreduce(&have_null,&pcbddc->change_interior,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      }
     } else { /* fake change (get back change of basis into ConstraintMatrix and info on qr) */
       ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
       pcbddc->ConstraintMatrix = localChangeOfBasisMatrix;
       pcbddc->use_qr_single = qr_needed;
     }
-  } else if (pcbddc->user_ChangeOfBasisMatrix) {
-    ierr = PetscObjectReference((PetscObject)pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
-    pcbddc->ChangeOfBasisMatrix = pcbddc->user_ChangeOfBasisMatrix;
-  }
-
-  /* set up change of basis context */
-  if (pcbddc->ChangeOfBasisMatrix) {
-    PCBDDCChange_ctx change_ctx;
-
-    if (!pcbddc->new_global_mat) {
-      PetscInt global_size,local_size;
-
-      ierr = VecGetSize(pcis->vec1_global,&global_size);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(pcis->vec1_global,&local_size);CHKERRQ(ierr);
-      ierr = MatCreate(PetscObjectComm((PetscObject)pc),&pcbddc->new_global_mat);CHKERRQ(ierr);
-      ierr = MatSetSizes(pcbddc->new_global_mat,local_size,local_size,global_size,global_size);CHKERRQ(ierr);
-      ierr = MatSetType(pcbddc->new_global_mat,MATSHELL);CHKERRQ(ierr);
-      ierr = MatShellSetOperation(pcbddc->new_global_mat,MATOP_MULT,(void (*)(void))PCBDDCMatMult_Private);CHKERRQ(ierr);
-      ierr = MatShellSetOperation(pcbddc->new_global_mat,MATOP_MULT_TRANSPOSE,(void (*)(void))PCBDDCMatMultTranspose_Private);CHKERRQ(ierr);
-      ierr = PetscNew(&change_ctx);CHKERRQ(ierr);
-      ierr = MatShellSetContext(pcbddc->new_global_mat,change_ctx);CHKERRQ(ierr);
-    } else {
-      ierr = MatShellGetContext(pcbddc->new_global_mat,&change_ctx);CHKERRQ(ierr);
-      ierr = MatDestroy(&change_ctx->global_change);CHKERRQ(ierr);
-      ierr = VecDestroyVecs(2,&change_ctx->work);CHKERRQ(ierr);
+  } else if (pcbddc->user_ChangeOfBasisMatrix || pcbddc->benign_saddle_point) {
+    PetscBool needglobal = PETSC_FALSE;
+    if (pcbddc->benign_saddle_point) {
+      PetscBool have_null = (PetscBool)!!pcbddc->benign_change;
+      ierr = MPI_Allreduce(&have_null,&needglobal,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     }
-    if (!pcbddc->user_ChangeOfBasisMatrix) {
-      ierr = PetscObjectReference((PetscObject)pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
-      change_ctx->global_change = pcbddc->ChangeOfBasisMatrix;
-    } else {
+    if (!needglobal && pcbddc->user_ChangeOfBasisMatrix) {
       ierr = PetscObjectReference((PetscObject)pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
-      change_ctx->global_change = pcbddc->user_ChangeOfBasisMatrix;
+      pcbddc->ChangeOfBasisMatrix = pcbddc->user_ChangeOfBasisMatrix;
+    } else {
+      Mat benign_global = NULL;
+      if (needglobal) {
+        Mat tmat;
+
+        pcbddc->change_interior = PETSC_TRUE;
+        ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+        ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
+        ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecReciprocal(pcis->vec1_global);CHKERRQ(ierr);
+        ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = MatDuplicate(pc->pmat,MAT_DO_NOT_COPY_VALUES,&tmat);CHKERRQ(ierr);
+        if (pcbddc->benign_change) {
+          Mat M;
+
+          ierr = MatDuplicate(pcbddc->benign_change,MAT_COPY_VALUES,&M);CHKERRQ(ierr);
+          ierr = MatDiagonalScale(M,pcis->vec1_N,NULL);CHKERRQ(ierr);
+          ierr = MatISSetLocalMat(tmat,M);CHKERRQ(ierr);
+          ierr = MatDestroy(&M);CHKERRQ(ierr);
+        } else {
+          Mat         eye;
+          PetscScalar *array;
+
+          ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+          ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,pcis->n,pcis->n,1,NULL,&eye);CHKERRQ(ierr);
+          for (i=0;i<pcis->n;i++) {
+            ierr = MatSetValue(eye,i,i,array[i],INSERT_VALUES);CHKERRQ(ierr);
+          }
+          ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+          ierr = MatAssemblyBegin(eye,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+          ierr = MatAssemblyEnd(eye,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+          ierr = MatISSetLocalMat(tmat,eye);CHKERRQ(ierr);
+          ierr = MatDestroy(&eye);CHKERRQ(ierr);
+        }
+        ierr = MatISGetMPIXAIJ(tmat,MAT_INITIAL_MATRIX,&benign_global);CHKERRQ(ierr);
+        ierr = MatDestroy(&tmat);CHKERRQ(ierr);
+      }
+      if (pcbddc->user_ChangeOfBasisMatrix) {
+        ierr = MatMatMult(pcbddc->user_ChangeOfBasisMatrix,benign_global,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
+        ierr = MatDestroy(&benign_global);CHKERRQ(ierr);
+      } else if (needglobal) {
+        pcbddc->ChangeOfBasisMatrix = benign_global;
+      }
     }
-    ierr = VecDuplicateVecs(pcis->vec1_global,2,&change_ctx->work);CHKERRQ(ierr);
-    ierr = MatSetUp(pcbddc->new_global_mat);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(pcbddc->new_global_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(pcbddc->new_global_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  } else {
-    ierr = MatDestroy(&pcbddc->new_global_mat);CHKERRQ(ierr);
+  }
+  if (!pcbddc->fake_change && pcbddc->ChangeOfBasisMatrix && !pcbddc->work_change) {
+    ierr = VecDuplicate(pcis->vec1_global,&pcbddc->work_change);CHKERRQ(ierr);
   }
 
   if (!pcbddc->fake_change) {
@@ -6144,37 +6174,6 @@ PetscErrorCode PCBDDCGlobalToLocal(VecScatter g2l_ctx,Vec gwork, Vec lwork, IS g
   ierr = VecRestoreArrayRead(lwork,(const PetscScalar**)&vals);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)gwork),lsize,idxs,PETSC_OWN_POINTER,&localis_t);CHKERRQ(ierr);
   *localis = localis_t;
-  PetscFunctionReturn(0);
-}
-
-/* the next two functions will be called in KSPMatMult if a change of basis has been requested */
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCMatMult_Private"
-static PetscErrorCode PCBDDCMatMult_Private(Mat A, Vec x, Vec y)
-{
-  PCBDDCChange_ctx change_ctx;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&change_ctx);CHKERRQ(ierr);
-  ierr = MatMult(change_ctx->global_change,x,change_ctx->work[0]);CHKERRQ(ierr);
-  ierr = MatMult(change_ctx->original_mat,change_ctx->work[0],change_ctx->work[1]);CHKERRQ(ierr);
-  ierr = MatMultTranspose(change_ctx->global_change,change_ctx->work[1],y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCMatMultTranspose_Private"
-static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y)
-{
-  PCBDDCChange_ctx change_ctx;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&change_ctx);CHKERRQ(ierr);
-  ierr = MatMult(change_ctx->global_change,x,change_ctx->work[0]);CHKERRQ(ierr);
-  ierr = MatMultTranspose(change_ctx->original_mat,change_ctx->work[0],change_ctx->work[1]);CHKERRQ(ierr);
-  ierr = MatMultTranspose(change_ctx->global_change,change_ctx->work[1],y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

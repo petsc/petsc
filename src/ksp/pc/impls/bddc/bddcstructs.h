@@ -155,14 +155,6 @@ struct _NullSpaceCorrection_ctx {
 };
 typedef struct _NullSpaceCorrection_ctx *NullSpaceCorrection_ctx;
 
-/* change of basis */
-struct _PCBDDCChange_ctx {
-  Mat original_mat;
-  Mat global_change;
-  Vec *work;
-};
-typedef struct _PCBDDCChange_ctx *PCBDDCChange_ctx;
-
 /* MatShell context for benign mat mults */
 struct _PCBDDCBenignMatMult_ctx {
   Mat         A;
@@ -172,6 +164,7 @@ struct _PCBDDCBenignMatMult_ctx {
   PetscBool   apply_left;
   PetscBool   apply_right;
   PetscBool   apply_p0;
+  PetscBool   free;
 };
 typedef struct _PCBDDCBenignMatMult_ctx *PCBDDCBenignMatMult_ctx;
 
