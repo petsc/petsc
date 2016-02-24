@@ -573,7 +573,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (!adaptLabel) SETERRQ(PetscObjectComm((PetscObject)adaptFrom),PETSC_ERR_USER,"No adaptivity label found in pre-adaptation forest");
     /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
     ierr = DMLabelGetNumValues(adaptLabel,&numValues);CHKERRQ(ierr);
-    ierr = DMLabelGetNumValues(adaptLabel,&defaultValue);CHKERRQ(ierr);
+    ierr = DMLabelGetDefaultValue(adaptLabel,&defaultValue);CHKERRQ(ierr);
     if (!numValues && defaultValue == DM_FOREST_COARSEN) { /* uniform coarsen */
       PetscInt minLevel;
 
