@@ -776,6 +776,58 @@ PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, PetscInt fields[]
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMRefine_Forest"
+PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
+{
+  DMLabel        refine;
+  DM             fineDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetFineDM(dm,&fineDM);CHKERRQ(ierr);
+  if (fineDM) {
+    ierr = PetscObjectReference((PetscObject)fineDM);CHKERRQ(ierr);
+    *dmRefined = fineDM;
+    PetscFunctionReturn(0);
+  }
+  ierr = DMForestTemplate(dm,comm,dmRefined);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm,"refine",&refine);CHKERRQ(ierr);
+  if (!refine) {
+    ierr = DMCreateLabel(dm,"refine");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm,"refine",&refine);CHKERRQ(ierr);
+    ierr = DMLabelSetDefaultValue(refine,DM_FOREST_REFINE);CHKERRQ(ierr);
+  }
+  ierr = DMForestSetAdaptivityLabel(*dmRefined,"refine");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsen_Forest"
+PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
+{
+  DMLabel        coarsen;
+  DM             coarseDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);
+  if (coarseDM) {
+    ierr = PetscObjectReference((PetscObject)coarseDM);CHKERRQ(ierr);
+    *dmCoarsened = coarseDM;
+    PetscFunctionReturn(0);
+  }
+  ierr = DMForestTemplate(dm,comm,dmCoarsened);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
+  if (!coarsen) {
+    ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
+    ierr = DMLabelSetDefaultValue(coarsen,DM_FOREST_COARSEN);CHKERRQ(ierr);
+  }
+  ierr = DMForestSetAdaptivityLabel(*dmCoarsened,"coarsen");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMInitialize_Forest"
 static PetscErrorCode DMInitialize_Forest(DM dm)
 {
@@ -788,6 +840,8 @@ static PetscErrorCode DMInitialize_Forest(DM dm)
   dm->ops->setfromoptions = DMSetFromOptions_Forest;
   dm->ops->destroy        = DMDestroy_Forest;
   dm->ops->createsubdm    = DMCreateSubDM_Forest;
+  dm->ops->refine         = DMRefine_Forest;
+  dm->ops->coarsen        = DMCoarsen_Forest;
   PetscFunctionReturn(0);
 }
 
