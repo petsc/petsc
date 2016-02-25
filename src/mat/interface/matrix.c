@@ -8068,7 +8068,7 @@ PetscErrorCode MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
 #undef __FUNCT__
 #define __FUNCT__ "MatSetNearNullSpace"
 /*@
-   MatSetNearNullSpace - attaches a null space to a matrix.
+   MatSetNearNullSpace - attaches a null space to a matrix, which is often the null space (rigid body modes) of the operator without boundary conditions
         This null space will be used to provide near null space vectors to a multigrid preconditioner built from this matrix.
 
    Logically Collective on Mat and MatNullSpace
@@ -8086,7 +8086,7 @@ PetscErrorCode MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
 
    Concepts: null space^attaching to matrix
 
-.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNullSpace()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNullSpace(), MatNullSpaceCreateRigidBody()
 @*/
 PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
 {
