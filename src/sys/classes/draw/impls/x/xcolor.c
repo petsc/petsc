@@ -212,18 +212,14 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawSetColormap_X"
-PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,char *host,Colormap colormap)
+PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,Colormap colormap)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (XiWin->depth < 8) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
   if (!gColormap) {
-    Display *display = XOpenDisplay(host);
-    int     screen   = DefaultScreen(display);
-    Visual  *visual  = DefaultVisual(display,screen);
-    ierr = PetscDrawSetUpColormap_X(display,screen,visual,colormap);CHKERRQ(ierr);
-    XCloseDisplay(display);
+    ierr = PetscDrawSetUpColormap_X(XiWin->disp,XiWin->screen,XiWin->vis,colormap);CHKERRQ(ierr);
   }
   XiWin->cmap       = gColormap;
   ierr              = PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PetscDrawXiPixVal));CHKERRQ(ierr);
@@ -231,6 +227,11 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,char *host,Colormap col
   XiWin->foreground = XiWin->cmapping[PETSC_DRAW_BLACK];
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiColormap"
+PetscErrorCode PetscDrawXiColormap(PetscDraw_X *XiWin)
+{ return PetscDrawSetColormap_X(XiWin,(Colormap)0); }
 
 /*
     Color in X is many-layered.  The first layer is the "visual",a

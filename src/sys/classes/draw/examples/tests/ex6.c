@@ -6,8 +6,6 @@ static char help[] = "Demonstrates named colormaps\n";
 #define Exp PetscExpReal
 #define Pow PetscPowReal
 
-extern PetscErrorCode PetscDrawSetColormap(PetscDraw,const char[]);
-
 static PetscReal Peaks(PetscReal x,PetscReal y)
 {
   return 3 * Pow(1-x,2) * Exp(-Pow(x,2) - Pow(y+1,2))
@@ -22,7 +20,7 @@ int main(int argc,char **argv)
   char           title[64],cmap[32] = "";
   PetscDraw      draw,popup;
   PetscMPIInt    size,rank;
-  int            i,j, w = 600, h = 600;
+  int            i,j, w = 400, h = 400;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
@@ -35,12 +33,12 @@ int main(int argc,char **argv)
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw,-3,-3,3,3);CHKERRQ(ierr);
   for (j=rank; j<h; j+=size) {
     for (i=0; i<w; i++) {
-      PetscReal u = (PetscReal)i/(w-1), x = 6*u-3;
-      PetscReal v = (PetscReal)j/(h-1), y = 6*(1-v)-3;
-      PetscReal f = Peaks(x,y);
-      int color = PetscDrawRealToColor(f,-8,+8);
+      PetscReal x,y,f; int color;
+      ierr = PetscDrawPixelToCoordinate(draw,i,j,&x,&y);CHKERRQ(ierr);
+      f = Peaks(x,y); color = PetscDrawRealToColor(f,-8,+8);
       ierr = PetscDrawPointPixel(draw,i,j,color);CHKERRQ(ierr);
     }
   }

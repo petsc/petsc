@@ -44,17 +44,15 @@ typedef struct {
 
 #define PetscDrawXiDrawable(w) ((w)->drw ? (w)->drw : (w)->win)
 
-#define PetscDrawXiSetColor(Win,icolor) \
-  { if (icolor >= 256 || icolor < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value out of range"); \
-    if ((Win)->gc.cur_pix != (Win)->cmapping[icolor]) {                  \
-      XSetForeground((Win)->disp,(Win)->gc.set,(Win)->cmapping[icolor]); \
-      (Win)->gc.cur_pix = (Win)->cmapping[icolor]; \
-    }}
+#define PetscDrawXiSetPixVal(W,pix) do {         \
+    if ((W)->gc.cur_pix != (pix)) {              \
+      XSetForeground((W)->disp,(W)->gc.set,pix); \
+      (W)->gc.cur_pix = pix;                     \
+    }} while (0)
 
-#define PetscDrawXiSetPixVal(Win,pix) \
-  { if ((PetscDrawXiPixVal) (Win)->gc.cur_pix != pix) { \
-      XSetForeground((Win)->disp,(Win)->gc.set,pix);    \
-      (Win)->gc.cur_pix = pix; \
-    }}
+#define PetscDrawXiSetColor(W,color) do {         \
+    if ((color) >= 256 || (color) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value %D out of range [0..255]",(PetscInt)(color)); \
+    PetscDrawXiSetPixVal(W,(W)->cmapping[color]); \
+    } while (0)
 
 #endif
