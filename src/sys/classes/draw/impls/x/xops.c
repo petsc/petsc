@@ -477,8 +477,11 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscDrawOpenX(PetscObjectComm((PetscObject)draw),NULL,NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
+  if (flg && win->win) {
+    ierr = PetscDrawCreate(PetscObjectComm((PetscObject)draw),draw->display,NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_");CHKERRQ(ierr);
+    ierr = PetscObjectAppendOptionsPrefix((PetscObject)*popup,((PetscObject)draw)->prefix);CHKERRQ(ierr);
+    ierr = PetscDrawSetType(*popup,PETSC_DRAW_X);CHKERRQ(ierr);
     draw->popup = *popup;
   } else {
     *popup = NULL;
@@ -676,17 +679,21 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   (*sdraw)->port_yl = draw->port_yl;
   (*sdraw)->port_yr = draw->port_yr;
 
-  if (draw->popup) {
-    ierr = PetscObjectReference((PetscObject)draw->popup);CHKERRQ(ierr);
-    (*sdraw)->popup = draw->popup;
-  }
-
-  /* actually create and open the window */
+  /* share drawables (windows and/or pixmap) from the parent draw */
   ierr = PetscNewLog(*sdraw,&sXwin);CHKERRQ(ierr);
   (*sdraw)->data = (void*)sXwin;
   ierr = PetscDrawXiInit(sXwin,draw->display);CHKERRQ(ierr);
-  if (Xwin->win) {ierr = PetscDrawXiQuickWindowFromWindow(sXwin,Xwin->win);CHKERRQ(ierr);}
-  if (Xwin->drw) {sXwin->drw = Xwin->drw; ierr = PetscDrawXiColormap(sXwin);CHKERRQ(ierr);}
+  if (Xwin->win) {
+    ierr = PetscDrawXiQuickWindowFromWindow(sXwin,Xwin->win);CHKERRQ(ierr);
+    sXwin->drw = Xwin->drw;
+  } else if (Xwin->drw) {
+    ierr = PetscDrawXiColormap(sXwin);CHKERRQ(ierr);
+    sXwin->drw = Xwin->drw;
+  }
+  (*sdraw)->x = sXwin->x = Xwin->x;
+  (*sdraw)->y = sXwin->y = Xwin->y;
+  (*sdraw)->w = sXwin->w = Xwin->w;
+  (*sdraw)->h = sXwin->h = Xwin->h;
   PetscFunctionReturn(0);
 }
 
@@ -698,7 +705,6 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw,PetscDraw *sdra
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawDestroy(&(*sdraw)->popup);CHKERRQ(ierr);
   ierr = PetscFree((*sdraw)->display);CHKERRQ(ierr);
   ierr = PetscFree((*sdraw)->title);CHKERRQ(ierr);
   ierr = PetscDrawXiClose(sXwin);CHKERRQ(ierr);
@@ -778,7 +784,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   }
 
   /* allow user to set size of drawable */
-  ierr = PetscOptionsGetRealArray(((PetscObject)draw)->options,NULL,"-draw_size",sizes,&nsizes,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_size",sizes,&nsizes,&set);CHKERRQ(ierr);
   if (set && nsizes == 1 && sizes[0] > 1.0) sizes[1] = sizes[0];
   if (set) {
     if (sizes[0] > 1.0)       w = (int)sizes[0];
@@ -807,13 +813,13 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   case PETSC_DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4; break;
   }
 
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,NULL,"-draw_virtual",&virtual,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_virtual",&virtual,NULL);CHKERRQ(ierr);
 
   if (!virtual) {
 
     /* allow user to set location and size of window */
     xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
-    ierr = PetscOptionsGetIntArray(((PetscObject)draw)->options,NULL,"-geometry",xywh,&osize,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetIntArray(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-geometry",xywh,&osize,NULL);CHKERRQ(ierr);
     x = (int)xywh[0]; y = (int)xywh[1]; w = (int)xywh[2]; h = (int)xywh[3];
     if (w == PETSC_DECIDE || w == PETSC_DEFAULT) w = 300;
     if (h == PETSC_DECIDE || h == PETSC_DEFAULT) h = 300;
@@ -861,7 +867,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
       ybottom    = 0;
     }
 
-  }/*endif(!virtual)*/
+  } /* endif(!virtual) */
 
   ierr = PetscNewLog(draw,&Xwin);CHKERRQ(ierr);
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
@@ -901,7 +907,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   */
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,NULL,"-draw_double_buffer",&doublebuffer,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_double_buffer",&doublebuffer,NULL);CHKERRQ(ierr);
   if (doublebuffer) {ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
