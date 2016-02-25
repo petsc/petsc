@@ -35,6 +35,7 @@ typedef const char* KSPType;
 #define KSPCG         "cg"
 #define KSPGROPPCG    "groppcg"
 #define KSPPIPECG     "pipecg"
+#define KSPPIPECGRR   "pipecgrr"
 #define   KSPCGNE       "cgne"
 #define   KSPNASH       "nash"
 #define   KSPSTCG       "stcg"
