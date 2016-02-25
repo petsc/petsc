@@ -130,8 +130,8 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   ierr = PetscHeaderCreate(draw,PETSC_DRAW_CLASSID,"Draw","Graphics","Draw",comm,PetscDrawDestroy,PetscDrawView);CHKERRQ(ierr);
 
   draw->data    = NULL;
-  ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
+  ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   draw->x       = x;
   draw->y       = y;
   draw->w       = w;

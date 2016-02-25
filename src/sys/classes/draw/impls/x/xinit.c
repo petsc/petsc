@@ -42,6 +42,36 @@ PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin,const char display[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiClose"
+PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!XiWin) PetscFunctionReturn(0);
+  ierr = PetscFree(XiWin->font);CHKERRQ(ierr);
+  if (XiWin->disp) {
+#if defined(PETSC_HAVE_SETJMP_H)
+    jmp_buf              jmpbuf;
+    PetscXIOErrorHandler xioerrhdl;
+    ierr = PetscMemcpy(&jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(jmpbuf));CHKERRQ(ierr);
+    xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump);
+    if (!setjmp(PetscXIOErrorHandlerJumpBuf))
+#endif
+    {
+      XFreeGC(XiWin->disp,XiWin->gc.set);
+      XCloseDisplay(XiWin->disp);
+    }
+    XiWin->disp = NULL;
+#if defined(PETSC_HAVE_SETJMP_H)
+    (void)PetscSetXIOErrorHandler(xioerrhdl);
+    ierr = PetscMemcpy(&PetscXIOErrorHandlerJumpBuf,&jmpbuf,sizeof(jmpbuf));CHKERRQ(ierr);
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
    PetscDrawXiSetGC - setup the GC structure
 */
@@ -64,11 +94,11 @@ PetscErrorCode PetscDrawXiSetGC(PetscDraw_X *XiWin,PetscDrawXiPixVal fg)
 }
 
 /*
-   PetscDrawXiInitialize - basic setup the draw (display, graphics context, font)
+   PetscDrawXiInit - basic setup the draw (display, graphics context, font)
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiInitialize"
-PetscErrorCode PetscDrawXiInitialize(PetscDraw_X *XiWin,char display[])
+#define __FUNCT__ "PetscDrawXiInit"
+PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin,char display[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

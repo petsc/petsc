@@ -192,7 +192,7 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
   ierr = PetscFree(draw->title);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   if (draw->ops->settitle) {
-    ierr = (*draw->ops->settitle)(draw,title);CHKERRQ(ierr);
+    ierr = (*draw->ops->settitle)(draw,draw->title);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
