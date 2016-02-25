@@ -302,7 +302,7 @@ static PetscErrorCode PCSetFromOptions_Redundant(PetscOptionItems *PetscOptionsO
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetNumber_Redundant"
-static PetscErrorCode  PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
+static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -327,7 +327,7 @@ static PetscErrorCode  PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode  PCRedundantSetNumber(PC pc,PetscInt nredundant)
+PetscErrorCode PCRedundantSetNumber(PC pc,PetscInt nredundant)
 {
   PetscErrorCode ierr;
 
@@ -340,7 +340,7 @@ PetscErrorCode  PCRedundantSetNumber(PC pc,PetscInt nredundant)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetScatter_Redundant"
-static PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
+static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -375,7 +375,7 @@ static PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecSc
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode  PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
+PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 {
   PetscErrorCode ierr;
 
@@ -389,36 +389,13 @@ PetscErrorCode  PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetKSP_Redundant"
-static PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
+static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  MPI_Comm       comm,subcomm;
-  const char     *prefix;
 
   PetscFunctionBegin;
-  if (!red->psubcomm) {
-    ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-    ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
-    ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
-    ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
-
-    /* create a new PC that processors in each subcomm have copy of */
-    subcomm = PetscSubcommChild(red->psubcomm);
-
-    ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
-    ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
-
-    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
-  }
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   *innerksp = red->ksp;
   PetscFunctionReturn(0);
 }
@@ -440,7 +417,7 @@ static PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode  PCRedundantGetKSP(PC pc,KSP *innerksp)
+PetscErrorCode PCRedundantGetKSP(PC pc,KSP *innerksp)
 {
   PetscErrorCode ierr;
 
@@ -453,7 +430,7 @@ PetscErrorCode  PCRedundantGetKSP(PC pc,KSP *innerksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetOperators_Redundant"
-static PetscErrorCode  PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
+static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -481,7 +458,7 @@ static PetscErrorCode  PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pma
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
+PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 {
   PetscErrorCode ierr;
 
