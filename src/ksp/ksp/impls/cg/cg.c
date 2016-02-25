@@ -80,7 +80,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 }
 
 /*
-     A macro used in the following KSPSolve_CG and KSPCGSolveSingleReduction_CG routines
+     A macro used in the following KSPSolve_CG and KSPSolve_CG_SingleReduction routines
 */
 #define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
 
@@ -251,8 +251,8 @@ PetscErrorCode KSPSolve_CG(KSP ksp)
 
 */
 #undef __FUNCT__
-#define __FUNCT__ "KSPCGSolveSingleReduction_CG"
-static PetscErrorCode KSPCGSolveSingleReduction_CG(KSP ksp)
+#define __FUNCT__ "KSPSolve_CG_SingleReduction"
+static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
@@ -517,7 +517,7 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
   PetscFunctionBegin;
   cg->singlereduction = flg;
   if (cg->singlereduction) {
-    ksp->ops->solve = KSPCGSolveSingleReduction_CG;
+    ksp->ops->solve = KSPSolve_CG_SingleReduction;
   } else {
     ksp->ops->solve = KSPSolve_CG;
   }
