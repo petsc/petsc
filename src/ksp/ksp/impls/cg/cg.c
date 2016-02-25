@@ -44,8 +44,6 @@
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>       /*I "petscksp.h" I*/
 extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
 extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
-static PetscErrorCode KSPCGSolveStandard_CG(KSP);
-static PetscErrorCode KSPCGSolveSingleReduction_CG(KSP);
 
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method.
@@ -82,11 +80,15 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 }
 
 /*
+     A macro used in the following KSPSolve_CG and KSPCGSolveSingleReduction_CG routines
+*/
+#define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
+
+/*
      KSPSolve_CG - This routine actually applies the conjugate gradient method
 
-     Note that for simpler (yet somewhat redundant) code, we immediately call
-     one of two subroutines depending on whether the single-reduction variant of
-     CG is being used.
+     Note : this routine can be replaced with another one (see below) which implements
+            another variant of CG.
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
@@ -95,30 +97,6 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_CG"
 PetscErrorCode KSPSolve_CG(KSP ksp)
-{
-  KSP_CG         *cg = (KSP_CG*)ksp->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (cg->singlereduction) {
-    ierr = KSPCGSolveSingleReduction_CG(ksp);CHKERRQ(ierr);
-  } else {
-    ierr = KSPCGSolveStandard_CG(ksp);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
-     A macro used in the following KSPCGSolveXXX_CG* routines
-*/
-#define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
-
-/*
-     The main logic to apply CG
-*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSolveStandard_CG"
-static PetscErrorCode KSPCGSolveStandard_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
@@ -268,6 +246,9 @@ static PetscErrorCode KSPCGSolveStandard_CG(KSP ksp)
        This variant of CG is identical in exact arithmetic to the standard algorithm, 
        but is rearranged to use only a single reduction stage per iteration, using additional
        intermediate vectors.
+
+       See KSPCGUseSingleReduction_CG()
+
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPCGSolveSingleReduction_CG"
@@ -520,6 +501,13 @@ static PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
   PetscFunctionReturn(0);
 }
 
+/*
+    KSPCGUseSingleReduction_CG
+
+    This routine sets a flag to use a variant of CG. Note that (in somewhat
+    atypical fashion) it also swaps out the routine called when KSPSolve()
+    is invoked.
+*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCGUseSingleReduction_CG"
 static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
@@ -528,6 +516,11 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
 
   PetscFunctionBegin;
   cg->singlereduction = flg;
+  if (cg->singlereduction) {
+    ksp->ops->solve = KSPCGSolveSingleReduction_CG;
+  } else {
+    ksp->ops->solve = KSPSolve_CG;
+  }
   PetscFunctionReturn(0);
 }
 
