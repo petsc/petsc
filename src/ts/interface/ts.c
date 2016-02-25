@@ -163,7 +163,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscErrorCode         ierr;
   char                   monfilename[PETSC_MAX_PATH_LEN];
   SNES                   snes;
-  TSAdapt                adapt;
   PetscReal              time_step;
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
@@ -410,12 +409,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
 
-  /*
-     This code is all wrong. One is creating objects inside the TSSetFromOptions() so if run with the options gui
-     will bleed memory. Also one is using a PetscOptionsBegin() inside a PetscOptionsBegin()
-  */
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
+  if (ts->adapt) {
+    ierr = TSAdaptSetFromOptions(PetscOptionsObject,ts->adapt);CHKERRQ(ierr);
+  }
 
   /* Handle specific TS options */
   if (ts->ops->setfromoptions) {
@@ -1782,6 +1778,9 @@ $  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
    Options Database:
 .   -ts_exact_final_time <stepover,interpolate,matchstep> - select the final step at runtime
 
+   Warning: If you use the option TS_EXACTFINALTIME_STEPOVER the solution may be at a very different time
+    then the final time you selected.
+
    Level: beginner
 
 .seealso: TSExactFinalTimeOption
@@ -1997,8 +1996,6 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
-
-  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
 
   if (ts->rhsjacobian.reuse) {
     Mat Amat,Pmat;
@@ -3509,6 +3506,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
     
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     PetscValidHeaderSpecific(u,VEC_CLASSID,2);
@@ -5253,13 +5251,13 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(adapt,2);
+  if (adapt) PetscValidPointer(adapt,2);
   if (!ts->adapt) {
     ierr = TSAdaptCreate(PetscObjectComm((PetscObject)ts),&ts->adapt);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)ts->adapt);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
   }
-  *adapt = ts->adapt;
+  if (adapt) *adapt = ts->adapt;
   PetscFunctionReturn(0);
 }
 
