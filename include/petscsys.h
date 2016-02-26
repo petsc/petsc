@@ -7,9 +7,9 @@
 /* ========================================================================== */
 /*
    petscconf.h is contained in ${PETSC_ARCH}/include/petscconf.h it is
-   found automatically by the compiler due to the -I${PETSC_DIR}/${PETSC_ARCH}/include
-   in the conf/variables definition of PETSC_INCLUDE. For --prefix installs the ${PETSC_ARCH}/
-   does not exist and petscconf.h is in the same directory as the other PETSc include files.
+   found automatically by the compiler due to the -I${PETSC_DIR}/${PETSC_ARCH}/include.
+   For --prefix installs the ${PETSC_ARCH}/ does not exist and petscconf.h is in the same
+   directory as the other PETSc include files.
 */
 #include <petscconf.h>
 #include <petscfix.h>
@@ -46,7 +46,8 @@
 /* ========================================================================== */
 /*
    Since PETSc manages its own extern "C" handling users should never include PETSc include
-   files within extern "C"
+   files within extern "C". This will generate a compiler error if a user does put the include 
+   file within an extern "C".
 */
 #if defined(__cplusplus)
 void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_put_petsc_headers_inside_an_extern_c(double);
@@ -84,6 +85,11 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  define PETSC_VISIBILITY_PUBLIC PETSC_DLLIMPORT
 #endif
 
+/*
+    Functions tagged with PETSC_EXTERN in the header files are
+  always defined as extern "C" when compiled with C++ so they may be
+  used from C and are always visible in the shared libraries
+*/
 #if defined(__cplusplus)
 #define PETSC_EXTERN extern "C" PETSC_VISIBILITY_PUBLIC
 #define PETSC_EXTERN_TYPEDEF extern "C"
@@ -154,7 +160,11 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #define MPIAPI
 #endif
 
-/* Support for Clang (>=3.2) matching type tag arguments with void* buffer types */
+/*
+   Support for Clang (>=3.2) matching type tag arguments with void* buffer types.
+   This allows the compiler to detect cases where the MPI datatype argument passed to a MPI routine
+   does not match the actual type of the argument being passed in
+*/
 #if defined(__has_attribute) && defined(works_with_const_which_is_not_true)
 #  if __has_attribute(argument_with_type_tag) && __has_attribute(pointer_with_type_tag) && __has_attribute(type_tag_for_datatype)
 #    define PetscAttrMPIPointerWithType(bufno,typeno) __attribute__((pointer_with_type_tag(MPI,bufno,typeno)))
@@ -205,7 +215,7 @@ typedef int PetscClassId;
     PetscMPIIntCast(a,&b) checks if the given PetscInt a will fit in a PetscMPIInt, if not it
       generates a PETSC_ERR_ARG_OUTOFRANGE error.
 
-.seealso: PetscBLASInt, PetscInt
+.seealso: PetscBLASInt, PetscInt, PetscMPIIntCast()
 
 M*/
 typedef int PetscMPIInt;
@@ -284,7 +294,7 @@ typedef int PetscInt;
      External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64 bit integers to BLAS/LAPACK so cannot
      be used with PETSc if you have set PetscBLASInt to long int.
 
-.seealso: PetscMPIInt, PetscInt
+.seealso: PetscMPIInt, PetscInt, PetscBLASIntCast()
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
@@ -316,7 +326,6 @@ PETSC_EXTERN const char *PetscPrecisions[];
 #else
 #error "Unknown size for size_t! Send us a bugreport at petsc-maint@mcs.anl.gov"
 #endif
-
 
 /*
       You can use PETSC_STDOUT as a replacement of stdout. You can also change
@@ -394,6 +403,7 @@ M*/
    Developer Note: Why have PetscBool , why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
       boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
 
+.seealso: PETSC_TRUE, PETSC_FALSE, PetscNot()
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
@@ -426,7 +436,7 @@ PETSC_EXTERN const char *const PetscCopyModes[];
 
     Note: Zero integer
 
-.seealso: PetscBool , PETSC_TRUE
+.seealso: PetscBool, PETSC_TRUE
 M*/
 
 /*MC
@@ -436,7 +446,7 @@ M*/
 
     Note: Nonzero integer
 
-.seealso: PetscBool , PETSC_FALSE
+.seealso: PetscBool, PETSC_FALSE
 M*/
 
 /*MC
@@ -487,7 +497,6 @@ M*/
        where you wish PETSc to compute the required value.
 
    Level: beginner
-
 
    Developer Note: I would like to use const PetscInt PETSC_DETERMINE = PETSC_DECIDE; but for
      some reason this is not allowed by the standard even though PETSC_DECIDE is a constant value.
@@ -1373,7 +1382,7 @@ typedef double PetscLogDouble;
 #define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
 
 /*
-   Routines for tracing memory corruption/bleeding with default PETSc  memory allocation
+   Routines for tracing memory corruption/bleeding with default PETSc memory allocation
 */
 PETSC_EXTERN PetscErrorCode PetscMallocDump(FILE *);
 PETSC_EXTERN PetscErrorCode PetscMallocDumpLog(FILE *);
@@ -1480,7 +1489,7 @@ PETSC_EXTERN PetscErrorCode PetscEListFind(PetscInt,const char *const*,const cha
 PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEnum*,PetscBool*);
 
 /*
-   These are  MPI operations for MPI_Allreduce() etc
+   These are MPI operations for MPI_Allreduce() etc
 */
 PETSC_EXTERN MPI_Op PetscMaxSum_Op;
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
@@ -1550,15 +1559,11 @@ typedef struct _n_PetscFunctionList *PetscFunctionList;
 
   Level: beginner
 
-  FILE_MODE_READ - open a file at its beginning for reading
-
-  FILE_MODE_WRITE - open a file at its beginning for writing (will create if the file does not exist)
-
-  FILE_MODE_APPEND - open a file at end for writing
-
-  FILE_MODE_UPDATE - open a file for updating, meaning for reading and writing
-
-  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and writing, at the end
+$  FILE_MODE_READ - open a file at its beginning for reading
+$  FILE_MODE_WRITE - open a file at its beginning for writing (will create if the file does not exist)
+$  FILE_MODE_APPEND - open a file at end for writing
+$  FILE_MODE_UPDATE - open a file for updating, meaning for reading and writing
+$  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and writing, at the end
 
 .seealso: PetscViewerFileSetMode()
 E*/
@@ -1647,7 +1652,6 @@ PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 #include <petscviewertypes.h>
 #include <petscoptions.h>
 
-
 PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
@@ -1701,7 +1705,6 @@ typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
 PETSC_EXTERN PetscErrorCode PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLClose(PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLSym(PetscDLHandle,const char[],void **);
-
 
 #if defined(PETSC_USE_DEBUG)
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void*,PetscStack**);
@@ -1774,7 +1777,7 @@ PETSC_EXTERN PetscErrorCode PetscMPIDump(FILE*);
     Notes: This is useful in cases like
 $     int        *a;
 $     PetscBool  flag = PetscNot(a)
-     where !a does not return a PetscBool  because we cannot provide a cast from int to PetscBool  in C.
+     where !a would not return a PetscBool because we cannot provide a cast from int to PetscBool in C.
 */
 #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
@@ -1806,8 +1809,6 @@ PETSC_EXTERN PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char[],...);
      Defines PETSc profiling.
 */
 #include <petsclog.h>
-
-
 
 /*
       Simple PETSc parallel IO for ASCII printing
@@ -2154,12 +2155,11 @@ M*/
 /*MC
     PetscScalar - PETSc type that represents either a double precision real number, a double precision
        complex number, a single precision real number, a long double or an int - if the code is configured
-       with --with-scalar-type=real,complex --with-precision=single,double,longdouble,int,matsingle
-
+       with --with-scalar-type=real,complex --with-precision=single,double,__float128
 
    Level: beginner
 
-.seealso: PetscReal, PassiveReal, PassiveScalar, MPIU_SCALAR, PetscInt
+.seealso: PetscReal, MPIU_SCALAR, PetscInt, MPIU_REAL
 M*/
 
 /*MC
@@ -2182,28 +2182,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscScalar, PassiveReal, PassiveScalar
-M*/
-
-/*MC
-    PassiveScalar - PETSc type that represents a PetscScalar
-   Level: beginner
-
-    This is the same as a PetscScalar except in code that is automatically differentiated it is
-   treated as a constant (not an indendent or dependent variable)
-
-.seealso: PetscReal, PassiveReal, PetscScalar
-M*/
-
-/*MC
-    PassiveReal - PETSc type that represents a PetscReal
-
-   Level: beginner
-
-    This is the same as a PetscReal except in code that is automatically differentiated it is
-   treated as a constant (not an indendent or dependent variable)
-
-.seealso: PetscScalar, PetscReal, PassiveScalar
+.seealso: PetscScalar
 M*/
 
 /*MC
@@ -2214,7 +2193,7 @@ M*/
     Note: In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalars
           pass this value
 
-.seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar, MPIU_INT
+.seealso: PetscReal, PetscScalar, MPIU_INT
 M*/
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -2384,7 +2363,6 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
    Use PetscIntMult64bit() to compute the product of two PetscInt as a Petsc64bitInt
    Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
-
 
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
@@ -2940,7 +2918,6 @@ PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],
 
 
 #if defined(PETSC_USE_DEBUG)
-
 /*
    Verify that all processes in the communicator have called this from the same line of code
  */

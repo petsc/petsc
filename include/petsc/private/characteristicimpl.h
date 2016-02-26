@@ -18,9 +18,9 @@ PETSC_EXTERN PetscLogEvent CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTime
 typedef struct _p_Item {
   int           proc; /* Relative processor from which data is required (mapped to absolute by neighbors) */
   int           i, j; /* The vertex for which we need field values */
-  PassiveScalar x, y; /* Coordinates of a point on the characteristic */
-  PassiveScalar u, v; /* Velocity of a point on the characteristic */
-  PassiveScalar field[MAX_COMPONENTS]; /* Field being advected */
+  PetscScalar   x, y; /* Coordinates of a point on the characteristic */
+  PetscScalar   u, v; /* Velocity of a point on the characteristic */
+  PetscScalar   field[MAX_COMPONENTS]; /* Field being advected */
 } CharacteristicPointDA2D;
 
 typedef CharacteristicPointDA2D *Queue;

@@ -81,7 +81,7 @@ typedef struct {
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo*,PetscReal,Field**,Field**,Field**,void*);
 
 typedef struct {
-  PassiveReal lidvelocity,prandtl,grashof;   /* physical parameters */
+  PetscReal   lidvelocity,prandtl,grashof;   /* physical parameters */
   PetscBool   parabolic;                     /* allow a transient term corresponding roughly to artificial compressibility */
   PetscReal   cfl_initial;                   /* CFL for first time step */
 } AppCtx;

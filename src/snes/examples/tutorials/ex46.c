@@ -18,8 +18,8 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-  PassiveReal D;  /* The diffusion coefficient */
-  PassiveReal K;  /* The advection coefficient */
+  PetscReal   D;  /* The diffusion coefficient */
+  PetscReal   K;  /* The advection coefficient */
   PetscInt    m;  /* Exponent for A */
 } AppCtx;
 

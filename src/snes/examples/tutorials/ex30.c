@@ -335,7 +335,7 @@ PETSC_STATIC_INLINE PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
 #undef __FUNCT__
 #define __FUNCT__ "HorizVelocity"
 /*  isoviscous analytic solution for IC */
-PETSC_STATIC_INLINE PassiveScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param = user->param;
@@ -448,7 +448,7 @@ PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, Pe
 #undef __FUNCT__
 #define __FUNCT__ "Viscosity"
 /*  computes the shear viscosity */
-PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PassiveScalar z, Parameter *param)
+PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscScalar z, Parameter *param)
 /*---------------------------------------------------------------------*/
 {
   PetscReal   result   =0.0;
@@ -1169,7 +1169,7 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   GridInfo       *grid;
   Vec            localX;
   Field          **v, **x;
-  PassiveReal    eps, /* dx,*/ dz, T, epsC, TC;
+  PetscReal      eps, /* dx,*/ dz, T, epsC, TC;
   PetscInt       i,j,is,js,im,jm,ilim,jlim,ivt;
   PetscErrorCode ierr;
 
@@ -1268,7 +1268,7 @@ PetscErrorCode StressField(DM da)
 #define __FUNCT__ "SlabVel"
 /* returns the velocity of the subducting slab and handles fault nodes
    for BC */
-PETSC_STATIC_INLINE PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter *param = user->param;
@@ -1290,11 +1290,11 @@ PETSC_STATIC_INLINE PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx
 #undef __FUNCT__
 #define __FUNCT__ "PlateModel"
 /*  solution to diffusive half-space cooling model for BC */
-PETSC_STATIC_INLINE PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
+PETSC_STATIC_INLINE PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter     *param = user->param;
-  PassiveScalar z;
+  PetscScalar   z;
   if (plate==PLATE_LID) z = (j-0.5)*user->grid->dz;
   else z = (j-0.5)*user->grid->dz*param->cb;  /* PLATE_SLAB */
 #if defined(PETSC_HAVE_ERF)
