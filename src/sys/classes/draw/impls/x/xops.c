@@ -761,7 +761,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   PetscMPIInt    rank;
   int            x = draw->x,y = draw->y,w = draw->w,h = draw->h;
   static int     xavailable = 0,yavailable = 0,ybottom = 0,xmax = 0,ymax = 0;
-  PetscBool      set,virtual = PETSC_FALSE,doublebuffer = PETSC_TRUE;
+  PetscBool      set,dvirtual = PETSC_FALSE,doublebuffer = PETSC_TRUE;
   PetscInt       xywh[4],osize = 4,nsizes=2;
   PetscReal      sizes[2] = {.3,.3};
 
@@ -813,9 +813,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   case PETSC_DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4; break;
   }
 
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_virtual",&virtual,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_virtual",&dvirtual,NULL);CHKERRQ(ierr);
 
-  if (!virtual) {
+  if (!dvirtual) {
 
     /* allow user to set location and size of window */
     xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
@@ -867,7 +867,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
       ybottom    = 0;
     }
 
-  } /* endif(!virtual) */
+  } /* endif(!dvirtual) */
 
   ierr = PetscNewLog(draw,&Xwin);CHKERRQ(ierr);
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
@@ -875,7 +875,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   ierr = PetscDrawXiInit(Xwin,draw->display);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  if (!virtual) {
+  if (!dvirtual) {
     Xwin->x = x; Xwin->y = y;
     Xwin->w = w; Xwin->h = h;
     if (!rank) {
