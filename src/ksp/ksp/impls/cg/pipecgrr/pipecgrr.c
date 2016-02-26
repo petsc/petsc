@@ -33,7 +33,7 @@ PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i,replace,totreplaces;
   PetscScalar    alpha = 0.0,beta = 0.0,gamma = 0.0,gammaold = 0.0,delta = 0.0;
-  PetscReal      dp    = 0.0,rnormprev = 0.0,rnormcurr = 0.0,tol = 1e-8,eps = 1e-16,ds = 0.0,dz = 0.0,errr = 0.0,errrprev = 0.0,errs = 0.0,errw = 0.0,errz = 0.0,errncr = 0.0,errncs = 0.0,errncw = 0.0,errncz = 0.0;
+  PetscReal      dp    = 0.0,rnormprev = 0.0,rnormcurr = 0.0,tol = PETSC_SQRT_MACHINE_EPSILON,eps = PETSC_MACHINE_EPSILON,ds = 0.0,dz = 0.0,errr = 0.0,errrprev = 0.0,errs = 0.0,errw = 0.0,errz = 0.0,errncr = 0.0,errncs = 0.0,errncw = 0.0,errncz = 0.0;
   Vec            X,B,Z,P,W,Q,U,M,N,R,S;
   Mat            Amat,Pmat;
   PetscBool      diagonalscale;
