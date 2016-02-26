@@ -98,7 +98,7 @@ PetscErrorCode PetscDrawXiSetGC(PetscDraw_X *XiWin,PetscDrawXiPixVal fg)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiInit"
-PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin,char display[])
+PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin,const char display[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
