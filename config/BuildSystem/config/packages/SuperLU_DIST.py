@@ -55,6 +55,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DXSDK_INDEX_SIZE=64')
 
     args.append('-Denable_tests=0')
+    args.append('-Denable_examples=0')
     #  CMake in SuperLU should set this; but like many other packages it does not
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
