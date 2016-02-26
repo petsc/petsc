@@ -182,16 +182,14 @@ PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
         errs = errncs;
         errw = errncw;
         errz = errncz;
-      }
-      else if (replace == 1) {
+      } else if (replace == 1) {
         errrprev = errr;
         errr = errncr;
         errs = errncs;
         errw = errncw;
         errz = errncz;
         replace = 0;
-      }
-      else {
+      } else {
         errrprev = errr;
         errr = errr + PetscAbsScalar(alpha) * errs                                 + errncr;
         errs = PetscAbsScalar(beta) * errs + errw + PetscAbsScalar(alpha) * errz   + errncs + errncw;
@@ -210,10 +208,7 @@ PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
         ierr = KSP_MatMult(ksp,Amat,Q,Z);CHKERRQ(ierr);        /*     z <- Aq       */
 
         replace = 1;
-	totreplaces = totreplaces + 1;
-        /*printf("Residual replacement in iteration: %d\n", i);*/
-	/*printf("Total number of residual replacements: %d\n", totreplaces);*/
-
+        totreplaces++;
       } 
     }
 
@@ -266,7 +261,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
-/*  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr); */
 
   ksp->ops->setup          = KSPSetUp_PIPECGRR;
   ksp->ops->solve          = KSPSolve_PIPECGRR;
