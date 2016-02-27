@@ -1,0 +1,9 @@
+  0 KSP Residual norm 378.599 
+  Linear ksp_ solve converged due to CONVERGED_RTOL iterations 5
+  Linear ksp_ solve converged due to CONVERGED_RTOL iterations 6
+  1 KSP Residual norm 2.85864 
+  Linear ksp_ solve converged due to CONVERGED_RTOL iterations 6
+  2 KSP Residual norm 0.0149458 
+  Linear ksp_ solve converged due to CONVERGED_RTOL iterations 6
+  3 KSP Residual norm 0.000100504 
+Norm of error 5.29598e-05, Iterations 3

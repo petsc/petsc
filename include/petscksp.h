@@ -40,7 +40,9 @@ typedef const char* KSPType;
 #define   KSPSTCG       "stcg"
 #define   KSPGLTR       "gltr"
 #define KSPFCG        "fcg"
+#define KSPPIPEFCG    "pipefcg"
 #define KSPGMRES      "gmres"
+#define KSPPIPEFGMRES "pipefgmres"
 #define   KSPFGMRES     "fgmres"
 #define   KSPLGMRES     "lgmres"
 #define   KSPDGMRES     "dgmres"
@@ -64,6 +66,7 @@ typedef const char* KSPType;
 #define KSPLCD        "lcd"
 #define KSPPYTHON     "python"
 #define KSPGCR        "gcr"
+#define KSPPIPEGCR    "pipegcr"
 #define KSPTSIRM      "tsirm"
 #define KSPCGLS       "cgls"
 
@@ -155,25 +158,40 @@ PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP,PetscBool,PetscBool,PetscInt *,Ve
 
 /*E
 
-  KSPFCGTruncationType - Define how stored directions are used to orthogonalize in FCG
+  KSPFCDTruncationType - Define how stored directions are used to orthogonalize in flexible conjugate directions (FCD) methods
 
-  KSP_FCG_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCG_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
    Level: intermediate
-
-.seealso : KSPFCG,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
+.seealso : KSPFCG,KSPPIPEFCG,KSPPIPEGCR,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
 
 E*/
-typedef enum {KSP_FCG_TRUNC_TYPE_STANDARD,KSP_FCG_TRUNC_TYPE_NOTAY} KSPFCGTruncationType;
-PETSC_EXTERN const char *const KSPFCGTruncationTypes[];
+typedef enum {KSP_FCD_TRUNC_TYPE_STANDARD,KSP_FCD_TRUNC_TYPE_NOTAY} KSPFCDTruncationType;
+PETSC_EXTERN const char *const KSPFCDTruncationTypes[];
 
 PETSC_EXTERN PetscErrorCode KSPFCGSetMmax(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPFCGGetMmax(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPFCGSetNprealloc(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPFCGGetNprealloc(KSP,PetscInt*);
-PETSC_EXTERN PetscErrorCode KSPFCGSetTruncationType(KSP,KSPFCGTruncationType);
-PETSC_EXTERN PetscErrorCode KSPFCGGetTruncationType(KSP,KSPFCGTruncationType*);
+PETSC_EXTERN PetscErrorCode KSPFCGSetTruncationType(KSP,KSPFCDTruncationType);
+PETSC_EXTERN PetscErrorCode KSPFCGGetTruncationType(KSP,KSPFCDTruncationType*);
+
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGSetMmax(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGGetMmax(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGSetNprealloc(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGGetNprealloc(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGSetTruncationType(KSP,KSPFCDTruncationType);
+PETSC_EXTERN PetscErrorCode KSPPIPEFCGGetTruncationType(KSP,KSPFCDTruncationType*);
+
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetMmax(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetMmax(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetNprealloc(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetNprealloc(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetTruncationType(KSP,KSPFCDTruncationType);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetTruncationType(KSP,KSPFCDTruncationType*);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRSetUnrollW(KSP,PetscBool);
+PETSC_EXTERN PetscErrorCode KSPPIPEGCRGetUnrollW(KSP,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);
@@ -187,6 +205,8 @@ PETSC_EXTERN PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,Pe
 
 PETSC_EXTERN PetscErrorCode KSPLGMRESSetAugDim(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPLGMRESSetConstant(KSP);
+
+PETSC_EXTERN PetscErrorCode KSPPIPEFGMRESSetShift(KSP,PetscScalar);
 
 PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP,PetscInt*);
@@ -361,7 +381,7 @@ M*/
 
 /*MC
     KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the
-       convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS, KSPFCG
+       convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS, KSPFCG, KSPPIPEFCG, KSPPIPEGCR
 
    Level: advanced
 

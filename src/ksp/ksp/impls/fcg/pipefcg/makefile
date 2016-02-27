@@ -3,13 +3,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = gmres.c borthog.c borthog2.c gmres2.c gmreig.c gmpre.c
-SOURCEH  = gmresimpl.h
+SOURCEC  = pipefcg.c
 SOURCEF  =
+SOURCEH  = pipefcgimpl.h
 LIBBASE  = libpetscksp
-DIRS     = lgmres fgmres dgmres pgmres pipefgmres
+DIRS     = 
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/gmres/
+LOCDIR   = src/ksp/ksp/impls/fcg/pipefcg/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
