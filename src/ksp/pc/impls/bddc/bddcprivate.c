@@ -1348,6 +1348,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   PetscFunctionBegin;
   ierr = MatDestroy(&pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->switch_static_change);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->work_change);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
@@ -3299,6 +3300,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* Destroy Mat objects computed previously */
   ierr = MatDestroy(&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->switch_static_change);CHKERRQ(ierr);
   /* save info on constraints from previous setup (if any) */
   olocal_primal_size = pcbddc->local_primal_size;
   olocal_primal_size_cc = pcbddc->local_primal_size_cc;
@@ -4310,7 +4312,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscFree(sub_schurs->change);CHKERRQ(ierr);
         }
       }
-      ierr = MatDestroy(&localChangeOfBasisMatrix);CHKERRQ(ierr);
+      if (pcbddc->switch_static) { /* need to save the local change */
+        pcbddc->switch_static_change = localChangeOfBasisMatrix;
+      } else {
+        ierr = MatDestroy(&localChangeOfBasisMatrix);CHKERRQ(ierr);
+      }
       /* determine if any process has changed the pressures locally */
       if (pcbddc->benign_saddle_point) {
         PetscBool have_null = (PetscBool)!!pcbddc->benign_change;
@@ -4375,6 +4381,16 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       } else if (needglobal) {
         pcbddc->ChangeOfBasisMatrix = benign_global;
       }
+    }
+    if (pcbddc->switch_static && pcbddc->ChangeOfBasisMatrix) { /* need to save the local change */
+      IS             is_global;
+      const PetscInt *gidxs;
+
+      ierr = ISLocalToGlobalMappingGetIndices(pc->pmat->rmap->mapping,&gidxs);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),pcis->n,gidxs,PETSC_COPY_VALUES,&is_global);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreIndices(pc->pmat->rmap->mapping,&gidxs);CHKERRQ(ierr);
+      ierr = MatGetSubMatrixUnsorted(pcbddc->ChangeOfBasisMatrix,is_global,is_global,&pcbddc->switch_static_change);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_global);CHKERRQ(ierr);
     }
   }
   if (!pcbddc->fake_change && pcbddc->ChangeOfBasisMatrix && !pcbddc->work_change) {

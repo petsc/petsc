@@ -208,6 +208,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
 
     /* Creating the scatter contexts */
+    ierr = VecScatterCreate(pcis->vec1_N,pcis->is_I_local,pcis->vec1_D,(IS)0,&pcis->N_to_D);CHKERRQ(ierr);
     ierr = VecScatterCreate(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
     ierr = VecScatterCreate(pcis->vec1_N,pcis->is_B_local,pcis->vec1_B,(IS)0,&pcis->N_to_B);CHKERRQ(ierr);
     ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
@@ -392,6 +393,7 @@ PetscErrorCode  PCISDestroy(PC pc)
   ierr = VecDestroy(&pcis->vec1_global);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&pcis->N_to_D);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcis->global_to_B);CHKERRQ(ierr);
   ierr = PetscFree(pcis->work_N);CHKERRQ(ierr);
   if (pcis->n_neigh > -1) {
@@ -440,6 +442,7 @@ PetscErrorCode  PCISCreate(PC pc)
   pcis->work_N           = 0;
   pcis->global_to_D      = 0;
   pcis->N_to_B           = 0;
+  pcis->N_to_D           = 0;
   pcis->global_to_B      = 0;
   pcis->mapping          = 0;
   pcis->BtoNmap          = 0;

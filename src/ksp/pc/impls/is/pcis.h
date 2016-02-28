@@ -45,6 +45,7 @@ typedef struct {
       vec1_global;
 
   PetscScalar * work_N;
+  VecScatter  N_to_D;             /* scattering context from all local nodes to local interior nodes */
   VecScatter  global_to_D;        /* scattering context from global to local interior nodes */
   VecScatter  N_to_B;             /* scattering context from all local nodes to local interface nodes */
   VecScatter  global_to_B;        /* scattering context from global to local interface nodes */
