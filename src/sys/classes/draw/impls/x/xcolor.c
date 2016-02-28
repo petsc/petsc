@@ -9,6 +9,8 @@
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
 #include <X11/Xatom.h>
 
+extern PetscErrorCode PetscDrawXiInitCmap(PetscDraw_X*);
+
 static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = {"white",
                                                             "black",
                                                             "red",
@@ -42,9 +44,6 @@ static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = {"white",
                                                             "limegreen",
                                                             "lavenderblush",
                                                             "plum"};
-
-extern PetscErrorCode PetscDrawXiInitCmap(PetscDraw_X*);
-extern PetscErrorCode PetscDrawXiGetVisualClass(PetscDraw_X*);
 
 /*
    Sets up a color map for a display. This is shared by all the windows
@@ -272,19 +271,6 @@ PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X *XiWin)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiGetVisualClass"
-PetscErrorCode PetscDrawXiGetVisualClass(PetscDraw_X *XiWin)
-{
-  PetscFunctionBegin;
-#if defined(__cplusplus)
-  PetscFunctionReturn(XiWin->vis->c_class);
-#else
-  PetscFunctionReturn(XiWin->vis->class);
-#endif
-}
-
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiSetColormap"
 PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X *XiWin)
 {
@@ -292,55 +278,3 @@ PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X *XiWin)
   XSetWindowColormap(XiWin->disp,XiWin->win,XiWin->cmap);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiGetBaseColor"
-PetscErrorCode PetscDrawXiGetBaseColor(PetscDraw_X *XiWin,PetscDrawXiPixVal *white_pix,PetscDrawXiPixVal *black_pix)
-{
-  PetscFunctionBegin;
-  *white_pix = XiWin->cmapping[PETSC_DRAW_WHITE];
-  *black_pix = XiWin->cmapping[PETSC_DRAW_BLACK];
-  PetscFunctionReturn(0);
-}
-
-/*
-    This routine returns the pixel value for the specified color
-    Returns 0 on failure,<>0 otherwise.
- */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiFindColor"
-PetscErrorCode PetscDrawXiFindColor(PetscDraw_X *XiWin,char *name,PetscDrawXiPixVal *pixval)
-{
-  XColor colordef;
-  int    st;
-
-  PetscFunctionBegin;
-  st = XParseColor(XiWin->disp,XiWin->cmap,name,&colordef);
-  if (st) {
-    st = XAllocColor(XiWin->disp,XiWin->cmap,&colordef);
-    if (st) *pixval = colordef.pixel;
-  }
-  PetscFunctionReturn(st);
-}
-
-/*
-    Another real need is to assign "colors" that make sense for
-    a monochrome display,without unduely penalizing color displays.
-    This routine takes a color name,a window, and a flag that
-    indicates whether this is "background" or "foreground".
-    In the monchrome case (or if the color is otherwise unavailable),
-    the "background" or "foreground" colors will be chosen
- */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiGetColor"
-PetscDrawXiPixVal PetscDrawXiGetColor(PetscDraw_X* XiWin,char *name,int is_fore)
-{
-  PetscDrawXiPixVal pixval;
-
-  PetscFunctionBegin;
-  if (XiWin->numcolors == 2 || !PetscDrawXiFindColor(XiWin,name,&pixval)) {
-    pixval = is_fore ? XiWin->cmapping[PETSC_DRAW_WHITE] : XiWin->cmapping[PETSC_DRAW_BLACK];
-  }
-  PetscFunctionReturn(pixval);
-}
-

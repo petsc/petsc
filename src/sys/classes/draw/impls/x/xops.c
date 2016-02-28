@@ -4,12 +4,6 @@
 
 #include <../src/sys/classes/draw/impls/x/ximpl.h>         /*I  "petscsys.h" I*/
 
-extern PetscErrorCode PetscDrawXiInit(PetscDraw_X*,const char[]);
-extern PetscErrorCode PetscDrawXiClose(PetscDraw_X*);
-extern PetscErrorCode PetscDrawXiColormap(PetscDraw_X*);
-extern PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X*,char*,int,int,int,int);
-extern PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X*,Window);
-
 /*
      These macros transform from the users coordinates to the  X-window pixel coordinates.
 */
@@ -35,7 +29,7 @@ static PetscErrorCode PetscDrawSetViewport_X(PetscDraw draw,PetscReal xl,PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCoordinateToPixel_X"
-PetscErrorCode PetscDrawCoordinateToPixel_X(PetscDraw draw,PetscReal x,PetscReal y,PetscInt *i,PetscInt *j)
+static PetscErrorCode PetscDrawCoordinateToPixel_X(PetscDraw draw,PetscReal x,PetscReal y,PetscInt *i,PetscInt *j)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
 
@@ -47,7 +41,7 @@ PetscErrorCode PetscDrawCoordinateToPixel_X(PetscDraw draw,PetscReal x,PetscReal
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawPixelToCoordinate_X"
-PetscErrorCode PetscDrawPixelToCoordinate_X(PetscDraw draw,PetscInt i,PetscInt j,PetscReal *x,PetscReal *y)
+static PetscErrorCode PetscDrawPixelToCoordinate_X(PetscDraw draw,PetscInt i,PetscInt j,PetscReal *x,PetscReal *y)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
 
@@ -89,7 +83,7 @@ static PetscErrorCode PetscDrawPointPixel_X(PetscDraw draw,PetscInt x,PetscInt y
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawLine_X"
-PetscErrorCode PetscDrawLine_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+static PetscErrorCode PetscDrawLine_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
   int         x1,y_1,x2,y2;
@@ -105,7 +99,7 @@ PetscErrorCode PetscDrawLine_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawArrow_X"
-PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+static PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
   int         x1,y_1,x2,y2;
@@ -160,7 +154,7 @@ static PetscErrorCode PetscDrawEllipse_X(PetscDraw Win,PetscReal x,PetscReal y,P
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X*,int,int,int,int,int,int,int,int,int);
+PETSC_INTERN PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X*,int,int,int,int,int,int,int,int,int);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawTriangle_X"
@@ -193,8 +187,6 @@ static PetscErrorCode PetscDrawTriangle_X(PetscDraw draw,PetscReal X1,PetscReal 
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X*,int,int,PetscDrawXiFont**);
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawStringSetSize_X"
 static PetscErrorCode PetscDrawStringSetSize_X(PetscDraw draw,PetscReal x,PetscReal y)
@@ -213,7 +205,7 @@ static PetscErrorCode PetscDrawStringSetSize_X(PetscDraw draw,PetscReal x,PetscR
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawStringGetSize_X"
-PetscErrorCode PetscDrawStringGetSize_X(PetscDraw draw,PetscReal *x,PetscReal  *y)
+static PetscErrorCode PetscDrawStringGetSize_X(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
   PetscReal   w,h;
@@ -258,7 +250,7 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal y,i
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawStringVertical_X"
-PetscErrorCode PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
+static PetscErrorCode PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscDraw_X    *XiWin = (PetscDraw_X*)draw->data;
   int            xx,yy;
@@ -353,10 +345,7 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_X(PetscDraw draw)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) {
-    win->drw = XCreatePixmap(win->disp,RootWindow(win->disp,win->screen),win->w,win->h,win->depth);
-    XSync(win->disp,False);
-  }
+  if (!rank) {ierr = PetscDrawXiQuickPixmap(win);CHKERRQ(ierr);}
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -368,56 +357,62 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_X(PetscDraw draw)
 #define __FUNCT__ "PetscDrawGetMouseButton_X"
 static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
-  PetscDraw_X  *win = (PetscDraw_X*)draw->data;
-  Cursor       cursor;
-  XEvent       report;
-  Window       root,child;
-  int          root_x,root_y,px=0,py=0;
-  unsigned int w,h,border,depth;
-  unsigned int keys_button;
+  PetscDraw_X    *win = (PetscDraw_X*)draw->data;
+  Cursor         cursor;
+  XEvent         report;
+  Window         root,child;
+  int            root_x,root_y,px=0,py=0;
+  unsigned int   w,h,border,depth;
+  unsigned int   keys_button;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *button = PETSC_BUTTON_NONE;
   if (!win->win) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  if (rank) goto finally;
 
   /* change cursor to indicate input */
   cursor = XCreateFontCursor(win->disp,XC_hand2); if (!cursor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X cursor");
   XDefineCursor(win->disp,win->win,cursor);
   /* wait for mouse button events */
-  XSelectInput(win->disp,win->win,ButtonPressMask | ButtonReleaseMask);
+  XSelectInput(win->disp,win->win,ButtonPressMask|ButtonReleaseMask);
   while (XCheckTypedEvent(win->disp,ButtonPress,&report));
   XMaskEvent(win->disp,ButtonReleaseMask,&report);
-  switch (report.xbutton.button) {
-  case Button1:
-    if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_LEFT_SHIFT;
-    else                                  *button = PETSC_BUTTON_LEFT;
-    break;
-  case Button2:
-    if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_CENTER_SHIFT;
-    else                                  *button = PETSC_BUTTON_CENTER;
-    break;
-  case Button3:
-    if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_RIGHT_SHIFT;
-    else                                  *button = PETSC_BUTTON_RIGHT;
-    break;
-  case Button4: *button = PETSC_BUTTON_WHEEL_UP;   break;
-  case Button5: *button = PETSC_BUTTON_WHEEL_DOWN; break;
-  }
   /* get mouse pointer coordinates */
   XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button);
+  /* the user may resize the window before pressing the mouse button */
+  XGetGeometry(win->disp,win->win,&root,&root_x,&root_y,&w,&h,&border,&depth);
   /* cleanup input event handler and cursor  */
   XSelectInput(win->disp,win->win,NoEventMask);
   XUndefineCursor(win->disp,win->win);
   XFreeCursor(win->disp, cursor);
-  XFlush(win->disp);
   XSync(win->disp,False);
-  /* the user may resize the window before pressing the mouse button */
-  XGetGeometry(win->disp,win->win,&root,&root_x,&root_y,&w,&h,&border,&depth);
 
+  switch (report.xbutton.button) {
+  case Button1: *button = PETSC_BUTTON_LEFT; break;
+  case Button2: *button = PETSC_BUTTON_CENTER; break;
+  case Button3: *button = PETSC_BUTTON_RIGHT; break;
+  case Button4: *button = PETSC_BUTTON_WHEEL_UP; break;
+  case Button5: *button = PETSC_BUTTON_WHEEL_DOWN; break;
+  }
+  if (report.xbutton.state & ShiftMask) {
+    switch (report.xbutton.button) {
+    case Button1: *button = PETSC_BUTTON_LEFT_SHIFT; break;
+    case Button2: *button = PETSC_BUTTON_CENTER_SHIFT; break;
+    case Button3: *button = PETSC_BUTTON_RIGHT_SHIFT; break;
+    }
+  }
   if (x_phys) *x_phys = ((double)px)/((double)w);
   if (y_phys) *y_phys = 1.0 - ((double)py)/((double)h);
   if (x_user) *x_user = draw->coor_xl + ((((double)px)/((double)w)-draw->port_xl))*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
   if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
+
+finally:
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -540,10 +535,7 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   /* free buffer space and create new version (only first processor does this) */
-  if (!rank && win->drw) {
-    XFreePixmap(win->disp,win->drw);
-    win->drw = XCreatePixmap(win->disp,RootWindow(win->disp,win->screen),win->w,win->h,win->depth);
-  }
+  if (!rank && win->drw) {ierr = PetscDrawXiQuickPixmap(win);CHKERRQ(ierr);}
   /* reset the clipping */
   xl = draw->port_xl; yl = draw->port_yl;
   xr = draw->port_xr; yr = draw->port_yr;
@@ -561,7 +553,7 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw,PetscDraw*);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawDestroy_X"
-PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
+static PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
 {
   PetscDraw_X    *win = (PetscDraw_X*)draw->data;
   PetscErrorCode ierr;
@@ -573,8 +565,8 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDrawSave_X(PetscDraw);
-PetscErrorCode PetscDrawSetSave_X(PetscDraw,const char*);
+PETSC_INTERN PetscErrorCode PetscDrawSave_X(PetscDraw);
+PETSC_INTERN PetscErrorCode PetscDrawSetSave_X(PetscDraw,const char[]);
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                       PetscDrawFlush_X,
@@ -648,15 +640,13 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   ierr = PetscDrawXiInit(sXwin,draw->display);CHKERRQ(ierr);
   if (Xwin->win) {
     ierr = PetscDrawXiQuickWindowFromWindow(sXwin,Xwin->win);CHKERRQ(ierr);
-    sXwin->drw = Xwin->drw;
+    sXwin->drw = Xwin->drw; /* XXX If the window is ever resized, this is wrong! */
   } else if (Xwin->drw) {
     ierr = PetscDrawXiColormap(sXwin);CHKERRQ(ierr);
     sXwin->drw = Xwin->drw;
   }
-  (*sdraw)->x = sXwin->x = Xwin->x;
-  (*sdraw)->y = sXwin->y = Xwin->y;
-  (*sdraw)->w = sXwin->w = Xwin->w;
-  (*sdraw)->h = sXwin->h = Xwin->h;
+  (*sdraw)->x = sXwin->x; (*sdraw)->y = sXwin->y;
+  (*sdraw)->w = sXwin->w; (*sdraw)->h = sXwin->h;
   PetscFunctionReturn(0);
 }
 
@@ -678,7 +668,7 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw,PetscDraw *sdra
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXGetDisplaySize_Private"
-PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int *height)
+static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int *height)
 {
   Display *display;
 
@@ -832,32 +822,25 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   } /* endif(!dvirtual) */
 
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+  if (!rank && (w <= 0 || h <= 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
+
   ierr = PetscNewLog(draw,&Xwin);CHKERRQ(ierr);
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   draw->data = (void*)Xwin;
 
   ierr = PetscDrawXiInit(Xwin,draw->display);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
   if (!dvirtual) {
     Xwin->x = x; Xwin->y = y;
     Xwin->w = w; Xwin->h = h;
-    if (!rank) {
-      if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
-      ierr = PetscDrawXiQuickWindow(Xwin,draw->title,x,y,w,h);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-    } else {
-      ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-      ierr = PetscDrawXiQuickWindowFromWindow(Xwin,Xwin->win);CHKERRQ(ierr);
-    }
+    if (!rank) {ierr = PetscDrawXiQuickWindow(Xwin,draw->title,x,y,w,h);CHKERRQ(ierr);}
+    ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+    if (rank) {ierr = PetscDrawXiQuickWindowFromWindow(Xwin,Xwin->win);CHKERRQ(ierr);}
   } else {
     Xwin->x = 0; Xwin->y = 0;
     Xwin->w = w; Xwin->h = h;
     ierr = PetscDrawXiColormap(Xwin);CHKERRQ(ierr);
-    if (!rank) {
-      if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative pixmap width or height");
-      Xwin->drw = XCreatePixmap(Xwin->disp,RootWindow(Xwin->disp,Xwin->screen),Xwin->w,Xwin->h,Xwin->depth);
-      XSync(Xwin->disp,False);
-    }
+    if (!rank) {ierr = PetscDrawXiQuickPixmap(Xwin);CHKERRQ(ierr);}
     ierr = MPI_Bcast(&Xwin->drw,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
   draw->x = Xwin->x; draw->y = Xwin->y;
