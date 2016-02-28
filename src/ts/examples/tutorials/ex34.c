@@ -255,6 +255,7 @@ int main(int argc, char **argv)
   ftime    = 800.0;
   maxsteps = 10000;
   ierr = TSSetDuration(ts, maxsteps, ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = FormInitialSolution(ts, X, &user);CHKERRQ(ierr);
   ierr = TSSetSolution(ts, X);CHKERRQ(ierr);
   ierr = VecGetSize(X, &mx);CHKERRQ(ierr);

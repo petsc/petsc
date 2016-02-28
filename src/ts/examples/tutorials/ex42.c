@@ -311,6 +311,7 @@ int main(int argc, char **argv)
    * convergenge to steady state
    */
   ierr = TSSetDuration(ts, 5000, 1e12);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /*
    * Set a larger number of potential errors

@@ -143,6 +143,7 @@ int main(int argc,char **argv)
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDATSSetIFunctionLocal(da,INSERT_VALUES,(DMDATSIFunctionLocal)FormIFunctionLocal,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,10000,1e12);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,user.cfl_initial/(user.lidvelocity*mx));CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

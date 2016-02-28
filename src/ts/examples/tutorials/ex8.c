@@ -418,6 +418,7 @@ int main(int argc,char **argv)
   ierr = TSSetIFunction(ts,NULL,problem->function,problem->data);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,problem->jacobian,problem->data);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,problem->final_time);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetMaxStepRejections(ts,10);CHKERRQ(ierr);
   ierr = TSSetMaxSNESFailures(ts,-1);CHKERRQ(ierr); /* unlimited */
   if (use_monitor) {
