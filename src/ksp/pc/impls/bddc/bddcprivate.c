@@ -6353,7 +6353,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
     ierr = ISDestroy(&verticesIS);CHKERRQ(ierr);
     ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
     ierr = PCBDDCGraphInit(graph,pcbddc->mat_graph->l2gmap,pcbddc->mat_graph->nvtxs_global);CHKERRQ(ierr);
-    ierr = PCBDDCGraphSetUp(graph,0,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticescomm);CHKERRQ(ierr);
+    ierr = PCBDDCGraphSetUp(graph,pcbddc->mat_graph->custom_minimal_size,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticescomm);CHKERRQ(ierr);
     ierr = ISDestroy(&verticescomm);CHKERRQ(ierr);
     ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
 /*
