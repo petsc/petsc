@@ -364,7 +364,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawDestroy_Null"
-PetscErrorCode PetscDrawDestroy_Null(PetscDraw draw)
+static PetscErrorCode PetscDrawDestroy_Null(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

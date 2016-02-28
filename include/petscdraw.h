@@ -10,6 +10,7 @@ PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
 PETSC_EXTERN PetscFunctionList PetscDrawList;
 PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PetscDrawFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char[],PetscErrorCode(*)(PetscDraw));
 
 PETSC_EXTERN PetscErrorCode PetscDrawGetType(PetscDraw,PetscDrawType*);
