@@ -2469,8 +2469,6 @@ runex196f90:
 	   ${DIFF} output/ex196f90_1.out ex196f.tmp || printf "${PWD}\nPossible problem with ex196f90, diffs above\n=========================================\n"; \
 	   ${RM} -f ex196f.tmp
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
-                                 ex7.PETSc runex7 ex7.rm \
 runex197:
 	  -@${MPIEXEC} -n 1 ./ex197   > ex197.tmp 2>&1; \
 	   ${DIFF} output/ex197_1.out ex197.tmp || printf "${PWD}\nPossible problem with ex197, diffs above\n=========================================\n"; \
@@ -2481,8 +2479,8 @@ runex197_2:
 	   ${DIFF} output/ex197_2.out ex197.tmp || printf "${PWD}\nPossible problem with ex197_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex197.tmp
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
-                                 ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
+TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
+                                 ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex8.PETSc runex8 ex8.rm \
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_3_baij runex9_3_sbaij runex9_4_baij runex9_4_sbaij ex9.rm \
                                  ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
                                  runex14 ex14.rm ex15.PETSc runex15 ex15.rm \
