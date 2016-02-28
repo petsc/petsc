@@ -58,7 +58,7 @@
 
    Concepts: X windows^drawing to
 
-.seealso: PetscDrawSynchronizedFlush(), PetscDrawDestroy(), PetscDrawCreate(), PetscDrawOpnOpenGL()
+.seealso: PetscDrawFlush(), PetscDrawDestroy(), PetscDrawCreate(), PetscDrawOpnOpenGL()
 @*/
 PetscErrorCode  PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *draw)
 {

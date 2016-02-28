@@ -6,7 +6,7 @@
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
 
-    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+   Logically Collective on PetscDrawAxis
 
     Input Parameters:
 +   axis - the axis
@@ -42,7 +42,7 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
 /*@
     PetscDrawAxisGetLimits -  Gets the limits (in user coords) of the axis
 
-    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+    Not Collective
 
     Input Parameters:
 +   axis - the axis

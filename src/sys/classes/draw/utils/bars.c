@@ -55,7 +55,6 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(bar,2);
-
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) {*bar = NULL; PetscFunctionReturn(0);}
 
@@ -84,7 +83,7 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
 /*@C
    PetscDrawBarSetData
 
-   Not Collective (ignored except on processor 0 of PetscDrawBar)
+   Logically Collective on PetscDrawBar
 
    Input Parameter:
 +  bar - The bar graph context.
@@ -153,7 +152,7 @@ PetscErrorCode  PetscDrawBarDestroy(PetscDrawBar *bar)
 /*@
   PetscDrawBarDraw - Redraws a bar graph.
 
-  Collective, but ignored by all processors except processor 0 in PetscDrawBar
+  Collective on PetscDrawBar
 
   Input Parameter:
 . bar - The bar graph context
@@ -176,10 +175,9 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
   ierr = PetscDrawIsNull(bar->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-
-  draw = bar->win;
-  if (bar->numBins < 1) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)bar),&rank);CHKERRQ(ierr);
+
+  if (bar->numBins < 1) PetscFunctionReturn(0);
 
   color = bar->color;
   if (color == PETSC_DRAW_ROTATE) bcolor = 2;
@@ -196,8 +194,8 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
       ymax = PetscMax(ymax,values[i]);
     }
   } else {
-    ymin      = bar->ymin;
-    ymax      = bar->ymax;
+    ymin = bar->ymin;
+    ymax = bar->ymax;
   }
   nplot  = numValues;  /* number of points to actually plot; if some are lower than requested tolerance */
   xmin   = 0.0;
@@ -218,13 +216,14 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
     }
   }
 
+  draw = bar->win;
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawAxisSetLimits(bar->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(bar->axis);CHKERRQ(ierr);
 
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   if (!rank) { /* Draw bins */
     for (i=0; i<nplot; i++) {
       idx = (bar->sort ? perm[numValues - i - 1] : i);
@@ -243,10 +242,10 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
       if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = 2;
     }
   }
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   if (bar->sort) {ierr = PetscFree(perm);CHKERRQ(ierr);}
 
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -256,7 +255,7 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
 /*@
   PetscDrawBarSetColor - Sets the color the bars will be drawn with.
 
-  Not Collective (ignored except on processor 0 of PetscDrawBar)
+  Logically Collective on PetscDrawBar
 
   Input Parameters:
 + bar - The bar graph context
@@ -280,7 +279,7 @@ PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
 /*@
   PetscDrawBarSort - Sorts the values before drawing the bar chart
 
-  Not Collective (ignored except on processor 0 of PetscDrawBar)
+  Logically Collective on PetscDrawBar
 
   Input Parameters:
 + bar - The bar graph context
@@ -308,7 +307,7 @@ PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tol
   points are added after this call, the limits will be adjusted to
   include those additional points.
 
-  Not Collective (ignored except on processor 0 of PetscDrawBar)
+  Logically Collective on PetscDrawBar
 
   Input Parameters:
 + bar - The bar graph context
@@ -336,7 +335,7 @@ PetscErrorCode  PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRe
   labels, color, etc. The axis context should not be destroyed by the
   application code.
 
-  Not Collective (ignored except on processor 0 of PetscDrawBar)
+  Not Collective, PetscDrawAxis is parallel if PetscDrawBar is parallel
 
   Input Parameter:
 . bar - The bar graph context

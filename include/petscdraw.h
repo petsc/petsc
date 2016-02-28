@@ -173,11 +173,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetPause(PetscDraw,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawGetPause(PetscDraw,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDrawPause(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw);
-PETSC_EXTERN PetscErrorCode PetscDrawFlush(PetscDraw);
-PETSC_EXTERN PetscErrorCode PetscDrawSynchronizedFlush(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawClear(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawFlush(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSave(PetscDraw);
-PETSC_EXTERN PetscErrorCode PetscDrawSynchronizedClear(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawBOP(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawEOP(PetscDraw);
 

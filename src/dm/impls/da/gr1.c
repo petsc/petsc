@@ -238,7 +238,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   PetscMPIInt       rank,size,tag1,tag2;
   PetscInt          i,n,N,step,istart,isize,j,nbounds;
   MPI_Status        status;
-  PetscReal         coors[4],ymin,ymax,min,max,xmin = 0.0,xmax = 0.0,tmp = 0.0,xgtmp = 0.0;
+  PetscReal         ymin,ymax,min,max,xmin = 0.0,xmax = 0.0,tmp = 0.0,xgtmp = 0.0;
   const PetscScalar *array,*xg;
   PetscDraw         draw;
   PetscBool         isnull,showmarkers = PETSC_FALSE;
@@ -246,6 +246,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   PetscDrawAxis     axis;
   Vec               xcoor;
   DMBoundaryType    bx;
+  const             char *title;
   const PetscReal   *bounds;
   PetscInt          *displayfields;
   PetscInt          k,ndisplayfields;
@@ -303,7 +304,9 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   for (k=0; k<ndisplayfields; k++) {
     j    = displayfields[k];
     ierr = PetscViewerDrawGetDraw(v,k,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+
+    ierr = DMDAGetFieldName(da,j,&title);CHKERRQ(ierr);
+    if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
 
     /*
         Determine the min and max y coordinate in plot
@@ -321,29 +324,17 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       min = PetscMin(min,bounds[2*j]);
       max = PetscMax(max,bounds[2*j+1]);
     }
-
     ierr = MPI_Reduce(&min,&ymin,1,MPIU_REAL,MPIU_MIN,0,comm);CHKERRQ(ierr);
     ierr = MPI_Reduce(&max,&ymax,1,MPIU_REAL,MPIU_MAX,0,comm);CHKERRQ(ierr);
 
+    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetHold(v,&hold);CHKERRQ(ierr);
     if (!hold) {
-      ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+      ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     }
     ierr = PetscViewerDrawGetDrawAxis(v,k,&axis);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)axis);CHKERRQ(ierr);
-    if (!rank) {
-      const char *title;
-
-      ierr = PetscDrawAxisSetLimits(axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
-      ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
-      ierr = PetscDrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
-      ierr = DMDAGetFieldName(da,j,&title);CHKERRQ(ierr);
-      if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
-    }
-    ierr = MPI_Bcast(coors,4,MPIU_REAL,0,comm);CHKERRQ(ierr);
-    if (rank) {
-      ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    }
+    ierr = PetscDrawAxisSetLimits(axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
 
     /* draw local part of vector */
     ierr = PetscObjectGetNewTag((PetscObject)xin,&tag1);CHKERRQ(ierr);
@@ -378,7 +369,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
         ierr = PetscDrawMarker(draw,PetscRealPart(xg[n-2]),PetscRealPart(array[j+step*(n-1)]),PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
-    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   }
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)

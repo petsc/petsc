@@ -7,7 +7,7 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 /*@
    PetscDrawAxisCreate - Generate the axis data structure.
 
-   Collective over PetscDraw
+   Collective on PetscDraw
 
    Input Parameters:
 .  win - PetscDraw object where axis to to be made
@@ -27,7 +27,6 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(axis,2);
-
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) {*axis = NULL; PetscFunctionReturn(0);}
 
@@ -57,7 +56,7 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 /*@
     PetscDrawAxisDestroy - Frees the space used by an axis structure.
 
-    Collective over PetscDrawAxis
+    Collective on PetscDrawAxis
 
     Input Parameters:
 .   axis - the axis context
@@ -88,7 +87,7 @@ PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis *axis)
     PetscDrawAxisSetColors -  Sets the colors to be used for the axis,
                          tickmarks, and text.
 
-    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+    Logically Collective on PetscDrawAxis
 
     Input Parameters:
 +   axis - the axis
@@ -104,6 +103,9 @@ PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(axis,ac,2);
+  PetscValidLogicalCollectiveInt(axis,tc,3);
+  PetscValidLogicalCollectiveInt(axis,cc,4);
   axis->ac = ac; axis->tc = tc; axis->cc = cc;
   PetscFunctionReturn(0);
 }
@@ -113,7 +115,7 @@ PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 /*@C
     PetscDrawAxisSetLabels -  Sets the x and y axis labels.
 
-    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+    Logically Collective on PetscDrawAxis
 
     Input Parameters:
 +   axis - the axis
@@ -148,7 +150,7 @@ PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const
     PetscDrawAxisSetHoldLimits -  Causes an axis to keep the same limits until this is called
         again
 
-    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+    Logically Collective on PetscDrawAxis
 
     Input Parameters:
 +   axis - the axis
@@ -168,6 +170,7 @@ PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool hold)
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
+  PetscValidLogicalCollectiveBool(axis,hold,2);
   axis->hold = hold;
   PetscFunctionReturn(0);
 }
@@ -177,7 +180,7 @@ PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool hold)
 /*@
     PetscDrawAxisDraw - PetscDraws an axis.
 
-    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+    Collective on PetscDrawAxis
 
     Input Parameter:
 .   axis - Axis structure
@@ -195,7 +198,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   int            i,ntick,numx,numy,ac,tc,cc;
   PetscMPIInt    rank;
   size_t         len;
-  PetscReal      tickloc[MAXSEGS],sep,h,w,tw,th,xl,xr,yl,yr;
+  PetscReal      coors[4],tickloc[MAXSEGS],sep,h,w,tw,th,xl,xr,yl,yr;
   char           *p;
   PetscDraw      draw;
   PetscBool      isnull;
@@ -206,11 +209,12 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   ierr = PetscDrawIsNull(axis->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)axis),&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
 
   draw = axis->win;
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  if (rank) goto finally;
+
   ac = axis->ac; tc = axis->tc; cc = axis->cc;
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
   if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
@@ -281,6 +285,12 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
     w    = xl + 1.5*tw;
     ierr = PetscDrawStringVertical(draw,w,h,cc,axis->ylabel);CHKERRQ(ierr);
   }
+
+  ierr = PetscDrawGetCoordinates(draw,&coors[0],&coors[1],&coors[2],&coors[3]);CHKERRQ(ierr);
+finally:
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+  ierr = MPI_Bcast(coors,4,MPIU_REAL,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

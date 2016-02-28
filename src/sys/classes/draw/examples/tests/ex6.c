@@ -30,8 +30,9 @@ int main(int argc,char **argv)
   ierr = PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap);CHKERRQ(ierr);
 
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,NULL,title,PETSC_DECIDE,PETSC_DECIDE,w,h,&draw);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)draw,"Peaks");CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetCoordinates(draw,-3,-3,3,3);CHKERRQ(ierr);
   for (j=rank; j<h; j+=size) {
@@ -43,7 +44,7 @@ int main(int argc,char **argv)
     }
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
   if (popup) {ierr = PetscDrawScalePopup(popup,-8,+8);CHKERRQ(ierr);}
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);

@@ -164,7 +164,7 @@ PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,char **title)
 /*@C
    PetscDrawSetTitle - Sets the title of a PetscDraw context.
 
-   Not collective (any processor or all may call this)
+   Collective on PetscDraw
 
    Input Parameters:
 +  draw - the graphics context
@@ -202,7 +202,7 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
 /*@C
    PetscDrawAppendTitle - Appends to the title of a PetscDraw context.
 
-   Not collective (any processor or all can call this)
+   Collective on PetscDraw
 
    Input Parameters:
 +  draw - the graphics context
@@ -219,18 +219,18 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
 PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
 {
   PetscErrorCode ierr;
-  size_t         len1,len2,len;
-  char           *newtitle;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (!title) PetscFunctionReturn(0);
+  if (title) PetscValidCharPointer(title,2);
+  if (!title || !title[0]) PetscFunctionReturn(0);
 
   if (draw->title) {
+    size_t len1,len2;
+    char   *newtitle;
     ierr = PetscStrlen(title,&len1);CHKERRQ(ierr);
     ierr = PetscStrlen(draw->title,&len2);CHKERRQ(ierr);
-    len  = len1 + len2;
-    ierr = PetscMalloc1(len + 1,&newtitle);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len1 + len2 + 1,&newtitle);CHKERRQ(ierr);
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     ierr = PetscFree(draw->title);CHKERRQ(ierr);

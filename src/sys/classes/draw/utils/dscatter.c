@@ -28,7 +28,7 @@ struct _p_PetscDrawSP {
 /*@C
     PetscDrawSPCreate - Creates a scatter plot data structure.
 
-    Collective over PetscDraw
+    Collective on PetscDraw
 
     Input Parameters:
 +   win - the window where the graph will be made.
@@ -53,7 +53,6 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidLogicalCollectiveInt(draw,dim,2);
   PetscValidPointer(drawsp,3);
-
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) {*drawsp = NULL; PetscFunctionReturn(0);}
 
@@ -90,7 +89,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 /*@
    PetscDrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
-   Logically Collective over PetscDrawSP
+   Logically Collective on PetscDrawSP
 
    Input Parameter:
 +  sp - the line graph context.
@@ -124,7 +123,7 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 /*@
    PetscDrawSPReset - Clears line graph to allow for reuse with new data.
 
-   Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
+   Logically Collective on PetscDrawSP
 
    Input Parameter:
 .  sp - the line graph context.
@@ -153,7 +152,7 @@ PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
 /*@C
    PetscDrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
-   Collective over PetscDrawSP
+   Collective on PetscDrawSP
 
    Input Parameter:
 .  sp - the line graph context
@@ -183,7 +182,7 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
 /*@
    PetscDrawSPAddPoint - Adds another point to each of the scatter plots.
 
-   Logically Collective over PetscDrawSP
+   Logically Collective on PetscDrawSP
 
    Input Parameters:
 +  sp - the scatter plot data structure
@@ -235,7 +234,7 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 /*@C
    PetscDrawSPAddPoints - Adds several points to each of the scatter plots.
 
-   Logically Collective over PetscDrawSP
+   Logically Collective on PetscDrawSP
 
    Input Parameters:
 +  sp - the LineGraph data structure
@@ -297,7 +296,7 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 /*@
    PetscDrawSPDraw - Redraws a scatter plot.
 
-   Collective, but ignored by all processors except processor 0 in PetscDrawSP
+   Collective on PetscDrawSP
 
    Input Parameter:
 +  sp - the line graph context
@@ -321,22 +320,22 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   ierr = PetscDrawIsNull(sp->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-
-  draw = sp->win;
-  if (sp->xmin > sp->xmax || sp->ymin > sp->ymax) PetscFunctionReturn(0);
-  if (sp->nopts < 1) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sp),&rank);CHKERRQ(ierr);
 
+  if (sp->xmin > sp->xmax || sp->ymin > sp->ymax) PetscFunctionReturn(0);
+  if (sp->nopts < 1) PetscFunctionReturn(0);
+
+  draw = sp->win;
   if (clear) {
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-    ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   }
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
 
   xmin = sp->xmin; xmax = sp->xmax; ymin = sp->ymin; ymax = sp->ymax;
   ierr = PetscDrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
 
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   if (!rank) {
     int i,j,dim=sp->dim,nopts=sp->nopts;
     for (i=0; i<dim; i++) {
@@ -345,9 +344,9 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
       }
     }
   }
-
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -359,7 +358,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Logically Collective over PetscDrawSP
+   Logically Collective on PetscDrawSP
 
    Input Parameters:
 +  xsp - the line graph context

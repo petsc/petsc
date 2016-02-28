@@ -514,7 +514,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 #endif
   }
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -528,7 +528,7 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   PetscMPIInt       rank,size,tag = ((PetscObject)viewer)->tag;
   PetscInt          i,start,end;
   MPI_Status        status;
-  PetscReal         coors[4],ymin,ymax,xmin,xmax,tmp = 0.0;
+  PetscReal         ymin,ymax,xmin,xmax,tmp = 0.0;
   PetscDraw         draw;
   PetscBool         isnull;
   PetscDrawAxis     axis;
@@ -536,10 +536,12 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
 
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   xmin = 1.e20; xmax = -1.e20;
   for (i=0; i<xin->map->n; i++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -556,20 +558,14 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   }
   ierr = MPI_Reduce(&xmin,&ymin,1,MPIU_REAL,MPIU_MIN,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   ierr = MPI_Reduce(&xmax,&ymax,1,MPIU_REAL,MPIU_MAX,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
+
+  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+
   ierr = PetscDrawAxisCreate(draw,&axis);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)axis);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLimits(axis,0.0,(double)xin->map->N,ymin,ymax);CHKERRQ(ierr);
-    ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
-    ierr = PetscDrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
-  }
+  ierr = PetscDrawAxisSetLimits(axis,0.0,(double)xin->map->N,ymin,ymax);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisDestroy(&axis);CHKERRQ(ierr);
-  ierr = MPI_Bcast(coors,4,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
-  if (rank) {ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);}
   /* draw local part of vector */
   ierr = VecGetOwnershipRange(xin,&start,&end);CHKERRQ(ierr);
   if (rank < size-1) { /*send value to right */
@@ -590,8 +586,10 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
     ierr = PetscDrawLine(draw,(PetscReal)start-1,tmp,(PetscReal)start,PetscRealPart(xarray[0]),PETSC_DRAW_RED);CHKERRQ(ierr);
 #endif
   }
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+
   ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

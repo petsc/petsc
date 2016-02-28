@@ -37,7 +37,7 @@ PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 
   PetscFunctionBegin;
   for (i=0; i<vdraw->draw_max; i++) {
-    if (vdraw->draw[i]) {ierr = PetscDrawSynchronizedFlush(vdraw->draw[i]);CHKERRQ(ierr);}
+    if (vdraw->draw[i]) {ierr = PetscDrawFlush(vdraw->draw[i]);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

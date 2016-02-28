@@ -645,26 +645,6 @@ static PetscErrorCode PetscDrawDestroy_Win32(PetscDraw draw)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawSynchronizedFlush_Win32"
-static PetscErrorCode PetscDrawSynchronizedFlush_Win32(PetscDraw draw)
-{
-  /* Multi Processor is not implemeted yet */
-  PetscFunctionBegin;
-  PetscDrawFlush_Win32(draw);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSynchronizedClear_Win32"
-static PetscErrorCode PetscDrawSynchronizedClear_Win32(PetscDraw draw)
-{
-  /* Multi Processor is not implemeted yet */
-  PetscFunctionBegin;
-  PetscDrawClear_Win32(draw);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MessageLoopThread_Win32"
 void MessageLoopThread_Win32(PetscDraw draw)
 {
@@ -739,13 +719,11 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_Win32,
                                       PetscDrawStringGetSize_Win32,
                                       0,
                                       PetscDrawClear_Win32,
-                                      PetscDrawSynchronizedFlush_Win32,
                                       PetscDrawRectangle_Win32,
                                       PetscDrawTriangle_Win32,
                                       0,
                                       PetscDrawGetMouseButton_Win32,
                                       PetscDrawPause_Win32,
-                                      PetscDrawSynchronizedClear_Win32,
                                       0,
                                       0,
                                       PetscDrawGetPopup_Win32,

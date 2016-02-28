@@ -123,7 +123,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
   ierr = PetscDrawLine(draw,xl,yr,xr,yr,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   ierr = PetscDrawLine(draw,xr,yr,xr,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   ierr = PetscDrawLine(draw,xr,yl,xl,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
 
   draw->port_xl = xl + .1*h;
   draw->port_xr = xr - .1*h;
@@ -205,7 +205,7 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
   }
   /* save previous drawport of window */
   ierr = PetscDrawGetViewPort(draw,&(*ports)->port_xl,&(*ports)->port_yl,&(*ports)->port_xr,&(*ports)->port_yr);CHKERRQ(ierr);
-  /* ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);*/  /* this causes flicker */
+  /* ierr = PetscDrawFlush(draw);CHKERRQ(ierr);*/  /* this causes flicker */
   PetscFunctionReturn(0);
 }
 
@@ -280,7 +280,7 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
     }
   }
   ierr = PetscDrawGetViewPort(draw,&(*ports)->port_xl,&(*ports)->port_yl,&(*ports)->port_xr,&(*ports)->port_yr);CHKERRQ(ierr);
-  /* ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr); */  /* this causes flicker */
+  /* ierr = PetscDrawFlush(draw);CHKERRQ(ierr); */  /* this causes flicker */
   PetscFunctionReturn(0);
 }
 

@@ -107,7 +107,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
     ierr = PetscDrawStringVertical(draw,xl,y,PETSC_DRAW_BLACK,zctx->name1);CHKERRQ(ierr);
   }
   /*
-     Ideally we would use the PetscDrawAxis object to manage displaying the coordinate limits 
+     Ideally we would use the PetscDrawAxis object to manage displaying the coordinate limits
      but that may require some refactoring.
   */
   ierr = MPIU_Allreduce(&xmin,&xminf,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
@@ -146,6 +146,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ZoomCtx            zctx;
   PetscDrawViewPorts *ports = NULL;
   PetscViewerFormat  format;
+  const char         *title;
   PetscInt           *displayfields;
   PetscInt           ndisplayfields,i,nbounds;
   const PetscReal    *bounds;
@@ -154,7 +155,9 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   zctx.showgrid = PETSC_FALSE;
 
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
   ierr = PetscViewerDrawGetBounds(viewer,&nbounds,&bounds);CHKERRQ(ierr);
 
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
@@ -264,10 +267,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-draw_ports",&useports,NULL);CHKERRQ(ierr);
   if (useports || format == PETSC_VIEWER_DRAW_PORTS) {
-    ierr       = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-    ierr       = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
-    zctx.name0 = 0;
-    zctx.name1 = 0;
+    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
+    zctx.name0 = zctx.name1 = NULL;
   } else {
     ierr = DMDAGetCoordinateName(da,0,&zctx.name0);CHKERRQ(ierr);
     ierr = DMDAGetCoordinateName(da,1,&zctx.name1);CHKERRQ(ierr);
@@ -278,11 +281,14 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   */
   for (i=0; i<ndisplayfields; i++) {
     zctx.k = displayfields[i];
-    if (useports) {
+    if (ports) {
       ierr = PetscDrawViewPortsSet(ports,i);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
     }
+
+    ierr = DMDAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
+    if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
 
     /*
         Determine the min and max color in plot
@@ -298,14 +304,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       zctx.max += 1.e-12;
     }
 
-    if (!rank) {
-      const char *title;
-
-      ierr = DMDAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
-      if (title) {
-        ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
-      }
-    }
     ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
     ierr = PetscInfo2(da,"DMDA 2d contour plot min %g max %g\n",(double)zctx.min,(double)zctx.max);CHKERRQ(ierr);
 

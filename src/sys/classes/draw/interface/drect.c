@@ -146,32 +146,3 @@ PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,Pets
   ierr = (*draw->ops->rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSave"
-/*@
-   PetscDrawSave - Saves a drawn image
-
-   Not Collective
-
-   Input Parameters:
-.  draw - the drawing context
-
-   Level: advanced
-
-   Notes: this is not normally called by the user, it is called by PetscDrawClear_X() to save a sequence of images.
-
-.seealso: PetscDrawSetSave()
-
-@*/
-PetscErrorCode  PetscDrawSave(PetscDraw draw)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->save) {
-    ierr = (*draw->ops->save)(draw);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
