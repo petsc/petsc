@@ -460,7 +460,12 @@ PetscErrorCode KSPReasonView(KSP ksp,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#if defined(PETSC_HAVE_THREADSAFETY)
+#define KSPReasonViewFromOptions KSPReasonViewFromOptionsUnsafe
+#define __FUNCT__ "KSPReasonViewFromOptionsUnsafe"
+#else
 #define __FUNCT__ "KSPReasonViewFromOptions"
+#endif
 /*@C
   KSPReasonViewFromOptions - Processes command line options to determine if/how a KSPReason is to be viewed.
 
