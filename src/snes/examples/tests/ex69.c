@@ -19,7 +19,7 @@ typedef struct {
 PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
 
 typedef struct {
-  PassiveReal lidvelocity,prandtl,grashof;  /* physical parameters */
+  PetscReal   lidvelocity,prandtl,grashof;  /* physical parameters */
   PetscBool   draw_contours;                /* flag - 1 indicates drawing contours */
   PetscBool   errorindomain;
   PetscBool   errorindomainmf;  
