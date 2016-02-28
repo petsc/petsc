@@ -285,7 +285,16 @@ runex4_sundials:
 	   if (${DIFF} output/ex4_sundials.out ex4.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex4_sundials, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4.tmp
-
+runex5:
+	-@${MPIEXEC} -n 1 ./ex5    > ex5_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5_1.tmp
+runex5_nox:
+	-@${MPIEXEC} -n 1 ./ex5 -nox   > ex5_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_nox, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5_1.tmp
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -nox -ts_max_steps 4   > ex6_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
@@ -679,7 +688,7 @@ runex41:
 	   ${RM} -f ex41.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm \
-                            ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
+                            ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
                             ex8.PETSc runex8 ex8.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
@@ -700,7 +709,7 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm 
                             ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
                             ex20opt_p.PETSc   ex20opt_p.rm \
                             ex20opt_ic.PETSc  ex20opt_ic.rm
-TESTEXAMPLES_C_X	  =
+TESTEXAMPLES_C_X	  = ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
