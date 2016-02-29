@@ -43,6 +43,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
+    help.addArgument('PETSc','-with-viewfromoptions=<bool>',      nargs.ArgBool(None, 1,'Support XXXSetFromOptions() calls, for calls with many small solvers turn this off'))
 
     return
 
@@ -1017,6 +1018,10 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
           self.addDefine('HAVE_'+baseName.upper(), 1)
           return
 
+  def configureViewFromOptions(self):
+    if not self.framework.argDB['with-viewfromoptions']:
+      self.addDefine('SKIP_VIEWFROMOPTIONS',1)
+
   def postProcessPackages(self):
     postPackages=[]
     for i in self.framework.packages:
@@ -1066,6 +1071,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.executeTest(self.configureGCOV)
     self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
+    self.executeTest(self.configureViewFromOptions)
     # dummy rules, always needed except for remote builds
     self.addMakeRule('remote','')
     self.addMakeRule('remoteclean','')
