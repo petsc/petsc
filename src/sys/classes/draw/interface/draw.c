@@ -253,30 +253,31 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_X,&match);CHKERRQ(ierr);
-  if (match) {
+  if (!match) PetscFunctionReturn(0);
 #if defined(PETSC_HAVE_POPEN)
+  if (draw->savefilemovie && draw->savefilename && !draw->savesinglefile) {
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-    if (!rank && draw->savefilename && draw->savefilemovie) {
+    if (!rank) {
       char       command[PETSC_MAX_PATH_LEN];
-      const char *fname = draw->savefilename;
+      const char *name = draw->savefilename;
       const char *ext   = draw->savefilenameext;
       FILE       *fd;
-      ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg  -i %s/%s_%%d%s %s.m4v",fname,fname,ext,fname);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg -i %s/%s_%%d%s %s.m4v",name,name,ext,name);CHKERRQ(ierr);
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
       ierr = PetscPClose(PETSC_COMM_SELF,fd,NULL);CHKERRQ(ierr);
     }
     ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
-#endif
-    if (draw->savefinalfilename) {
-      ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
-      draw->savefilecount = 0;
-      ierr = PetscDrawSave(draw);CHKERRQ(ierr);
-    }
-    ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
   }
+#endif
+  if (draw->savefinalfilename) {
+    draw->savesinglefile = PETSC_TRUE;
+    ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
+    draw->savefilecount = 0;
+    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+  }
+  ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__

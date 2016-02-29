@@ -596,11 +596,7 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                       0,
                                       PetscDrawGetSingleton_X,
                                       PetscDrawRestoreSingleton_X,
-#if defined(PETSC_HAVE_AFTERIMAGE)
                                       PetscDrawSave_X,
-#else
-                                      0,
-#endif
                                       PetscDrawSetSave_X,
                                       0,
                                       PetscDrawArrow_X,
