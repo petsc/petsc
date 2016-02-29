@@ -500,7 +500,7 @@ static const struct FieldDescription PhysicsFields_Euler[] = {{"Density",1},{"Mo
 int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord[], const PetscReal Lx);
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsSolution_Euler"
-static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
+static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
 {
   PetscInt i;
   Physics         phys = (Physics)ctx;
@@ -555,7 +555,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time, const Pets
     }
   }
   else if (eu->type==EULER_LINEAR_WAVE) {
-    initLinearWave(uu,gamma,x,mod->bounds[1]-mod->bounds[0]);
+    initLinearWave( uu, gamma, x, mod->bounds[1] - mod->bounds[0]);
   }
   else SETERRQ1(mod->comm,PETSC_ERR_SUP,"Unknown type %d",eu->type);
 
@@ -1273,7 +1273,6 @@ static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const Pet
 {
   Model          mod;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
   mod  = (Model) modctx;
   ierr = (*mod->solution)(mod, time, x, u, mod->solutionctx);CHKERRQ(ierr);
@@ -1717,8 +1716,8 @@ L10:
 } /* cvmgm_ */
 
 #undef __FUNCT__
-#define __FUNCT__ "riem1mdt_"
-int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar *pl,
+#define __FUNCT__ "riem1mdt"
+int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar *pl,
               PetscScalar *uxl, PetscScalar *rr, PetscScalar *pr,
               PetscScalar *uxr, PetscScalar *rstarl, PetscScalar *rstarr, PetscScalar *
               pstar, PetscScalar *ustar)
@@ -1886,7 +1885,7 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 		gamr + 1.) * *rr;
     }
     return iwave;
-} /* riem1mdt_ */
+}
 
 PetscScalar sign(PetscScalar x)
 {
@@ -1895,8 +1894,10 @@ PetscScalar sign(PetscScalar x)
     return 0.0;
 }
 /*        Riemann Solver */
+#undef __FUNCT__
+#define __FUNCT__ "riemannsolver"
 /* -------------------------------------------------------------------- */
-int riemannsolver_(PetscScalar *xcen, PetscScalar *xp,
+int riemannsolver(PetscScalar *xcen, PetscScalar *xp,
                    PetscScalar *dtt, PetscScalar *rl, PetscScalar *uxl, PetscScalar *pl,
                    PetscScalar *utl, PetscScalar *ubl, PetscScalar *gaml, PetscScalar *rho1l,
                    PetscScalar *rr, PetscScalar *uxr, PetscScalar *pr, PetscScalar *utr,
@@ -1929,7 +1930,7 @@ int riemannsolver_(PetscScalar *xcen, PetscScalar *xp,
 	}
 	return 0;
     }
-    int iwave = riem1mdt_(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, &ustar);
+    int iwave = riem1mdt(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, &ustar);
 
     x2 = *xcen + ustar * *dtt;
     d__1 = *xp - x2;
@@ -1992,8 +1993,9 @@ int riemannsolver_(PetscScalar *xcen, PetscScalar *xp,
 	*rho1 = *rho1l;
     }
     return iwave;
-} /* riemannsolver_ */
-
+} 
+#undef __FUNCT__
+#define __FUNCT__ "godunovflux"
 int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
                  PetscScalar *flux, const PetscScalar *nn, const int *ndim,
                  const PetscScalar *gamma)
@@ -2097,7 +2099,7 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
     rho1l = rl;
     rho1r = rr;
 
-    iwave = riemannsolver_(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
+    iwave = riemannsolver(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
                            rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
                            pm, &utm, &ubm, &gamm, &rho1m);
 
@@ -2189,7 +2191,8 @@ int eigenvectors(PetscScalar rv[][3], PetscScalar lv[][3], const PetscScalar ueq
   rv[2][2] = csnd;
   return 0;
 }
-
+#undef __FUNCT__
+#define __FUNCT__ "initLinearWave"
 int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord[], const PetscReal Lx)
 {
   PetscScalar p0,u0,wcp[3],wc[3];
@@ -2216,14 +2219,12 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
   ueq[0] = rho0;
   ueq[1] = u0;
   ueq[2] = p0;
-
   /* Project initial state to characteristic variables */
   eigenvectors(rv, lv, ueq, gamma);
   projecteqstate(wc, ueq, lv);
-  projecttoprim(vp, wc, rv);
   wcp[0] = wc[0];
   wcp[1] = wc[1];
-  wcp[2] = wc[2] + eps * cos(coord[0] * 8. * twopi / Lx);
+  wcp[2] = wc[2] + eps * cos(coord[0] * 2. * twopi / Lx);
   projecttoprim(vp, wcp, rv);
   ux->r = vp[0]; /* density */
   ux->ru[0] = vp[0] * vp[1]; /* x momentum */
@@ -2231,7 +2232,7 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
 #if defined DIM > 2
   if (dim>2) ux->ru[2] = 0.;
 #endif
-  /* E = rho * e + rho * v^2/2 */
+  /* E = rho * e + rho * v^2/2 = p/(gam-1) + rho*v^2/2 */
   ux->E = vp[2]/(gamma - 1.) + 0.5*vp[0]*vp[1]*vp[1];
   /* ux[5] = 0.; */
   /* ux(i,j,k,1)=vp(1) */
