@@ -1651,17 +1651,14 @@ static PetscErrorCode MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   } else {
     /* use contour shading to indicate magnitude of values */
     /* first determine max of all nonzero values */
+    PetscReal minv = 0.0, maxv = 0.0;
     PetscDraw popup;
-    PetscReal scale,maxv = 0.0;
 
     for (i=0; i<a->nz*a->bs2; i++) {
       if (PetscAbsScalar(a->a[i]) > maxv) maxv = PetscAbsScalar(a->a[i]);
     }
-    scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/maxv;
     ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {
-      ierr = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);
-    }
+    if (popup) {ierr = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);}
     for (i=0,row=0; i<mbs; i++,row+=bs) {
       for (j=a->i[i]; j<a->i[i+1]; j++) {
         y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
@@ -1669,7 +1666,7 @@ static PetscErrorCode MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
         aa  = a->a + j*bs2;
         for (k=0; k<bs; k++) {
           for (l=0; l<bs; l++) {
-            color = PETSC_DRAW_BASIC_COLORS + (PetscInt)(scale*PetscAbsScalar(*aa++));
+            color = PetscDrawRealToColor(PetscAbsScalar(*aa++),minv,maxv);
             ierr  = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
           }
         }

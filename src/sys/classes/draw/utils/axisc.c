@@ -204,14 +204,13 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
-
-  draw = axis->win;
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(axis->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)axis),&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
+  draw = axis->win;
   ac = axis->ac; tc = axis->tc; cc = axis->cc;
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
   if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
