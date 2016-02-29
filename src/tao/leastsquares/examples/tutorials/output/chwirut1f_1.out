@@ -1,47 +1,44 @@
 iter =   0, Function value 4575.71, Residual: Inf 
-iter =   1, Function value 4575.71, Residual: 3630.6 
-iter =   2, Function value 4575.71, Residual: 9676.42 
-iter =   3, Function value 4575.71, Residual: 2660.59 
-iter =   4, Function value 3775.94, Residual: 19769.8 
-iter =   5, Function value 2435.92, Residual: 14340.1 
-iter =   6, Function value 2435.92, Residual: 2594.57 
-iter =   7, Function value 2435.92, Residual: 328.649 
-iter =   8, Function value 2430.35, Residual: 242.82 
-iter =   9, Function value 2430.35, Residual: 80.274 
-iter =  10, Function value 2419.48, Residual: 159.584 
-iter =  11, Function value 2419.48, Residual: 41.3098 
-iter =  12, Function value 2417.79, Residual: 7.48275 
-iter =  13, Function value 2413.35, Residual: 124.193 
-iter =  14, Function value 2399.57, Residual: 1756.83 
-iter =  15, Function value 2399.57, Residual: 218.433 
-iter =  16, Function value 2393.48, Residual: 5024.86 
-iter =  17, Function value 2393.48, Residual: 60301.7 
-iter =  18, Function value 2385.4, Residual: 136966. 
-iter =  19, Function value 2385.4, Residual: 1264.87 
-iter =  20, Function value 2385.4, Residual: 76.5228 
-iter =  21, Function value 2384.53, Residual: 3.4621 
-iter =  22, Function value 2384.48, Residual: 4.65242 
-iter =  23, Function value 2384.48, Residual: 0.215406 
-iter =  24, Function value 2384.48, Residual: 0.449377 
-iter =  25, Function value 2384.48, Residual: 0.0306569 
-iter =  26, Function value 2384.48, Residual: 0.000704145 
-iter =  27, Function value 2384.48, Residual: 0.000119916 
-iter =  28, Function value 2384.48, Residual: 0.00133751 
-iter =  29, Function value 2384.48, Residual: 5.2266e-05 
-iter =  30, Function value 2384.48, Residual: 0.0107208 
-iter =  31, Function value 2384.48, Residual: 0.000357177 
-iter =  32, Function value 2384.48, Residual: 5.33448e-05 
-iter =  33, Function value 2384.48, Residual: 9.42158e-06 
+iter =   1, Function value 4575.71, Residual: 1815.3 
+iter =   2, Function value 4575.71, Residual: 4838.21 
+iter =   3, Function value 4575.71, Residual: 1330.29 
+iter =   4, Function value 3775.94, Residual: 9884.88 
+iter =   5, Function value 2435.92, Residual: 7170.04 
+iter =   6, Function value 2435.92, Residual: 1297.28 
+iter =   7, Function value 2435.92, Residual: 164.324 
+iter =   8, Function value 2430.35, Residual: 121.41 
+iter =   9, Function value 2430.35, Residual: 40.137 
+iter =  10, Function value 2419.48, Residual: 79.792 
+iter =  11, Function value 2419.48, Residual: 20.6549 
+iter =  12, Function value 2417.79, Residual: 3.74138 
+iter =  13, Function value 2413.35, Residual: 62.0967 
+iter =  14, Function value 2399.57, Residual: 878.413 
+iter =  15, Function value 2399.57, Residual: 109.216 
+iter =  16, Function value 2393.48, Residual: 2512.43 
+iter =  17, Function value 2393.48, Residual: 30150.8 
+iter =  18, Function value 2385.4, Residual: 68483.1 
+iter =  19, Function value 2385.4, Residual: 632.435 
+iter =  20, Function value 2385.4, Residual: 38.2614 
+iter =  21, Function value 2384.53, Residual: 1.73105 
+iter =  22, Function value 2384.48, Residual: 2.32621 
+iter =  23, Function value 2384.48, Residual: 0.107703 
+iter =  24, Function value 2384.48, Residual: 0.224689 
+iter =  25, Function value 2384.48, Residual: 0.0153285 
+iter =  26, Function value 2384.48, Residual: 0.000352073 
+iter =  27, Function value 2384.48, Residual: 0.0166487 
+iter =  28, Function value 2384.48, Residual: 0.00413971 
+iter =  29, Function value 2384.48, Residual: 0.000142352 
+iter =  30, Function value 2384.48, Residual: 1.75231e-05 
 Tao Object: 1 MPI processes
   type: pounders
       initial delta: 0.1
-      final delta: 0.000390625
-      model points: 7
+      final delta: 0.00078125
+      model points: 5
       subproblem solver: tron
-      total subproblem iterations: 68
+      total subproblem iterations: 62
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=9.42158e-06
+  Residual in Function/Gradient:=1.75231e-05
   Objective value=2384.48
-  total number of iterations=33,                          (max: 100)
-  total number of function evaluations=36,                  max: 4000
+  total number of iterations=30,                          (max: 100)
+  total number of function evaluations=33,                  max: 4000
   Solution converged:    ||g(X)||/|f(X)| <= grtol
