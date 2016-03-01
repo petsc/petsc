@@ -1103,17 +1103,21 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   PetscReal        refinementLimit;
   PetscInt         dim, cStart, cEnd;
   char             genname[1024], *name = NULL;
-  PetscBool        isUniform, isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg;
+  PetscBool        isUniform, isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg, localized;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
   ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
   if (isUniform) {
     CellRefiner cellRefiner;
 
     ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
-    ierr = DMPlexCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
+    ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
+    if (localized) {
+      ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);
+    }
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
@@ -1199,7 +1203,10 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %d is not supported.", dim);
   }
-  ierr = DMPlexCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
+  ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
+  if (localized) {
+    ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1209,19 +1216,23 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
 {
   DM             cdm = dm;
   PetscInt       r;
-  PetscBool      isUniform;
+  PetscBool      isUniform, localized;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
   if (!isUniform) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Non-uniform refinement is incompatible with the hierarchy");
   for (r = 0; r < nlevels; ++r) {
     CellRefiner cellRefiner;
 
     ierr = DMPlexGetCellRefiner_Internal(cdm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(cdm, cellRefiner, &dmRefined[r]);CHKERRQ(ierr);
-    ierr = DMPlexCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
-    ierr = DMPlexSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
+    ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
+    if (localized) {
+      ierr = DMLocalizeCoordinates(dmRefined[r]);CHKERRQ(ierr);
+    }
+    ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
     ierr = DMPlexSetRegularRefinement(dmRefined[r], PETSC_TRUE);CHKERRQ(ierr);
     cdm  = dmRefined[r];
   }

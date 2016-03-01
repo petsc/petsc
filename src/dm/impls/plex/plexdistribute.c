@@ -1399,7 +1399,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     for (p = 0; p < nleaves; p++) {
       /* Write new local id into old location */
       if (roots[p].rank == rank) {
-        rootNodes[roots[p].index].index = leaves[p];
+        rootNodes[roots[p].index].index = leaves ? leaves[p] : p;
       }
     }
   }
@@ -1645,7 +1645,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
   ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
   /* Copy BC */
-  ierr = DMPlexCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
+  ierr = DMCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
   /* Create sfNatural */
   if (dm->useNatural) {
     PetscSection section;
@@ -1742,5 +1742,106 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   if (sf) *sf = sfOverlap;
   else    {ierr = PetscSFDestroy(&sfOverlap);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(DMPLEX_DistributeOverlap, dm, 0, 0, 0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetGatherDM"
+/*@C
+  DMPlexGetGatherDM - Get a copy of the DMPlex that gathers all points on the
+  root process of the original's communicator.
+
+  Input Parameters:
+. dm - the original DMPlex object
+
+  Output Parameters:
+. gatherMesh - the gathered DM object, or NULL
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMPlexDistribute(), DMPlexGetRedundantDM()
+@*/
+PetscErrorCode DMPlexGetGatherDM(DM dm, DM * gatherMesh)
+{
+  MPI_Comm       comm;
+  PetscMPIInt    size;
+  PetscPartitioner oldPart, gatherPart;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  comm = PetscObjectComm((PetscObject)dm);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  *gatherMesh = NULL;
+  if (size == 1) PetscFunctionReturn(0);
+  ierr = DMPlexGetPartitioner(dm,&oldPart);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)oldPart);CHKERRQ(ierr);
+  ierr = PetscPartitionerCreate(comm,&gatherPart);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetType(gatherPart,PETSCPARTITIONERGATHER);CHKERRQ(ierr);
+  ierr = DMPlexSetPartitioner(dm,gatherPart);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(dm,0,NULL,gatherMesh);CHKERRQ(ierr);
+  ierr = DMPlexSetPartitioner(dm,oldPart);CHKERRQ(ierr);
+  ierr = PetscPartitionerDestroy(&gatherPart);CHKERRQ(ierr);
+  ierr = PetscPartitionerDestroy(&oldPart);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetRedundantDM"
+/*@C
+  DMPlexGetRedundantDM - Get a copy of the DMPlex that is completely copied on each process.
+
+  Input Parameters:
+. dm - the original DMPlex object
+
+  Output Parameters:
+. redundantMesh - the redundant DM object, or NULL
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMPlexDistribute(), DMPlexGetGatherDM()
+@*/
+PetscErrorCode DMPlexGetRedundantDM(DM dm, DM * redundantMesh)
+{
+  MPI_Comm       comm;
+  PetscMPIInt    size, rank;
+  PetscInt       pStart, pEnd, p;
+  PetscInt       numPoints = -1;
+  PetscSF        migrationSF, sfPoint;
+  DM             gatherDM, dmCoord;
+  PetscSFNode    *points;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  comm = PetscObjectComm((PetscObject)dm);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  *redundantMesh = NULL;
+  if (size == 1) PetscFunctionReturn(0);
+  ierr = DMPlexGetGatherDM(dm,&gatherDM);CHKERRQ(ierr);
+  if (!gatherDM) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(gatherDM,&pStart,&pEnd);CHKERRQ(ierr);
+  numPoints = pEnd - pStart;
+  ierr = MPI_Bcast(&numPoints,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numPoints,&points);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm,&migrationSF);CHKERRQ(ierr);
+  for (p = 0; p < numPoints; p++) {
+    points[p].index = p;
+    points[p].rank  = 0;
+  }
+  ierr = PetscSFSetGraph(migrationSF,pEnd-pStart,numPoints,NULL,PETSC_OWN_POINTER,points,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = DMPlexCreate(comm, redundantMesh);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *redundantMesh, "Redundant Mesh");CHKERRQ(ierr);
+  ierr = DMPlexMigrate(gatherDM, migrationSF, *redundantMesh);CHKERRQ(ierr);
+  ierr = DMPlexCreatePointSF(*redundantMesh, migrationSF, PETSC_FALSE, &sfPoint);CHKERRQ(ierr);
+  ierr = DMSetPointSF(*redundantMesh, sfPoint);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(*redundantMesh, &dmCoord);CHKERRQ(ierr);
+  if (dmCoord) {ierr = DMSetPointSF(dmCoord, sfPoint);CHKERRQ(ierr);}
+  ierr = PetscSFDestroy(&sfPoint);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
+  ierr = DMDestroy(&gatherDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

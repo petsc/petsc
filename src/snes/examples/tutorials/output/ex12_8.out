@@ -246,7 +246,6 @@ Label 'marker':
 [0]: 48 (1)
 [0]: 51 (1)
 [0]: 56 (1)
-[0]: 20 (-1)
 Local function:
 Vec Object: 1 MPI processes
   type: seq

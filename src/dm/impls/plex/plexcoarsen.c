@@ -9,7 +9,6 @@
 #define __FUNCT__ "DMCoarsen_Plex"
 PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
 #ifdef PETSC_HAVE_PRAGMATIC
   DM             udm, coordDM;
   DMLabel        bd;
@@ -29,7 +28,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_PRAGMATIC
-  if (!mesh->coarseMesh) {
+  if (!dm->coarseMesh) {
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(coordDM, &coordSection);CHKERRQ(ierr);
@@ -71,7 +70,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
     }
     /* Create boundary mesh */
     ierr = DMLabelCreate("boundary", &bd);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);
+    ierr = DMMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(bd, 1, &bdIS);CHKERRQ(ierr);
     ierr = DMLabelGetStratumSize(bd, 1, &numBdFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(bdIS, &faces);CHKERRQ(ierr);
@@ -200,15 +199,15 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
     }
     pragmatic_get_elements(cells);
     /* TODO Read out markers for boundary */
-    ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCoarseCells, numCoarseVertices, numCorners, PETSC_TRUE, cells, dim, coarseCoords, &mesh->coarseMesh);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCoarseCells, numCoarseVertices, numCorners, PETSC_TRUE, cells, dim, coarseCoords, &dm->coarseMesh);CHKERRQ(ierr);
     pragmatic_finalize();
     ierr = PetscFree5(x, y, z, metric, cells);CHKERRQ(ierr);
     ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
     ierr = PetscFree(coarseCoords);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscObjectReference((PetscObject) mesh->coarseMesh);CHKERRQ(ierr);
-  *dmCoarsened = mesh->coarseMesh;
+  ierr = PetscObjectReference((PetscObject) dm->coarseMesh);CHKERRQ(ierr);
+  *dmCoarsened = dm->coarseMesh;
   PetscFunctionReturn(0);
 }
 
@@ -223,8 +222,8 @@ PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]
   PetscFunctionBegin;
   for (c = nlevels-1; c >= 0; --c) {
     ierr = DMCoarsen(rdm, PetscObjectComm((PetscObject) dm), &dmCoarsened[c]);CHKERRQ(ierr);
-    ierr = DMPlexCopyBoundary(rdm, dmCoarsened[c]);CHKERRQ(ierr);
-    ierr = DMPlexSetCoarseDM(rdm, dmCoarsened[c]);CHKERRQ(ierr);
+    ierr = DMCopyBoundary(rdm, dmCoarsened[c]);CHKERRQ(ierr);
+    ierr = DMSetCoarseDM(rdm, dmCoarsened[c]);CHKERRQ(ierr);
     rdm  = dmCoarsened[c];
   }
   PetscFunctionReturn(0);

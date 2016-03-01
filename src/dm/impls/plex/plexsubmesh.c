@@ -48,6 +48,50 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexLabelComplete_Internal"
+PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool completeCells)
+{
+  IS              valueIS;
+  const PetscInt *values;
+  PetscInt        numValues, v, cStart, cEnd;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+  for (v = 0; v < numValues; ++v) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        numPoints, p;
+
+    ierr = DMLabelGetStratumSize(label, values[v], &numPoints);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      PetscInt  q = points[p];
+      PetscInt *closure = NULL;
+      PetscInt  closureSize, c;
+
+      if (cStart <= q && q < cEnd && !completeCells) { /* skip cells */
+        continue;
+      }
+      ierr = DMPlexGetTransitiveClosure(dm, q, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (c = 0; c < closureSize*2; c += 2) {
+        ierr = DMLabelSetValue(label, closure[c], values[v]);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm, q, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexLabelComplete"
 /*@
   DMPlexLabelComplete - Starting with a label marking points on a surface, we add the transitive closure to the surface
@@ -65,38 +109,10 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
 @*/
 PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
 {
-  IS              valueIS;
-  const PetscInt *values;
-  PetscInt        numValues, v;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
-  ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
-  ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
-  for (v = 0; v < numValues; ++v) {
-    IS              pointIS;
-    const PetscInt *points;
-    PetscInt        numPoints, p;
-
-    ierr = DMLabelGetStratumSize(label, values[v], &numPoints);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
-    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-    for (p = 0; p < numPoints; ++p) {
-      PetscInt *closure = NULL;
-      PetscInt  closureSize, c;
-
-      ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (c = 0; c < closureSize*2; c += 2) {
-        ierr = DMLabelSetValue(label, closure[c], values[v]);CHKERRQ(ierr);
-      }
-      ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
-    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-  }
-  ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
-  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete_Internal(dm, label, PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -150,6 +166,61 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
         if ((point >= cStart) && (point < cEnd)) {ierr = DMLabelSetValue(label, point, values[v]);CHKERRQ(ierr); break;}
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_FALSE, &closureSize, &closure);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexLabelClearCells"
+/*@
+  DMPlexLabelClearCells - Remove cells from a label
+
+  Input Parameters:
++ dm - The DM
+- label - A DMLabel marking surface points and their adjacent cells
+
+  Output Parameter:
+. label - A DMLabel without cells
+
+  Level: developer
+
+  Note: This undoes DMPlexLabelAddCells()
+
+.seealso: DMPlexLabelComplete(), DMPlexLabelCohesiveComplete(), DMPlexLabelAddCells()
+@*/
+PetscErrorCode DMPlexLabelClearCells(DM dm, DMLabel label)
+{
+  IS              valueIS;
+  const PetscInt *values;
+  PetscInt        numValues, v, cStart, cEnd, cEndInterior;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+  ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+  for (v = 0; v < numValues; ++v) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        numPoints, p;
+
+    ierr = DMLabelGetStratumSize(label, values[v], &numPoints);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      PetscInt point = points[p];
+
+      if (point >= cStart && point < cEnd) {
+        ierr = DMLabelClearValue(label,point,values[v]);CHKERRQ(ierr);
+      }
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
@@ -308,21 +379,35 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   PetscSection   coordSection, newCoordSection;
   Vec            coordinates, newCoordinates;
   PetscScalar   *coords, *newCoords;
-  PetscInt       coordSize;
-  PetscInt       dim, depth = 0, vStart, vEnd, vStartNew, vEndNew, v;
+  PetscInt       coordSize, sStart, sEnd;
+  PetscInt       dim, depth = 0, cStart, cEnd, cStartNew, cEndNew, c, vStart, vEnd, vStartNew, vEndNew, v;
+  PetscBool      hasCells;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   /* Step 8: Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmNew, 0, &vStartNew, &vEndNew);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dmNew, 0, &cStartNew, &cEndNew);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(newCoordSection, vStartNew, vEndNew);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection, &sStart, &sEnd);CHKERRQ(ierr);
+  hasCells = sStart == cStart ? PETSC_TRUE : PETSC_FALSE;
+  ierr = PetscSectionSetChart(newCoordSection, hasCells ? cStartNew : vStartNew, vEndNew);CHKERRQ(ierr);
+  if (hasCells) {
+    for (c = cStart; c < cEnd; ++c) {
+      PetscInt cNew = DMPlexShiftPoint_Internal(c, depth, depthShift), dof;
+
+      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(newCoordSection, cNew, dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(newCoordSection, cNew, 0, dof);CHKERRQ(ierr);
+    }
+  }
   for (v = vStartNew; v < vEndNew; ++v) {
     ierr = PetscSectionSetDof(newCoordSection, v, dim);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldDof(newCoordSection, v, 0, dim);CHKERRQ(ierr);
@@ -339,15 +424,23 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(newCoordinates, &newCoords);CHKERRQ(ierr);
+  if (hasCells) {
+    for (c = cStart; c < cEnd; ++c) {
+      PetscInt cNew = DMPlexShiftPoint_Internal(c, depth, depthShift), dof, off, noff, d;
+
+      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, c, &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(newCoordSection, cNew, &noff);CHKERRQ(ierr);
+      for (d = 0; d < dof; ++d) newCoords[noff+d] = coords[off+d];
+    }
+  }
   for (v = vStart; v < vEnd; ++v) {
     PetscInt dof, off, noff, d;
 
     ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(newCoordSection, DMPlexShiftPoint_Internal(v, depth, depthShift), &noff);CHKERRQ(ierr);
-    for (d = 0; d < dof; ++d) {
-      newCoords[noff+d] = coords[off+d];
-    }
+    for (d = 0; d < dof; ++d) newCoords[noff+d] = coords[off+d];
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(newCoordinates, &newCoords);CHKERRQ(ierr);
@@ -425,6 +518,8 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
     ierr = DMCreateLabel(dmNew, lname);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
     ierr = DMGetLabel(dmNew, lname, &newlabel);CHKERRQ(ierr);
+    ierr = DMLabelGetDefaultValue(label,&val);CHKERRQ(ierr);
+    ierr = DMLabelSetDefaultValue(newlabel,val);CHKERRQ(ierr);
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
     ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
@@ -732,7 +827,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
     ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
   }
   ierr = DMPlexConstructGhostCells_Internal(dm, label, numGhostCells, gdm);CHKERRQ(ierr);
-  ierr = DMPlexCopyBoundary(dm, gdm);CHKERRQ(ierr);
+  ierr = DMCopyBoundary(dm, gdm);CHKERRQ(ierr);
   *dmGhosted = gdm;
   PetscFunctionReturn(0);
 }

@@ -16,6 +16,7 @@ struct _n_DMLabel {
   PetscObjectState state;
   char       *name;           /* Label name */
   PetscInt    numStrata;      /* Number of integer values */
+  PetscInt    defaultValue;   /* Background value when no value explicitly given */
   PetscInt   *stratumValues;  /* Value of each stratum */
   /* Basic sorted array storage */
   PetscBool  *arrayValid;     /* The array storage is valid (no additions need to be merged in) */

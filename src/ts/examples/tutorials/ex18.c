@@ -284,6 +284,22 @@ static void f0_lap_doubly_periodic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[1] =  2.0*sin(2.0*PETSC_PI*x[1])*cos(2.0*PETSC_PI*x[0]);
 }
 
+void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+{
+  const PetscInt Ncomp = dim;
+  PetscInt       compI, d;
+
+  for (compI = 0; compI < Ncomp; ++compI) {
+    for (d = 0; d < dim; ++d) {
+      g3[((compI*Ncomp+compI)*dim+d)*dim+d] = 1.0;
+    }
+  }
+}
+
+/* \frac{\partial\phi}{\partial t} + \nabla\phi \cdot \mathbf{u} + \phi \nabla \cdot \mathbf{u} = 0 */
 static void f0_advection(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -301,6 +317,43 @@ static void f1_advection(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[0] = 0.0;
+}
+
+void g0_adv_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+               PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+{
+  PetscInt d;
+  g0[0] = u_tShift;
+  for (d = 0; d < dim; ++d) g0[0] += u_x[d*dim+d];
+}
+
+void g1_adv_pp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+               PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) g1[d] = u[d];
+}
+
+void g0_adv_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+               PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) g0[0] += u_x[dim*dim+d];
+}
+
+void g1_adv_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+               PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) g1[d*dim+d] = u[dim];
 }
 
 static void riemann_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscScalar *flux, void *ctx)
@@ -345,7 +398,7 @@ static PetscErrorCode constant_x_2d(PetscInt dim, PetscReal time, const PetscRea
   PetscErrorCode  ierr;
   u[0] = x[0];
   u[1] = x[1] + t;
-  ierr = DMPlexLocalizeCoordinate(globalUser->dm, u, u);CHKERRQ(ierr);
+  ierr = DMLocalizeCoordinate(globalUser->dm, u, u);CHKERRQ(ierr);
   return 0;
 }
 
@@ -699,14 +752,14 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   if (label) {
     const PetscInt id = 1;
 
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   }
   ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 1, 0, NULL, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "outflow", "Face Sets", 1, 0, NULL, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 1, 0, NULL, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, PETSC_FALSE, "outflow", "Face Sets", 1, 0, NULL, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -745,12 +798,16 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetResidual(prob, 0, f0_lap_u, f1_lap_u);CHKERRQ(ierr);
       break;
     }
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
     break;
   case VEL_SHEAR:
     ierr = PetscDSSetResidual(prob, 0, f0_zero_u, f1_lap_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
     break;
   }
   ierr = PetscDSSetResidual(prob, 1, f0_advection, f1_advection);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(prob, 1, 1, g0_adv_pp, g1_adv_pp, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(prob, 1, 0, g0_adv_pu, g1_adv_pu, NULL, NULL);CHKERRQ(ierr);
   if (user->velocityDist == VEL_ZERO) {ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);}
   else                                {ierr = PetscDSSetRiemannSolver(prob, 1, riemann_coupled_advection);CHKERRQ(ierr);}
 
@@ -795,10 +852,10 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     else             {ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);}
 
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
 
     /* Coordinates were never localized for coarse meshes */
-    if (cdm) {ierr = DMPlexLocalizeCoordinates(cdm);CHKERRQ(ierr);}
+    if (cdm) {ierr = DMLocalizeCoordinates(cdm);CHKERRQ(ierr);}
   }
   ierr = PetscDSViewFromOptions(prob, NULL, "-ds_view");CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
@@ -828,7 +885,7 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
     *dm  = gdm;
   }
   /* Localize coordinates */
-  ierr = DMPlexLocalizeCoordinates(*dm);CHKERRQ(ierr);
+  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   /* Setup problem */
   ierr = SetupDiscretization(*dm, user);CHKERRQ(ierr);
@@ -1073,18 +1130,22 @@ int main(int argc, char **argv)
     ierr = PetscOptionsHasName(NULL,"", "-use_implicit", &isImplicit);CHKERRQ(ierr);
     if (isImplicit) {
       ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user);CHKERRQ(ierr);
+      ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &user);CHKERRQ(ierr);
     }
+    ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &user);CHKERRQ(ierr);
     ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, &user);CHKERRQ(ierr);
   } else {
+    ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &user);CHKERRQ(ierr);
     ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &user);CHKERRQ(ierr);
+    ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &user);CHKERRQ(ierr);
   }
   if (user.useFV) {ierr = TSMonitorSet(ts, MonitorFunctionals, &user, NULL);CHKERRQ(ierr);}
   ierr = TSSetDuration(ts, 1, 2.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts, 0.0, 0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = DMPlexProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, 0.0, user.initialGuess, ctxs, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, user.initialGuess, ctxs, INSERT_VALUES, u);CHKERRQ(ierr);
   if (user.useFV) {ierr = SetInitialConditionFVM(dm, u, 1, user.initialGuess[1], ctxs[1]);CHKERRQ(ierr);}
   ierr = VecViewFromOptions(u, NULL, "-init_vec_view");CHKERRQ(ierr);
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);

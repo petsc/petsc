@@ -58,6 +58,10 @@ typedef struct {
   PetscInt dummy;
 } PetscPartitioner_Simple;
 
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_Gather;
+
 /* Utility struct to store the contents of a Gmsh file in memory */
 typedef struct {
   PetscInt dim;      /* Entity dimension */
@@ -78,21 +82,6 @@ typedef struct {
   int   nd;       /* Either ND or element-type */
   void *data;
 } FluentSection;
-
-struct _n_Boundary {
-  const char *name;
-  const char *labelname;
-  DMLabel     label;
-  PetscBool   essential;
-  PetscInt    field;
-  PetscInt    numcomps;
-  PetscInt   *comps;
-  void      (*func)();
-  PetscInt    numids;
-  PetscInt   *ids;
-  void       *ctx;
-  DMBoundary  next;
-};
 
 struct _PetscGridHash {
   PetscInt     dim;
@@ -125,7 +114,6 @@ typedef struct {
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
   /* Hierarchy */
-  DM                   coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
   PetscBool            regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
 
   /* Generation */
@@ -168,9 +156,6 @@ typedef struct {
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */
 
-  /* Problem definition */
-  DMBoundary           boundary;          /* List of boundary conditions */
-
   /* Geometry */
   PetscReal            minradius;         /* Minimum distance from cell centroid to face */
   PetscBool            useHashLocation;   /* Use grid hashing for point location */
@@ -212,11 +197,15 @@ PETSC_EXTERN PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefi
 PETSC_EXTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const PetscReal[], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer, PetscInt, PetscBool, PetscBool, GmshElement **);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
-PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems*,DM);
+PETSC_EXTERN PetscErrorCode DMPlexLabelComplete_Internal(DM,DMLabel,PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM,DM,const char *,DM*);
+PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM,DM,PetscSF,PetscInt *,Mat);
+PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM,PetscSection,PetscInt,PetscInt,const PetscInt*,const PetscScalar*,PetscInt*,PetscInt*,PetscInt**,PetscScalar**,PetscInt*,PetscBool);
+PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,PetscInt,PetscInt []);
+PETSC_EXTERN PetscErrorCode indicesPointFields_private(PetscSection,PetscInt,PetscInt,PetscInt [],PetscBool,PetscInt,PetscInt []);
 
 #undef __FUNCT__
 #define __FUNCT__ "DihedralInvert"
@@ -381,7 +370,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt
     PetscInt       dof,cdof;
     *start = *end = 0; /* Silence overzealous compiler warning */
     if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
-    if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be crated automatically by DMGetDefaultGlobalSection()");
+    if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be created automatically by DMGetDefaultGlobalSection()");
     ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(dm->defaultGlobalSection, point, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(dm->defaultGlobalSection, point, &cdof);CHKERRQ(ierr);

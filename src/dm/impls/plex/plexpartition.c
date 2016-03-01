@@ -580,7 +580,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 
   Level: beginner
 
-.seealso: PetscPartitionerSetType(), PETSCPARTITIONERCHACO, PETSCPARTITIONERPARMETIS, PETSCPARTITIONERSHELL, PETSCPARTITIONERSIMPLE
+.seealso: PetscPartitionerSetType(), PETSCPARTITIONERCHACO, PETSCPARTITIONERPARMETIS, PETSCPARTITIONERSHELL, PETSCPARTITIONERSIMPLE, PETSCPARTITIONERGATHER
 @*/
 PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 {
@@ -949,6 +949,98 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner part)
   ierr = PetscPartitionerInitialize_Simple(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerDestroy_Gather"
+PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part)
+{
+  PetscPartitioner_Gather *p = (PetscPartitioner_Gather *) part->data;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(p);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Gather_Ascii"
+PetscErrorCode PetscPartitionerView_Gather_Ascii(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Gather Graph Partitioner:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Gather"
+PetscErrorCode PetscPartitionerView_Gather(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscPartitionerView_Gather_Ascii(part, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerPartition_Gather"
+PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
+{
+  PetscInt       np;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition);CHKERRQ(ierr);
+  ierr = PetscSectionSetDof(partSection,0,numVertices);CHKERRQ(ierr);
+  for (np = 1; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, 0);CHKERRQ(ierr);}
+  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerInitialize_Gather"
+PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part)
+{
+  PetscFunctionBegin;
+  part->ops->view      = PetscPartitionerView_Gather;
+  part->ops->destroy   = PetscPartitionerDestroy_Gather;
+  part->ops->partition = PetscPartitionerPartition_Gather;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCPARTITIONERGATHER = "gather" - A PetscPartitioner object
+
+  Level: intermediate
+
+.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerCreate_Gather"
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner part)
+{
+  PetscPartitioner_Gather *p;
+  PetscErrorCode           ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  part->data = p;
+
+  ierr = PetscPartitionerInitialize_Gather(part);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPartitionerDestroy_Chaco"
