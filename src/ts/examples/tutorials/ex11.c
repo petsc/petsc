@@ -741,18 +741,26 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     if (is) {
       eu->type = EULER_LINEAR_WAVE;
       mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_PERIODIC;
+      PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"linear_wave");
     }
     else {
       if (DIM != 2) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
       ierr = PetscStrcmp(type,"iv_shock", &is);CHKERRQ(ierr);
-      if (is) eu->type = EULER_IV_SHOCK;
+      if (is) {
+        eu->type = EULER_IV_SHOCK;
+        PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"iv_shock");
+      }
       else {
         ierr = PetscStrcmp(type,"ss_shock", &is);CHKERRQ(ierr);
-        if (is) eu->type = EULER_SS_SHOCK;
+        if (is) {
+          eu->type = EULER_SS_SHOCK;
+          PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"ss_shock");
+        }
         else {
           ierr = PetscStrcmp(type,"shock_tube", &is);CHKERRQ(ierr);
           if (is) eu->type = EULER_SHOCK_TUBE;
           else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown Euler type %s",type);
+          PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"shock_tube");
         }
       }
     }
