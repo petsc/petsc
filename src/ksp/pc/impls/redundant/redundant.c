@@ -58,7 +58,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscMPIInt    size;
   MPI_Comm       comm,subcomm;
   Vec            x;
-  const char     *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
@@ -69,31 +68,12 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
   if (!pc->setupcalled) {
     PetscInt mloc_sub;
-    if (!red->psubcomm) {
-      ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
-      ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
-      ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
-      /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type interlaced */
-      ierr = PetscSubcommSetFromOptions(red->psubcomm);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
-
-      /* create a new PC that processors in each subcomm have copy of */
+    if (!red->psubcomm) { /* create red->psubcomm, new ksp and pc over subcomm */
+      KSP ksp;
+      ierr = PCRedundantGetKSP(pc,&ksp);CHKERRQ(ierr);
       subcomm = PetscSubcommChild(red->psubcomm);
-
-      ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
-      ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
-      ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
-      ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
-      ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
-
-      ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
-    } else {
-      subcomm = PetscSubcommChild(red->psubcomm);
-    }
+    } 
+    subcomm = PetscSubcommChild(red->psubcomm);
 
     if (red->useparallelmat) {
       /* grab the parallel matrix and put it into processors of a subcomminicator */
@@ -393,9 +373,32 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
+  MPI_Comm       comm,subcomm;
+  const char     *prefix;
 
   PetscFunctionBegin;
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
+  if (!red->psubcomm) {
+    ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+    ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
+    ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
+    ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
+
+    /* create a new PC that processors in each subcomm have copy of */
+    subcomm = PetscSubcommChild(red->psubcomm);
+
+    ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(red->ksp,pc->erroriffailure);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
+    ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
+    ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
+
+    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
+  }
   *innerksp = red->ksp;
   PetscFunctionReturn(0);
 }
