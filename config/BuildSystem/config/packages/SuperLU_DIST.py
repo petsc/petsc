@@ -39,17 +39,14 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
-    if (self.compilers.c99flag == None):
-      raise RuntimeError('SUPERLU_DIST: install requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
-    if not self.make.haveGNUMake:
-      raise RuntimeError('SUPERLU_DIST: install requires GNU make. Suggest using --download-make')
-
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
 
+    metis_inc = self.headers.toStringNoDupes(self.metis.include)[2:]
+    parmetis_inc = self.headers.toStringNoDupes(self.parmetis.include)[2:]
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
-    args.append('-DTPL_PARMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:])
-    args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib)+'"')
+    args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+metis_inc+';'+parmetis_inc+'"')
+    args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib+self.metis.lib)+'"')
 
     if self.indexTypes.integerSize == 64:
       args.append('-DXSDK_INDEX_SIZE=64')
@@ -58,6 +55,10 @@ class Configure(config.package.CMakePackage):
     args.append('-Denable_examples=0')
     #  CMake in SuperLU should set this; but like many other packages it does not
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
+    args.append('-DMPI_C_COMPILER:STRING="'+self.framework.getCompiler()+'"')
+    args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
+    args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
+    args.append('-DMPI_C_LIBRARIES:STRING=""')
 
     return args
 
