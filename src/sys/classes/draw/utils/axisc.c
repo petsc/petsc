@@ -43,9 +43,9 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
   ad->ac        = PETSC_DRAW_BLACK;
   ad->tc        = PETSC_DRAW_BLACK;
   ad->cc        = PETSC_DRAW_BLACK;
-  ad->xlabel    = 0;
-  ad->ylabel    = 0;
-  ad->toplabel  = 0;
+  ad->xlabel    = NULL;
+  ad->ylabel    = NULL;
+  ad->toplabel  = NULL;
 
   *axis = ad;
   PetscFunctionReturn(0);
@@ -222,9 +222,9 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
 
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
-  numx = (int)(.15*(xr-xl)/tw); if (numx > 6) numx = 6;if (numx< 2) numx = 2;
-  numy = (int)(.50*(yr-yl)/th); if (numy > 6) numy = 6;if (numy< 2) numy = 2;
-  xl  -= 11*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
+  numx = (int)(.15*(xr-xl)/tw); if (numx > 6) numx = 6; if (numx< 2) numx = 2;
+  numy = (int)(.50*(yr-yl)/th); if (numy > 6) numy = 6; if (numy< 2) numy = 2;
+  xl -= 11*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
   if (axis->xlabel) yl -= 2*th;
   if (axis->ylabel) xl -= 2*tw;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);

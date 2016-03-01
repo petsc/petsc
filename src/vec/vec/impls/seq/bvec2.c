@@ -462,6 +462,8 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_Seq_Draw_LG"
 PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
+  PetscDraw         draw;
+  PetscBool         isnull;
   PetscErrorCode    ierr;
   PetscInt          i,c,bs = PetscAbs(xin->map->bs),n = xin->map->n/bs;
   PetscDrawLG       lg;
@@ -470,6 +472,10 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
   int               colors[] = {PETSC_DRAW_RED};
 
   PetscFunctionBegin;
+  ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
   ierr = PetscMalloc2(n,&xx,n,&yy);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
   for (c=0; c<bs; c++) {

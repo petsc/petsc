@@ -46,7 +46,7 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
   }
   if (dpause != -1) goto theend;
 
-  ierr = PetscDrawGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
+  ierr = PetscDrawGetMouseButton(draw,&button,&xc,&yc,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
   xmin = xl; xmax = xr; w = xr - xl;
   ymin = yl; ymax = yr; h = yr - yl;
@@ -70,7 +70,7 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
     ierr = (*func)(draw,ctx);CHKERRQ(ierr);
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-    ierr = PetscDrawGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
+    ierr = PetscDrawGetMouseButton(draw,&button,&xc,&yc,NULL,NULL);CHKERRQ(ierr);
   }
   ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 theend:
