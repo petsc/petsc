@@ -353,6 +353,18 @@ cdef class DMDA(DM):
                                           _ymin, _ymax,
                                           _zmin, _zmax) )
 
+    def setCoordinateName(self, index, name):
+        cdef PetscInt ival = asInt(index)
+        cdef const_char *cval = NULL
+        name = str2bytes(name, &cval)
+        CHKERR( DMDASetCoordinateName(self.dm, ival, cval) )
+
+    def getCoordinateName(self, index):
+        cdef PetscInt ival = asInt(index)
+        cdef const_char *cval = NULL
+        CHKERR( DMDAGetCoordinateName(self.dm, ival, &cval) )
+        return bytes2str(cval)
+
     def getBoundingBox(self):
         cdef PetscInt i,dim=0
         CHKERR( DMDAGetDim(self.dm, &dim) )

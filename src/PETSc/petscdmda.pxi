@@ -80,6 +80,8 @@ cdef extern from * nogil:
 
     int DMDASetFieldName(PetscDM,PetscInt,const_char[])
     int DMDAGetFieldName(PetscDM,PetscInt,const_char*[])
+    int DMDASetCoordinateName(PetscDM,PetscInt,const_char[])
+    int DMDAGetCoordinateName(PetscDM,PetscInt,const_char*[])
 
 # --------------------------------------------------------------------
 
