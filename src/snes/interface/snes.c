@@ -1344,6 +1344,9 @@ PetscErrorCode  SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
    Notes:
    This counter is reset to zero for each successive call to SNESSolve() unless SNESSetCountersReset() is used.
 
+   If the linear solver fails inside the SNESSolve() the iterations for that call to the linear solver are not included. If you wish to count them 
+   then call KSPGetIterationNumber() after the failed solve.
+
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
