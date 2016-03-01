@@ -625,6 +625,8 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   PetscInt    i;
   const EulerNode *xI = (const EulerNode*)a_xI;
   EulerNode       *xG = (EulerNode*)a_xG;
+  Physics         phys = (Physics)ctx;
+  Physics_Euler   *eu  = (Physics_Euler*)phys->data;
   PetscFunctionBeginUser;
   xG->r = xI->r;           /* ghost cell density - same */
   xG->E = xI->E;           /* ghost cell energy - same */
@@ -634,6 +636,9 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   }
   else { /* sides */
     for (i=0; i<DIM; i++) xG->ru[i] = xI->ru[i]; /* copy */
+  }
+  if (eu->type == EULER_LINEAR_WAVE) { // debug
+    // PetscPrintf(PETSC_COMM_WORLD,"%s coord=%g,%g\n",__FUNCT__,c[0],c[1]);
   }
   PetscFunctionReturn(0);
 }
@@ -701,8 +706,15 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 static PetscErrorCode SetUpBC_Euler(DM dm,Physics phys)
 {
   PetscErrorCode  ierr;
-  const PetscInt wallids[] = {100,101,200,300};
-  ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+  Physics_Euler   *eu = phys->data;
+  if (eu->type == EULER_LINEAR_WAVE) {
+    const PetscInt wallids[] = {100,101};
+    ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+  }
+  else {
+    const PetscInt wallids[] = {100,101,200,300};
+    ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -741,6 +753,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     if (is) {
       eu->type = EULER_LINEAR_WAVE;
       mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_PERIODIC;
+      mod->bcs[1] = DM_BOUNDARY_GHOSTED; /* debug */
       PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"linear_wave");
     }
     else {
@@ -1878,8 +1891,6 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    }
 	}
     }
-/*     500        if (debug .eq. 1) */
-/*     x                write(99,*) 'newton iteration does not convergent' */
 
     *ustar = (zl * ustarr + zr * ustarl) / (zl + zr);
     if (*pstar > *pl) {
@@ -2108,8 +2119,8 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
     rho1r = rr;
 
     iwave = riemannsolver(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
-                           rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
-                           pm, &utm, &ubm, &gamm, &rho1m);
+                          rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
+                          pm, &utm, &ubm, &gamm, &rho1m);
 
     flux[1] = rhom * unm;
     fn = rhom * unm * unm + pm;
@@ -2161,35 +2172,17 @@ int eigenvectors(PetscScalar rv[][3], PetscScalar lv[][3], const PetscScalar ueq
   int j,k;
   PetscScalar rho,csnd,p0,u;
 
-  /*      lv=0.D0 */
-  /*      rv=0.D0 */
   for (k = 0; k < 3; ++k) for (j = 0; j < 3; ++j) { lv[k][j] = 0.; rv[k][j] = 0.; }
-  /*  lamda=1.D0 */
-  /* csnd=SoundSpeedFun(Ueq(3),Ueq(1),lamda) */
-  /* rho=Ueq(1) */
   rho = ueq[0];
   u = ueq[1];
   p0 = ueq[2];
   csnd = PetscSqrtScalar(gamma * p0 / rho);
-  /* lv(1,2)=0.5D0*rho */
-  /* lv(1,3)=-0.5D0/csnd */
-  /* lv(2,1)=csnd */
-  /* lv(2,3)=-1.D0/csnd */
-  /* lv(3,2)=0.5D0*rho */
-  /* lv(3,3)=0.5D0/csnd */
   lv[0][1] = rho * .5;
   lv[0][2] = -.5 / csnd;
   lv[1][0] = csnd;
   lv[1][2] = -1. / csnd;
   lv[2][1] = rho * .5;
   lv[2][2] = .5 / csnd;
-  /* rv(1,1)=-1.D0/csnd */
-  /* rv(2,1)=1.D0/rho */
-  /* rv(3,1)=-csnd */
-  /* rv(1,2)=1.D0/csnd */
-  /* rv(1,3)=1.D0/csnd */
-  /* rv(2,3)=1.D0/rho */
-  /* rv(3,3)=csnd */
   rv[0][0] = -1. / csnd;
   rv[1][0] = 1. / rho;
   rv[2][0] = -csnd;
@@ -2212,15 +2205,6 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
   /* Function Body */
   twopi = 2.*M_PI;
   eps = 1e-4; /* perturbation */
-
-  /* rho0=1000.D0 ! density of water */
-  /* p0=1.01325D5 ! init pressure of 1 atm (?) */
-  /* lamda0=1.D0 */
-  /* c0=SoundSpeedFun(p0,rho0,lamda0) */
-  /* u0=0.D0 */
-  /* Ueq(1)=rho0 */
-  /* Ueq(2)=u0 */
-  /* Ueq(3)=p0 */
   rho0 = 1e3;   /* density of water */
   p0 = 101325.; /* init pressure of 1 atm (?) */
   u0 = 0.;
@@ -2242,13 +2226,5 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
 #endif
   /* E = rho * e + rho * v^2/2 = p/(gam-1) + rho*v^2/2 */
   ux->E = vp[2]/(gamma - 1.) + 0.5*vp[0]*vp[1]*vp[1];
-  /* ux[5] = 0.; */
-  /* ux(i,j,k,1)=vp(1) */
-  /* ux(i,j,k,2)=vp(1)*vp(2) */
-  /* ux(i,j,k,3)=0.D0 */
-  /* ux(i,j,k,4)=0.D0 */
-  /* ux(i,j,k,6)=0.D0 */
-  /* eint = (PetscScalar) internalenergyfun(&vp[2], vp, &lamda0); */
-  /* ux(i,j,k,5)=vp(1)*eint+0.5D0*vp(1)*vp(2)**2 */
   return 0;
 }
