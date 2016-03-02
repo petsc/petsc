@@ -36,6 +36,8 @@ $       saws[:communicatorname]                    publishes object to the Scien
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
+   If PETSc is configured with --with-viewfromoptions=0 this function always returns with *set of PETSC_FALSE
+
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
@@ -53,6 +55,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
 
+  if (set) *set = PETSC_FALSE;
+#if defined(PETSC_SKIP_VIEWFROMOPTIONS)
+  PetscFunctionReturn(0);
+#endif
+
   ierr = PetscOptionsHasName(NULL,NULL,"-help",&hashelp);CHKERRQ(ierr);
   if (hashelp) {
     ierr = (*PetscHelpPrintf)(comm,"  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Triggers display of a PETSc object to screen or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
@@ -63,7 +70,6 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   }
 
   if (format) *format = PETSC_VIEWER_DEFAULT;
-  if (set) *set = PETSC_FALSE;
   ierr = PetscOptionsFindPair_Private(NULL,pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (set) *set = PETSC_TRUE;

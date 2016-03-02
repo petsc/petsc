@@ -50,6 +50,8 @@ class Configure(config.base.Configure):
     self.addDefine('USE_LOG',   self.useLog)
 
     if self.debugging.debugging:
+      if self.useThreadSafety:
+        raise RuntimeError('Must use --with-debugging=0 with --with-threadsafety')
       self.addDefine('USE_DEBUG',1)
     elif not config.setCompilers.Configure.isIBM(self.framework.getCompiler(), self.log):
       # IBM XLC version 12.1 (BG/Q and POWER) miscompiles PetscMalloc3()
