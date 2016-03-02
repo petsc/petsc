@@ -412,21 +412,20 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
   PetscInt         i;
-  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*vsdraw;
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*svdraw;
 
   PetscFunctionBegin;
   if (vdraw->singleton_made) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get SubViewer without first restoring previous");
   /* only processor zero can use the PetscViewer draw singleton */
-  *sviewer = NULL;
+  if (*sviewer) *sviewer = NULL;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr   = PetscViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
-    ierr   = PetscViewerSetType(*sviewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
-    vsdraw = (PetscViewer_Draw*)(*sviewer)->data;
-    for (i=0; i<vdraw->draw_max; i++) {
-      if (vdraw->draw[i]) {
-        ierr = PetscDrawGetSingleton(vdraw->draw[i],&vsdraw->draw[i]);CHKERRQ(ierr);
-      }
+    ierr = PetscViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(*sviewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
+    svdraw = (PetscViewer_Draw*)(*sviewer)->data;
+    (*sviewer)->format = viewer->format;
+    for (i=0; i<vdraw->draw_max; i++) { /* XXX this is wrong if svdraw->draw_max (initially 5) < vdraw->draw_max */
+      if (vdraw->draw[i]) {ierr = PetscDrawGetSingleton(vdraw->draw[i],&svdraw->draw[i]);CHKERRQ(ierr);}
     }
   }
   vdraw->singleton_made = PETSC_TRUE;
@@ -440,19 +439,19 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
   PetscInt         i;
-  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*vsdraw;
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*svdraw;
 
   PetscFunctionBegin;
   if (!vdraw->singleton_made) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
-    vsdraw = (PetscViewer_Draw*)(*sviewer)->data;
+    svdraw = (PetscViewer_Draw*)(*sviewer)->data;
     for (i=0; i<vdraw->draw_max; i++) {
-      if (vdraw->draw[i] && vsdraw->draw[i]) {
-        ierr = PetscDrawRestoreSingleton(vdraw->draw[i],&vsdraw->draw[i]);CHKERRQ(ierr);
+      if (vdraw->draw[i] && svdraw->draw[i]) {
+        ierr = PetscDrawRestoreSingleton(vdraw->draw[i],&svdraw->draw[i]);CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree3(vsdraw->draw,vsdraw->drawlg,vsdraw->drawaxis);CHKERRQ(ierr);
+    ierr = PetscFree3(svdraw->draw,svdraw->drawlg,svdraw->drawaxis);CHKERRQ(ierr);
     ierr = PetscFree((*sviewer)->data);CHKERRQ(ierr);
     ierr = PetscHeaderDestroy(sviewer);CHKERRQ(ierr);
   }

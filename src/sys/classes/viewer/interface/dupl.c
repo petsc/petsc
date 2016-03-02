@@ -74,7 +74,7 @@ PetscErrorCode  PetscViewerRestoreSubViewer(PetscViewer viewer,MPI_Comm comm,Pet
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
-    if (outviewer) *outviewer = 0;
+    if (outviewer) *outviewer = NULL;
   } else if (viewer->ops->restoresubviewer) {
     ierr = (*viewer->ops->restoresubviewer)(viewer,comm,outviewer);CHKERRQ(ierr);
   }
