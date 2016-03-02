@@ -230,10 +230,10 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
   /* make the window visible */
   XSelectInput(XiWin->disp,XiWin->win,ExposureMask|StructureNotifyMask);
   XMapWindow(XiWin->disp,XiWin->win);
-
   /* some window systems are cruel and interfere with the placement of
      windows.  We wait here for the window to be created or to die */
   if (PetscDrawXiWaitMap(XiWin)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Wait for X window failed");
+  XSelectInput(XiWin->disp,XiWin->win,NoEventMask);
   PetscFunctionReturn(0);
 }
 

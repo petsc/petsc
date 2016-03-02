@@ -109,6 +109,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawIsNull(PetscDraw,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDrawGetPopup(PetscDraw,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawResizeWindow(PetscDraw,int,int);
+PETSC_EXTERN PetscErrorCode PetscDrawGetWindowSize(PetscDraw,int*,int*);
 
 PETSC_EXTERN PetscErrorCode PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal);
 

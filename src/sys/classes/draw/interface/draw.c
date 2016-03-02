@@ -101,9 +101,40 @@ PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidLogicalCollectiveInt(draw,w,2);
+  PetscValidLogicalCollectiveInt(draw,h,3);
   if (draw->ops->resizewindow) {
     ierr = (*draw->ops->resizewindow)(draw,w,h);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawGetWindowSize"
+/*@
+   PetscDrawGetWindowSize - Gets the size of the window.
+
+   Not collective
+
+   Input Parameter:
+.  draw - the window
+
+   Output Parameters:
+.  w,h - the window width and height
+
+   Level: intermediate
+
+.seealso: PetscDrawResizeWindow(), PetscDrawCheckResizedWindow()
+@*/
+PetscErrorCode  PetscDrawGetWindowSize(PetscDraw draw,int *w,int *h)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  if (w) PetscValidPointer(w,2);
+  if (h) PetscValidPointer(h,3);
+  if (w) *w = draw->w;
+  if (h) *h = draw->h;
   PetscFunctionReturn(0);
 }
 
@@ -127,6 +158,7 @@ PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->checkresizedwindow) {
     ierr = (*draw->ops->checkresizedwindow)(draw);CHKERRQ(ierr);
   }
