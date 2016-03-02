@@ -13,14 +13,15 @@ extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
 #define __FUNCT__ "PetscSubcommSetFromOptions"
 PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PetscSubcommType type;
-  PetscBool      flg;
+  PetscBool        flg;
 
   PetscFunctionBegin;
   if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must call PetscSubcommCreate firt");
-  type = psubcomm->type;
-  ierr = PetscOptionsGetEnum(NULL,NULL,"-psubcomm_type",PetscSubcommTypes,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
+
+  ierr = PetscOptionsBegin(psubcomm->parent,NULL,"Options for PetscSubcomm",NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-psubcomm_type",NULL,NULL,PetscSubcommTypes,(PetscEnum)psubcomm->type,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
   if (flg && psubcomm->type != type) {
     /* free old structures */
     ierr = PetscCommDestroy(&(psubcomm)->dupparent);CHKERRQ(ierr);
@@ -40,10 +41,11 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
     }
   }
 
-  ierr = PetscOptionsHasName(NULL,NULL, "-psubcomm_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-psubcomm_view","Triggers display of PetscSubcomm context","PetscSubcommView",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
