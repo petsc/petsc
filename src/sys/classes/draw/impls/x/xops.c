@@ -617,8 +617,13 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   ierr = PetscDrawCreate(PETSC_COMM_SELF,draw->display,draw->title,draw->x,draw->y,draw->w,draw->h,sdraw);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*sdraw,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscMemcpy((*sdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  (*sdraw)->ops->destroy  = NULL;
-  (*sdraw)->ops->getpopup = NULL;
+
+  if (draw->popup) {
+    PetscBool isnull;
+    ierr = PetscDrawIsNull(draw->popup,&isnull);CHKERRQ(ierr);
+    if (isnull) {ierr = PetscDrawOpenNull(PETSC_COMM_SELF,&(*sdraw)->popup);CHKERRQ(ierr);}
+    else        {ierr = PetscDrawGetSingleton(draw->popup,&(*sdraw)->popup);CHKERRQ(ierr);}
+  }
 
   (*sdraw)->pause   = draw->pause;
   (*sdraw)->coor_xl = draw->coor_xl;
@@ -650,15 +655,23 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
 #define __FUNCT__ "PetscDrawRestoreSingleton_X"
 static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw,PetscDraw *sdraw)
 {
-  PetscDraw_X    *sXwin = (PetscDraw_X*)(*sdraw)->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree((*sdraw)->display);CHKERRQ(ierr);
-  ierr = PetscFree((*sdraw)->title);CHKERRQ(ierr);
-  ierr = PetscDrawXiClose(sXwin);CHKERRQ(ierr);
-  ierr = PetscFree(sXwin);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(sdraw);CHKERRQ(ierr);
+  if (draw->popup && (*sdraw)->popup) {
+    PetscBool isdrawx;
+    PetscDraw_X *pXwin = (PetscDraw_X*)draw->popup->data;
+    PetscDraw_X *sXwin = (PetscDraw_X*)(*sdraw)->popup->data;
+    ierr = PetscObjectTypeCompare((PetscObject)draw->popup,PETSC_DRAW_X,&isdrawx);CHKERRQ(ierr);
+    if (!isdrawx) goto finally;
+    ierr = PetscObjectTypeCompare((PetscObject)(*sdraw)->popup,PETSC_DRAW_X,&isdrawx);CHKERRQ(ierr);
+    if (!isdrawx) goto finally;
+    if (sXwin->win == pXwin->win) {
+      ierr = PetscDrawRestoreSingleton(draw->popup,&(*sdraw)->popup);CHKERRQ(ierr);
+    }
+  }
+finally:
+  ierr = PetscDrawDestroy(sdraw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

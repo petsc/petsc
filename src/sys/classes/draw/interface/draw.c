@@ -472,8 +472,10 @@ PetscErrorCode  PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscValidPointer(sdraw,2);
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
-  if (size == 1) *sdraw = draw;
-  else {
+  if (size == 1) {
+    ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
+    *sdraw = draw;
+  } else {
     if (draw->ops->getsingleton) {
       ierr = (*draw->ops->getsingleton)(draw,sdraw);CHKERRQ(ierr);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get singleton for this type %s of draw object",((PetscObject)draw)->type_name);
@@ -509,7 +511,12 @@ PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscValidHeaderSpecific(*sdraw,PETSC_DRAW_CLASSID,2);
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
-  if (size != 1) {
+  if (size == 1) {
+    if (draw == *sdraw) {
+      ierr = PetscObjectDereference((PetscObject)draw);CHKERRQ(ierr);
+      *sdraw = NULL;
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore singleton, it is not the parent draw");
+  } else {
     if (draw->ops->restoresingleton) {
       ierr = (*draw->ops->restoresingleton)(draw,sdraw);CHKERRQ(ierr);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore singleton for this type %s of draw object",((PetscObject)draw)->type_name);
