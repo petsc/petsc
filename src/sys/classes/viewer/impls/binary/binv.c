@@ -1185,7 +1185,7 @@ static PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const cha
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetUp_Binary"
-static static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
+static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
 {
   PetscMPIInt        rank;
   PetscErrorCode     ierr;

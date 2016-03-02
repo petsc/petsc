@@ -11,7 +11,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_FBCGSR"
-PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
+static PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -23,7 +23,7 @@ PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
 #include <petsc/private/pcimpl.h>            /*I "petscksp.h" I*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_FBCGSR"
-PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
+static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,N;

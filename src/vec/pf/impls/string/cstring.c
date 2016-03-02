@@ -8,7 +8,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PFView_String"
-PetscErrorCode PFView_String(void *value,PetscViewer viewer)
+static PetscErrorCode PFView_String(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -23,7 +23,7 @@ PetscErrorCode PFView_String(void *value,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFDestroy_String"
-PetscErrorCode PFDestroy_String(void *value)
+static PetscErrorCode PFDestroy_String(void *value)
 {
   PetscErrorCode ierr;
 
@@ -101,7 +101,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions_String"
-PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObject,PF pf)
+static PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
   PetscBool      flag;

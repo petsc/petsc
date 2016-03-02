@@ -1,6 +1,5 @@
 
 #include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
-#include <../src/mat/impls/dense/seq/dense.h>
 
 typedef struct {
   Mat         A,U,V;
@@ -23,7 +22,7 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 
   /* multiply the local part of V with the local part of x */
   /* note in this call x is treated as a sequential vector  */
-  ierr = MatMultTranspose_SeqDense(Na->V,x,Na->work1);CHKERRQ(ierr);
+  ierr = MatMultTranspose(Na->V,x,Na->work1);CHKERRQ(ierr);
 
   /* Form the sum of all the local multiplies : this is work2 = V'*x =
      sum_{all processors} work1 */
@@ -36,7 +35,7 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 
   /* multiply-sub y = y  + U*work2 */
   /* note in this call y is treated as a sequential vector  */
-  ierr = MatMultAdd_SeqDense(Na->U,Na->work2,y,y);CHKERRQ(ierr);
+  ierr = MatMultAdd(Na->U,Na->work2,y,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

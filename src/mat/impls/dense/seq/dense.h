@@ -22,10 +22,6 @@ typedef struct {
   Mat_MatTransMatMult *atb;       /* used by MatTransposeMatMult_SeqAIJ_SeqDense */
 } Mat_SeqDense;
 
-extern PetscErrorCode MatMult_SeqDense(Mat A,Vec,Vec);
-extern PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
-extern PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec,Vec);
-extern PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec,Vec,Vec);
 extern PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat,Mat,Mat);
 extern PetscErrorCode MatTransposeMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);

@@ -18,7 +18,7 @@ extern PetscErrorCode  MatBlockMatSetPreallocation(Mat,PetscInt,PetscInt,const P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSOR_BlockMat_Symmetric"
-PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_BlockMat      *a = (Mat_BlockMat*)A->data;
   PetscScalar       *x;

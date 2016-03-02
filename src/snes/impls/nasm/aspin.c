@@ -55,7 +55,7 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_ASPIN"
-PetscErrorCode SNESDestroy_ASPIN(SNES snes)
+static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
 {
   PetscErrorCode ierr;
 

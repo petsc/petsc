@@ -9,7 +9,7 @@
 #include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "DMView_DA_3d"
-PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
+static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
