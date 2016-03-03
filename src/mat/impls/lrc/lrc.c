@@ -8,6 +8,8 @@ typedef struct {
 } Mat_LRC;
 
 
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat,Vec,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_LRC"
@@ -22,7 +24,7 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 
   /* multiply the local part of V with the local part of x */
   /* note in this call x is treated as a sequential vector  */
-  ierr = MatMultTranspose(Na->V,x,Na->work1);CHKERRQ(ierr);
+  ierr = MatMultTranspose_SeqDense(Na->V,x,Na->work1);CHKERRQ(ierr);
 
   /* Form the sum of all the local multiplies : this is work2 = V'*x =
      sum_{all processors} work1 */
@@ -35,7 +37,7 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 
   /* multiply-sub y = y  + U*work2 */
   /* note in this call y is treated as a sequential vector  */
-  ierr = MatMultAdd(Na->U,Na->work2,y,y);CHKERRQ(ierr);
+  ierr = MatMultAdd_SeqDense(Na->U,Na->work2,y,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -972,7 +972,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Elemental"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat               mat_elemental;
   PetscErrorCode    ierr;
@@ -1004,7 +1004,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat A, MatType newtype,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_Elemental"
-PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat               mat_elemental;
   PetscErrorCode    ierr;
@@ -1038,7 +1038,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_Elemental"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat               mat_elemental;
   PetscErrorCode    ierr;
@@ -1076,7 +1076,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPISBAIJ_Elemental"
-PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat               mat_elemental;
   PetscErrorCode    ierr;

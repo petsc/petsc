@@ -860,7 +860,7 @@ static PetscErrorCode MatFactorGetSolverPackage_mkl_cpardiso(Mat A, const MatSol
 /* MatGetFactor for MPI AIJ matrices */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_mpiaij_mkl_cpardiso"
-PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype,Mat *F)
+static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat              B;
   PetscErrorCode   ierr;

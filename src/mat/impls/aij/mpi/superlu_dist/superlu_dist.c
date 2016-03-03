@@ -484,7 +484,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatF
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_aij_superlu_dist"
-PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSUPERLU_DIST;
@@ -493,7 +493,7 @@ PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const MatSolverP
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_aij_superlu_dist"
-PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
+static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat               B;
   Mat_SuperLU_DIST  *lu;

@@ -66,7 +66,7 @@ PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheckHost(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec);
-PETSC_INTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUSP(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqCUSP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);

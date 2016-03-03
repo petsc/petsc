@@ -429,7 +429,7 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMissingDiagonal_Shell"

@@ -87,11 +87,11 @@ typedef struct {
             nearest neighbor timestepping.
 */
 
-PETSC_EXTERN PetscErrorCode VecView_MPI_DA(Vec,PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Default_DA(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
-PETSC_EXTERN PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
-PETSC_EXTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_MPI_DA(Vec,PetscViewer);
+PETSC_INTERN PetscErrorCode VecLoad_Default_DA(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
+PETSC_INTERN PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
+PETSC_INTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMDAVTKWriteAll(PetscObject,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMDASelectFields(DM,PetscInt*,PetscInt**);
 

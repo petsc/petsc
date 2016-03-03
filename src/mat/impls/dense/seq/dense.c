@@ -53,7 +53,7 @@ PETSC_EXTERN PetscErrorCode MatPtAP_SeqDense_SeqDense(Mat A,Mat P,MatReuse reuse
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqDense"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -91,7 +91,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqDense_SeqAIJ"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
@@ -609,7 +609,7 @@ static PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqdense_petsc"
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
+PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
 {
   PetscErrorCode ierr;
 
@@ -671,7 +671,7 @@ static PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType fl
 /* -----------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqDense"
-static PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
   const PetscScalar *v   = mat->v,*x;
@@ -695,7 +695,7 @@ static PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqDense"
-static PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
+PETSC_INTERN PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
   PetscScalar       *y,_DOne=1.0,_DZero=0.0;
@@ -718,7 +718,7 @@ static PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_SeqDense"
-static PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
   const PetscScalar *v = mat->v,*x;
@@ -2343,7 +2343,7 @@ PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
 #if defined(PETSC_HAVE_ELEMENTAL)
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqDense_Elemental"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat_elemental;
   PetscErrorCode ierr;

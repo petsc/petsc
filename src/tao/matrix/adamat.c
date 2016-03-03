@@ -326,7 +326,7 @@ static PetscErrorCode MatGetColumnVector_ADA(Mat mat,Vec Y, PetscInt col)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_ADA"
-PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
+PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

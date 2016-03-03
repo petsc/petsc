@@ -272,7 +272,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_Clique"
-PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCLIQUE;
@@ -281,7 +281,7 @@ PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPackage *ty
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_aij_clique"
-PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
+static PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_Clique     *cliq;

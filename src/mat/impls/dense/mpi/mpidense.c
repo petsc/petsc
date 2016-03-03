@@ -461,6 +461,11 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatMult_SeqDense(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqDense(Mat,Vec,Vec,Vec);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_MPIDense"
 PetscErrorCode MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
@@ -471,7 +476,7 @@ PetscErrorCode MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecScatterBegin(mdn->Mvctx,xx,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(mdn->Mvctx,xx,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = MatMult(mdn->A,mdn->lvec,yy);CHKERRQ(ierr);
+  ierr = MatMult_SeqDense(mdn->A,mdn->lvec,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -485,7 +490,7 @@ PetscErrorCode MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecScatterBegin(mdn->Mvctx,xx,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(mdn->Mvctx,xx,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = MatMultAdd(mdn->A,mdn->lvec,yy,zz);CHKERRQ(ierr);
+  ierr = MatMultAdd_SeqDense(mdn->A,mdn->lvec,yy,zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -499,7 +504,7 @@ PetscErrorCode MatMultTranspose_MPIDense(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecSet(yy,zero);CHKERRQ(ierr);
-  ierr = MatMultTranspose(a->A,xx,a->lvec);CHKERRQ(ierr);
+  ierr = MatMultTranspose_SeqDense(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->Mvctx,a->lvec,yy,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,a->lvec,yy,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -514,7 +519,7 @@ PetscErrorCode MatMultTransposeAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
-  ierr = MatMultTranspose(a->A,xx,a->lvec);CHKERRQ(ierr);
+  ierr = MatMultTranspose_SeqDense(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->Mvctx,a->lvec,zz,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,a->lvec,zz,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1280,7 +1285,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 #if defined(PETSC_HAVE_ELEMENTAL)
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIDense_Elemental"
-PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat_elemental;
   PetscErrorCode ierr;
