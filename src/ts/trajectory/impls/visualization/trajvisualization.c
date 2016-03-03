@@ -53,7 +53,7 @@ PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscInt step
 }
 
 /*MC
-      TSTRAJECTORYBASIC - Stores each solution of the ODE/ADE in a file
+      TSTRAJECTORYVISUALIZATION - Stores each solution of the ODE/DAE in a file
 
   Level: intermediate
 
