@@ -69,6 +69,8 @@ struct _p_PetscDraw {
   PetscBool           savefilemovie;
   PetscBool           savesinglefile;
   char                *savefinalfilename;
+  PetscBool           saveonclear; /* save a new image for every PetscDrawClear() called */
+  PetscBool           saveonflush; /* save a new image for every PetscDrawFlush() called */
   void                *data;
 };
 

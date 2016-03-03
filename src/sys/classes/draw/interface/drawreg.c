@@ -319,7 +319,9 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 .   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
 .   -draw_save_final_image [optional filename] - (X windows only) saves the final image displayed in a window
 .   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
--   -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with filename_%d
+.   -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with 'filename/filename_%d.ext'
+.   -draw_save_on_clear - saves an image on each clear, mainly for debugging
+-   -draw_save_on_flush - saves an image on each flush, mainly for debugging
 
    Level: intermediate
 
@@ -386,6 +388,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     if (save) {
       ierr = PetscDrawSetSaveFinalImage(draw,filename);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsBool("-draw_save_on_clear","Save graphics to file (X Windows only) on each clear","PetscDrawSetSave",draw->saveonclear,&draw->saveonclear,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file (X Windows only) on each flush","PetscDrawSetSave",draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
   }
 #endif
   ierr = PetscOptionsReal("-draw_pause","Amount of time that program pauses after plots","PetscDrawSetPause",draw->pause,&draw->pause,NULL);CHKERRQ(ierr);

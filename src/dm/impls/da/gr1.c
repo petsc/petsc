@@ -298,6 +298,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       const char *title;
       ierr = PetscViewerDrawGetDraw(v,k,&draw);CHKERRQ(ierr);
       ierr = PetscViewerDrawGetDrawAxis(v,k,&axis);CHKERRQ(ierr);
+      ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
       ierr = DMDAGetFieldName(da,j,&title);CHKERRQ(ierr);
       if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
     }
@@ -315,7 +316,6 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       max += 1.e-5;
     }
 
-    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetHold(v,&hold);CHKERRQ(ierr);
     if (!hold) {ierr = PetscDrawClear(draw);CHKERRQ(ierr);}
     ierr = PetscDrawAxisSetLimits(axis,xmin,xmax,min,max);CHKERRQ(ierr);

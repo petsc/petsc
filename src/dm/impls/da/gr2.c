@@ -265,6 +265,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     } else {
       const char *title;
       ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
+      ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
       ierr = DMDAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
       if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
     }

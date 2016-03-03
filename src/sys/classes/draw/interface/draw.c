@@ -293,7 +293,7 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
     if (!rank) {
       char       command[PETSC_MAX_PATH_LEN];
       const char *name = draw->savefilename;
-      const char *ext   = draw->savefilenameext;
+      const char *ext  = draw->savefilenameext;
       FILE       *fd;
       ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg -i %s/%s_%%d%s %s.m4v",name,name,ext,name);CHKERRQ(ierr);
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
@@ -303,9 +303,10 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
   }
 #endif
   if (draw->savefinalfilename) {
+    draw->savefilecount  = 0;
     draw->savesinglefile = PETSC_TRUE;
+    draw->savefilemovie  = PETSC_FALSE;
     ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
-    draw->savefilecount = 0;
     ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   }
   ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);

@@ -287,22 +287,24 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
 
+  /* make sure the X server processed requests from all processes */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   XSync(XiWin->disp,False);
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
 
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank && XiWin->drw && XiWin->win) {
-    XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
-    XSync(XiWin->disp,False);
+  /* transfer pixmap contents to window (only the first process does this) */
+  if (XiWin->drw && XiWin->win) {
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    if (!rank) XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
+    if (!rank) XSync(XiWin->disp,False);
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
 
-  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+  if (draw->saveonflush) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -315,14 +317,17 @@ static PetscErrorCode PetscDrawClear_X(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+  if (draw->saveonclear) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
 
+  /* make sure the X server processed requests from all processes */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   XSync(XiWin->disp,False);
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
 
+  /* only the first process handles the clearing business */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
   if (!rank) {
     int x = (int)(draw->port_xl*XiWin->w);
     int y = (int)((1-draw->port_yr)*XiWin->h);
@@ -439,7 +444,6 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
   if (!rank && win->drw) {ierr = PetscDrawXiQuickPixmap(win);CHKERRQ(ierr);}
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-
   /* reset the clipping */
   ierr = PetscDrawSetViewport_X(draw,draw->port_xl,draw->port_yl,draw->port_xr,draw->port_yr);CHKERRQ(ierr);
   PetscFunctionReturn(0);

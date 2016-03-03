@@ -113,8 +113,9 @@ PETSC_STATIC_INLINE int PetscDrawXiPixelToColor(PetscDraw_X *Xwin,PetscDrawXiPix
 PetscErrorCode PetscDrawSave_X(PetscDraw draw)
 {
   PetscDraw_X      *Xwin = (PetscDraw_X*)draw->data;
-  const char       *fname = draw->savefilename;
+  const char       *name = draw->savefilename;
   const char       *ext   = draw->savefilenameext;
+  PetscInt         savecount;
   char             filename[PETSC_MAX_PATH_LEN];
   PetscMPIInt      rank;
   PetscErrorCode   ierr;
@@ -123,40 +124,40 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
   if (!draw->savefilename) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
 
-  if (!rank && !draw->savefilecount) {
+  savecount = draw->savefilecount++;
+  if (!rank && !savecount) {
     char path[PETSC_MAX_PATH_LEN];
-    if (draw->savefilemovie) {
-      ierr = PetscMemzero(path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(path,PETSC_MAX_PATH_LEN,"%s.m4v",fname);CHKERRQ(ierr);
-      (void)remove(path);
-    }
     if (draw->savesinglefile) {
       ierr = PetscMemzero(path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(path,PETSC_MAX_PATH_LEN,"%s%s",fname,ext);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(path,PETSC_MAX_PATH_LEN,"%s%s",name,ext);CHKERRQ(ierr);
       (void)remove(path);
     } else {
       ierr = PetscMemzero(path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(path,PETSC_MAX_PATH_LEN,"%s",fname);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(path,PETSC_MAX_PATH_LEN,"%s",name);CHKERRQ(ierr);
       ierr = PetscRMTree(path);CHKERRQ(ierr);
       ierr = PetscMkdir(path);CHKERRQ(ierr);
     }
+    if (draw->savefilemovie) {
+      ierr = PetscMemzero(path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(path,PETSC_MAX_PATH_LEN,"%s.m4v",name);CHKERRQ(ierr);
+      (void)remove(path);
+    }
+  }
+  ierr = PetscMemzero(filename,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  if (draw->savesinglefile) {
+    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s%s",name,ext);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d%s",name,name,(int)savecount,ext);CHKERRQ(ierr);
   }
 
+  /* make sure the X server processed requests from all processes */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   XSync(Xwin->disp,True);
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
 
-  ierr = PetscMemzero(filename,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  if (draw->savesinglefile) {
-    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s%s",fname,ext);CHKERRQ(ierr);
-  } else {
-    PetscInt suffix = draw->savefilecount++;
-    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d%s",fname,fname,(int)suffix,ext);CHKERRQ(ierr);
-  }
-
+  /* only the first process handles the saving business */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  /* only process 0 handles the saving business */
   if (!rank) {
     Window        root;
     XImage        *image;
@@ -185,6 +186,7 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
     ierr = PetscFree(rgb);CHKERRQ(ierr);
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+  ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -372,6 +374,7 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
   XDestroyImage(image);
 finally:
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+  ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
