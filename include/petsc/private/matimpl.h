@@ -611,7 +611,7 @@ typedef struct {
 } FactorShiftCtx;
 
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
-PETSC_EXTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_nz"

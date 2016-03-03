@@ -468,9 +468,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat,MatFactorType,Mat*);
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
+PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat,MatFactorType,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_SuiteSparse"
@@ -481,7 +481,7 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuiteSparse(void)
   PetscFunctionBegin;
   ierr = MatSolverPackageRegister(MATSOLVERUMFPACK,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
   ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
   ierr = MatSolverPackageRegister(MATSOLVERKLU,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_klu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
