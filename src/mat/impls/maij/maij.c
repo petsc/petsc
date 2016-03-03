@@ -3208,7 +3208,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_SeqAIJ_SeqMAIJ"
-PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
@@ -3248,7 +3248,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_MPIAIJ_MPIMAIJ"
-PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 

@@ -3787,7 +3787,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat
 /* ----------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqDense_SeqAIJ"
-PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 

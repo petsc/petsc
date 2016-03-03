@@ -37,7 +37,7 @@ PetscErrorCode MatPtAPSymbolic_SeqDense_SeqDense(Mat A,Mat P,PetscReal fill,Mat 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_SeqDense_SeqDense"
-PETSC_EXTERN PetscErrorCode MatPtAP_SeqDense_SeqDense(Mat A,Mat P,MatReuse reuse,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatPtAP_SeqDense_SeqDense(Mat A,Mat P,MatReuse reuse,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
@@ -1789,7 +1789,7 @@ static PetscErrorCode MatImaginaryPart_SeqDense(Mat A)
 /* ----------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqDense_SeqDense"
-PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 

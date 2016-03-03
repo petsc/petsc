@@ -21,7 +21,7 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
+PETSC_INTERN PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
 {
   PetscErrorCode ierr;
 
