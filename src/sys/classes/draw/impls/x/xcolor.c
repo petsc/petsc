@@ -3,8 +3,7 @@
     Code for managing color the X implementation of the PetscDraw routines.
 
     Currently we default to using cmapping[0 to PETSC_DRAW_BASIC_COLORS-1] for the basic colors and
-  cmapping[DRAW_BASIC_COLORS to 255] for a uniform hue of all the colors. But in the contour
-  plot we only use from PETSC_DRAW_BASIC_COLORS to 240 since the ones beyond that are too dark.
+    cmapping[DRAW_BASIC_COLORS to 255] for countour plots.
 
 */
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
@@ -73,10 +72,10 @@ static PetscDrawXiPixVal gCmapping[256];
 PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   XColor         colordef,ecolordef;
+  int            i,ncolors = 256-PETSC_DRAW_BASIC_COLORS;
   unsigned char  *red,*green,*blue;
-  int            i,ncolors;
-  PetscErrorCode ierr;
   PetscBool      fast = PETSC_FALSE;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (colormap) gColormap = colormap;
@@ -88,22 +87,21 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
     gCmapping[i] = colordef.pixel;
   }
 
-  /* set the uniform hue colors into the color map */
-  ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  ierr    = PetscMalloc3(ncolors,&red,ncolors,&green,ncolors,&blue);CHKERRQ(ierr);
-  ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetBool(NULL,NULL,"-draw_fast",&fast,NULL);CHKERRQ(ierr);
+  /* set the colors into the colormap */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_fast",&fast,NULL);CHKERRQ(ierr);
   if (!fast) {
-    for (i=PETSC_DRAW_BASIC_COLORS; i<ncolors+PETSC_DRAW_BASIC_COLORS; i++) {
-      colordef.red   = ((int)red[i-PETSC_DRAW_BASIC_COLORS]   * 65535) / 255;
-      colordef.green = ((int)green[i-PETSC_DRAW_BASIC_COLORS] * 65535) / 255;
-      colordef.blue  = ((int)blue[i-PETSC_DRAW_BASIC_COLORS]  * 65535) / 255;
+    ierr = PetscMalloc3(ncolors,&red,ncolors,&green,ncolors,&blue);CHKERRQ(ierr);
+    ierr = PetscDrawUtilitySetCmap(NULL,ncolors,red,green,blue);CHKERRQ(ierr);
+    for (i=0; i<ncolors; i++) {
+      colordef.red   = ((int)  red[i] * 65535) / 255;
+      colordef.green = ((int)green[i] * 65535) / 255;
+      colordef.blue  = ((int) blue[i] * 65535) / 255;
       colordef.flags = DoRed | DoGreen | DoBlue;
       XAllocColor(display,gColormap,&colordef);
-      gCmapping[i]   = colordef.pixel;
+      gCmapping[PETSC_DRAW_BASIC_COLORS + i]   = colordef.pixel;
     }
+    ierr = PetscFree3(red,green,blue);CHKERRQ(ierr);
   }
-  ierr = PetscFree3(red,green,blue);CHKERRQ(ierr);
   ierr = PetscInfo(0,"Successfully allocated colors\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -121,11 +119,11 @@ static int       cmap_base = 0;
 PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   Colormap       defaultmap = DefaultColormap(display,screen);
-  PetscErrorCode ierr;
-  int            found,i,ncolors;
   XColor         colordef;
+  int            found,i,ncolors = 256-PETSC_DRAW_BASIC_COLORS;
   unsigned char  *red,*green,*blue;
   PetscBool      fast = PETSC_FALSE;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (colormap) gColormap = colormap;
@@ -153,16 +151,15 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
     gCmapping[i] = colordef.pixel;
   }
 
-  /* set the uniform hue colors into the color map */
-  ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  ierr    = PetscMalloc3(ncolors,&red,ncolors,&green,ncolors,&blue);CHKERRQ(ierr);
-  ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetBool(NULL,NULL,"-draw_fast",&fast,NULL);CHKERRQ(ierr);
+  /* set the colors into the colormap */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_fast",&fast,NULL);CHKERRQ(ierr);
   if (!fast) {
-    for (i=PETSC_DRAW_BASIC_COLORS; i<ncolors+PETSC_DRAW_BASIC_COLORS; i++) {
-      colordef.red   = ((int)red[i-PETSC_DRAW_BASIC_COLORS]   * 65535) / 255;
-      colordef.green = ((int)green[i-PETSC_DRAW_BASIC_COLORS] * 65535) / 255;
-      colordef.blue  = ((int)blue[i-PETSC_DRAW_BASIC_COLORS]  * 65535) / 255;
+    ierr = PetscMalloc3(ncolors,&red,ncolors,&green,ncolors,&blue);CHKERRQ(ierr);
+    ierr = PetscDrawUtilitySetCmap(NULL,ncolors,red,green,blue);CHKERRQ(ierr);
+    for (i=0; i<ncolors; i++) {
+      colordef.red   = ((int)  red[i] * 65535) / 255;
+      colordef.green = ((int)green[i] * 65535) / 255;
+      colordef.blue  = ((int) blue[i] * 65535) / 255;
       colordef.flags = DoRed | DoGreen | DoBlue;
       /* try to allocate the color in the default-map */
       found = XAllocColor(display,defaultmap,&colordef);
@@ -176,10 +173,10 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
         cmap_pixvalues_used[cmap_base++] = PETSC_TRUE;
       }
       XStoreColor(display,gColormap,&colordef);
-      gCmapping[i] = colordef.pixel;
+      gCmapping[PETSC_DRAW_BASIC_COLORS+i] = colordef.pixel;
     }
+    ierr = PetscFree3(red,green,blue);CHKERRQ(ierr);
   }
-  ierr = PetscFree3(red,green,blue);CHKERRQ(ierr);
   ierr = PetscInfo(0,"Successfully allocated colors\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -215,23 +212,14 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawSetColormap_X"
-PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,char *host,Colormap colormap)
+PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,Colormap colormap)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (XiWin->depth < 8) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
   if (!gColormap) {
-    Display *display;   /* Private display will exist forever contains colormap shared by all windows */
-    int     screen;
-    Visual  *vis;
-
-    display = XOpenDisplay(host);
-    screen  = DefaultScreen(display);
-    vis     = DefaultVisual(display,screen);
-
-    ierr = PetscDrawSetUpColormap_X(display,screen,vis,colormap);CHKERRQ(ierr);
-    XCloseDisplay(display);
+    ierr = PetscDrawSetUpColormap_X(XiWin->disp,XiWin->screen,XiWin->vis,colormap);CHKERRQ(ierr);
   }
   XiWin->cmap       = gColormap;
   ierr              = PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PetscDrawXiPixVal));CHKERRQ(ierr);
@@ -239,6 +227,11 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,char *host,Colormap col
   XiWin->foreground = XiWin->cmapping[PETSC_DRAW_BLACK];
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiColormap"
+PetscErrorCode PetscDrawXiColormap(PetscDraw_X *XiWin)
+{ return PetscDrawSetColormap_X(XiWin,(Colormap)0); }
 
 /*
     Color in X is many-layered.  The first layer is the "visual",a

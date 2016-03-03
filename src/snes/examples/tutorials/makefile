@@ -783,7 +783,7 @@ runex19_superlu_dist:
 runex19_superlu_dist_2:
 	-@${MPIEXEC} -n 2 ./ex19  -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
-	   else  printf "${PWD}\nPossible problem with ex19_superlu_dist, diffs above\n=========================================\n"; fi; \
+	   else  printf "${PWD}\nPossible problem with ex19_superlu_dist_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19.tmp
 runex19_fieldsplit_2:
 	-@${MPIEXEC} -n 1 ./ex19 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short  > ex19_6.tmp 2>&1; \

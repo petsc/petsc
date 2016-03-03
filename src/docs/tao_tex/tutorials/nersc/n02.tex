@@ -911,7 +911,7 @@ algorithmic options and tolerances.}
 
   VecCreateMPI(PETSC_COMM_WORLD,n,&x);}
   VecDuplicate(x,&g);
-  \textcolor{red}{MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,d_nz,d_nnz,o_nz,o_nnz,&H);}
+  \textcolor{red}{MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,d_nz,d_nnz,o_nz,o_nnz,&H);}
   TaoCreate(\textcolor{red}{PETSC_COMM_WORLD},TAOLMVM,&tao);
   TaoPetscApplicationCreate(\textcolor{red}{PETSC_COMM_WORLD},&app);
   TaoSetPetscFunction(app,x,\textcolor{blue}{FormFunction,(void *)&user});

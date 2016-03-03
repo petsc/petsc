@@ -457,10 +457,10 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   PetscFunctionBegin;
   if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  ierr = PetscDrawIsNull(lg->win,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
 
   draw = lg->win;
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
 
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);

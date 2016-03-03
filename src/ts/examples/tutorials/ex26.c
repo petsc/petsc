@@ -81,7 +81,7 @@ typedef struct {
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo*,PetscReal,Field**,Field**,Field**,void*);
 
 typedef struct {
-  PassiveReal lidvelocity,prandtl,grashof;   /* physical parameters */
+  PetscReal   lidvelocity,prandtl,grashof;   /* physical parameters */
   PetscBool   parabolic;                     /* allow a transient term corresponding roughly to artificial compressibility */
   PetscReal   cfl_initial;                   /* CFL for first time step */
 } AppCtx;
@@ -143,6 +143,7 @@ int main(int argc,char **argv)
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDATSSetIFunctionLocal(da,INSERT_VALUES,(DMDATSIFunctionLocal)FormIFunctionLocal,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,10000,1e12);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,user.cfl_initial/(user.lidvelocity*mx));CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

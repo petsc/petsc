@@ -21,12 +21,12 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
-  PetscBool      flg,flg_ilu,flg_ch;
+  PetscBool      flg=PETSC_FALSE,flg_ilu=PETSC_FALSE,flg_ch=PETSC_FALSE;
 #if defined(PETSC_HAVE_MUMPS)
-  PetscBool      flg_mumps,flg_mumps_ch;
+  PetscBool      flg_mumps=PETSC_FALSE,flg_mumps_ch=PETSC_FALSE;
 #endif
 #if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
-  PetscBool      flg_superlu;
+  PetscBool      flg_superlu=PETSC_FALSE;
 #endif
   PetscScalar    v;
   PetscMPIInt    rank,size;

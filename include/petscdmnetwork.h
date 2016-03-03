@@ -14,26 +14,29 @@
 */
 typedef PetscInt DMNetworkComponentGenericDataType; 
 
-PETSC_EXTERN PetscErrorCode DMNetworkCreate(MPI_Comm, DM*);
-PETSC_EXTERN PetscErrorCode DMNetworkSetSizes(DM, PetscInt, PetscInt, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMNetworkSetEdgeList(DM, int[]);
+PETSC_EXTERN PetscErrorCode DMNetworkCreate(MPI_Comm,DM*);
+PETSC_EXTERN PetscErrorCode DMNetworkSetSizes(DM,PetscInt,PetscInt,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode DMNetworkSetEdgeList(DM,int[]);
 PETSC_EXTERN PetscErrorCode DMNetworkLayoutSetUp(DM);
-PETSC_EXTERN PetscErrorCode DMNetworkRegisterComponent(DM, const char*, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkGetVertexRange(DM, PetscInt*, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkGetEdgeRange(DM, PetscInt*, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkAddComponent(DM, PetscInt, PetscInt, void*);
-PETSC_EXTERN PetscErrorCode DMNetworkGetNumComponents(DM, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkGetComponentTypeOffset(DM, PetscInt, PetscInt, PetscInt*, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkGetVariableOffset(DM, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkGetVariableGlobalOffset(DM, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkAddNumVariables(DM, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMNetworkGetNumVariables(DM, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkSetNumVariables(DM, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMNetworkGetComponentDataArray(DM, DMNetworkComponentGenericDataType**);
-PETSC_EXTERN PetscErrorCode DMNetworkDistribute(DM, PetscInt,DM*);
-PETSC_EXTERN PetscErrorCode DMNetworkGetSupportingEdges(DM, PetscInt, PetscInt*, const PetscInt*[]);
-PETSC_EXTERN PetscErrorCode DMNetworkGetConnectedNodes(DM, PetscInt, const PetscInt*[]);
-PETSC_EXTERN PetscErrorCode DMNetworkIsGhostVertex(DM, PetscInt, PetscBool*);
+PETSC_EXTERN PetscErrorCode DMNetworkRegisterComponent(DM,const char*,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetVertexRange(DM,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetEdgeRange(DM,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkAddComponent(DM,PetscInt,PetscInt,void*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetNumComponents(DM,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetComponentTypeOffset(DM,PetscInt,PetscInt,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetVariableOffset(DM,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetVariableGlobalOffset(DM,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkAddNumVariables(DM,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode DMNetworkGetNumVariables(DM,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkSetNumVariables(DM,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode DMNetworkGetComponentDataArray(DM,DMNetworkComponentGenericDataType**);
+PETSC_EXTERN PetscErrorCode DMNetworkDistribute(DM,PetscInt,DM*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetSupportingEdges(DM,PetscInt,PetscInt*,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMNetworkGetConnectedNodes(DM,PetscInt,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMNetworkIsGhostVertex(DM,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMNetworkEdgeSetMatrix(DM,PetscInt,Mat[]);
+PETSC_EXTERN PetscErrorCode DMNetworkVertexSetMatrix(DM,PetscInt,Mat[]);
+PETSC_EXTERN PetscErrorCode DMNetworkHasJacobian(DM,PetscBool,PetscBool);
 
 typedef struct _p_DMNetworkMonitorList *DMNetworkMonitorList;
 struct _p_DMNetworkMonitorList

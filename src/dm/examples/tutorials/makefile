@@ -108,6 +108,16 @@ runex3_3:
 	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex3_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_3.tmp
+runex5:
+	-@${MPIEXEC} -n 1 ./ex5  > ex5_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5_1.tmp
+runex5_2:
+	-@${MPIEXEC} -n 2 ./ex5  > ex5_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5_2.tmp
 runex9:
 	-@${MPIEXEC} -n 4 ./ex9
 	-@${MPIEXEC} -n 4 ./ex9 -ndof 2
@@ -145,7 +155,7 @@ runex15_3:
 
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm \
                             ex15.PETSc runex15 runex15_2 runex15_3 ex15.rm
-TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm
+TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc ex11f90.rm ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_C_X_MPIUNI   =

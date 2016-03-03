@@ -1182,7 +1182,7 @@ opposite of the Fortran convention, meaning that the value to be put in row
 \trl{idxm[i]} and column \trl{idxn[j]} is located in \trl{values[i*n+j]}. To
 allow the insertion of values in column major order, one can call the command
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED,PETSC\_TRUE);
+  MatSetOption(Mat A,MAT\_ROW\_ORIENTED,PETSC\_FALSE);
 \end{tabbing}
 {\bf Warning}: Several of the sparse implementations do {\em not} currently
 support the column-oriented option.
@@ -1399,7 +1399,7 @@ expensive.
 Parallel sparse matrices with the AIJ
 format can be created with the command
 \begin{tabbing}
-  MatCreateMPIAIJ\=(MPI\_Comm comm,int m,int n,int M,int N,int d\_nz,\\
+  MatCreateAIJ\=(MPI\_Comm comm,int m,int n,int M,int N,int d\_nz,\\
                  \>         int *d\_nnz, int o\_nz,int *o\_nnz,Mat *A);
 \end{tabbing}
 \trl{A} is the newly created matrix, while the arguments \trl{m},
@@ -4909,6 +4909,9 @@ promote the solution form $ u^n $ to $ u^{n+1}. $
 (whatever is first) with the command
 \begin{tabbing}
  TSSetDuration(TS ts,int maxsteps,double maxtime);
+\end{tabbing}
+\begin{tabbing}
+  TSSetExactFinalTime(TS ts,TS\_EXACTFINALTIME\_STEPOVER,TS\_EXACTFINALTIME\_INTERPOLATE,TS\_EXACTFINALTIME\_MATCHSTEP);
 \end{tabbing}
 One performs the request number of time steps with
 \begin{tabbing}

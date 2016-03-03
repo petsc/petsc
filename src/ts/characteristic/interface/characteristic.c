@@ -14,7 +14,7 @@ PetscFunctionList CharacteristicList              = NULL;
 PetscBool         CharacteristicRegisterAllCalled = PETSC_FALSE;
 
 PetscErrorCode DMDAGetNeighborsRank(DM, PetscMPIInt []);
-PetscInt       DMDAGetNeighborRelative(DM, PassiveReal, PassiveReal);
+PetscInt       DMDAGetNeighborRelative(DM, PetscReal, PetscReal);
 PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar []);
 
 PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
@@ -350,9 +350,9 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   void                    *velocityArray;
   void                    *velocityArrayOld;
   void                    *fieldArray;
-  PassiveScalar           *interpIndices;
-  PassiveScalar           *velocityValues, *velocityValuesOld;
-  PassiveScalar           *fieldValues;
+  PetscScalar             *interpIndices;
+  PetscScalar             *velocityValues, *velocityValuesOld;
+  PetscScalar             *fieldValues;
   PetscMPIInt             rank;
   PetscInt                dim;
   PetscMPIInt             neighbors[9];
@@ -846,15 +846,15 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
     8 | 7 | 6
       |   |
 */
-PetscInt DMDAGetNeighborRelative(DM da, PassiveReal ir, PassiveReal jr)
+PetscInt DMDAGetNeighborRelative(DM da, PetscReal ir, PetscReal jr)
 {
   DMDALocalInfo  info;
-  PassiveReal    is,ie,js,je;
+  PetscReal      is,ie,js,je;
   PetscErrorCode ierr;
 
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  is   = (PassiveReal) info.xs - 0.5; ie = (PassiveReal) info.xs + info.xm - 0.5;
-  js   = (PassiveReal) info.ys - 0.5; je = (PassiveReal) info.ys + info.ym - 0.5;
+  is   = (PetscReal) info.xs - 0.5; ie = (PetscReal) info.xs + info.xm - 0.5;
+  js   = (PetscReal) info.ys - 0.5; je = (PetscReal) info.ys + info.ym - 0.5;
 
   if (ir >= is && ir <= ie) { /* center column */
     if (jr >= js && jr <= je) return 0;

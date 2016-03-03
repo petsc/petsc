@@ -109,7 +109,8 @@
       ftime = 1.0
       maxsteps = 10000
       call TSSetDuration(ts,maxsteps,ftime,ierr)
-
+      call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr)
+      
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set initial conditions
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

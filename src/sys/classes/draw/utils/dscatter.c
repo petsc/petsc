@@ -319,10 +319,10 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   PetscFunctionBegin;
   if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
+  ierr = PetscDrawIsNull(sp->win,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
 
   draw = sp->win;
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   if (sp->xmin > sp->xmax || sp->ymin > sp->ymax) PetscFunctionReturn(0);
   if (sp->nopts < 1) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sp),&rank);CHKERRQ(ierr);

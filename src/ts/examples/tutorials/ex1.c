@@ -141,6 +141,7 @@ int main(int argc,char **argv)
      to insure convergence to steady state.
   */
   ierr = TSSetDuration(ts,1000,1.e12);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /*
       Use the default strategy for increasing the timestep

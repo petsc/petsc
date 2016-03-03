@@ -190,6 +190,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   /* Set lower and upper bound on the solution vector for each time step */
   ierr = TSVISetVariableBounds(ts,xl,xu);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

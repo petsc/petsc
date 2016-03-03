@@ -9,6 +9,49 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "MatPtAPNumeric_SeqDense_SeqDense"
+PetscErrorCode MatPtAPNumeric_SeqDense_SeqDense(Mat A,Mat P,Mat C)
+{
+  Mat_SeqDense   *c = (Mat_SeqDense*)(C->data);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatMultNumeric_SeqDense_SeqDense(A,P,c->ptapwork);CHKERRQ(ierr);
+  ierr = MatTransposeMatMultNumeric_SeqDense_SeqDense(P,c->ptapwork,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAPSymbolic_SeqDense_SeqDense"
+PetscErrorCode MatPtAPSymbolic_SeqDense_SeqDense(Mat A,Mat P,PetscReal fill,Mat *C)
+{
+  Mat_SeqDense   *c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)A),P->cmap->N,P->cmap->N,NULL,C);CHKERRQ(ierr);
+  c = (Mat_SeqDense*)((*C)->data);
+  ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)A),A->rmap->N,P->cmap->N,NULL,&c->ptapwork);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAP_SeqDense_SeqDense"
+PETSC_EXTERN PetscErrorCode MatPtAP_SeqDense_SeqDense(Mat A,Mat P,MatReuse reuse,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatPtAPSymbolic_SeqDense_SeqDense(A,P,fill,C);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqDense"
 PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
@@ -1100,8 +1143,7 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscInt          m  = A->rmap->n,n = A->cmap->n,color,i,j;
   PetscScalar       *v = a->v;
   PetscViewer       viewer;
-  PetscDraw         popup;
-  PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r,scale,maxv = 0.0;
+  PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -1132,19 +1174,21 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   } else {
     /* use contour shading to indicate magnitude of values */
     /* first determine max of all nonzero values */
+    PetscReal minv = 0.0, maxv = 0.0;
+    PetscDraw popup;
+
     for (i = 0; i < m*n; i++) {
       if (PetscAbsScalar(v[i]) > maxv) maxv = PetscAbsScalar(v[i]);
     }
-    scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/maxv;
     ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {ierr = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);}
+    if (popup) {ierr = PetscDrawScalePopup(popup,minv,maxv);CHKERRQ(ierr);}
     for (j = 0; j < n; j++) {
       x_l = j;
       x_r = x_l + 1.0;
       for (i = 0; i < m; i++) {
         y_l   = m - i - 1.0;
         y_r   = y_l + 1.0;
-        color = PETSC_DRAW_BASIC_COLORS + (int)(scale*PetscAbsScalar(v[j*m+i]));
+        color = PetscDrawRealToColor(PetscAbsScalar(v[j*m+i]),minv,maxv);
         ierr  = PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       }
     }
@@ -1209,6 +1253,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   PetscLogObjectState((PetscObject)mat,"Rows %D Cols %D",mat->rmap->n,mat->cmap->n);
 #endif
   ierr = PetscFree(l->pivots);CHKERRQ(ierr);
+  ierr = MatDestroy(&l->ptapwork);CHKERRQ(ierr);
   if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
@@ -1223,6 +1268,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPtAP_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMult_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultSymbolic_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultNumeric_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
@@ -2041,6 +2087,7 @@ static PetscErrorCode MatMissingDiagonal_SeqDense(Mat A,PetscBool  *missing,Pets
   PetscFunctionReturn(0);
 }
 
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         MatGetRow_SeqDense,
@@ -2134,9 +2181,9 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                 /* 89*/ MatMatMult_SeqDense_SeqDense,
                                         MatMatMultSymbolic_SeqDense_SeqDense,
                                         MatMatMultNumeric_SeqDense_SeqDense,
-                                        0,
-                                        0,
-                                /* 94*/ 0,
+                                        MatPtAP_SeqDense_SeqDense,
+                                        MatPtAPSymbolic_SeqDense_SeqDense,
+                                /* 94*/ MatPtAPNumeric_SeqDense_SeqDense,
                                         0,
                                         0,
                                         0,
@@ -2415,6 +2462,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaij_seqdense_C",MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqaij_seqdense_C",MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaij_seqdense_C",MatMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaij_seqdense_C",MatPtAP_SeqDense_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaij_seqdense_C",MatTransposeMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultSymbolic_seqaij_seqdense_C",MatTransposeMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultNumeric_seqaij_seqdense_C",MatTransposeMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);

@@ -58,7 +58,7 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-  PassiveReal param;          /* test problem parameter */
+  PetscReal param;          /* test problem parameter */
 } AppCtx;
 
 /*

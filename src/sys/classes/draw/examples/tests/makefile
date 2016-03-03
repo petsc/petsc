@@ -71,6 +71,15 @@ runex3:
 	-@${MPIEXEC} -n 1 ./ex3
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4
+runex6:
+	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap hue
+	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap gray
+	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap bone
+	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap jet
+	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap coolwarm
+	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap parula
+	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap viridis
+	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap plasma
 runex9:
 	-@${MPIEXEC} -n 1 ./ex9
 runex10:
@@ -81,10 +90,10 @@ runex12:
 	-@${MPIEXEC} -n 1 ./ex12
 
 TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex10.PETSc \
-                            runex10 ex10.rm ex4.PETSc runex4 ex4.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 ex11.rm \
-                            ex12.PETSc runex12 ex12.rm
+                            runex10 ex10.rm ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm ex9.PETSc runex9 ex9.rm \
+                            ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_FORTRAN	  = ex4f.PETSc ex4f.rm ex5f.PETSc ex5f.rm
-TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm
+TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc ex1.rm
 TESTEXAMPLES_13		  = ex9.PETSc ex9.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

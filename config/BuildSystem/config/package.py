@@ -62,6 +62,7 @@ class Package(config.base.Configure):
     self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload = [] # Used by, for example mpi.py which does not support --download-mpi but one can use --download-mpich
+    self.requirec99flag      = 0 # package must be compiled with C99 flags
 
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
@@ -589,11 +590,13 @@ class Package(config.base.Configure):
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
-        pkgdir = self.getDir()
         self.logWrite(retriever.restoreLog())
+        retriever.saveLog()
+        pkgdir = self.getDir()
         if not pkgdir:
-          raise RuntimeError('Unable to download '+self.PACKAGE)
+          raise RuntimeError('Failed to download '+self.PACKAGE)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
+        retriever.restoreLog()
         return pkgdir
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
@@ -1232,6 +1235,10 @@ class CMakePackage(Package):
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
+    if self.requirec99flag:
+      if (self.compilers.c99flag == None):
+        raise RuntimeError('Requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
+      cflags += ' '+self.compilers.c99flag
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):

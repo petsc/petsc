@@ -399,8 +399,8 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     nz = spA->nz + spB->nz; /* total nonzero entries of mat */
     if (!baij->colmap) {
       ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
-      colmap = baij->colmap;
     }
+    colmap = baij->colmap;
     ierr = MatGetColumnIJ_SeqBAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatGetColumnIJ_SeqBAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
 
@@ -425,8 +425,8 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       /* Allow access to data structures of local part of matrix
        - creates aij->colmap which maps global column number to local number in part B */
       ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
-      colmap = aij->colmap;
     }
+    colmap = aij->colmap;
     ierr = MatGetColumnIJ_SeqAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatGetColumnIJ_SeqAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
 

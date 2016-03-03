@@ -141,12 +141,14 @@ typedef unknownuniptr MPIUNI_INTPTR;
 #endif
 
 /* old 32bit MS compiler does not support long long */
-#if defined(PETSC_SIZEOF_LONG_LONG)
-typedef long long MPIUNI_INT64;
-#elif defined(PETSC_HAVE___INT64)
+#if defined(PETSC_HAVE___INT64)
 typedef _int64 MPIUNI_INT64;
+typedef unsigned _int64 MPIUNI_UINT64;
+#elif defined(PETSC_SIZEOF_LONG_LONG)
+typedef long long MPIUNI_INT64;
+typedef unsigned long long MPIUNI_UINT64;
 #else
-typedef unknownunint64 MPIUNI_INT64;
+#error "cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
 #endif
 
 /*
@@ -211,7 +213,7 @@ typedef int    MPI_Offset;
 #define MPI_UNSIGNED_SHORT   (5 << 16 | sizeof(unsigned short))
 #define MPI_UNSIGNED         (5 << 16 | sizeof(unsigned))
 #define MPI_UNSIGNED_LONG    (5 << 16 | sizeof(unsigned long))
-#define MPI_UNSIGNED_LONG_LONG (5 << 16 | sizeof(unsigned MPIUNI_INT64))
+#define MPI_UNSIGNED_LONG_LONG (5 << 16 | sizeof(MPIUNI_UINT64))
 
 #define MPI_FLOAT_INT        (10 << 16 | (sizeof(float) + sizeof(int)))
 #define MPI_DOUBLE_INT       (11 << 16 | (sizeof(double) + sizeof(int)))

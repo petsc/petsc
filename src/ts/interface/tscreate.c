@@ -76,10 +76,12 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->rtol             = 1e-4;
   t->cfltime          = PETSC_MAX_REAL;
   t->cfltime_local    = PETSC_MAX_REAL;
-  t->exact_final_time = TS_EXACTFINALTIME_STEPOVER;
+  t->exact_final_time = TS_EXACTFINALTIME_UNSPECIFIED;
   t->vec_costintegral = NULL;
   t->trajectory       = NULL;
 
+  /* all methods that do not do adaptivity should delete this object in their constructor */
+  ierr = TSGetAdapt(t,NULL);CHKERRQ(ierr);
   *ts = t;
   PetscFunctionReturn(0);
 }

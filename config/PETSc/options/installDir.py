@@ -37,7 +37,7 @@ class Configure(config.base.Configure):
     self.installSudo        = ''
     self.installSudoMessage = ''
     if self.framework.argDB['prefix']:
-      self.dir = self.framework.argDB['prefix']
+      self.dir = os.path.abspath(self.framework.argDB['prefix'])
       try:
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))

@@ -174,10 +174,10 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   PetscFunctionBegin;
   if (!bar) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
+  ierr = PetscDrawIsNull(bar->win,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
 
   draw = bar->win;
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   if (bar->numBins < 1) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)bar),&rank);CHKERRQ(ierr);
 

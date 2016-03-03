@@ -7,7 +7,7 @@ SOURCEC  = gmres.c borthog.c borthog2.c gmres2.c gmreig.c gmpre.c
 SOURCEH  = gmresimpl.h
 SOURCEF  =
 LIBBASE  = libpetscksp
-DIRS     = lgmres fgmres dgmres pgmres
+DIRS     = lgmres fgmres dgmres pgmres pipefgmres
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/gmres/
 
