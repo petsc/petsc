@@ -59,15 +59,16 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-
-  ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
 
   xr   = fd->N; yr  = fd->M; h = yr/10.0; w = xr/10.0;
   xr  += w;     yr += h;    xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,MatFDColoringView_Draw_Zoom,fd);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",NULL);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

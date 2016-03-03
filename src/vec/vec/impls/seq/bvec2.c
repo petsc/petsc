@@ -464,9 +464,9 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
   PetscDraw         draw;
   PetscBool         isnull;
+  PetscDrawLG       lg;
   PetscErrorCode    ierr;
   PetscInt          i,c,bs = PetscAbs(xin->map->bs),n = xin->map->n/bs;
-  PetscDrawLG       lg;
   const PetscScalar *xv;
   PetscReal         *xx,*yy;
   int               colors[] = {PETSC_DRAW_RED};
@@ -489,6 +489,7 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
     }
     ierr = PetscDrawLGAddPoints(lg,n,&xx,&yy);CHKERRQ(ierr);
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
   ierr = PetscFree2(xx,yy);CHKERRQ(ierr);

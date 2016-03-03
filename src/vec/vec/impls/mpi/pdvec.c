@@ -498,6 +498,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
     ierr = PetscFree2(xx,yy);CHKERRQ(ierr);
   }
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

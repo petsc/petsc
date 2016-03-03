@@ -70,7 +70,6 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
     ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-
     ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
@@ -81,7 +80,6 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         for (xmin=(PetscReal)(k*(dd->M+1)); xmin<(PetscReal)(dd->M+(k*(dd->M+1))); xmin++) {
           ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
         }
-
         xmin = (PetscReal)(k*(dd->M+1)); xmax = xmin + (PetscReal)(dd->M - 1);
         for (ymin=0; ymin<(PetscReal)dd->N; ymin++) {
           ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -89,7 +87,6 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       }
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
@@ -111,16 +108,14 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         xmin = dd->xs/dd->w;
         xmax =(dd->xe-1)/dd->w;
 
+        /* identify which processor owns the box */
+        ierr = PetscSNPrintf(node,sizeof(node),"%d",(int)rank);CHKERRQ(ierr);
+        ierr = PetscDrawString(draw,xmin+(dd->M+1)*k+.2,ymin+.3,PETSC_DRAW_RED,node);CHKERRQ(ierr);
         /* put in numbers*/
         base = (dd->base+(dd->xe-dd->xs)*(dd->ye-dd->ys)*(k-dd->zs))/dd->w;
-
-        /* Identify which processor owns the box */
-        sprintf(node,"%d",rank);
-        ierr = PetscDrawString(draw,xmin+(dd->M+1)*k+.2,ymin+.3,PETSC_DRAW_RED,node);CHKERRQ(ierr);
-
         for (y=ymin; y<=ymax; y++) {
           for (x=xmin+(dd->M+1)*k; x<=xmax+(dd->M+1)*k; x++) {
-            sprintf(node,"%d",(int)base++);
+            ierr = PetscSNPrintf(node,sizeof(node),"%d",(int)base++);CHKERRQ(ierr);
             ierr = PetscDrawString(draw,x,y,PETSC_DRAW_BLACK,node);CHKERRQ(ierr);
           }
         }
@@ -128,7 +123,6 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       }
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
@@ -164,9 +158,9 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       }
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = DMView_DA_Binary(da,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)

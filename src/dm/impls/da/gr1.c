@@ -263,14 +263,16 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
   n    = n/dof;
 
-  /* get coordinates of nodes */
+  /* Get coordinates of nodes */
   ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
     ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
     ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
   ierr = VecGetArrayRead(xcoor,&xg);CHKERRQ(ierr);
-  /* determine the min and max x coordinate in plot */
+  ierr = DMDAGetCoordinateName(da,0,&xlabel);CHKERRQ(ierr);
+
+  /* Determine the min and max coordinate in plot */
   if (!rank) xmin = PetscRealPart(xg[0]);
   if (rank == size-1) xmax = PetscRealPart(xg[n-1]);
   ierr = MPI_Bcast(&xmin,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
@@ -279,30 +281,18 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = DMDASelectFields(da,&ndisplayfields,&displayfields);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-draw_ports",&useports,NULL);CHKERRQ(ierr);
-  if (useports || format == PETSC_VIEWER_DRAW_PORTS) {
+  if (format == PETSC_VIEWER_DRAW_PORTS) useports = PETSC_TRUE;
+  if (useports) {
     ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDrawAxis(v,0,&axis);CHKERRQ(ierr);
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
     ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     ierr = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
   }
-  ierr = DMDAGetCoordinateName(da,0,&xlabel);CHKERRQ(ierr);
 
-  /* loop over each field; drawing each in a different window */
+  /* Loop over each field; drawing each in a different window */
   for (k=0; k<ndisplayfields; k++) {
     j = displayfields[k];
-    if (useports || format == PETSC_VIEWER_DRAW_PORTS) {
-      ierr = PetscDrawViewPortsSet(ports,k);CHKERRQ(ierr);
-      ierr = DMDAGetFieldName(da,j,&tlabel);CHKERRQ(ierr);
-    } else {
-      const char *title;
-      ierr = PetscViewerDrawGetDraw(v,k,&draw);CHKERRQ(ierr);
-      ierr = PetscViewerDrawGetDrawAxis(v,k,&axis);CHKERRQ(ierr);
-      ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-      ierr = DMDAGetFieldName(da,j,&title);CHKERRQ(ierr);
-      if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
-    }
-    ierr = PetscDrawAxisSetLabels(axis,tlabel,xlabel,NULL);CHKERRQ(ierr);
 
     /* determine the min and max value in plot */
     ierr = VecStrideMin(xin,j,NULL,&min);CHKERRQ(ierr);
@@ -316,8 +306,20 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       max += 1.e-5;
     }
 
-    ierr = PetscViewerDrawGetHold(v,&hold);CHKERRQ(ierr);
-    if (!hold) {ierr = PetscDrawClear(draw);CHKERRQ(ierr);}
+    if (useports) {
+      ierr = PetscDrawViewPortsSet(ports,k);CHKERRQ(ierr);
+      ierr = DMDAGetFieldName(da,j,&tlabel);CHKERRQ(ierr);
+    } else {
+      const char *title;
+      ierr = PetscViewerDrawGetHold(v,&hold);CHKERRQ(ierr);
+      ierr = PetscViewerDrawGetDraw(v,k,&draw);CHKERRQ(ierr);
+      ierr = PetscViewerDrawGetDrawAxis(v,k,&axis);CHKERRQ(ierr);
+      ierr = DMDAGetFieldName(da,j,&title);CHKERRQ(ierr);
+      if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
+      ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+      if (!hold) {ierr = PetscDrawClear(draw);CHKERRQ(ierr);}
+    }
+    ierr = PetscDrawAxisSetLabels(axis,tlabel,xlabel,NULL);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLimits(axis,xmin,xmax,min,max);CHKERRQ(ierr);
     ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
 
@@ -346,10 +348,15 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+    if (!useports) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   }
+  if (useports) {
+    ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+  }
+
   ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
   ierr = PetscFree(displayfields);CHKERRQ(ierr);
-
   ierr = VecRestoreArrayRead(xcoor,&xg);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);

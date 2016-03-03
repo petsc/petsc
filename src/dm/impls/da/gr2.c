@@ -155,7 +155,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,NULL);CHKERRQ(ierr);
 
   /*
-        Obtain a sequential vector that is going to contain the local values plus ONE layer of
+     Obtain a sequential vector that is going to contain the local values plus ONE layer of
      ghosted values to draw the graphics from. We also need its corresponding DMDA (dac) that will
      update the local values pluse ONE layer of ghost values.
   */
@@ -200,7 +200,9 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xlocal,&zctx.v);CHKERRQ(ierr);
 
-  /* get coordinates of nodes */
+  /*
+      Get coordinates of nodes
+  */
   ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
     ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
@@ -220,7 +222,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscInfo4(da,"Preparing DMDA 2d contour plot coordinates %g %g %g %g\n",(double)coors[0],(double)coors[1],(double)coors[2],(double)coors[3]);CHKERRQ(ierr);
 
   /*
-       get local ghosted version of coordinates
+      Get local ghosted version of coordinates
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) {
@@ -237,9 +239,11 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xcoorl,&zctx.xy);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateName(da,0,&zctx.name0);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateName(da,1,&zctx.name1);CHKERRQ(ierr);
 
   /*
-        Get information about size of area each processor must do graphics for
+      Get information about size of area each processor must do graphics for
   */
   ierr = DMDAGetInfo(dac,NULL,&M,&N,NULL,NULL,NULL,NULL,&zctx.dof,NULL,&bx,&by,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,NULL,NULL,NULL,&zctx.m,&zctx.n,NULL);CHKERRQ(ierr);
@@ -248,27 +252,19 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMDASelectFields(da,&ndisplayfields,&displayfields);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-draw_ports",&useports,NULL);CHKERRQ(ierr);
-  if (useports || format == PETSC_VIEWER_DRAW_PORTS) {
+  if (format == PETSC_VIEWER_DRAW_PORTS) useports = PETSC_TRUE;
+  if (useports) {
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
     ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     ierr = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
   }
-  ierr = DMDAGetCoordinateName(da,0,&zctx.name0);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateName(da,1,&zctx.name1);CHKERRQ(ierr);
 
-  /* loop over each field; drawing each in a different window */
+  /*
+      Loop over each field; drawing each in a different window
+  */
   for (i=0; i<ndisplayfields; i++) {
     zctx.k = displayfields[i];
-    if (useports || format == PETSC_VIEWER_DRAW_PORTS) {
-      ierr = PetscDrawViewPortsSet(ports,i);CHKERRQ(ierr);
-    } else {
-      const char *title;
-      ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
-      ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-      ierr = DMDAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
-      if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
-    }
 
     /* determine the min and max value in plot */
     ierr = VecStrideMin(xin,zctx.k,NULL,&zctx.min);CHKERRQ(ierr);
@@ -283,14 +279,28 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     }
     ierr = PetscInfo2(da,"DMDA 2d contour plot min %g max %g\n",(double)zctx.min,(double)zctx.max);CHKERRQ(ierr);
 
+    if (useports) {
+      ierr = PetscDrawViewPortsSet(ports,i);CHKERRQ(ierr);
+    } else {
+      const char *title;
+      ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
+      ierr = DMDAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
+      if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
+    }
+
     ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
     if (popup) {ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
     ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
     ierr = PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
+    if (!useports) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   }
+  if (useports) {
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+  }
+
   ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
   ierr = PetscFree(displayfields);CHKERRQ(ierr);
-
   ierr = VecRestoreArrayRead(xcoorl,&zctx.xy);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xlocal,&zctx.v);CHKERRQ(ierr);
   PetscFunctionReturn(0);

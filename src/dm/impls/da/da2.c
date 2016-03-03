@@ -54,7 +54,6 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
 
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
     ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-
     ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
@@ -70,7 +69,6 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       }
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
@@ -90,7 +88,6 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       }
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
@@ -109,9 +106,9 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     }
     ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = DMView_DA_Binary(da,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
