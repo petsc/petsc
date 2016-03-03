@@ -16,6 +16,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char[],PetscErrorCode(*)(Pet
 PETSC_EXTERN PetscErrorCode PetscDrawGetType(PetscDraw,PetscDrawType*);
 PETSC_EXTERN PetscErrorCode PetscDrawSetType(PetscDraw,PetscDrawType);
 PETSC_EXTERN PetscErrorCode PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawSetFromOptions(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw,const char*);

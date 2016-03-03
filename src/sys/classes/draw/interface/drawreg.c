@@ -301,6 +301,34 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetOptionsPrefix"
+/*@C
+   PetscDrawSetOptionsPrefix - Sets the prefix used for searching for all
+   PetscDraw options in the database.
+
+   Logically Collective on PetscDraw
+
+   Input Parameter:
++  draw - the draw context
+-  prefix - the prefix to prepend to all option names
+
+   Level: advanced
+
+.keywords: PetscDraw, set, options, prefix, database
+
+.seealso: PetscDrawSetFromOptions()
+@*/
+PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)draw,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawSetFromOptions"
 /*@
    PetscDrawSetFromOptions - Sets the graphics type from the options database.
