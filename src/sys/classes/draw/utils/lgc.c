@@ -166,6 +166,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
 
   ierr = PetscHeaderCreate(lg,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawLGDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetOptionsPrefix(lg,((PetscObject)draw)->prefix);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
   lg->win = draw;
@@ -182,9 +183,9 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
   ierr = PetscMalloc2(dim*CHUNCKSIZE,&lg->x,dim*CHUNCKSIZE,&lg->y);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
 
-  lg->len     = dim*CHUNCKSIZE;
-  lg->loc     = 0;
-  lg->use_markers= PETSC_FALSE;
+  lg->len         = dim*CHUNCKSIZE;
+  lg->loc         = 0;
+  lg->use_markers = PETSC_FALSE;
 
   ierr = PetscDrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)lg,(PetscObject)lg->axis);CHKERRQ(ierr);
@@ -572,6 +573,35 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawLGSetOptionsPrefix"
+/*@C
+   PetscDrawLGSetOptionsPrefix - Sets the prefix used for searching for all
+   PetscDrawLG options in the database.
+
+   Logically Collective on PetscDrawLG
+
+   Input Parameter:
++  lg - the line graph context
+-  prefix - the prefix to prepend to all option names
+
+   Level: advanced
+
+.keywords: PetscDrawLG, set, options, prefix, database
+
+.seealso: PetscDrawLGSetFromOptions()
+@*/
+PetscErrorCode  PetscDrawLGSetOptionsPrefix(PetscDrawLG lg,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!lg) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)lg,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

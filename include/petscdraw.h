@@ -262,6 +262,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetUseMarkers(PetscDrawLG,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetColors(PetscDrawLG,const int*);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetOptionsPrefix(PetscDrawLG,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetFromOptions(PetscDrawLG);
 
 PETSC_EXTERN PetscClassId PETSC_DRAWSP_CLASSID;
