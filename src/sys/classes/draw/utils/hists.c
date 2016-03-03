@@ -406,6 +406,33 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGSave"
+/*@
+  PetscDrawHGSave - Saves a drawn image
+
+  Collective on PetscDrawHG
+
+  Input Parameter:
+. hist - The histogram context
+
+  Level: intermediate
+
+  Concepts: histogram^saving
+
+.seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+@*/
+PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!hg) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(hg,PETSC_DRAWHG_CLASSID,1);
+  ierr = PetscDrawSave(hg->win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawHGView"
 /*@
   PetscDrawHGView - Prints the histogram information.

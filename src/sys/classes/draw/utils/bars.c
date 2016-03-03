@@ -251,6 +251,33 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawBarSave"
+/*@
+  PetscDrawBarSave - Saves a drawn image
+
+  Collective on PetscDrawBar
+
+  Input Parameters:
+. bar - The bar graph context
+
+  Level: intermediate
+
+  Concepts: bar graph^saving
+
+.seealso:  PetscDrawBarCreate(), PetscDrawBarGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+@*/
+PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!bar) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
+  ierr = PetscDrawSave(bar->win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawBarSetColor"
 /*@
   PetscDrawBarSetColor - Sets the color the bars will be drawn with.

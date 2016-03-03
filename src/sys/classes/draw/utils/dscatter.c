@@ -352,6 +352,33 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPSave"
+/*@
+   PetscDrawSPSave - Saves a drawn image
+
+   Collective on PetscDrawSP
+
+   Input Parameter:
+.  sp - the scatter plot context
+
+   Level: intermediate
+
+   Concepts: scatter plot^saving
+
+.seealso:  PetscDrawSPCreate(), PetscDrawSPGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+@*/
+PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!sp) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
+  ierr = PetscDrawSave(sp->win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawSPSetLimits"
 /*@
    PetscDrawSPSetLimits - Sets the axis limits for a scatter plot If more

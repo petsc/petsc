@@ -509,6 +509,33 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawLGSave"
+/*@
+  PetscDrawLGSave - Saves a drawn image
+
+  Collective on PetscDrawLG
+
+  Input Parameter:
+. lg - The line graph context
+
+  Level: intermediate
+
+  Concepts: line graph^saving
+
+.seealso:  PetscDrawLGCreate(), PetscDrawLGGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+@*/
+PetscErrorCode  PetscDrawLGSave(PetscDrawLG lg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!lg) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  ierr = PetscDrawSave(lg->win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawLGView"
 /*@
   PetscDrawLGView - Prints a line graph.
