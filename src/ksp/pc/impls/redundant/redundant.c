@@ -71,7 +71,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (!red->psubcomm) { /* create red->psubcomm, new ksp and pc over subcomm */
       KSP ksp;
       ierr = PCRedundantGetKSP(pc,&ksp);CHKERRQ(ierr);
-      subcomm = PetscSubcommChild(red->psubcomm);
     } 
     subcomm = PetscSubcommChild(red->psubcomm);
 
