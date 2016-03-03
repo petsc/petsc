@@ -378,10 +378,15 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 
   PetscFunctionBegin;
   if (!red->psubcomm) {
+    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
+
+    ierr = PetscSubcommSetOptionsPrefix(red->psubcomm,prefix);CHKERRQ(ierr);
+    ierr = PetscSubcommSetFromOptions(red->psubcomm);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
@@ -395,7 +400,6 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
     ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
 
-    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
     ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
   }

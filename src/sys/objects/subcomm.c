@@ -9,8 +9,20 @@ const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","Pe
 
 extern PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
 extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscSubcommSetFromOptions"
+/*@C
+   PetscSubcommSetFromOptions - Allows setting options from a PetscSubcomm
+
+   Collective on PetscSubcomm
+
+   Input Parameter:
+.  psubcomm - PetscSubcomm context
+
+   Level: beginner
+
+@*/
 PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 {
   PetscErrorCode   ierr;
@@ -20,7 +32,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   PetscFunctionBegin;
   if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must call PetscSubcommCreate firt");
 
-  ierr = PetscOptionsBegin(psubcomm->parent,NULL,"Options for PetscSubcomm",NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(psubcomm->parent,psubcomm->subcommprefix,"Options for PetscSubcomm",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-psubcomm_type",NULL,NULL,PetscSubcommTypes,(PetscEnum)psubcomm->type,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
   if (flg && psubcomm->type != type) {
     /* free old structures */
@@ -50,7 +62,48 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSubcommSetOptionsPrefix"
+/*@C
+  PetscSubcommSetOptionsPrefix - Sets the prefix used for searching for all
+  PetscSubcomm items in the options database.
+
+  Logically collective on PetscSubcomm.
+
+  Level: Intermediate
+
+  Input Parameters:
++   psubcomm - PetscSubcomm context
+-   prefix - the prefix to prepend all PetscSubcomm item names with.
+
+@*/
+PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm,const char pre[])
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+   if (!pre) {
+    ierr = PetscFree(psubcomm->subcommprefix);CHKERRQ(ierr);
+  } else {
+    if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
+    ierr = PetscFree(psubcomm->subcommprefix);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(pre,&(psubcomm->subcommprefix));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSubcommView"
+/*@C
+   PetsSubcommcView - Views a PetscSubcomm of values as either ASCII text or a binary file
+
+   Collective on PetscSubcomm
+
+   Input Parameter:
++  psubcomm - PetscSubcomm context
+-  viewer - location to view the values
+
+   Level: beginner
+@*/
 PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -226,6 +279,7 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
   ierr = PetscCommDestroy(&(*psubcomm)->dupparent);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&(*psubcomm)->child);CHKERRQ(ierr);
   ierr = PetscFree((*psubcomm)->subsize);CHKERRQ(ierr);
+  if ((*psubcomm)->subcommprefix) { ierr = PetscFree((*psubcomm)->subcommprefix);CHKERRQ(ierr); }
   ierr = PetscFree((*psubcomm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
