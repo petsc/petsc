@@ -190,7 +190,7 @@ static PetscErrorCode VecUnWrapCholmodRead(Vec X,cholmod_dense *Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_CHOLMOD"
-static PetscErrorCode  MatDestroy_CHOLMOD(Mat F)
+PETSC_INTERN PetscErrorCode  MatDestroy_CHOLMOD(Mat F)
 {
   PetscErrorCode ierr;
   Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->spptr;
@@ -271,7 +271,7 @@ static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_CHOLMOD"
-static PetscErrorCode  MatView_CHOLMOD(Mat F,PetscViewer viewer)
+PETSC_INTERN PetscErrorCode  MatView_CHOLMOD(Mat F,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscBool         iascii;
@@ -336,7 +336,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_CHOLMOD"
-static PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatFactorInfo *info)
+PETSC_INTERN PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
   PetscErrorCode ierr;
