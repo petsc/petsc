@@ -232,6 +232,7 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
   if (!vdraw->drawlg[windownumber+vdraw->draw_base]) {
     ierr = PetscDrawLGCreate(vdraw->draw[windownumber+vdraw->draw_base],1,&vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetFromOptions(vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
   }
   *drawlg = vdraw->drawlg[windownumber+vdraw->draw_base];
   PetscFunctionReturn(0);
