@@ -403,7 +403,7 @@ PetscErrorCode PCApply_MyShell(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
+PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobian_MyShell"
