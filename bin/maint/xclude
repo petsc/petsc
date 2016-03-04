@@ -23,6 +23,7 @@ petsc-dist/bin/maint
 petsc-dist/BitKeeper
 petsc-dist/ChangeSet
 petsc-dist/arch-build
+petsc-dist/arch-fvpf
 petsc-dist/configure.log
 petsc-dist/configure.log.bkp
 petsc-dist/Rdict.log
