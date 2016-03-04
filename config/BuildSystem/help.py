@@ -104,6 +104,12 @@ class Help(Info):
     self.argDB.setType(self.getArgName(name), argType, forceLocal = 1)
     return
 
+  def addDownload(self,name,dlist):
+    if not hasattr(self.argDB,'dlist'):
+      self.argDB.dlist = {}
+    else:
+      self.argDB.dlist[name] = dlist
+
   def output(self, f = None, sections = None):
     '''Print a help screen with all the argument information.'''
     if f is  None:
@@ -129,3 +135,31 @@ class Help(Info):
         else:
           f.write(format % (name, type.help))
     return
+
+  def outputDownload(self):
+    import nargs
+    import os
+    import sys
+    pkgdir = nargs.Arg.findArgument('with-packages-dir', self.clArgs)
+    missing = 0
+    print 'Download the following packages to '+pkgdir+' \n'
+    for i in self.argDB.dlist.keys():
+      if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
+        dlist = self.argDB.dlist[i]
+        found = 0
+        for k in range(0,len(dlist)):
+          fd = os.path.join(pkgdir,os.path.basename(dlist[k]))
+          if os.path.isdir(fd) or os.path.isfile(fd):
+            found = 1
+            for k in range(0,len(self.clArgs)):
+              if self.clArgs[k].startswith('--download-'+i):
+                self.clArgs[k] = 'download-'+i+'='+fd
+                self.argDB.insertArgs([self.clArgs[k]])
+            break
+        if not found: 
+          print i + ' ' + str(self.argDB.dlist[i])
+          missing = 1
+    if missing:
+      sys.exit()
+
+
