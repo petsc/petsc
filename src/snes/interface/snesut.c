@@ -233,8 +233,9 @@ PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
   ierr = VecDestroy(&work2);CHKERRQ(ierr);
 
   ierr = PetscDrawLGAddPoint(lg,NULL,y);CHKERRQ(ierr);
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || snes->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

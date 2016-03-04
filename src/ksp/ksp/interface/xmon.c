@@ -67,8 +67,9 @@ PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void
   if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n <= 20 || !(n % 5)) {
+  if (n <= 20 || !(n % 5) || ksp->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -87,6 +88,10 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,4);
+
+  ierr = KSPMonitorRange_Private(ksp,n,&per);CHKERRQ(ierr);
+  if (!n) prev = rnorm;
+
   ierr = PetscViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
@@ -95,33 +100,33 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
   if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || ksp->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerDrawGetDrawLG(v,1,&lg);CHKERRQ(ierr);
-  ierr =  KSPMonitorRange_Private(ksp,n,&per);CHKERRQ(ierr);
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetTitle(draw,"% elemts > .2*max elemt");CHKERRQ(ierr);
   x    = (PetscReal) n;
   y    = 100.0*per;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || ksp->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerDrawGetDrawLG(v,2,&lg);CHKERRQ(ierr);
-  if (!n) {prev = rnorm;ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetTitle(draw,"(norm -oldnorm)/oldnorm*(% > .2 max)");CHKERRQ(ierr);
-  ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetTitle(draw,"(norm -oldnorm)/oldnorm");CHKERRQ(ierr);
+  ierr = PetscDrawSetTitle(draw,"(norm-oldnorm)/oldnorm");CHKERRQ(ierr);
   x    = (PetscReal) n;
   y    = (prev - rnorm)/prev;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || ksp->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerDrawGetDrawLG(v,3,&lg);CHKERRQ(ierr);
@@ -133,9 +138,11 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
   if (n > 5) {
     ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   }
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || ksp->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
+
   prev = rnorm;
   PetscFunctionReturn(0);
 }
@@ -218,6 +225,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
   ierr = PetscDrawLGAddPoint(lg,x,y);CHKERRQ(ierr);
   if (n <= 20 || !(n % 5)) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
