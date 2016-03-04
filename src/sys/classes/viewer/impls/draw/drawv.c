@@ -48,10 +48,10 @@ PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
     This PetscDraw object may then be used to perform graphics using
     PetscDrawXXX() commands.
 
-    Not collective (but PetscDraw returned will be parallel object if PetscViewer is)
+    Collective on PetscViewer
 
     Input Parameters:
-+  viewer - the PetscViewer (created with PetscViewerDrawOpen())
++   viewer - the PetscViewer (created with PetscViewerDrawOpen())
 -   windownumber - indicates which subwindow (usually 0)
 
     Ouput Parameter:
@@ -110,6 +110,7 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
       ierr = PetscDrawSetType(vdraw->draw[windownumber],vdraw->drawtype);CHKERRQ(ierr);
     }
     ierr = PetscDrawSetPause(vdraw->draw[windownumber],vdraw->pause);CHKERRQ(ierr);
+    ierr = PetscDrawSetOptionsPrefix(vdraw->draw[windownumber],((PetscObject)viewer)->prefix);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
   }
   if (draw) *draw = vdraw->draw[windownumber];
@@ -122,7 +123,7 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
 /*@C
     PetscViewerDrawBaseAdd - add to the base integer that is added to the windownumber passed to PetscViewerDrawGetDraw()
 
-    Not collective (but PetscDraw returned will be parallel object if PetscViewer is)
+    Logically Collective on PetscViewer
 
     Input Parameters:
 +  viewer - the PetscViewer (created with PetscViewerDrawOpen())
@@ -158,10 +159,10 @@ PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
 /*@C
     PetscViewerDrawBaseSet - sets the base integer that is added to the windownumber passed to PetscViewerDrawGetDraw()
 
-    Not collective (but PetscDraw returned will be parallel object if PetscViewer is)
+    Logically Collective on PetscViewer
 
     Input Parameters:
-+  viewer - the PetscViewer (created with PetscViewerDrawOpen())
++   viewer - the PetscViewer (created with PetscViewerDrawOpen())
 -   windownumber - value to set the base
 
     Level: developer
@@ -196,7 +197,7 @@ PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
     This PetscDrawLG object may then be used to perform graphics using
     PetscDrawLGXXX() commands.
 
-    Not Collective (but PetscDrawLG object will be parallel if PetscViewer is)
+    Collective on PetscViewer
 
     Input Parameter:
 +   PetscViewer - the PetscViewer (created with PetscViewerDrawOpen())
@@ -245,7 +246,7 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
     This PetscDrawAxis object may then be used to perform graphics using
     PetscDrawAxisXXX() commands.
 
-    Not Collective (but PetscDrawAxis object will be parallel if PetscViewer is)
+    Collective on PetscViewer
 
     Input Parameter:
 +   viewer - the PetscViewer (created with PetscViewerDrawOpen()
