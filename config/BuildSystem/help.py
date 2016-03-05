@@ -181,6 +181,6 @@ class Help(Info):
           if not found:
             print i + ' ' + str(self.argDB.dlist[i])
       print '\nThen run the script again\n'
-      sys.exit(1)
+      sys.exit(10)
 
 
