@@ -591,10 +591,12 @@ class Package(config.base.Configure):
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
         self.logWrite(retriever.restoreLog())
+        retriever.saveLog()
         pkgdir = self.getDir()
         if not pkgdir:
-          raise RuntimeError('Unable to download '+self.PACKAGE)
+          raise RuntimeError('Failed to download '+self.PACKAGE)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
+        retriever.restoreLog()
         return pkgdir
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))

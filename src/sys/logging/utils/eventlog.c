@@ -275,11 +275,6 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
 .ve
 
   Notes:
-  PETSc automatically logs library events if the code has been
-  compiled with -DPETSC_USE_LOG (which is the default) and -log,
-  -log_summary, or -log_all are specified.  PetscLogEventRegister() is
-  intended for logging user events to supplement this PETSc
-  information.
 
   PETSc can gather data for use with the utilities Jumpshot
   (part of the MPICH distribution).  If PETSc has been compiled

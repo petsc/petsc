@@ -220,7 +220,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
     entry->next    = 0;
     *fl            = entry;
 
-#if defined(PETSC_USE_LOG)
+#if defined(PETSC_USE_DEBUG)
     /* add this new list to list of all lists */
     if (!dlallhead) {
       dlallhead        = *fl;

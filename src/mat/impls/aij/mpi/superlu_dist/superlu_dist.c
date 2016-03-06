@@ -348,7 +348,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       PetscStackCall("SuperLU_DIST:dallocateA_dist",dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row));
 #endif
     } else { /* successive numeric factorization, sparsity pattern and perm_c are reused. */
-      /* Destroy_CompRowLoc_Matrix_dist(&lu->A_sup); */ /* this leads to crash! However, see SuperLU_DIST_2.5/EXAMPLE/pzdrive2.c */
+      SUPERLU_FREE((void*)lu->A_sup.Store);
       if (lu->FactPattern == SamePattern_SameRowPerm) {
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
       } else {

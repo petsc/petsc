@@ -926,8 +926,7 @@ PetscErrorCode  VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscSc
 
    Concepts: vector^getting values
 
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecGetValuesLocal(),
-           VecGetValuesBlocked(), InsertMode, INSERT_VALUES, ADD_VALUES, VecSetValues()
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues()
 @*/
 PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y[])
 {

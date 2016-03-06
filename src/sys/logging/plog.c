@@ -239,9 +239,8 @@ PetscErrorCode  PetscLogInitialize(void)
   Logically Collective over PETSC_COMM_WORLD
 
   Options Database Keys:
-+ -log_summary - Prints summary of flop and timing information to the
-                  screen (for code compiled with PETSC_USE_LOG)
-- -log - Prints detailed log information (for code compiled with PETSC_USE_LOG)
+. -log_view [viewertype:filename:viewerformat] - Prints summary of flop and timing information to the
+                  screen (for code configured with --with-log=1 (which is the default))
 
   Usage:
 .vb
@@ -279,7 +278,7 @@ PetscErrorCode  PetscLogDefaultBegin(void)
   Logically Collective on PETSC_COMM_WORLD
 
   Options Database Keys:
-. -log_all - Prints extensive log information (for code compiled with PETSC_USE_LOG)
+. -log_all - Prints extensive log information
 
   Usage:
 .vb
@@ -692,8 +691,8 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 
   Notes:
   PETSc automatically logs library events if the code has been
-  compiled with -DPETSC_USE_LOG (which is the default) and -log,
-  -log_summary, or -log_all are specified.  PetscLogEventRegister() is
+  configured with --with-log (which is the default) and
+  -log_view or -log_all is specified.  PetscLogEventRegister() is
   intended for logging user events to supplement this PETSc
   information.
 
@@ -938,13 +937,7 @@ PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
 
    Notes:
    You need to register each integer event with the command
-   PetscLogEventRegister().  The source code must be compiled with
-   -DPETSC_USE_LOG, which is the default.
-
-   PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_USE_LOG, and -log, -log_summary, or -log_all are
-   specified.  PetscLogEventBegin() is intended for logging user events
-   to supplement this PETSc information.
+   PetscLogEventRegister().
 
    Level: intermediate
 
@@ -983,13 +976,7 @@ M*/
 
    Notes:
    You should also register each additional integer event with the command
-   PetscLogEventRegister(). Source code must be compiled with
-   -DPETSC_USE_LOG, which is the default.
-
-   PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_USE_LOG, and -log, -log_summary, or -log_all are
-   specified.  PetscLogEventEnd() is intended for logging user events
-   to supplement this PETSc information.
+   PetscLogEventRegister().
 
    Level: intermediate
 
@@ -1114,10 +1101,6 @@ PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
 
   Input Parameter:
 . name - an optional file name
-
-  Options Database Keys:
-+ -log     - Prints basic log information (for code compiled with PETSC_USE_LOG)
-- -log_all - Prints extensive log information (for code compiled with PETSC_USE_LOG)
 
   Usage:
 .vb
@@ -1848,12 +1831,6 @@ PetscErrorCode PetscLogViewFromOptions(void)
    PetscLogFlops() to increment this counter to include flops for the
    application code.
 
-   PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_USE_LOG (which is the default), and -log,
-   -log_summary, or -log_all are specified.  PetscLogFlops() is
-   intended for logging user flops to supplement this PETSc
-   information.
-
    Level: intermediate
 
 .keywords: log, flops, floating point operations
@@ -1911,12 +1888,6 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
    A global counter logs all PETSc flop counts.  The user can use
    PetscLogFlops() to increment this counter to include flops for the
    application code.
-
-   PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_USE_LOG (which is the default), and -log,
-   -log_summary, or -log_all are specified.  PetscLogFlops() is
-   intended for logging user flops to supplement this PETSc
-   information.
 
    Level: intermediate
 
@@ -2097,7 +2068,7 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,Pe
    Collective over PETSC_COMM_WORLD
 
    Options Database Keys:
-. -log_mpe - Prints extensive log information (for code compiled with PETSC_USE_LOG)
+. -log_mpe - Prints extensive log information
 
    Notes:
    A related routine is PetscLogDefaultBegin() (with the options key -log_summary), which is

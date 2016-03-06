@@ -1224,7 +1224,6 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
 PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
 {
   Mat_IS*        matis = (Mat_IS*)pc->pmat->data;
-  PC_IS*         pcis = (PC_IS*)pc->data;
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat            new_mat;
   IS             is_local,is_global;
@@ -1236,7 +1235,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   ierr = MatGetSize(matis->A,&local_size,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)matis->A),local_size,0,1,&is_local);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyIS(pcis->mapping,is_local,&is_global);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyIS(pc->pmat->rmap->mapping,is_local,&is_global);CHKERRQ(ierr);
   ierr = ISDestroy(&is_local);CHKERRQ(ierr);
   ierr = MatGetSubMatrixUnsorted(ChangeOfBasisMatrix,is_global,is_global,&new_mat);CHKERRQ(ierr);
   ierr = ISDestroy(&is_global);CHKERRQ(ierr);
