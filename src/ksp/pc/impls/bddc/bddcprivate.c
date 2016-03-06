@@ -2072,7 +2072,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatGetSubMatrix(pcbddc->benign_B0,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B0_B);CHKERRQ(ierr);
     ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
     ierr = MatMatMult(B0_B,pcbddc->coarse_phi_B,MAT_INITIAL_MATRIX,1.0,&B0_BPHI);CHKERRQ(ierr);
-    ierr = MatConvert(B0_BPHI,MATSEQDENSE,MAT_REUSE_MATRIX,&B0_BPHI);CHKERRQ(ierr);
+    ierr = MatConvert(B0_BPHI,MATSEQDENSE,MAT_INPLACE_MATRIX,&B0_BPHI);CHKERRQ(ierr);
     ierr = MatDenseGetArray(B0_BPHI,&data);CHKERRQ(ierr);
     for (j=0;j<pcbddc->benign_n;j++) {
       PetscInt primal_idx = pcbddc->local_primal_size - pcbddc->benign_n + j;
@@ -2262,7 +2262,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->benign_n,0,1,&is_dummy);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(pcbddc->benign_B0,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B0_B);CHKERRQ(ierr);
       ierr = MatMatMult(B0_B,coarse_phi_B,MAT_INITIAL_MATRIX,1.0,&B0_BPHI);CHKERRQ(ierr);
-      ierr = MatConvert(B0_BPHI,MATSEQDENSE,MAT_REUSE_MATRIX,&B0_BPHI);CHKERRQ(ierr);
+      ierr = MatConvert(B0_BPHI,MATSEQDENSE,MAT_INPLACE_MATRIX,&B0_BPHI);CHKERRQ(ierr);
       ierr = MatDenseGetArray(TM1,&data);CHKERRQ(ierr);
       ierr = MatDenseGetArray(B0_BPHI,&data2);CHKERRQ(ierr);
       for (j=0;j<pcbddc->benign_n;j++) {
