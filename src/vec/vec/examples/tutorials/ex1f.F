@@ -56,7 +56,8 @@
       three = 3.0
       n     = 20
       ithree = 3
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+     &                        '-n',n,flg,ierr)
       nfloat = n
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -208,7 +209,7 @@
       v2 = abs(norm-3.0*sqrt(nfloat))
       if (v2 .gt. -PETSC_SMALL .and. v2 .lt. PETSC_SMALL) v2 = 0.0
       if (rank .eq. 0) write(6,220) v,v1,v2
- 220  format ('VecMAXPY ',3(1pe8.2))
+ 220  format ('VecMAXPY ',3(2x,1pe8.2))
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

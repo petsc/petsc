@@ -87,6 +87,7 @@ typedef const char* MatType;
 #define MATSUBMATRIX       "submatrix"
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
+#define MATPREALLOCATOR    "preallocator"
 
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type.
@@ -159,7 +160,7 @@ PETSC_EXTERN PetscClassId MATMFFD_CLASSID;
 
 .seealso: MatGetSubMatrices(), MatGetSubMatrix(), MatDestroyMatrices(), MatConvert()
 E*/
-typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX,MAT_IGNORE_MATRIX} MatReuse;
+typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX,MAT_IGNORE_MATRIX,MAT_INPLACE_MATRIX} MatReuse;
 
 /*E
     MatGetSubMatrixOption - Indicates if matrices obtained from a call to MatGetSubMatrices()
@@ -183,7 +184,7 @@ PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const 
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
-PETSC_EXTERN PetscErrorCode MatSetErrorIfFPE(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat,PetscBool);
 
 PETSC_EXTERN PetscFunctionList MatList;
 PETSC_EXTERN PetscFunctionList MatColoringList;
@@ -465,17 +466,20 @@ PETSC_EXTERN PetscErrorCode MatGetRowMinAbs(Mat,Vec,PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatGetRowSum(Mat,Vec);
 PETSC_EXTERN PetscErrorCode MatTranspose(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatHermitianTranspose(Mat,MatReuse,Mat*);
-PETSC_EXTERN PetscErrorCode MatPermute(Mat,IS,IS,Mat *);
+PETSC_EXTERN PetscErrorCode MatPermute(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatDiagonalScale(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatDiagonalSet(Mat,Vec,InsertMode);
-PETSC_EXTERN PetscErrorCode MatEqual(Mat,Mat,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatMultEqual(Mat,Mat,PetscInt,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatMultAddEqual(Mat,Mat,PetscInt,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatMultTransposeEqual(Mat,Mat,PetscInt,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool *);
 
-PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal *);
-PETSC_EXTERN PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal *);
+PETSC_EXTERN PetscErrorCode MatEqual(Mat,Mat,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultAddEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultTransposeEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatTransposeMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
+
+PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatZeroEntries(Mat);
 PETSC_EXTERN PetscErrorCode MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsIS(Mat,IS,PetscScalar,Vec,Vec);
@@ -993,6 +997,15 @@ S*/
 typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
 PETSC_EXTERN const char *const MatFactorShiftTypes[];
 PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
+
+/*S
+    MatFactorError - indicates what type of error in matrix factor
+
+    Level: beginner
+
+    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+S*/
+typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY,MAT_FACTOR_OTHER} MatFactorError;
 
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
@@ -1514,7 +1527,7 @@ PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
 /*
    Codes for matrices stored on disk. By default they are
    stored in a universal format. By changing the format with
-   PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
+   PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
    be stored in a way natural for the matrix, for example dense matrices
    would be stored as dense. Matrices stored this way may only be
    read into matrices of the same type.
@@ -1786,5 +1799,7 @@ PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscInt,PetscInt*,IS**);
+
+PETSC_EXTERN PetscErrorCode MatPreallocatorPreallocate(Mat,PetscBool,Mat);
 
 #endif

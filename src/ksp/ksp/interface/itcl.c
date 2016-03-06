@@ -287,6 +287,46 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSetFromOptions"
+/*@C
+   KSPMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - KSP object you wish to monitor
+.  name - the monitor type one is seeking
+.  help - message indicating what monitoring is done
+.  manual - manual page for the monitor
+-  monitor - the monitor function
+
+   Level: developer
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*))
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,monitor,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions"
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
@@ -325,7 +365,7 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 .   -ksp_monitor_cancel - cancel all previous convergene monitor routines set
 .   -ksp_monitor <optional filename> - print residual norm at each iteration
 .   -ksp_monitor_lg_residualnorm - plot residual norm at each iteration
-.   -ksp_monitor_solution - plot solution at each iteration
+.   -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration
 -   -ksp_monitor_singular_value - monitor extreme singular values at each iteration
 
    Notes:
@@ -345,7 +385,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   PetscInt       indx;
   const char     *convtests[] = {"default","skip"};
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
-  PetscViewer    monviewer;
   PetscBool      flg,flag,reuse,set;
   PetscInt       model[2]={0,0},nmax;
   KSPNormType    normtype;
@@ -455,24 +494,17 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flg) {
     ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
   }
-  /*
-    Prints preconditioned residual norm at each iteration
-  */
-  ierr = PetscOptionsString("-ksp_monitor","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
-  /*
-    Prints preconditioned residual norm at each iteration
-  */
-  ierr = PetscOptionsString("-ksp_monitor_range","Monitor percent of residual entries more than 10 percent of max","KSPMonitorRange","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorRange,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor","Monitor the (preconditioned) residual norm","KSPMonitorDefault",KSPMonitorDefault);CHKERRQ(ierr);
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_range","Monitor the percentage of large entries in the residual","KSPMonitorRange",KSPMonitorRange);CHKERRQ(ierr);
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_true_residual","Monitor the unprecondiitoned residual norm","KSPMOnitorTrueResidual",KSPMonitorTrueResidualNorm);CHKERRQ(ierr);
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_max","Monitor the maximum norm of the residual","KSPMonitorTrueResidualMaxNorm",KSPMonitorTrueResidualMaxNorm);CHKERRQ(ierr);
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_short","Monitor preconditioned residual norm with fewer digits","KSPMonitorDefaultShort",KSPMonitorDefaultShort);CHKERRQ(ierr);
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_solution","Monitor the solution","KSPMonitorSolution",KSPMonitorSolution);CHKERRQ(ierr);
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_singular_value","Monitor singular values","KSPMonitorSingularValue",KSPMonitorSingularValue);CHKERRQ(ierr);
+  
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCKSP,&flg);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCBJACOBI,&flag);CHKERRQ(ierr);
+
   if (flg || flag) {
     /* A hack for using dynamic tolerance in preconditioner */
     ierr = PetscOptionsString("-sub_ksp_dynamic_tolerance","Use dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicTolerance","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -485,46 +517,8 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr        = KSPMonitorSet(ksp,KSPMonitorDynamicTolerance,scale,KSPMonitorDynamicToleranceDestroy);CHKERRQ(ierr);
     }
   }
-  /*
-    Plots the vector solution
-  */
-  ierr = PetscOptionsBool("-ksp_monitor_solution","Monitor solution graphically","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set && flg) {
-    ierr = KSPMonitorSet(ksp,KSPMonitorSolution,NULL,NULL);CHKERRQ(ierr);
-  }
-  /*
-    Prints preconditioned and true residual norm at each iteration
-  */
-  ierr = PetscOptionsString("-ksp_monitor_true_residual","Monitor true residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualNorm,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
-  /*
-    Prints with max norm at each iteration
-  */
-  ierr = PetscOptionsString("-ksp_monitor_max","Monitor true residual max norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualMaxNorm,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
-  /*
-    Prints extreme eigenvalue estimates at each iteration
-  */
-  ierr = PetscOptionsString("-ksp_monitor_singular_value","Monitor singular values","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
-  /*
-    Prints preconditioned residual norm with fewer digits
-  */
-  ierr = PetscOptionsString("-ksp_monitor_short","Monitor preconditioned residual norm with fewer digits","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
+ 
+
   /*
    Calls Python function
   */
@@ -602,7 +596,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   }
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

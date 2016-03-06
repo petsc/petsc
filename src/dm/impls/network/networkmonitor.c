@@ -7,14 +7,16 @@
   DMNetworkMonitorCreate - Creates a network monitor context
 
   Collective on MPI_Comm
-  
+
   Input Parameters:
-+ network - network to monitor
+. network - network to monitor
 
   Output Parameters:
-+ Monitorptr - Location to put network monitor context
+. Monitorptr - Location to put network monitor context
 
-.seealso: DMNetworkMonitorDestroy, DMNetworkMonitorAdd
+  Level: intermediate
+
+.seealso: DMNetworkMonitorDestroy(), DMNetworkMonitorAdd()
 @*/
 PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
 {
@@ -43,9 +45,11 @@ PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
   DMNetworkMonitorDestroy - Destroys a network monitor and all associated viewers
 
   Collective on DMNetworkMonitor
-  
+
   Input Parameters:
-+ monitor - monitor to destroy
+. monitor - monitor to destroy
+
+  Level: intermediate
 
 .seealso: DMNetworkMonitorCreate, DMNetworkMonitorAdd
 @*/
@@ -66,11 +70,15 @@ PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
 #define __FUNCT__ "DMNetworkMonitorPop"
 /*@
   DMNetworkMonitorPop - Removes the most recently added viewer
-  
-  Input Parameters:
-+ monitor - the monitor
 
-.seealso: DMNetworkMonitorCreate, DMNetworkMonitorDestroy 
+  Collective on DMNetworkMonitor
+
+  Input Parameters:
+. monitor - the monitor
+
+  Level: intermediate
+
+.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy()
 @*/
 PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 {
@@ -95,7 +103,9 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 #define __FUNCT__ "DMNetworkMonitorAdd"
 /*@
   DMNetworkMonitorAdd - Adds a new viewer to monitor
-  
+
+  Collective on DMNetworkMonitor
+
   Input Parameters:
 + monitor - the monitor
 . name - name of viewer
@@ -107,6 +117,8 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
 . ymax - ymax for viewer
 - hold - determines if plot limits should be held
 
+  Level: intermediate
+
   Notes:
   This is written to be independent of the semantics associated to the variables
   at a given network vertex / edge.
@@ -114,7 +126,7 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   Precisely, the parameters nodes, start and blocksize allow you to select a general
   strided subarray of the variables to monitor.
 
-.seealso: DMNetworkMonitorCreate, DMNetworkMonitorDestroy 
+.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy() 
 @*/
 PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,PetscInt element,PetscInt nodes,PetscInt start,PetscInt blocksize,PetscReal ymin,PetscReal ymax,PetscBool hold)
 {
@@ -170,12 +182,16 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
 #define __FUNCT__ "DMNetworkMonitorView"
 /*@
   DMNetworkMonitorView - Monitor function for TSMonitorSet.
-  
+
+  Collectiveon DMNetworkMonitor
+
   Input Parameters:
 + monitor - DMNetworkMonitor object
 - x - TS solution vector
 
-.seealso: DMNetworkMonitorCreate, DMNetworkMonitorDestroy, DMNetworkMonitorAdd
+  Level: intermediate
+
+.seealso: DMNetworkMonitorCreate(), DMNetworkMonitorDestroy(), DMNetworkMonitorAdd()
 @*/
 PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor,Vec x)
 {

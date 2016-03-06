@@ -152,7 +152,7 @@ $     -mat_type my_mat
 
 .keywords: Mat, register
 
-.seealso: MatRegisterAll(), MatRegisterDestroy()
+.seealso: MatRegisterAll()
 
 
   Level: advanced

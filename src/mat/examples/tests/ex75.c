@@ -10,7 +10,7 @@ int main(int argc,char **args)
   Vec            x,y,u,s1,s2;
   Mat            A,sA,sB;
   PetscRandom    rctx;
-  PetscReal      r1,r2,rnorm,tol=1.e-10;
+  PetscReal      r1,r2,rnorm,tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscScalar    one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1;
   PetscInt       n,col[3],n1,block,row,i,j,i2,j2,Ii,J,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=2;
   PetscErrorCode ierr;
@@ -19,8 +19,8 @@ int main(int argc,char **args)
   MatType        type;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

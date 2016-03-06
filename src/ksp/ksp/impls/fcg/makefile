@@ -7,7 +7,7 @@ SOURCEC  = fcg.c
 SOURCEF  =
 SOURCEH  = fcgimpl.h
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     = pipefcg
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/fcg/
 

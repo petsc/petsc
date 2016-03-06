@@ -17,6 +17,7 @@ typedef struct {
   PetscBool    changelda;         /* change lda on resize? Default unless user set lda */
   PetscBLASInt Mmax,Nmax;         /* indicates the largest dimensions of data possible */
   PetscBool    user_alloc;        /* true if the user provided the dense data */
+  Mat          ptapwork;          /* workspace (SeqDense matrix) for PtAP */
 
   Mat_MatTransMatMult *atb;       /* used by MatTransposeMatMult_SeqAIJ_SeqDense */
 } Mat_SeqDense;

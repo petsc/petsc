@@ -1072,6 +1072,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->JsBlockPrec);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(user->solver,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetTolerances(user->solver,1e-4,1e-20,1e3,500);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(user->solver);CHKERRQ(ierr);
   ierr = KSPGetPC(user->solver,&user->prec);CHKERRQ(ierr);
   ierr = PCSetType(user->prec,PCSHELL);CHKERRQ(ierr);
 

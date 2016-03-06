@@ -175,7 +175,7 @@ PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSPARSE"
-PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptions *PetscOptionsObject,Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   MatCUSPARSEStorageFormat format;
   PetscErrorCode           ierr;

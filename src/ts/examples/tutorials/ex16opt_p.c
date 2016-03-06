@@ -172,8 +172,8 @@ int main(int argc,char **argv)
   user.steps       = 0;
   user.ftime       = 0.5;
 
-  ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -271,7 +271,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
   
-  ierr = TaoSetTolerances(tao,1e-13,1e-13,1e-13,PETSC_DEFAULT,PETSC_DEFAULT);
+  ierr = TaoSetTolerances(tao,1e-13,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
@@ -337,7 +337,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,user);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -347,6 +346,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,0.5);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used

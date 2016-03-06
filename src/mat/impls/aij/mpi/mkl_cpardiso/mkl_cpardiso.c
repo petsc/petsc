@@ -2,7 +2,7 @@
 #define MKL_ILP64
 #endif
 
-#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/aij/seq/aij.h>                       /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 #include <stdio.h>
@@ -834,7 +834,8 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
 
    Level: beginner
 
-   References: Mkl_Pardiso Users' Guide
+   References:
+.      Mkl_Pardiso Users' Guide
 
 .seealso: MatGetFactor()
 @*/

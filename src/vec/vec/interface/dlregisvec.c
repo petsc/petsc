@@ -58,7 +58,7 @@ PetscErrorCode  ISInitializePackage(void)
   ierr = PetscClassIdRegister("Section",&PETSC_SECTION_CLASSID);CHKERRQ(ierr);
 
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
@@ -67,7 +67,7 @@ PetscErrorCode  ISInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
@@ -178,7 +178,7 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_ReduceBarrier, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
@@ -186,7 +186,7 @@ PetscErrorCode  VecInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
@@ -195,7 +195,7 @@ PetscErrorCode  VecInitializePackage(void)
   }
   /* Special processing */
   opt  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-log_sync", &opt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-log_sync", &opt,NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscLogEventSetActiveAll(VEC_NormBarrier, PETSC_TRUE);CHKERRQ(ierr);

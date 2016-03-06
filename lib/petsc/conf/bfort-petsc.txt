@@ -6,7 +6,7 @@ native DMBoundaryType
 native PetscDrawMarkerType
 native ISGlobalToLocalMappingType
 native ISColoringType
-native KSPFCGTruncationType
+native KSPFCDTruncationType
 native KSPGMRESCGSRefinementType
 native KSPNormType
 native KSPCGType
@@ -68,6 +68,7 @@ native MatFactorInfo
 # Old PETSc types
 native PetscTruth
 #
+nativeptr PetscOptions
 nativeptr AO
 nativeptr DM
 nativeptr DMLabel

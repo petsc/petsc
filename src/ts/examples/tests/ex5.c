@@ -250,14 +250,14 @@ int main(int argc,char **argv)
 
   /* set values for MonitorCtx */
   usermonitor.drawcontours = PETSC_FALSE;
-  ierr = PetscOptionsHasName(NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
   if (usermonitor.drawcontours) {
     PetscReal bounds[] = {1000.0,-1000.,  -1000.,-1000.,  1000.,-1000.,  1000.,-1000.,  1000,-1000, 100700,100800};
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,300,300,&usermonitor.drawviewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawSetBounds(usermonitor.drawviewer,dof,bounds);CHKERRQ(ierr);
   }
   usermonitor.interval = 1;
-  ierr = PetscOptionsGetInt(NULL,"-monitor_interval",&usermonitor.interval,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-monitor_interval",&usermonitor.interval,NULL);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DA;
@@ -288,7 +288,7 @@ int main(int argc,char **argv)
   }
 
   /* Define what to print for ts_monitor option */
-  ierr = PetscOptionsHasName(NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
   if (!monitor_off) {
     ierr = TSMonitorSet(ts,Monitor,&usermonitor,NULL);CHKERRQ(ierr);
   }
@@ -299,6 +299,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time,ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,T);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
 

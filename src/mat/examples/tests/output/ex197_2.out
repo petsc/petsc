@@ -1,0 +1,12 @@
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+1240. + 22. i
+Process [1]
+1734. + 33. i
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+2480. + 44. i
+Process [1]
+3468. + 66. i

@@ -136,7 +136,7 @@ int main(int argc,char **argv)
     u[0] = 1;
     u[1] = .7;
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscOptionsGetVec(NULL,"-initial",U,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetVec(NULL,NULL,"-initial",U,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -161,6 +161,7 @@ int main(int argc,char **argv)
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,100000,2000.0);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

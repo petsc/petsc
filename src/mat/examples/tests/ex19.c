@@ -34,7 +34,7 @@ int main(int argc,char **args)
   PetscReal      h,norm;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
 
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m;      /* number of elements */
@@ -86,12 +86,12 @@ int main(int argc,char **args)
   /* Check error */
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-10 || norm < -1.e-10) {
+  if (norm > PETSC_SQRT_MACHINE_EPSILON) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* Now test MatGetValues() */
-  ierr = PetscOptionsHasName(NULL,"-get_values",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-get_values",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr  = MatGetOwnershipRange(C,&mystart,&myend);CHKERRQ(ierr);
     nrsub = myend - mystart; ncsub = 4;

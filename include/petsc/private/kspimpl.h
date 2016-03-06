@@ -20,10 +20,11 @@ struct _KSPOps {
                                                           user-provided area.  */
   PetscErrorCode (*solve)(KSP);                        /* actual solver */
   PetscErrorCode (*setup)(KSP);
-  PetscErrorCode (*setfromoptions)(PetscOptions*,KSP);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,KSP);
   PetscErrorCode (*publishoptions)(KSP);
   PetscErrorCode (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
   PetscErrorCode (*computeeigenvalues)(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
+  PetscErrorCode (*computeritz)(KSP,PetscBool,PetscBool,PetscInt*,Vec[],PetscReal*,PetscReal*);
   PetscErrorCode (*destroy)(KSP);
   PetscErrorCode (*view)(KSP,PetscViewer);
   PetscErrorCode (*reset)(KSP);
@@ -51,6 +52,7 @@ struct _p_KSP {
   KSPFischerGuess guess;
   PetscBool       guess_zero,                  /* flag for whether initial guess is 0 */
                   calc_sings,                  /* calculate extreme Singular Values */
+                  calc_ritz,                   /* calculate (harmonic) Ritz pairs */
                   guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
   PCSide          pc_side;                  /* flag for left, right, or symmetric preconditioning */
   PetscInt        normsupporttable[KSP_NORM_MAX][PC_SIDE_MAX]; /* Table of supported norms and pc_side, see KSPSetSupportedNorm() */
@@ -60,8 +62,8 @@ struct _p_KSP {
                   divtol;                   /* divergence tolerance */
   PetscReal       rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal       rnorm;                    /* current residual norm */
-  KSPConvergedReason reason;
-  PetscBool          errorifnotconverged;    /* create an error if the KSPSolve() does not converge */
+  KSPConvergedReason    reason;
+  PetscBool             errorifnotconverged; /* create an error if the KSPSolve() does not converge */
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed
                                       the solution and rhs, these are
@@ -293,6 +295,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
 }
 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_0,KSP_Solve_FS_1,KSP_Solve_FS_2,KSP_Solve_FS_3,KSP_Solve_FS_4,KSP_Solve_FS_S,KSP_Solve_FS_L,KSP_Solve_FS_U;
 
 PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 
@@ -302,11 +305,22 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
 #define KSPCheckDot(ksp,beta)           \
   if (PetscIsInfOrNanScalar(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
-  else {\
-    ksp->reason = KSP_DIVERGED_NANORINF;\
-    PetscFunctionReturn(0);\
-  }\
-}
+    else {\
+      PetscErrorCode ierr;\
+      PCFailedReason pcreason;\
+      PetscInt       sendbuf,pcreason_max; \
+      ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      sendbuf = (PetscInt)pcreason; \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      if (pcreason_max) {\
+        ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
+        ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
+      } else {\
+        ksp->reason = KSP_DIVERGED_NANORINF;\
+      }\
+      PetscFunctionReturn(0);\
+    }\
+  }
 
 /*
     Either generate an error or mark as diverged when a real from a norm is Nan or Inf
@@ -314,10 +328,21 @@ PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse
 #define KSPCheckNorm(ksp,beta)           \
   if (PetscIsInfOrNanReal(beta)) { \
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
-  else {\
-    ksp->reason = KSP_DIVERGED_NANORINF;\
-    PetscFunctionReturn(0);\
-  }\
-}
+    else {\
+      PetscErrorCode ierr;\
+      PCFailedReason pcreason;\
+      PetscInt       sendbuf,pcreason_max; \
+      ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
+      sendbuf = (PetscInt)pcreason; \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      if (pcreason_max) {\
+        ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
+        ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
+      } else {\
+        ksp->reason = KSP_DIVERGED_NANORINF;\
+      }\
+      PetscFunctionReturn(0);\
+    }\
+  }
 
 #endif

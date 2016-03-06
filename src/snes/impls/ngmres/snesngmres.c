@@ -103,7 +103,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NGMRES"
-PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptions *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
@@ -188,10 +188,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
-    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  }
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
@@ -539,10 +536,14 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType r
    The N-GMRES method combines m previous solutions into a minimum-residual solution by solving a small linearized
    optimization problem at each iteration.
 
-   References:
+   Very similar to the SNESANDERSON algorithm.
 
-   "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", C. W. Oosterlee and T. Washio,
+   References:
++  1. - C. W. Oosterlee and T. Washio, "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", 
    SIAM Journal on Scientific Computing, 21(5), 2000.
+-  2. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", 
+   SIAM Review, 57(4), 2015
+
 
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/

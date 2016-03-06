@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode SNESGetType(SNES,SNESType*);
 PETSC_EXTERN PetscErrorCode SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRange(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
-PETSC_EXTERN PetscErrorCode SNESMonitorSetRatio(SNES,PetscViewer);
+PETSC_EXTERN PetscErrorCode SNESMonitorRatioSetUp(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESMonitorSolution(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorResidual(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,void *);
@@ -324,6 +324,7 @@ PETSC_EXTERN PetscErrorCode SNESSetConvergenceTest(SNES,PetscErrorCode (*)(SNES,
 PETSC_EXTERN PetscErrorCode SNESConvergedDefault(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode SNESConvergedSkip(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES,SNESConvergedReason*);
+PETSC_EXTERN PetscErrorCode SNESSetConvergedReason(SNES,SNESConvergedReason);
 
 PETSC_DEPRECATED("Use SNESConvergedSkip()") PETSC_STATIC_INLINE void SNESSkipConverged(void) { /* never called */ }
 #define SNESSkipConverged (SNESSkipConverged, SNESConvergedSkip)
@@ -434,6 +435,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES,SNESNormSchedule);
 PETSC_EXTERN PetscErrorCode SNESGetNormSchedule(SNES,SNESNormSchedule*);
+PETSC_EXTERN PetscErrorCode SNESSetFunctionNorm(SNES,PetscReal);
+PETSC_EXTERN PetscErrorCode SNESGetFunctionNorm(SNES,PetscReal*);
 
 /*E
     SNESFunctionType - Type of function computed
@@ -588,8 +591,13 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetNorms(SNESLineSearch, PetscReal, Pe
 PETSC_EXTERN PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch, PetscBool);
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetMonitor(SNESLineSearch, PetscBool);
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetMonitor(SNESLineSearch, PetscViewer*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitor(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch,PetscErrorCode(*)(SNESLineSearch,void*),void *,PetscErrorCode (*)(void**));
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorCancel(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorUpdate(SNESLineSearch,void*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetDefaultMonitor(SNESLineSearch,PetscViewer);
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch,PetscViewer*);
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSolutionUpdate(SNESLineSearch,void*);
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchAppendOptionsPrefix(SNESLineSearch, const char prefix[]);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetOptionsPrefix(SNESLineSearch, const char *prefix[]);
@@ -835,6 +843,6 @@ PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 #endif

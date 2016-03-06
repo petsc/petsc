@@ -148,10 +148,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   SNESConvergedReason  reason;
 
   PetscFunctionBegin;
-
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
-    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  }
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
@@ -374,7 +371,7 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NEWTONLS"
-static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;

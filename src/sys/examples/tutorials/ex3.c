@@ -4,8 +4,7 @@ Run this program with one of the\n\
 following options to generate logging information:  -log, -log_summary,\n\
 -log_all.  The PETSc routines automatically log event times and flops,\n\
 so this monitoring is intended solely for users to employ in application\n\
-codes.  Note that the code must be compiled with the flag -DPETSC_USE_LOG\n\
-(the default) to activate logging.\n\n";
+codes.\n\n";
 
 /*T
    Concepts: PetscLog^user-defined event profiling

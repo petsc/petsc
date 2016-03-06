@@ -111,9 +111,7 @@ PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec glo
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(local_interface_vector,VEC_CLASSID,2);
   PetscValidHeaderSpecific(global_vector,VEC_CLASSID,3);
-  if (local_interface_vector == pcbddc->work_scaling) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
-  }
+  if (local_interface_vector == pcbddc->work_scaling) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
   ierr = PetscTryMethod(pc,"PCBDDCScalingExtension_C",(PC,Vec,Vec),(pc,local_interface_vector,global_vector));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -214,9 +212,7 @@ PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_inte
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(global_vector,VEC_CLASSID,2);
   PetscValidHeaderSpecific(local_interface_vector,VEC_CLASSID,3);
-  if (local_interface_vector == pcbddc->work_scaling) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
-  }
+  if (local_interface_vector == pcbddc->work_scaling) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
   ierr = PetscTryMethod(pc,"PCBDDCScalingRestriction_C",(PC,Vec,Vec),(pc,global_vector,local_interface_vector));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -430,9 +426,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
         ierr = ISGetIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
         ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_com,idxs,&nmap,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
-        if (nmap != n_com) {
-          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_vertices)! %d != %d",nmap,n_com);
-        }
+        if (nmap != n_com) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_vertices)! %d != %d",nmap,n_com);
         ierr = ISRestoreIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
       }
       if (sub_schurs->is_dir) {
@@ -441,16 +435,12 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
         ierr = ISGetIndices(sub_schurs->is_dir,&idxs);CHKERRQ(ierr);
         ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_dir,idxs,&nmap,deluxe_ctx->idx_simple_B+n_com);CHKERRQ(ierr);
-        if (nmap != n_dir) {
-          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (sub_schurs->is_dir)! %d != %d",nmap,n_dir);
-        }
+        if (nmap != n_dir) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (sub_schurs->is_dir)! %d != %d",nmap,n_dir);
         ierr = ISRestoreIndices(sub_schurs->is_dir,&idxs);CHKERRQ(ierr);
       }
       ierr = PetscSortInt(deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
     } else {
-      if (deluxe_ctx->n_simple != n_dir + n_com) {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of simply scaled dofs %d is different from the previous one computed %d",n_dir + n_com,deluxe_ctx->n_simple);
-      }
+      if (deluxe_ctx->n_simple != n_dir + n_com) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of simply scaled dofs %d is different from the previous one computed %d",n_dir + n_com,deluxe_ctx->n_simple);
     }
   } else {
     deluxe_ctx->n_simple = 0;

@@ -36,7 +36,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscInt       i,m = 5,N,start,end,M,its;
   PetscScalar    val,Ke[16],r[4];
-  PetscReal      x,y,h,norm,tol=1.e-14;
+  PetscReal      x,y,h,norm;
   PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows;
   Vec            u,ustar,b;
@@ -44,8 +44,8 @@ int main(int argc,char **args)
   PetscBool      viewkspest = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-ksp_est_view",&viewkspest,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-ksp_est_view",&viewkspest,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
@@ -155,9 +155,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its);CHKERRQ(ierr);
-  }
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);

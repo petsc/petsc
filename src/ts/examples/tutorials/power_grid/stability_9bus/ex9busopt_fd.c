@@ -839,8 +839,8 @@ int main(int argc,char **argv)
   TaoConvergedReason reason;
   Vec                lowerb,upperb;
 
-  ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   PetscFunctionBeginUser;
+  ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
@@ -931,7 +931,6 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
 
-  /* ierr = TaoSetTolerances(tao,1e-15,1e-15,1e-15,1e-15,1e-15); */
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
   /* Get information on termination */
@@ -943,13 +942,16 @@ int main(int argc,char **argv)
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-
+  ierr = VecDestroy(&user.vec_q);CHKERRQ(ierr);
+  ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
+  ierr = VecDestroy(&upperb);CHKERRQ(ierr);
+  ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmgen);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmnet);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmpgrid);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_diff);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_alg);CHKERRQ(ierr);
-
+  ierr = PetscFinalize();
   return(0);
 }
 
@@ -1052,6 +1054,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ctx->stepnum++;
 
   ierr = TSSetDuration(ts,1000,ctx->tfaulton);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   /* ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr); */
@@ -1089,6 +1092,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   /* Disturbance period */
   ierr = TSSetDuration(ts,1000,ctx->tfaultoff);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,ctx->tfaulton,.01);CHKERRQ(ierr);
 
   ctx->alg_flg = PETSC_FALSE;
@@ -1117,6 +1121,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   /* Post-disturbance period */
   ierr = TSSetDuration(ts,1000,ctx->tmax);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,ctx->tfaultoff,.01);CHKERRQ(ierr);
 
   ctx->alg_flg = PETSC_TRUE;

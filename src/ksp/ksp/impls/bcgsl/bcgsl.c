@@ -497,7 +497,7 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_BCGSL"
-PetscErrorCode KSPSetFromOptions_BCGSL(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_BCGSL(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
   PetscErrorCode ierr;
@@ -591,14 +591,14 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
                 out of the denominator in the formula for ghat.
 
     References:
-      1. G.L.G. Sleijpen, H.A. van der Vorst, "An overview of
++     1. - G.L.G. Sleijpen, H.A. van der Vorst, "An overview of
          approaches for the stable computation of hybrid BiCG
          methods", Applied Numerical Mathematics: Transactions
-         f IMACS, 19(3), pp 235-54, 1996.
-      2. G.L.G. Sleijpen, H.A. van der Vorst, D.R. Fokkema,
-         "BiCGStab(L) and other hybrid Bi-CG methods",
-          Numerical Algorithms, 7, pp 75-109, 1994.
-      3. D.R. Fokkema, "Enhanced implementation of BiCGStab(L)
+         f IMACS, 19(3), 1996.
+.     2. -  G.L.G. Sleijpen, H.A. van der Vorst, D.R. Fokkema,
+         "BiCGStab(L) and other hybrid BiCG methods",
+          Numerical Algorithms, 7, 1994.
+-     3. -  D.R. Fokkema, "Enhanced implementation of BiCGStab(L)
          for solving linear systems of equations", preprint
          from www.citeseer.com.
 

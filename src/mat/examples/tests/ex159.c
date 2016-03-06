@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   }
 
   usenest = PETSC_FALSE;
-  ierr    = PetscOptionsGetBool(NULL,"-nest",&usenest,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(NULL,NULL,"-nest",&usenest,NULL);CHKERRQ(ierr);
   if (usenest) {
     ISLocalToGlobalMapping l2g;
     PetscInt               l2gind[3];

@@ -256,7 +256,7 @@ PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x
     a linear system is solved repeatedly
 
   References:
-      http://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
+.   1. -   http://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
 
    Notes: the algorithm is different from the paper because we do not CHANGE the right hand side of the new
     problem and solve the problem with an initial guess of zero, rather we solve the original new problem
@@ -302,7 +302,7 @@ PetscErrorCode  KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)ITG->ksp)->prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)ITG->ksp)->options,((PetscObject)ITG->ksp)->prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

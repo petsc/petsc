@@ -26,14 +26,14 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-mat_mbs",&mbs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-view_id",&vid,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-test_overlap", &TestOverlap);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-test_submat", &TestSubMat);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL, "-test_allcols", &TestAllcols);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_mbs",&mbs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-view_id",&vid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_overlap", &TestOverlap);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_submat", &TestSubMat);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_allcols", &TestAllcols);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,mbs*bs,mbs*bs,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);

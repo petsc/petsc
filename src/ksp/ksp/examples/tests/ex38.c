@@ -52,16 +52,16 @@ int main(int argc,char **args)
   n1 = 64;
   n2 = 64;
 
-  ierr = PetscOptionsGetInt(NULL,"-n1",&n1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n2",&n2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n1",&n1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n2",&n2,NULL);CHKERRQ(ierr);
 
   h     = 1.0/n1;
   gamma = 4.0;
   beta  = 0.01;
 
-  ierr = PetscOptionsGetReal(NULL,"-h",&h,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-gamma",&gamma,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-beta",&beta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-h",&h,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-gamma",&gamma,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-beta",&beta,NULL);CHKERRQ(ierr);
   gamma = gamma/h;
   beta  = beta/(h*h);
 

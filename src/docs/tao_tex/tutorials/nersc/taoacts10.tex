@@ -723,7 +723,7 @@ Once that is done, it is trivial to get TAO to run in parallel:
  TaoCreate(PETSC_COMM_WORLD,TAOLMVM,&tao);
  TaoApplicationCreate(PETSC_COMM_WORLD,&app);
  VecCreateMPI(PETSC_COMM_WORLD,n,&x);
- MatCreateMPIAIJ(PETSC_COMM_WORLD,n,n,nz,NULL,&H);
+ MatCreateAIJ(PETSC_COMM_WORLD,n,n,nz,NULL,&H);
  ...
 \end{verbatim}
 }

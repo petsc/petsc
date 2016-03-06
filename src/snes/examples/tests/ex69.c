@@ -19,7 +19,7 @@ typedef struct {
 PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
 
 typedef struct {
-  PassiveReal lidvelocity,prandtl,grashof;  /* physical parameters */
+  PetscReal   lidvelocity,prandtl,grashof;  /* physical parameters */
   PetscBool   draw_contours;                /* flag - 1 indicates drawing contours */
   PetscBool   errorindomain;
   PetscBool   errorindomainmf;  
@@ -56,13 +56,13 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsGetBool(NULL,"-error_in_matmult",&errorinmatmult,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-error_in_pcapply",&errorinpcapply,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-error_in_pcsetup",&errorinpcsetup,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_matmult",&errorinmatmult,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_pcapply",&errorinpcapply,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_pcsetup",&errorinpcsetup,NULL);CHKERRQ(ierr);
   user.errorindomain = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-error_in_domain",&user.errorindomain,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_domain",&user.errorindomain,NULL);CHKERRQ(ierr);
   user.errorindomainmf = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-error_in_domainmf",&user.errorindomainmf,NULL);CHKERRQ(ierr);  
+  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_domainmf",&user.errorindomainmf,NULL);CHKERRQ(ierr);  
 
   comm = PETSC_COMM_WORLD;
   ierr = SNESCreate(comm,&user.snes);CHKERRQ(ierr);
@@ -83,10 +83,10 @@ int main(int argc,char **argv)
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
 
-  ierr = PetscOptionsGetReal(NULL,"-lidvelocity",&user.lidvelocity,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-prandtl",&user.prandtl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-grashof",&user.grashof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"x_velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y_velocity");CHKERRQ(ierr);

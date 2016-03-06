@@ -415,7 +415,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Multiblock"
-static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptions *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
   PCCompositeType ctype;
@@ -512,10 +512,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
-    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  }
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   snes->reason = SNES_CONVERGED_ITERATING;
 

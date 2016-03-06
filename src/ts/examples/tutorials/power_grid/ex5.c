@@ -63,12 +63,6 @@ typedef struct {
 PetscScalar s = -0.00011577790353;
 /*Pw = 0.011064344110238; %Te*wm */
 PetscScalar       vwa  = 22.317142184449754;
-const PetscScalar Vds  = 0.221599610176842;
-const PetscScalar Vqs  = 0.985390081525825;
-const PetscScalar Edp  = 0.204001061991491;
-const PetscScalar Eqp  = 0.930016956074682;
-PetscScalar       Ids  = -0.315782941309702;
-PetscScalar       Iqs  = 0.081163163902447;
 PetscReal         tmax = 20.0;
 
 /* Saves the solution at each time to a matrix */
@@ -316,6 +310,7 @@ int main(int argc,char **argv)
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,2000,20.0);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);

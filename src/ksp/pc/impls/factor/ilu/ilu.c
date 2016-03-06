@@ -95,7 +95,7 @@ PetscErrorCode  PCFactorGetUseInPlace_ILU(PC pc,PetscBool *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ILU"
-static PetscErrorCode PCSetFromOptions_ILU(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       itmp;
@@ -169,6 +169,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     }
   }
 
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (ilu->inplace) {
     if (!pc->setupcalled) {
 
@@ -185,10 +186,16 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     ((PC_Factor*)ilu)->info.diagonal_fill = 0.0;
 
     ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);CHKERRQ(ierr);
+    if (pc->pmat->errortype) { /* Factor() fails */
+      pc->failedreason = (PCFailedReason)pc->pmat->errortype;
+      PetscFunctionReturn(0);
+    }
+
     ((PC_Factor*)ilu)->fact = pc->pmat;
     /* must update the pc record of the matrix state or the PC will attempt to run PCSetUp() yet again */
     ierr = PetscObjectStateGet((PetscObject)pc->pmat,&pc->matstate);CHKERRQ(ierr);
   } else {
+    Mat F;
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
@@ -229,8 +236,16 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
     }
-    ierr = MatSetErrorIfFPE(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
+    F = ((PC_Factor*)ilu)->fact;
+    if (F->errortype) { /* FactorSymbolic() fails */
+      pc->failedreason = (PCFailedReason)F->errortype;
+      PetscFunctionReturn(0);
+    }
+
     ierr = MatLUFactorNumeric(((PC_Factor*)ilu)->fact,pc->pmat,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
+    if (F->errortype) { /* FactorNumeric() fails */
+      pc->failedreason = (PCFailedReason)F->errortype;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -330,17 +345,13 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
           is never done on the GPU).
 
    References:
-   T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
-   self-adjoint elliptic difference equations. SIAM J. Numer. Anal., 5:559--573, 1968.
-
-   T.A. Oliphant. An implicit numerical method for solving two-dimensional time-dependent dif-
-   fusion problems. Quart. Appl. Math., 19:221--229, 1961.
-
-   Review article: 
-    APPROXIMATE AND INCOMPLETE FACTORIZATIONS, TONY F. CHAN AND HENK A. VAN DER VORST
-      http://igitur-archive.library.uu.nl/math/2001-0621-115821/proc.pdf chapter in Parallel Numerical
++  1. - T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
+   self adjoint elliptic difference equations. SIAM J. Numer. Anal., 5, 1968.
+.  2. -  T.A. Oliphant. An implicit numerical method for solving two dimensional timedependent diffusion problems. Quart. Appl. Math., 19, 1961.
+-  3. -  TONY F. CHAN AND HENK A. VAN DER VORST, APPROXIMATE AND INCOMPLETE FACTORIZATIONS, 
+      Chapter in Parallel Numerical
       Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
-      Science and Engineering, Kluwer, pp. 167--202.
+      Science and Engineering, Kluwer.
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,

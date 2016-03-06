@@ -466,8 +466,6 @@ PETSC_EXTERN PetscErrorCode VecLockPop(Vec);
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);
 
-PETSC_EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
-
 /*
     These numbers need to match the entries in
   the function table in vecimpl.h
@@ -545,8 +543,6 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMod
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
-PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArray(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArray(Vec,PetscScalar**);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
@@ -566,7 +562,7 @@ PETSC_EXTERN PetscErrorCode VecNestSetSubVec(Vec,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode VecCreateNest(MPI_Comm,PetscInt,IS*,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode VecNestGetSize(Vec,PetscInt*);
 
-PETSC_EXTERN PetscErrorCode PetscOptionsGetVec(const char[],const char[],Vec,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetVec(PetscOptions,const char[],const char[],Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode VecChop(Vec,PetscReal);
 
 PETSC_EXTERN PetscErrorCode VecGetLayout(Vec,PetscLayout*);

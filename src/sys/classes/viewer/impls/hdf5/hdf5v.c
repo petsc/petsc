@@ -18,7 +18,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_HDF5"
-static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptions *PetscOptionsObject,PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode   ierr;
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)v->data;
@@ -327,7 +327,7 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Concepts: HDF5 files
    Concepts: PetscViewerHDF5^creating
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
           PetscViewerHDF5SetSPOutput(), PetscViewerHDF5GetBaseDimension2(), VecView(), MatView(), VecLoad(),
           MatLoad(), PetscFileMode, PetscViewer
 @*/

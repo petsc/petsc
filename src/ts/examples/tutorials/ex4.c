@@ -113,8 +113,8 @@ int main(int argc,char **argv)
   appctx.comm = PETSC_COMM_WORLD;
 
   m               = 60;
-  ierr            = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr            = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
@@ -167,7 +167,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-nonlinear",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-nonlinear",&flg,NULL);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,flg ? TS_NONLINEAR : TS_LINEAR);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -186,7 +186,7 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-time_dependent_rhs",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-time_dependent_rhs",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation
@@ -233,6 +233,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

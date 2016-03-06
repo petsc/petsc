@@ -5,8 +5,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.gitcommit         = '6d01158'
-    self.giturls           = ['https://bitbucket.org/petsc/ctetgen.git']
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.4.tar.gz']
+    self.download          = ['git://https://bitbucket.org/petsc/ctetgen.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.4.tar.gz']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
@@ -22,6 +21,17 @@ class Configure(config.package.GNUPackage):
 
   def configureLibrary(self):
     ''' Just assume the downloaded library will work'''
+    if self.framework.clArgDB.has_key('with-ctetgen'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen; only --download-ctetgen')
+    if self.framework.clArgDB.has_key('with-ctetgen-dir'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen-dir; only --download-ctetgen')
+    if self.framework.clArgDB.has_key('with-ctetgen-include'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen-include; only --download-ctetgen')
+    if self.framework.clArgDB.has_key('with-ctetgen-lib'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen-lib; only --download-ctetgen')
+    if self.framework.clArgDB.has_key('with-ctetgen-shared'):
+      raise RuntimeError('Ctetgen does not support --with-ctetgen-shared')
+
     self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]
     self.lib     = [os.path.join(self.installDir,'lib','libctetgen.a')]

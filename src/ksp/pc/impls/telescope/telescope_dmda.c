@@ -139,8 +139,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,
   ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (isActiveRank(psubcomm)) {
     ierr = DMDAGetCorners(subdm,&si,&sj,NULL,&ni,&nj,NULL);CHKERRQ(ierr);
-    Ml = ni - si;
-    Nl = nj - sj;
+    Ml = ni;
+    Nl = nj;
   } else {
     Ml = Nl = 0;
   }
@@ -237,10 +237,9 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,
 
   if (isActiveRank(psubcomm)) {
     ierr = DMDAGetCorners(subdm,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
-
-    Ml = ni - si;
-    Nl = nj - sj;
-    Pl = nk - sk;
+    Ml = ni;
+    Nl = nj;
+    Pl = nk;
   } else {
     Ml = Nl = Pl = 0;
   }

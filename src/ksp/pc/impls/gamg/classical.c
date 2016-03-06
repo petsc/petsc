@@ -191,12 +191,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
   MPI_Comm         fcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
-
-
-  /* construct the graph if necessary */
-  if (!G) {
-    SETERRQ(fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
-  }
+  if (!G) SETERRQ(fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
 
   ierr = MatCoarsenCreate(fcomm,&crs);CHKERRQ(ierr);
   ierr = MatCoarsenSetFromOptions(crs);CHKERRQ(ierr);
@@ -944,7 +939,7 @@ PetscErrorCode PCGAMGDestroy_Classical(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetFromOptions_Classical"
-PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;

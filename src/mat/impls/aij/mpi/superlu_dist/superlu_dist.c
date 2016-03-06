@@ -348,7 +348,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       PetscStackCall("SuperLU_DIST:dallocateA_dist",dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row));
 #endif
     } else { /* successive numeric factorization, sparsity pattern and perm_c are reused. */
-      /* Destroy_CompRowLoc_Matrix_dist(&lu->A_sup); */ /* this leads to crash! However, see SuperLU_DIST_2.5/EXAMPLE/pzdrive2.c */
+      SUPERLU_FREE((void*)lu->A_sup.Store);
       if (lu->FactPattern == SamePattern_SameRowPerm) {
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
       } else {
@@ -417,11 +417,29 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
   } else { /* distributed mat input */
 #if defined(PETSC_USE_COMPLEX)
     PetscStackCall("SuperLU_DIST:pzgssvx",pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, m, 0, &lu->grid,&lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo));
-    if (sinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",sinfo);
 #else
     PetscStackCall("SuperLU_DIST:pdgssvx",pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, m, 0, &lu->grid,&lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo));
-    if (sinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",sinfo);
 #endif
+  }
+  
+  if (sinfo > 0) { 
+    if (A->erroriffailure) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
+    } else {
+      if (sinfo <= lu->A_sup.ncol) {
+        F->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        ierr = PetscInfo1(F,"U(i,i) is exactly zero, i= %D\n",sinfo);CHKERRQ(ierr);
+      } else if (sinfo > lu->A_sup.ncol) {
+        /* 
+         number of bytes allocated when memory allocation
+         failure occurred, plus A->ncol.
+         */
+        F->errortype = MAT_FACTOR_OUTMEMORY;
+        ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %D\n",sinfo);CHKERRQ(ierr);
+      }
+    }
+  } else if (sinfo < 0) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, argument in p*gssvx() had an illegal value", sinfo);
   }
 
   if (lu->MatInputMode == GLOBAL && size > 1) {
@@ -583,11 +601,11 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
     }
   }
 
+  options.ReplaceTinyPivot = NO;
   ierr = PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",options.ReplaceTinyPivot ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set && !flg) options.ReplaceTinyPivot = NO;
+  if (set && flg) options.ReplaceTinyPivot = YES;
 
   options.ParSymbFact = NO;
-
   ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg && size>1) {
     if (lu->MatInputMode == GLOBAL) {
@@ -604,9 +622,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
     }
   }
 
-  lu->FactPattern = SamePattern_SameRowPerm;
-
-  ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,2,factPattern[1],&indx,&flg);CHKERRQ(ierr);
+  lu->FactPattern = SamePattern; 
+  ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,2,factPattern[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0:

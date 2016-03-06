@@ -1665,6 +1665,7 @@ int main(int argc,char *argv[])
   ierr = TSSetIFunction(ts,NULL,THIFunction,thi);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,B,B,THIJacobian,thi);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,100,10.0);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -1679,7 +1680,7 @@ int main(int argc,char *argv[])
   {
     PetscBool flg;
     char      filename[PETSC_MAX_PATH_LEN] = "";
-    ierr = PetscOptionsGetString(NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = THIDAVecView_VTK_XML(thi,pack,X,filename,NULL);CHKERRQ(ierr);
     }

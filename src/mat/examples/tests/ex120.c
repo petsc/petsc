@@ -36,24 +36,24 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
-  ierr = PetscOptionsHasName(NULL, "-test_zheevx", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_zheevx", &flg);CHKERRQ(ierr);
   if (flg) {
     TestZHEEV  = PETSC_FALSE;
     TestZHEEVX = PETSC_TRUE;
   }
-  ierr = PetscOptionsHasName(NULL, "-test_zhegv", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_zhegv", &flg);CHKERRQ(ierr);
   if (flg) {
     TestZHEEV = PETSC_FALSE;
     TestZHEGV = PETSC_TRUE;
   }
-  ierr = PetscOptionsHasName(NULL, "-test_zhegvx", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_zhegvx", &flg);CHKERRQ(ierr);
   if (flg) {
     TestZHEEV  = PETSC_FALSE;
     TestZHEGVX = PETSC_TRUE;
   }
 
-  ierr = PetscOptionsGetReal(NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   dim  = n*n;
 
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(NULL,"-norandom",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-norandom",&flg);CHKERRQ(ierr);
   if (flg) use_random = 0;
   else     use_random = 1;
   if (use_random) {
@@ -102,7 +102,7 @@ PetscInt main(PetscInt argc,char **args)
   m    = n = dim;
 
   /* Check whether A is symmetric */
-  ierr = PetscOptionsHasName(NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Trans;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
@@ -192,7 +192,7 @@ PetscInt main(PetscInt argc,char **args)
   if (nevs <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
 
   /* View evals */
-  ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     printf(" %d evals: \n",nevs);
     for (i=0; i<nevs; i++) printf("%d  %g\n",i+il,(double)evals[i]);

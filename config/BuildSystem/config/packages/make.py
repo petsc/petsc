@@ -49,7 +49,6 @@ class Configure(config.package.GNUPackage):
     if not self.installNeeded(conffile):
       return self.installDir
     ### Configure and Build package
-    self.gitPreInstallCheck()
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
@@ -93,7 +92,7 @@ class Configure(config.package.GNUPackage):
         minor = int(gver.group(2))
         if ((major > 3) or (major == 3 and minor > 80)):
           self.haveGNUMake = 1
-        if (major > 3) and not self.setCompilers.isDarwin(self.log):
+        if (major > 3) and not self.setCompilers.isDarwin(self.log) and not self.setCompilers.isFreeBSD(self.log):
           self.paroutflg = "--output-sync=recurse"
     except RuntimeError, e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
@@ -118,34 +117,38 @@ class Configure(config.package.GNUPackage):
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
     return
 
+  def compute_make_np(self,i):
+    f16 = .80
+    f32 = .65
+    f64 = .50
+    f99 = .30
+    if (i<=2):    return 2
+    elif (i<=4):  return i
+    elif (i<=16): return int(4+(i-4)*f16)
+    elif (i<=32): return int(4+12*f16+(i-16)*f32)
+    elif (i<=64): return int(4+12*f16+16*f32+(i-32)*f64)
+    else:         return int(4+12*f16+16*f32+32*f64+(i-64)*f99)
+    return
+
   def configureMakeNP(self):
     '''check no of cores on the build machine [perhaps to do make '-j ncores']'''
-    make_np = self.argDB.get('with-make-np')
-    if make_np is not None:
-      self.logPrint('using user-provided make_np = %d' % make_np)
-    else:
-      def compute_make_np(i):
-        f16 = .80
-        f32 = .65
-        f64 = .50
-        f99 = .30
-        if (i<=2):    return 2
-        elif (i<=4):  return i
-        elif (i<=16): return int(4+(i-4)*f16)
-        elif (i<=32): return int(4+12*f16+(i-16)*f32)
-        elif (i<=64): return int(4+12*f16+16*f32+(i-32)*f64)
-        else:         return int(4+12*f16+16*f32+32*f64+(i-64)*f99)
-        return
-      try:
-        import multiprocessing # python-2.6 feature
-        cores = multiprocessing.cpu_count()
-        make_np = compute_make_np(cores)
-        self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
-      except (ImportError), e:
-        make_np = 2
-        self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
+    try:
+      import multiprocessing # python-2.6 feature
+      cores = multiprocessing.cpu_count()
+      make_np = self.compute_make_np(cores)
+      self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
+    except (ImportError), e:
+      cores = 2
+      make_np = 2
+      self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
+
+    if 'with-make-np' in self.argDB and self.argDB['with-make-np']:
+        self.logPrint('using user-provided make_np = %d' % make_np)
+        make_np = self.argDB['with-make-np']
+
     self.make_np = make_np
     self.addMakeMacro('MAKE_NP',str(make_np))
+    self.addMakeMacro('NPMAX',str(cores))
     self.make_jnp = self.make + ' -j ' + str(self.make_np)
     return
 

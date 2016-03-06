@@ -13,6 +13,7 @@ typedef struct {
   Vec          *VecsDeltaLam;             /* Increment of the adjoint sensitivity w.r.t IC at stage*/
   Vec          *VecsDeltaMu;              /* Increment of the adjoint sensitivity w.r.t P at stage*/
   Vec          *VecsSensiTemp;            /* Vector to be timed with Jacobian transpose*/
+  Vec          VecCostIntegral0;          /* backup for roll-backs due to events */
   PetscBool    extrapolate;
   PetscBool    endpoint;
   PetscReal    Theta;
@@ -23,6 +24,7 @@ typedef struct {
   PetscReal    ccfl;               /* Placeholder for CFL coefficient relative to forward Euler */
   PetscBool    adapt;  /* use time-step adaptivity ? */
   PetscReal    ptime;
+  PetscReal    time_step;
 } TS_Theta;
 
 #undef __FUNCT__
@@ -160,6 +162,55 @@ static PetscErrorCode TSRollBack_Theta(TS ts)
   PetscFunctionBegin;
   ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
   th->status    = TS_STEP_INCOMPLETE;
+  if (ts->vec_costintegral && ts->costintegralfwd) {
+    ierr = VecCopy(th->VecCostIntegral0,ts->vec_costintegral);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSForwardCostIntegral_Theta"
+static PetscErrorCode TSForwardCostIntegral_Theta(TS ts)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* backup cost integral */
+  ierr = VecCopy(ts->vec_costintegral,th->VecCostIntegral0);CHKERRQ(ierr);
+  if (th->endpoint) {
+    ierr = TSAdjointComputeCostIntegrand(ts,th->ptime,th->X0,ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = VecAXPY(ts->vec_costintegral,th->time_step*(1.-th->Theta),ts->vec_costintegrand);CHKERRQ(ierr);
+  }
+  ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
+  if (th->endpoint) {
+    ierr = VecAXPY(ts->vec_costintegral,th->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
+  } else {
+    ierr = VecAXPY(ts->vec_costintegral,th->time_step,ts->vec_costintegrand);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointCostIntegral_Theta"
+static PetscErrorCode TSAdjointCostIntegral_Theta(TS ts)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (th->endpoint) {
+    /* Evolve ts->vec_costintegral to compute integrals */
+    ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
+    if (th->Theta!=1) {
+      ierr = TSAdjointComputeCostIntegrand(ts,th->ptime,th->X0,ts->vec_costintegrand);CHKERRQ(ierr);
+      ierr = VecAXPY(ts->vec_costintegral,ts->time_step*(th->Theta-1.),ts->vec_costintegrand);CHKERRQ(ierr);
+    }
+  }else {
+    ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = VecAXPY(ts->vec_costintegral,-ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -200,7 +251,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ts->snes_its += its; ts->ksp_its += lits;
     ierr = TSPostStage(ts,th->stage_time,0,&(th->X));CHKERRQ(ierr);
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(adapt,ts,&stageok);CHKERRQ(ierr);
+    ierr = TSAdaptCheckStage(adapt,ts,th->stage_time,th->X,&stageok);CHKERRQ(ierr);
     if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
 
     ierr = TSEvaluateStep(ts,th->order,ts->vec_sol,NULL);CHKERRQ(ierr);
@@ -217,20 +268,10 @@ static PetscErrorCode TSStep_Theta(TS ts)
       goto reject_step;
     }
 
-    if (ts->vec_costintegral) {
-      /* Evolve ts->vec_costintegral to compute integrals */
-      if (th->endpoint) {
-        ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,th->X0,ts->vec_costintegrand);CHKERRQ(ierr);
-        ierr = VecAXPY(ts->vec_costintegral,ts->time_step*(1.-th->Theta),ts->vec_costintegrand);CHKERRQ(ierr);
-      }
-      ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
-      if (th->endpoint) {
-        ierr = VecAXPY(ts->vec_costintegral,ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
-      }else {
-        ierr = VecAXPY(ts->vec_costintegral,ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);
-      }
+    if (ts->costintegralfwd) { /* Save the info for the later use in cost integral evaluation*/
+      th->ptime     = ts->ptime;
+      th->time_step = ts->time_step;
     }
-
     /* ignore next_scheme for now */
     ts->ptime    += ts->time_step;
     ts->time_step = next_time_step;
@@ -309,13 +350,6 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       ierr  = TSComputeIJacobian(ts,th->ptime,th->X0,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
       if (ts->vec_costintegral) {
         ierr = TSAdjointComputeDRDYFunction(ts,th->ptime,th->X0,ts->vecs_drdy);CHKERRQ(ierr);
-        if (!ts->costintegralfwd) {
-          /* Evolve ts->vec_costintegral to compute integrals */
-          ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
-          ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
-          ierr = TSAdjointComputeCostIntegrand(ts,th->ptime,th->X0,ts->vec_costintegrand);CHKERRQ(ierr);
-          ierr = VecAXPY(ts->vec_costintegral,ts->time_step*(th->Theta-1.),ts->vec_costintegrand);CHKERRQ(ierr);
-        }
       }
       for (nadj=0; nadj<ts->numcost; nadj++) {
         ierr = MatMultTranspose(J,VecsDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);
@@ -332,11 +366,6 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
         ierr = VecAXPY(ts->vecs_sensi[nadj],ts->time_step,VecsSensiTemp[nadj]);CHKERRQ(ierr);
         if (ts->vec_costintegral) {
           ierr = VecAXPY(ts->vecs_sensi[nadj],-ts->time_step,ts->vecs_drdy[nadj]);CHKERRQ(ierr);
-          if (!ts->costintegralfwd) {
-          /* Evolve ts->vec_costintegral to compute integrals */
-            ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
-            ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
-          }
         }
       }
     }
@@ -372,11 +401,6 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr); /* get -f_y */
     if (ts->vec_costintegral) {
       ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
-      if (!ts->costintegralfwd) {
-        /* Evolve ts->vec_costintegral to compute integrals */
-        ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
-        ierr = VecAXPY(ts->vec_costintegral,-ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);
-      }
     }
     for (nadj=0; nadj<ts->numcost; nadj++) {
       ierr = MatMultTranspose(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj]);CHKERRQ(ierr);
@@ -400,7 +424,6 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     }
   }
 
-  ts->ptime += ts->time_step;
   ts->steps++;
   th->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
@@ -434,6 +457,9 @@ static PetscErrorCode TSReset_Theta(TS ts)
   ierr = VecDestroy(&th->Xdot);CHKERRQ(ierr);
   ierr = VecDestroy(&th->X0);CHKERRQ(ierr);
   ierr = VecDestroy(&th->affine);CHKERRQ(ierr);
+  if (th->VecCostIntegral0) {
+    ierr = VecDestroy(&th->VecCostIntegral0);CHKERRQ(ierr);
+  }
   ierr = VecDestroyVecs(ts->numcost,&th->VecsDeltaLam);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->numcost,&th->VecsDeltaMu);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->numcost,&th->VecsSensiTemp);CHKERRQ(ierr);
@@ -520,6 +546,9 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   DM             dm;
 
   PetscFunctionBegin;
+  if (!th->VecCostIntegral0 && ts->vec_costintegral && ts->costintegralfwd) { /* back up cost integral */
+    ierr = VecDuplicate(ts->vec_costintegral,&th->VecCostIntegral0);CHKERRQ(ierr);
+  }
   if (!th->X) {
     ierr = VecDuplicate(ts->vec_sol,&th->X);CHKERRQ(ierr);
   }
@@ -592,7 +621,7 @@ static PetscErrorCode TSAdjointSetUp_Theta(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Theta"
-static PetscErrorCode TSSetFromOptions_Theta(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Theta(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
@@ -710,9 +739,10 @@ static PetscErrorCode  TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
    Level: beginner
 
    Options Database:
-      -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
-      -ts_theta_extrapolate <flg> Extrapolate stage solution from previous solution (sometimes unstable)
-      -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
++      -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
+.      -ts_theta_extrapolate <flg> - Extrapolate stage solution from previous solution (sometimes unstable)
+.      -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
+-     -ts_theta_adapt <flg> - Use time-step adaptivity with the Theta method
 
    Notes:
 $  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
@@ -776,6 +806,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 #endif
   ts->ops->getstages       = TSGetStages_Theta;
   ts->ops->adjointstep     = TSAdjointStep_Theta;
+  ts->ops->adjointintegral = TSAdjointCostIntegral_Theta;
+  ts->ops->forwardintegral = TSForwardCostIntegral_Theta;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

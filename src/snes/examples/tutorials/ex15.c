@@ -64,10 +64,10 @@ static const char *const JacTypes[] = {"BRATU","PICARD","STAR","NEWTON","JacType
    FormFunctionLocal().
 */
 typedef struct {
-  PassiveReal lambda;         /* Bratu parameter */
-  PassiveReal p;              /* Exponent in p-Laplacian */
-  PassiveReal epsilon;        /* Regularization */
-  PassiveReal source;         /* Source term */
+  PetscReal   lambda;         /* Bratu parameter */
+  PetscReal   p;              /* Exponent in p-Laplacian */
+  PetscReal   epsilon;        /* Regularization */
+  PetscReal   source;         /* Source term */
   JacType     jtype;          /* What type of Jacobian to assemble */
   PetscBool   picard;
   PetscInt    blocks[2];

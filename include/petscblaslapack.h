@@ -32,13 +32,7 @@
 #include <petscblaslapack_stdcall.h>
 #else
 
-#if defined(PETSC_BLASLAPACK_UNDERSCORE)
-#include <petscblaslapack_uscore.h>
-#elif defined(PETSC_BLASLAPACK_CAPS)
-#include <petscblaslapack_caps.h>
-#else
-#include <petscblaslapack_c.h>
-#endif
+#include <petscblaslapack_mangle.h>
 
 PETSC_EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
@@ -53,7 +47,11 @@ PETSC_EXTERN void BLASscal_(const PetscBLASInt*,const PetscScalar*,PetscScalar*,
 PETSC_EXTERN void BLAScopy_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void BLASswap_(const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void BLASaxpy_(const PetscBLASInt*,const PetscScalar*,const PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*);
+#if defined(PETSC_USE_REAL_SINGLE) && defined(PETSC_BLASLAPACK_SNRM2_RETURNS_DOUBLE)
+PETSC_EXTERN double BLASasum_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+#else
 PETSC_EXTERN PetscReal BLASasum_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+#endif
 PETSC_EXTERN void LAPACKpttrf_(const PetscBLASInt*,PetscReal*,PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void LAPACKstein_(const PetscBLASInt*,PetscReal*,PetscReal*,const PetscBLASInt*,PetscReal*,const PetscBLASInt*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscReal*,const PetscBLASInt*,const PetscBLASInt*,const PetscBLASInt*);
 PETSC_EXTERN void LAPACKgesv_(const PetscBLASInt*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*);

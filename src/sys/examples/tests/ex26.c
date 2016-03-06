@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-N", &N, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL);CHKERRQ(ierr);
   ierr = PetscHashIJCreate(&table);CHKERRQ(ierr);
   ierr = PetscHashIJSetMultivalued(table, PETSC_FALSE);CHKERRQ(ierr);
   for (i = 0; i < N; ++i) {

@@ -228,7 +228,7 @@ static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BMRM"
-static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
@@ -288,8 +288,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-  if (!tao->fatol_changed) tao->fatol = 1.0e-12;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-12;
   if (!tao->gatol_changed) tao->gatol = 1.0e-12;
   if (!tao->grtol_changed) tao->grtol = 1.0e-12;
 

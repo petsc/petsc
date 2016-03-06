@@ -140,6 +140,17 @@ typedef size_t MPIUNI_INTPTR;
 typedef unknownuniptr MPIUNI_INTPTR;
 #endif
 
+/* old 32bit MS compiler does not support long long */
+#if defined(PETSC_HAVE___INT64)
+typedef _int64 MPIUNI_INT64;
+typedef unsigned _int64 MPIUNI_UINT64;
+#elif defined(PETSC_SIZEOF_LONG_LONG)
+typedef long long MPIUNI_INT64;
+typedef unsigned long long MPIUNI_UINT64;
+#else
+#error "cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
+#endif
+
 /*
 
     MPIUNI_TMP is used in the macros below only to stop various C/C++ compilers
@@ -179,7 +190,6 @@ typedef int    MPI_File;
 typedef int    MPI_Info;
 typedef int    MPI_Offset;
 
-
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the MPIUNI_Memcpy's easily */
 #define MPI_Datatype         int
@@ -197,13 +207,13 @@ typedef int    MPI_Offset;
 
 #define MPI_INT              (4 << 16 | sizeof(int))
 #define MPI_LONG             (4 << 16 | sizeof(long))
-#define MPI_LONG_LONG_INT    (4 << 16 | sizeof(long long))
+#define MPI_LONG_LONG_INT    (4 << 16 | sizeof(MPIUNI_INT64))
 #define MPI_SHORT            (4 << 16 | sizeof(short))
 
 #define MPI_UNSIGNED_SHORT   (5 << 16 | sizeof(unsigned short))
 #define MPI_UNSIGNED         (5 << 16 | sizeof(unsigned))
 #define MPI_UNSIGNED_LONG    (5 << 16 | sizeof(unsigned long))
-#define MPI_UNSIGNED_LONG_LONG (5 << 16 | sizeof(unsigned long long))
+#define MPI_UNSIGNED_LONG_LONG (5 << 16 | sizeof(MPIUNI_UINT64))
 
 #define MPI_FLOAT_INT        (10 << 16 | (sizeof(float) + sizeof(int)))
 #define MPI_DOUBLE_INT       (11 << 16 | (sizeof(double) + sizeof(int)))
@@ -259,12 +269,16 @@ typedef int   (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 
 /*
-  In order that the PETSc MPIUNI can be used with another package that has its
-  own MPIUni we map the following function names to a unique PETSc name. Those functions
-  are defined in mpi.c and put into the libpetscsys.a or libpetsc.a library.
+  To enable linking PETSc+MPIUNI with any other package that might have its
+  own MPIUNI (equivalent implementation) we need to avoid using 'MPI'
+  namespace for MPIUNI functions that go into the petsc library.
 
-  Note that this does not work for the MPIUni Fortran symbols which are explicitly in the
-  PETSc libraries unless the flag MPIUNI_AVOID_MPI_NAMESPACE is set.
+  For C functions below (that get compiled into petsc library) - we map
+  the 'MPI' functions to use 'Petsc_MPI' namespace.
+
+  However we cannot do such maping for fortran MPIUNI functions. One
+  can use the configure option --with-mpiuni-fortran-binding=0 to
+  prevent compiling MPIUNI fortran interface.
 */
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get

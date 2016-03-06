@@ -11,11 +11,11 @@ int main(int argc,char **argv)
   PetscBool       flg;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetString(NULL,"-f",filename,sizeof filename,&flg);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof filename,&flg);
   if (flg) {
     ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,filename,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsView(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscOptionsView(PETSC_NULL,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);
 }

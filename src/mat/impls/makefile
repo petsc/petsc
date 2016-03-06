@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = dense aij shell baij adj maij is sbaij normal lrc scatter blockmat composite cufft mffd transpose python submat localref nest fft elemental
+DIRS     = dense aij shell baij adj maij is sbaij normal lrc scatter blockmat composite cufft mffd transpose python submat localref nest fft elemental preallocator
 LOCDIR   = src/mat/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

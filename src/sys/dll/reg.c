@@ -71,7 +71,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 
   PetscFunctionBegin;
   nmax = 32;
-  ierr = PetscOptionsGetStringArray(NULL,"-dll_prepend",libname,&nmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetStringArray(NULL,NULL,"-dll_prepend",libname,&nmax,NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
     ierr = PetscDLLibraryPrepend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
 #else
   preload = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-dynamic_library_preload",&preload,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-dynamic_library_preload",&preload,NULL);CHKERRQ(ierr);
   if (preload) {
     PetscBool found;
 #if defined(PETSC_USE_SINGLE_LIBRARY)
@@ -113,7 +113,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 #endif
 
   nmax = 32;
-  ierr = PetscOptionsGetStringArray(NULL,"-dll_append",libname,&nmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetStringArray(NULL,NULL,"-dll_append",libname,&nmax,NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL,"-dll_view",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-dll_view",&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = PetscDLLibraryPrintPath(PetscDLLibrariesLoaded);CHKERRQ(ierr); }
   ierr = PetscDLLibraryClose(PetscDLLibrariesLoaded);CHKERRQ(ierr);
 
@@ -220,7 +220,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
     entry->next    = 0;
     *fl            = entry;
 
-#if defined(PETSC_USE_LOG)
+#if defined(PETSC_USE_DEBUG)
     /* add this new list to list of all lists */
     if (!dlallhead) {
       dlallhead        = *fl;

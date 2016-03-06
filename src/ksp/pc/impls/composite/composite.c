@@ -244,7 +244,7 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Composite"
-static PetscErrorCode PCSetFromOptions_Composite(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode   ierr;

@@ -3,11 +3,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = cg.c cgeig.c cgtype.c
+SOURCEC  = cg.c cgeig.c cgtype.c cgls.c
 SOURCEF  =
 SOURCEH  = cgimpl.h
 LIBBASE  = libpetscksp
-DIRS     = cgne gltr nash stcg pipecg groppcg
+DIRS     = cgne gltr nash stcg pipecg pipecgrr groppcg
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/cg/
 

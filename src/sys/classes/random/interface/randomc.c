@@ -130,7 +130,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 .keywords: PetscRandom, set, options, database, type
 .seealso: PetscRandomSetFromOptions(), PetscRandomSetType()
 */
-static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,PetscRandom rnd)
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,PetscRandom rnd)
 {
   PetscBool      opt;
   const char     *defaultType;
@@ -240,7 +240,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
          data to the first processor to print.
 
    You can change the format the vector is printed using the
-   option PetscViewerSetFormat().
+   option PetscViewerPushFormat().
 
    Level: beginner
 

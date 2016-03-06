@@ -84,7 +84,7 @@ typedef struct {
 PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
 
 typedef struct {
-  PassiveReal lidvelocity,prandtl,grashof;  /* physical parameters */
+  PetscReal   lidvelocity,prandtl,grashof;  /* physical parameters */
   PetscBool   draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
@@ -126,10 +126,10 @@ int main(int argc,char **argv)
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
 
-  ierr = PetscOptionsGetReal(NULL,"-lidvelocity",&user.lidvelocity,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-prandtl",&user.prandtl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-grashof",&user.grashof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"x_velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y_velocity");CHKERRQ(ierr);

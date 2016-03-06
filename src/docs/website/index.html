@@ -53,21 +53,29 @@
       </ul>
 
       <div id="searchbox">
-        <form action="http://www.mcs.anl.gov/search/search_results.php" id="cse-search-box">
-          <input name="cx" value="014943323003462260985:ew2yv_efmzq" type="hidden"/>
-          <input name="cof" value="FORID:10" type="hidden"/>
-          <input name="ie" value="UTF-8" type="hidden"/>
-          <input name="q" size="20" type="text"/>
-          <input name="sa" value="Search" type="submit"/>
+        <form action="http://public-search.anl.gov/search" method="GET" id="argonne-search-search-block" accept-charset="UTF-8">
+          <div class="mobile-search-wrapper">
+            <input placeholder="SEARCH" type="text" id="edit-q" name="q" value="" maxlength="128" class="form-text">
+            <button type="submit" class="search-button" id="edit-submit" name="op" value="">
+              <span class="sr-only">Toggle Search</span>
+              <i class="fa fa-search fa-lg" id="search-button-icon"></i>
+            </button>
+            <input type="hidden" name="output" value="xml_no_dtd">
+            <input type="hidden" name="client" value="anl_gov">
+            <input type="hidden" name="proxystylesheet" value="anl_gov">
+            <input type="hidden" name="filter" value="0">
+            <input type="hidden" name="site" value="all_external">
+            <input type="hidden" name="form_build_id" value="form-Egb05lhHt6Nn4sg1_qSVc_WmttuP-H8_fomWmFAx6T0">
+            <input type="hidden" name="form_id" value="argonne_search_search_block">
+          </div>
         </form>
-        <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
     </div>
 
     <div id="main">
 
      <div align="center">
-        <h1> News: PETSc <a href="http://www.mcs.anl.gov/petsc-20">conference and tutorial,</a> June 15-18, 2015 </h1>
+        <h1> News: <a href="http://www.mcs.anl.gov/petsc/meetings/2016/">PETSc User Meeting</a>, June 28-30, 2016 </h1>
       </div>
 
       </p>
@@ -100,7 +108,7 @@
             <li><a href="http://mooseframework.org/">MOOSE - Multiphysics Object-Oriented Simulation Environment</a> finite element framework, built on top of libMesh and PETSc</li>
             <li><a href="http://slepc.upv.es/">SLEPc - Scalable Library for Eigenvalue Problems</a></li>
             <li><a href="https://github.com/andrealani/COOLFluiD">COOLFluiD - CFD, plasma and multi-physics simulation package</a></li>
-            <li><a href="http://amcg.ese.ic.ac.uk/index.php?title=Modelling_Software">fluidity - a finite element/volume fluids code</a></li>
+            <li><a href="https://fluidityproject.github.io/">Fluidity - a finite element/volume fluids code</a></li>
             <li><a href="http://openfvm.sourceforge.net/">OpenFVM - finite volume based CFD solver</a></li>
             <li><a href="http://www.oofem.org">OOFEM - object oriented finite element library</a></li>
             <li><a href="http://libmesh.sourceforge.net/">libMesh - adaptive finite element library</a></li>

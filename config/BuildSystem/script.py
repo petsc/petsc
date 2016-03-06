@@ -82,6 +82,7 @@ class Script(logger.Logger):
     logger.Logger.setup(self)
     self._setup = 1
     if self.hasHelpFlag():
+      self.argDB.readonly = True
       if self.argDB.target == ['default']:
         sections = None
       else:
@@ -96,8 +97,8 @@ class Script(logger.Logger):
     return
 
   def checkPython(self):
-    if not hasattr(sys, 'version_info') or float(sys.version_info[0]) != 2 or float(sys.version_info[1]) < 4:
-      raise RuntimeError('BuildSystem requires Python2 version 2.4 or higher. Get Python at http://www.python.org')
+    if not hasattr(sys, 'version_info') or float(sys.version_info[0]) != 2 or float(sys.version_info[1]) < 6:
+      raise RuntimeError('BuildSystem requires Python2 version 2.6 or higher. Get Python at http://www.python.org')
     return
 
   def getModule(root, name):

@@ -58,7 +58,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
       }
     }
   }
-  ierr = MPI_Allreduce(&D,&Dv,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&D,&Dv,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   if (D != Dv) {
     *II  = -1;
     *JJ  = -1;
@@ -69,7 +69,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
     rank++;
   }
-  ierr = MPI_Allreduce(&rank,&root,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&rank,&root,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   root--;
   ierr = MPI_Bcast(X,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   ierr = MPI_Bcast(Y,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);

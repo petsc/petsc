@@ -55,7 +55,7 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_OWArmijo"
-static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
   PetscErrorCode         ierr;
@@ -239,7 +239,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 
     partgdx=0.0;
     ierr = ProjWork_OWLQN(armP->work,x,g_old,&partgdx);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
 
     /* Check the condition of gdx */
     if (PetscIsInfOrNanReal(gdx)) {

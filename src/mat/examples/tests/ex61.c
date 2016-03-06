@@ -22,7 +22,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
 
-  ierr = PetscOptionsHasName(NULL,"-baij",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-baij",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,0,rowlens,&A);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetColumnIndices(A,cols);CHKERRQ(ierr);

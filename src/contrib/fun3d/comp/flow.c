@@ -107,14 +107,14 @@ int main(int argc,char **args)
   tsCtx.max_steps  = 50;   tsCtx.max_time      = 1.0e+12; tsCtx.iramp      = -50;
   tsCtx.dt         = -5.0; tsCtx.fnorm_fo_rtol = 1.0e-02; tsCtx.fnorm_rtol = 1.0e-10;
   tsCtx.fnorm_atol = 1.0e-14;
-  ierr             = PetscOptionsGetInt(NULL,"-max_st",&tsCtx.max_steps,NULL);CHKERRQ(ierr);
+  ierr             = PetscOptionsGetInt(NULL,NULL,"-max_st",&tsCtx.max_steps,NULL);CHKERRQ(ierr);
   ierr             = PetscOptionsGetReal(NULL,"-ts_fo_rtol",&tsCtx.fnorm_fo_rtol,NULL);CHKERRQ(ierr);
   ierr             = PetscOptionsGetReal(NULL,"-ts_so_rtol",&tsCtx.fnorm_rtol,NULL);CHKERRQ(ierr);
   ierr             = PetscOptionsGetReal(NULL,"-ts_atol",&tsCtx.fnorm_atol,NULL);CHKERRQ(ierr);
   ierr             = PetscOptionsGetReal(NULL,"-cfl_ini",&tsCtx.cfl_ini,NULL);CHKERRQ(ierr);
   ierr             = PetscOptionsGetReal(NULL,"-cfl_max",&tsCtx.cfl_max,NULL);CHKERRQ(ierr);
   tsCtx.print_freq = tsCtx.max_steps;
-  ierr             = PetscOptionsGetInt(NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
+  ierr             = PetscOptionsGetInt(NULL,NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
   /*======================================================================*/
 
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
@@ -129,7 +129,7 @@ int main(int argc,char **args)
   c_gmcom->ilu0 = 1; c_gmcom->nsrch = 10;
 
   c_runge->nitfo = 0;
-  ierr           = PetscOptionsGetInt(NULL,"-first_order_it",&c_runge->nitfo,&flg);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetInt(NULL,NULL,"-first_order_it",&c_runge->nitfo,&flg);CHKERRQ(ierr);
 
 
 /* Read & process the grid */
@@ -487,8 +487,8 @@ int Update(SNES snes, void *ctx)
   PetscScalar cfl_damp_ratio = 1.0e-02, cfl_damp_power = 0.75;
   PetscBool   print_flag     = PETSC_FALSE,cfl_damp_flag = PETSC_FALSE,flg;
 
-  ierr = PetscOptionsGetBool(NULL,"-print", &print_flag,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-cfl_damp", &cfl_damp_flag,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-print", &print_flag,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-cfl_damp", &cfl_damp_flag,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-cfl_damp_ratio",&cfl_damp_ratio,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-cfl_damp_power",&cfl_damp_power,&flg);CHKERRQ(ierr);
   /*
@@ -516,8 +516,8 @@ int Update(SNES snes, void *ctx)
   ierr = PetscTime(&time1);
   #if defined(PARCH_IRIX64) && defined(USE_HW_COUNTERS)
   /* if (!PreLoadFlag) {
-    ierr = PetscOptionsGetInt(NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
     ierr = PetscTime(&time_start_counters);CHKERRQ(ierr);
     if ((gen_start = start_counters(event0,event1)) < 0)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Error in start_counters\n");
@@ -751,7 +751,7 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(grid_param,&tmp);
   if (!rank) {
     PetscBool exists;
-    ierr = PetscOptionsGetString(NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
     ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
     if (!exists) { /* try uns3d.msh as the file name */
       ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
@@ -808,7 +808,7 @@ int GetLocalOrdering(GRID *grid)
       char      spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool exists;
 
-      ierr = PetscOptionsGetString(NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
       if (!exists) { /* try appending the number of processors */
         sprintf(part_file,"part_vec.part.%d",CommSize);

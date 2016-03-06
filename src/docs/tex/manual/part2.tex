@@ -1182,7 +1182,7 @@ opposite of the Fortran convention, meaning that the value to be put in row
 \trl{idxm[i]} and column \trl{idxn[j]} is located in \trl{values[i*n+j]}. To
 allow the insertion of values in column major order, one can call the command
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED,PETSC\_TRUE);
+  MatSetOption(Mat A,MAT\_ROW\_ORIENTED,PETSC\_FALSE);
 \end{tabbing}
 {\bf Warning}: Several of the sparse implementations do {\em not} currently
 support the column-oriented option.
@@ -1399,7 +1399,7 @@ expensive.
 Parallel sparse matrices with the AIJ
 format can be created with the command
 \begin{tabbing}
-  MatCreateMPIAIJ\=(MPI\_Comm comm,int m,int n,int M,int N,int d\_nz,\\
+  MatCreateAIJ\=(MPI\_Comm comm,int m,int n,int M,int N,int d\_nz,\\
                  \>         int *d\_nnz, int o\_nz,int *o\_nnz,Mat *A);
 \end{tabbing}
 \trl{A} is the newly created matrix, while the arguments \trl{m},
@@ -4910,6 +4910,9 @@ promote the solution form $ u^n $ to $ u^{n+1}. $
 \begin{tabbing}
  TSSetDuration(TS ts,int maxsteps,double maxtime);
 \end{tabbing}
+\begin{tabbing}
+  TSSetExactFinalTime(TS ts,TS\_EXACTFINALTIME\_STEPOVER,TS\_EXACTFINALTIME\_INTERPOLATE,TS\_EXACTFINALTIME\_MATCHSTEP);
+\end{tabbing}
 One performs the request number of time steps with
 \begin{tabbing}
   TSSolve(TS ts,Vec U);
@@ -4966,13 +4969,13 @@ Table \ref{tab:IMEX:RK:PETSc}.
 as $F(t,y,\dot{y})=G(t,y)$, where $F()$ is meant to be integrated
 implicitly and $G()$ explicitly. An IMEX formulation such as
 $M\dot{y}=g(t,y)+f(t,y)$ requires the user to provide $M^{-1} g(t,y)$ or
-solve  $g(t,y) - M x=0$ in place of $g(t,u)$. General cases such as
-$f(t,y,\dot{y})=g(t,y)$ are
+solve  $g(t,y) - M x=0$ in place of $G(t,u)$. General cases such as
+$F(t,y,\dot{y})=G(t,y)$ are
 not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.}
 %
-\begin{tabular}{|l|c|p{3in}|}
+\begin{tabular}{|l|p{1.7in}|p{2.8in}|}
 \hline
-$\dot{y}=g(t,y)$ & nonstiff ODE & $f(t,y,\dot{y}) = \dot{y}$,
+$\dot{y}=g(t,y)$ & nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}$,
 $G(t,y)=g(t,y)$\\
 \hline
 $\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
@@ -4981,14 +4984,16 @@ $G(t,y)=0$\\
 $M \dot{y}=f(t,y)$ & stiff ODE w/ mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
 $G(t,y)=0$\\
 \hline
+$M \dot{y} = g(t,y)$& nonstiff ODE w/ mass matrix&$F(t,y,\dot{y}) = \dot{y}, G(t,y) = M^{-1} g(t,y)$\\
+\hline
 $\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$,
 $G(t,y)=g(t,y)$\\
 \hline
 $M\dot{y}=g(t,y)+f(t,y)$ & mass \& stiff-nonstiff ODE & $F(t,y,\dot{y}) =M \dot{y}-f(t,y)$,
 $G(t,y)=M^{-1}g(t,y)$\\
 \hline
-$f(t,y,\dot{y})=0$ & implicit ODE/DAE & $f(t,y,\dot{y}) = f(t,y,\dot{y})$,
-$F(t,y)=0$; the user needs to set TSSetEquationType() to
+$f(t,y,\dot{y})=0$ & implicit ODE/DAE &
+$F(t,y,\dot{y}) = f(t,y,\dot{y})$, $G(t,y) = 0$; the user needs to set TSSetEquationType() to
 TS\_EQ\_IMPLICIT or higher\\
 \hline
 \end{tabular}
@@ -4999,15 +5004,16 @@ TS\_EQ\_IMPLICIT or higher\\
 \begin{table}
 \centering
 \caption{\label{tab:IMEX:RK:PETSc} List of the  currently available
-IMEX Runge-Kutta schemes.  For each method we listed the reference, the
+IMEX Runge-Kutta schemes.  For each method we listed the -ts\_arkimex\_type
+  name, the reference, the
   total number
   of stages/implicit stages, the order/stage-order,
   the implicit stability properties, stiff accuracy (SA), the
   existence of an embedded scheme, and dense output.}
 \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
 \hline
-{\bf TS}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
-{\bf Name} &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
+{\bf Name}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
+ &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
 \hline
 a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
 \hline
@@ -5172,7 +5178,7 @@ where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$
 \item  -ts\_monitor\_lg\_error - for ODEs with only a few components plots the error as a function of time, only if TSSetSolutionFunction() is provided, TSMonitorLGError().
 \item  -ts\_monitor\_draw\_solution - plots the solution at each iteration, TSMonitorDrawSolution().
 \item  -ts\_monitor\_draw\_error - plots the error at each iteration only if TSSetSolutionFunction() is provided, TSMonitorDrawSolution().
-\item  -ts\_monitor\_solution\_binary - saves the solution at each iteration to a binary file, TSMonitorSolutionBinary().
+\item  -ts\_monitor\_solution binary[:filename] - saves the solution at each iteration to a binary file, TSMonitorSolution().
 \item  -ts\_monitor\_solution\_vtk < filename-%%03D.vts> - saves the solution at each iteration to a file in vtk format, TSMonitorSolutionVTK().
 \end{itemize}
 
@@ -5589,13 +5595,9 @@ MatView() functions with a viewer type of ASCII (see PetscViewerASCIIOpen(),
 \trl{PETSC_VIEWER_STDOUT_WORLD}, \trl{PETSC_VIEWER_STDOUT_SELF}, or \trl{PETSC_VIEWER_STDOUT_(MPI_Comm)}). Before calling
 the viewer set the output type with, for example,
 \begin{tabbing}
-  PetscViewerSetFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
-  VecView(A,PETSC\_VIEWER\_STDOUT\_WORLD);
-\end{tabbing}
-or
-\begin{tabbing}
   PetscViewerPushFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
-  MatView(B,PETSC\_VIEWER\_STDOUT\_WORLD);
+  VecView(A,PETSC\_VIEWER\_STDOUT\_WORLD);
+  PetscViewerPopFormat(PETSC\_VIEWER\_STDOUT\_WORLD);\\  
 \end{tabbing}
 The name of each PETSc variable printed for MATLAB may be set with
 \begin{tabbing}\sindex{PetscObjectSetName()}
@@ -5890,7 +5892,7 @@ be used.  For example, when no options prefix is desired in the
 routine PetscOptionsGetInt(), one must use the following command in
 Fortran:
 \begin{tabbing}
-    call PetscOptionsGetInt(PETSC\_NULL\_CHARACTER,'-name',N,flg,ierr)
+    call PetscOptionsGetInt(PETSC\_NULL\_OBJECT,PETSC\_NULL\_CHARACTER,'-name',N,flg,ierr)
 \end{tabbing}
 
 This Fortran requirement is inconsistent with C, where the
@@ -6227,11 +6229,11 @@ MPI Reductions:       1.850e+02      1.0
 Summary of Stages:  ---- Time ------  ----- Flops -------  -- Messages -- -- Message-lengths -- Reductions -
                       Avg      %Total    Avg     %Total   counts   %Total    avg      %Total   counts  %Total
  0:  Load System 0: 1.191e+00    3.6% 3.980e+06   0.5%  3.80e+01    4.9%  6.102e+04   0.3%  1.80e+01   9.7%
- 1:    KSPSetup 0: 6.328e-01    2.5% 1.479e+04   0.0%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0%
- 2:    KSPSolve 0: 2.269e-01    0.9% 1.340e+06   0.0%  1.52e+02   19.7%  9.405e+03   0.0%  3.90e+01  21.1%
+ 1:    KSPSetup 0:  6.328e-01    2.5% 1.479e+04   0.0%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0%
+ 2:    KSPSolve 0:  2.269e-01    0.9% 1.340e+06   0.0%  1.52e+02   19.7%  9.405e+03   0.0%  3.90e+01  21.1%
  3:  Load System 1: 2.680e+01  107.3% 0.000e+00   0.0%  2.10e+01    2.7%  1.799e+07  88.2%  1.60e+01   8.6%
- 4:    KSPSetup 1: 1.867e-01    0.7% 1.088e+08   2.3%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0%
- 5:    KSPSolve 1: 3.831e+00   15.3% 2.217e+08  97.1%  5.60e+02   72.6%  2.333e+06  11.4%  1.12e+02  60.5%
+ 4:    KSPSetup 1:  1.867e-01    0.7% 1.088e+08   2.3%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0%
+ 5:    KSPSolve 1:  3.831e+00   15.3% 2.217e+08  97.1%  5.60e+02   72.6%  2.333e+06  11.4%  1.12e+02  60.5%
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -6249,7 +6251,7 @@ Vector Scatter        2              2     106220     0
 Matrix                8              8    9611488     5.59773e+06
 Krylov Solver         4              4      33960     7.5966e+06
 Preconditioner        4              4         16     9.49114e+06
-KSP                  4              4          0     1.71217e+07
+KSP                   4              4          0     1.71217e+07
 \end{verbatim}
 }
 %\centerline{ \pdfximage width 7in {perflog1.pdf} \pdfrefximage \pdflastximage}
@@ -6309,7 +6311,7 @@ Phase              Count      Time (sec)       Flops/sec                        
 MatGetReordering       1  3.491e-03   1.0  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   2  0  0  0  0     0
 MatILUFctrSymbol       1  6.970e-03   1.2  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   3  0  0  0  0     0
 MatLUFactorNumer       1  1.829e-01   1.1  3.2e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  90 99  0  0  0   110
-KSPSetUp              2  1.989e-01   1.1  2.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  99 99  0  0  0   102
+KSPSetUp               2  1.989e-01   1.1  2.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  99 99  0  0  0   102
 PCSetUp                2  1.952e-01   1.1  2.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  97 99  0  0  0   104
 PCSetUpOnBlocks        1  1.930e-01   1.1  3.0e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  96 99  0  0  0   105
 
@@ -6326,7 +6328,7 @@ VecMDot               55  5.216e-01   1.2  9.8e+07   1.2  0.0e+00 0.0e+00 2.2e+0
 VecMAXPY              57  6.997e-01   1.1  6.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  3 21  0  0  0  18 21  0  0  0   261
 VecScatterBegin       56  4.534e-02   1.8  0.0e+00   0.0  1.1e+03 4.2e+03 0.0e+00  0  0 99 23  0   1  0 99 99  0     0
 VecScatterEnd         56  2.095e-01   1.2  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  1  0  0  0  0   5  0  0  0  0     0
-KSPSolve              1  3.832e+00   1.0  5.6e+07   1.0  1.1e+03 4.2e+03 4.5e+02 15 97 99 23 61  99 99 99 99 99   222
+KSPSolve               1  3.832e+00   1.0  5.6e+07   1.0  1.1e+03 4.2e+03 4.5e+02 15 97 99 23 61  99 99 99 99 99   222
 KSPGMRESOrthog        55  1.177e+00   1.1  7.9e+07   1.1  0.0e+00 0.0e+00 2.2e+02  4 39  0  0 30  29 40  0  0 49   290
 PCSetUpOnBlocks        1  1.180e-05   1.1  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
 PCApply               57  1.267e+00   1.0  4.7e+07   1.0  0.0e+00 0.0e+00 0.0e+00  5 27  0  0  0  33 28  0  0  0   186
@@ -7050,7 +7052,7 @@ To locate options in the database, one should use the
 commands
 \begin{tabbing}
   PetscOptionsHasName(char *pre,char *name,PetscBool  *flg);\\
-  PetscOptionsGetInt(char *pre,char *name,int *value,PetscBool  *flg);\\
+  PetscOptionsGetInt(PetscOptions options,char *pre,char *name,int *value,PetscBool  *flg);\\
   PetscOptionsGetReal(char *pre,char *name,double *value,PetscBool  *flg);\\
   PetscOptionsGetString(char *pre,char *name,char *value,int maxlen,PetscBool  *flg);\\
   PetscOptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,PetscBool  *flg);\\
@@ -7136,7 +7138,7 @@ predefined viewers:
 The user can control the format of ASCII printed objects with viewers
 created by PetscViewerASCIIOpen() by calling
 \begin{tabbing}
-  PetscViewerSetFormat(PetscViewer viewer,int format);
+  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
 \end{tabbing}
 \findex{PETSC_VIEWER_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB}
 \findex{PETSC_VIEWER_ASCII_IMPL}

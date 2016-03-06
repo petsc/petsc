@@ -121,7 +121,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 
   /* Default type of lagrange multipliers is non-redundant */
   fully_redundant = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-fetidp_fullyredundant",&fully_redundant,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fetidp_fullyredundant",&fully_redundant,NULL);CHKERRQ(ierr);
 
   /* Evaluate local and global number of lagrange multipliers */
   ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
@@ -183,9 +183,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = ISCreateGeneral(comm,partial_sum,aux_local_numbering_2,PETSC_OWN_POINTER,&subset_mult);CHKERRQ(ierr);
   ierr = PCBDDCSubsetNumbering(subset,subset_mult,&i,&subset_n);CHKERRQ(ierr);
   ierr = ISDestroy(&subset);CHKERRQ(ierr);
-  if (i != fetidpmat_ctx->n_lambda) {
-    SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in %s: global number of multipliers mismatch! (%d!=%d)\n",__FUNCT__,fetidpmat_ctx->n_lambda,i);
-  }
+  if (i != fetidpmat_ctx->n_lambda) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global number of multipliers mismatch! (%d!=%d)\n",fetidpmat_ctx->n_lambda,i);
 
   /* init data for scaling factors exchange */
   partial_sum = 0;
@@ -370,7 +368,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = VecDuplicate(pcis->vec1_D,&fetidpmat_ctx->temp_solution_D);CHKERRQ(ierr);
 
   test_fetidp = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-fetidp_check",&test_fetidp,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fetidp_check",&test_fetidp,NULL);CHKERRQ(ierr);
 
   if (test_fetidp && !pcbddc->use_deluxe_scaling) {
 

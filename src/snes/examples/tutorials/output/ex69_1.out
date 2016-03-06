@@ -11,7 +11,7 @@ Labels:
   markerTop: 1 strata of sizes (7)
   markerLeft: 1 strata of sizes (9)
   depth: 3 strata of sizes (25, 56, 32)
-Integral of pressure: -1.38778e-17
+Integral of pressure: 0.
 L_2 Error: [9.10655e-05, 0.00993529]
 L_2 Residual: 0.0089128
 Linear L_2 Residual: 0.0089128
@@ -46,7 +46,7 @@ SNES Object: 1 MPI processes
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object:   1 MPI processes
@@ -62,7 +62,7 @@ SNES Object: 1 MPI processes
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object:        (fieldsplit_velocity_)         1 MPI processes
@@ -70,7 +70,7 @@ SNES Object: 1 MPI processes
             LU: out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
-            factor fill ratio given 5, needed 1.79106
+            factor fill ratio given 5., needed 1.79106
               Factored matrix follows:
                 Mat Object:                 1 MPI processes
                   type: seqaij
@@ -92,7 +92,7 @@ SNES Object: 1 MPI processes
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object:        (fieldsplit_pressure_)         1 MPI processes
@@ -124,7 +124,7 @@ SNES Object: 1 MPI processes
                     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                     GMRES: happy breakdown tolerance 1e-30
                   maximum iterations=10000, initial guess is zero
-                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using PRECONDITIONED norm type for convergence test
                 PC Object:                (fieldsplit_velocity_)                 1 MPI processes
@@ -132,7 +132,7 @@ SNES Object: 1 MPI processes
                     LU: out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
-                    factor fill ratio given 5, needed 1.79106
+                    factor fill ratio given 5., needed 1.79106
                       Factored matrix follows:
                         Mat Object:                         1 MPI processes
                           type: seqaij
@@ -171,7 +171,7 @@ SNES Object: 1 MPI processes
         using I-node routines: found 80 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 0.00522 [9.53e-05, 0.00522]
-Integral of pressure: -2.77556e-17
+Integral of pressure: 0.
 Solution
 Vec Object:Solution 1 MPI processes
   type: seq

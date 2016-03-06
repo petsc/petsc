@@ -25,7 +25,7 @@ static char help[] = "Reduced formulation of the mother problem of PDE-constrain
   Contributed by: Patrick Farrell <patrick.farrell@maths.ox.ac.uk>
 
   Run with e.g.:
-  ./ex3 -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_fatol 0.0 -tao_frtol 0.0 -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f meshes/mesh-1.h5
+  ./ex3 -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f meshes/mesh-1.h5
 
   and visualise in paraview with ../../../../petsc_gen_xdmf.py solution.h5.
 
@@ -133,8 +133,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
     ierr = DMPlexOrient(*dm);CHKERRQ(ierr);
-    ierr = DMPlexCreateLabel(*dm, "marker");CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
+    ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
     ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
 
@@ -250,7 +250,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   /* Code from Matt to get the indices associated with the boundary dofs */
   ierr = DMPlexAddBoundary(dm_laplace, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);
   ierr = DMGetDefaultSection(dm_laplace, &section);CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(label, 1, &n);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(label, 1, &is);CHKERRQ(ierr);
   ierr = ISGetIndices(is, &points);CHKERRQ(ierr);

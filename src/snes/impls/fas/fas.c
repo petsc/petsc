@@ -5,7 +5,7 @@ const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE"
 
 extern PetscErrorCode SNESDestroy_FAS(SNES snes);
 extern PetscErrorCode SNESSetUp_FAS(SNES snes);
-extern PetscErrorCode SNESSetFromOptions_FAS(PetscOptions *PetscOptionsObject,SNES snes);
+extern PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes);
 extern PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer);
 extern PetscErrorCode SNESSolve_FAS(SNES snes);
 extern PetscErrorCode SNESReset_FAS(SNES snes);
@@ -41,6 +41,10 @@ Notes:
    The cycle SNES instance may be used for monitoring convergence on a particular level.
 
 Level: beginner
+
+   References:
+. 1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+   SIAM Review, 57(4), 2015
 
 .seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
@@ -308,7 +312,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_FAS"
-PetscErrorCode SNESSetFromOptions_FAS(PetscOptions *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_FAS       *fas   = (SNES_FAS*) snes->data;
   PetscInt       levels = 1;
@@ -922,9 +926,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
 
   PetscFunctionBegin;
 
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) {
-    SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
-  }
+  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   maxits       = snes->max_its;      /* maximum number of iterations */
@@ -982,9 +984,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
       ierr = SNESFASCycle_Full(snes, X);CHKERRQ(ierr);
     } else if (fas->fastype ==SNES_FAS_KASKADE) {
       ierr = SNESFASCycle_Kaskade(snes, X);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
-    }
+    } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
 
     /* check for FAS cycle divergence */
     if (snes->reason != SNES_CONVERGED_ITERATING) PetscFunctionReturn(0);

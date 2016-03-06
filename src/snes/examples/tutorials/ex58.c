@@ -478,8 +478,8 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   ierr     = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Check if lower and upper bounds are set */
-  ierr = PetscOptionsGetScalar(NULL, "-lb", &user->lb, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL, "-ub", &user->ub, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL, "-lb", &user->lb, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL, "-ub", &user->ub, 0);CHKERRQ(ierr);
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
   ierr = PetscMalloc1(bsize, &user->bottom);CHKERRQ(ierr);

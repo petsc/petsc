@@ -65,8 +65,8 @@ int main(int argc,char **argv)
   appctx.cstar   = .2;
   appctx.upwind  = PETSC_TRUE;
 
-  ierr = PetscOptionsGetScalar(NULL,"-delta",&appctx.delta,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-upwind",&appctx.upwind,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-delta",&appctx.delta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-upwind",&appctx.upwind,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -102,6 +102,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

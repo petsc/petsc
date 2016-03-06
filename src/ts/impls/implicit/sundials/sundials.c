@@ -389,7 +389,7 @@ const char *const TSSundialsGramSchmidtTypes[] = {"","MODIFIED","CLASSICAL","TSS
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Sundials"
-PetscErrorCode TSSetFromOptions_Sundials(PetscOptions *PetscOptionsObject,TS ts)
+PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;

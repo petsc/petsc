@@ -63,8 +63,9 @@ class Installer(script.Script):
   def setupDirectories(self):
     self.rootDir    = self.petscdir.dir
     self.destDir    = os.path.abspath(self.argDB['destDir'])
-    self.installDir = self.framework.argDB['prefix']
+    self.installDir = os.path.abspath(self.framework.argDB['prefix'])
     self.arch       = self.arch.arch
+    self.archDir           = os.path.join(self.rootDir, self.arch)
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
     self.rootConfDir       = os.path.join(self.rootDir, 'lib','petsc','conf')
@@ -297,7 +298,9 @@ for dir in dirs:
     if os.path.splitext(dst)[1] == '.'+self.arLibSuffix:
       self.executeShellCommand(self.ranlib+' '+dst)
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
-      installName = dst.replace(self.destDir, self.installDir)
+      [output,err,flg] = self.executeShellCommand("otool -D "+src)
+      oldname = output[output.find("\n")+1:]
+      installName = oldname.replace(self.archDir, self.installDir)
       self.executeShellCommand('/usr/bin/install_name_tool -id ' + installName + ' ' + dst)
     # preserve the original timestamps - so that the .a vs .so time order is preserved
     shutil.copystat(src,dst)

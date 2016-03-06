@@ -338,7 +338,7 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
     if (!numCornersLocal)           numCornersLocal = Nc;
     else if (numCornersLocal != Nc) numCornersLocal = 1;
   }
-  ierr = MPI_Allreduce(&numCornersLocal, &numCorners, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&numCornersLocal, &numCorners, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
   if (numCornersLocal && (numCornersLocal != numCorners || numCorners == 1)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Visualization topology currently only supports identical cell shapes");
 
   ierr = PetscViewerHDF5PushGroup(viewer, "/viz");CHKERRQ(ierr);
@@ -527,7 +527,7 @@ PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
   ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
   if (groupId != fileId) PetscStackCallHDF5(H5Gclose,(groupId));
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+  ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   for (l = 0; l < numLabels; ++l) {
     DMLabel         label;
     const char     *name;
@@ -537,11 +537,11 @@ PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
     PetscBool       isDepth, output;
     char            group[PETSC_MAX_PATH_LEN];
 
-    ierr = DMPlexGetLabelName(dm, l, &name);CHKERRQ(ierr);
-    ierr = DMPlexGetLabelOutput(dm, name, &output);CHKERRQ(ierr);
+    ierr = DMGetLabelName(dm, l, &name);CHKERRQ(ierr);
+    ierr = DMGetLabelOutput(dm, name, &output);CHKERRQ(ierr);
     ierr = PetscStrncmp(name, "depth", 10, &isDepth);CHKERRQ(ierr);
     if (isDepth || !output) continue;
-    ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
     ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s", name);CHKERRQ(ierr);
     ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
     ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
@@ -633,8 +633,8 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_
   PetscErrorCode ierr;
   herr_t         err;
 
-  ierr = DMPlexCreateLabel(dm, name); if (ierr) return (herr_t) ierr;
-  ierr = DMPlexGetLabel(dm, name, &((LabelCtx *) op_data)->label); if (ierr) return (herr_t) ierr;
+  ierr = DMCreateLabel(dm, name); if (ierr) return (herr_t) ierr;
+  ierr = DMGetLabel(dm, name, &((LabelCtx *) op_data)->label); if (ierr) return (herr_t) ierr;
   PetscStackCall("H5Literate_by_name",err = H5Literate_by_name(g_id, name, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0));
   return err;
 }

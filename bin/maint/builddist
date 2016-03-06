@@ -57,6 +57,7 @@ PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
 # Clean and Update the git repository and check for branch
 cd $PETSC_DIR
+/bin/rm -rf $PETSC_DIR/$PETSC_ARCH
 git clean -q -f -d -x
 git fetch -q origin
 git checkout -f origin/$branch
@@ -109,7 +110,7 @@ cd $PETSC_DIR
 # we should have an option of running configure - without compilers/mpi/blas etc..
 ./config/configure.py --with-mpi=0 --with-matlab=1 --download-c2html=1 --download-sowing=1
 make allfortranstubs
-make alldoc LOC=${PETSC_DIR}
+make alldoc LOC=${PETSC_DIR} DOCSETDATE_PRUNE_LIST=""
 #
 make ACTION=clean tree_basic
 

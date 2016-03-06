@@ -105,8 +105,8 @@ int main(int argc,char **argv)
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
   m    = 60;
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
 
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
@@ -160,7 +160,7 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-time_dependent_rhs",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-time_dependent_rhs",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation
@@ -199,6 +199,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -392,13 +393,13 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %3D: step size = %-11g, time = %-11g, 2-norm error = %-11g, max norm error = %-11g\n",step,(double)dt,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %3D: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)dt,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
 
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
   dttol = .0001;
-  ierr  = PetscOptionsGetReal(NULL,"-dttol",&dttol,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetReal(NULL,NULL,"-dttol",&dttol,NULL);CHKERRQ(ierr);
   if (dt < dttol) {
     dt  *= .999;
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);

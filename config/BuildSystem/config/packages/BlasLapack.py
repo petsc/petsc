@@ -4,6 +4,7 @@ import config.base
 import config.package
 from sourceDatabase import SourceDB
 import os
+import string
 
 class Configure(config.package.Package):
   '''FIX: This has not yet been converted to the package style'''
@@ -38,6 +39,7 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,libblas.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library containing BLAS and LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-blas-lapack-suffix=<string>',nargs.ArgLibrary(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
     help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
     return
 
@@ -70,7 +72,7 @@ class Configure(config.package.Package):
     call      = ''
     routine   = self.mangleBlas(routineIn)
     if fortranMangle=='stdcall':
-      if routine=='ddot':
+      if routine=='ddot'+self.suffix:
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
         call      = 'DDOT(0,0,0,0,0);'
     self.libraries.saveLog()
@@ -116,6 +118,8 @@ class Configure(config.package.Package):
     foundBlas   = 0
     foundLapack = 0
     self.f2c    = 0
+    # allow a user-specified suffix to be appended to BLAS/LAPACK symbols
+    self.suffix = string.join(self.argDB.get('with-blas-lapack-suffix', ''),'')
     mangleFunc = self.compilers.fortranMangling
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
     if foundBlas:
@@ -125,22 +129,26 @@ class Configure(config.package.Package):
       self.logPrint('Found Fortran mangling on BLAS/LAPACK which is '+self.compilers.fortranMangling)
     else:
       self.logPrint('Checking for no name mangling on BLAS/LAPACK')
+      save_f2c = self.f2c
+      self.f2c = 1 # so that mangleBlas will do its job
+      self.mangling = 'unchanged'
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
       if foundBlas:
         foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
       if foundBlas and foundLapack:
         self.logPrint('Found no name mangling on BLAS/LAPACK')
-        self.mangling = 'unchanged'
-        self.f2c = 1
       else:
         self.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
-        foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot_')
+        self.mangling = 'underscore'
+        foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
         if foundBlas:
-          foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs_', 'geev_'])
+          foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
         if foundBlas and foundLapack:
           self.logPrint('Found underscore name mangling on BLAS/LAPACK')
-          self.mangling = 'underscore'
-          self.f2c = 1
+        else:
+          self.logPrint('Unknown name mangling in BLAS/LAPACK')
+          self.f2c = save_f2c
+          self.mangling = 'unknown'
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -292,14 +300,6 @@ class Configure(config.package.Package):
     # IBM ESSL locations
     yield ('IBM ESSL Mathematics library', None, 'libessl.a', 1)
     yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a', 2)
-    # Portland group compiler blas and lapack
-    if 'PGI' in os.environ and config.setCompilers.Configure.isPGI(self.setCompilers.CC, self.log):
-      dir = os.path.join(os.environ['PGI'],'linux86','5.1','lib')
-      yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'), 1)
-      dir = os.path.join(os.environ['PGI'],'linux86','5.0','lib')
-      yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'), 1)
-      dir = os.path.join(os.environ['PGI'],'linux86','lib')
-      yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'), 1)
     # Try compiler defaults
     yield ('Default compiler libraries', '', '', 1)
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a', 1)
@@ -370,7 +370,7 @@ class Configure(config.package.Package):
         import glob
         blib = glob.glob('/usr/lib/libblas.*')
         if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
-          raise RuntimeError('Incomplete BLAS install; Perhaps blas package is installed - but blas-dev/blas-devel is required?')
+          raise RuntimeError('Incomplete system BLAS install detected. Perhaps you need to install blas-dev or blas-devel package - that contains /usr/lib/libblas.so using apt or yum or equivalent package manager?')
         if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') : pkg = 'fblaslapack'
         else: pkg = 'f2cblaslapack'
         raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
@@ -379,7 +379,7 @@ class Configure(config.package.Package):
         import glob
         llib = glob.glob('/usr/lib/liblapack.*')
         if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
-          raise RuntimeError('Incomplete LAPACK install; Perhaps lapack package is installed - but lapack-dev/lapack-devel is required?')
+          raise RuntimeError('Incomplete system LAPACK install detected. Perhaps you need to install lapack-dev or lapack-devel package - that contains /usr/lib/liblapack.so using apt or yum or equivalent package manager?')
         if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') : pkg = 'fblaslapack'
         else: pkg = 'f2cblaslapack'
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
@@ -394,6 +394,10 @@ class Configure(config.package.Package):
         self.addDefine('BLASLAPACK_CAPS', 1)
     elif self.mangling == 'stdcall':
         self.addDefine('BLASLAPACK_STDCALL', 1)
+
+    if self.suffix != '':
+        self.addDefine('BLASLAPACK_SUFFIX', self.suffix)
+
     self.found = 1
     return
 
@@ -425,19 +429,18 @@ class Configure(config.package.Package):
   def mangleBlas(self, baseName):
     prefix = self.getPrefix()
     if self.f2c and self.mangling == 'underscore':
-      return prefix+baseName+'_'
+      return prefix+baseName+self.suffix+'_'
     else:
-      return prefix+baseName
+      return prefix+baseName+self.suffix
 
   def mangleBlasNoPrefix(self, baseName):
     if self.f2c:
       if self.mangling == 'underscore':
-        return baseName+'_'
+        return baseName+self.suffix+'_'
       else:
-        return baseName
+        return baseName+self.suffix
     else:
-      return self.compilers.mangleFortranFunction(baseName)
-
+      return self.compilers.mangleFortranFunction(baseName+self.suffix)
 
   def checkMissing(self):
     '''Check for missing LAPACK routines'''
@@ -459,7 +462,7 @@ class Configure(config.package.Package):
     routine = 'lsame';
     if self.f2c:
       if self.mangling == 'underscore':
-        routine = routine + '_'
+        routine = routine + self.suffix + '_'
     else:
       routine = self.compilers.mangleFortranFunction(routine)
     self.libraries.saveLog()
@@ -473,9 +476,9 @@ class Configure(config.package.Package):
     self.libraries.saveLog()
     if self.f2c:
       if self.mangling == 'underscore':
-        ret = self.libraries.check(self.dlib,routine+'_')
+        ret = self.libraries.check(self.dlib,routine+self.suffix+'_')
       else:
-        ret = self.libraries.check(self.dlib,routine)
+        ret = self.libraries.check(self.dlib,routine+self.suffix)
     else:
       ret = self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
     self.logWrite(self.libraries.restoreLog())
@@ -550,13 +553,12 @@ class Configure(config.package.Package):
     self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
     if self.argDB['with-shared-libraries']:
-      symbol = 'dgeev'
+      symbol = 'dgeev'+self.suffix
       if self.f2c:
-        if self.mangling == 'underscore': symbol = 'dgeev_'
+        if self.mangling == 'underscore': symbol = symbol+'_'
       elif hasattr(self.compilers, 'FC'):
         symbol = self.compilers.mangleFortranFunction(symbol)
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
         raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot be used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
     self.executeTest(self.checksdotreturnsdouble)
     return
-

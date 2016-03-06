@@ -94,7 +94,7 @@
 !  start PETSc
 !
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call PetscOptionsSetValue('-snes_mf','true',ierr)
+      call PetscOptionsSetValue(PETSC_NULL_OBJECT,'-snes_mf','true',ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -171,29 +171,52 @@
 !
 !  load the command line options
 !
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-dt',dt,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-nstep',nstep,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-debug',ndb,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-pcnew',npc,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-ihod',ihod,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-ientro',ientro,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-theta',theta,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-ngraph',ngraph,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER, '-damfac',damfac,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-dampit',ndamp,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER, '-wilson',nwilson,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-gorder',gorder,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER, '-probnum',probnum,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER, '-kappa0',kappa0,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER, '-erg0',erg0,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-dtcon',ndtcon,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER, '-tfinal',tfinal,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER, '-tplot',tplot,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-dtgrow',dtgrow,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER, '-tcscal',tcscal,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER, '-hcscal',hcscal,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER, '-dtmax',dtmax,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-dt',dt,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-nstep',nstep,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-debug',ndb,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-pcnew',npc,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-ihod',ihod,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-ientro',ientro,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-theta',theta,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-ngraph',ngraph,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-damfac',damfac,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-dampit',ndamp,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-wilson',nwilson,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-gorder',gorder,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                        '-probnum',probnum,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-kappa0',kappa0,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-erg0',erg0,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+     &                         '-dtcon',ndtcon,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-tfinal',tfinal,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-tplot',tplot,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-dtgrow',dtgrow,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-tcscal',tcscal,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-hcscal',hcscal,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+     &                         '-dtmax',dtmax,flg,ierr)
 
       if (ndamp .eq. 1) then
          dampit = .true.

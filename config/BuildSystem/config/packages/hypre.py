@@ -4,7 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.10.0b-p2.tar.gz']
+    self.gitcommit = 'v2.10.1-140-g36b814d'
+    self.download  = ['git://https://github.com/LLNL/hypre']
+#    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.10.0b-p3.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
     self.liblist   = [['libHYPRE.a']]
@@ -56,12 +58,10 @@ class Configure(config.package.GNUPackage):
     args.append('--with-MPI-libs="'+libs+'"')
 
     # tell hypre configure not to look for blas/lapack [and not use hypre-internal blas]
-    args.append('--with-blas-libs=')
-    args.append('--with-blas-lib-dir=')
-    args.append('--with-lapack-libs=')
-    args.append('--with-lapack-lib-dir=')
-    args.append('--with-blas=yes')
-    args.append('--with-lapack=yes')
+    args.append('--with-blas-lib="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('--with-lapack-lib=" "')
+    args.append('--with-blas=no')
+    args.append('--with-lapack=no')
     if self.openmp.found:
       args.append('--with-openmp')
 
@@ -75,7 +75,6 @@ class Configure(config.package.GNUPackage):
     args.append('--with-fmangle-blas='+mang)
     args.append('--with-fmangle-lapack='+mang)
 
-    args.append('--without-babel')
     args.append('--without-mli')
     args.append('--without-fei')
     args.append('--without-superlu')

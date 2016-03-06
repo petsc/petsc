@@ -8,8 +8,8 @@ if __name__ == '__main__':
     'CC=icc',
     'CXX=icpc',
     'FC=ifort',
-    '--with-blas-lapack-dir=/soft/com/packages/intel/13/update5/mkl/',
-    '--with-mkl_pardiso-dir=/soft/com/packages/intel/13/update5/mkl/',
+    '--with-blas-lapack-dir='+os.environ['MKL_HOME'],
+    '--with-mkl_pardiso-dir='+os.environ['MKL_HOME'],
     '--download-mpich=1',
   ]
   configure.petsc_configure(configure_options)

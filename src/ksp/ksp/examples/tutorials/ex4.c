@@ -126,9 +126,9 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
   ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, "-view", &doView, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-view", &doView, NULL);CHKERRQ(ierr);
   /* Construct matrix using GPU */
-  ierr = PetscOptionsGetBool(NULL, "-gpu", &doGPU, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-gpu", &doGPU, NULL);CHKERRQ(ierr);
   if (doGPU) {
     ierr = PetscLogStageRegister("GPU Stage", &gpuStage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(gpuStage);CHKERRQ(ierr);
@@ -144,13 +144,14 @@ int main(int argc, char **argv)
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, NULL, &viewer);CHKERRQ(ierr);
       if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
       ierr = MatView(A, viewer);CHKERRQ(ierr);
+      if (Ne > 500) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   /* Construct matrix using CPU */
-  ierr = PetscOptionsGetBool(NULL, "-cpu", &doCPU, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-cpu", &doCPU, NULL);CHKERRQ(ierr);
   if (doCPU) {
     ierr = PetscLogStageRegister("CPU Stage", &cpuStage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(cpuStage);CHKERRQ(ierr);
@@ -164,12 +165,13 @@ int main(int argc, char **argv)
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, NULL, &viewer);CHKERRQ(ierr);
       if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
       ierr = MatView(A, viewer);CHKERRQ(ierr);
+      if (Ne > 500) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   /* Solve simple system with random rhs */
-  ierr = PetscOptionsGetBool(NULL, "-solve", &doSolve, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-solve", &doSolve, NULL);CHKERRQ(ierr);
   if (doSolve) {
     ierr = MatCreateVecs(A, &x, &b);CHKERRQ(ierr);
     ierr = VecSetRandom(b, NULL);CHKERRQ(ierr);

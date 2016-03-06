@@ -90,7 +90,8 @@
       i1 = 1
       i2 = 2
       i3 = 3
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+     &                        '-n',n,flg,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Compute the matrix and right-hand-side vector that define
@@ -168,7 +169,7 @@
 
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
-      tol = 1.e-7
+      tol = .0000001
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                         &
      &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
@@ -204,8 +205,8 @@
       else
         write(6,200) its
       endif
- 100  format('Norm of error = ',e11.4,',  Iterations = ',i5)
- 200  format('Norm of error < 1.e-12,Iterations = ',i5)
+ 100  format('Norm of error ',e11.4,',  Iterations = ',i5)
+ 200  format('Norm of error < 1.e-12, Iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

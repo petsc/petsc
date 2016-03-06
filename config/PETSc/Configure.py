@@ -1,7 +1,9 @@
 import config.base
 
 import os
+import sys
 import re
+import cPickle
 
 # The sorted() builtin is not available with python-2.3
 try: sorted
@@ -40,7 +42,26 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
+    help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
+    help.addArgument('PETSc','-with-viewfromoptions=<bool>',      nargs.ArgBool(None, 1,'Support XXXSetFromOptions() calls, for calls with many small solvers turn this off'))
+
     return
+
+  def registerPythonFile(self,filename,directory):
+    ''' Add a python file to the framework and registers its headerprefix, ... externalpackagedir
+        directory is the directory where the file relative to the BuildSystem or config path in python notation with . '''
+    (utilityName, ext) = os.path.splitext(filename)
+    if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+      if directory: directory = directory+'.'
+      utilityObj                             = self.framework.require(directory+utilityName, self)
+      utilityObj.headerPrefix                = self.headerPrefix
+      utilityObj.archProvider                = self.arch
+      utilityObj.languageProvider            = self.languages
+      utilityObj.installDirProvider          = self.installdir
+      utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+      utilityObj.precisionProvider           = self.scalartypes
+      utilityObj.indexProvider               = self.indexTypes
+      setattr(self, utilityName.lower(), utilityObj)
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
@@ -50,6 +71,8 @@ class Configure(config.base.Configure):
     self.arch          = framework.require('PETSc.options.arch',        self.setCompilers)
     self.petscdir      = framework.require('PETSc.options.petscdir',    self.arch)
     self.installdir    = framework.require('PETSc.options.installDir',  self)
+    self.scalartypes   = framework.require('PETSc.options.scalarTypes', self)
+    self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
     self.debugging     = framework.require('PETSc.options.debugging',   self.compilers)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
@@ -66,40 +89,14 @@ class Configure(config.base.Configure):
     self.mpi           = framework.require('config.packages.MPI',self)
 
     for utility in os.listdir(os.path.join('config','PETSc','options')):
-      (utilityName, ext) = os.path.splitext(utility)
-      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-        utilityObj                    = self.framework.require('PETSc.options.'+utilityName, self)
-        utilityObj.headerPrefix       = self.headerPrefix
-        utilityObj.archProvider       = self.arch
-        utilityObj.languageProvider   = self.languages
-        utilityObj.installDirProvider = self.installdir
-        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
-        setattr(self, utilityName.lower(), utilityObj)
+      self.registerPythonFile(utility,'PETSc.options')
 
     for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
-      (utilityName, ext) = os.path.splitext(utility)
-      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-        utilityObj                    = self.framework.require('config.utilities.'+utilityName, self)
-        utilityObj.headerPrefix       = self.headerPrefix
-        utilityObj.archProvider       = self.arch
-        utilityObj.languageProvider   = self.languages
-        utilityObj.installDirProvider = self.installdir
-        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
-        setattr(self, utilityName.lower(), utilityObj)
+      self.registerPythonFile(utility,'config.utilities')
 
-    if os.path.isdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
-      for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
-        (packageName, ext) = os.path.splitext(package)
-        if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__' and not packageName == 'PETSc':
-          packageObj                    = framework.require('config.packages.'+packageName, self)
-          packageObj.headerPrefix       = self.headerPrefix
-          packageObj.archProvider       = self.arch
-          packageObj.languageProvider   = self.languages
-          packageObj.precisionProvider  = self.scalartypes
-          packageObj.indexProvider      = self.indexTypes
-          packageObj.installDirProvider = self.installdir
-          packageObj.externalPackagesDirProvider = self.externalpackagesdir
-          setattr(self, packageName.lower(), packageObj)
+    for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+      self.registerPythonFile(package,'config.packages')
+
     # Force blaslapack and opencl to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.options.scalarTypes', self.f2cblaslapack)
     framework.require('PETSc.options.scalarTypes', self.fblaslapack)
@@ -113,8 +110,19 @@ class Configure(config.base.Configure):
     self.headers.headerPrefix    = self.headerPrefix
     self.functions.headerPrefix  = self.headerPrefix
     self.libraries.headerPrefix  = self.headerPrefix
-    self.blaslapack.headerPrefix = self.headerPrefix
-    self.mpi.headerPrefix        = self.headerPrefix
+
+    # Look for any user provided --download-xxx=directory packages
+    for arg in sys.argv:
+      if arg.startswith('--download-') and arg.find('=') > -1:
+        pname = arg[11:arg.find('=')]
+        if not hasattr(self,pname):
+          dname = os.path.dirname(arg[arg.find('=')+1:])
+          if os.path.isdir(dname) and not os.path.isfile(os.path.join(dname,pname+'.py')):
+            self.framework.logPrint('User is registering a new package: '+arg)
+            sys.path.append(dname)
+            self.registerPythonFile(pname+'.py','')
+
+    # test for a variety of basic headers and functions
     headersC = map(lambda name: name+'.h', ['setjmp','dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
@@ -170,10 +178,10 @@ class Configure(config.base.Configure):
 
     plibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc'])
     if self.framework.argDB['prefix']:
-      fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.framework.argDB['prefix'])+'\n')
+      fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.installdir.dir)+'\n')
     else:
       fd.write('Libs: '+plibs+'\n')
-    fd.write('Libs.private: '+' '.join(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS)
+    fd.write('Libs.private: '+self.libraries.toStringNoDupes(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'\n')
 
     fd.close()
     return
@@ -347,7 +355,7 @@ prepend-path PATH %s
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
-      libs.extend(i.lib)
+      if i.linkedbypetsc: libs.extend(i.lib)
       self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
@@ -471,7 +479,7 @@ prepend-path PATH %s
 
   def dumpCMakeConfig(self):
     '''
-    Writes configuration-specific values to ${PETSC_ARCH}/lib/petsc/conf/PETScConfig.cmake.
+    Writes configuration-specific values to ${PETSC_ARCH}/lib/petsc/conf/PETScBuildInternal.cmake.
     This file is private to PETSc and should not be included by third parties
     (a suitable file can be produced later by CMake, but this is not it).
     '''
@@ -563,8 +571,9 @@ prepend-path PATH %s
       includes  = []
       libvars   = []
       for pkg in self.framework.packages:
-        extendby(pkg.lib)
-        uniqextend(includes,pkg.include)
+        if pkg.linkedbypetsc:
+          extendby(pkg.lib)
+          uniqextend(includes,pkg.include)
       extendby(self.libraries.math)
       extendby(self.libraries.rt)
       extendby(self.compilers.flibs)
@@ -581,7 +590,7 @@ prepend-path PATH %s
       fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
       includes = filter(notstandardinclude,includes)
       fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',includes)) + ')\n')
-    fd = open(os.path.join(self.arch.arch,'lib','petsc','conf','PETScConfig.cmake'), 'w')
+    fd = open(os.path.join(self.arch.arch,'lib','petsc','conf','PETScBuildInternal.cmake'), 'w')
     writeMacroDefinitions(fd)
     writeBuildFlags(fd)
     fd.close()
@@ -602,6 +611,8 @@ prepend-path PATH %s
     import sys
     self.cmakeboot_success = False
     if sys.version_info >= (2,4) and hasattr(self.cmake,'cmake'):
+      oldRead = self.argDB.readonly
+      self.argDB.readonly = True
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
@@ -609,6 +620,7 @@ prepend-path PATH %s
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
+      self.argDB.readonly = oldRead
       if self.cmakeboot_success:
         if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
           self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
@@ -719,6 +731,53 @@ prepend-path PATH %s
     else:
       self.addDefine('DEPRECATED(why)', ' ')
     self.popLanguage()
+
+  def configureAlign(self):
+    '''Check if __attribute(align) is supported'''
+    filename = 'conftestalign'
+    includes = '''
+#include <sys/types.h>
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stdio.h>
+#include <stddef.h>
+#endif\n'''
+    body     = '''
+struct mystruct {int myint;} __attribute((aligned(16)));
+FILE *f = fopen("'''+filename+'''", "w");
+if (!f) exit(1);
+fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
+'''
+    if 'known-has-attribute-aligned' in self.argDB:
+      if self.argDB['known-has-attribute-aligned']:
+        size = 16
+      else:
+        size = -3
+    elif not self.argDB['with-batch']:
+      self.pushLanguage(self.languages.clanguage)
+      try:
+        if self.checkRun(includes, body) and os.path.exists(filename):
+          f    = file(filename)
+          size = int(f.read())
+          f.close()
+          os.remove(filename)
+        else:
+          size = -4
+      except:
+        size = -1
+        self.framework.logPrint('Error checking attribute(aligned)')
+      self.popLanguage()
+    else:
+      self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>', '#include <sys/types.h>','struct mystruct {int myint;} __attribute((aligned(16)));'])
+      self.framework.addBatchBody('fprintf(output, "  \'--known-has-attribute-aligned=%d\',\\n", sizeof(struct mystruct)==16);')
+      size = -2
+    if size == 16:
+      self.addDefine('ATTRIBUTEALIGNED(size)', '__attribute((aligned (size)))')
+      self.addDefine('HAVE_ATTRIBUTEALIGNED', 1)
+    else:
+      self.framework.logPrint('incorrect alignment. Found alignment:'+ str(size))
+      self.addDefine('ATTRIBUTEALIGNED(size)', ' ')
+    return
 
   def configureExpect(self):
     '''Sees if the __builtin_expect directive is supported'''
@@ -959,6 +1018,10 @@ prepend-path PATH %s
           self.addDefine('HAVE_'+baseName.upper(), 1)
           return
 
+  def configureViewFromOptions(self):
+    if not self.framework.argDB['with-viewfromoptions']:
+      self.addDefine('SKIP_VIEWFROMOPTIONS',1)
+
   def postProcessPackages(self):
     postPackages=[]
     for i in self.framework.packages:
@@ -966,6 +1029,11 @@ prepend-path PATH %s
     if postPackages:
       # ctetgen needs petsc conf files. so attempt to create them early
       self.framework.dumpConfFiles()
+      # tacky fix for dependency of Aluimia on Pflotran; requested via petsc-dev Matt provide a correct fix
+      for i in postPackages:
+        if i.name.upper() in ['PFLOTRAN']:
+          i.postProcess()
+          postPackages.remove(i)
       for i in postPackages: i.postProcess()
     return
 
@@ -990,6 +1058,7 @@ prepend-path PATH %s
     self.executeTest(self.configureDeprecated)
     self.executeTest(self.configureIsatty)
     self.executeTest(self.configureExpect);
+    self.executeTest(self.configureAlign);
     self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)
@@ -1002,6 +1071,7 @@ prepend-path PATH %s
     self.executeTest(self.configureGCOV)
     self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
+    self.executeTest(self.configureViewFromOptions)
     # dummy rules, always needed except for remote builds
     self.addMakeRule('remote','')
     self.addMakeRule('remoteclean','')
@@ -1009,12 +1079,16 @@ prepend-path PATH %s
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()
-    self.postProcessPackages()
     self.dumpCMakeConfig()
     self.dumpCMakeLists()
+    # need to save the current state of BuildSystem so that postProcess() packages can read it in and perhaps run make install
+    self.framework.storeSubstitutions(self.framework.argDB)
+    self.framework.argDB['configureCache'] = cPickle.dumps(self.framework)
+    self.framework.argDB.save(force = True)
     self.cmakeBoot()
     self.DumpPkgconfig()
     self.DumpModule()
+    self.postProcessPackages()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return

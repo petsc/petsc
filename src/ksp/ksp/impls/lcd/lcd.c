@@ -180,7 +180,7 @@ PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_LCD"
-PetscErrorCode KSPSetFromOptions_LCD(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_LCD(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -207,19 +207,19 @@ PetscErrorCode KSPSetFromOptions_LCD(PetscOptions *PetscOptionsObject,KSP ksp)
     Notes: Support only for left preconditioning
 
     References:
-   - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate
++    1. - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate
      direction methods for real positive definite system. BIT Numerical
-     Mathematics, 44(1):189-207,2004.
-   - Y. Dai and J.Y. Yuan. Study on semi-conjugate direction methods for
-     non-symmetric systems. International Journal for Numerical Methods in
-     Engineering, 60:1383-1399,2004.
-   - L. Catabriga, A.L.G.A. Coutinho, and L.P.Franca. Evaluating the LCD
+     Mathematics, 44(1),2004.
+.    2. - Y. Dai and J.Y. Yuan. Study on semiconjugate direction methods for
+     nonsymmetric systems. International Journal for Numerical Methods in
+     Engineering, 60, 2004.
+.    3. - L. Catabriga, A.L.G.A. Coutinho, and L.P.Franca. Evaluating the LCD
      algorithm for solving linear systems of equations arising from implicit
      SUPG formulation of compressible flows. International Journal for
-     Numerical Methods in Engineering, 60:1513-1534,2004
-   - L. Catabriga, A. M. P. Valli, B. Z. Melotti, L. M. Pessoa,
+     Numerical Methods in Engineering, 60, 2004
+-    4. - L. Catabriga, A. M. P. Valli, B. Z. Melotti, L. M. Pessoa,
      A. L. G. A. Coutinho, Performance of LCD iterative method in the finite
-     element and finite difference solution of convection-diffusion
+     element and finite difference solution of convection diffusion
      equations,  Communications in Numerical Methods in Engineering, (Early
      View).
 

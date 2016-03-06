@@ -1,6 +1,5 @@
   0  1  2  3  4  5  9 10 11 12 13 14
   0  1  3  4
-  type: block
 Block 0 Index 0
 Block 1 Index 1
 Block 2 Index 3
@@ -9,3 +8,4 @@ Block size 3
 IS Object: 1 MPI processes
 Number of block indices in set 4
 The first indices of each block are
+  type: block

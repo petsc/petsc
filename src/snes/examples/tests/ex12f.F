@@ -50,7 +50,8 @@
       i0 = 0
       i3 = 3
       N  = 10
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                        '-n',N,flg,ierr)
       h = 1.0/(N-1.0)
       ctx(6) = N
       ctx(4) = PETSC_COMM_WORLD
@@ -106,12 +107,6 @@
       call FormInitialGuess(snes,x,ierr)
       call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
-
-! Write results if first processor
-      if (ctx(4) .eq. 0) then
-        write(6,100) its
-      endif
-  100 format('Number of SNES iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

@@ -9,7 +9,7 @@ static char help[] = "Tests DMDAGetElements() and VecView() contour plotting for
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt         M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ne,nc,i;
+  PetscInt         M = 10,N = 8,ne,nc,i;
   const PetscInt   *e;
   PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
@@ -25,15 +25,13 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,m,n,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
@@ -46,9 +44,10 @@ int main(int argc,char **argv)
   ierr = DMDAGetElements(da,&ne,&nc,&e);CHKERRQ(ierr);
   ierr = VecGetArray(local,&lv);CHKERRQ(ierr);
   for (i=0; i<ne; i++) {
-    ierr       = PetscPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]);
+    ierr       = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]);
     lv[e[3*i]] = i;
   }
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   ierr = VecRestoreArray(local,&lv);CHKERRQ(ierr);
   ierr = DMDARestoreElements(da,&ne,&nc,&e);CHKERRQ(ierr);
 

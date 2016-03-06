@@ -1,6 +1,7 @@
 !
 !
       program main
+      implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 !
@@ -13,6 +14,7 @@
        PetscScalar      one,two,three,dot
        PetscReal        norm,rdot
        Vec              x,y,w
+       PetscOptions     options
 
        n     = 20
        one   = 1.0
@@ -20,7 +22,10 @@
        three = 3.0
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
+       call PetscOptionsCreate(options,ierr)
+       call PetscOptionsGetInt(options,PETSC_NULL_CHARACTER,                  &
+     &                        '-n',n,flg,ierr)
+       call PetscOptionsDestroy(options,ierr)
 
 ! Create a vector, then duplicate it
        call VecCreate(PETSC_COMM_WORLD,x,ierr)

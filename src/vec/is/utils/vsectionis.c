@@ -901,7 +901,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 
   Input Parameters:
 + s - the PetscSection
-- point - the point
+- size - the allocated size
 
   Output Parameter:
 . size - the size of an array which can hold all the dofs
@@ -2033,11 +2033,11 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 
   Input Parameters:
 + sf - The SF
-. rootSection - Data layout of remote points for outgoing data (this is usually the serial section), or NULL
-- remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
+. rootSection - Data layout of remote points for outgoing data (this is usually the serial section)
+. remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
+- leafSection - Data layout of local points for incoming data  (this is the distributed section)
 
   Output Parameters:
-+ leafSection - Data layout of local points for incoming data  (this is the distributed section)
 - sectionSF - The new SF
 
   Note: Either rootSection or remoteOffsets can be specified
@@ -2099,7 +2099,6 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
       }
     }
   }
-  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   if (numIndices != ind) SETERRQ2(comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);
   ierr = PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);

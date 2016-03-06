@@ -1,6 +1,5 @@
-
-static char help[] = "Illustrates use of the preconditioner GASM.\n\
-The Additive Schwarz Method for solving a linear system in parallel with KSP.  The\n\
+static char help[] = "Illustrates use of PCGASM.\n\
+The Generalized Additive Schwarz Method for solving a linear system in parallel with KSP.  The\n\
 code indicates the procedure for setting user-defined subdomains.\n\
 See section 'ex62' below for command-line options.\n\
 Without -user_set_subdomains, the general PCGASM options are meaningful:\n\
@@ -40,7 +39,7 @@ T*/
 */
 #include <petscksp.h>
 
-
+PetscErrorCode AssembleMatrix(Mat,PetscInt m,PetscInt n);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -55,17 +54,15 @@ int main(int argc,char **args)
   PetscInt       Nsub;                   /* number of subdomains */
   PetscInt       m,n;                    /* mesh dimensions in x- and y- directions */
   PetscInt       M,N;                    /* number of subdomains in x- and y- directions */
-  PetscInt       i,j,Ii,J,Istart,Iend;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscBool      flg;
-  PetscBool      user_set_subdomains;
-  PetscScalar    v, one = 1.0;
-  PetscReal      e;
+  PetscBool      flg=PETSC_FALSE;
+  PetscBool      user_set_subdomains=PETSC_FALSE;
+  PetscReal      one,e;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PC");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PCGASM");CHKERRQ(ierr);
   m = 15;
   ierr = PetscOptionsInt("-M", "Number of mesh points in the x-direction","PCGASMCreateSubdomains2D",m,&m,NULL);CHKERRQ(ierr);
   n = 17;
@@ -92,17 +89,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-  for (Ii=Istart; Ii<Iend; Ii++) {
-    v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = AssembleMatrix(A,m,n);CHKERRQ(ierr);
 
   /*
      Create and set vectors
@@ -112,6 +99,7 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  one  = 1.0;
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
@@ -169,8 +157,9 @@ int main(int argc,char **args)
     ierr = PCGASMSetSubdomains(pc,Nsub,inneris,outeris);CHKERRQ(ierr);
     ierr = PCGASMDestroySubdomains(Nsub,&inneris,&outeris);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-subdomain_view",&flg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-subdomain_view",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
+      PetscInt i;
       ierr = PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %D x %D; subdomain partition: %D x %D; overlap: %D; Nsub: %D\n",m,n,M,N,overlap,Nsub);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Outer IS:\n");CHKERRQ(ierr);
       for (i=0; i<Nsub; i++) {
@@ -216,10 +205,10 @@ int main(int argc,char **args)
   */
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-user_set_subdomain_solvers",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-user_set_subdomain_solvers",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     KSP       *subksp;        /* array of KSP contexts for local subblocks */
-    PetscInt  nlocal,first;   /* number of local subblocks, first local subblock */
+    PetscInt  i,nlocal,first;   /* number of local subblocks, first local subblock */
     PC        subpc;          /* PC context for subblock */
     PetscBool isasm;
 
@@ -273,13 +262,20 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------
+        Assemble the matrix again to test repeated setup and solves.
+     ------------------------------------------------------------------- */
+
+  ierr = AssembleMatrix(A,m,n);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+
+  /* -------------------------------------------------------------------
                       Compare result to the exact solution
      ------------------------------------------------------------------- */
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_INFINITY, &e);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-print_error",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-print_error",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n", (double)e);CHKERRQ(ierr);
   }
@@ -296,4 +292,28 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "AssembleMatrix"
+PetscErrorCode AssembleMatrix(Mat A,PetscInt m,PetscInt n)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j,Ii,J,Istart,Iend;
+  PetscScalar    v;
+
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    v = -1.0; i = Ii/n; j = Ii - i*n;
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
 }

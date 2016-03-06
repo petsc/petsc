@@ -100,11 +100,11 @@ int main(int argc,char **argv)
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
-  ierr = PetscOptionsGetInt(NULL,"-M",&appctx.m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-ul",&ul,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,"-uh",&uh,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&appctx.m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-ul",&ul,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,NULL,"-uh",&uh,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
   appctx.h    = 1.0/(appctx.m-1.0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -190,6 +190,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   /* Set lower and upper bound on the solution vector for each time step */
   ierr = TSVISetVariableBounds(ts,xl,xu);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

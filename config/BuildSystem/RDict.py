@@ -65,7 +65,7 @@ import os
 import sys
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
 if useThreads is None:
-  useThreads = 0 # match the default set in script.py
+  useThreads = 1
 else:
   useThreads = int(useThreads)
 
@@ -641,7 +641,7 @@ Arg class, which wraps the usual value.'''
     '''Save the dictionary after 5 seconds, ignoring all subsequent calls until the save
        - Giving force = True will cause an immediate save'''
     if self.readonly: return
-    if force or not useThreads:
+    if force:
       self.saveTimer = None
       # This should be a critical section
       dbFile = file(self.saveFilename, 'w')

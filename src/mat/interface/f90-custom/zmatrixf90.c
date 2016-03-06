@@ -6,7 +6,7 @@
 #define matdensegetarrayf90_       MATDENSEGETARRAYF90
 #define matdenserestorearrayf90_        MATDENSERESTOREARRAYF90
 #define matseqaijgetarrayf90_       MATSEQAIJGETARRAYF90
-#define matseqaijrestorearrayf90_        MATSEQDENSERESTOREARRAYF90
+#define matseqaijrestorearrayf90_  MATSEQAIJRESTOREARRAYF90
 #define matgetghostsf90_           MATGETGHOSTSF90
 #define matgetrowijf90_            MATGETROWIJF90
 #define matrestorerowijf90_        MATRESTOREROWIJF90
@@ -43,19 +43,19 @@ PETSC_EXTERN void PETSC_STDCALL matdenserestorearrayf90_(Mat *mat,F90Array2d *pt
   *ierr = F90Array2dDestroy(ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = MatDenseRestoreArray(*mat,&fa);
 }
-PETSC_EXTERN void PETSC_STDCALL matseqaijgetarrayf90_(Mat *mat,F90Array2d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void PETSC_STDCALL matseqaijgetarrayf90_(Mat *mat,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   PetscInt    m,n;
   *ierr = MatSeqAIJGetArray(*mat,&fa);       if (*ierr) return;
   *ierr = MatGetLocalSize(*mat,&m,&n); if (*ierr) return;
-  *ierr = F90Array2dCreate(fa,PETSC_SCALAR,1,m,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate(fa,PETSC_SCALAR,1,m*n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void PETSC_STDCALL matseqaijrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void PETSC_STDCALL matseqaijrestorearrayf90_(Mat *mat,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  *ierr = F90Array2dAccess(ptr,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = F90Array2dDestroy(ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptr,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = MatSeqAIJRestoreArray(*mat,&fa);
 }
 PETSC_EXTERN void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscBool *sym,PetscBool *blockcompressed,PetscInt *n,F90Array1d *ia,

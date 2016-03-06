@@ -70,7 +70,7 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
   PetscBool        isdraw;
-  char             *title;
+  char             *title  = vdraw->title;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -98,10 +98,9 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
   }
 
   if (!vdraw->draw[windownumber]) {
-    if (!windownumber) title = vdraw->title;
-    else {
-      char tmp_str[128];
-      ierr  = PetscSNPrintf(tmp_str, 128, "%s:%d", vdraw->title,windownumber);CHKERRQ(ierr);
+    char tmp_str[128];
+    if (windownumber) {
+      ierr  = PetscSNPrintf(tmp_str,sizeof(tmp_str),"%s:%d",vdraw->title?vdraw->title:"",windownumber);CHKERRQ(ierr);
       title = tmp_str;
     }
     ierr = PetscDrawCreate(PetscObjectComm((PetscObject)viewer),vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,&vdraw->draw[windownumber]);CHKERRQ(ierr);
@@ -436,7 +435,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Draw"
-PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptions *PetscOptionsObject,PetscViewer v)
+PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscReal      bounds[16];

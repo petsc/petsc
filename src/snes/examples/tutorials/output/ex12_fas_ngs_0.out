@@ -73,7 +73,7 @@ SNES Object: 1 MPI processes
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object:      (fas_coarse_)       1 MPI processes
@@ -89,7 +89,7 @@ SNES Object: 1 MPI processes
     SNES Object:    (fas_levels_1_)     1 MPI processes
       type: ngs
       maximum iterations=1, maximum function evaluations=30000
-      tolerances: relative=0, absolute=0, solution=0
+      tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=0
       total number of function evaluations=1
       norm schedule FINALONLY
@@ -111,6 +111,3 @@ SNES Object: 1 MPI processes
     maximum iterations=1
 Number of SNES iterations = 8
 L_2 Error: 0.0252141
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-dm_refinement_limit value: 0.03125

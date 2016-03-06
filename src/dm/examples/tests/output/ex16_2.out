@@ -1,134 +1,134 @@
 Vec Object: 3 MPI processes
   type: mpi
 Process [0]
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
+0.
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+9.
 Process [1]
-10
-11
-12
-13
-14
-15
-16
+10.
+11.
+12.
+13.
+14.
+15.
+16.
 Process [2]
-17
-18
-19
-20
+17.
+18.
+19.
+20.
 [0] My part of redundant1 vector
 Vec Object: 1 MPI processes
   type: seq
-0
-1
-2
-3
-4
+0.
+1.
+2.
+3.
+4.
 [1] My part of redundant1 vector
 Vec Object: 1 MPI processes
   type: seq
-0
-1
-2
-3
-4
+0.
+1.
+2.
+3.
+4.
 [2] My part of redundant1 vector
 Vec Object: 1 MPI processes
   type: seq
-0
-1
-2
-3
-4
+0.
+1.
+2.
+3.
+4.
 [0] My part of da1 vector
 Vec Object: 1 MPI processes
   type: seq
-5
-6
-7
-10
+5.
+6.
+7.
+10.
 [1] My part of da1 vector
 Vec Object: 1 MPI processes
   type: seq
-7
-10
-11
-12
-17
+7.
+10.
+11.
+12.
+17.
 [2] My part of da1 vector
 Vec Object: 1 MPI processes
   type: seq
-12
-17
-18
+12.
+17.
+18.
 [0] My part of redundant2 vector
 Vec Object: 1 MPI processes
   type: seq
-13
-14
+13.
+14.
 [1] My part of redundant2 vector
 Vec Object: 1 MPI processes
   type: seq
-13
-14
+13.
+14.
 [2] My part of redundant2 vector
 Vec Object: 1 MPI processes
   type: seq
-13
-14
+13.
+14.
 [0] My part of da2 vector
 Vec Object: 1 MPI processes
   type: seq
-8
-9
-15
+8.
+9.
+15.
 [1] My part of da2 vector
 Vec Object: 1 MPI processes
   type: seq
-9
-15
-16
-19
+9.
+15.
+16.
+19.
 [2] My part of da2 vector
 Vec Object: 1 MPI processes
   type: seq
-16
-19
-20
+16.
+19.
+20.
 Vec Object: 3 MPI processes
   type: mpi
 Process [0]
-0
-10
-20
-30
-40
-10
-12
-21
-16
-27
+0.
+10.
+20.
+30.
+40.
+10.
+12.
+21.
+16.
+27.
 Process [1]
-30
-22
-36
-13
-47
-45
-48
+30.
+22.
+36.
+13.
+47.
+45.
+48.
 Process [2]
-51
-36
-57
-40
+51.
+36.
+57.
+40.
 Local to global mapping of redundant1 vector
 ISLocalToGlobalMapping Object: 3 MPI processes
   type: basic

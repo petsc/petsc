@@ -108,17 +108,17 @@ PetscErrorCode SetFromOptions(AppCtx * ctx)
   stoich(0, 2) = 1.;
 
   PetscInt as = N_SPECIES;
-  ierr = PetscOptionsGetReal(NULL,"-length_x",&ctx->length[0],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-length_y",&ctx->length[1],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-porosity",&ctx->porosity,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-saturation",&ctx->saturation,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-dispersivity",&ctx->dispersivity,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-gradq_inflow",&ctx->gradq_inflow,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-rate_constant",&ctx->rate_constant[0],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(NULL,"-sp_inflow",ctx->x_inflow.sp,&as,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(NULL,"-sp_0",ctx->x_0.sp,&as,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-length_x",&ctx->length[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-length_y",&ctx->length[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-porosity",&ctx->porosity,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-saturation",&ctx->saturation,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-dispersivity",&ctx->dispersivity,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-gradq_inflow",&ctx->gradq_inflow,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-rate_constant",&ctx->rate_constant[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,NULL,"-sp_inflow",ctx->x_inflow.sp,&as,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,NULL,"-sp_0",ctx->x_0.sp,&as,NULL);CHKERRQ(ierr);
   as   = N_SPECIES;
-  ierr = PetscOptionsGetRealArray(NULL,"-stoich",ctx->stoichiometry,&as,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,NULL,"-stoich",ctx->stoichiometry,&as,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -151,6 +151,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetDM(ts, da);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,10000,1000.0);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,1.0);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

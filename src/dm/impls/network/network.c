@@ -41,7 +41,7 @@ PetscErrorCode DMNetworkSetSizes(DM dm, PetscInt nV, PetscInt nE, PetscInt NV, P
   if ((network->nEdges >= 0 || network->NEdges >= 0) && (network->nEdges != nE || network->NEdges != NE)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset edge sizes to %D local %D global after previously setting them to %D local %D global",nE,NE,network->nEdges,network->NEdges);
   if (NE < 0 || NV < 0) {
     a[0] = nV; a[1] = nE;
-    ierr = MPI_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     NV = b[0]; NE = b[1];
   }
   network->nNodes = nV;
@@ -111,7 +111,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 
   PetscFunctionBegin;
   if (network->nNodes) {
-    ierr = PetscMalloc1(numCorners*network->nNodes,&vertexcoords);CHKERRQ(ierr);
+    ierr = PetscCalloc1(numCorners*network->nNodes,&vertexcoords);CHKERRQ(ierr);
   }
   ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject)dm),dim,network->nEdges,network->nNodes,numCorners,PETSC_FALSE,network->edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
   if (network->nNodes) {
@@ -127,7 +127,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
-  ierr = PetscMalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
+  ierr = PetscCalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
   for (i = network->pStart; i < network->pEnd; i++) {
     network->header[i].ndata = 0;
     ndata = network->header[i].ndata;
@@ -260,15 +260,15 @@ PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 @*/
 PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,void* compvalue)
 {
-  DM_Network     *network = (DM_Network*)dm->data;
-  DMNetworkComponent component=network->component[componentkey];
-  DMNetworkComponentHeader header=&network->header[p];
-  DMNetworkComponentValue  cvalue=&network->cvalue[p];
-  PetscErrorCode         ierr;
+  DM_Network               *network = (DM_Network*)dm->data;
+  DMNetworkComponent       *component = &network->component[componentkey];
+  DMNetworkComponentHeader header = &network->header[p];
+  DMNetworkComponentValue  cvalue = &network->cvalue[p];
+  PetscErrorCode           ierr;
   
   PetscFunctionBegin;
-  header->size[header->ndata] = component.size;
-  ierr = PetscSectionAddDof(network->DataSection,p,component.size);CHKERRQ(ierr);
+  header->size[header->ndata] = component->size;
+  ierr = PetscSectionAddDof(network->DataSection,p,component->size);CHKERRQ(ierr);
   header->key[header->ndata] = componentkey;
   if (header->ndata != 0) header->offset[header->ndata] = header->offset[header->ndata-1] + header->size[header->ndata-1]; 
 
@@ -341,10 +341,10 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 @*/
 PetscErrorCode DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
 {
-  PetscErrorCode ierr;
-  PetscInt       offsetp;
+  PetscErrorCode           ierr;
+  PetscInt                 offsetp;
   DMNetworkComponentHeader header;
-  DM_Network     *network = (DM_Network*)dm->data;
+  DM_Network               *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
@@ -407,6 +407,7 @@ PetscErrorCode DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
 
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(network->GlobalDofSection,p,offsetg);CHKERRQ(ierr);
+  if (*offsetg < 0) *offsetg = -(*offsetg + 1); /* Convert to actual global offset for ghost node */
   PetscFunctionReturn(0);
 }
 
@@ -607,7 +608,7 @@ PetscErrorCode DMNetworkDistribute(DM oldDM, PetscInt overlap,DM *distDM)
   ierr = PetscSFDistributeSection(pointsf,oldDMnetwork->DofSection,NULL,newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMnetwork->DataSection);CHKERRQ(ierr);
   /* Distribute data and associated section */
-  ierr = DMPlexDistributeData(newDMnetwork->plex,pointsf,oldDMnetwork->DataSection,MPI_INT,(void*)oldDMnetwork->componentdataarray,newDMnetwork->DataSection,(void**)&newDMnetwork->componentdataarray);CHKERRQ(ierr);
+  ierr = DMPlexDistributeData(newDMnetwork->plex,pointsf,oldDMnetwork->DataSection,MPIU_INT,(void*)oldDMnetwork->componentdataarray,newDMnetwork->DataSection,(void**)&newDMnetwork->componentdataarray);CHKERRQ(ierr);
   /* Destroy point SF */
   ierr = PetscSFDestroy(&pointsf);CHKERRQ(ierr);
   
@@ -663,7 +664,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 #undef __FUNCT__
 #define __FUNCT__ "DMNetworkGetConnectedNodes"
 /*@C
-  DMNetworkGetConnectedNodes - Return the connected edges for this edge point
+  DMNetworkGetConnectedNodes - Return the connected vertices for this edge point
 
   Not Collective
 
@@ -742,14 +743,288 @@ PetscErrorCode DMSetUp_Network(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMNetworkHasJacobian"
+/*@
+    DMNetworkHasJacobian - Sets global flag for using user's sub Jacobian matrices
+                            -- replaced by DMNetworkSetOption(network,userjacobian,PETSC_TURE)?
+
+    Collective
+
+    Input Parameters:
++   dm - The DMNetwork object
+.   eflg - turn the option on (PETSC_TRUE) or off (PETSC_FALSE) if user provides Jacobian for edges
+-   vflg - turn the option on (PETSC_TRUE) or off (PETSC_FALSE) if user provides Jacobian for vertices
+
+    Level: intermediate
+
+@*/
+PetscErrorCode DMNetworkHasJacobian(DM dm,PetscBool eflg,PetscBool vflg)
+{
+  DM_Network     *network=(DM_Network*)dm->data;
+
+  PetscFunctionBegin;
+  network->userEdgeJacobian   = eflg;
+  network->userVertexJacobian = vflg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMNetworkEdgeSetMatrix"
+/*@
+    DMNetworkEdgeSetMatrix - Sets user-provided Jacobian matrices for this edge to the network
+
+    Not Collective
+
+    Input Parameters:
++   dm - The DMNetwork object
+.   p  - the edge point
+-   J - array (size = 3) of Jacobian submatrices for this edge point:
+        J[0]: this edge
+        J[1] and J[2]: connected vertices, obtained by calling DMNetworkGetConnectedNodes()
+
+    Level: intermediate
+
+.seealso: DMNetworkVertexSetMatrix
+@*/
+PetscErrorCode DMNetworkEdgeSetMatrix(DM dm,PetscInt p,Mat J[])
+{
+  PetscErrorCode ierr;
+  DM_Network     *network=(DM_Network*)dm->data;
+
+  PetscFunctionBegin;
+  if (!network->userEdgeJacobian) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"Must call DMNetworkHasJacobian() collectively before calling DMNetworkEdgeSetMatrix");
+  if (!network->Je) {
+    ierr = PetscCalloc1(3*network->nEdges,&network->Je);CHKERRQ(ierr);
+  }
+  network->Je[3*p]   = J[0];
+  network->Je[3*p+1] = J[1];
+  network->Je[3*p+2] = J[2];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMNetworkVertexSetMatrix"
+/*@
+    DMNetworkVertexSetMatrix - Sets user-provided Jacobian matrix for this vertex to the network
+
+    Not Collective
+
+    Input Parameters:
++   dm - The DMNetwork object
+.   p  - the vertex point
+-   J - array of Jacobian (size = 2*(num of supporting edges) + 1) submatrices for this vertex point: 
+        J[0]:       this vertex
+        J[1+2*i]:   i-th supporting edge
+        J[1+2*i+1]: i-th connected vertex
+
+    Level: intermediate
+
+.seealso: DMNetworkEdgeSetMatrix
+@*/
+PetscErrorCode DMNetworkVertexSetMatrix(DM dm,PetscInt p,Mat J[])
+{
+  PetscErrorCode ierr;
+  DM_Network     *network=(DM_Network*)dm->data;
+  PetscInt       i,*vptr,nedges,vStart,vEnd;
+  const PetscInt *edges;
+
+  PetscFunctionBegin;
+  if (!network->userVertexJacobian) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"Must call DMNetworkHasJacobian() collectively before calling DMNetworkVertexSetMatrix");
+
+  ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
+
+  if (!network->Jv) {
+    PetscInt nNodes = network->nNodes,nedges_total;
+    /* count nvertex_total */
+    nedges_total = 0;
+    ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nNodes+1,&vptr);CHKERRQ(ierr);
+   
+    vptr[0] = 0;
+    for (i=0; i<nNodes; i++) {
+      ierr = DMNetworkGetSupportingEdges(dm,i+vStart,&nedges,&edges);CHKERRQ(ierr);
+      nedges_total += nedges;
+      vptr[i+1] = vptr[i] + 2*nedges + 1; 
+    }
+
+    ierr = PetscCalloc1(2*nedges_total+nNodes,&network->Jv);CHKERRQ(ierr);
+    network->Jvptr = vptr;
+  }
+
+  vptr = network->Jvptr;
+  network->Jv[vptr[p-vStart]] = J[0]; /* Set Jacobian for this vertex */
+
+  /* Set Jacobian for each supporting edge and connected vertex */
+  ierr = DMNetworkGetSupportingEdges(dm,p,&nedges,&edges);CHKERRQ(ierr);
+  for (i=1; i<=2*nedges; i++) network->Jv[vptr[p-vStart]+i] = J[i];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetDenseblock_private"
+PetscErrorCode MatSetDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+{
+  PetscErrorCode ierr;
+  PetscInt       j,*cols;
+  PetscScalar    *zeros;
+
+  PetscFunctionBegin;
+  ierr = PetscCalloc2(ncols,&cols,nrows*ncols,&zeros);CHKERRQ(ierr);
+  for (j=0; j<ncols; j++) cols[j] = j+ cstart;
+  ierr = MatSetValues(*J,nrows,rows,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = PetscFree2(cols,zeros);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetUserblock_private"
+PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+{
+  PetscErrorCode ierr;
+  PetscInt       j,M,N,row,col,ncols_u;
+  const PetscInt *cols;
+  PetscScalar    zero=0.0;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(Ju,&M,&N);CHKERRQ(ierr);
+  if (nrows != M || ncols != N) SETERRQ4(PetscObjectComm((PetscObject)Ju),PETSC_ERR_USER,"%D by %D must equal %D by %D",nrows,ncols,M,N);
+
+  for (row=0; row<nrows; row++) {
+    ierr = MatGetRow(Ju,row,&ncols_u,&cols,NULL);CHKERRQ(ierr);
+    for (j=0; j<ncols_u; j++) {
+      col = cols[j] + cstart;
+      ierr = MatSetValues(*J,1,&rows[row],1,&col,&zero,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRow(Ju,row,&ncols_u,&cols,NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetblock_private"
+PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Ju) {
+    ierr = MatSetUserblock_private(Ju,nrows,rows,ncols,cstart,J);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetDenseblock_private(nrows,rows,ncols,cstart,J);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Network"
 PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*) dm->data;
+  PetscInt       eStart,eEnd,vStart,vEnd,rstart,nrows,*rows,localSize;
+  PetscInt       cstart,ncols,j,e,v,*dnz,*onz,*dnzu,*onzu;
+  PetscBool      ghost; 
+  Mat            Juser;
+  PetscSection   sectionGlobal;
+  PetscInt       nedges,*vptr,vc;
+  const PetscInt *edges,*cone;
 
   PetscFunctionBegin;
-  ierr = DMCreateMatrix(network->plex,J);CHKERRQ(ierr);
+  if (!network->userEdgeJacobian && !network->userVertexJacobian) { 
+    /* user does not provide Jacobian blocks */
+    ierr = DMCreateMatrix(network->plex,J);CHKERRQ(ierr);
+    ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm),J);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(network->plex,&sectionGlobal);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal,&localSize);CHKERRQ(ierr); 
+  ierr = MatSetSizes(*J,localSize,localSize,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);  
+
+  ierr = MatSetType(*J,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
+
+  /* Preallocation - submatrix for an element (edge/vertex) is allocated as a dense block, 
+   see DMCreateMatrix_Plex() */
+  ierr = PetscCalloc4(localSize,&dnz,localSize,&onz,localSize,&dnzu,localSize,&onzu);CHKERRQ(ierr);
+  ierr = DMPlexPreallocateOperator(network->plex,1,dnz,onz,dnzu,onzu,*J,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscFree4(dnz,onz,dnzu,onzu);CHKERRQ(ierr);
+
+  /* Set matrix entries for edges */
+  /*------------------------------*/
+  ierr = DMNetworkGetEdgeRange(dm,&eStart,&eEnd);CHKERRQ(ierr);
+  for (e=eStart; e<eEnd; e++) {
+    /* Get row indices */
+    ierr = DMNetworkGetVariableGlobalOffset(dm,e,&rstart);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(dm,e,&nrows);CHKERRQ(ierr); 
+    ierr = PetscMalloc1(nrows,&rows);CHKERRQ(ierr);
+    for (j=0; j<nrows; j++) rows[j] = j + rstart;
+
+    /* Set matrix entries for conntected vertices */
+    ierr = DMNetworkGetConnectedNodes(dm,e,&cone);CHKERRQ(ierr); 
+    for (v=0; v<2; v++) {
+      ierr = DMNetworkGetVariableGlobalOffset(dm,cone[v],&cstart);CHKERRQ(ierr);
+      ierr = DMNetworkGetNumVariables(dm,cone[v],&ncols);CHKERRQ(ierr);
+
+      Juser = network->Je[3*e+1+v]; /* Jacobian(e,v) */
+      ierr = MatSetblock_private(Juser,nrows,rows,ncols,cstart,J);CHKERRQ(ierr);
+    }
+
+    /* Set matrix entries for edge self */
+    cstart = rstart;
+    Juser = network->Je[3*e]; /* Jacobian(e,e) */
+    ierr = MatSetblock_private(Juser,nrows,rows,nrows,cstart,J);CHKERRQ(ierr);
+
+    ierr = PetscFree(rows);CHKERRQ(ierr);
+  }
+
+  /* Set matrix entries for vertices */
+  /*---------------------------------*/
+  ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
+  vptr = network->Jvptr;
+  for (v=vStart; v<vEnd; v++) {
+    /* Get row indices */
+    ierr = DMNetworkGetVariableGlobalOffset(dm,v,&rstart);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(dm,v,&nrows);CHKERRQ(ierr);
+
+    ierr = PetscMalloc1(nrows,&rows);CHKERRQ(ierr);
+    for (j=0; j<nrows; j++) rows[j] = j + rstart;
+
+    /* Get supporting edges and connected vertices */
+    ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
+   
+    for (e=0; e<nedges; e++) {
+      /* Supporting edges */
+      ierr = DMNetworkGetVariableGlobalOffset(dm,edges[e],&cstart);CHKERRQ(ierr);
+      ierr = DMNetworkGetNumVariables(dm,edges[e],&ncols);CHKERRQ(ierr); 
+
+      Juser = network->Jv[vptr[v-vStart]+2*e+1]; /* Jacobian(v,e) */
+      ierr = MatSetblock_private(Juser,nrows,rows,ncols,cstart,J);CHKERRQ(ierr);
+
+      /* Connected vertices */
+      ierr = DMNetworkGetConnectedNodes(dm,edges[e],&cone);CHKERRQ(ierr);
+      vc = (v == cone[0]) ? cone[1]:cone[0];
+   
+      ierr = DMNetworkGetVariableGlobalOffset(dm,vc,&cstart);CHKERRQ(ierr);
+      ierr = DMNetworkGetNumVariables(dm,vc,&ncols);CHKERRQ(ierr);
+
+      Juser = network->Jv[vptr[v-vStart]+2*e+2]; /* Jacobian(v,vc) */
+      ierr = MatSetblock_private(Juser,nrows,rows,nrows,cstart,J);CHKERRQ(ierr);
+    }
+
+    /* Set matrix entries for vertex self */
+    ierr = DMNetworkIsGhostVertex(dm,v,&ghost);CHKERRQ(ierr);
+    if (!ghost) {
+      ierr = DMNetworkGetVariableGlobalOffset(dm,v,&cstart);CHKERRQ(ierr);
+      Juser = network->Jv[vptr[v-vStart]]; /* Jacobian(v,v) */
+      ierr = MatSetblock_private(Juser,nrows,rows,nrows,cstart,J);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(rows);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -760,14 +1035,35 @@ PetscErrorCode DMDestroy_Network(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*) dm->data;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (--network->refct > 0) PetscFunctionReturn(0);
+  if (network->Je) {
+    for (i=0; i<3*network->nEdges; i++) {
+      ierr = MatDestroy(&network->Je[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(network->Je);CHKERRQ(ierr);
+  }
+  if (network->Jv) {
+    PetscInt       v,vStart,vEnd,nedges,*vptr=network->Jvptr;
+    const PetscInt *edges;
+    ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
+    for (v=vStart; v<vEnd; v++) {
+      ierr = MatDestroy(&network->Jv[vptr[v-vStart]]);CHKERRQ(ierr);
+      ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
+      for (i=0; i<2*nedges; i++) {
+        ierr = MatDestroy(&network->Jv[vptr[v-vStart]+i+1]);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree(network->Jvptr);CHKERRQ(ierr);
+    ierr = PetscFree(network->Jv);CHKERRQ(ierr);
+  }
   ierr = DMDestroy(&network->plex);CHKERRQ(ierr);
   network->edges = NULL;
   ierr = PetscSectionDestroy(&network->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&network->DofSection);CHKERRQ(ierr);
-  /*  ierr = PetscSectionDestroy(&network->GlobalDofSection);CHKERRQ(ierr); */
+ 
   ierr = PetscFree(network->componentdataarray);CHKERRQ(ierr);
   ierr = PetscFree(network->cvalue);CHKERRQ(ierr);
   ierr = PetscFree(network->header);CHKERRQ(ierr);

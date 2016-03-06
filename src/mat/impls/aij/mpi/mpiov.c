@@ -106,7 +106,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
    * generally speaking, we do not need to exchange
    * data when overlap is 1
    * */
-  ierr = MPI_Allreduce(&nrrows,&reducednrrows,1,MPIU_INT,MPIU_MAX,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&nrrows,&reducednrrows,1,MPIU_INT,MPIU_MAX,comm);CHKERRQ(ierr);
   /* we do not have any messages
    * It usually corresponds to overlap 1
    * */
@@ -1141,10 +1141,10 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
     if (rowflag && colflag && nrow == C->rmap->N && ncol == C->cmap->N) {
       wantallmatrix = PETSC_TRUE;
 
-      ierr = PetscOptionsGetBool(((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)C)->options,((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,NULL);CHKERRQ(ierr);
     }
   }
-  ierr = MPI_Allreduce(&wantallmatrix,&twantallmatrix,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&wantallmatrix,&twantallmatrix,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
   if (twantallmatrix) {
     ierr = MatGetSubMatrix_MPIAIJ_All(C,MAT_GET_VALUES,scall,submat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1179,7 +1179,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   nstages_local = ismax/nmax + ((ismax % nmax) ? 1 : 0);
 
   /* Make sure every processor loops through the nstages */
-  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
 
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;
@@ -2157,7 +2157,7 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
 {
   PetscErrorCode ierr;
   PetscMPIInt    isize,flag;
-  PetscInt       i,ii,cismax,ispar;
+  PetscInt       i,ii,cismax,ispar,ciscol_localsize;
   Mat            *A,*B;
   IS             *isrow_p,*iscol_p,*cisrow,*ciscol,*ciscol_p;
 
@@ -2175,7 +2175,7 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
      If cismax is zero on all C's ranks, then and only then can we use purely sequential matrix extraction.
      ispar counts the number of parallel ISs across C's comm.
   */
-  ierr = MPI_Allreduce(&cismax,&ispar,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&cismax,&ispar,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
   if (!ispar) { /* Sequential ISs only across C's comm, so can call the sequential matrix extraction subroutine. */
     ierr = (*getsubmats_seq)(C,ismax,isrow,iscol,scall,submat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -2310,6 +2310,19 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
   }
   /* Now obtain the sequential A and B submatrices separately. */
   ierr = (*getsubmats_seq)(C,ismax,isrow,iscol,scall,&A);CHKERRQ(ierr);
+  /* I did not figure out a good way to fix it right now.
+   * Local column size of B[i] is different from the size of ciscol[i].
+   * B[i]'s size is finally determined by MatAssembly, while
+   * ciscol[i] is computed as the complement of iscol[i].
+   * It is better to keep only nonzero indices when computing
+   * the complement ciscol[i].
+   * */
+  if(scall==MAT_REUSE_MATRIX){
+	for(i=0; i<cismax; i++){
+	  ierr = ISGetLocalSize(ciscol[i],&ciscol_localsize);CHKERRQ(ierr);
+	  B[i]->cmap->n = ciscol_localsize;
+	}
+  }
   ierr = (*getsubmats_seq)(C,cismax,cisrow,ciscol,scall,&B);CHKERRQ(ierr);
   /*
     If scall == MAT_REUSE_MATRIX AND the permutations are NULL, we are done, since the sequential

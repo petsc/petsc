@@ -388,6 +388,14 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
   ierr = DMGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
+  if (!coordSectionB) {
+    PetscInt dim;
+
+    ierr = PetscSectionCreate(PetscObjectComm((PetscObject) coordSectionA), &coordSectionB);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(dmA, &dim);CHKERRQ(ierr);
+    ierr = DMSetCoordinateSection(dmB, dim, coordSectionB);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject) coordSectionB);CHKERRQ(ierr);
+  }
   ierr = PetscSectionSetNumFields(coordSectionB, 1);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(coordSectionA, 0, &spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim);CHKERRQ(ierr);
@@ -414,49 +422,6 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = VecRestoreArray(coordinatesB, &coordsB);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmB, coordinatesB);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinatesB);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCopyLabels"
-/*@
-  DMPlexCopyLabels - Copy labels from one mesh to another with a superset of the points
-
-  Collective on DM
-
-  Input Parameter:
-. dmA - The DMPlex object with initial labels
-
-  Output Parameter:
-. dmB - The DMPlex object with copied labels
-
-  Level: intermediate
-
-  Note: This is typically used when interpolating or otherwise adding to a mesh
-
-.keywords: mesh
-.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
-@*/
-PetscErrorCode DMPlexCopyLabels(DM dmA, DM dmB)
-{
-  PetscInt       numLabels, l;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (dmA == dmB) PetscFunctionReturn(0);
-  ierr = DMPlexGetNumLabels(dmA, &numLabels);CHKERRQ(ierr);
-  for (l = 0; l < numLabels; ++l) {
-    DMLabel     label, labelNew;
-    const char *name;
-    PetscBool   flg;
-
-    ierr = DMPlexGetLabelName(dmA, l, &name);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "depth", &flg);CHKERRQ(ierr);
-    if (flg) continue;
-    ierr = DMPlexGetLabel(dmA, name, &label);CHKERRQ(ierr);
-    ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
-    ierr = DMPlexAddLabel(dmB, labelNew);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

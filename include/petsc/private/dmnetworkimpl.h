@@ -13,17 +13,17 @@ struct _p_DMNetworkComponentHeader {
   PetscInt size[MAX_DATA_AT_POINT];
   PetscInt key[MAX_DATA_AT_POINT];
   PetscInt offset[MAX_DATA_AT_POINT];
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_DMNetworkComponentValue *DMNetworkComponentValue;
 struct _p_DMNetworkComponentValue {
   void* data[MAX_DATA_AT_POINT];
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct {
-  char name[20];
+  char     name[20];
   PetscInt size;
-}DMNetworkComponent;
+}DMNetworkComponent PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct {
   PetscInt                          refct;  /* reference count */
@@ -45,6 +45,15 @@ typedef struct {
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
+
+  PetscBool                         userEdgeJacobian,userVertexJacobian;  /* Global flag for using user's sub Jacobians */
+  Mat                               *Je;  /* Pointer array to hold local sub Jacobians for edges, 3 elements for an edge */
+  Mat                               *Jv;  /* Pointer array to hold local sub Jacobians for vertices, 1+2*nsupportedges for a vertex */
+  PetscInt                          *Jvptr;   /* index of Jv for v-th vertex
+                                              Jvpt[v-vStart]:    Jacobian(v,v)
+                                              Jvpt[v-vStart]+2i+1: Jacobian(v,e[i]),   e[i]: i-th supporting edge
+                                              Jvpt[v-vStart]+2i+2: Jacobian(v,vc[i]), vc[i]: i-th connected vertex
+                                              */
 } DM_Network;
 
 #endif /* _NETWORKIMPL_H */

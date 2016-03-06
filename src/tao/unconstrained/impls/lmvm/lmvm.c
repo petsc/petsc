@@ -245,7 +245,7 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_LMVM"
-static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
 
@@ -334,8 +334,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-  if (!tao->fatol_changed) tao->fatol = 1.0e-4;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-4;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);

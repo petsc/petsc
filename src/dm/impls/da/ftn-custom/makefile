@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zdaf.c zda1f.c zda2f.c zda3f.c zdacornf.c zdagetscatterf.c zdaviewf.c
+SOURCEC  = zdaf.c zda1f.c zda2f.c zda3f.c zdacornf.c zdagetscatterf.c zdaviewf.c zdaindexf.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm

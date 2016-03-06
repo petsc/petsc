@@ -14,7 +14,7 @@
 
 #define KSPType character*(80)
 #define KSPCGType PetscEnum
-#define KSPFCGTruncationType PetscEnum
+#define KSPFCDTruncationType PetscEnum
 #define KSPConvergedReason PetscEnum
 #define KSPNormType PetscEnum
 #define KSPGMRESCGSRefinementType PetscEnum
@@ -53,4 +53,6 @@
 #define KSPLCD 'lcd'
 #define KSPPYTHON 'python'
 #define KSPGCR 'gcr'
+#define KSPTSIRM 'tsirm'
+#define KSPCGLS 'cgls'
 #endif

@@ -3,9 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.giturls           = ['https://bitbucket.org/petsc/petsc4py']
-    self.gitcommit         = '0f2c091' # Aug 7 2015
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-'+self.gitcommit+'.tar.gz']
+    self.gitcommit         = '94a52a891996fe5a1db39c0a1eaac11601561d2b'
+    self.download          = ['git://https://bitbucket.org/petsc/petsc4py'] #'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-'+self.gitcommit+'.tar.gz'
     self.functions         = []
     self.includes          = []
     self.skippackagewithoptions = 1
@@ -37,7 +36,7 @@ class Configure(config.package.Package):
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix']:
-       newdir = 'PETSC_DIR='+self.argDB['prefix']+' '+'PETSC_ARCH= MPICC=${PCC} '
+       newdir = 'PETSC_DIR='+os.path.abspath(self.argDB['prefix'])+' '+'PETSC_ARCH= MPICC=${PCC} '
     else:
        newdir = 'MPICC=${PCC} '
 
@@ -78,7 +77,7 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    if not self.sharedLibraries.useShared:
+    if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
     self.checkDownload()
     if self.setCompilers.isDarwin(self.log):

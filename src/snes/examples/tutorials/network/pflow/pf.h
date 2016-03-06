@@ -31,7 +31,7 @@ struct _p_VERTEXDATA{
   PetscInt      gidx[NGEN_AT_BUS_MAX]; /* list of inndices for accessing the generator data in GEN structure */
   PetscInt      nload;
   PetscInt      lidx[NLOAD_AT_BUS_MAX];
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_VERTEXDATA *VERTEXDATA;
 
@@ -53,7 +53,7 @@ struct _p_LOAD{
   PetscInt 	owner; /* Owner number */
   PetscInt	internal_i; /* Internal Bus Number */
   PetscScalar   scale_load;
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_LOAD *LOAD;
 
@@ -84,7 +84,7 @@ struct _p_GEN{
   PetscScalar 	f1; /* Fraction of ownership */
   PetscInt	internal_i; /* Internal Bus Number */
   PetscScalar   scale_gen;
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_GEN *GEN;
 
@@ -114,7 +114,7 @@ struct _p_EDGEDATA{
   PetscInt	internal_i; /* Internal From Bus Number */
   PetscInt	internal_j; /* Internal To Bus Number */
   PetscScalar   yff[2],yft[2],ytf[2],ytt[2]; /* [G,B] */
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_EDGEDATA *EDGEDATA;
 
@@ -123,11 +123,11 @@ typedef struct{
   PetscScalar sbase; /* System base MVA */
   PetscInt    nbus,ngen,nbranch,nload; /* # of buses,gens,branches, and loads (includes elements which are
                                           out of service */
-  VERTEXDATA bus;
-  LOAD load;
-  GEN gen;
-  EDGEDATA branch;
-}PFDATA;
+  VERTEXDATA  bus;
+  LOAD        load;
+  GEN         gen;
+  EDGEDATA    branch;
+}PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
 #endif

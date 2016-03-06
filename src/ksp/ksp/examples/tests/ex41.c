@@ -60,10 +60,10 @@ int main(int argc,char **argv)
   user.ratio     = 2;
   user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
 
-  ierr = PetscOptionsGetInt(NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-Mz",&user.coarse.mz,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-Mz",&user.coarse.mz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1;

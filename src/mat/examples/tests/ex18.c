@@ -22,8 +22,8 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = nlocal*size;
 
-  ierr = PetscOptionsGetInt(NULL, "-bs", &bs, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, "-nonlocal_bc", &nonlocalBC, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-bs", &bs, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-nonlocal_bc", &nonlocalBC, NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs);CHKERRQ(ierr);

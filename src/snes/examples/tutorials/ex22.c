@@ -83,13 +83,13 @@ int main(int argc,char **argv)
   PetscBool      use_monitor = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,NULL,help);
-  ierr = PetscOptionsSetFromOptions();CHKERRQ(ierr);
+  ierr = PetscOptionsSetFromOptions(NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
-  ierr = PetscOptionsInsertString(common_options);CHKERRQ(ierr);
-  ierr = PetscOptionsInsertString(matrix_free_options);CHKERRQ(ierr);
-  ierr = PetscOptionsInsert(&argc,&argv,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = PetscOptionsInsertString(NULL,common_options);CHKERRQ(ierr);
+  ierr = PetscOptionsInsertString(NULL,matrix_free_options);CHKERRQ(ierr);
+  ierr = PetscOptionsInsert(NULL,&argc,&argv,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);

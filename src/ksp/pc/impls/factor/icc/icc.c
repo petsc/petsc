@@ -2,17 +2,19 @@
 #include <../src/ksp/pc/impls/factor/icc/icc.h>   /*I "petscpc.h" I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSetup_ICC"
-static PetscErrorCode PCSetup_ICC(PC pc)
+#define __FUNCT__ "PCSetUp_ICC"
+static PetscErrorCode PCSetUp_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   IS             perm,cperm;
   PetscErrorCode ierr;
   MatInfo        info;
+  Mat            F;
 
   PetscFunctionBegin;
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
 
+  ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
   if (!pc->setupcalled) {
     if (!((PC_Factor*)icc)->fact) {
       ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
@@ -28,7 +30,17 @@ static PetscErrorCode PCSetup_ICC(PC pc)
 
   ierr = ISDestroy(&cperm);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
+
+  F = ((PC_Factor*)icc)->fact;
+  if (F->errortype) { /* FactorSymbolic() fails */
+    pc->failedreason = (PCFailedReason)F->errortype;
+    PetscFunctionReturn(0);
+  }
+ 
   ierr = MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
+  if (F->errortype) { /* FactorNumeric() fails */
+    pc->failedreason = (PCFailedReason)F->errortype;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -97,7 +109,7 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ICC"
-static PetscErrorCode PCSetFromOptions_ICC(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscBool      flg;
@@ -168,10 +180,9 @@ PetscErrorCode  PCFactorGetUseInPlace_ICC(PC pc,PetscBool *flg)
           to turn off the shift.
 
    References:
-   Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS, TONY F. CHAN AND HENK A. VAN DER VORST
-      http://igitur-archive.library.uu.nl/math/2001-0621-115821/proc.pdf chapter in Parallel Numerical
-      Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
-      Science and Engineering, Kluwer, pp. 167--202.
+.  1. - TONY F. CHAN AND HENK A. VAN DER VORST, Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS, 
+      Chapter in Parallel Numerical Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
+      Science and Engineering, Kluwer.
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
@@ -210,7 +221,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   pc->data                     = (void*)icc;
   pc->ops->apply               = PCApply_ICC;
   pc->ops->applytranspose      = PCApply_ICC;
-  pc->ops->setup               = PCSetup_ICC;
+  pc->ops->setup               = PCSetUp_ICC;
   pc->ops->reset               = PCReset_ICC;
   pc->ops->destroy             = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;

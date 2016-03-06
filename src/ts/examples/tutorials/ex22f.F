@@ -71,23 +71,23 @@
 ! Initialize user application context
 ! Use zero-based indexing for command line parameters to match ex22.c
       user(user_a+1) = 1.0
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-a0',              &
-     &     user(user_a+1),flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                         '-a0',user(user_a+1),flg,ierr)
       user(user_a+2) = 0.0
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-a1',              &
-     &     user(user_a+2),flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                        '-a1',user(user_a+2),flg,ierr)
       user(user_k+1) = 1000000.0
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-k0',              &
-     &     user(user_k+1),flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                         '-k0',user(user_k+1),flg,ierr)
       user(user_k+2) = 2*user(user_k+1)
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-k1',              &
-     &     user(user_k+2),flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                         '-k1', user(user_k+2),flg,ierr)
       user(user_s+1) = 0.0
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-s0',              &
-     &     user(user_s+1),flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                         '-s0',user(user_s+1),flg,ierr)
       user(user_s+2) = 1.0
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-s1',              &
-     &     user(user_s+2),flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+     &                         '-s1',user(user_s+2),flg,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !    Create timestepping solver context
@@ -109,7 +109,8 @@
       ftime = 1.0
       maxsteps = 10000
       call TSSetDuration(ts,maxsteps,ftime,ierr)
-
+      call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr)
+      
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set initial conditions
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

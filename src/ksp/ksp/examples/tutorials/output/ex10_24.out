@@ -71,7 +71,7 @@ KSP Object: 1 MPI processes
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
   maximum iterations=10000
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using nonzero initial guess
   using PRECONDITIONED norm type for convergence test
@@ -84,12 +84,12 @@ PC Object: 1 MPI processes
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object:  (hmpi_)   2 MPI processes  
     type: sor
-      SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+      SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
     linear system matrix = precond matrix:
     Mat Object:     2 MPI processes    
       type: mpiaij

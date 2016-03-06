@@ -73,8 +73,8 @@ int main(int argc,char **argv)
   user.boundary     = 0;  /* 0: Dirichlet BC; 1: Neumann BC */
   user.viewJacobian = PETSC_FALSE;
 
-  ierr = PetscOptionsGetInt(NULL,"-boundary",&user.boundary,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-boundary",&user.boundary,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -93,6 +93,7 @@ int main(int argc,char **argv)
 
   ftime = 1.0;
   ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

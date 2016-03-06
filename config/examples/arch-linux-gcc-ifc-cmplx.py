@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
-# Note: Intel 7.1 Fortran cannot work with g++ 3.3
+# find the ifort libs location
+import os
+import distutils.spawn
+ifort_lib_dir=os.path.join(os.path.dirname(os.path.dirname(distutils.spawn.find_executable('ifort'))),'lib','intel64')
+mpich_install_dir='/homes/petsc/soft/linux-Ubuntu_12.04-x86_64/mpich-3.1.3-gcc-ifc'
+mpich_lib_dir=os.path.join(mpich_install_dir,'lib')
+
 configure_options = [
   # cannot use download-mpich with fortranlib-autodetect=0 so disabling
   #'--with-cc=gcc',
@@ -8,12 +14,12 @@ configure_options = [
   #'--with-cxx=g++',
   #'--download-mpich=1',
   #'--download-mpich-pm=gforker',
-  '--with-mpi-dir=/homes/petsc/soft/linux-Ubuntu_12.04-x86_64/mpich-3.1.3-gcc-ifc',
+  '--with-mpi-dir='+mpich_install_dir,
 
   '--with-clib-autodetect=0',
   '--with-fortranlib-autodetect=0',
   '--with-cxxlib-autodetect=0',
-  'LIBS=-L/soft/com/packages/intel/13/079/composer_xe_2013.0.079/compiler/lib/intel64 -lifcore -ldl -limf -lirc -L/homes/petsc/soft/linux-Ubuntu_12.04-x86_64/mpich-3.1.3-gcc-ifc/lib -lmpifort -lmpi',
+  'LIBS=-L'+ifort_lib_dir+' -lifcore -ldl -limf -lirc -L'+mpich_lib_dir+' -lmpifort -lmpi',
   '--with-scalar-type=complex',
   '--download-hdf5',
   '--download-fblaslapack=1'

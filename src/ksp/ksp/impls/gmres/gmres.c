@@ -219,9 +219,11 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 PetscErrorCode KSPSolve_GMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       its,itcount;
+  PetscInt       its,itcount,i;
   KSP_GMRES      *gmres     = (KSP_GMRES*)ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
+  PetscInt       N = gmres->max_k + 1;
+  PetscBLASInt   bN;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !gmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -231,10 +233,28 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   itcount     = 0;
+  gmres->fullcycle = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   while (!ksp->reason) {
     ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
     ierr     = KSPGMRESCycle(&its,ksp);CHKERRQ(ierr);
+    /* Store the Hessenberg matrix and the basis vectors of the Krylov subspace
+    if the cycle is complete for the computation of the Ritz pairs */
+    if (its == gmres->max_k) {
+      gmres->fullcycle++;
+      if (ksp->calc_ritz) {
+        if (!gmres->hes_ritz) {
+          ierr = PetscMalloc1(N*N,&gmres->hes_ritz);CHKERRQ(ierr);
+          ierr = PetscLogObjectMemory((PetscObject)ksp,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = VecDuplicateVecs(VEC_VV(0),N,&gmres->vecb);CHKERRQ(ierr);
+        }
+        ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
+        ierr = PetscMemcpy(gmres->hes_ritz,gmres->hes_origin,bN*bN*sizeof(PetscReal));CHKERRQ(ierr);
+        for (i=0; i<gmres->max_k+1; i++) {
+          ierr = VecCopy(VEC_VV(i),gmres->vecb[i]);CHKERRQ(ierr);
+        }
+      }
+    }
     itcount += its;
     if (itcount >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
@@ -256,7 +276,7 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
-  ierr = PetscFree5(gmres->hh_origin,gmres->hes_origin,gmres->rs_origin,gmres->cc_origin,gmres->ss_origin);CHKERRQ(ierr);
+  ierr = PetscFree6(gmres->hh_origin,gmres->hes_origin,gmres->rs_origin,gmres->cc_origin,gmres->ss_origin,gmres->hes_ritz);CHKERRQ(ierr);
 
   /* free work vectors */
   ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
@@ -264,6 +284,9 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
     ierr = VecDestroyVecs(gmres->mwork_alloc[i],&gmres->user_work[i]);CHKERRQ(ierr);
   }
   gmres->nwork_alloc = 0;
+  if (gmres->vecb)  {
+    ierr = VecDestroyVecs(gmres->max_k+1,&gmres->vecb);CHKERRQ(ierr);
+  }
 
   ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);
   ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);
@@ -562,7 +585,7 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GMRES"
-PetscErrorCode KSPSetFromOptions_GMRES(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       restart;
@@ -880,8 +903,8 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
    Notes: Left and right preconditioning are supported, but not symmetric preconditioning.
 
    References:
-     GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS. YOUCEF SAAD AND MARTIN H. SCHULTZ,
-          SIAM J. ScI. STAT. COMPUT. Vo|. 7, No. 3, July 1986, pp. 856--869.
+.     1. - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.
+          SIAM J. ScI. STAT. COMPUT. Vo|. 7, No. 3, July 1986.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
@@ -901,8 +924,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ierr      = PetscNewLog(ksp,&gmres);CHKERRQ(ierr);
   ksp->data = (void*)gmres;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,4);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,2);CHKERRQ(ierr);
 
   ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
   ksp->ops->setup                        = KSPSetUp_GMRES;
@@ -913,7 +937,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ksp->ops->setfromoptions               = KSPSetFromOptions_GMRES;
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
-
+#if !defined(PETSC_USE_COMPLEX)
+  ksp->ops->computeritz                  = KSPComputeRitz_GMRES;
+#endif
+  
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);

@@ -9,7 +9,7 @@ static char help[] = "Simple wrapper object to solve DAE of the form:\n\
 typedef struct _p_TSDAESimple *TSDAESimple;
 struct _p_TSDAESimple {
   MPI_Comm       comm;
-  PetscErrorCode (*setfromoptions)(PetscOptions*,TSDAESimple);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,TSDAESimple);
   PetscErrorCode (*solve)(TSDAESimple,Vec);
   PetscErrorCode (*destroy)(TSDAESimple);
   Vec            U,V;
@@ -162,7 +162,7 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSDAESimpleSetFromOptions_Reduced"
-PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptions *PetscOptionsObject,TSDAESimple tsdae)
+PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptionItems *PetscOptionsObject,TSDAESimple tsdae)
 {
   PetscErrorCode      ierr;
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
@@ -206,6 +206,7 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
   ierr = TSCreate(tsdae->comm,&red->ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(red->ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(red->ts,TSEULER);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(red->ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = VecDuplicate(tsdae->U,&tsrhs);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(red->ts,tsrhs,TSDAESimple_Reduced_TSFunction,tsdae);CHKERRQ(ierr);
   ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
@@ -304,7 +305,7 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSDAESimpleSetFromOptions_Full"
-PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptions *PetscOptionsObject,TSDAESimple tsdae)
+PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptionItems *PetscOptionsObject,TSDAESimple tsdae)
 {
   PetscErrorCode   ierr;
   TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
@@ -353,6 +354,7 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
   ierr = TSCreate(tsdae->comm,&full->ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(full->ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(full->ts,TSROSW);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(full->ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = VecDuplicate(tsdae->U,&full->UF);CHKERRQ(ierr);
   ierr = VecDuplicate(tsdae->V,&full->VF);CHKERRQ(ierr);
 

@@ -446,4 +446,19 @@ PETSC_INTERN PetscErrorCode MatSetSeqMat_SeqAIJ(Mat,IS,IS,MatStructure,Mat);
     }                                                                   \
 }
 
+/*
+ Add column indices into table for counting the nonzeros of merged rows
+ */
+#define MatMergeRows_SeqAIJ(mat,nrows,rows,ta) {    \
+  PetscInt _j,_row,_nz,*_col,_i;                      \
+    for (_i=0; _i<nrows; _i++) {\
+      _row = rows[_i]; \
+      _nz = mat->i[_row+1] - mat->i[_row]; \
+      for (_j=0; _j<_nz; _j++) {                \
+        _col = _j + mat->j + mat->i[_row];       \
+        PetscTableAdd(ta,*_col+1,1,INSERT_VALUES); \
+      }                                                                 \
+    }                                                                   \
+}
+
 #endif

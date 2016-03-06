@@ -6222,7 +6222,7 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   if (refiner) {ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);}
-  ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+  ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   switch (refiner) {
   case REFINER_NOOP:
@@ -6251,12 +6251,12 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
     const PetscInt *values;
     PetscInt        numValues, val;
 
-    ierr = DMPlexGetLabelName(dm, l, &lname);CHKERRQ(ierr);
+    ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
-    ierr = DMPlexCreateLabel(rdm, lname);CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(dm, lname, &label);CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(rdm, lname, &labelNew);CHKERRQ(ierr);
+    ierr = DMCreateLabel(rdm, lname);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
+    ierr = DMGetLabel(rdm, lname, &labelNew);CHKERRQ(ierr);
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
     ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);

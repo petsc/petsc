@@ -12,6 +12,7 @@ PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!pc->pmat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
   if (!pc->setupcalled && !((PC_Factor*)icc)->fact) {
     ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,((PC_Factor*)icc)->factortype,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
   }
@@ -227,7 +228,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Factor"
-PetscErrorCode  PCSetFromOptions_Factor(PetscOptions *PetscOptionsObject,PC pc)
+PetscErrorCode  PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Factor         *factor = (PC_Factor*)pc->data;
   PetscErrorCode    ierr;

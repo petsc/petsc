@@ -32,6 +32,8 @@
       CHKERRQ(ierr)
       call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr)
       CHKERRQ(ierr)
+      call PetscObjectSetName(dm, 'Mesh', ierr)
+      CHKERRQ(ierr)
       dim = 2
       call DMSetDimension(dm, dim, ierr)
       CHKERRQ(ierr)
@@ -111,7 +113,11 @@
          call DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE,          &
      &        nClosure, ierr)
          CHKERRQ(ierr)
-         write(*,*) nClosure
+!
+!     Different Fortran compilers print a different number of columns
+!     per row producing different outputs in the test runs hence
+!     do not print the nClosure
+!         write(*,*) nClosure
          call DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE,      &
      &        nClosure, ierr)
       end do

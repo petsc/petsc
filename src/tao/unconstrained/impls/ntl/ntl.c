@@ -836,7 +836,7 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NTL"
-static PetscErrorCode TaoSetFromOptions_NTL(PetscOptions *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
   PetscErrorCode ierr;
@@ -981,13 +981,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 50;
   if (!tao->trust0_changed) tao->trust0 = 100.0;
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->fatol_changed) tao->fatol = 1.0e-5;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-5;
-#else
-  if (!tao->fatol_changed) tao->fatol = 1.0e-10;
-  if (!tao->frtol_changed) tao->frtol = 1.0e-10;
-#endif
 
   tao->data = (void*)tl;
 

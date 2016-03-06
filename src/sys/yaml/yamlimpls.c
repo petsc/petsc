@@ -25,7 +25,7 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
       case YAML_SCALAR_EVENT:
         if (storage) {
           ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"-%s %s",key,(char*)event.data.scalar.value);CHKERRQ(ierr);
-          ierr = PetscOptionsInsertString(option);CHKERRQ(ierr);
+          ierr = PetscOptionsInsertString(NULL,option);CHKERRQ(ierr);
         } else {
           ierr = PetscStrncpy(key,(char*)event.data.scalar.value,event.data.scalar.length+1);CHKERRQ(ierr);
         }
@@ -44,13 +44,13 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
       case YAML_MAPPING_START_EVENT:
         ierr = PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN,"%s_",key);CHKERRQ(ierr);
         if (*lvl > 0) {
-          ierr = PetscOptionsPrefixPush(prefix);CHKERRQ(ierr);
+          ierr = PetscOptionsPrefixPush(NULL,prefix);CHKERRQ(ierr);
         }
         (*lvl)++;
         ierr = PetscParseLayerYAML(parser,lvl);CHKERRQ(ierr);
         (*lvl)--;
         if (*lvl > 0) {
-          ierr = PetscOptionsPrefixPop();CHKERRQ(ierr);
+          ierr = PetscOptionsPrefixPop(NULL);CHKERRQ(ierr);
         }
         storage ^= VAL;           /* Flip VAR/VAL, w/o touching SEQ */
         yaml_event_delete(&event);

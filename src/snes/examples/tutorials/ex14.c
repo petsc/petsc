@@ -85,7 +85,7 @@ int main(int argc,char **argv)
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.param = 6.0;
-  ierr       = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
+  ierr       = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,8 +124,8 @@ int main(int argc,char **argv)
      -fdcoloring : using finite differences with coloring to compute the Jacobian
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsGetBool(NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-fdcoloring",&coloring,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fdcoloring",&coloring,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     ierr = DMSetMatType(user.da,MATAIJ);CHKERRQ(ierr);
     ierr = DMCreateMatrix(user.da,&J);CHKERRQ(ierr);

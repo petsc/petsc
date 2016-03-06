@@ -528,7 +528,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 -     PETSC_VIEWER_STDOUT_(comm) - for parallel vectors created on MPI communicator comm
 
    You can change the format the vector is printed using the
-   option PetscViewerSetFormat().
+   option PetscViewerPushFormat().
 
    The user can open alternative visualization contexts with
 +    PetscViewerASCIIOpen() - Outputs vector to a specified file
@@ -537,7 +537,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 .    PetscViewerDrawOpen() - Outputs vector to an X window display
 -    PetscViewerSocketOpen() - Outputs vector to Socket viewer
 
-   The user can call PetscViewerSetFormat() to specify the output
+   The user can call PetscViewerPushFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
 +    PETSC_VIEWER_DEFAULT - default, prints vector contents
@@ -1283,7 +1283,7 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 .keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
 */
-static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,Vec vec)
+static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,Vec vec)
 {
   PetscBool      opt;
   VecType        defaultType;
@@ -1347,7 +1347,7 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)vec);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)vec);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1861,7 +1861,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetVec"
-PetscErrorCode PetscOptionsGetVec(const char prefix[],const char key[],Vec v,PetscBool *set)
+PetscErrorCode PetscOptionsGetVec(PetscOptions options,const char prefix[],const char key[],Vec v,PetscBool *set)
 {
   PetscInt       i,N,rstart,rend;
   PetscErrorCode ierr;
@@ -1873,7 +1873,7 @@ PetscErrorCode PetscOptionsGetVec(const char prefix[],const char key[],Vec v,Pet
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
   ierr = PetscCalloc1(N,&xreal);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(prefix,key,xreal,&N,&iset);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(options,prefix,key,xreal,&N,&iset);CHKERRQ(ierr);
   if (iset) {
     ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];

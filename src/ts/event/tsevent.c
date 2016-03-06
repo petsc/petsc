@@ -202,7 +202,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   for(i = 0; i < nevents_zero;i++) {
     terminate = (PetscBool)(terminate || event->terminate[events_zero[i]]);
   }
-  ierr = MPI_Allreduce(&terminate,&ts_terminate,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&terminate,&ts_terminate,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
   if (ts_terminate) {
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);
     event->status = TSEVENT_NONE;
@@ -213,9 +213,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   /* Record the event in the event recorder */
   ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
   ctr = event->recorder.ctr;
-  if (ctr == MAXEVENTRECORDERS) {
-    SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Exceeded limit (=%d) for number of events recorded",MAXEVENTRECORDERS);
-  }
+  if (ctr == MAXEVENTRECORDERS) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Exceeded limit (=%d) for number of events recorded",MAXEVENTRECORDERS);
   event->recorder.time[ctr] = t;
   event->recorder.stepnum[ctr] = stepnum;
   event->recorder.nevents[ctr] = nevents_zero;
@@ -331,7 +329,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   
   in[0] = event->status;
   in[1] = rollback;
-  ierr = MPI_Allreduce(in,out,2,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
   
   event->status = (TSEventStatus)out[0];
   rollback = out[1];
@@ -373,7 +371,7 @@ PetscErrorCode TSEventMonitor(TS ts)
     }
   }
 
-  ierr = MPI_Allreduce(&dt,&(ts->time_step),1,MPIU_REAL,MPIU_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&dt,&(ts->time_step),1,MPIU_REAL,MPIU_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

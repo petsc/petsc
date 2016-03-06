@@ -98,14 +98,14 @@ static PetscErrorCode deletemouselist_Win32(WindowNode deletelist)
   /* Called upon window close. Frees memory of linked list of stored mouse commands */
   MouseNode node;
 
-  while (deletelist->MouseListHead != NULL) {
+  while (deletelist->MouseListHead) {
     node = deletelist->MouseListHead;
-    if (deletelist->MouseListHead->mnext != NULL) deletelist->MouseListHead = deletelist->MouseListHead->mnext;
+    if (deletelist->MouseListHead->mnext) deletelist->MouseListHead = deletelist->MouseListHead->mnext;
     PetscFree(node);
   }
   deletelist->MouseListHead = deletelist->MouseListTail = NULL;
-  if (deletelist->wprev != NULL) deletelist->wprev->wnext = deletelist->wnext;
-  if (deletelist->wnext != NULL) deletelist->wnext->wprev = deletelist->wprev;
+  if (deletelist->wprev) deletelist->wprev->wnext = deletelist->wnext;
+  if (deletelist->wnext) deletelist->wnext->wprev = deletelist->wprev;
   PetscFree(deletelist);
   return 0;
 }
@@ -123,7 +123,7 @@ static PetscErrorCode PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawBut
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
   /* Look for the node that matches the window you are using */
   current = WindowListHead;
-  while (current != NULL) {
+  while (current) {
     if (current->hWnd == windraw->hWnd) {
       current->IsGetMouseOn = TRUE;
       break;
@@ -767,7 +767,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popup)
   PetscBool       flg  = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
     ierr = PetscDrawSetType(*popup,PETSC_DRAW_WIN32);CHKERRQ(ierr);
@@ -808,7 +808,7 @@ PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   newnode->wnext         = WindowListHead;
   newnode->wprev         = NULL;
   newnode->hWnd          = windraw->hWnd;
-  if (WindowListHead != NULL) WindowListHead->wprev = newnode;
+  if (WindowListHead) WindowListHead->wprev = newnode;
   WindowListHead         = newnode;
   windraw->hdc           = GetDC(windraw->hWnd);
 
@@ -895,7 +895,7 @@ static void OnPaint_Win32(HWND hWnd)
   current = WindowListHead;
   hdc     = BeginPaint(hWnd, &ps);
 
-  while (current != NULL) {
+  while (current) {
     if (current->hWnd == hWnd) {
       /* flushes primary buffer to window */
       BitBlt(hdc,0,0,GetDeviceCaps(hdc,HORZRES),GetDeviceCaps(hdc,VERTRES),
@@ -929,7 +929,7 @@ static PetscErrorCode MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
   if (current->IsGetMouseOn == TRUE) {
 
     SetEvent(current->event);
-    while (current != NULL) {
+    while (current) {
       if (current->hWnd == hWnd) {
 
         ierr            = PetscNew(&newnode);CHKERRQ(ierr);
@@ -970,9 +970,9 @@ static void OnDestroy_Win32(HWND hWnd)
   current = WindowListHead;
 
   SetEvent(current->event);
-  while (current != NULL) {
+  while (current) {
     if (current->hWnd == hWnd) {
-      if (current->wprev != NULL) current->wprev->wnext = current->wnext;
+      if (current->wprev) current->wprev->wnext = current->wnext;
       else WindowListHead = current->wnext;
       if (current->MouseListHead) deletemouselist_Win32(current);
       else PetscFree(current);

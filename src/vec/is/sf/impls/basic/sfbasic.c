@@ -777,8 +777,8 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,NULL,&leafoffset,NULL);CHKERRQ(ierr);
   ierr = PetscNew(&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
-  ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nrootranks+nleafranks,&link->requests);CHKERRQ(ierr);
+  ierr = PetscCalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nrootranks+nleafranks,&link->requests);CHKERRQ(ierr);
 
 found:
   link->key  = key;
@@ -832,7 +832,7 @@ static PetscErrorCode PetscSFBasicReclaimPack(PetscSF sf,PetscSFBasicPack *link)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Basic"
-static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptions *PetscOptionsObject,PetscSF sf)
+static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptionItems *PetscOptionsObject,PetscSF sf)
 {
   PetscErrorCode ierr;
 

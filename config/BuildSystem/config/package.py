@@ -30,10 +30,9 @@ class Package(config.base.Configure):
                                  # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
                                  # args database so it keeps track of what the user set vs what the program set
     self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
+    self.linkedbypetsc    = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
     self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
-    self.giturls          = []   # list of Git repository URLs to be used for downloads
     self.download         = []   # list of URLs where repository or tarballs may be found
-    self.downloadURLSetByUser = False # user overrode package file by providing download location
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
@@ -63,6 +62,7 @@ class Package(config.base.Configure):
     self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
     self.alternativedownload = [] # Used by, for example mpi.py which does not support --download-mpi but one can use --download-mpich
+    self.requirec99flag      = 0 # package must be compiled with C99 flags
 
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
@@ -71,6 +71,7 @@ class Package(config.base.Configure):
     self.isMPI            = 0 # Is an MPI implementation, needed to check for compiler wrappers
     self.hastests         = 0 # indicates that PETSc make alltests has tests for this package
     self.hastestsdatafiles= 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
+    self.makerulename     = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
     return
 
   def __str__(self):
@@ -110,8 +111,9 @@ class Package(config.base.Configure):
       help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
       help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
-    if self.download or self.giturls:
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
+    if self.download:
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename,url>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'-commit=commitid', nargs.ArgString(None, 0, 'The commit id from a git repository to use for the build'+self.name))
     return
 
   def setNames(self):
@@ -120,7 +122,7 @@ class Package(config.base.Configure):
     package:      The lowercase name
     PACKAGE:      The uppercase name
     downloadname:     Name for download option (usually name)
-    downloadfilename: name for downloaded file (first part of string) (usually downloadname)
+    downloaddirname: name for downloaded directory (first part of string) (usually downloadname)
     '''
     import sys
     if hasattr(sys.modules.get(self.__module__), '__file__'):
@@ -131,7 +133,7 @@ class Package(config.base.Configure):
     self.package          = self.name.lower()
     self.downloadname     = self.name
     self.pkgname          = self.name
-    self.downloadfilename = self.downloadname;
+    self.downloaddirname  = self.downloadname;
     return
 
   def getDefaultPrecision(self):
@@ -264,6 +266,9 @@ class Package(config.base.Configure):
   def getInstallDir(self):
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
     self.packageDir = self.getDir()
+    if not self.packageDir: self.packageDir = self.downLoad()
+    self.updateGitDir()
+    self.updatehgDir()
     if self.publicInstall:
       self.installDir = self.defaultInstallDir
       self.installSudo= self.installDirProvider.installSudo
@@ -448,22 +453,36 @@ class Package(config.base.Configure):
     return ''
 
   def installNeeded(self, mkfile):
-    makefile      = os.path.join(self.packageDir, mkfile)
-    makefileSaved = os.path.join(self.confDir, 'lib','petsc','conf',self.name)
+    makefile       = os.path.join(self.packageDir, mkfile)
+    makefileSaved  = os.path.join(self.confDir, 'lib','petsc','conf','pkg.conf.'+self.package)
+    gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
+    gcommfileSaved = os.path.join(self.confDir,'lib','petsc','conf', 'pkg.gitcommit.'+self.package)
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
-      self.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
+      self.log.write('Have to rebuild '+self.PACKAGE+', '+makefile+' != '+makefileSaved+'\n')
       return 1
-    else:
-      self.log.write('Do not need to rebuild '+self.name+'\n')
-      return 0
+    if os.path.isfile(gcommfile) and (not os.path.isfile(gcommfileSaved) or not (self.getChecksum(gcommfileSaved) == self.getChecksum(gcommfile))):
+      self.log.write('Have to rebuild '+self.PACKAGE+', '+gcommfile+' != '+gcommfileSaved+'\n')
+      return 1
+    self.log.write('Do not need to rebuild '+self.PACKAGE+'\n')
+    return 0
 
   def postInstall(self, output, mkfile):
     '''Dump package build log into configure.log - also copy package config to prevent unnecessary rebuild'''
-    self.log.write('********Output of running make on '+self.name+' follows *******\n')
+    self.log.write('********Output of running make on '+self.PACKAGE+' follows *******\n')
     self.log.write(output)
-    self.log.write('********End of Output of running make on '+self.name+' *******\n')
-    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'lib','petsc','conf', self.name), timeout=5, log = self.log)
-    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
+    self.log.write('********End of Output of running make on '+self.PACKAGE+' *******\n')
+    subconfDir = os.path.join(self.confDir, 'lib', 'petsc', 'conf')
+    if not os.path.isdir(subconfDir):
+      os.makedirs(subconfDir)
+    makefile       = os.path.join(self.packageDir, mkfile)
+    makefileSaved  = os.path.join(subconfDir, 'pkg.conf.'+self.package)
+    gcommfile      = os.path.join(self.packageDir, 'pkg.gitcommit')
+    gcommfileSaved = os.path.join(subconfDir, 'pkg.gitcommit.'+self.package)
+    import shutil
+    shutil.copyfile(makefile,makefileSaved)
+    if os.path.exists(gcommfile):
+      shutil.copyfile(gcommfile,gcommfileSaved)
+    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.PACKAGE+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
     '''Check is the dir matches something in the excluded directory list'''
@@ -472,35 +491,74 @@ class Package(config.base.Configure):
         return 1
     return 0
 
-  def getDir(self, retry = 1):
+  def gitPreReqCheck(self):
+    '''Some packages may need addition prerequisites if the package comes from a git repository'''
+    return 1
+
+  def updatehgDir(self):
+    '''Checkout the correct hash'''
+    if hasattr(self.sourceControl, 'hg') and (self.packageDir == os.path.join(self.externalPackagesDir,'hg.'+self.package)):
+      if hasattr(self,'hghash'):
+        config.base.Configure.executeShellCommand([self.sourceControl.hg, 'update', '-c', self.hghash], cwd=self.packageDir, log = self.log)
+
+  def updateGitDir(self):
+    '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
+    if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
+      prefetch = 0
+      if self.gitcommit.startswith('origin/'):
+        prefetch = 1
+      else:
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'cat-file', '-e', self.gitcommit+'^{commit}'], cwd=self.packageDir, log = self.log)
+        except:
+          prefetch = 1
+      if prefetch:
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'fetch'], cwd=self.packageDir, log = self.log)
+        except:
+          raise RuntimeError('Unable to fetch '+self.gitcommit+' in repository '+self.packageDir+
+                             '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
+      try:
+        gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
+        if self.gitcommit != 'HEAD':
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+      except:
+        raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
+                           '.\nPerhaps its a remote branch, if so - use: origin/'+self.gitcommit)
+      # write a commit-tag file
+      fd = open(os.path.join(self.packageDir,'pkg.gitcommit'),'w')
+      fd.write(gitcommit_hash)
+      fd.close()
+    return
+
+  def getDir(self):
     '''Find the directory containing the package'''
     packages = self.externalPackagesDir
     if not os.path.isdir(packages):
       os.makedirs(packages)
       self.framework.actions.addArgument('Framework', 'Directory creation', 'Created the external packages directory: '+packages)
     Dir = None
-    self.logPrint('Looking for '+self.PACKAGE+' in directory starting with '+str(self.downloadfilename))
-    for d in os.listdir(packages):
-      if d.startswith(self.downloadfilename) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
-        self.logPrint('Found a copy of '+self.PACKAGE+' in '+str(d))
-        Dir = d
-        break
-    if Dir is None:
-      self.logPrint('Could not locate an existing copy of '+self.downloadfilename+':')
-      self.logPrint('  '+str(os.listdir(packages)))
-      if retry <= 0:
-        raise RuntimeError('Unable to download '+self.downloadname)
-      self.downLoad()
-      return self.getDir(retry = 0)
-    return os.path.join(packages, Dir)
-
-  def gitPreReqCheck(self):
-    '''Check for git prerequisites. This is intended to be overwritten by a subclass'''
-    return 1
-
-  def gitPreInstallCheck(self):
-    '''Perhaps configure need to be built before install. This is intended to be overwritten by a subclass'''
-    return
+    pkgdirs = os.listdir(packages)
+    gitpkg  = 'git.'+self.package
+    hgpkg  = 'hg.'+self.package
+    self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ', '+hgpkg+' or a directory starting with '+str(self.downloaddirname))
+    if hasattr(self.sourceControl, 'git') and gitpkg in pkgdirs:
+      Dir = gitpkg
+    elif hasattr(self.sourceControl, 'hg') and hgpkg in pkgdirs:
+      Dir = hgpkg
+    else:
+      for d in pkgdirs:
+        if d.startswith(self.downloaddirname) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+          Dir = d
+          break
+    if Dir:
+      self.logPrint('Found a copy of '+self.PACKAGE+' in '+str(Dir))
+      return os.path.join(packages, Dir)
+    else:
+      self.logPrint('Could not locate an existing copy of '+self.PACKAGE+':')
+      self.logPrint('  '+str(pkgdirs))
+      return
 
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
@@ -508,6 +566,7 @@ class Package(config.base.Configure):
 
     retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     retriever.setup()
+    retriever.saveLog()
     self.logPrint('Downloading '+self.name)
     # check if its http://ftp.mcs - and add ftp://ftp.mcs as fallback
     download_urls = []
@@ -517,28 +576,33 @@ class Package(config.base.Configure):
         download_urls.append(url.replace('http://','ftp://'))
     # now attempt to download each url until any one succeeds.
     err =''
-    if not self.downloadURLSetByUser and hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
-      for giturl in self.giturls: # First try to fetch using Git
-        self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
-        try:
-          gitrepo = os.path.join(self.externalPackagesDir, self.downloadfilename)
-          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo], log = self.log)
-          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo, log = self.log)
-          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
-          return
-        except RuntimeError, e:
-          self.logPrint('ERROR: '+str(e))
-          err += str(e)
     for url in download_urls:
+      if url.startswith('git://'):
+        if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
+        if not hasattr(self.sourceControl, 'git'):
+          self.logPrint('Git not found - required for url: '+url+'\n')
+          err += 'Git not found - required for url: '+url+'\n'
+          continue
+        elif not self.gitPreReqCheck():
+          err += 'Git prerequisite check failed for url: '+url+'\n'
+          self.logPrint('Git prerequisite check failed - required for url: '+url+'\n')
+          continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
-        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
-        return
+        retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
+        self.logWrite(retriever.restoreLog())
+        retriever.saveLog()
+        pkgdir = self.getDir()
+        if not pkgdir:
+          raise RuntimeError('Failed to download '+self.PACKAGE)
+        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
+        retriever.restoreLog()
+        return pkgdir
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
         err += str(e)
-    raise RuntimeError(err)
+    self.logWrite(retriever.restoreLog())
+    raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
@@ -666,7 +730,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
-    if not (self.download or self.giturls) and self.argDB.has_key('download-'+self.downloadname.lower()) and self.argDB['download-'+self.downloadname.lower()]:
+    if not self.download and self.argDB.has_key('download-'+self.downloadname.lower()) and self.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
 
@@ -676,7 +740,8 @@ class Package(config.base.Configure):
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
       if isinstance(downloadPackageVal, str):
         self.download = [downloadPackageVal]
-        self.downloadURLSetByUser = True
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-commit']:
+      self.gitcommit = self.argDB['download-'+self.downloadname.lower()+'-commit']
     if not 'with-'+self.package in self.argDB:
       self.argDB['with-'+self.package] = 0
     if 'with-'+self.package+'-dir' in self.argDB or 'with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB:
@@ -733,6 +798,16 @@ class Package(config.base.Configure):
     self.logWrite(self.compilerFlags.restoreLog())
     return
 
+  def rmArgs(self,args,rejects):
+    self.logPrint('Removing configure arguments '+str(rejects))
+    return [arg for arg in args if not arg in rejects]
+
+  def rmArgsStartsWith(self,args,rejectstarts):
+    rejects = []
+    for i in rejectstarts:
+      rejects.extend([arg for arg in args if arg.startswith(i)])
+    return self.rmArgs(args,rejects)
+
 '''
 config.package.GNUPackage is a helper class whose intent is to simplify writing configure modules
 for GNU-style packages that are installed using the "configure; make; make install" idiom.
@@ -781,7 +856,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.package          - lowercase name                                [string]
     self.PACKAGE          - uppercase name                                [string]
     self.downloadname     - same as self.name (usage a bit inconsistent)  [string]
-    self.downloadfilename - same as self.name (usage a bit inconsistent)  [string]
+    self.downloaddirname - same as self.name (usage a bit inconsistent)  [string]
   Package subclass typically sets up the following state variables:
     self.download         - url to download source from                   [string]
     self.includes         - names of header files to locate               [list of strings]
@@ -975,7 +1050,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   The main contribution is in the implementation of a generic Install method, which attempts
   to automate the building of a package based on the mostly standard instance variables.
 
-  
+
   Besides running GNU configure, GNUPackage.Install runs installNeeded, make and postInstall
   at the appropriate times, automatically determining whether a rebuild is necessary, saving
   a GNU configure arguments stamp to perform the check in the future, etc.
@@ -1034,6 +1109,8 @@ class GNUPackage(Package):
     args.append('CFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
+    if self.setCompilers.LDFLAGS:
+      args.append('LDFLAGS="'+self.setCompilers.LDFLAGS+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
@@ -1076,6 +1153,18 @@ class GNUPackage(Package):
     return args
 
   def Install(self):
+    # hypre had configure inside src directory ugh
+    if not os.path.isfile(os.path.join(self.packageDir,'configure')) and not os.path.isfile(os.path.join(self.packageDir,'src','configure')):
+      if not self.programs.autoreconf:
+        raise RuntimeError('autoreconf required for ' + self.PACKAGE+' not found (or broken)!')
+      if not self.programs.libtoolize:
+        raise RuntimeError('libtoolize required for ' + self.PACKAGE+' not found!')
+      try:
+        self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.programs.libtoolize+' && '+self.programs.autoreconf + ' --force --install', timeout=200, log = self.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
+
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
@@ -1087,7 +1176,6 @@ class GNUPackage(Package):
     if not self.installNeeded(conffile):
       return self.installDir
     ### Configure and Build package
-    self.gitPreInstallCheck()
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
@@ -1095,8 +1183,8 @@ class GNUPackage(Package):
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
-      if self.parallelMake: pmake = self.make.make_jnp
-      else: pmake = self.make.make
+      if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
+      else: pmake = self.make.make+' '+self.makerulename+' '
 
       output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean', timeout=200, log = self.log)
       output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+pmake, timeout=6000, log = self.log)
@@ -1138,7 +1226,7 @@ class CMakePackage(Package):
   def formCMakeConfigureArgs(self):
     import os
     import shlex
- 
+
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     self.framework.pushLanguage('C')
@@ -1147,6 +1235,10 @@ class CMakePackage(Package):
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
+    if self.requirec99flag:
+      if (self.compilers.c99flag == None):
+        raise RuntimeError('Requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
+      cflags += ' '+self.compilers.c99flag
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
@@ -1160,6 +1252,12 @@ class CMakePackage(Package):
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
+
+    if (self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']:
+      args.append('-DBUILD_SHARED_LIBS=on')
+    else:
+      args.append('-DBUILD_SHARED_LIBS=off')
+
     return args
 
   def Install(self):
@@ -1172,6 +1270,9 @@ class CMakePackage(Package):
     fd.close()
 
     if self.installNeeded(conffile):
+
+      if not self.cmake.found:
+        raise RuntimeError('CMake not found, needed to build '+self.PACKAGE+'. Rerun configure with --download-cmake.')
 
       # effectively, this is 'make clean'
       folder = os.path.join(self.packageDir, 'build')
@@ -1188,7 +1289,7 @@ class CMakePackage(Package):
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.make.make_jnp+' && '+self.installSudo+' '+self.make.make+' install', timeout=3000, log = self.log)
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.make.make_jnp+' '+self.makerulename+' && '+self.installSudo+' '+self.make.make+' install', timeout=3000, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
       self.postInstall(output1+err1+output2+err2,conffile)

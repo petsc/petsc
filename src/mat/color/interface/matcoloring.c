@@ -226,7 +226,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   }
   ierr = PetscOptionsBool("-mat_coloring_valid","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL);CHKERRQ(ierr);
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)mc);CHKERRQ(ierr);
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)mc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -436,7 +436,7 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mc,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Weight type: %s\n",MatColoringWeightTypes[mc->weight_type]);CHKERRQ(ierr);
     if (mc->maxcolors > 0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %d, Max. Colors %d\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %D, Max. Colors %D\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Distance %d\n",mc->dist);CHKERRQ(ierr);
     }

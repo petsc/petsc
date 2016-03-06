@@ -3,9 +3,9 @@
 # This 'default' config is sourced by startnightly/copylogsnightly/killnightly
 # which inturn setsup some common conifg data for these scripts.
 #
-# It uses "TEST" variable set by the calling script - and setsup:
+# It uses "TEST" variable set by the calling script - and setup:
 # TNAME : the actual config file for this test
-# RNAME : name of the local repo clone for this test [petsc-dev vs petsc33]
+# RNAME : name of the local repo clone for this test
 # URL  : petsc repo url
 #
   set SSH=ssh

@@ -49,9 +49,9 @@ int main(int argc,char **argv)
 
   ierr        = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
   view_sparse = PETSC_FALSE;
-  ierr        = PetscOptionsGetBool(NULL, "-view_sparse", &view_sparse, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetBool(NULL,NULL, "-view_sparse", &view_sparse, NULL);CHKERRQ(ierr);
   if (!view_sparse) {
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer,"Original matrix\n");CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);
@@ -59,6 +59,9 @@ int main(int argc,char **argv)
   ierr = MatPermute(A,isrow,iscol,&B);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Permuted matrix\n");CHKERRQ(ierr);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
+  if (!view_sparse) {
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  }
 
   ierr = PetscViewerASCIIPrintf(viewer,"Row permutation\n");CHKERRQ(ierr);
   ierr = ISView(isrow,viewer);CHKERRQ(ierr);

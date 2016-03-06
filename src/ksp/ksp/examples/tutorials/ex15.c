@@ -60,8 +60,8 @@ int main(int argc,char **args)
   PetscBool      user_defined_pc = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
@@ -157,7 +157,7 @@ int main(int argc,char **args)
   /*
      Set a user-defined "shell" preconditioner if desired
   */
-  ierr = PetscOptionsGetBool(NULL,"-user_defined_pc",&user_defined_pc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-user_defined_pc",&user_defined_pc,NULL);CHKERRQ(ierr);
   if (user_defined_pc) {
     /* (Required) Indicate to PETSc that we're using a "shell" preconditioner */
     ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);

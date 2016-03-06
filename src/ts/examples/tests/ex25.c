@@ -47,10 +47,13 @@ static int Brusselator(int,char**,PetscInt);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt cycle;
+  PetscInt       cycle;
+  PetscErrorCode ierr;
+
   MPI_Init(&argc,&argv);
   for (cycle=0; cycle<4; cycle++) {
-    Brusselator(argc,argv,cycle);
+    ierr = Brusselator(argc,argv,cycle);
+    if (ierr) return 1;
   }
   MPI_Finalize();
   return 0;
@@ -58,7 +61,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "Brusselator"
-int Brusselator(int argc,char **argv,PetscInt cycle)
+PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
 {
   TS                ts;         /* nonlinear solver */
   Vec               X;          /* solution, residual vectors */
@@ -70,7 +73,7 @@ int Brusselator(int argc,char **argv,PetscInt cycle)
   struct _User      user;       /* user-defined work context */
   TSConvergedReason reason;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -117,6 +120,7 @@ int Brusselator(int argc,char **argv,PetscInt cycle)
   ftime    = 1.0;
   maxsteps = 10000;
   ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr     = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -154,7 +158,7 @@ int Brusselator(int argc,char **argv,PetscInt cycle)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

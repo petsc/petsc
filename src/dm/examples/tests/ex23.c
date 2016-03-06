@@ -23,24 +23,24 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-P",&P,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-native",&native,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-native",&native,NULL);CHKERRQ(ierr);
   if (pt == 1) bx = DM_BOUNDARY_PERIODIC;
   if (pt == 2) by = DM_BOUNDARY_PERIODIC;
   if (pt == 3) {bx = DM_BOUNDARY_PERIODIC; by = DM_BOUNDARY_PERIODIC;}
   if (pt == 4) bz = DM_BOUNDARY_PERIODIC;
 
-  ierr         = PetscOptionsGetInt(NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetInt(NULL,NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
   stencil_type = (DMDAStencilType) st;
 
-  ierr = PetscOptionsHasName(NULL,"-one",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-two",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-three",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-one",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-two",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-three",&flg3);CHKERRQ(ierr);
   if (flg2) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,m,n,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
   } else if (flg3) {
@@ -62,12 +62,14 @@ int main(int argc,char **argv)
   ierr = VecView(global1,viewer);CHKERRQ(ierr);
   ierr = VecSetRandom(global3,rdm);CHKERRQ(ierr);
   ierr = VecView(global3,viewer);CHKERRQ(ierr);
+  if (native) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   if (native) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);}
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
   ierr = VecLoad(global4,viewer);CHKERRQ(ierr);
+  if (native) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   if (native) {

@@ -1160,7 +1160,6 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
 
-  /* ierr = TaoSetTolerances(tao,1e-15,1e-15,1e-15,1e-15,1e-15); */
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
   /* Get information on termination */
@@ -1282,6 +1281,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,1000,ctx->tfaulton);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   /* ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr); */
@@ -1320,6 +1320,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   /* Disturbance period */
   ierr = TSSetDuration(ts,1000,ctx->tfaultoff);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,ctx->tfaulton,.01);CHKERRQ(ierr);
 
   ctx->alg_flg = PETSC_FALSE;
@@ -1349,6 +1350,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   /* Post-disturbance period */
   ierr = TSSetDuration(ts,1000,ctx->tmax);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,ctx->tfaultoff,.01);CHKERRQ(ierr);
 
   ctx->alg_flg = PETSC_TRUE;
@@ -1373,7 +1375,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   ierr = TSSetCostIntegrand(ts,1,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_FALSE,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSetSteps(ts,steps3);CHKERRQ(ierr);
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);

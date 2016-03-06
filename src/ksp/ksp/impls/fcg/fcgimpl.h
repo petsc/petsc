@@ -17,7 +17,7 @@ typedef struct {
   Vec          *Pvecs, *Cvecs, **pPvecs, **pCvecs; /* Arrays of vectors, and arrays of pointers to them */
   PetscInt     *chunksizes; /* Chunk sizes allocated */
   PetscInt     nchunks;     /* Number of chunks */
-  KSPFCGTruncationType truncstrat; 
+  KSPFCDTruncationType truncstrat;
 } KSP_FCG;
 
 #endif

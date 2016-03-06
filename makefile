@@ -148,7 +148,7 @@ test:
 	-@if [ "${PETSC_WITH_BATCH}" = "" ]; then \
           printf "=========================================\n"; \
           printf "Now to evaluate the computer systems you plan use - do:\n"; \
-          printf "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams NPMAX=<number of MPI processes you intend to use>\n"; \
+          printf "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams\n"; \
         fi
 testx:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/testx.log
@@ -351,6 +351,8 @@ alldoc3: chk_loc
 allman:
 	@cd ${LOC}/docs/manualpages; rm -rf all ; mkdir all ; find *  -type d -wholename all -prune -o -name index.html -prune  -o -type f -name \*.html -exec ln -s  -f ../{} all \;
 
+DOCSETDATE_PRUNE_LIST="-o -type f -wholename share/petsc/saws/linearsolveroptions.html -prune -o -type f -wholename tutorials/HandsOnExercise.html -prune -o -type f -wholename tutorials/TAOHandsOnExercise.html -prune"
+
 # modify all generated html files and add in version number, date, canonical URL info.
 docsetdate: chk_petscdir
 	@echo "Updating generated html files with petsc version, date, canonical URL info";\
@@ -374,7 +376,7 @@ docsetdate: chk_petscdir
         export gitver; \
         find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
           -type d -wholename config/BuildSystem/docs/website -prune -o -type d -wholename include/web -prune -o \
-          -type d -wholename 'arch-*' -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \
+          -type d -wholename 'arch-*' -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune ${DOCSETDATE_PRUNE_LIST} -o \
           -type f -name \*.html \
           -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>\n   <div id="bugreport" align=right><a href="mailto:petsc-maint\@mcs.anl.gov?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: $$ENV{petscversion} $$ENV{gitver} {} "><small>Report Typos and Errors</small></a></div>^i' {} \; \
           -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \

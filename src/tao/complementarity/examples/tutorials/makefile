@@ -32,7 +32,7 @@ runblackscholes:
 	${RM} -f blackscholes_1.tmp
 
 runblackscholes_2:
-	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type ssfls > blackscholes_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type ssfls -tao_max_it 9 > blackscholes_2.tmp 2>&1; \
 	${DIFF} output/blackscholes_2.out blackscholes_2.tmp || printf '${PWD}\nPossible problem with blackscholes_2 stdout, diffs above \n=========================================\n';\
 	${RM} -f blackscholes_2.tmp
 
@@ -47,17 +47,17 @@ runblackscholes_4:
 	${RM} -f blackscholes_4.tmp
 
 runblackscholes_5:
-	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asils -tao_subset_type matrixfree -pc_type jacobi > blackscholes_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asils -tao_subset_type matrixfree -pc_type jacobi -tao_max_it 5 > blackscholes_5.tmp 2>&1; \
 	${DIFF} output/blackscholes_5.out blackscholes_5.tmp || printf '${PWD}\nPossible problem with blackscholes_5 stdout, diffs above \n=========================================\n';\
 	${RM} -f blackscholes_5.tmp
 
 runblackscholes_6:
-	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asfls -tao_subset_type subvec > blackscholes_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asfls -tao_subset_type subvec -tao_max_it 9 > blackscholes_6.tmp 2>&1; \
 	${DIFF} output/blackscholes_6.out blackscholes_6.tmp || printf '${PWD}\nPossible problem with blackscholes_6 stdout, diffs above \n=========================================\n';\
 	${RM} -f blackscholes_6.tmp
 
 runblackscholes_7:
-	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asfls -tao_subset_type mask > blackscholes_7.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_type asfls -tao_subset_type mask -tao_max_it 9 > blackscholes_7.tmp 2>&1; \
 	${DIFF} output/blackscholes_7.out blackscholes_7.tmp || printf '${PWD}\nPossible problem with blackscholes_7 stdout, diffs above \n=========================================\n';\
 	${RM} -f blackscholes_7.tmp
 
@@ -71,7 +71,7 @@ runminsurf1_2:
 	${DIFF} output/minsurf1_2.out minsurf1_2.tmp || printf '${PWD}\nPossible problem with minsurf1_2 stdout, diffs above \n=========================================\n';\
 	${RM} -f minsurf1_2.tmp
 
-TESTEXAMPLES_C           = blackscholes.PETSc runblackscholes runblackscholes_2\
+TESTEXAMPLES_C_NOTSINGLE = blackscholes.PETSc runblackscholes runblackscholes_2\
 	                   runblackscholes_3 runblackscholes_4 \
 	                   runblackscholes_5 runblackscholes_6 \
 	                   runblackscholes_7 blackscholes.rm \

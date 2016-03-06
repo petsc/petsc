@@ -194,12 +194,15 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscScalar    *coords, *coordsNew;
     const PetscInt *pperm;
     PetscInt        pStart, pEnd, p;
+    const char     *name;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(cdm, &csection);CHKERRQ(ierr);
     ierr = PetscSectionPermute(csection, perm, &csectionNew);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = VecDuplicate(coordinates, &coordinatesNew);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)coordinates,&name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)coordinatesNew,name);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(csectionNew, &pStart, &pEnd);CHKERRQ(ierr);
@@ -226,11 +229,11 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscInt numLabels, l;
     DMLabel  label, labelNew;
 
-    ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+    ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     for (l = numLabels-1; l >= 0; --l) {
-      ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+      ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
       ierr = DMLabelPermute(label, perm, &labelNew);CHKERRQ(ierr);
-      ierr = DMPlexAddLabel(*pdm, labelNew);CHKERRQ(ierr);
+      ierr = DMAddLabel(*pdm, labelNew);CHKERRQ(ierr);
     }
     if (plex->subpointMap) {ierr = DMLabelPermute(plex->subpointMap, perm, &plexNew->subpointMap);CHKERRQ(ierr);}
   }

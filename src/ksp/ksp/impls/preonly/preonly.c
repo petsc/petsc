@@ -15,17 +15,23 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscBool      diagonalscale;
+  PCFailedReason pcreason;
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   if (!ksp->guess_zero) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
                you probably want a KSP type of Richardson");
-  ksp->its    = 0;
-  ierr        = PCSetInitialGuessNonzero(ksp->pc,(PetscBool) !(int)ksp->guess_zero);CHKERRQ(ierr);
-  ierr        = KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
-  ksp->its    = 1;
-  ksp->reason = KSP_CONVERGED_ITS;
+  ksp->its = 0;
+  ierr     = PCSetInitialGuessNonzero(ksp->pc,(PetscBool) !(int)ksp->guess_zero);CHKERRQ(ierr);
+  ierr     = KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+  ierr     = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+  if (pcreason) {
+    ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
+  } else {
+    ksp->its    = 1;
+    ksp->reason = KSP_CONVERGED_ITS;
+  }
   PetscFunctionReturn(0);
 }
 

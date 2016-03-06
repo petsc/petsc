@@ -19,7 +19,7 @@ int main(int argc,char **args)
   MPI_Comm       subcomm;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = 2*size;
@@ -63,13 +63,10 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   ierr = MatMult(C,x,y);CHKERRQ(ierr);
-  /*
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-   */
-  ierr = PetscOptionsHasName(NULL,"-view_info",&flg_info);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(NULL,NULL,"-view_info",&flg_info);CHKERRQ(ierr);
   if (flg_info)  {
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
@@ -80,23 +77,23 @@ int main(int argc,char **args)
      nonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   }
   
-  ierr = PetscOptionsHasName(NULL,"-view_mat",&flg_mat);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-view_mat",&flg_mat);CHKERRQ(ierr);
   if (flg_mat) {
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Test MatCreateRedundantMatrix() */
   nsubcomms = size;
-  ierr = PetscOptionsGetInt(NULL,"-nsubcomms",&nsubcomms,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nsubcomms",&nsubcomms,NULL);CHKERRQ(ierr);
   ierr = MatCreateRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
   ierr = MatCreateRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)Credundant,&subcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     
-  if (subsize==1 && flg_mat) {
-    printf("\n[%d] Credundant:\n",rank);
-    ierr = MatView(Credundant,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  if (subsize==2 && flg_mat) {
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(subcomm),"\n[%d] Credundant:\n",rank);
+    ierr = MatView(Credundant,PETSC_VIEWER_STDOUT_(subcomm));CHKERRQ(ierr);
   }
   ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
    

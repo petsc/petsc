@@ -41,6 +41,7 @@ typedef struct {
 static MPI_Attr_keyval attr_keyval[MAX_ATTR];
 static MPI_Attr        attr[MAX_COMM][MAX_ATTR];
 static int             num_attr = 1,mpi_tag_ub = 100000000;
+static void*           MPIUNIF_mpi_in_place = 0;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -55,7 +56,8 @@ int MPIUNI_Memcpy(void *a,const void *b,int n)
   char *aa= (char*)a;
   char *bb= (char*)b;
 
-  if (b == MPI_IN_PLACE) return 0;
+  if (a == MPI_IN_PLACE || a == MPIUNIF_mpi_in_place) return 0;
+  if (b == MPI_IN_PLACE || b == MPIUNIF_mpi_in_place) return 0;
   for (i=0; i<n; i++) aa[i] = bb[i];
   return 0;
 }
@@ -211,6 +213,8 @@ int MPI_Finalized(int *flag)
 /* -------------------     Fortran versions of several routines ------------------ */
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define mpiunisetcommonblock_ MPIUNISETCOMMONBLOCK
+#define mpiunisetfortranbasepointers_  MPIUNISETFORTRANBASEPOINTERS
 #define mpi_init_             MPI_INIT
 #define mpi_finalize_         MPI_FINALIZE
 #define mpi_comm_size_        MPI_COMM_SIZE
@@ -257,6 +261,8 @@ int MPI_Finalized(int *flag)
 #define mpi_comm_group_       MPI_COMM_GROUP
 #define mpi_exscan_           MPI_EXSCAN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define mpiunisetcommonblock_ mpiunisetcommonblock
+#define mpiunisetfortranbasepointers_  mpiunisetfortranbasepointers
 #define mpi_init_             mpi_init
 #define mpi_finalize_         mpi_finalize
 #define mpi_comm_size_        mpi_comm_size
@@ -352,12 +358,19 @@ int MPI_Finalized(int *flag)
 #define mpi_exscan_           mpi_exscan__
 #endif
 
-
 /* Do not build fortran interface if MPI namespace colision is to be avoided */
-#if !defined(MPIUNI_AVOID_MPI_NAMESPACE)
+#if defined(MPIUNI_FORTRAN_BINDING)
+
+PETSC_EXTERN void PETSC_STDCALL mpiunisetcommonblock_(void);
+
+PETSC_EXTERN void PETSC_STDCALL mpiunisetfortranbasepointers_(void *f_mpi_in_place)
+{
+  MPIUNIF_mpi_in_place   = f_mpi_in_place;
+}
 
 PETSC_EXTERN void PETSC_STDCALL   mpi_init_(int *ierr)
 {
+  mpiunisetcommonblock_();
   *ierr = MPI_Init((int*)0, (char***)0);
 }
 
