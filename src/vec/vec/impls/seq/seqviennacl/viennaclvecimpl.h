@@ -39,7 +39,7 @@ PETSC_INTERN PetscErrorCode VecDuplicate_SeqViennaCL(Vec,Vec*);
 PETSC_INTERN PetscErrorCode VecNorm_SeqViennaCL(Vec,NormType,PetscReal*);
 PETSC_INTERN PetscErrorCode VecViennaCLCopyToGPU(Vec);
 PETSC_INTERN PetscErrorCode VecViennaCLAllocateCheck(Vec);
-PETSC_INTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec);
+PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec);
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqViennaCL(Vec);
