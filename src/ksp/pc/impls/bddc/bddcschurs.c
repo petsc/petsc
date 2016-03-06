@@ -956,7 +956,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #else
     ierr = PetscStrcpy(solver,MATSOLVERMKL_PARDISO);CHKERRQ(ierr);
 #endif
-    ierr = PetscOptionsGetString("sub_schurs_","-mat_solver_package",solver,256,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"sub_schurs_","-mat_solver_package",solver,256,NULL);CHKERRQ(ierr);
 
     /* when using the benign subspace trick, the local Schur complements are SPD */
     if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;
@@ -1214,29 +1214,35 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       /* insert S_E values */
       for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
       if (change) {
-        Mat change_sub,SEj;
+        Mat            change_sub,SEj,T;
+        const PetscInt *idxs;
+        PetscInt       nz;
 
         /* change basis */
         ierr = KSPGetOperators(sub_schurs->change[i],&change_sub,NULL);CHKERRQ(ierr);
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,work,&SEj);CHKERRQ(ierr);
-        { /* currently there's no support for PtAP with A dense */
-          Mat T,T2,SEj2;
-          ierr = MatConvert(SEj,MATSEQAIJ,MAT_INITIAL_MATRIX,&T);CHKERRQ(ierr);
-          ierr = MatConvert(change_sub,MATSEQAIJ,MAT_INITIAL_MATRIX,&T2);CHKERRQ(ierr);
-          ierr = MatPtAP(T,T2,MAT_INITIAL_MATRIX,1.0,&SEj2);CHKERRQ(ierr);
-          ierr = MatDestroy(&T);CHKERRQ(ierr);
+        if (!sub_schurs->change_with_qr) { /* currently there's no support for PtAP with P SeqAIJ */
+          Mat T2;
+          ierr = MatTransposeMatMult(change_sub,SEj,MAT_INITIAL_MATRIX,1.0,&T2);CHKERRQ(ierr);
+          ierr = MatMatMult(T2,change_sub,MAT_INITIAL_MATRIX,1.0,&T);CHKERRQ(ierr);
+          ierr = MatConvert(T,MATSEQDENSE,MAT_INPLACE_MATRIX,&T);CHKERRQ(ierr);
           ierr = MatDestroy(&T2);CHKERRQ(ierr);
-          ierr = MatCopy(SEj2,SEj,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-          ierr = MatDestroy(&SEj2);CHKERRQ(ierr);
+        } else {
+          ierr = MatPtAP(SEj,change_sub,MAT_INITIAL_MATRIX,1.0,&T);CHKERRQ(ierr);
         }
-        { /* currently there's no support for ZeroRows with A dense */
-          Mat T;
-          ierr = MatConvert(SEj,MATSEQAIJ,MAT_INITIAL_MATRIX,&T);CHKERRQ(ierr);
-          ierr = MatZeroRowsColumnsIS(T,change_primal_sub[i],1.,NULL,NULL);CHKERRQ(ierr);
-          ierr = MatConvert(T,MATSEQDENSE,MAT_REUSE_MATRIX,&T);CHKERRQ(ierr);
-          ierr = MatCopy(T,SEj,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-          ierr = MatDestroy(&T);CHKERRQ(ierr);
+        ierr = MatCopy(T,SEj,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatDestroy(&T);CHKERRQ(ierr);
+        /* currently there's no support for ZeroRowsColumns with A dense */
+        ierr = ISGetIndices(change_primal_sub[i],&idxs);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(change_primal_sub[i],&nz);CHKERRQ(ierr);
+        for (j=0;j<nz;j++) {
+          PetscInt k;
+
+          ierr = PetscMemzero(work+subset_size*idxs[j],subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+          for (k=0;k<subset_size;k++) work[idxs[j]+k*subset_size] = 0.;
+          work[idxs[j]*(subset_size+1)] = 1.0;
         }
+        ierr = ISRestoreIndices(change_primal_sub[i],&idxs);CHKERRQ(ierr);
         ierr = MatDestroy(&SEj);CHKERRQ(ierr);
       }
       ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
@@ -1373,21 +1379,22 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             }
           }
           if (change) {
-            Mat change_sub,SEj;
+            Mat change_sub,SEj,T;
 
             /* change basis */
             ierr = KSPGetOperators(sub_schurs->change[i],&change_sub,NULL);CHKERRQ(ierr);
             ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,work,&SEj);CHKERRQ(ierr);
-            {
-              Mat T,T2,SEj2;
-              ierr = MatConvert(SEj,MATSEQAIJ,MAT_INITIAL_MATRIX,&T);CHKERRQ(ierr);
-              ierr = MatConvert(change_sub,MATSEQAIJ,MAT_INITIAL_MATRIX,&T2);CHKERRQ(ierr);
-              ierr = MatPtAP(T,T2,MAT_INITIAL_MATRIX,1.0,&SEj2);CHKERRQ(ierr);
-              ierr = MatDestroy(&T);CHKERRQ(ierr);
+            if (!sub_schurs->change_with_qr) { /* currently there's no support for PtAP with P SeqAIJ */
+              Mat T2;
+              ierr = MatTransposeMatMult(change_sub,SEj,MAT_INITIAL_MATRIX,1.0,&T2);CHKERRQ(ierr);
+              ierr = MatMatMult(T2,change_sub,MAT_INITIAL_MATRIX,1.0,&T);CHKERRQ(ierr);
               ierr = MatDestroy(&T2);CHKERRQ(ierr);
-              ierr = MatCopy(SEj2,SEj,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-              ierr = MatDestroy(&SEj2);CHKERRQ(ierr);
+              ierr = MatConvert(T,MATSEQDENSE,MAT_INPLACE_MATRIX,&T);CHKERRQ(ierr);
+            } else {
+              ierr = MatPtAP(SEj,change_sub,MAT_INITIAL_MATRIX,1.0,&T);CHKERRQ(ierr);
             }
+            ierr = MatCopy(T,SEj,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+            ierr = MatDestroy(&T);CHKERRQ(ierr);
             /* set diagonal entry to a very large value to pick the basis we are eliminating as the first eigenvectors with adaptive selection */
             {
               const PetscInt *idxs;
