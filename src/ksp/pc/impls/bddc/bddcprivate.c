@@ -312,7 +312,7 @@ PetscErrorCode MatDetectDisconnectedComponents(Mat A, PetscBool filter, PetscInt
         }
       }
       ierr = MatDenseRestoreArray(B,&array);CHKERRQ(ierr);
-      ierr = MatConvert(B,MATSEQAIJ,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+      ierr = MatConvert(B,MATSEQAIJ,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
     }
   } else {
     B = A;
@@ -1061,11 +1061,18 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   thresh = pcbddc->adaptive_threshold;
   for (i=0;i<sub_schurs->n_subs;i++) {
     const PetscInt *idxs;
-    PetscReal      infty = PETSC_MAX_REAL;
+    PetscReal      upper,lower;
     PetscInt       j,subset_size,eigs_start = 0;
     PetscBLASInt   B_N;
     PetscBool      same_data = PETSC_FALSE;
 
+    if (pcbddc->use_deluxe_scaling) {
+      upper = PETSC_MAX_REAL;
+      lower = thresh;
+    } else {
+      upper = 1./thresh;
+      lower = 0.;
+    }
     ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
     ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
@@ -1113,17 +1120,17 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 
           /* ask for eigenvalues larger than thresh */
 #if defined(PETSC_USE_COMPLEX)
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
 #else
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
 #endif
         } else {
           B_IU = PetscMax(1,PetscMin(B_N,nmax));
           B_IL = 1;
 #if defined(PETSC_USE_COMPLEX)
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
 #else
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
 #endif
         }
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -1137,7 +1144,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           if (pcbddc->dbg_flag) {
             PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, more than maximum required %d.\n",B_neigs,nmax);
           }
-          eigs_start = B_neigs -nmax;
+          if (pcbddc->use_deluxe_scaling) eigs_start = B_neigs -nmax;
           B_neigs = nmax;
         }
 
@@ -1145,8 +1152,13 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         if (B_neigs < nmin_s) {
           PetscBLASInt B_neigs2;
 
-          B_IU = B_N - B_neigs;
-          B_IL = B_N - nmin_s + 1;
+          if (pcbddc->use_deluxe_scaling) {
+            B_IL = B_N - nmin_s + 1;
+            B_IU = B_N - B_neigs;
+          } else {
+            B_IL = B_neigs + 1;
+            B_IU = nmin_s;
+          }
           if (pcbddc->dbg_flag) {
             PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",B_neigs,nmin,B_IL,B_IU);
           }
@@ -1164,9 +1176,9 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           }
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*subset_size,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*subset_size,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
 #else
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&thresh,&infty,&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*subset_size,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*subset_size,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
 #endif
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
           B_neigs += B_neigs2;
@@ -1182,7 +1194,11 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
             if (eigs[j] == 0.0) {
               ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     Inf\n");CHKERRQ(ierr);
             } else {
-              ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",eigs[j+eigs_start]);CHKERRQ(ierr);
+              if (pcbddc->use_deluxe_scaling) {
+                ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",eigs[j+eigs_start]);CHKERRQ(ierr);
+              } else {
+                ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",1./eigs[j+eigs_start]);CHKERRQ(ierr);
+              }
             }
           }
         }
@@ -1797,7 +1813,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
         array = work+lda_rhs*n_vertices;
         ierr = PetscMemzero(array,lda_rhs*n_vertices*sizeof(PetscScalar));CHKERRQ(ierr);
-        ierr = MatConvert(A_RV,MATSEQAIJ,MAT_REUSE_MATRIX,&A_RV);CHKERRQ(ierr);
+        ierr = MatConvert(A_RV,MATSEQAIJ,MAT_INPLACE_MATRIX,&A_RV);CHKERRQ(ierr);
         ierr = MatGetRowIJ(A_RV,0,PETSC_FALSE,PETSC_FALSE,&n,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
         ierr = MatSeqAIJGetArray(A_RV,&av);CHKERRQ(ierr);
         for (i=0;i<n;i++) {
@@ -6213,12 +6229,13 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
   if (!sub_schurs->schur_explicit) {
     /* pcbddc->ksp_D up to date only if not using MatFactor with Schur complement support */
     ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,PETSC_FALSE,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE,0,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,PETSC_FALSE,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,NULL,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE,0,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {
     PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
     PetscBool isseqaij;
     PetscInt  benign_n;
     Mat       change = NULL;
+    Vec       scaling = NULL;
     IS        change_primal = NULL;
 
     if (!pcbddc->use_vertices && reuse_solvers) {
@@ -6286,7 +6303,8 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       pcf->ops->destroy = NULL;
       ierr = PCDestroy(&pcf);CHKERRQ(ierr);
     }
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs,change,change_primal);CHKERRQ(ierr);
+    if (!pcbddc->use_deluxe_scaling) scaling = pcis->D;
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,scaling,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs,change,change_primal);CHKERRQ(ierr);
     ierr = MatDestroy(&change);CHKERRQ(ierr);
     ierr = ISDestroy(&change_primal);CHKERRQ(ierr);
   }

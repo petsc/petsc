@@ -1360,8 +1360,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   computeconstraintsmatrix = PETSC_FALSE;
 
   /* check parameters' compatibility */
-  if (pcbddc->adaptive_threshold > 0.0 && !pcbddc->use_deluxe_scaling) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute adaptive constraints without deluxe scaling. Rerun with -pc_bddc_use_deluxe_scaling");
-  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0 && pcbddc->use_deluxe_scaling);
+  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
@@ -1469,6 +1468,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (computesubschurs && computetopography) {
       ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
     }
+    /* SetUp Scaling operator (scaling matrices could be needed in SubSchursSetUp)*/
+    if (!pcbddc->use_deluxe_scaling) {
+      ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
+    }
     if (sub_schurs->schur_explicit) {
       if (computesubschurs) {
         ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
@@ -1557,7 +1560,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     /* SetUp coarse and local Neumann solvers */
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
     /* SetUp Scaling operator */
-    ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
+    if (pcbddc->use_deluxe_scaling) {
+      ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
+    }
   }
   /* mark topography as done */
   pcbddc->recompute_topography = PETSC_FALSE;
