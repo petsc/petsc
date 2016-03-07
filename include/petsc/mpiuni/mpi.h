@@ -141,12 +141,12 @@ typedef unknownuniptr MPIUNI_INTPTR;
 #endif
 
 /* old 32bit MS compiler does not support long long */
-#if defined(PETSC_HAVE___INT64)
-typedef _int64 MPIUNI_INT64;
-typedef unsigned _int64 MPIUNI_UINT64;
-#elif defined(PETSC_SIZEOF_LONG_LONG)
+#if defined(PETSC_SIZEOF_LONG_LONG)
 typedef long long MPIUNI_INT64;
 typedef unsigned long long MPIUNI_UINT64;
+#elif defined(PETSC_HAVE___INT64)
+typedef _int64 MPIUNI_INT64;
+typedef unsigned _int64 MPIUNI_UINT64;
 #else
 #error "cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
 #endif
