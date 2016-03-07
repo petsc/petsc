@@ -54,6 +54,7 @@ typedef struct _n_Model *Model;
 /* 'User' implements a discretization of a continuous model. */
 typedef struct _n_User *User;
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
+typedef PetscErrorCode (*SetUpBCFunction)(DM,Physics);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
 typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
 static PetscErrorCode ModelSolutionSetDefault(Model,SolutionFunction,void*);
@@ -93,9 +94,11 @@ struct _n_Model {
   PetscInt         numCall;
   FunctionalLink   *functionalCall;
   SolutionFunction solution;
+  SetUpBCFunction  setupbc;
   void             *solutionctx;
   PetscReal        maxspeed;    /* estimate of global maximum speed (for CFL calculation) */
   PetscReal        bounds[2*DIM];
+  DMBoundaryType   bcs[3];
 };
 
 struct _n_User {
@@ -248,8 +251,21 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetUpBC_Advect"
+static PetscErrorCode SetUpBC_Advect(DM dm, Physics phys)
+{
+  PetscErrorCode ierr;
+  const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
+  PetscFunctionBeginUser;
+  /* Register "canned" boundary conditions and defaults for where to apply. */
+  ierr = DMAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm, PETSC_FALSE, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
-static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_Advect *advect;
   PetscErrorCode ierr;
@@ -259,6 +275,8 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOp
   phys->riemann    = (PetscRiemannFunc)PhysicsRiemann_Advect;
   ierr = PetscNew(&advect);CHKERRQ(ierr);
   phys->data       = advect;
+  mod->setupbc = SetUpBC_Advect;
+
   ierr = PetscOptionsHead(PetscOptionsObject,"Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
@@ -290,16 +308,11 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOp
     }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  {
-    const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
-    /* Register "canned" boundary conditions and defaults for where to apply. */
-    ierr = DMAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, PETSC_FALSE, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
-    /* Initial/transient solution with default boundary conditions */
-    ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys);CHKERRQ(ierr);
-    /* Register "canned" functionals */
-    ierr = ModelFunctionalRegister(mod,"Error",&advect->functional.Error,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
-  }
+  /* Initial/transient solution with default boundary conditions */
+  ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys);CHKERRQ(ierr);
+  /* Register "canned" functionals */
+  ierr = ModelFunctionalRegister(mod,"Error",&advect->functional.Error,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
+  mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_GHOSTED;
   PetscFunctionReturn(0);
 }
 
@@ -413,8 +426,19 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetUpBC_SW"
+static PetscErrorCode SetUpBC_SW(DM dm,Physics phys)
+{
+  PetscErrorCode ierr;
+  const PetscInt wallids[] = {100,101,200,300};
+  PetscFunctionBeginUser;
+  ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
-static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_SW     *sw;
   PetscErrorCode ierr;
@@ -424,6 +448,8 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
   phys->riemann = (PetscRiemannFunc) PhysicsRiemann_SW;
   ierr          = PetscNew(&sw);CHKERRQ(ierr);
   phys->data    = sw;
+  mod->setupbc  = SetUpBC_SW;
+
   ierr          = PetscOptionsHead(PetscOptionsObject,"SW options");CHKERRQ(ierr);
   {
     sw->gravity = 1.0;
@@ -432,14 +458,13 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   phys->maxspeed = PetscSqrtReal(2.0*sw->gravity); /* Mach 1 for depth of 2 */
 
-  {
-    const PetscInt wallids[] = {100,101,200,300};
-    ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
-    ierr = ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys);CHKERRQ(ierr);
-    ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
-    ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
-    ierr = ModelFunctionalRegister(mod,"Energy",&sw->functional.Energy,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
-  }
+  ierr = ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys);CHKERRQ(ierr);
+  ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
+  ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
+  ierr = ModelFunctionalRegister(mod,"Energy",&sw->functional.Energy,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
+
+  mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_GHOSTED;
+
   PetscFunctionReturn(0);
 }
 
@@ -475,7 +500,7 @@ static const struct FieldDescription PhysicsFields_Euler[] = {{"Density",1},{"Mo
 int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord[], const PetscReal Lx);
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsSolution_Euler"
-static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
+static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
 {
   PetscInt i;
   Physics         phys = (Physics)ctx;
@@ -530,7 +555,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time, const Pets
     }
   }
   else if (eu->type==EULER_LINEAR_WAVE) {
-    initLinearWave(uu,gamma,x,mod->bounds[1]-mod->bounds[0]);
+    initLinearWave( uu, gamma, x, mod->bounds[1] - mod->bounds[0]);
   }
   else SETERRQ1(mod->comm,PETSC_ERR_SUP,"Unknown type %d",eu->type);
 
@@ -600,6 +625,8 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   PetscInt    i;
   const EulerNode *xI = (const EulerNode*)a_xI;
   EulerNode       *xG = (EulerNode*)a_xG;
+  Physics         phys = (Physics)ctx;
+  Physics_Euler   *eu  = (Physics_Euler*)phys->data;
   PetscFunctionBeginUser;
   xG->r = xI->r;           /* ghost cell density - same */
   xG->E = xI->E;           /* ghost cell energy - same */
@@ -609,6 +636,9 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   }
   else { /* sides */
     for (i=0; i<DIM; i++) xG->ru[i] = xI->ru[i]; /* copy */
+  }
+  if (eu->type == EULER_LINEAR_WAVE) { // debug
+    // PetscPrintf(PETSC_COMM_WORLD,"%s coord=%g,%g\n",__FUNCT__,c[0],c[1]);
   }
   PetscFunctionReturn(0);
 }
@@ -672,8 +702,25 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetUpBC_Euler"
+static PetscErrorCode SetUpBC_Euler(DM dm,Physics phys)
+{
+  PetscErrorCode  ierr;
+  Physics_Euler   *eu = phys->data;
+  if (eu->type == EULER_LINEAR_WAVE) {
+    const PetscInt wallids[] = {100,101};
+    ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+  }
+  else {
+    const PetscInt wallids[] = {100,101,200,300};
+    ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Euler"
-static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItems *PetscOptionsObject)
 {
   Physics_Euler   *eu;
   PetscErrorCode  ierr;
@@ -683,11 +730,13 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   phys->riemann = (PetscRiemannFunc) PhysicsRiemann_Euler_Godunov;
   ierr = PetscNew(&eu);CHKERRQ(ierr);
   phys->data    = eu;
+  mod->setupbc = SetUpBC_Euler;
   ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
   {
     PetscReal alpha;
     char type[64] = "linear_wave";
-    PetscBool  isDepth;
+    PetscBool  is;
+    mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_GHOSTED;
     eu->pars[EULER_PAR_GAMMA] = 1.4;
     eu->pars[EULER_PAR_AMACH] = 2.02;
     eu->pars[EULER_PAR_RHOR] = 3.0;
@@ -700,19 +749,31 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
     if (alpha<=0. || alpha>90.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
     eu->pars[EULER_PAR_ITANA] = 1./tan ( alpha * M_PI / 180.0 );
     ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
-    ierr = PetscStrcmp(type,"linear_wave", &isDepth);CHKERRQ(ierr);
-    if (isDepth) eu->type = EULER_LINEAR_WAVE;
+    ierr = PetscStrcmp(type,"linear_wave", &is);CHKERRQ(ierr);
+    if (is) {
+      eu->type = EULER_LINEAR_WAVE;
+      mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_PERIODIC;
+      mod->bcs[1] = DM_BOUNDARY_GHOSTED; /* debug */
+      PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"linear_wave");
+    }
     else {
       if (DIM != 2) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
-      ierr = PetscStrcmp(type,"iv_shock", &isDepth);CHKERRQ(ierr);
-      if (isDepth) eu->type = EULER_IV_SHOCK;
+      ierr = PetscStrcmp(type,"iv_shock", &is);CHKERRQ(ierr);
+      if (is) {
+        eu->type = EULER_IV_SHOCK;
+        PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"iv_shock");
+      }
       else {
-        ierr = PetscStrcmp(type,"ss_shock", &isDepth);CHKERRQ(ierr);
-        if (isDepth) eu->type = EULER_SS_SHOCK;
+        ierr = PetscStrcmp(type,"ss_shock", &is);CHKERRQ(ierr);
+        if (is) {
+          eu->type = EULER_SS_SHOCK;
+          PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"ss_shock");
+        }
         else {
-          ierr = PetscStrcmp(type,"shock_tube", &isDepth);CHKERRQ(ierr);
-          if (isDepth) eu->type = EULER_SHOCK_TUBE;
+          ierr = PetscStrcmp(type,"shock_tube", &is);CHKERRQ(ierr);
+          if (is) eu->type = EULER_SHOCK_TUBE;
           else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown Euler type %s",type);
+          PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",__FUNCT__,"shock_tube");
         }
       }
     }
@@ -720,16 +781,13 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   eu->sound = SpeedOfSound_PG;
   phys->maxspeed = 0.; /* will get set in solution */
-  {
-    const PetscInt wallids[] = {100,101,200,300};
-    ierr = DMAddBoundary(dm, PETSC_FALSE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
-    ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys);CHKERRQ(ierr);
-    ierr = ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-    ierr = ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-    ierr = ModelFunctionalRegister(mod,"Density",&eu->monitor.Density,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-    ierr = ModelFunctionalRegister(mod,"Momentum",&eu->monitor.Momentum,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-    ierr = ModelFunctionalRegister(mod,"Pressure",&eu->monitor.Pressure,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
-  }
+  ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys);CHKERRQ(ierr);
+  ierr = ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+  ierr = ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+  ierr = ModelFunctionalRegister(mod,"Density",&eu->monitor.Density,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+  ierr = ModelFunctionalRegister(mod,"Momentum",&eu->monitor.Momentum,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+  ierr = ModelFunctionalRegister(mod,"Pressure",&eu->monitor.Pressure,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -1236,7 +1294,6 @@ static PetscErrorCode SolutionFunctional(PetscInt dim, PetscReal time, const Pet
 {
   Model          mod;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
   mod  = (Model) modctx;
   ierr = (*mod->solution)(mod, time, x, u, mod->solutionctx);CHKERRQ(ierr);
@@ -1437,6 +1494,21 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
+  {
+    PetscErrorCode (*physcreate)(Model,Physics,PetscOptionItems*);
+    ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
+    ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
+    ierr = (*physcreate)(mod,phys,PetscOptionsObject);CHKERRQ(ierr);
+    /* Count number of fields and dofs */
+    for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
+    if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
+    ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   {
     size_t len,i;
     for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
@@ -1455,7 +1527,7 @@ int main(int argc, char **argv)
         dim = nret1;
         if (dim != DIM) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D in -grid_size",dim);CHKERRQ(ierr);
       }
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, &dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, mod->bcs[0], mod->bcs[1], mod->bcs[2], &dm);CHKERRQ(ierr);
       if (flg2) {
         PetscInt dimEmbed, i;
         PetscInt nCoords;
@@ -1496,22 +1568,9 @@ int main(int argc, char **argv)
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
-  {
-    PetscErrorCode (*physcreate)(DM,Model,Physics,PetscOptionItems*);
-
-    ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
-    ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
-    ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
-    ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
-    ierr = (*physcreate)(dm,mod,phys,PetscOptionsObject);CHKERRQ(ierr);
-    /* Count number of fields and dofs */
-    for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
-
-    if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
-    ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  /* set up BCs, functions, tags */
+  ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
+  ierr = (*mod->setupbc)(dm,phys);CHKERRQ(ierr);
 
   {
     DM dmDist;
@@ -1621,6 +1680,7 @@ int main(int argc, char **argv)
   /* collect max maxspeed from all processes -- todo */
   mod->maxspeed = phys->maxspeed;
   if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   dt   = cfl * minRadius / user->model->maxspeed;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -1678,8 +1738,8 @@ L10:
 } /* cvmgm_ */
 
 #undef __FUNCT__
-#define __FUNCT__ "riem1mdt_"
-int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar *pl,
+#define __FUNCT__ "riem1mdt"
+int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar *pl,
               PetscScalar *uxl, PetscScalar *rr, PetscScalar *pr,
               PetscScalar *uxr, PetscScalar *rstarl, PetscScalar *rstarr, PetscScalar *
               pstar, PetscScalar *ustar)
@@ -1832,8 +1892,6 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    }
 	}
     }
-/*     500        if (debug .eq. 1) */
-/*     x                write(99,*) 'newton iteration does not convergent' */
 
     *ustar = (zl * ustarr + zr * ustarl) / (zl + zr);
     if (*pstar > *pl) {
@@ -1847,7 +1905,7 @@ int riem1mdt_(PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 		gamr + 1.) * *rr;
     }
     return iwave;
-} /* riem1mdt_ */
+}
 
 PetscScalar sign(PetscScalar x)
 {
@@ -1856,8 +1914,10 @@ PetscScalar sign(PetscScalar x)
     return 0.0;
 }
 /*        Riemann Solver */
+#undef __FUNCT__
+#define __FUNCT__ "riemannsolver"
 /* -------------------------------------------------------------------- */
-int riemannsolver_(PetscScalar *xcen, PetscScalar *xp,
+int riemannsolver(PetscScalar *xcen, PetscScalar *xp,
                    PetscScalar *dtt, PetscScalar *rl, PetscScalar *uxl, PetscScalar *pl,
                    PetscScalar *utl, PetscScalar *ubl, PetscScalar *gaml, PetscScalar *rho1l,
                    PetscScalar *rr, PetscScalar *uxr, PetscScalar *pr, PetscScalar *utr,
@@ -1890,7 +1950,7 @@ int riemannsolver_(PetscScalar *xcen, PetscScalar *xp,
 	}
 	return 0;
     }
-    int iwave = riem1mdt_(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, &ustar);
+    int iwave = riem1mdt(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, &ustar);
 
     x2 = *xcen + ustar * *dtt;
     d__1 = *xp - x2;
@@ -1953,8 +2013,9 @@ int riemannsolver_(PetscScalar *xcen, PetscScalar *xp,
 	*rho1 = *rho1l;
     }
     return iwave;
-} /* riemannsolver_ */
-
+} 
+#undef __FUNCT__
+#define __FUNCT__ "godunovflux"
 int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
                  PetscScalar *flux, const PetscScalar *nn, const int *ndim,
                  const PetscScalar *gamma)
@@ -2058,9 +2119,9 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
     rho1l = rl;
     rho1r = rr;
 
-    iwave = riemannsolver_(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
-                           rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
-                           pm, &utm, &ubm, &gamm, &rho1m);
+    iwave = riemannsolver(&xcen, &xp, &dtt, &rl, &uxl, &pl, &utl, &ubl, &gaml, &
+                          rho1l, &rr, &uxr, &pr, &utr, &ubr, &gamr, &rho1r, &rhom, &unm, &
+                          pm, &utm, &ubm, &gamm, &rho1m);
 
     flux[1] = rhom * unm;
     fn = rhom * unm * unm + pm;
@@ -2112,35 +2173,17 @@ int eigenvectors(PetscScalar rv[][3], PetscScalar lv[][3], const PetscScalar ueq
   int j,k;
   PetscScalar rho,csnd,p0,u;
 
-  /*      lv=0.D0 */
-  /*      rv=0.D0 */
   for (k = 0; k < 3; ++k) for (j = 0; j < 3; ++j) { lv[k][j] = 0.; rv[k][j] = 0.; }
-  /*  lamda=1.D0 */
-  /* csnd=SoundSpeedFun(Ueq(3),Ueq(1),lamda) */
-  /* rho=Ueq(1) */
   rho = ueq[0];
   u = ueq[1];
   p0 = ueq[2];
   csnd = PetscSqrtScalar(gamma * p0 / rho);
-  /* lv(1,2)=0.5D0*rho */
-  /* lv(1,3)=-0.5D0/csnd */
-  /* lv(2,1)=csnd */
-  /* lv(2,3)=-1.D0/csnd */
-  /* lv(3,2)=0.5D0*rho */
-  /* lv(3,3)=0.5D0/csnd */
   lv[0][1] = rho * .5;
   lv[0][2] = -.5 / csnd;
   lv[1][0] = csnd;
   lv[1][2] = -1. / csnd;
   lv[2][1] = rho * .5;
   lv[2][2] = .5 / csnd;
-  /* rv(1,1)=-1.D0/csnd */
-  /* rv(2,1)=1.D0/rho */
-  /* rv(3,1)=-csnd */
-  /* rv(1,2)=1.D0/csnd */
-  /* rv(1,3)=1.D0/csnd */
-  /* rv(2,3)=1.D0/rho */
-  /* rv(3,3)=csnd */
   rv[0][0] = -1. / csnd;
   rv[1][0] = 1. / rho;
   rv[2][0] = -csnd;
@@ -2150,7 +2193,8 @@ int eigenvectors(PetscScalar rv[][3], PetscScalar lv[][3], const PetscScalar ueq
   rv[2][2] = csnd;
   return 0;
 }
-
+#undef __FUNCT__
+#define __FUNCT__ "initLinearWave"
 int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord[], const PetscReal Lx)
 {
   PetscScalar p0,u0,wcp[3],wc[3];
@@ -2162,29 +2206,18 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
   /* Function Body */
   twopi = 2.*M_PI;
   eps = 1e-4; /* perturbation */
-
-  /* rho0=1000.D0 ! density of water */
-  /* p0=1.01325D5 ! init pressure of 1 atm (?) */
-  /* lamda0=1.D0 */
-  /* c0=SoundSpeedFun(p0,rho0,lamda0) */
-  /* u0=0.D0 */
-  /* Ueq(1)=rho0 */
-  /* Ueq(2)=u0 */
-  /* Ueq(3)=p0 */
   rho0 = 1e3;   /* density of water */
   p0 = 101325.; /* init pressure of 1 atm (?) */
   u0 = 0.;
   ueq[0] = rho0;
   ueq[1] = u0;
   ueq[2] = p0;
-
   /* Project initial state to characteristic variables */
   eigenvectors(rv, lv, ueq, gamma);
   projecteqstate(wc, ueq, lv);
-  projecttoprim(vp, wc, rv);
   wcp[0] = wc[0];
   wcp[1] = wc[1];
-  wcp[2] = wc[2] + eps * cos(coord[0] * 8. * twopi / Lx);
+  wcp[2] = wc[2] + eps * cos(coord[0] * 2. * twopi / Lx);
   projecttoprim(vp, wcp, rv);
   ux->r = vp[0]; /* density */
   ux->ru[0] = vp[0] * vp[1]; /* x momentum */
@@ -2192,15 +2225,7 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
 #if defined DIM > 2
   if (dim>2) ux->ru[2] = 0.;
 #endif
-  /* E = rho * e + rho * v^2/2 */
+  /* E = rho * e + rho * v^2/2 = p/(gam-1) + rho*v^2/2 */
   ux->E = vp[2]/(gamma - 1.) + 0.5*vp[0]*vp[1]*vp[1];
-  /* ux[5] = 0.; */
-  /* ux(i,j,k,1)=vp(1) */
-  /* ux(i,j,k,2)=vp(1)*vp(2) */
-  /* ux(i,j,k,3)=0.D0 */
-  /* ux(i,j,k,4)=0.D0 */
-  /* ux(i,j,k,6)=0.D0 */
-  /* eint = (PetscScalar) internalenergyfun(&vp[2], vp, &lamda0); */
-  /* ux(i,j,k,5)=vp(1)*eint+0.5D0*vp(1)*vp(2)**2 */
   return 0;
 }

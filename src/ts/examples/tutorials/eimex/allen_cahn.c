@@ -74,6 +74,7 @@ int main(int argc, char **argv)
   ftime = 142;
   maxsteps = 100000;
   ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set initial conditions

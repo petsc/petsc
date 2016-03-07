@@ -21,7 +21,6 @@
 
 */
 
-#define PetscExpPassiveScalar(a) PetscExpScalar()
 #if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
@@ -512,10 +511,6 @@ PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
 PETSC_STATIC_INLINE PetscErrorCode PetscIsNanScalar(PetscScalar v) {return PetscIsNanReal(PetscAbsScalar(v));}
 PETSC_STATIC_INLINE PetscErrorCode PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
-
-/* ----------------------------------------------------------------------------*/
-#define PassiveReal   PetscReal
-#define PassiveScalar PetscScalar
 
 /*
     These macros are currently hardwired to match the regular data types, so there is no support for a different

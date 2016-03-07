@@ -9,6 +9,7 @@ configure_options = [
   '--download-ptscotch=1',
   '--download-hypre=1',
   '--download-superlu_dist=1',
+  '--download-cmake',  # superlu_dist requires a newer cmake
   ]
 
 if __name__ == '__main__':

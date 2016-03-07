@@ -817,7 +817,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscInt          rows,cols,rbs,cbs;
-  PetscBool         iascii;
+  PetscBool         iascii,ibinary;
   PetscViewerFormat format;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool         issaws;
@@ -832,6 +832,12 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(mat,1,viewer,2);
   MatCheckPreallocated(mat,1);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
+  if (ibinary) {
+    PetscBool mpiio;
+    ierr = PetscViewerBinaryGetUseMPIIO(viewer,&mpiio);CHKERRQ(ierr);
+    if (mpiio) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"PETSc matrix viewers do not support using MPI-IO, turn off that flag");
+  }
 
   ierr = PetscLogEventBegin(MAT_View,mat,viewer,0,0);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -2498,7 +2504,6 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!mat->ops->multhermitiantransposeadd) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (v1 == v3) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_IDN,"v1 and v3 must be different vectors");
   if (mat->rmap->N != v1->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec v1: global dim %D %D",mat->rmap->N,v1->map->N);
   if (mat->cmap->N != v2->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: global dim %D %D",mat->cmap->N,v2->map->N);
@@ -2507,7 +2512,20 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
   ierr = PetscLogEventBegin(MAT_MultHermitianTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = VecLockPush(v1);CHKERRQ(ierr);
-  ierr = (*mat->ops->multhermitiantransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
+  if (mat->ops->multhermitiantransposeadd) {
+    ierr = (*mat->ops->multhermitiantransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
+   } else {
+    Vec w,z;
+    ierr = VecDuplicate(v1,&w);CHKERRQ(ierr);
+    ierr = VecCopy(v1,w);CHKERRQ(ierr);
+    ierr = VecConjugate(w);CHKERRQ(ierr);
+    ierr = VecDuplicate(v3,&z);CHKERRQ(ierr);
+    ierr = MatMultTranspose(mat,w,z);CHKERRQ(ierr);
+    ierr = VecDestroy(&w);CHKERRQ(ierr);
+    ierr = VecConjugate(z);CHKERRQ(ierr);
+    ierr = VecWAXPY(v3,1.0,v2,z);CHKERRQ(ierr);
+    ierr = VecDestroy(&z);CHKERRQ(ierr);
+  }
   ierr = VecLockPop(v1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultHermitianTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v3);CHKERRQ(ierr);

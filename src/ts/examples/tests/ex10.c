@@ -206,6 +206,7 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
   ierr = TSCreate(tsdae->comm,&red->ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(red->ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(red->ts,TSEULER);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(red->ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = VecDuplicate(tsdae->U,&tsrhs);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(red->ts,tsrhs,TSDAESimple_Reduced_TSFunction,tsdae);CHKERRQ(ierr);
   ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
@@ -353,6 +354,7 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
   ierr = TSCreate(tsdae->comm,&full->ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(full->ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(full->ts,TSROSW);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(full->ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = VecDuplicate(tsdae->U,&full->UF);CHKERRQ(ierr);
   ierr = VecDuplicate(tsdae->V,&full->VF);CHKERRQ(ierr);
 

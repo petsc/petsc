@@ -129,9 +129,9 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   *indraw = 0;
   ierr = PetscHeaderCreate(draw,PETSC_DRAW_CLASSID,"Draw","Graphics","Draw",comm,PetscDrawDestroy,PetscDrawView);CHKERRQ(ierr);
 
-  draw->data    = 0;
-  ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
+  draw->data    = NULL;
   ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
+  ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   draw->x       = x;
   draw->y       = y;
   draw->w       = w;
@@ -230,8 +230,8 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
   if (draw->ops->destroy) {ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);}
   ierr = PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps));CHKERRQ(ierr);
-  ierr       = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
-  ierr       = (*r)(draw);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
+  ierr = (*r)(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

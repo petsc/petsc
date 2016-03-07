@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = axis.c lg.c dscatter.c hists.c zoom.c hue.c lgc.c axisc.c bars.c
+SOURCEC  = axis.c lg.c dscatter.c hists.c zoom.c cmap.c lgc.c axisc.c bars.c
 SOURCEF  =
 SOURCEH  = axisimpl.h lgimpl.h
 LIBBASE  = libpetscsys

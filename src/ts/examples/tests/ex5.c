@@ -299,6 +299,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time,ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,T);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
 

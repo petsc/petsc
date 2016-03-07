@@ -20,11 +20,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim         = 2;
-  options->cellSimplex = PETSC_TRUE;
-  options->filename[0] = '\0';
-  options->overlap     = 0;
-  options->loadBalance = PETSC_FALSE;
+  options->dim           = 2;
+  options->cellSimplex   = PETSC_TRUE;
+  options->filename[0]   = '\0';
+  options->overlap       = 0;
+  options->testPartition = PETSC_FALSE;
+  options->testRedundant = PETSC_FALSE;
+  options->loadBalance   = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);

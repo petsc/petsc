@@ -13,7 +13,7 @@
 */
 typedef struct {
   PetscInt          m,n,step,k;
-  PetscReal         min,max,scale;
+  PetscReal         min,max;
   const PetscScalar *xy,*v;
   PetscBool         showgrid;
   const char        *name0,*name1;
@@ -31,7 +31,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   ZoomCtx           *zctx = (ZoomCtx*)ctx;
   PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k,step,id,c1,c2,c3,c4;
-  PetscReal         s,min,max,x1,x2,x3,x4,y_1,y2,y3,y4,xmin = PETSC_MAX_REAL,xmax = PETSC_MIN_REAL,ymin = PETSC_MAX_REAL,ymax = PETSC_MIN_REAL;
+  PetscReal         min,max,x1,x2,x3,x4,y_1,y2,y3,y4,xmin = PETSC_MAX_REAL,xmax = PETSC_MIN_REAL,ymin = PETSC_MAX_REAL,ymax = PETSC_MIN_REAL;
   PetscReal         xminf,xmaxf,yminf,ymaxf,w;
   const PetscScalar *v,*xy;
   char              value[16];
@@ -44,7 +44,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   k    = zctx->k;
   v    = zctx->v;
   xy   = zctx->xy;
-  s    = zctx->scale;
   min  = zctx->min;
   max  = zctx->max;
 
@@ -54,7 +53,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
       id   = i+j*m;
       x1   = PetscRealPart(xy[2*id]);
       y_1  = PetscRealPart(xy[2*id+1]);
-      c1   = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      c1   = PetscDrawRealToColor(PetscRealPart(v[k+step*id]),min,max);
       xmin = PetscMin(xmin,x1);
       ymin = PetscMin(ymin,y_1);
       xmax = PetscMax(xmax,x1);
@@ -63,7 +62,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
       id   = i+j*m+1;
       x2   = PetscRealPart(xy[2*id]);
       y2   = PetscRealPart(xy[2*id+1]);
-      c2   = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      c2   = PetscDrawRealToColor(PetscRealPart(v[k+step*id]),min,max);
       xmin = PetscMin(xmin,x2);
       ymin = PetscMin(ymin,y2);
       xmax = PetscMax(xmax,x2);
@@ -72,7 +71,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
       id   = i+j*m+1+m;
       x3   = PetscRealPart(xy[2*id]);
       y3   = PetscRealPart(xy[2*id+1]);
-      c3   = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      c3   = PetscDrawRealToColor(PetscRealPart(v[k+step*id]),min,max);
       xmin = PetscMin(xmin,x3);
       ymin = PetscMin(ymin,y3);
       xmax = PetscMax(xmax,x3);
@@ -81,7 +80,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
       id = i+j*m+m;
       x4 = PetscRealPart(xy[2*id]);
       y4 = PetscRealPart(xy[2*id+1]);
-      c4 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      c4 = PetscDrawRealToColor(PetscRealPart(v[k+step*id]),min,max);
       xmin = PetscMin(xmin,x4);
       ymin = PetscMin(ymin,y4);
       xmax = PetscMax(xmax,x4);
@@ -312,8 +311,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
     ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
     if (popup) {ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
-
-    zctx.scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/(zctx.max - zctx.min);
 
     ierr = PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
   }

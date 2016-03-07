@@ -1143,8 +1143,7 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscInt          m  = A->rmap->n,n = A->cmap->n,color,i,j;
   PetscScalar       *v = a->v;
   PetscViewer       viewer;
-  PetscDraw         popup;
-  PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r,scale,maxv = 0.0;
+  PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -1175,19 +1174,21 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   } else {
     /* use contour shading to indicate magnitude of values */
     /* first determine max of all nonzero values */
+    PetscReal minv = 0.0, maxv = 0.0;
+    PetscDraw popup;
+
     for (i = 0; i < m*n; i++) {
       if (PetscAbsScalar(v[i]) > maxv) maxv = PetscAbsScalar(v[i]);
     }
-    scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/maxv;
     ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {ierr = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);}
+    if (popup) {ierr = PetscDrawScalePopup(popup,minv,maxv);CHKERRQ(ierr);}
     for (j = 0; j < n; j++) {
       x_l = j;
       x_r = x_l + 1.0;
       for (i = 0; i < m; i++) {
         y_l   = m - i - 1.0;
         y_r   = y_l + 1.0;
-        color = PETSC_DRAW_BASIC_COLORS + (int)(scale*PetscAbsScalar(v[j*m+i]));
+        color = PetscDrawRealToColor(PetscAbsScalar(v[j*m+i]),minv,maxv);
         ierr  = PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       }
     }

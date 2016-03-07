@@ -142,6 +142,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
   ts->ops->interpolate     = TSInterpolate_Euler;
   ts->ops->linearstability = TSComputeLinearStability_Euler;
 
+  /* does not have adaptivity so delete adaptivity object */
+  ierr = TSAdaptDestroy(&ts->adapt);CHKERRQ(ierr);
+
   ierr = PetscNewLog(ts,&euler);CHKERRQ(ierr);
   ts->data = (void*)euler;
   PetscFunctionReturn(0);

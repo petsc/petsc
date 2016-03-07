@@ -31,15 +31,18 @@
 .  -draw_pause <pause> - Sets time (in seconds) that the
        program pauses after PetscDrawPause() has been called
        (0 is default, -1 implies until user input).
+.  -draw_cmap <name> - Sets the colormap to use.
+.  -draw_cmap_reverse - Reverses the colormap.
+.  -draw_cmap_brighten - Brighten (0 < beta < 1) or darken (-1 < beta < 0) the colormap.
 .  -draw_x_shared_colormap - Causes PETSc to use a shared
        colormap. By default PETSc creates a separate color
        for its windows, you must put the mouse into the graphics
        window to see  the correct colors. This options forces
        PETSc to use the default colormap which will usually result
        in bad contour plots.
-.  -draw_fast - does not create colormap for countour plots
+.  -draw_fast - Does not create colormap for countour plots.
 .  -draw_double_buffer - Uses double buffering for smooth animation.
--  -geometry - Indicates location and size of window
+-  -geometry - Indicates location and size of window.
 
    Level: beginner
 

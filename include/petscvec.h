@@ -466,8 +466,6 @@ PETSC_EXTERN PetscErrorCode VecLockPop(Vec);
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);
 
-PETSC_EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
-
 /*
     These numbers need to match the entries in
   the function table in vecimpl.h

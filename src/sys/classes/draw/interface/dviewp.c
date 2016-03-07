@@ -65,6 +65,10 @@ PetscErrorCode  PetscDrawGetViewPort(PetscDraw draw,PetscReal *xl,PetscReal *yl,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidRealPointer(xl,2);
+  PetscValidRealPointer(yl,3);
+  PetscValidRealPointer(xr,4);
+  PetscValidRealPointer(yr,5);
   *xl = draw->port_xl;
   *yl = draw->port_yl;
   *xr = draw->port_xr;
@@ -100,7 +104,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
@@ -301,6 +305,7 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 
   PetscFunctionBegin;
   if (!ports) PetscFunctionReturn(0);
+  PetscValidPointer(ports,1);
   /* reset Drawport of Window back to previous value */
   ierr = PetscDrawSetViewPort(ports->draw,ports->port_xl,ports->port_yl,ports->port_xr,ports->port_yr);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&ports->draw);CHKERRQ(ierr);
@@ -335,9 +340,8 @@ PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ports) {
-    if (port < 0 || port > ports->nports-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
-    ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
-  }
+  if (!ports) PetscFunctionReturn(0);
+  if (port < 0 || port > ports->nports-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
+  ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

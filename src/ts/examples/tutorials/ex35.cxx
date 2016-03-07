@@ -148,8 +148,9 @@ int main(int argc,char **argv)
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,user);CHKERRQ(ierr);
 
   ftime = 10.0;
-  ierr = TSSetDuration(ts,user->ntsteps,ftime);CHKERRQ(ierr);
-
+  ierr  = TSSetDuration(ts,user->ntsteps,ftime);CHKERRQ(ierr);
+  ierr  = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create the solution vector and set the initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

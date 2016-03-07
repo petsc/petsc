@@ -5,7 +5,7 @@ Parallel Mesh in 2 dimensions:
   1-cells: 18 26 29 26 26 18 29 26
   2-cells: 9 14 16 14 14 9 16 14
 Labels:
-  marker: 2 strata of sizes (13, 4)
+  marker: 1 strata of sizes (13)
   depth: 3 strata of sizes (10, 18, 9)
 DM Object:Simplicial Mesh 8 MPI processes
   type: plex
