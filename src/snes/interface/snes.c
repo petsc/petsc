@@ -3322,8 +3322,9 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || snes->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerDrawGetDrawLG(v,1,&lg);CHKERRQ(ierr);
@@ -3334,8 +3335,9 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   x    = (PetscReal)n;
   y    = 100.0*per;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || snes->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerDrawGetDrawLG(v,2,&lg);CHKERRQ(ierr);
@@ -3345,8 +3347,9 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   x    = (PetscReal)n;
   y    = (prev - rnorm)/prev;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || snes->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerDrawGetDrawLG(v,3,&lg);CHKERRQ(ierr);
@@ -3358,8 +3361,9 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   if (n > 2) { /*skip initial crazy value */
     ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   }
-  if (n < 20 || !(n % 5)) {
+  if (n < 20 || !(n % 5) || snes->reason) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
   prev = rnorm;
   PetscFunctionReturn(0);

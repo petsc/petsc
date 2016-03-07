@@ -65,10 +65,14 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
     PetscBool      isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-    ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-    ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+    if (isnull) PetscFunctionReturn(0);
 
+    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     /* first processor draw all node lines */
     if (!rank) {
       for (k=0; k<dd->P; k++) {
@@ -76,17 +80,19 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         for (xmin=(PetscReal)(k*(dd->M+1)); xmin<(PetscReal)(dd->M+(k*(dd->M+1))); xmin++) {
           ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
         }
-
         xmin = (PetscReal)(k*(dd->M+1)); xmax = xmin + (PetscReal)(dd->M - 1);
         for (ymin=0; ymin<(PetscReal)dd->N; ymin++) {
           ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK);CHKERRQ(ierr);
         }
       }
     }
-    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
-    for (k=0; k<dd->P; k++) {  /*Go through and draw for each plane*/
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    /*Go through and draw for each plane*/
+    for (k=0; k<dd->P; k++) {
       if ((k >= dd->zs) && (k < dd->ze)) {
         /* draw my box */
         ymin = dd->ys;
@@ -102,29 +108,28 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         xmin = dd->xs/dd->w;
         xmax =(dd->xe-1)/dd->w;
 
+        /* identify which processor owns the box */
+        ierr = PetscSNPrintf(node,sizeof(node),"%d",(int)rank);CHKERRQ(ierr);
+        ierr = PetscDrawString(draw,xmin+(dd->M+1)*k+.2,ymin+.3,PETSC_DRAW_RED,node);CHKERRQ(ierr);
         /* put in numbers*/
         base = (dd->base+(dd->xe-dd->xs)*(dd->ye-dd->ys)*(k-dd->zs))/dd->w;
-
-        /* Identify which processor owns the box */
-        sprintf(node,"%d",rank);
-        ierr = PetscDrawString(draw,xmin+(dd->M+1)*k+.2,ymin+.3,PETSC_DRAW_RED,node);CHKERRQ(ierr);
-
         for (y=ymin; y<=ymax; y++) {
           for (x=xmin+(dd->M+1)*k; x<=xmax+(dd->M+1)*k; x++) {
-            sprintf(node,"%d",(int)base++);
+            ierr = PetscSNPrintf(node,sizeof(node),"%d",(int)base++);CHKERRQ(ierr);
             ierr = PetscDrawString(draw,x,y,PETSC_DRAW_BLACK,node);CHKERRQ(ierr);
           }
         }
 
       }
     }
-    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     for (k=0-dd->s; k<dd->P+dd->s; k++) {
       /* Go through and draw for each plane */
       if ((k >= dd->Zs) && (k < dd->Ze)) {
-
         /* overlay ghost numbers, useful for error checking */
         base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs)/dd->w;
         ierr = ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
@@ -141,10 +146,8 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
             ycoord = y;
             /*Keep y wrap around points on drawing */
             if (y<0) ycoord = dd->N+y;
-
             if (y>=dd->N) ycoord = y-dd->N;
             xcoord = x;   /* Keep x wrap points on drawing */
-
             if (x<xmin) xcoord = xmax - (xmin-x);
             if (x>=xmax) xcoord = xmin + (x-xmax);
             ierr = PetscDrawString(draw,xcoord/dd->w,ycoord,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
@@ -154,8 +157,10 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
       }
     }
-    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = DMView_DA_Binary(da,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)

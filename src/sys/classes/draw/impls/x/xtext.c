@@ -6,9 +6,10 @@
 
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
 
-PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X*);
-PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont*,int,int);
-PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X*,PetscDrawXiFont*);
+static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X*);
+static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X*,PetscDrawXiFont*);
+static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont*,int,int);
+
 /*
     PetscDrawXiFontFixed - Return a pointer to the selected font.
 
@@ -48,7 +49,7 @@ static int act_nfonts = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiLoadFont"
-PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin,PetscDrawXiFont *font)
+static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin,PetscDrawXiFont *font)
 {
   char        font_name[100];
   XFontStruct *FontInfo;
@@ -76,7 +77,7 @@ PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin,PetscDrawXiFont *font)
 /* Code to find fonts and their characteristics */
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiInitFonts"
-PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
+static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
 {
   char        **names;
   int         cnt,i,j;
@@ -126,7 +127,7 @@ PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiMatchFontSize"
-PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *font,int w,int h)
+static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *font,int w,int h)
 {
   int i,max,imax,tmp;
 
