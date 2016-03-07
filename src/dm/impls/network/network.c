@@ -1040,9 +1040,11 @@ PetscErrorCode DMDestroy_Network(DM dm)
   PetscFunctionBegin;
   if (--network->refct > 0) PetscFunctionReturn(0);
   if (network->Je) {
+#if 0
     for (i=0; i<3*network->nEdges; i++) {
       ierr = MatDestroy(&network->Je[i]);CHKERRQ(ierr);
     }
+#endif
     ierr = PetscFree(network->Je);CHKERRQ(ierr);
   }
   if (network->Jv) {
