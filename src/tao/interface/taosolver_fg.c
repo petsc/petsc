@@ -262,6 +262,62 @@ PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao tao, Vec sepobj, PetscErrorCo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoSetSeparableObjectiveWeights"
+/*@
+  TaoSetSeparableObjectiveWeights - Give weights for the separable objective values. A vector can be used if only diagonal terms are used, otherwise a matrix can be give. If this function is not used, or if sigma_v and sigma_w are both NULL, then the default identity matrix will be used for weights.
+
+  Collective on Tao
+
+  Input Parameters:
++ tao - the Tao context
+. sigma_v - vector of weights (diagonal terms only)
+. n       - the number of weights (if using off-diagonal)
+. rows    - index list of rows for sigma_w
+. cols    - index list of columns for sigma_w
+- vals - array of weights
+
+
+
+  Note: Either sigma_v or sigma_w (or both) should be NULL
+
+  Level: intermediate
+
+.seealso: TaoSetSeparableObjectiveRoutine()
+@*/
+PetscErrorCode TaoSetSeparableObjectiveWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  ierr = VecDestroy(&tao->sep_weights_v);CHKERRQ(ierr);
+  tao->sep_weights_v=sigma_v;
+  if (sigma_v) {
+    ierr = PetscObjectReference((PetscObject)sigma_v);CHKERRQ(ierr);
+  }
+  if (vals) {
+    if (tao->sep_weights_n) {
+      ierr = PetscFree(tao->sep_weights_rows);CHKERRQ(ierr);
+      ierr = PetscFree(tao->sep_weights_cols);CHKERRQ(ierr);
+      ierr = PetscFree(tao->sep_weights_w);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc1(n,&tao->sep_weights_rows);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&tao->sep_weights_cols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&tao->sep_weights_w);CHKERRQ(ierr);
+    tao->sep_weights_n=n;
+    for (i=0;i<n;i++) {
+      tao->sep_weights_rows[i]=rows[i];
+      tao->sep_weights_cols[i]=cols[i];
+      tao->sep_weights_w[i]=vals[i];
+    }
+  } else {
+    tao->sep_weights_n=0;
+    tao->sep_weights_rows=0;
+    tao->sep_weights_cols=0;
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
 #define __FUNCT__ "TaoComputeSeparableObjective"
 /*@
   TaoComputeSeparableObjective - Computes a separable objective function vector at a given point (for least-square applications)
