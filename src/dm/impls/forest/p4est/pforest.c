@@ -280,7 +280,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     PetscInt   N[3] = {2,2,2}, P[3] = {0,0,0}, nretN = P4EST_DIM, nretP = P4EST_DIM, nretB = 2 * P4EST_DIM, i;
     PetscReal  B[6] = {0.0,1.0,0.0,1.0,0.0,1.0};
 
-    if (forest->setFromOptions) {
+    if (forest->setfromoptionscalled) {
       ierr = PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_size",N,&nretN,&flgN);CHKERRQ(ierr);
       ierr = PetscOptionsGetIntArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_periodicity",P,&nretP,&flgP);CHKERRQ(ierr);
       ierr = PetscOptionsGetRealArray(((PetscObject)dm)->options,prefix,"-dm_p4est_brick_bounds",B,&nretB,&flgB);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     if (isShell) {
       PetscReal R2 = 1., R1 = .55;
 
-      if (forest->setFromOptions) {
+      if (forest->setfromoptionscalled) {
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_shell_outer_radius",&R2,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_shell_inner_radius",&R1,NULL);CHKERRQ(ierr);
       }
@@ -317,7 +317,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
     else if (isSphere) {
       PetscReal R2 = 1., R1 = 0.191728, R0 = 0.039856;
 
-      if (forest->setFromOptions) {
+      if (forest->setfromoptionscalled) {
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_outer_radius",&R2,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_inner_radius",&R1,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_core_radius",&R0,NULL);CHKERRQ(ierr);
@@ -631,7 +631,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
                                                              0,           /* we don't allocate any per quadrant data */
                                                              NULL,        /* there is no special quadrant initialization */
                                                              (void *)dm)); /* this dm is the user context */
-    if (forest->setFromOptions) {
+    if (forest->setfromoptionscalled) {
       PetscBool       flgPattern, flgFractal;
       PetscInt        corner = 0;
       PetscInt        corners[P4EST_CHILDREN], ncorner = P4EST_CHILDREN;
@@ -713,7 +713,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMForestSetAdaptivityLabel(coarseDM,"coarsen");CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
       ierr = DMSetFineDM(coarseDM,dm);CHKERRQ(ierr);
-      if (forest->setFromOptions) {
+      if (forest->setfromoptionscalled) {
         ierr = DMSetFromOptions(coarseDM);CHKERRQ(ierr);
       }
       ierr = DMForestSetInitialRefinement(coarseDM,initLevel - 1);CHKERRQ(ierr);
@@ -3023,7 +3023,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       pforest->plex = newPlex;
     }
 
-    if (forest->setFromOptions) {
+    if (forest->setfromoptionscalled) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex);CHKERRQ(ierr);
       ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) newPlex);CHKERRQ(ierr);

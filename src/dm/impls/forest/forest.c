@@ -649,7 +649,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  forest->setFromOptions = PETSC_TRUE;
+  forest->setfromoptionscalled = PETSC_TRUE;
   ierr = DMForestGetTopology(dm, &oldTopo);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"DMForest Options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,256,&flg1);CHKERRQ(ierr);
@@ -859,7 +859,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   dm->data                    = forest;
   forest->refct               = 1;
   forest->data                = NULL;
-  forest->setFromOptions      = PETSC_FALSE;
+  forest->setfromoptionscalled      = PETSC_FALSE;
   forest->topology            = NULL;
   forest->base                = NULL;
   forest->adjDim              = PETSC_DEFAULT;

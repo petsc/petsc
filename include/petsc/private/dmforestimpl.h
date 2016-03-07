@@ -14,7 +14,7 @@ typedef struct {
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);
   PetscErrorCode             (*destroy)(DM);
   PetscErrorCode             (*ftemplate)(DM,DM);
-  PetscBool                  setFromOptions;
+  PetscBool                  setfromoptionscalled;
   DMForestTopology           topology;
   DM                         base;
   DM                         adapt;
