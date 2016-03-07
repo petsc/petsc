@@ -66,6 +66,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetCoordinates(draw,-3,-3,+3,+3);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,DrawFunction,(void*)Peaks);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();

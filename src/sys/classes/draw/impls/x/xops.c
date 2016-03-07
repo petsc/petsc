@@ -582,8 +582,7 @@ static PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
 
 static       PetscErrorCode PetscDrawGetSingleton_X(PetscDraw,PetscDraw*);
 static       PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw,PetscDraw*);
-PETSC_INTERN PetscErrorCode PetscDrawSave_X(PetscDraw);
-PETSC_INTERN PetscErrorCode PetscDrawSetSave_X(PetscDraw,const char[]);
+PETSC_INTERN PetscErrorCode PetscDrawGetImage_X(PetscDraw,unsigned char[][3],unsigned int*,unsigned int*,unsigned char*[]);
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                       PetscDrawFlush_X,
@@ -613,8 +612,8 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                       0,
                                       PetscDrawGetSingleton_X,
                                       PetscDrawRestoreSingleton_X,
-                                      PetscDrawSave_X,
-                                      PetscDrawSetSave_X,
+                                      0,
+                                      PetscDrawGetImage_X,
                                       0,
                                       PetscDrawArrow_X,
                                       PetscDrawCoordinateToPixel_X,
