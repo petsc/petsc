@@ -1833,6 +1833,8 @@ static PetscErrorCode DMPforestGetCellSFNodes(DM dm, PetscInt numClosureIndices,
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMGetPointSF(dm,&pointSF);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(pointSF,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+  nleaves = PetscMax(0,nleaves);
+  nroots = PetscMax(0,nroots);
   *numClosurePoints = numClosureIndices * (cEnd - cStart);
   ierr = PetscMalloc1(*numClosurePoints,closurePoints);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -2289,10 +2291,12 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     }
 
     /* now every cell has labeled the points in its closure, so we first make sure everyone agrees by reducing to roots, and the broadcast the agreements */
-    ierr = PetscSFReduceBegin(pointSF,nodeType,roots,roots,sfNodeReduce);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(pointSF,nodeType,roots,roots,sfNodeReduce);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(pointSF,nodeType,roots,roots);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(pointSF,nodeType,roots,roots);CHKERRQ(ierr);
+    if (size > 1) {
+      ierr = PetscSFReduceBegin(pointSF,nodeType,roots,roots,sfNodeReduce);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(pointSF,nodeType,roots,roots,sfNodeReduce);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(pointSF,nodeType,roots,roots);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(pointSF,nodeType,roots,roots);CHKERRQ(ierr);
+    }
 
     {
       PetscInt pStartC, pEndC;
