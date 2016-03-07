@@ -2392,17 +2392,6 @@ static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofP
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPforestGetLabelsFinalized"
-static PetscErrorCode DMPforestGetLabelsFinalized(DM dm, PetscBool *finalized)
-{
-  DM_Forest_pforest *pforest = (DM_Forest_pforest *) ((DM_Forest *)dm->data)->data;
-
-  PetscFunctionBegin;
-  *finalized = pforest->labelsFinalized;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMPforestLabelsInitialize"
 static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
 {
@@ -2797,22 +2786,17 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 {
   DM_Forest_pforest *pforest = (DM_Forest_pforest *) ((DM_Forest *) dm->data)->data;
   DM                adapt;
-  PetscBool         labelsFinalized = PETSC_TRUE;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (pforest->labelsFinalized) PetscFunctionReturn(0);
-  ierr = DMGetCoarseDM(dm,&adapt);CHKERRQ(ierr);
-  if (adapt) {
-    ierr = DMPforestGetLabelsFinalized(adapt,&labelsFinalized);CHKERRQ(ierr);
+  pforest->labelsFinalized = PETSC_TRUE;
+  ierr = DMForestGetAdaptivityForest(dm,&adapt);CHKERRQ(ierr);
+  if (!adapt) {
+    /* Initialize labels from the base dm */
+    ierr = DMPforestLabelsInitialize(dm,plex);CHKERRQ(ierr);
   }
-  if (!adapt || !labelsFinalized) {
-    ierr = DMGetFineDM(dm,&adapt);CHKERRQ(ierr);
-    if (adapt) {
-      ierr = DMPforestGetLabelsFinalized(adapt,&labelsFinalized);CHKERRQ(ierr);
-    }
-  }
-  if (adapt && labelsFinalized) {
+  else {
     PetscInt    dofPerDim[4]={1, 1, 1, 1};
     PetscSF     transferForward, transferBackward;
     PetscInt    pStart, pEnd, pStartA, pEndA;
@@ -2879,10 +2863,6 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     ierr = PetscSFDestroy(&transferForward);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&transferBackward);CHKERRQ(ierr);
     pforest->labelsFinalized = PETSC_TRUE;
-  }
-  else {
-    /* Initialize labels from the base dm */
-    ierr = DMPforestLabelsInitialize(dm,plex);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
