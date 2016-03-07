@@ -1083,6 +1083,10 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
     }
     idx += rootDegree[p];
   }
+  ierr = PetscFree(leafPoints);CHKERRQ(ierr);
+  ierr = PetscFree(rootStrata);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfLabel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
