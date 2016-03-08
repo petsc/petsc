@@ -857,6 +857,10 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!nvtxs) {
+    ierr = PCBDDCGraphResetCSR(mat_graph);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (mat_graph->nvtxs_csr == nvtxs) {
     if (mat_graph->xadj == xadj && mat_graph->adjncy == adjncy) same_data = PETSC_TRUE;
     if (!same_data && mat_graph->xadj[nvtxs] == xadj[nvtxs]) {
@@ -908,8 +912,10 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidIntPointer(xadj,3);
-  PetscValidIntPointer(adjncy,4);
+  if (nvtxs) {
+    PetscValidIntPointer(xadj,3);
+    PetscValidIntPointer(adjncy,4);
+  }
   if (copymode != PETSC_COPY_VALUES && copymode != PETSC_OWN_POINTER)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d",copymode);
   ierr = PetscTryMethod(pc,"PCBDDCSetLocalAdjacencyGraph_C",(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode),(pc,nvtxs,xadj,adjncy,copymode));CHKERRQ(ierr);
   /* free arrays if PCBDDC is not the PC type */
