@@ -24,6 +24,7 @@ class Configure(config.package.GNUPackage):
     help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
     help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
     help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
+    help.addArgument('MAKE', '-with-make-exec=<executable>',                 nargs.Arg(None, None, 'Make executable to look for'))
     return
 
   def formGNUConfigureArgs(self):
@@ -64,9 +65,10 @@ class Configure(config.package.GNUPackage):
 
   def configureMake(self):
     '''Check for user specified make - or gmake, make'''
-    if self.framework.clArgDB.has_key('with-make'):
-      if not self.getExecutable(self.argDB['with-make'],getFullPath = 1,resultName = 'make'):
-        raise RuntimeError('Error! User provided make not found :'+self.argDB['with-make'])
+    if 'with-make-exec' in self.argDB:
+      self.log.write('Looking for specified Make executable '+self.argDB['with-make-exec']+'\n')
+      if not self.getExecutable(self.argDB['with-make-exec'], getFullPath=1, resultName='make'):
+        raise RuntimeError('Error! User provided make not found :'+self.argDB['with-make-exec'])
       self.found = 1
       return
     if not self.getExecutable('gmake', getFullPath = 1,resultName = 'make') and not self.getExecutable('make', getFullPath = 1,resultName = 'make'):
