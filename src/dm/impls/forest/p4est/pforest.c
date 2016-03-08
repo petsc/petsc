@@ -707,12 +707,12 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       DM                coarseDM;
 
       ierr = DMForestTemplate(dm,MPI_COMM_NULL,&coarseDM);CHKERRQ(ierr);
+      ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_FOREST_COARSEN);CHKERRQ(ierr);
       ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);
       ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
       ierr = DMLabelSetDefaultValue(coarsen,DM_FOREST_COARSEN);CHKERRQ(ierr);
       ierr = DMForestSetAdaptivityLabel(coarseDM,"coarsen");CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
-      ierr = DMSetFineDM(coarseDM,dm);CHKERRQ(ierr);
       if (forest->setfromoptionscalled) {
         ierr = DMSetFromOptions(coarseDM);CHKERRQ(ierr);
       }

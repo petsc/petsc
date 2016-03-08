@@ -251,9 +251,21 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   forest = (DM_Forest *) dm->data;
   if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
-  ierr = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);
-  ierr = DMDestroy(&(forest->adapt));CHKERRQ(ierr);
-  forest->adapt = adapt;
+  switch (forest->adaptPurpose) {
+  case DM_FOREST_KEEP:
+    ierr = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);
+    ierr = DMDestroy(&(forest->adapt));CHKERRQ(ierr);
+    forest->adapt = adapt;
+    break;
+  case DM_FOREST_REFINE:
+    ierr = DMSetCoarseDM(dm,adapt);CHKERRQ(ierr);
+    break;
+  case DM_FOREST_COARSEN:
+    ierr = DMSetFineDM(dm,adapt);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid adaptivity purpose");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -262,11 +274,46 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
 PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
 {
   DM_Forest        *forest;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   forest = (DM_Forest *) dm->data;
-  *adapt = forest->adapt;
+  switch (forest->adaptPurpose) {
+  case DM_FOREST_KEEP:
+    *adapt = forest->adapt;
+    break;
+  case DM_FOREST_REFINE:
+    ierr = DMGetCoarseDM(dm,adapt);CHKERRQ(ierr);
+    break;
+  case DM_FOREST_COARSEN:
+    ierr = DMGetFineDM(dm,adapt);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid adaptivity purpose");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdaptivityPurpose"
+PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMForestAdaptivityPurpose purpose)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  forest = (DM_Forest *) dm->data;
+  if (purpose != forest->adaptPurpose) {
+    DM adapt;
+
+    ierr = DMForestGetAdaptivityForest(dm,&adapt);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);
+    ierr = DMForestSetAdaptivityForest(dm,NULL);CHKERRQ(ierr);
+    forest->adaptPurpose = purpose;
+    ierr = DMForestSetAdaptivityForest(dm,adapt);CHKERRQ(ierr);
+    ierr = DMDestroy(&adapt);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

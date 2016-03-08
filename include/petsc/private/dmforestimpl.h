@@ -18,6 +18,7 @@ typedef struct {
   DMForestTopology           topology;
   DM                         base;
   DM                         adapt;
+  DMForestAdaptivityPurpose  adaptPurpose;
   PetscInt                   adjDim;
   PetscInt                   overlap;
   PetscInt                   minRefinement;
