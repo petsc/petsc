@@ -2513,6 +2513,10 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
       continue;
     }
     ierr = DMGetLabel(base,label->name,&baseLabel);CHKERRQ(ierr);
+    if (!baseLabel) {
+      next = next->next;
+      continue;
+    }
     ierr = DMLabelCreateIndex(baseLabel,pStartBase,pEndBase);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; p++) {
       PetscInt s, c = -1, l;
