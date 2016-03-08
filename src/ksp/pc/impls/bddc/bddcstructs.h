@@ -120,6 +120,7 @@ struct _PCBDDCSubSchurs {
   PCBDDCReuseSolvers reuse_solver;
   /* change of variables */
   KSP       *change;
+  IS        *change_primal_sub;
   PetscBool change_with_qr;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;

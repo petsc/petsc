@@ -1360,6 +1360,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   computeconstraintsmatrix = PETSC_FALSE;
 
   /* check parameters' compatibility */
+  if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
   pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;

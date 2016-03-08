@@ -413,7 +413,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   Mat                    S_all;
   Mat                    global_schur_subsets,work_mat,*submats;
   ISLocalToGlobalMapping l2gmap_subsets;
-  IS                     is_I,is_I_layer,*change_primal_sub;
+  IS                     is_I,is_I_layer;
   IS                     all_subsets,all_subsets_mult,all_subsets_n;
   PetscInt               *nnz,*all_local_idx_N;
   PetscInt               *auxnum1,*auxnum2;
@@ -706,17 +706,18 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&sub_schurs->is_Ej_all);CHKERRQ(ierr);
   }
 
-  change_primal_sub = NULL;
   if (change) {
     ISLocalToGlobalMapping BtoS;
     IS                     change_primal_B;
     IS                     change_primal_all;
 
-    ierr = PetscMalloc1(sub_schurs->n_subs,&change_primal_sub);CHKERRQ(ierr);
+    if (sub_schurs->change_primal_sub) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+    if (sub_schurs->change) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+    ierr = PetscMalloc1(sub_schurs->n_subs,&sub_schurs->change_primal_sub);CHKERRQ(ierr);
     for (i=0;i<sub_schurs->n_subs;i++) {
       ISLocalToGlobalMapping NtoS;
       ierr = ISLocalToGlobalMappingCreateIS(sub_schurs->is_subs[i],&NtoS);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApplyIS(NtoS,IS_GTOLM_DROP,change_primal,&change_primal_sub[i]);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApplyIS(NtoS,IS_GTOLM_DROP,change_primal,&sub_schurs->change_primal_sub[i]);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&NtoS);CHKERRQ(ierr);
     }
     ierr = ISGlobalToLocalMappingApplyIS(sub_schurs->BtoNmap,IS_GTOLM_DROP,change_primal,&change_primal_B);CHKERRQ(ierr);
@@ -724,28 +725,24 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = ISGlobalToLocalMappingApplyIS(BtoS,IS_GTOLM_DROP,change_primal_B,&change_primal_all);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&BtoS);CHKERRQ(ierr);
     ierr = ISDestroy(&change_primal_B);CHKERRQ(ierr);
-    if (!sub_schurs->change) {
-      ierr = PetscCalloc1(sub_schurs->n_subs,&sub_schurs->change);CHKERRQ(ierr);
-    }
+    ierr = PetscMalloc1(sub_schurs->n_subs,&sub_schurs->change);CHKERRQ(ierr);
     for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-      if (!sub_schurs->change[i]) {
-        Mat change_sub;
+      Mat change_sub;
 
-        ierr = KSPCreate(PETSC_COMM_SELF,&sub_schurs->change[i]);CHKERRQ(ierr);
-        ierr = KSPSetType(sub_schurs->change[i],KSPPREONLY);CHKERRQ(ierr);
-        if (!sub_schurs->change_with_qr) {
-          ierr = MatGetSubMatrix(change,sub_schurs->is_subs[i],sub_schurs->is_subs[i],MAT_INITIAL_MATRIX,&change_sub);CHKERRQ(ierr);
-        } else {
-          Mat change_subt;
-          ierr = MatGetSubMatrix(change,sub_schurs->is_subs[i],sub_schurs->is_subs[i],MAT_INITIAL_MATRIX,&change_subt);CHKERRQ(ierr);
-          ierr = MatConvert(change_subt,MATSEQDENSE,MAT_INITIAL_MATRIX,&change_sub);CHKERRQ(ierr);
-          ierr = MatDestroy(&change_subt);CHKERRQ(ierr);
-        }
-        ierr = KSPSetOperators(sub_schurs->change[i],change_sub,change_sub);CHKERRQ(ierr);
-        ierr = MatDestroy(&change_sub);CHKERRQ(ierr);
-        ierr = KSPSetOptionsPrefix(sub_schurs->change[i],"sub_schurs_change_");CHKERRQ(ierr);
+      ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_SELF,&sub_schurs->change[i]);CHKERRQ(ierr);
+      ierr = KSPSetType(sub_schurs->change[i],KSPPREONLY);CHKERRQ(ierr);
+      if (!sub_schurs->change_with_qr) {
+        ierr = MatGetSubMatrix(change,sub_schurs->is_subs[i],sub_schurs->is_subs[i],MAT_INITIAL_MATRIX,&change_sub);CHKERRQ(ierr);
+      } else {
+        Mat change_subt;
+        ierr = MatGetSubMatrix(change,sub_schurs->is_subs[i],sub_schurs->is_subs[i],MAT_INITIAL_MATRIX,&change_subt);CHKERRQ(ierr);
+        ierr = MatConvert(change_subt,MATSEQDENSE,MAT_INITIAL_MATRIX,&change_sub);CHKERRQ(ierr);
+        ierr = MatDestroy(&change_subt);CHKERRQ(ierr);
       }
+      ierr = KSPSetOperators(sub_schurs->change[i],change_sub,change_sub);CHKERRQ(ierr);
+      ierr = MatDestroy(&change_sub);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(sub_schurs->change[i],"sub_schurs_change_");CHKERRQ(ierr);
     }
     ierr = ISDestroy(&change_primal_all);CHKERRQ(ierr);
   }
@@ -1232,7 +1229,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       }
       /* insert S_E values */
       for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
-      if (change) {
+      if (sub_schurs->change) {
         Mat            change_sub,SEj,T;
         const PetscInt *idxs;
         PetscInt       nz;
@@ -1252,8 +1249,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatCopy(T,SEj,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatDestroy(&T);CHKERRQ(ierr);
         /* currently there's no support for ZeroRowsColumns with A dense */
-        ierr = ISGetIndices(change_primal_sub[i],&idxs);CHKERRQ(ierr);
-        ierr = ISGetLocalSize(change_primal_sub[i],&nz);CHKERRQ(ierr);
+        ierr = ISGetIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(sub_schurs->change_primal_sub[i],&nz);CHKERRQ(ierr);
         for (j=0;j<nz;j++) {
           PetscInt k;
 
@@ -1261,7 +1258,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           for (k=0;k<subset_size;k++) work[idxs[j]+k*subset_size] = 0.;
           work[idxs[j]*(subset_size+1)] = 1.0;
         }
-        ierr = ISRestoreIndices(change_primal_sub[i],&idxs);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
         ierr = MatDestroy(&SEj);CHKERRQ(ierr);
       }
       if (deluxe) {
@@ -1389,7 +1386,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
              will be properly accessed later during adaptive selection */
           if (S_lower_triangular) {
             PetscInt k;
-            if (change) {
+            if (sub_schurs->change) {
               for (k=0;k<subset_size;k++) {
                 for (j=k;j<subset_size;j++) {
                   work[k*subset_size+j] = S_data[cum2+k*size_schur+j];
@@ -1411,7 +1408,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
               }
             }
           }
-          if (change) {
+          if (sub_schurs->change) {
             Mat change_sub,SEj,T;
 
             /* change basis */
@@ -1432,8 +1429,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             {
               const PetscInt *idxs;
               PetscInt n,j;
-              ierr = ISGetLocalSize(change_primal_sub[i],&n);CHKERRQ(ierr);
-              ierr = ISGetIndices(change_primal_sub[i],&idxs);CHKERRQ(ierr);
+              ierr = ISGetLocalSize(sub_schurs->change_primal_sub[i],&n);CHKERRQ(ierr);
+              ierr = ISGetIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
               for (j=0;j<n;j++) {
                 PetscInt k;
                 for (k=0;k<subset_size;k++) {
@@ -1441,7 +1438,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
                 }
                 work[idxs[j] + idxs[j]*subset_size] = 1./PETSC_SMALL;
               }
-              ierr = ISRestoreIndices(change_primal_sub[i],&idxs);CHKERRQ(ierr);
+              ierr = ISRestoreIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
             }
             ierr = MatDestroy(&SEj);CHKERRQ(ierr);
           }
@@ -1522,12 +1519,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = PetscFree(schur_factor);CHKERRQ(ierr);
     ierr = VecDestroy(&Dall);CHKERRQ(ierr);
   }
-  if (change_primal_sub) {
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = ISDestroy(&change_primal_sub[i]);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscFree(change_primal_sub);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = ISDestroy(&is_I_layer);CHKERRQ(ierr);
@@ -1765,9 +1756,11 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   if (sub_schurs->change) {
     for (i=0;i<sub_schurs->n_subs;i++) {
       ierr = KSPDestroy(&sub_schurs->change[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(&sub_schurs->change_primal_sub[i]);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(sub_schurs->change);CHKERRQ(ierr);
+  ierr = PetscFree(sub_schurs->change_primal_sub);CHKERRQ(ierr);
   sub_schurs->n_subs = 0;
   PetscFunctionReturn(0);
 }

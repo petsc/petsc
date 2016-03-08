@@ -1098,11 +1098,11 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       St = Starray + cumarray;
     }
     /* see if we can save some work */
-    if (sub_schurs->n_subs == 1) {
+    if (sub_schurs->n_subs == 1 && pcbddc->use_deluxe_scaling) {
       ierr = PetscMemcmp(S,St,subset_size*subset_size*sizeof(PetscScalar),&same_data);CHKERRQ(ierr);
     }
 
-    if (same_data) { /* there's no need of constraints here, deluxe scaling is enough */
+    if (same_data && !sub_schurs->change) { /* there's no need of constraints here */
       B_neigs = 0;
     } else {
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
@@ -1110,13 +1110,19 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         PetscBLASInt B_IL, B_IU;
         PetscReal    eps = -1.0; /* dlamch? */
         PetscInt     nmin_s;
+        PetscBool    compute_range = PETSC_FALSE;
 
         if (pcbddc->dbg_flag) {
           PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Computing for sub %d/%d %d %d.\n",i,sub_schurs->n_subs,subset_size,pcbddc->mat_graph->count[idxs[0]]);
         }
 
+        compute_range = PETSC_FALSE;
+        if (thresh > 1.+PETSC_SMALL && !same_data) {
+          compute_range = PETSC_TRUE;
+        }
+
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        if (thresh > 1.+PETSC_SMALL) {
+        if (compute_range) {
 
           /* ask for eigenvalues larger than thresh */
 #if defined(PETSC_USE_COMPLEX)
@@ -1124,7 +1130,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 #else
           PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
 #endif
-        } else {
+        } else if (!same_data) {
           B_IU = PetscMax(1,PetscMin(B_N,nmax));
           B_IL = 1;
 #if defined(PETSC_USE_COMPLEX)
@@ -1132,6 +1138,17 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 #else
           PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","I","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
 #endif
+        } else { /* same_data is true, so get the adaptive function requested by the user */
+          PetscInt k;
+          if (!sub_schurs->change_primal_sub) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+          ierr = ISGetLocalSize(sub_schurs->change_primal_sub[i],&nmax);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(nmax,&B_neigs);CHKERRQ(ierr);
+          nmin = nmax;
+          ierr = PetscMemzero(eigv,subset_size*nmax*sizeof(PetscScalar));CHKERRQ(ierr);
+          for (k=0;k<nmax;k++) {
+            eigs[k] = 1./PETSC_SMALL;
+            eigv[k*(subset_size+1)] = 1.0;
+          }
         }
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         if (B_ierr) {
@@ -6232,7 +6249,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
     ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,PETSC_FALSE,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,NULL,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE,0,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {
     PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
-    PetscBool isseqaij;
+    PetscBool isseqaij,need_change = PETSC_FALSE;;
     PetscInt  benign_n;
     Mat       change = NULL;
     Vec       scaling = NULL;
@@ -6259,9 +6276,17 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
     } else {
       benign_n = 0;
     }
-    /* If the user defines additional constraints, we import them here.
-       We need to compute the change of basis according to the quadrature weights attached to pmat via MatSetNearNullSpace, and this could not be done, at the moment, without some hacking */
+    /* sub_schurs->change is a local object; instead, PCBDDCConstraintsSetUp and the quantities used in the test below are logically collective on pc.
+       We need a global reduction to avoid possible deadlocks.
+       We assume that sub_schurs->change is created once, and then reused for different solves, unless the topography has been recomputed */
     if (pcbddc->adaptive_userdefined || (pcbddc->deluxe_zerorows && !pcbddc->use_change_of_basis)) {
+      PetscBool have_loc_change = !!(sub_schurs->change);
+      ierr = MPIU_Allreduce(&have_loc_change,&need_change,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      need_change = !need_change;
+    }
+    /* If the user defines additional constraints, we import them here.
+       We need to compute the change of basis according to the quadrature weights attached to pmat via MatSetNearNullSpace, and this could not be done (at the moment) without some hacking */
+    if (need_change) {
       PC_IS   *pcisf;
       PC_BDDC *pcbddcf;
       PC      pcf;
