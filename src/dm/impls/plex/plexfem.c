@@ -433,7 +433,11 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode 
         ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
         for (d = 0; d < spDim; ++d) {
           if (funcs[f]) {
-            ierr = PetscDualSpaceApply(sp[f], d, time, &geom, numComp[f], funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+            ierr = PetscDualSpaceApply(sp[f], d, time, &geom, numComp[f], funcs[f], ctx, &values[v]);
+            if (ierr) {
+              ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+              CHKERRQ(ierr);
+            }
           } else {
             for (comp = 0; comp < numComp[f]; ++comp) values[v+comp] = 0.0;
           }
