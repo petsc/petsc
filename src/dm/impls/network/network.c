@@ -1035,31 +1035,13 @@ PetscErrorCode DMDestroy_Network(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*) dm->data;
-  PetscInt       i;
 
   PetscFunctionBegin;
   if (--network->refct > 0) PetscFunctionReturn(0);
   if (network->Je) {
-#if 0
-    for (i=0; i<3*network->nEdges; i++) {
-      ierr = MatDestroy(&network->Je[i]);CHKERRQ(ierr);
-    }
-#endif
     ierr = PetscFree(network->Je);CHKERRQ(ierr);
   }
   if (network->Jv) {
-    PetscInt       v,vStart,vEnd,nedges,*vptr=network->Jvptr;
-    const PetscInt *edges;
-#if 0
-    ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
-    for (v=vStart; v<vEnd; v++) {
-      ierr = MatDestroy(&network->Jv[vptr[v-vStart]]);CHKERRQ(ierr);
-      ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
-      for (i=0; i<2*nedges; i++) {
-        ierr = MatDestroy(&network->Jv[vptr[v-vStart]+i+1]);CHKERRQ(ierr);
-      }
-    }
-#endif
     ierr = PetscFree(network->Jvptr);CHKERRQ(ierr);
     ierr = PetscFree(network->Jv);CHKERRQ(ierr);
   }
