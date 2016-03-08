@@ -19,6 +19,7 @@
 #define dmgetlabel_                  DMGETLABEL
 #define dmgetstratumsize_            DMGETSTRATUMSIZE
 #define dmgetstratumis_              DMGETSTRATUMIS
+#define dmremovelabel_               DMREMOVELABEL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmview_                      dmview
 #define dmsetoptionsprefix_          dmsetoptionsprefix
@@ -36,6 +37,7 @@
 #define dmgetlabel_                  dmgetlabel
 #define dmgetstratumsize_            dmgetstratumsize
 #define dmgetstratumis_              dmgetstratumis
+#define dmremovelabel_               dmremovelabel
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL dmgetmattype_(DM *mm,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
@@ -173,5 +175,14 @@ PETSC_EXTERN void PETSC_STDCALL dmgetstratumis_(DM *dm, CHAR name PETSC_MIXED_LE
 
   FIXCHAR(name, lenN, lname);
   *ierr = DMGetStratumIS(*dm, lname, *value, is);
+  FREECHAR(name, lname);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmremovelabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), DMLabel *label, int *ierr PETSC_END_LEN(lenN))
+{
+  char *lname;
+
+  FIXCHAR(name, lenN, lname);
+  *ierr = DMRemoveLabel(*dm, lname, label);
   FREECHAR(name, lname);
 }
