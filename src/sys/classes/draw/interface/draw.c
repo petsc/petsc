@@ -276,7 +276,7 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscDrawMovieSave(const char[],PetscInt,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawMovieSave(const char[],PetscInt,const char[],PetscInt,const char[]);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawDestroy_Private"
@@ -293,7 +293,7 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
       const char *fname = draw->savefilename;
       const char *imext = draw->saveimageext;
       const char *mvext = draw->savemovieext;
-      ierr = PetscDrawMovieSave(fname,draw->savefilecount,imext,mvext);CHKERRQ(ierr);
+      ierr = PetscDrawMovieSave(fname,draw->savefilecount,imext,draw->savemoviefps,mvext);CHKERRQ(ierr);
     }
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }

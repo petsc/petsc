@@ -155,6 +155,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   draw->savemovieext   = NULL;
   draw->savefilecount  = 0;
   draw->savesinglefile = PETSC_FALSE;
+  draw->savemoviefps   = PETSC_DECIDE;
 
   ierr = PetscDrawSetCurrentPoint(draw,.5,.9);CHKERRQ(ierr);
 
@@ -409,14 +410,15 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     char      filename[PETSC_MAX_PATH_LEN] = "";
     char      movieext[PETSC_MAX_PATH_LEN] = ".m4v";
     PetscBool save,movie;
-    ierr = PetscOptionsBool("-draw_save_single_file","Each new image replaces previous image in file","PetscDrawSetSave",draw->savesinglefile,&draw->savesinglefile,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-draw_save","Save graphics to image file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
     ierr = PetscOptionsString("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movieext,movieext,PETSC_MAX_PATH_LEN,&movie);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-draw_save_movie_fps","Set frames per second in saved movie (X Windows only)",__FUNCT__,draw->savemoviefps,&draw->savemoviefps,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_single_file","Each new image replaces previous image in file",__FUNCT__,draw->savesinglefile,&draw->savesinglefile,NULL);CHKERRQ(ierr);
     if (save || movie) {ierr = PetscDrawSetSave(draw,save?filename:NULL,movie?movieext:NULL);CHKERRQ(ierr);}
     ierr = PetscOptionsString("-draw_save_final_image","Save graphics to file (X Windows only)","PetscDrawSetSaveFinalImage",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
     if (save) {ierr = PetscDrawSetSaveFinalImage(draw,filename);CHKERRQ(ierr);}
-    ierr = PetscOptionsBool("-draw_save_on_clear","Save graphics to file (X Windows only) on each clear","PetscDrawSetSave",draw->saveonclear,&draw->saveonclear,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file (X Windows only) on each flush","PetscDrawSetSave",draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_on_clear","Save graphics to file (X Windows only) on each clear",__FUNCT__,draw->saveonclear,&draw->saveonclear,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file (X Windows only) on each flush",__FUNCT__,draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
   }
 #endif
   ierr = PetscOptionsReal("-draw_pause","Amount of time that program pauses after plots","PetscDrawSetPause",draw->pause,&draw->pause,NULL);CHKERRQ(ierr);

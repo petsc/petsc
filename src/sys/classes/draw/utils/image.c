@@ -1,7 +1,7 @@
 #include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
 
 PETSC_EXTERN PetscErrorCode PetscDrawImageSave(const char[],const char[],unsigned char[][3],unsigned int,unsigned int,const unsigned char[]);
-PETSC_EXTERN PetscErrorCode PetscDrawMovieSave(const char[],PetscInt,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawMovieSave(const char[],PetscInt,const char[],PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawImageCheckFormat(const char *[]);
 PETSC_EXTERN PetscErrorCode PetscDrawMovieCheckFormat(const char *[]);
 
@@ -338,7 +338,7 @@ PetscErrorCode PetscDrawMovieCheckFormat(const char *ext[])
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawMovieSave"
-PetscErrorCode PetscDrawMovieSave(const char basename[],PetscInt count,const char imext[],const char mvext[])
+PetscErrorCode PetscDrawMovieSave(const char basename[],PetscInt count,const char imext[],PetscInt fps,const char mvext[])
 {
   PetscBool      imgif;
   PetscErrorCode ierr;
@@ -356,19 +356,25 @@ PetscErrorCode PetscDrawMovieSave(const char basename[],PetscInt count,const cha
   /* use ffmpeg to generate a movie */
   {
     PetscInt i;
-    char     filelist[PETSC_MAX_PATH_LEN];
-    char     command[64+PETSC_MAX_PATH_LEN*2];
     FILE     *fd;
+    char     ffmpeg[64] = "ffmpeg -loglevel error -y", framerate[24] = "";
+    char     input[PETSC_MAX_PATH_LEN], output[PETSC_MAX_PATH_LEN];
+    char     command[sizeof(ffmpeg)+sizeof(framerate)+PETSC_MAX_PATH_LEN*2];
+    if (fps > 0 && !imgif) { /* ffmpeg seems to have trouble with non-animated GIF input */
+      ierr = PetscSNPrintf(framerate,sizeof(framerate)," -framerate %d",(int)fps);CHKERRQ(ierr);
+      ierr = PetscStrcat(ffmpeg,framerate);CHKERRQ(ierr);
+    }
+    ierr = PetscSNPrintf(input,sizeof(input),"%s/%s_%%d%s",basename,basename,imext);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(output,sizeof(output),"%s%s",basename,mvext);CHKERRQ(ierr);
     if (imgif) {
-      ierr = PetscSNPrintf(filelist,sizeof(filelist),"%s/%s.filelist",basename,basename);CHKERRQ(ierr);
-      ierr = PetscFOpen(PETSC_COMM_SELF,filelist,"w",&fd);CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"# ffmpeg -f concat -i \"%s.filelist\" \"%s%s\"\n",basename,basename,mvext);CHKERRQ(ierr);
+      ierr = PetscStrcat(ffmpeg," -f concat");CHKERRQ(ierr);
+      ierr = PetscSNPrintf(input,sizeof(input),"%s/%s.filelist",basename,basename);CHKERRQ(ierr);
+      ierr = PetscFOpen(PETSC_COMM_SELF,input,"w",&fd);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"# ffmpeg%s -f concat -i \"%s.filelist\" \"%s\"\n",framerate,basename,output);CHKERRQ(ierr);
       for (i=0; i<count; i++) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"file '%s_%d%s'\n",basename,i,imext);CHKERRQ(ierr);}
       ierr = PetscFClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(command,sizeof(command),"ffmpeg -loglevel error -f concat -i \"%s/%s.filelist\" \"%s%s\"",basename,basename,basename,mvext);CHKERRQ(ierr);
-    } else {
-      ierr = PetscSNPrintf(command,sizeof(command),"ffmpeg -loglevel error -i \"%s/%s_%%d%s\" \"%s%s\"",basename,basename,imext,basename,mvext);CHKERRQ(ierr);
     }
+    ierr = PetscSNPrintf(command,sizeof(command),"%s -i \"%s\" \"%s\"",ffmpeg,input,output);CHKERRQ(ierr);
     ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
     ierr = PetscPClose(PETSC_COMM_SELF,fd,NULL);CHKERRQ(ierr);
   }
