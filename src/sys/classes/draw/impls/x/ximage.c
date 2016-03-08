@@ -6,27 +6,30 @@
 
 PETSC_INTERN PetscErrorCode PetscDrawGetImage_X(PetscDraw,unsigned char[][3],unsigned int*,unsigned int*,unsigned char*[]);
 
-/*
-   Get RGB color entries out of the X colormap
-*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiGetColorsRGB"
-static PetscErrorCode PetscDrawXiGetColorsRGB(PetscDraw_X *Xwin,unsigned char rgb[256][3])
-{
-  int    k;
-  XColor colordef[256];
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscArgSortPixVal"
+PETSC_STATIC_INLINE PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[256],int idx[],int right)
+{
+  PetscDrawXiPixVal vl;
+  int               i,last,tmp;
+  PetscErrorCode    ierr;
+# define            SWAP(a,b) {tmp=a;a=b;b=tmp;}
   PetscFunctionBegin;
-  for (k=0; k<256; k++) {
-    colordef[k].pixel = Xwin->cmapping[k];
-    colordef[k].flags = DoRed|DoGreen|DoBlue;
+  if (right <= 1) {
+    if (right == 1) {
+      if (v[idx[0]] > v[idx[1]]) SWAP(idx[0],idx[1]);
+    }
+    PetscFunctionReturn(0);
   }
-  XQueryColors(Xwin->disp,Xwin->cmap,colordef,256);
-  for (k=0; k<256; k++) {
-    rgb[k][0] = (unsigned char)(colordef[k].red   >> 8);
-    rgb[k][1] = (unsigned char)(colordef[k].green >> 8);
-    rgb[k][2] = (unsigned char)(colordef[k].blue  >> 8);
-  }
+  SWAP(idx[0],idx[right/2]);
+  vl = v[idx[0]]; last = 0;
+  for (i=1; i<=right; i++)
+    if (v[idx[i]] < vl) {last++; SWAP(idx[last],idx[i]);}
+  SWAP(idx[0],idx[last]);
+  ierr = PetscArgSortPixVal(v,idx,last-1);CHKERRQ(ierr);
+  ierr = PetscArgSortPixVal(v,idx+last+1,right-(last+1));CHKERRQ(ierr);
+# undef SWAP
   PetscFunctionReturn(0);
 }
 
@@ -34,18 +37,22 @@ static PetscErrorCode PetscDrawXiGetColorsRGB(PetscDraw_X *Xwin,unsigned char rg
    Map a pixel value to PETSc color value (index in the colormap)
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiPixelToColor"
-PETSC_STATIC_INLINE int PetscDrawXiPixelToColor(PetscDraw_X *Xwin,PetscDrawXiPixVal pixval)
+#define __FUNCT__ "PetscFindPixVal"
+PETSC_STATIC_INLINE int PetscDrawXiPixelToColor(PetscDraw_X *Xwin,const int arg[256],PetscDrawXiPixVal pix)
 {
-  int               color;
-  PetscDrawXiPixVal *cmap = Xwin->cmapping;
-
-  PetscFunctionBegin;
-  for (color=0; color<256; color++)   /* slow linear search */
-    if (cmap[color] == pixval) break; /* found color */
-  if (PetscUnlikely(color == 256))    /* should not happen */
-    color = PETSC_DRAW_BLACK;
-  PetscFunctionReturn(color);
+  const PetscDrawXiPixVal *cmap = Xwin->cmapping;
+  int                     lo, mid, hi = 256;
+  /* linear search the first few entries */
+  for (lo=0; lo<8; lo++)
+    if (pix == cmap[lo])
+      return lo;
+  /* binary search the remaining entries */
+  while (hi - lo > 1) {
+    mid = lo + (hi - lo)/2;
+    if (pix < cmap[arg[mid]]) hi = mid;
+    else                      lo = mid;
+  }
+  return arg[lo];
 }
 
 #undef __FUNCT__
@@ -68,25 +75,31 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[256][3],
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
 
-  /* only the first process handles the saving business */
+  /* only the first process return image data */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   if (!rank) {
     Window        root;
     XImage        *ximage;
+    int           pmap[256];
     unsigned char *pixels = NULL;
     unsigned int  w,h,dummy;
     int           x,y,p;
-    /* get RGB colors out of the colormap */
-    ierr = PetscDrawXiGetColorsRGB(Xwin,palette);CHKERRQ(ierr);
+    /* copy colormap palette to the caller */
+    ierr = PetscMemcpy(palette,Xwin->cpalette,sizeof(Xwin->cpalette));CHKERRQ(ierr);
     /* get image out of the drawable */
     XGetGeometry(Xwin->disp,PetscDrawXiDrawable(Xwin),&root,&x,&y,&w,&h,&dummy,&dummy);
     ximage = XGetImage(Xwin->disp,PetscDrawXiDrawable(Xwin),0,0,w,h,AllPlanes,ZPixmap);
     if (!ximage) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot XGetImage()");
-    /* extract pixel values out of the image  */
+    /* build indirect sort permutation (a.k.a argsort) of the color -> pixel mapping */
+    for (p=0; p<256; p++) pmap[p] = p; /* identity permutation */
+    ierr = PetscArgSortPixVal(Xwin->cmapping,pmap,255);CHKERRQ(ierr);
+    /* extract pixel values out of the image and map them to color indices */
     ierr = PetscMalloc1(w*h,&pixels);CHKERRQ(ierr);
     for (p=0,y=0; y<(int)h; y++)
-      for (x=0; x<(int)w; x++)
-        pixels[p++] = PetscDrawXiPixelToColor(Xwin,XGetPixel(ximage,x,y));
+      for (x=0; x<(int)w; x++) {
+        PetscDrawXiPixVal pix = XGetPixel(ximage,x,y);
+        pixels[p++] = (unsigned char)PetscDrawXiPixelToColor(Xwin,pmap,pix);
+      }
     XDestroyImage(ximage);
     *out_w      = w;
     *out_h      = h;
