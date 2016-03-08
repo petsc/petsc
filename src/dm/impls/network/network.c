@@ -1050,6 +1050,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
   if (network->Jv) {
     PetscInt       v,vStart,vEnd,nedges,*vptr=network->Jvptr;
     const PetscInt *edges;
+#if 0
     ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
     for (v=vStart; v<vEnd; v++) {
       ierr = MatDestroy(&network->Jv[vptr[v-vStart]]);CHKERRQ(ierr);
@@ -1058,6 +1059,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
         ierr = MatDestroy(&network->Jv[vptr[v-vStart]+i+1]);CHKERRQ(ierr);
       }
     }
+#endif
     ierr = PetscFree(network->Jvptr);CHKERRQ(ierr);
     ierr = PetscFree(network->Jv);CHKERRQ(ierr);
   }
