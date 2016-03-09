@@ -568,6 +568,65 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPforestComputeOverlappingRanks"
+/* range of processes whose B sections overlap this ranks A section */
+static PetscErrorCode DMPforestComputeOverlappingRanks(PetscMPIInt size, PetscMPIInt rank, p4est_t *p4estA, p4est_t *p4estB, PetscInt *startB, PetscInt *endB)
+{
+  p4est_quadrant_t * myCoarseStart = &(p4estA->global_first_position[rank]);
+  p4est_quadrant_t * myCoarseEnd   = &(p4estA->global_first_position[rank+1]);
+  p4est_quadrant_t * globalFirstB  = p4estB->global_first_position;
+
+  PetscFunctionBegin;
+  *startB = -1;
+  *endB = -1;
+  if (p4estA->local_num_quadrants) {
+    PetscInt lo, hi, guess;
+    /* binary search to find interval containing myCoarseStart */
+    lo    = 0;
+    hi    = size;
+    guess = rank;
+    while (1) {
+      int startCompMy, myCompEnd;
+
+      PetscStackCallP4estReturn(startCompMy,p4est_quadrant_compare_piggy,(&globalFirstB[guess],myCoarseStart));
+      PetscStackCallP4estReturn(myCompEnd,p4est_quadrant_compare_piggy,(myCoarseStart,&globalFirstB[guess+1]));
+      if (startCompMy <= 0 && myCompEnd < 0) {
+        *startB = guess;
+        break;
+      }
+      else if (startCompMy > 0) { /* guess is to high */
+        hi = guess;
+      }
+      else { /* guess is to low */
+        lo = guess + 1;
+      }
+      guess = lo + (hi - lo) / 2;
+    }
+    /* reset bounds, but not guess */
+    lo = 0;
+    hi = size;
+    while (1) {
+      int startCompMy, myCompEnd;
+
+      PetscStackCallP4estReturn(startCompMy,p4est_quadrant_compare_piggy,(&globalFirstB[guess],myCoarseEnd));
+      PetscStackCallP4estReturn(myCompEnd,p4est_quadrant_compare_piggy,(myCoarseEnd,&globalFirstB[guess+1]));
+      if (startCompMy < 0 && myCompEnd <= 0) { /* notice that the comparison operators are different from above */
+        *endB = guess + 1;
+        break;
+      }
+      else if (startCompMy >= 0) { /* guess is to high */
+        hi = guess;
+      }
+      else { /* guess is to low */
+        lo = guess + 1;
+      }
+      guess = lo + (hi - lo) / 2;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #define DMSetUp_pforest _append_pforest(DMSetUp)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMSetUp_pforest)
@@ -872,34 +931,94 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     }
   }
   {
-    PetscMPIInt size;
+    PetscMPIInt size, rank;
 
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
     if ((size > 1) && (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity != 1. || forest->weightsFactor != 1.)) {
+      PetscBool copyForest = PETSC_FALSE;
+      p4est_t *forest_copy = NULL;
+      if (preCoarseToFine || coarseToPreFine) {
+        copyForest = PETSC_TRUE;
+      }
+      if (copyForest) {
+        PetscStackCallP4estReturn(forest_copy,p4est_copy,(pforest->forest,0));
+      }
+
       if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
-        PetscBool copyForest = PETSC_FALSE;
-        p4est_t *forest_copy = NULL;
-        if (preCoarseToFine || coarseToPreFine) {
-          copyForest = PETSC_TRUE;
-        }
-        if (copyForest) {
-          PetscStackCallP4estReturn(forest_copy,p4est_copy,(pforest->forest,0));
-        }
         PetscStackCallP4est(p4est_partition,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
-        if (forest_copy) {
-          if (preCoarseToFine || coarseToPreFine) {
-          }
-          PetscStackCallP4est(p4est_destroy,(forest_copy));
-        }
       }
       else {
         /* TODO: handle non-uniform partition cases */
         SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
       }
+      if (forest_copy) {
+        if (preCoarseToFine || coarseToPreFine) {
+          PetscSF repartSF; /* repartSF has roots in the old partition */
+          PetscInt pStart = -1, pEnd = -1, p;
+          PetscInt numRoots, numLeaves;
+          PetscSFNode *repartRoots;
+          p4est_gloidx_t postStart  = pforest->forest->global_first_quadrant[rank];
+          p4est_gloidx_t postEnd    = pforest->forest->global_first_quadrant[rank+1];
+          p4est_gloidx_t partOffset = postStart;
+
+          numRoots  = (PetscInt) (forest_copy->global_first_quadrant[rank + 1] - forest_copy->global_first_quadrant[rank]);
+          numLeaves = (PetscInt) (postEnd - postStart);
+          ierr = DMPforestComputeOverlappingRanks(size,rank,pforest->forest,forest_copy,&pStart,&pEnd);CHKERRQ(ierr);
+          ierr = PetscMalloc1((PetscInt) pforest->forest->local_num_quadrants,&repartRoots);CHKERRQ(ierr);
+          for (p = pStart; p < pEnd; p++) {
+            p4est_gloidx_t preStart = forest_copy->global_first_quadrant[p];
+            p4est_gloidx_t preEnd   = forest_copy->global_first_quadrant[p+1];
+            PetscInt q;
+
+            if (preEnd == preStart) continue;
+            if (preStart > postStart) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad partition overlap computation");
+            preEnd = preEnd > postEnd ? postEnd : preEnd;
+            for (q = partOffset; q < preEnd; q++) {
+              repartRoots[q - postStart].rank = p;
+              repartRoots[q - postStart].index = partOffset - preStart;
+            }
+            partOffset = preEnd;
+          }
+          ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm),&repartSF);CHKERRQ(ierr);
+          ierr = PetscSFSetGraph(repartSF,numRoots,numLeaves,NULL,PETSC_OWN_POINTER,repartRoots,PETSC_OWN_POINTER);CHKERRQ(ierr);
+          ierr = PetscSFSetUp(repartSF);CHKERRQ(ierr);
+          if (preCoarseToFine) {
+            PetscSF repartSFembed, preCoarseToFineNew;
+            PetscInt nleaves;
+            const PetscInt *leaves;
+
+            ierr = PetscSFSetUp(preCoarseToFine);CHKERRQ(ierr);
+            ierr = PetscSFGetGraph(preCoarseToFine,NULL,&nleaves,&leaves,NULL);CHKERRQ(ierr);
+            if (leaves) {
+              ierr = PetscSFCreateEmbeddedSF(repartSF,nleaves,leaves,&repartSFembed);CHKERRQ(ierr);
+            }
+            else {
+              repartSFembed = repartSF;
+              ierr = PetscObjectReference((PetscObject)repartSFembed);CHKERRQ(ierr);
+            }
+            ierr = PetscSFCompose(preCoarseToFine,repartSFembed,&preCoarseToFineNew);CHKERRQ(ierr);
+            ierr = PetscSFDestroy(&preCoarseToFine);CHKERRQ(ierr);
+            ierr = PetscSFDestroy(&repartSFembed);CHKERRQ(ierr);
+            preCoarseToFine = preCoarseToFineNew;
+          }
+          if (coarseToPreFine) {
+            PetscSF repartSFinv, coarseToPreFineNew;
+
+            ierr = PetscSFCreateInverseSF(repartSF,&repartSFinv);CHKERRQ(ierr);
+            ierr = PetscSFCompose(repartSFinv,coarseToPreFine,&coarseToPreFineNew);CHKERRQ(ierr);
+            ierr = PetscSFDestroy(&coarseToPreFine);CHKERRQ(ierr);
+            ierr = PetscSFDestroy(&repartSFinv);CHKERRQ(ierr);
+            coarseToPreFine = coarseToPreFineNew;
+          }
+          ierr = PetscSFDestroy(&repartSF);CHKERRQ(ierr);
+        }
+        PetscStackCallP4est(p4est_destroy,(forest_copy));
+      }
     }
   }
   forest->preCoarseToFine = preCoarseToFine;
-  forest->coarseToPreFine = preCoarseToFine;
+  forest->coarseToPreFine = coarseToPreFine;
   PetscFunctionReturn(0);
 }
 
@@ -1799,65 +1918,6 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   dmA->boundary->refct++;
   ierr = DMBoundaryDestroy(&(dmB->boundary));CHKERRQ(ierr);
   dmB->boundary = dmA->boundary;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPforestComputeOverlappingRanks"
-/* range of processes whose B sections overlap this ranks A section */
-static PetscErrorCode DMPforestComputeOverlappingRanks(PetscMPIInt size, PetscMPIInt rank, p4est_t *p4estA, p4est_t *p4estB, PetscInt *startB, PetscInt *endB)
-{
-  p4est_quadrant_t * myCoarseStart = &(p4estA->global_first_position[rank]);
-  p4est_quadrant_t * myCoarseEnd   = &(p4estA->global_first_position[rank+1]);
-  p4est_quadrant_t * globalFirstB  = p4estB->global_first_position;
-
-  PetscFunctionBegin;
-  *startB = -1;
-  *endB = -1;
-  if (p4estA->local_num_quadrants) {
-    PetscInt lo, hi, guess;
-    /* binary search to find interval containing myCoarseStart */
-    lo    = 0;
-    hi    = size;
-    guess = rank;
-    while (1) {
-      int startCompMy, myCompEnd;
-
-      PetscStackCallP4estReturn(startCompMy,p4est_quadrant_compare_piggy,(&globalFirstB[guess],myCoarseStart));
-      PetscStackCallP4estReturn(myCompEnd,p4est_quadrant_compare_piggy,(myCoarseStart,&globalFirstB[guess+1]));
-      if (startCompMy <= 0 && myCompEnd < 0) {
-        *startB = guess;
-        break;
-      }
-      else if (startCompMy > 0) { /* guess is to high */
-        hi = guess;
-      }
-      else { /* guess is to low */
-        lo = guess + 1;
-      }
-      guess = lo + (hi - lo) / 2;
-    }
-    /* reset bounds, but not guess */
-    lo = 0;
-    hi = size;
-    while (1) {
-      int startCompMy, myCompEnd;
-
-      PetscStackCallP4estReturn(startCompMy,p4est_quadrant_compare_piggy,(&globalFirstB[guess],myCoarseEnd));
-      PetscStackCallP4estReturn(myCompEnd,p4est_quadrant_compare_piggy,(myCoarseEnd,&globalFirstB[guess+1]));
-      if (startCompMy < 0 && myCompEnd <= 0) { /* notice that the comparison operators are different from above */
-        *endB = guess + 1;
-        break;
-      }
-      else if (startCompMy >= 0) { /* guess is to high */
-        hi = guess;
-      }
-      else { /* guess is to low */
-        lo = guess + 1;
-      }
-      guess = lo + (hi - lo) / 2;
-    }
-  }
   PetscFunctionReturn(0);
 }
 
