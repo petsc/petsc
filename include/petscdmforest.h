@@ -80,6 +80,11 @@ typedef const char* DMForestAdaptivityStrategy;
 PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityStrategy(DM, DMForestAdaptivityStrategy);
 PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityStrategy(DM, DMForestAdaptivityStrategy *);
 
+PETSC_EXTERN PetscErrorCode DMForestSetComputeAdaptivitySF(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMForestGetComputeAdaptivitySF(DM, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivitySF(DM, PetscSF *, PetscSF *);
+
 /* for a quadtree/octree mesh, this is the x:1 condition: 1 indicates a uniform mesh,
  *                                                        2 indicates typical 2:1,
  */

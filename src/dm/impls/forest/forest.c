@@ -211,6 +211,8 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   if (--forest->refct > 0) PetscFunctionReturn(0);
   if (forest->destroy) {ierr = forest->destroy(dm);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&forest->cellSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&forest->adaptSFCoarseToFine);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&forest->adaptSFFineToCoarse);CHKERRQ(ierr);
   ierr = PetscFree(forest->adaptLabel);CHKERRQ(ierr);
   ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
@@ -885,6 +887,104 @@ PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(adaptStrategy,2);
   *adaptStrategy = forest->adaptStrategy;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetComputeAdaptivitySF"
+/*@
+  DMForestSetComputeAdaptivitySF - During the pre-setup phase, set whether transfer PetscSFs should be computed
+  relating the cells of the pre-adaptation forest to the post-adaptiation forest.  After DMSetUp() is called, these transfer PetscSFs can be accessed with DMForestGetAdaptivitySF().
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the post-adaptation forest
+- computeSF - default PETSC_TRUE
+
+  Level: advanced
+
+.seealso: DMForestGetComputeAdaptivitySF(), DMForestGetAdaptivitySF()
+@*/
+PetscErrorCode DMForestSetComputeAdaptivitySF(DM dm, PetscBool computeSF)
+{
+  DM_Forest *forest;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot compute adaptivity PetscSFs after setup is called");
+  forest = (DM_Forest *) dm->data;
+  forest->computeAdaptSF = computeSF;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetComputeAdaptivitySF"
+/*@
+  DMForestGetComputeAdaptivitySF - Get whether transfer PetscSFs should be computed relating the cells of the
+  pre-adaptation forest to the post-adaptiation forest.  After DMSetUp() is called, these transfer PetscSFs can be
+  accessed with DMForestGetAdaptivitySF().
+
+  Not collective
+
+  Input Parameter:
+. dm - the post-adaptation forest
+
+  Output Parameter:
+. computeSF - default PETSC_TRUE
+
+  Level: advanced
+
+.seealso: DMForestSetComputeAdaptivitySF(), DMForestGetAdaptivitySF()
+@*/
+PetscErrorCode DMForestGetComputeAdaptivitySF(DM dm, PetscBool *computeSF)
+{
+  DM_Forest *forest;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  forest = (DM_Forest *) dm->data;
+  *computeSF = forest->computeAdaptSF;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivitySF"
+/*@
+  DMForestGetAdaptivitySF - Get PetscSFs that relate the pre-adaptation forest to the post-adaptation forest.
+  Adaptation can be any combination of refinement, coarsening, repartition, and change of overlap, so there may be
+  some cells of the pre-adaptation that are parents of post-adaptation cells, and vice versa.  Therefore there are two
+  PetscSFs: one that relates pre-adaptation coarse cells to post-adaptation fine cells, and one that relates
+  pre-adaptation fine cells to post-adaptation coarse cells.
+
+  Not collective
+
+  Input Parameter:
+  dm - the post-adaptation forest
+
+  Output Parameter:
+  coarseToFineSF - pre-adaptation coarse cells to post-adaptation fine cells: BCast goes from pre- to post-
+  fineToCoarseSF - pre-adaptation fine cells to post-adaptation coarse cells: BCase goes from post- to pre-
+
+  Level: advanced
+
+.seealso: DMForestGetComputeAdaptivitySF(), DMForestSetComputeAdaptivitySF()
+@*/
+PetscErrorCode DMForestGetAdaptivitySF(DM dm, PetscSF *coarseToFineSF, PetscSF *fineToCoarseSF)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  forest = (DM_Forest *) dm->data;
+  if (coarseToFineSF) {
+    *coarseToFineSF = forest->adaptSFCoarseToFine;
+  }
+  if (fineToCoarseSF) {
+    *fineToCoarseSF = forest->adaptSFFineToCoarse;
+  }
   PetscFunctionReturn(0);
 }
 
