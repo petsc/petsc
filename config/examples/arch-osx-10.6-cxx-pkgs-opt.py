@@ -3,9 +3,10 @@
 # moab breaks with --with-cxx-dialect=C++11 - so disable elemental?
 
 configure_options = [
-  '--with-cc=gcc',
+  '--with-cc=clang',
   '--with-fc=gfortran', # http://brew.sh/
-  '--with-cxx=g++',
+  '--with-cxx=clang++',
+  'CXXCPPFLAGS=-x -c++',
 
   '--with-clanguage=cxx',
   '--with-debugging=0',

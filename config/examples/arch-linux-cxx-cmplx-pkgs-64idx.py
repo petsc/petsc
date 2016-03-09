@@ -4,6 +4,7 @@ configure_options = [
   '--with-cc=clang',
   '--with-fc=gfortran',
   '--with-cxx=clang++',
+  'CXXCPPFLAGS=-x -c++',
 
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',

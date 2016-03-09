@@ -3,9 +3,10 @@
 # elemental breaks with complex?
 
 configure_options = [
-  '--with-cc=gcc',
+  '--with-cc=clang',
   '--with-fc=gfortran', # http://brew.sh/
-  '--with-cxx=g++',
+  '--with-cxx=clang++',
+  'CXXCPPFLAGS=-x -c++',
 
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
