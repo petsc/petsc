@@ -9,6 +9,7 @@ typedef struct {
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscInt  overlap;                      /* The cell overlap to use during partitioning */
   PetscBool testPartition;                /* Use a fixed partitioning for testing */
+  PetscBool testRedundant;                /* Use a redundant partitioning for testing */
   PetscBool loadBalance;                  /* Load balance via a second distribute step */
 } AppCtx;
 
@@ -19,11 +20,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim         = 2;
-  options->cellSimplex = PETSC_TRUE;
-  options->filename[0] = '\0';
-  options->overlap     = 0;
-  options->loadBalance = PETSC_FALSE;
+  options->dim           = 2;
+  options->cellSimplex   = PETSC_TRUE;
+  options->filename[0]   = '\0';
+  options->overlap       = 0;
+  options->testPartition = PETSC_FALSE;
+  options->testRedundant = PETSC_FALSE;
+  options->loadBalance   = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
@@ -31,6 +34,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-filename", "The mesh file", "ex12.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_redundant", "Use a redundant partition for testing", "ex12.c", options->testRedundant, &options->testRedundant, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-load_balance", "Perform parallel load balancing in a second distribution step", "ex12.c", options->loadBalance, &options->loadBalance, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -87,29 +91,34 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
   }
-  if (user->testPartition) {
-    const PetscInt  *sizes = NULL;
-    const PetscInt  *points = NULL;
-    PetscPartitioner part;
+  if (!user->testRedundant) {
+    if (user->testPartition) {
+      const PetscInt  *sizes = NULL;
+      const PetscInt  *points = NULL;
+      PetscPartitioner part;
 
-    if (!rank) {
-      if (dim == 2 && cellSimplex && numProcs == 2) {
-        sizes = triSizes_n2; points = triPoints_n2;
-      } else if (dim == 2 && cellSimplex && numProcs == 3) {
-        sizes = triSizes_n3; points = triPoints_n3;
-      } else if (dim == 2 && cellSimplex && numProcs == 4) {
-        sizes = triSizes_n4; points = triPoints_n4;
-      } else if (dim == 2 && cellSimplex && numProcs == 8) {
-        sizes = triSizes_n8; points = triPoints_n8;
-      } else if (dim == 2 && !cellSimplex && numProcs == 2) {
-        sizes = quadSizes; points = quadPoints;
+      if (!rank) {
+        if (dim == 2 && cellSimplex && numProcs == 2) {
+          sizes = triSizes_n2; points = triPoints_n2;
+        } else if (dim == 2 && cellSimplex && numProcs == 3) {
+          sizes = triSizes_n3; points = triPoints_n3;
+        } else if (dim == 2 && cellSimplex && numProcs == 4) {
+          sizes = triSizes_n4; points = triPoints_n4;
+        } else if (dim == 2 && cellSimplex && numProcs == 8) {
+          sizes = triSizes_n8; points = triPoints_n8;
+        } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+          sizes = quadSizes; points = quadPoints;
+        }
       }
+      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
     }
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
   }
-  ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
+  else {
+    ierr = DMPlexGetRedundantDM(*dm,&distMesh);CHKERRQ(ierr);
+  }
   if (distMesh) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = distMesh;

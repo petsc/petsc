@@ -80,8 +80,12 @@ class Xdmf:
       dof = f[1].shape[1]
       bs  = f[1].shape[2]
     elif len(f[1].shape) > 1:
-      dof = f[1].shape[0]
-      bs  = f[1].shape[1]
+      if numSteps > 1:
+        dof = f[1].shape[1]
+        bs  = 1
+      else:
+        dof = f[1].shape[0]
+        bs  = f[1].shape[1]
     else:
       dof = f[1].shape[0]
       bs  = 1
@@ -117,7 +121,7 @@ class Xdmf:
       dof    = f[1].shape[1]
       bs     = f[1].shape[2]
       cdims  = '1 %d 1' % dof
-      dims   = '1 %d 1' % (numSteps, dof, bs)
+      dims   = '%d %d %d' % (numSteps, dof, bs)
       stride = '1 1 1'
       size   = '1 %d 1' % dof
     else:

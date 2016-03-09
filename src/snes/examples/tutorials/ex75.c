@@ -574,8 +574,8 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   /* Project solution into FE space */
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2Diff(dm, 0.0, funcs, NULL, u, &discError);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &discError);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
   /* Cleanup */
   ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);

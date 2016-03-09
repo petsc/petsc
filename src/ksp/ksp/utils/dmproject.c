@@ -36,6 +36,19 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalSolve_project1"
+static PetscErrorCode DMGlobalToLocalSolve_project1 (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+{
+  PetscInt f;
+
+  PetscFunctionBegin;
+  for (f = 0; f < Nf; f++) {
+    u[f] = 1.;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalSolve"
 /*@
   DMGlobalToLocalSolve - Solve for the global vector that is mapped to a given local vector by DMGlobalToLocalBegin()/DMGlobalToLocalEnd() with mode
@@ -64,7 +77,7 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
 PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 {
   Mat                   CtC;
-  PetscInt              n, N, cStart, cEnd, c;
+  PetscInt              n, N, cStart, cEnd, cEndInterior, c;
   PetscBool             isPlex;
   KSP                   ksp;
   PC                    pc;
@@ -76,9 +89,11 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (isPlex) {
     /* mark points in the closure */
-    ierr = DMGetLocalVector(dm,&mask);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dm,&mask);CHKERRQ(ierr);
     ierr = VecSet(mask,0.0);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+    cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
     if (cEnd > cStart) {
       PetscScalar *ones;
       PetscInt numValues, i;
@@ -93,6 +108,28 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
       }
       ierr = PetscFree(ones);CHKERRQ(ierr);
     }
+  }
+  else {
+    PetscBool hasMask;
+
+    ierr = DMHasNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &hasMask);CHKERRQ(ierr);
+    if (!hasMask) {
+      PetscErrorCode (**func) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+      void            **ctx;
+      PetscInt          Nf, f;
+
+      ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+      ierr = PetscMalloc2(Nf, &func, Nf, &ctx);CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {
+        func[f] = DMGlobalToLocalSolve_project1;
+        ctx[f]  = NULL;
+      }
+      ierr = DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
+      ierr = DMProjectFunctionLocal(dm,0.0,func,ctx,INSERT_ALL_VALUES,mask);CHKERRQ(ierr);
+      ierr = DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
+      ierr = PetscFree2(func, ctx);CHKERRQ(ierr);
+    }
+    ierr = DMGetNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
   }
   ctx.dm   = dm;
   ctx.mask = mask;
@@ -116,22 +153,25 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   if (mask) {ierr = VecPointwiseMult(x,mask,x);CHKERRQ(ierr);}
   ierr = DMLocalToGlobalBegin(dm,x,ADD_VALUES,global);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,x,ADD_VALUES,global);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,global,y);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm,&global);CHKERRQ(ierr);
   /* clean up */
-  if (isPlex) {
-    ierr = DMRestoreLocalVector(dm,&mask);CHKERRQ(ierr);
-  }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&CtC);CHKERRQ(ierr);
+  if (isPlex) {
+    ierr = VecDestroy(&mask);CHKERRQ(ierr);
+  }
+  else {
+    ierr = DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectField"
+#define __FUNCT__ "DMProjectField"
 /*@C
-  DMPlexProjectField - This projects the given function of the fields into the function space provided.
+  DMProjectField - This projects the given function of the fields into the function space provided.
 
   Input Parameters:
 + dm      - The DM
@@ -144,9 +184,14 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 
   Level: developer
 
-.seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff()
+.seealso: DMProjectFunction(), DMComputeL2Diff()
 @*/
-PetscErrorCode DMPlexProjectField(DM dm, Vec U, void (**funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode mode, Vec X)
+PetscErrorCode DMProjectField(DM dm, Vec U,
+                              void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                             const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                             const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                             PetscReal, const PetscReal[], PetscScalar[]),
+                              InsertMode mode, Vec X)
 {
   Vec            localX, localU;
   PetscErrorCode ierr;
@@ -157,7 +202,7 @@ PetscErrorCode DMPlexProjectField(DM dm, Vec U, void (**funcs)(const PetscScalar
   ierr = DMGetLocalVector(dm, &localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMPlexProjectFieldLocal(dm, localU, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = DMProjectFieldLocal(dm, localU, funcs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {

@@ -30,7 +30,7 @@ Labels:
 TS Object: 1 MPI processes
   type: euler
   maximum steps=20
-  maximum time=5
+  maximum time=5.
   total number of nonlinear solver iterations=0
   total number of nonlinear solve failures=0
   total number of linear solver iterations=0

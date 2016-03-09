@@ -1,0 +1,96 @@
+DM Object: 1 MPI processes
+  type: plex
+DM_0x84000000_0 in 2 dimensions:
+  0-cells: 12
+  1-cells: 21
+  2-cells: 15 (6)
+Labels:
+  ghost: 0 strata of sizes ()
+  vtk: 1 strata of sizes (9)
+  Face Sets: 2 strata of sizes (3, 3)
+  marker: 1 strata of sizes (12)
+  depth: 3 strata of sizes (12, 21, 15)
+  0  time        0  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  1  time   0.3333  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.00443e-06] int  2.23207e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  2  time   0.6667  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 2.00563e-06] int  4.45697e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  3  time        1  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 3.00671e-06] int  6.68157e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  4  time    1.333  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 4.00764e-06] int  8.90588e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  5  time    1.667  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 5.01363e-06] int  1.11356e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  6  time        2  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 6.01426e-06] int  1.33593e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  7  time    2.333  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 7.01474e-06] int  1.55826e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  8  time    2.667  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 8.01504e-06] int  1.78055e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  9  time        3  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 9.01517e-06] int   2.0028e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 10  time    3.333  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.00151e-05] int  2.22501e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 11  time    3.667  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.10149e-05] int  2.44718e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 12  time        4  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.20196e-05] int  2.66988e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 13  time    4.333  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.30189e-05] int  2.89195e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 14  time    4.667  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0,  1.4018e-05] int  3.11398e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 15  time        5  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0,  1.5022e-05] int  3.33652e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 16  time    5.333  |x| (       1,        1) |x|_1 (       6,        1)         Error [           0, 1.60206e-05] int  3.55844e-06
+TS Object: 1 MPI processes
+  type: mimex
+  maximum steps=20
+  maximum time=5.
+  total number of nonlinear solver iterations=0
+  total number of nonlinear solve failures=0
+  total number of linear solver iterations=0
+  total number of rejected steps=0
+    Version = 1
+  SNES Object:   1 MPI processes
+    type: newtonls
+    maximum iterations=50, maximum function evaluations=10000
+    tolerances: relative=1e-07, absolute=1e-50, solution=1e-08
+    total number of linear solver iterations=1
+    total number of function evaluations=20
+    norm schedule ALWAYS
+    SNESLineSearch Object:     1 MPI processes
+      type: basic
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=40
+    KSP Object:     1 MPI processes
+      type: gmres
+        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        GMRES: happy breakdown tolerance 1e-30
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object:     1 MPI processes
+      type: lu
+        LU: out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5., needed 1.22511
+          Factored matrix follows:
+            Mat Object:             1 MPI processes
+              type: seqaij
+              rows=21, cols=21
+              package used to perform factorization: petsc
+              total: nonzeros=283, allocated nonzeros=283
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 14 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object:       1 MPI processes
+        type: seqaij
+        rows=21, cols=21
+        total: nonzeros=231, allocated nonzeros=231
+        total number of mallocs used during MatSetValues calls =0
+          using I-node routines: found 15 nodes, limit used is 5
+CONVERGED_TIME at time 5.33333 after 16 steps

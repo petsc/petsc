@@ -625,64 +625,23 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeError_Plex"
-static PetscErrorCode ComputeError_Plex(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *),
-                                        PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
-                                        void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
-{
-  Vec            u;
-  PetscReal      n[3] = {1.0, 1.0, 1.0};
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  /* Project function into FE function space */
-  ierr = DMPlexProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  /* Compare approximation to exact in L_2 */
-  ierr = DMPlexComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ComputeError_DA"
-static PetscErrorCode ComputeError_DA(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *),
-                                      PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
-                                      void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
-{
-  Vec            u;
-  PetscReal      n[3] = {1.0, 1.0, 1.0};
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  /* Project function into FE function space */
-  ierr = DMDAProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  /* Compare approximation to exact in L_2 */
-  ierr = DMDAComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
-  ierr = DMDAComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ComputeError"
 static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *),
                                    PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
                                    void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
 {
-  PetscBool      isPlex, isDA;
+  Vec            u;
+  PetscReal      n[3] = {1.0, 1.0, 1.0};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
-  if (isPlex) {
-    ierr = ComputeError_Plex(dm, exactFuncs, exactFuncDers, exactCtxs, error, errorDer, user);CHKERRQ(ierr);
-  } else if (isDA) {
-    ierr = ComputeError_DA(dm, exactFuncs, exactFuncDers, exactCtxs, error, errorDer, user);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
+  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
+  /* Project function into FE function space */
+  ierr = DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  /* Compare approximation to exact in L_2 */
+  ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
+  ierr = DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -763,7 +722,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
-  ierr = DMPlexSetCoarseDM(rdm, dm);CHKERRQ(ierr);
+  ierr = DMSetCoarseDM(rdm, dm);CHKERRQ(ierr);
   ierr = DMPlexSetRegularRefinement(rdm, user->convRefine);CHKERRQ(ierr);
   if (user->tree && isPlex) {
     DM refTree;
@@ -797,22 +756,13 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   ierr = DMSetApplicationContext(rdm, user);CHKERRQ(ierr);
   ierr = DMCreateInterpolation(dm, rdm, &Interp, &scaling);CHKERRQ(ierr);
   /* Project function into initial FE function space */
-  if (isPlex) {
-    ierr = DMPlexProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
-  } else if (isDA) {
-    ierr = DMDAProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
+  ierr = DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
   /* Interpolate function into final FE function space */
   if (checkRestrict) {ierr = MatRestrict(Interp, iu, fu);CHKERRQ(ierr);ierr = VecPointwiseMult(fu, scaling, fu);CHKERRQ(ierr);}
   else               {ierr = MatInterpolate(Interp, iu, fu);CHKERRQ(ierr);}
   /* Compare approximation to exact in L_2 */
-  if (isPlex) {
-    ierr = DMPlexComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
-  } else if (isDA) {
-    ierr = DMDAComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
-    ierr = DMDAComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM L_2 difference routine for this type of DM");
+  ierr = DMComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
+  ierr = DMComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
   /* Report result */
   if (error > tol)    {ierr = PetscPrintf(comm, "Interpolation tests FAIL for order %D at tolerance %g error %g\n", order, (double)tol, (double)error);CHKERRQ(ierr);}
   else                {ierr = PetscPrintf(comm, "Interpolation tests pass for order %D at tolerance %g\n", order, (double)tol);CHKERRQ(ierr);}

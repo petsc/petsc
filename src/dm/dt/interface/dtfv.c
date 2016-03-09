@@ -1241,6 +1241,7 @@ PetscErrorCode PetscFVSetUp(PetscFV fvm)
 @*/
 PetscErrorCode PetscFVDestroy(PetscFV *fvm)
 {
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1250,6 +1251,10 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   if (--((PetscObject)(*fvm))->refct > 0) {*fvm = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*fvm))->refct = 0;
 
+  for (i = 0; i < (*fvm)->numComponents; i++) {
+    ierr = PetscFree((*fvm)->componentNames[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree((*fvm)->componentNames);CHKERRQ(ierr);
   ierr = PetscLimiterDestroy(&(*fvm)->limiter);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&(*fvm)->dualSpace);CHKERRQ(ierr);
   ierr = PetscFree((*fvm)->fluxWork);CHKERRQ(ierr);
@@ -1296,6 +1301,7 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
   f->dim              = 0;
   f->computeGradients = PETSC_FALSE;
   f->fluxWork         = NULL;
+  ierr = PetscCalloc1(f->numComponents,&f->componentNames);CHKERRQ(ierr);
 
   *fvm = f;
   PetscFunctionReturn(0);
@@ -1376,6 +1382,15 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  if (fvm->numComponents != comp) {
+    PetscInt i;
+
+    for (i = 0; i < fvm->numComponents; i++) {
+      ierr = PetscFree(fvm->componentNames[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(fvm->componentNames);CHKERRQ(ierr);
+    ierr = PetscCalloc1(comp,&fvm->componentNames);CHKERRQ(ierr);
+  }
   fvm->numComponents = comp;
   ierr = PetscFree(fvm->fluxWork);CHKERRQ(ierr);
   ierr = PetscMalloc1(comp, &fvm->fluxWork);CHKERRQ(ierr);
@@ -1405,6 +1420,55 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(comp, 2);
   *comp = fvm->numComponents;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVSetComponentName"
+/*@C
+  PetscFVSetComponentName - Set the name of a component (used in output and viewing)
+
+  Logically collective on PetscFV
+  Input Parameters:
++ fvm - the PetscFV object
+. comp - the component number
+- name - the component name
+
+  Level: developer
+
+.seealso: PetscFVGetComponentName()
+@*/
+PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *name)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(fvm->componentNames[comp]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&fvm->componentNames[comp]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetComponentName"
+/*@C
+  PetscFVGetComponentName - Get the name of a component (used in output and viewing)
+
+  Logically collective on PetscFV
+  Input Parameters:
++ fvm - the PetscFV object
+- comp - the component number
+
+  Output Parameter:
+. name - the component name
+
+  Level: developer
+
+.seealso: PetscFVSetComponentName()
+@*/
+PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **name)
+{
+  PetscFunctionBegin;
+  *name = fvm->componentNames[comp];
   PetscFunctionReturn(0);
 }
 
@@ -1851,7 +1915,7 @@ PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm)
 #define __FUNCT__ "PetscFVView_Upwind_Ascii"
 PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer)
 {
-  PetscInt          Nc;
+  PetscInt          Nc, c;
   PetscViewerFormat format;
   PetscErrorCode    ierr;
 
@@ -1859,10 +1923,11 @@ PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer)
   ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Upwind Finite Volume:\n");CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    ierr = PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc);CHKERRQ(ierr);
-  } else {
-    ierr = PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc);CHKERRQ(ierr);
+  for (c = 0; c < Nc; c++) {
+    if (fv->componentNames[c]) {
+      ierr = PetscViewerASCIIPrintf(viewer, "    component %d: %s\n", c, fv->componentNames[c]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1980,7 +2045,7 @@ PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm)
 #define __FUNCT__ "PetscFVView_LeastSquares_Ascii"
 PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer)
 {
-  PetscInt          Nc;
+  PetscInt          Nc, c;
   PetscViewerFormat format;
   PetscErrorCode    ierr;
 
@@ -1988,10 +2053,11 @@ PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer)
   ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Finite Volume with Least Squares Reconstruction:\n");CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    ierr = PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc);CHKERRQ(ierr);
-  } else {
-    ierr = PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc);CHKERRQ(ierr);
+  for (c = 0; c < Nc; c++) {
+    if (fv->componentNames[c]) {
+      ierr = PetscViewerASCIIPrintf(viewer, "    component %d: %s\n", c, fv->componentNames[c]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

@@ -104,8 +104,11 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   for testnum, param in enumerate(params):
     testnum = str(testnum)
     if 'requires' in param:
-      if not set(param['requires']).issubset(packageNames):
-        maker.logPrint('Test %s requires packages %s\n' % (testnum, param['requires']), debugSection='screen', forceScroll=True)
+      reqs = param['requires']
+      if not isinstance(reqs,list):
+        reqs = [reqs]
+      if not set(reqs).issubset(packageNames):
+        maker.logPrint('Test %s requires packages %s\n' % (testnum, reqs), debugSection='screen', forceScroll=True)
         continue
     if 'num' in param: testnum = param['num']
     if 'numProcs' in args and not args.numProcs is None:
