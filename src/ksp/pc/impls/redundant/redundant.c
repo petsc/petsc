@@ -77,6 +77,17 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (red->useparallelmat) {
       /* grab the parallel matrix and put it into processors of a subcomminicator */
       ierr = MatCreateRedundantMatrix(pc->pmat,red->psubcomm->n,subcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
+
+      ierr = MPI_Comm_size(subcomm,&size);CHKERRQ(ierr);
+      if (size > 1) {
+        PetscBool foundpack;
+        ierr = MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_LU,&foundpack);CHKERRQ(ierr);
+        if (!foundpack) { /* reset default ksp and pc */
+          ierr = KSPSetType(red->ksp,KSPGMRES);CHKERRQ(ierr);
+          ierr = PCSetType(red->pc,PCBJACOBI);CHKERRQ(ierr);
+        }
+      }
+
       ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats);CHKERRQ(ierr);
        
       /* get working vectors xsub and ysub */
@@ -398,7 +409,7 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
     ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
-
+  
     ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
     ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
   }

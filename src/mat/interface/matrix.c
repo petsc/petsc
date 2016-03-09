@@ -4085,22 +4085,41 @@ PetscErrorCode MatSolverPackageGet(const MatSolverPackage package,const MatType 
   if (foundpackage) *foundpackage = PETSC_FALSE;
   if (foundmtype)   *foundmtype   = PETSC_FALSE;
   if (getfactor)    *getfactor    = NULL;
-  while (next) {
-    ierr = PetscStrcasecmp(package,next->name,&flg);CHKERRQ(ierr);
-    if (flg) {
-      if (foundpackage) *foundpackage = PETSC_TRUE;
-      inext = next->handlers;
-      while (inext) {
-        ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
-        if (flg) {
-          if (foundmtype) *foundmtype = PETSC_TRUE;
-          if (getfactor)  *getfactor  = inext->getfactor[(int)ftype-1];
-          PetscFunctionReturn(0);
+
+  if (package) {
+    while (next) {
+      ierr = PetscStrcasecmp(package,next->name,&flg);CHKERRQ(ierr);
+      if (flg) {
+        if (foundpackage) *foundpackage = PETSC_TRUE;
+        inext = next->handlers;
+        while (inext) {
+          ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
+          if (flg) {
+            if (foundmtype) *foundmtype = PETSC_TRUE;
+            if (getfactor)  *getfactor  = inext->getfactor[(int)ftype-1];
+            PetscFunctionReturn(0);
+          }
+          inext = inext->next;
         }
-        inext = inext->next;
       }
+      next = next->next;
     }
-    next = next->next;
+  }
+
+  if (!package || !(*foundmtype)) { /* found first working package */
+    if (foundpackage) *foundpackage = PETSC_FALSE;
+    next = MatSolverPackageHolders;
+    inext = next->handlers;
+    while (inext) {
+      ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
+      if (flg) {
+        if (foundpackage) *foundpackage = PETSC_TRUE;
+        if (foundmtype)   *foundmtype   = PETSC_TRUE;
+        if (getfactor)    *getfactor    = inext->getfactor[(int)ftype-1];
+        PetscFunctionReturn(0);
+      }
+      inext = inext->next;
+    }
   }
   PetscFunctionReturn(0);
 }
