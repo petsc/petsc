@@ -30,6 +30,8 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     if not self.cmake.found:
       raise RuntimeError('CMake > 2.8.12 is needed to build Elemental')
+    if not self.parmetis.ComputeVertexSeparator:
+      raise RuntimeError('Elemental requires modified Parmetis! Use options: --download-metis=1 --download-parmetis=1')
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     if self.compilerFlags.debugging:
       args.append('-DEL_ZERO_INIT=ON')
