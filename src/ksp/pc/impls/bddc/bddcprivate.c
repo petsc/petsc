@@ -438,8 +438,8 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     ierr = MatISGetLocalMat(pc->mat,&A);CHKERRQ(ierr);
     ierr = MatMult(A,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
     ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
-    if (PetscAbsScalar(vals[0]) > PETSC_SMALL) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %f (should be numerically 0.)",PetscAbsScalar(vals[0]));
+    if (!pcbddc->current_level && PetscAbsScalar(vals[0]) > PETSC_SMALL) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %1.6e (should be numerically 0.)",PetscAbsScalar(vals[0]));
     }
     ierr = PetscFree(vals);CHKERRQ(ierr);
     ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
@@ -582,10 +582,15 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   }
 
   if (!pcbddc->benign_n) {
+    PetscInt n;
+
     ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
     recompute_zerodiag = PETSC_FALSE;
-    has_null_pressures = PETSC_FALSE;
-    have_null = PETSC_FALSE;
+    ierr = MatGetLocalSize(pcbddc->local_mat,&n,NULL);CHKERRQ(ierr);
+    if (n) {
+      has_null_pressures = PETSC_FALSE;
+      have_null = PETSC_FALSE;
+    }
   }
 
   /* final check for null pressures */
@@ -5454,6 +5459,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     csin_ml = PETSC_FALSE;
     ncoarse_ml = all_procs;
     if (void_procs) {
+      csin_ml = PETSC_TRUE;
+      ncoarse_ml = void_procs;
       csin_ds = PETSC_TRUE;
       ncoarse_ds = void_procs;
       csin_type_simple = PETSC_FALSE;
@@ -5490,6 +5497,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ncoarse = ncoarse_ml;
     csin = csin_ml;
     redist = PETSC_FALSE;
+    csin_type_simple = PETSC_TRUE;
   } else {
     ncoarse = ncoarse_ds;
     csin = csin_ds;
@@ -5560,6 +5568,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = ISRestoreIndices(pcbddc->user_primal_vertices_local,&idxs);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingApply(coarse_islg,nout,tidxs,tidxs2);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),nout,tidxs2,PETSC_COPY_VALUES,&isarray[nis-1]);CHKERRQ(ierr);
+      /* ierr = ISView(isarray[nis-1],0);CHKERRQ(ierr); */
     }
     /* free memory */
     ierr = PetscFree(tidxs);CHKERRQ(ierr);
