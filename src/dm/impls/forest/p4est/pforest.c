@@ -1073,7 +1073,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           ierr = PetscSFBcastEnd(coarseToPreFine,MPIU_2INT,remotesNewRoot,remotesNew);CHKERRQ(ierr);
           ierr = PetscFree(remotesNewRoot);CHKERRQ(ierr);
           ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm),&coarseToPreFineNew);CHKERRQ(ierr);
-          ierr = PetscSFSetGraph(coarseToPreFineNew,nroots,nleaves,leaves,PETSC_COPY_VALUES,remotes,PETSC_OWN_POINTER);CHKERRQ(ierr);
+          ierr = PetscSFSetGraph(coarseToPreFineNew,cEnd,nleaves,leaves,PETSC_COPY_VALUES,remotes,PETSC_OWN_POINTER);CHKERRQ(ierr);
           ierr = PetscSFDestroy(&coarseToPreFine);CHKERRQ(ierr);
           coarseToPreFine = coarseToPreFineNew;
         }
@@ -3790,17 +3790,91 @@ static PetscErrorCode DMClone_pforest(DM dm, DM *newdm)
 #define __FUNCT__ _pforest_string(DMForestCreateCellChart_pforest)
 static PetscErrorCode DMForestCreateCellChart_pforest(DM dm, PetscInt *cStart, PetscInt *cEnd)
 {
-  DM             plex;
-  PetscInt       cS, cE, cEInterior;
-  PetscErrorCode ierr;
+  DM_Forest         *forest;
+  DM_Forest_pforest *pforest;
+  PetscInt          overlap;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex,0,&cS,&cE);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex,&cEInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-  cE = cEInterior < 0 ? cE : cEInterior;
-  *cStart = cS;
-  *cEnd = cE;
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  forest  = (DM_Forest *) dm->data;
+  pforest = (DM_Forest_pforest *) forest->data;
+  *cStart = 0;
+  ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
+  if (overlap && pforest->ghost) {
+    *cEnd = pforest->forest->local_num_quadrants + pforest->ghost->proc_offsets[pforest->forest->mpisize];
+  }
+  else {
+    *cEnd = pforest->forest->local_num_quadrants;
+  }
+  PetscFunctionReturn(0);
+}
+
+#define DMForestCreateCellSF_pforest _append_pforest(DMForestCreateCellSF)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMForestCreateCellSF_pforest)
+static PetscErrorCode DMForestCreateCellSF_pforest(DM dm, PetscSF *cellSF)
+{
+  DM_Forest         *forest;
+  DM_Forest_pforest *pforest;
+  PetscMPIInt       rank;
+  PetscInt          overlap;
+  PetscInt          cStart, cEnd, cLocalStart, cLocalEnd;
+  PetscInt          nRoots, nLeaves;
+  PetscSFNode       *remote;
+  PetscSF           sf;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMForestGetCellChart(dm,&cStart,&cEnd);CHKERRQ(ierr);
+  forest  = (DM_Forest *)         dm->data;
+  pforest = (DM_Forest_pforest *) forest->data;
+  nRoots  = nLeaves = cEnd - cStart;
+  cLocalStart = pforest->cLocalStart;
+  cLocalEnd   = pforest->cLocalEnd;
+  ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cEnd-cStart,&remote);CHKERRQ(ierr);
+  if (overlap && pforest->ghost) {
+    PetscSFNode *mirror, *ghost;
+    p4est_quadrant_t *mirror_array;
+    PetscInt nMirror, nGhost, nGhostPre, nGhostPost, nSelf, q;
+    void **mirrorPtrs;
+
+    nMirror    = (PetscInt) pforest->ghost->mirrors.elem_count;
+    nSelf      = cLocalEnd - cLocalStart;
+    nGhost     = (cEnd - cStart) - nSelf;
+    nGhostPre  = (PetscInt) pforest->ghost->proc_offsets[rank];
+    nGhostPost = nGhost - nGhostPre;
+    ierr = PetscMalloc3(nMirror,&mirror,nMirror,&mirrorPtrs,nGhost,&ghost);CHKERRQ(ierr);
+    mirror_array = (p4est_quadrant_t *) pforest->ghost->mirrors.array;
+    for (q = 0; q < nMirror; q++) {
+      p4est_quadrant_t *mir = &(mirror_array[q]);
+
+      mirror[q].rank = rank;
+      mirror[q].index = (PetscInt) mir->p.piggy3.local_num;
+      mirrorPtrs[q] = (void *) &(mirror[q]);
+    }
+    PetscStackCallP4est(p4est_ghost_exchange_custom,(pforest->forest,pforest->ghost,sizeof(PetscSFNode),mirrorPtrs,ghost));
+    ierr = PetscFree3(mirror,mirrorPtrs,ghost);CHKERRQ(ierr);
+    ierr = PetscMemcpy(remote,ghost,nGhostPre * sizeof(PetscSFNode));CHKERRQ(ierr);
+    for (q = cLocalStart; q < cLocalEnd; q++) {
+      remote[q].rank  = rank;
+      remote[q].index = q;
+    }
+    ierr = PetscMemcpy(&remote[cLocalEnd],&ghost[nGhostPre],nGhostPost * sizeof(PetscSFNode));CHKERRQ(ierr);
+  }
+  else {
+    PetscInt q;
+
+    for (q = 0; q < cEnd; q++) {
+      remote[q].rank = rank;
+      remote[q].index = q;
+    }
+  }
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm),&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,nRoots,nLeaves,NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  *cellSF = sf;
   PetscFunctionReturn(0);
 }
 
@@ -3866,6 +3940,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   forest->destroy                   = DMForestDestroy_pforest;
   forest->ftemplate                 = DMForestTemplate_pforest;
   forest->createcellchart           = DMForestCreateCellChart_pforest;
+  forest->createcellsf              = DMForestCreateCellSF_pforest;
   pforest->topo                     = NULL;
   pforest->forest                   = NULL;
   pforest->ghost                    = NULL;
