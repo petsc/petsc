@@ -594,6 +594,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"non-uniform adaptivity not implemented");
     }
     PetscStackCallP4est(p4est_reset_data,(pforest->forest,0,NULL,(void *)dm)); /* this dm is the user context for the new forest */
+    PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
     {
       PetscInt numLabels, l;
 
