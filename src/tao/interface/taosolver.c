@@ -82,6 +82,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->constraints=NULL;
   tao->constraints_equality=NULL;
   tao->constraints_inequality=NULL;
+  tao->sep_weights_v=NULL;
+  tao->sep_weights_w=NULL;
   tao->stepdirection=NULL;
   tao->niter=0;
   tao->ntotalits=0;
@@ -317,12 +319,18 @@ PetscErrorCode TaoDestroy(Tao *tao)
   ierr = MatDestroy(&(*tao)->jacobian_inequality_pre);CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->state_is);CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->design_is);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->sep_weights_v);CHKERRQ(ierr);
   ierr = TaoCancelMonitors(*tao);CHKERRQ(ierr);
   if ((*tao)->hist_malloc) {
     ierr = PetscFree((*tao)->hist_obj);CHKERRQ(ierr);
     ierr = PetscFree((*tao)->hist_resid);CHKERRQ(ierr);
     ierr = PetscFree((*tao)->hist_cnorm);CHKERRQ(ierr);
     ierr = PetscFree((*tao)->hist_lits);CHKERRQ(ierr);
+  }
+  if ((*tao)->sep_weights_n) {
+    ierr = PetscFree((*tao)->sep_weights_rows);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->sep_weights_cols);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->sep_weights_w);CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -382,6 +390,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
+
   /* So no warnings are given about unused options */
   ierr = PetscOptionsHasName(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_ls_type",&flg);CHKERRQ(ierr);
 

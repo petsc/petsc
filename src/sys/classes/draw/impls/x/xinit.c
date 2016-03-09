@@ -13,9 +13,6 @@
 
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
 
-extern PetscErrorCode PetscDrawXi_wait_map(PetscDraw_X*);
-extern PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X*,int,int,PetscDrawXiFont**);
-extern PetscErrorCode PetscDrawXiInitCmap(PetscDraw_X*);
 extern PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,Colormap);
 
 /*
@@ -23,7 +20,7 @@ extern PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,Colormap);
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiOpenDisplay"
-PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin,const char display[])
+static PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin,const char display[])
 {
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay(display);
@@ -73,11 +70,11 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
 }
 
 /*
-   PetscDrawXiSetGC - setup the GC structure
+   PetscDrawXiCreateGC - setup the GC structure
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiSetGC"
-PetscErrorCode PetscDrawXiSetGC(PetscDraw_X *XiWin,PetscDrawXiPixVal fg)
+#define __FUNCT__ "PetscDrawXiCreateGC"
+static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin,PetscDrawXiPixVal fg)
 {
   XGCValues gcvalues;             /* window graphics context values */
 
@@ -103,8 +100,40 @@ PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin,const char display[])
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscDrawXiOpenDisplay(XiWin,display);CHKERRQ(ierr);
-  ierr = PetscDrawXiSetGC(XiWin,XiWin->foreground);CHKERRQ(ierr);
+  ierr = PetscDrawXiCreateGC(XiWin,XiWin->foreground);CHKERRQ(ierr);
   ierr = PetscDrawXiFontFixed(XiWin,6,10,&XiWin->font);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+    This routine waits until the window is actually created or destroyed
+    Returns 0 if window is mapped; 1 if window is destroyed.
+ */
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiWaitMap"
+static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin)
+{
+  XEvent event;
+
+  PetscFunctionBegin;
+  while (1) {
+    XMaskEvent(XiWin->disp,ExposureMask|StructureNotifyMask,&event);
+    if (event.xany.window != XiWin->win) break;
+    else {
+      switch (event.type) {
+      case ConfigureNotify:
+        /* window has been moved or resized */
+        XiWin->w = event.xconfigure.width  - 2 * event.xconfigure.border_width;
+        XiWin->h = event.xconfigure.height - 2 * event.xconfigure.border_width;
+        break;
+      case DestroyNotify:
+        PetscFunctionReturn(1);
+      case Expose:
+        PetscFunctionReturn(0);
+        /* else ignore event */
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -113,7 +142,7 @@ PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin,const char display[])
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiDisplayWindow"
-PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,int x,int y,int w,int h)
+static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,int x,int y,int w,int h)
 {
   unsigned int         wavail,havail;
   XSizeHints           size_hints;
@@ -201,10 +230,10 @@ PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,int x,int
   /* make the window visible */
   XSelectInput(XiWin->disp,XiWin->win,ExposureMask|StructureNotifyMask);
   XMapWindow(XiWin->disp,XiWin->win);
-
   /* some window systems are cruel and interfere with the placement of
      windows.  We wait here for the window to be created or to die */
-  if (PetscDrawXi_wait_map(XiWin)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Wait for X window failed");
+  if (PetscDrawXiWaitMap(XiWin)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Wait for X window failed");
+  XSelectInput(XiWin->disp,XiWin->win,NoEventMask);
   PetscFunctionReturn(0);
 }
 
@@ -256,268 +285,15 @@ PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin,Window win)
   PetscFunctionReturn(0);
 }
 
-/*
-      PetscDrawXiSetWindowLabel - Sets new label in open window.
-*/
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiSetWindowLabel"
-PetscErrorCode PetscDrawXiSetWindowLabel(PetscDraw_X *XiWin,char *label)
-{
-  XTextProperty  prop;
-  size_t         len;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscStrlen(label,&len);CHKERRQ(ierr);
-  XGetWMName(XiWin->disp,XiWin->win,&prop);
-  prop.value  = (unsigned char*)label;
-  prop.nitems = (long)len;
-  XSetWMName(XiWin->disp,XiWin->win,&prop);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiSetToBackground"
-PetscErrorCode PetscDrawXiSetToBackground(PetscDraw_X *XiWin)
+#define __FUNCT__ "PetscDrawXiQuickPixmap"
+PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
-  if (XiWin->gc.cur_pix != XiWin->background) {
-    XSetForeground(XiWin->disp,XiWin->gc.set,XiWin->background);
-    XiWin->gc.cur_pix = XiWin->background;
-  }
-  PetscFunctionReturn(0);
-
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetSave_X"
-PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
-{
-  PetscErrorCode ierr;
-#if defined(PETSC_HAVE_POPEN)
-  PetscMPIInt    rank;
-#endif
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-#if defined(PETSC_HAVE_POPEN)
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  if (!rank) {
-    char  command[PETSC_MAX_PATH_LEN];
-    FILE  *fd;
-    int   err;
-
-    ierr = PetscMemzero(command,sizeof(command));CHKERRQ(ierr);
-    ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -fr %s %s.m4v",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
-    ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"mkdir %s",draw->savefilename);CHKERRQ(ierr);
-    ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
-  }
-#endif
+  if (XiWin->drw) XFreePixmap(XiWin->disp,XiWin->drw);
+  XiWin->drw = XCreatePixmap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),XiWin->w,XiWin->h,XiWin->depth);
+  PetscDrawXiSetPixVal(XiWin,XiWin->background);
+  XFillRectangle(XiWin->disp,XiWin->drw,XiWin->gc.set,0,0,XiWin->w,XiWin->h);
+  XSync(XiWin->disp,False);
   PetscFunctionReturn(0);
 }
-
-
-#if defined(PETSC_HAVE_AFTERIMAGE)
-#include <afterimage.h>
-
-/* String names of possible Afterimage formats */
-const char *PetscAfterImageFormats[] = {
-        ".Xpm",
-	".Xpm.Z",
-	".Xpm.gz",
-	".Png",
-	".Jpeg",
-	".Xcf", /* Gimp format */
-	".Ppm",
-	".Pnm",
-	"MS Windows Bitmap",
-	"MS Windows Icon",
-	"MS Windows Cursor",
-	".Gif",
-	".Tiff",
-	"Afterstep XMLScript",
-	"Scalable Vector Graphics (SVG)",
-	".Xbm",
-	"Targa",
-	".Pcx",
-	".HTML",
-	"XML",
-	"Unknown"
-};
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscAfterimageStringToFormat"
-static PetscErrorCode PetscAfterimageStringToFormat(const char *ext,ASImageFileTypes *format)
-{
-  PetscInt       i;
-  PetscErrorCode ierr;
-  PetscBool      flg;
-
-  PetscFunctionBegin;
-  ierr = PetscStrcasecmp(".Jpg",ext,&flg);CHKERRQ(ierr);
-  if (flg) ext = ".Jpeg";
-  for (i=0; i<sizeof(PetscAfterImageFormats)/sizeof(char**); i++) {
-    ierr = PetscStrcasecmp(PetscAfterImageFormats[i],ext,&flg);CHKERRQ(ierr);
-    if (flg) {
-      *format = (ASImageFileTypes)i;
-      PetscFunctionReturn(0);
-    }
-  }
-  *format = ASIT_Unknown;
-  PetscFunctionReturn(0);
-}
-
-#if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
-/*
-  The PetscAfterimage object and functions are used to maintain a list of file images created by Afterimage that can
-  be displayed by the SAWs webserver.
-*/
-typedef struct _P_PetscAfterimage *PetscAfterimage;
-struct _P_PetscAfterimage {
-  PetscAfterimage next;
-  char            *filename;
-  char            *ext;
-  PetscInt        cnt;
-} ;
-
-static PetscAfterimage afterimages = 0;
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscAfterimageDestroy"
-static PetscErrorCode PetscAfterimageDestroy(void)
-{
-  PetscErrorCode ierr;
-  PetscAfterimage       afterimage,oafterimage = afterimages;
-
-  PetscFunctionBegin;
-  while (oafterimage) {
-    afterimage = oafterimage->next;
-    ierr = PetscFree(oafterimage->filename);CHKERRQ(ierr);
-    ierr = PetscFree(oafterimage->ext);CHKERRQ(ierr);
-    ierr = PetscFree(oafterimage);CHKERRQ(ierr);
-    oafterimage = afterimage;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscAfterimageAdd"
-static PetscErrorCode PetscAfterimageAdd(const char *filename,const char *ext,PetscInt cnt)
-{
-  PetscErrorCode   ierr;
-  PetscAfterimage  afterimage,oafterimage = afterimages;
-  PetscBool        flg;
-
-  PetscFunctionBegin;
-  if (oafterimage){
-    ierr = PetscStrcmp(filename,oafterimage->filename,&flg);CHKERRQ(ierr);
-    if (flg) {
-      oafterimage->cnt = cnt;
-      PetscFunctionReturn(0);
-    }
-    while (oafterimage->next) {
-      oafterimage = oafterimage->next;
-      ierr = PetscStrcmp(filename,oafterimage->filename,&flg);CHKERRQ(ierr);
-      if (flg) {
-        oafterimage->cnt = cnt;
-        PetscFunctionReturn(0);
-      }
-    }
-    ierr = PetscNew(&afterimage);CHKERRQ(ierr);
-    oafterimage->next = afterimage;
-  } else {
-    ierr = PetscNew(&afterimage);CHKERRQ(ierr);
-    afterimages = afterimage;
-  }
-  ierr = PetscStrallocpy(filename,&afterimage->filename);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ext,&afterimage->ext);CHKERRQ(ierr);
-  afterimage->cnt = cnt;
-  ierr = PetscRegisterFinalize(PetscAfterimageDestroy);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#endif
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSave_X"
-PetscErrorCode PetscDrawSave_X(PetscDraw draw)
-{
-  PetscDraw_X      *drawx = (PetscDraw_X*)draw->data;
-  XImage           *image;
-  ASImage          *asimage;
-  struct  ASVisual *asv;
-  char             filename[PETSC_MAX_PATH_LEN];
-  PetscErrorCode   ierr;
-  PetscMPIInt      rank;
-  int              depth;
-  ASImageFileTypes format;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
-  if (!draw->savefilename) PetscFunctionReturn(0);
-  if (draw->savefilecount == -1) {
-    /* The first PetscDrawClear() should happen before any drawing has been done, hence do not save at the first PetscDrawClear() */
-    draw->savefilecount++;
-    PetscFunctionReturn(0);
-  }
-  XSynchronize(drawx->disp, True);
-  depth = DefaultDepth( drawx->disp, drawx->screen );
-  asv   = create_asvisual(drawx->disp, drawx->screen, depth, NULL);if (!asv) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASVisual");
-
-  image   = XGetImage(drawx->disp, drawx->drw ? drawx->drw : drawx->win, 0, 0, drawx->w, drawx->h, AllPlanes, ZPixmap);
-  if (!image) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot XGetImage()");
-  asimage = picture_ximage2asimage (asv,image,0,0);if (!asimage) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASImage");
-  if (draw->savesinglefile) {
-    ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s%s",draw->savefilename,draw->savefilename,draw->savefilenameext);CHKERRQ(ierr);
-  } else {
-    ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d%s",draw->savefilename,draw->savefilename,draw->savefilecount++,draw->savefilenameext);CHKERRQ(ierr);
-  }
-  ierr = PetscAfterimageStringToFormat(draw->savefilenameext,&format);CHKERRQ(ierr);
-  ASImage2file(asimage, 0, filename,format,0);
-#if defined(PETSC_HAVE_SAWS)
-  {
-    char     body[4096];
-    PetscAfterimage afterimage;
-    size_t   len = 0;
-
-    ierr = PetscAfterimageAdd(draw->savefilename,draw->savefilenameext,draw->savefilecount-1);CHKERRQ(ierr);
-    afterimage  = afterimages;
-    while (afterimage) {
-      if (draw->savesinglefile) {
-        ierr = PetscSNPrintf(body+len,4086-len,"<img src=\"%s/%s%s\" alt=\"None\">",afterimage->filename,afterimage->filename,afterimage->ext);CHKERRQ(ierr);
-      } else {
-        ierr = PetscSNPrintf(body+len,4086-len,"<img src=\"%s/%s_%d%s\" alt=\"None\">",afterimage->filename,afterimage->filename,afterimage->cnt,afterimage->ext);CHKERRQ(ierr);
-      }
-      ierr = PetscStrlen(body,&len);CHKERRQ(ierr);
-      afterimage  = afterimage->next;
-    }
-    ierr = PetscStrcat(body,"<br>\n");CHKERRQ(ierr);
-    if (draw->savefilecount > 0) PetscStackCallSAWs(SAWs_Pop_Body,("index.html",1));
-    PetscStackCallSAWs(SAWs_Push_Body,("index.html",1,body));
-  }
-#endif
-
-  XDestroyImage(image);
-  destroy_asvisual(asv,0);
-  PetscFunctionReturn(0);
-}
-/*
-   There are routines wanted by AfterImage for PNG files
- */
-void crc32(void) {;}
-void inflateReset(void) {;}
-void deflateReset(void) {;}
-void deflateInit2(void) {;}
-void deflateInit2_(void) {;}
-void deflate(void) {;}
-void deflateEnd(void) {;}
-
-#endif
-
-
-

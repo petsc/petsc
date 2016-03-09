@@ -137,6 +137,7 @@ PetscOptionsGetAll(PetscOptions,char*[]);
 
       <h4>Configure/Build:</h4>
       <ul>
+        <li>Added --download-packages-dir=directory to support easy use of --download-xxx behind firewalls</li>
         <li>--download-package for externalpackage with a gitrepo will never be stale. Each time configure is invoked - it will do a 'git fetch' and 'git checkout commit-id'. And if the commit-id changes from the previous build - the package will be rebuilt. To prevent this sync [and use previous snapshot] - one can use --download-package-commit=HEAD</li>
       </ul>
       <h4>IS:</h4>

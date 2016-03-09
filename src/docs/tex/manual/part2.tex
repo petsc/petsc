@@ -7715,7 +7715,7 @@ command  \sindex{double buffer}
 \end{tabbing}
 {\em all} processes must call
 \begin{tabbing}
-  PetscDrawSynchronizedFlush(PetscDraw win);
+  PetscDrawFlush(PetscDraw win);
 \end{tabbing}
 in order to swap the buffers. From the options database one may use
 \trl{-draw_pause} \trl{n}, which \findex{-draw_pause} causes the PETSc application

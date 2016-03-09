@@ -412,7 +412,7 @@ class Configure(config.base.Configure):
     if cxxdialect == 'C++11':
       if self.cxxdialect != 'C++11':
         self.logWrite(self.setCompilers.restoreLog())
-        raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s, use CXXFLAGS' % (self.argDB['with-cxx-dialect']))
+        raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s,\nIf you know the flag for turning on C++11 features set it with the CXXFLAGS variables\n for example, --with-cxx-dialect=C++11 CXXFLAGS="-std=c++0x"' % (self.argDB['with-cxx-dialect']))
     elif cxxdialect in ['C++98', 'C++03', '']:
       self.cxxdialect = cxxdialect
       pass                    # The user can set CXXFLAGS if they want to be strict

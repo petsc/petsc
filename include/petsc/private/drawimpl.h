@@ -25,13 +25,11 @@ struct _PetscDrawOps {
   PetscErrorCode (*stringgetsize)(PetscDraw,PetscReal*,PetscReal*);
   PetscErrorCode (*setviewport)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
   PetscErrorCode (*clear)(PetscDraw);
-  PetscErrorCode (*synchronizedflush)(PetscDraw);
   PetscErrorCode (*rectangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
   PetscErrorCode (*triangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
   PetscErrorCode (*ellipse)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
   PetscErrorCode (*getmousebutton)(PetscDraw,PetscDrawButton*,PetscReal *,PetscReal *,PetscReal*,PetscReal*);
   PetscErrorCode (*pause)(PetscDraw);
-  PetscErrorCode (*synchronizedclear)(PetscDraw);
   PetscErrorCode (*beginpage)(PetscDraw);
   PetscErrorCode (*endpage)(PetscDraw);
   PetscErrorCode (*getpopup)(PetscDraw,PetscDraw*);
@@ -69,9 +67,10 @@ struct _p_PetscDraw {
   char                *savefilenameext;
   PetscInt            savefilecount;
   PetscBool           savefilemovie;
-  PetscBool           saveonflush;       /* save a new image for every PetscDrawFlush() called */
   PetscBool           savesinglefile;
   char                *savefinalfilename;
+  PetscBool           saveonclear; /* save a new image for every PetscDrawClear() called */
+  PetscBool           saveonflush; /* save a new image for every PetscDrawFlush() called */
   void                *data;
 };
 

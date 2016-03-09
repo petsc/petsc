@@ -35,10 +35,11 @@ typedef struct {
   PetscInt *last_model_indices; /* n */
   PetscInt *interp_indices; /* n */
   PetscBLASInt *iwork; /* n */
+  PetscReal *w; /* nxn */
   PetscInt nHist;
   VecScatter scatterf,scatterx;
   Vec localf, localx, localfmin, localxmin;
-  Vec workxvec;
+  Vec workxvec,workfvec;
   PetscMPIInt size;
 
 

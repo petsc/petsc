@@ -3,4 +3,4 @@
 set MACH=grind
 set USR=petsc
 set LOC=/sandbox/petsc/${RNAME}-3
-set CONF=arch-linux-xsdk-dbg
+set CONF=arch-linux-opt-cxx-quad

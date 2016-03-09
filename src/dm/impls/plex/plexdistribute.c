@@ -610,7 +610,12 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   ierr = ISRestoreIndices(rootrank, &rrank);CHKERRQ(ierr);
   ierr = ISRestoreIndices(leafrank, &nrank);CHKERRQ(ierr);
   /* Add additional overlap levels */
-  for (l = 1; l < levels; l++) {ierr = DMPlexPartitionLabelAdjacency(dm, ovAdjByRank);CHKERRQ(ierr);}
+  for (l = 1; l < levels; l++) {
+    /* Propagate point donations over SF to capture remote connections */
+    ierr = DMPlexPartitionLabelPropagate(dm, ovAdjByRank);CHKERRQ(ierr);
+    /* Add next level of point donations to the label */
+    ierr = DMPlexPartitionLabelAdjacency(dm, ovAdjByRank);CHKERRQ(ierr);
+  }
   /* We require the closure in the overlap */
   ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
   ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
@@ -621,8 +626,19 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   if (flg) {
     ierr = DMLabelView(ovAdjByRank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  /* Make process SF and invert sender to receiver label */
-  ierr = DMPlexCreateTwoSidedProcessSF(dm, sfPoint, rootSection, rootrank, leafSection, leafrank, NULL, &sfProc);CHKERRQ(ierr);
+  /* Make global process SF and invert sender to receiver label */
+  {
+    /* Build a global process SF */
+    PetscSFNode *remoteProc;
+    ierr = PetscMalloc1(numProcs, &remoteProc);CHKERRQ(ierr);
+    for (p = 0; p < numProcs; ++p) {
+      remoteProc[p].rank  = p;
+      remoteProc[p].index = rank;
+    }
+    ierr = PetscSFCreate(comm, &sfProc);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) sfProc, "Process SF");CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sfProc, numProcs, numProcs, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
   ierr = DMLabelCreate("Overlap label", ovLabel);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelInvert(dm, ovAdjByRank, sfProc, *ovLabel);CHKERRQ(ierr);
   /* Add owned points, except for shared local points */

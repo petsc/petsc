@@ -542,7 +542,7 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt *idx,PetscReal *z)
   }
   *z = min;
   if (idx) *idx = j;
-  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

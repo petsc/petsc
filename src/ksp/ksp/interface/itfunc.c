@@ -736,11 +736,11 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
         }
         ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
         ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
-        ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
           ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
         }
         ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscDrawSPSave(drawsp);CHKERRQ(ierr);
         ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
       }
       if (flag3 && !rank) {
@@ -790,7 +790,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
       PetscDrawSP drawsp;
 
       if (!ksp->eigviewer) {
-        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,400,400,&ksp->eigviewer);CHKERRQ(ierr);
+        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,400,400,&ksp->eigviewer);CHKERRQ(ierr);
       }
       ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
       ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
@@ -799,6 +799,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
       ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscDrawSPSave(drawsp);CHKERRQ(ierr);
       ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
     }
     ierr = PetscFree2(r,c);CHKERRQ(ierr);

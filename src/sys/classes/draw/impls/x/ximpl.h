@@ -55,4 +55,12 @@ typedef struct {
     PetscDrawXiSetPixVal(W,(W)->cmapping[color]); \
     } while (0)
 
+PETSC_INTERN PetscErrorCode PetscDrawXiInit(PetscDraw_X*,const char[]);
+PETSC_INTERN PetscErrorCode PetscDrawXiClose(PetscDraw_X*);
+PETSC_INTERN PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X*,int,int,PetscDrawXiFont**);
+PETSC_INTERN PetscErrorCode PetscDrawXiColormap(PetscDraw_X*);
+PETSC_INTERN PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X*,char*,int,int,int,int);
+PETSC_INTERN PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X*,Window);
+PETSC_INTERN PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X*);
+
 #endif

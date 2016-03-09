@@ -431,28 +431,19 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       row,i,j,k,l,mbs=a->mbs,color,bs=A->rmap->bs,bs2=a->bs2;
-  PetscMPIInt    rank;
   PetscReal      xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   MatScalar      *aa;
-  MPI_Comm       comm;
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  /*
-    This is nasty. If this is called from an originally parallel matrix
-    then all processes call this,but only the first has the matrix so the
-    rest should return immediately.
-  */
-  ierr = PetscObjectGetComm((PetscObject)draw,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
-
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr);
-
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
-  PetscDrawString(draw, .3*(xl+xr), .3*(yl+yr), PETSC_DRAW_BLACK, "symmetric");
 
   /* loop over matrix elements drawing boxes */
+
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawString(draw, .3*(xl+xr), .3*(yl+yr), PETSC_DRAW_BLACK, "symmetric");CHKERRQ(ierr);
+  /* Blue for negative, Cyan for zero and  Red for positive */
   color = PETSC_DRAW_BLUE;
   for (i=0,row=0; i<mbs; i++,row+=bs) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
@@ -481,7 +472,6 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
       }
     }
   }
-
   color = PETSC_DRAW_RED;
   for (i=0,row=0; i<mbs; i++,row+=bs) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
@@ -496,6 +486,7 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
       }
     }
   }
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -510,14 +501,16 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
 
-  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
   xr   = A->rmap->N; yr = A->rmap->N; h = yr/10.0; w = xr/10.0;
-  xr  += w;    yr += h;  xl = -w;     yl = -h;
+  xr  += w;          yr += h;        xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,MatView_SeqSBAIJ_Draw_Zoom,A);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",NULL);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
