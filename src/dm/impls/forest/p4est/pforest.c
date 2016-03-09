@@ -1024,6 +1024,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       if (overlap > 0) {
         PetscInt i, cLocalStart, cLocalEnd;
         PetscInt cEnd;
+        PetscSF  preCellSF, cellSF;
 
         PetscStackCallP4estReturn(pforest->ghost,p4est_ghost_new,(pforest->forest,P4EST_CONNECT_FULL));
         PetscStackCallP4estReturn(pforest->lnodes,p4est_lnodes_new,(pforest->forest,pforest->ghost,-P4EST_DIM));
@@ -1032,37 +1033,73 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           PetscStackCallP4est(p4est_ghost_expand_by_lnodes,(pforest->forest,pforest->lnodes,pforest->ghost));
         }
 
-        cLocalStart = pforest->cLocalStart = (pforest->ghost->proc_offsets[rank] - pforest->ghost->proc_offsets[0]);
+        cLocalStart = pforest->cLocalStart = pforest->ghost->proc_offsets[rank];
         cLocalEnd = pforest->cLocalEnd = cLocalStart + pforest->forest->local_num_quadrants;
-        cEnd = pforest->forest->local_num_quadrants + pforest->ghost->proc_offsets[size] - pforest->ghost->proc_offsets[0];
+        cEnd = pforest->forest->local_num_quadrants + pforest->ghost->proc_offsets[size];
 
         /* shift sfs by cLocalStart, expand by cell SFs */
+        ierr = DMForestGetCellSF(adaptFrom,&preCellSF);CHKERRQ(ierr);
+        ierr = DMForestGetCellSF(dm,&cellSF);CHKERRQ(ierr);
         if (preCoarseToFine) {
           PetscSF preCoarseToFineNew;
-          PetscInt nleaves, nroots, *leavesNew, i;
+          PetscInt nleaves, nroots, *leavesNew, i, nleavesNew;
           const PetscInt *leaves;
           const PetscSFNode *remotes;
+          PetscSFNode *remotesAll;
 
           ierr = PetscSFSetUp(preCoarseToFine);CHKERRQ(ierr);
           ierr = PetscSFGetGraph(preCoarseToFine,&nroots,&nleaves,&leaves,&remotes);CHKERRQ(ierr);
-          ierr = PetscMalloc1(nleaves,&leavesNew);CHKERRQ(ierr);
+          ierr = PetscMalloc1(cEnd,&remotesAll);CHKERRQ(ierr);
+          for (i = 0; i < cEnd; i++) {
+            remotesAll[i].rank  = -1;
+            remotesAll[i].index = -1;
+          }
           for (i = 0; i < nleaves; i++) {
-            leavesNew[i] = (leaves? leaves[i] : i) + cLocalStart;
+            remotesAll[(leaves ? leaves[i] : i) + cLocalStart] = remotes[i];
+          }
+          ierr = PetscSFSetUp(cellSF);CHKERRQ(ierr);
+          ierr = PetscSFBcastBegin(cellSF,MPIU_2INT,remotesAll,remotesAll);CHKERRQ(ierr);
+          ierr = PetscSFBcastEnd(cellSF,MPIU_2INT,remotesAll,remotesAll);CHKERRQ(ierr);
+          nleavesNew = 0;
+          for (i = 0; i < nleaves; i++) {
+            if (remotesAll[i].rank >= 0) {
+              nleavesNew++;
+            }
+          }
+          ierr = PetscMalloc1(nleavesNew,&leavesNew);CHKERRQ(ierr);
+          nleavesNew = 0;
+          for (i = 0; i < nleaves; i++) {
+            if (remotesAll[i].rank >= 0) {
+              leavesNew[nleavesNew] = i;
+              if (i > nleavesNew) {
+                remotesAll[nleavesNew] = remotesAll[i];
+              }
+              nleavesNew++;
+            }
           }
           ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm),&preCoarseToFineNew);CHKERRQ(ierr);
-          ierr = PetscSFSetGraph(preCoarseToFineNew,nroots,nleaves,leavesNew,PETSC_OWN_POINTER,remotes,PETSC_COPY_VALUES);CHKERRQ(ierr);
+          if (nleavesNew < cEnd) {
+            ierr = PetscSFSetGraph(preCoarseToFineNew,nroots,nleavesNew,leavesNew,PETSC_OWN_POINTER,remotesAll,PETSC_COPY_VALUES);CHKERRQ(ierr);
+          }
+          else { /* all cells are leaves */
+            ierr = PetscFree(leavesNew);CHKERRQ(ierr);
+            ierr = PetscSFSetGraph(preCoarseToFineNew,nroots,nleavesNew,NULL,PETSC_OWN_POINTER,remotesAll,PETSC_COPY_VALUES);CHKERRQ(ierr);
+          }
+          ierr = PetscFree(remotesAll);CHKERRQ(ierr);
           ierr = PetscSFDestroy(&preCoarseToFine);CHKERRQ(ierr);
+          preCoarseToFine = preCoarseToFineNew;
           preCoarseToFine = preCoarseToFineNew;
         }
         if (coarseToPreFine) {
           PetscSF coarseToPreFineNew;
-          PetscInt nleaves, nroots, i;
+          PetscInt nleaves, nroots, i, nleavesCellSF, nleavesExpanded, *leavesNew;
           const PetscInt *leaves;
           const PetscSFNode *remotes;
-          PetscSFNode *remotesNew, *remotesNewRoot;
+          PetscSFNode *remotesNew, *remotesNewRoot, *remotesExpanded;
 
-          ierr = PetscSFSetUp(preCoarseToFine);CHKERRQ(ierr);
+          ierr = PetscSFSetUp(coarseToPreFine);CHKERRQ(ierr);
           ierr = PetscSFGetGraph(coarseToPreFine,&nroots,&nleaves,&leaves,&remotes);CHKERRQ(ierr);
+          ierr = PetscSFGetGraph(preCellSF,NULL,&nleavesCellSF,NULL,NULL);CHKERRQ(ierr);
           ierr = PetscMalloc1(nroots,&remotesNewRoot);CHKERRQ(ierr);
           ierr = PetscMalloc1(nleaves,&remotesNew);CHKERRQ(ierr);
           for (i = 0; i < nroots; i++) {
@@ -1072,8 +1109,44 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           ierr = PetscSFBcastBegin(coarseToPreFine,MPIU_2INT,remotesNewRoot,remotesNew);CHKERRQ(ierr);
           ierr = PetscSFBcastEnd(coarseToPreFine,MPIU_2INT,remotesNewRoot,remotesNew);CHKERRQ(ierr);
           ierr = PetscFree(remotesNewRoot);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nleavesCellSF,&remotesExpanded);CHKERRQ(ierr);
+          for (i = 0; i < nleavesCellSF; i++) {
+            remotesExpanded[i].rank = -1;
+            remotesExpanded[i].index = -1;
+          }
+          for (i = 0; i < nleaves; i++) {
+            remotesExpanded[leaves ? leaves[i] : i] = remotesNew[i];
+          }
+          ierr = PetscFree(remotesNew);CHKERRQ(ierr);
+          ierr = PetscSFBcastBegin(preCellSF,MPIU_2INT,remotesExpanded,remotesExpanded);CHKERRQ(ierr);
+          ierr = PetscSFBcastEnd(preCellSF,MPIU_2INT,remotesExpanded,remotesExpanded);CHKERRQ(ierr);
+
+          nleavesExpanded = 0;
+          for (i = 0; i < nleavesCellSF; i++) {
+            if (remotesExpanded[i].rank >= 0) {
+              nleavesExpanded++;
+            }
+          }
+          ierr = PetscMalloc1(nleavesExpanded,&leavesNew);CHKERRQ(ierr);
+          nleavesExpanded = 0;
+          for (i = 0; i < nleavesCellSF; i++) {
+            if (remotesExpanded[i].rank >= 0) {
+              leavesNew[nleavesExpanded] = i;
+              if (i > nleavesExpanded) {
+                remotesExpanded[nleavesExpanded] = remotes[i];
+              }
+              nleavesExpanded++;
+            }
+          }
           ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm),&coarseToPreFineNew);CHKERRQ(ierr);
-          ierr = PetscSFSetGraph(coarseToPreFineNew,cEnd,nleaves,leaves,PETSC_COPY_VALUES,remotes,PETSC_OWN_POINTER);CHKERRQ(ierr);
+          if (nleavesExpanded < nleavesCellSF) {
+            ierr = PetscSFSetGraph(coarseToPreFineNew,cEnd,nleavesExpanded,leavesNew,PETSC_OWN_POINTER,remotesExpanded,PETSC_COPY_VALUES);CHKERRQ(ierr);
+          }
+          else {
+            ierr = PetscFree(leavesNew);CHKERRQ(ierr);
+            ierr = PetscSFSetGraph(coarseToPreFineNew,cEnd,nleavesExpanded,NULL,PETSC_OWN_POINTER,remotesExpanded,PETSC_COPY_VALUES);CHKERRQ(ierr);
+          }
+          ierr = PetscFree(remotesExpanded);CHKERRQ(ierr);
           ierr = PetscSFDestroy(&coarseToPreFine);CHKERRQ(ierr);
           coarseToPreFine = coarseToPreFineNew;
         }
