@@ -69,7 +69,11 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  define PETSC_DLLEXPORT __declspec(dllexport)
 #  define PETSC_DLLIMPORT __declspec(dllimport)
 #  define PETSC_VISIBILITY_INTERNAL
-#elif defined(PETSC_USE_VISIBILITY)
+#elif defined(PETSC_USE_VISIBILITY_CXX) && defined(__cplusplus)
+#  define PETSC_DLLEXPORT __attribute__((visibility ("default")))
+#  define PETSC_DLLIMPORT __attribute__((visibility ("default")))
+#  define PETSC_VISIBILITY_INTERNAL __attribute__((visibility ("hidden")))
+#elif defined(PETSC_USE_VISIBILITY_C) && !defined(__cplusplus)
 #  define PETSC_DLLEXPORT __attribute__((visibility ("default")))
 #  define PETSC_DLLIMPORT __attribute__((visibility ("default")))
 #  define PETSC_VISIBILITY_INTERNAL __attribute__((visibility ("hidden")))

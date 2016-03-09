@@ -355,11 +355,19 @@ void (*signal())();
 
   def checkVisibility(self):
     if self.argDB['with-visibility']:
+      self.pushLanguage('C')        
       if self.checkCompile('','__attribute__((visibility ("default"))) int foo(void);'):
-        self.addDefine('USE_VISIBILITY',1)
+        self.addDefine('USE_VISIBILITY_C',1)
       else:
-        self.log.write('Cannot use visibility attributes')
+        self.log.write('Cannot use visibility attributes with C')
         self.argDB['with-visibility'] = 0
+      self.popLanguage()
+      self.pushLanguage('C++')        
+      if self.checkCompile('','__attribute__((visibility ("default"))) int foo(void);'):
+        self.addDefine('USE_VISIBILITY_CXX',1)
+      else:
+        self.log.write('Cannot use visibility attributes with C++')
+      self.popLanguage()
     else:
       self.log.write('User turned off visibility attributes')
 

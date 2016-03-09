@@ -107,7 +107,10 @@
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 #  define MPIUni_PETSC_DLLEXPORT __declspec(dllexport)
 #  define MPIUni_PETSC_DLLIMPORT __declspec(dllimport)
-#elif defined(PETSC_USE_VISIBILITY)
+#elif defined(PETSC_USE_VISIBILITY_CXX) && defined(__cplusplus)
+#  define MPIUni_PETSC_DLLEXPORT __attribute__((visibility ("default")))
+#  define MPIUni_PETSC_DLLIMPORT __attribute__((visibility ("default")))
+#elif defined(PETSC_USE_VISIBILITY_C) && !defined(__cplusplus)
 #  define MPIUni_PETSC_DLLEXPORT __attribute__((visibility ("default")))
 #  define MPIUni_PETSC_DLLIMPORT __attribute__((visibility ("default")))
 #else
