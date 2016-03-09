@@ -930,7 +930,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMDestroy(&coarseDM);CHKERRQ(ierr);
     }
   }
-  {
+  { /* repartitioning and overlap */
     PetscMPIInt size, rank;
 
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
@@ -1014,6 +1014,69 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           ierr = PetscSFDestroy(&repartSF);CHKERRQ(ierr);
         }
         PetscStackCallP4est(p4est_destroy,(forest_copy));
+      }
+    }
+    if (size > 1) {
+      PetscInt overlap;
+
+      ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
+
+      if (overlap > 0) {
+        PetscInt i, cLocalStart, cLocalEnd;
+        PetscInt cEnd;
+
+        PetscStackCallP4estReturn(pforest->ghost,p4est_ghost_new,(pforest->forest,P4EST_CONNECT_FULL));
+        PetscStackCallP4estReturn(pforest->lnodes,p4est_lnodes_new,(pforest->forest,pforest->ghost,-P4EST_DIM));
+        PetscStackCallP4est(p4est_ghost_support_lnodes,(pforest->forest,pforest->lnodes,pforest->ghost));
+        for (i = 1; i < overlap; i++) {
+          PetscStackCallP4est(p4est_ghost_expand_by_lnodes,(pforest->forest,pforest->lnodes,pforest->ghost));
+        }
+
+        cLocalStart = pforest->cLocalStart = (pforest->ghost->proc_offsets[rank] - pforest->ghost->proc_offsets[0]);
+        cLocalEnd = pforest->cLocalEnd = cLocalStart + pforest->forest->local_num_quadrants;
+        cEnd = pforest->forest->local_num_quadrants + pforest->ghost->proc_offsets[size] - pforest->ghost->proc_offsets[0];
+
+        /* shift sfs by cLocalStart, expand by cell SFs */
+        if (preCoarseToFine) {
+          PetscSF preCoarseToFineNew;
+          PetscInt nleaves, nroots, *leavesNew, i;
+          const PetscInt *leaves;
+          const PetscSFNode *remotes;
+
+          ierr = PetscSFSetUp(preCoarseToFine);CHKERRQ(ierr);
+          ierr = PetscSFGetGraph(preCoarseToFine,&nroots,&nleaves,&leaves,&remotes);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nleaves,&leavesNew);CHKERRQ(ierr);
+          for (i = 0; i < nleaves; i++) {
+            leavesNew[i] = (leaves? leaves[i] : i) + cLocalStart;
+          }
+          ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm),&preCoarseToFineNew);CHKERRQ(ierr);
+          ierr = PetscSFSetGraph(preCoarseToFineNew,nroots,nleaves,leavesNew,PETSC_OWN_POINTER,remotes,PETSC_COPY_VALUES);CHKERRQ(ierr);
+          ierr = PetscSFDestroy(&preCoarseToFine);CHKERRQ(ierr);
+          preCoarseToFine = preCoarseToFineNew;
+        }
+        if (coarseToPreFine) {
+          PetscSF coarseToPreFineNew;
+          PetscInt nleaves, nroots, i;
+          const PetscInt *leaves;
+          const PetscSFNode *remotes;
+          PetscSFNode *remotesNew, *remotesNewRoot;
+
+          ierr = PetscSFSetUp(preCoarseToFine);CHKERRQ(ierr);
+          ierr = PetscSFGetGraph(coarseToPreFine,&nroots,&nleaves,&leaves,&remotes);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nroots,&remotesNewRoot);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nleaves,&remotesNew);CHKERRQ(ierr);
+          for (i = 0; i < nroots; i++) {
+            remotesNewRoot[i].rank = rank;
+            remotesNewRoot[i].index = i + cLocalStart;
+          }
+          ierr = PetscSFBcastBegin(coarseToPreFine,MPIU_2INT,remotesNewRoot,remotesNew);CHKERRQ(ierr);
+          ierr = PetscSFBcastEnd(coarseToPreFine,MPIU_2INT,remotesNewRoot,remotesNew);CHKERRQ(ierr);
+          ierr = PetscFree(remotesNewRoot);CHKERRQ(ierr);
+          ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm),&coarseToPreFineNew);CHKERRQ(ierr);
+          ierr = PetscSFSetGraph(coarseToPreFineNew,nroots,nleaves,leaves,PETSC_COPY_VALUES,remotes,PETSC_OWN_POINTER);CHKERRQ(ierr);
+          ierr = PetscSFDestroy(&coarseToPreFine);CHKERRQ(ierr);
+          coarseToPreFine = coarseToPreFineNew;
+        }
       }
     }
   }
