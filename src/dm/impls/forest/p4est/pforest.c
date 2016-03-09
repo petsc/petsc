@@ -437,6 +437,137 @@ static int pforest_refine_uniform (p4est_t * p4est, p4est_topidx_t which_tree, p
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPforestComputeLocalCellTransferSF_loop"
+static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFrom, PetscInt FromOffset, p4est_t *p4estTo, PetscInt ToOffset, p4est_topidx_t flt, p4est_topidx_t llt, PetscInt *toFineLeavesCount, PetscInt *toLeaves, PetscSFNode *fromRoots, PetscInt *fromFineLeavesCount, PetscInt *fromLeaves, PetscSFNode *toRoots)
+{
+  PetscMPIInt rank = p4estFrom->mpirank;
+  p4est_topidx_t t;
+  PetscInt toFineLeaves = 0, fromFineLeaves = 0;
+
+  PetscFunctionBegin;
+  for (t = flt; t <= llt; t++) { /* count roots and leaves */
+    p4est_tree_t *treeFrom = &(((p4est_tree_t *) p4estFrom->trees->array)[t]);
+    p4est_tree_t *treeTo   = &(((p4est_tree_t *) p4estTo->trees->array)[t]);
+    p4est_quadrant_t *firstFrom = &treeFrom->first_desc;
+    p4est_quadrant_t *firstTo   = &treeTo->first_desc;
+    PetscInt numFrom = (PetscInt) &treeFrom->quadrants.elem_count;
+    PetscInt numTo   = (PetscInt) &treeTo->quadrants.elem_count;
+    p4est_quadrant_t *quadsFrom = (p4est_quadrant_t *) treeFrom->quadrants.array;
+    p4est_quadrant_t *quadsTo   = (p4est_quadrant_t *) treeTo->quadrants.array;
+    PetscInt currentFrom, currentTo;
+    PetscInt treeOffsetFrom = (PetscInt) treeFrom->quadrants_offset;
+    PetscInt treeOffsetTo   = (PetscInt) treeTo->quadrants_offset;
+    int comp;
+
+    PetscStackCallP4estReturn(comp,p4est_quadrant_is_equal,(firstFrom,firstTo));
+    if (!comp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"non-matching partitions");
+
+    for (currentFrom = 0, currentTo = 0; currentFrom < numFrom && currentTo < numTo;) {
+      p4est_quadrant_t *quadFrom = &quadsFrom[currentFrom];
+      p4est_quadrant_t *quadTo = &quadsTo[currentTo];
+
+      if (quadFrom->level == quadTo->level) {
+        if (toLeaves) {
+          toLeaves[toFineLeaves] = currentTo + treeOffsetTo + ToOffset;
+          fromRoots[toFineLeaves].rank = rank;
+          fromRoots[toFineLeaves].index = currentFrom + treeOffsetFrom + FromOffset;
+        }
+        toFineLeaves++;
+        currentFrom++;
+        currentTo++;
+      }
+      else {
+        int fromIsAncestor;
+
+        PetscStackCallP4estReturn(fromIsAncestor,p4est_quadrant_is_ancestor,(quadFrom,quadTo));
+        if (fromIsAncestor) {
+          p4est_quadrant_t lastDesc;
+
+          if (toLeaves) {
+            toLeaves[toFineLeaves] = currentTo + treeOffsetTo + ToOffset;
+            fromRoots[toFineLeaves].rank = rank;
+            fromRoots[toFineLeaves].index = currentFrom + treeOffsetFrom + FromOffset;
+          }
+          toFineLeaves++;
+          currentTo++;
+          PetscStackCallP4est(p4est_quadrant_last_descendant,(quadFrom,&lastDesc,quadTo->level));
+          PetscStackCallP4estReturn(comp,p4est_quadrant_is_equal,(quadTo,&lastDesc));
+          if (comp) {
+            currentFrom++;
+          }
+        }
+        else {
+          p4est_quadrant_t lastDesc;
+
+          if (fromLeaves) {
+            fromLeaves[fromFineLeaves] = currentFrom + treeOffsetFrom + FromOffset;
+            toRoots[fromFineLeaves].rank = rank;
+            toRoots[fromFineLeaves].index = currentTo + treeOffsetTo + ToOffset;
+          }
+          fromFineLeaves++;
+          currentFrom++;
+          PetscStackCallP4est(p4est_quadrant_last_descendant,(quadTo,&lastDesc,quadFrom->level));
+          PetscStackCallP4estReturn(comp,p4est_quadrant_is_equal,(quadFrom,&lastDesc));
+          if (comp) {
+            currentTo++;
+          }
+        }
+      }
+    }
+  }
+  *toFineLeavesCount = toFineLeaves;
+  *fromFineLeavesCount = fromFineLeaves;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPforestComputeLocalCellTransferSF"
+/* Puts identity in coarseToFine */
+/* assumes a matching partition */
+static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t *p4estFrom, PetscInt FromOffset, p4est_t *p4estTo, PetscInt ToOffset, PetscSF *fromCoarseToFine, PetscSF *toCoarseFromFine)
+{
+  p4est_connectivity_t * conn;
+  p4est_topidx_t flt, llt;
+  PetscSF fromCoarse, toCoarse;
+  PetscInt numRootsFrom, numRootsTo, numLeavesFrom, numLeavesTo;
+  PetscInt *fromLeaves = NULL, *toLeaves = NULL;
+  PetscSFNode *fromRoots = NULL, *toRoots = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  conn = p4estFrom->connectivity;
+  flt  = p4estFrom->first_local_tree;
+  llt  = p4estFrom->last_local_tree;
+  ierr = PetscSFCreate(comm,&fromCoarse);CHKERRQ(ierr);
+  if (toCoarseFromFine) {
+    ierr = PetscSFCreate(comm,&toCoarse);CHKERRQ(ierr);
+  }
+  numRootsFrom = p4estFrom->local_num_quadrants + FromOffset;
+  numRootsTo = p4estTo->local_num_quadrants + ToOffset;
+  ierr = DMPforestComputeLocalCellTransferSF_loop(p4estFrom,FromOffset,p4estTo,ToOffset,flt,llt,&numLeavesTo,NULL,NULL,&numLeavesFrom,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesTo,&toLeaves);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesTo,&fromRoots);CHKERRQ(ierr);
+  if (toCoarseFromFine) {
+    ierr = PetscMalloc1(numLeavesFrom,&fromLeaves);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeavesFrom,&fromRoots);CHKERRQ(ierr);
+  }
+  ierr = DMPforestComputeLocalCellTransferSF_loop(p4estFrom,FromOffset,p4estTo,ToOffset,flt,llt,&numLeavesTo,toLeaves,fromRoots,&numLeavesFrom,fromLeaves,toRoots);CHKERRQ(ierr);
+  if (!ToOffset && (numLeavesTo == numRootsTo)) { /* compress */
+    ierr = PetscFree(toLeaves);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(fromCoarse,numRootsFrom,numLeavesTo,NULL,PETSC_OWN_POINTER,fromRoots,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
+  else { /* generic */
+    ierr = PetscSFSetGraph(fromCoarse,numRootsFrom,numLeavesTo,toLeaves,PETSC_OWN_POINTER,fromRoots,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
+  *fromCoarseToFine = fromCoarse;
+  if (toCoarseFromFine) {
+    ierr = PetscSFSetGraph(toCoarse,numRootsTo,numLeavesFrom,fromLeaves,PETSC_OWN_POINTER,toRoots,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    *toCoarseFromFine = toCoarse;
+  }
+  PetscFunctionReturn(0);
+}
+
 #define DMSetUp_pforest _append_pforest(DMSetUp)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMSetUp_pforest)
@@ -446,6 +577,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   DM_Forest_pforest *pforest = (DM_Forest_pforest *) forest->data;
   DM                base, adaptFrom;
   DMForestTopology  topoName;
+  PetscSF           preCoarseToFine = NULL, coarseToPreFine = NULL;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -566,57 +698,73 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     PetscInt          numValues;
     DM_Forest         *aforest  = (DM_Forest *) adaptFrom->data;
     DM_Forest_pforest *apforest = (DM_Forest_pforest *) aforest->data;
+    PetscBool         computeAdaptSF;
 
+    ierr = DMForestGetComputeAdaptivitySF(dm,&computeAdaptSF);CHKERRQ(ierr);
     PetscStackCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
     ierr = DMForestGetAdaptivityLabel(dm,&adaptName);CHKERRQ(ierr);
-    ierr = DMGetLabel(adaptFrom,adaptName,&adaptLabel);CHKERRQ(ierr);
-    if (!adaptLabel) SETERRQ(PetscObjectComm((PetscObject)adaptFrom),PETSC_ERR_USER,"No adaptivity label found in pre-adaptation forest");
-    /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
-    ierr = DMLabelGetNumValues(adaptLabel,&numValues);CHKERRQ(ierr);
-    ierr = DMLabelGetDefaultValue(adaptLabel,&defaultValue);CHKERRQ(ierr);
-    if (!numValues && defaultValue == DM_FOREST_COARSEN) { /* uniform coarsen */
-      PetscInt minLevel;
+    if (adaptName) {
+      ierr = DMGetLabel(adaptFrom,adaptName,&adaptLabel);CHKERRQ(ierr);
+      if (adaptLabel) SETERRQ(PetscObjectComm((PetscObject)adaptFrom),PETSC_ERR_USER,"No adaptivity label found in pre-adaptation forest");
+      /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
+      ierr = DMLabelGetNumValues(adaptLabel,&numValues);CHKERRQ(ierr);
+      ierr = DMLabelGetDefaultValue(adaptLabel,&defaultValue);CHKERRQ(ierr);
+      if (!numValues && defaultValue == DM_FOREST_COARSEN) { /* uniform coarsen */
+        PetscInt minLevel;
 
-      ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
-      pforest->forest->user_pointer = (void *) &minLevel;
-      PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
-      pforest->forest->user_pointer = (void *) dm;
-    }
-    else if (!numValues && defaultValue == DM_FOREST_REFINE) { /* uniform refine */
-      PetscInt maxLevel;
+        ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
+        pforest->forest->user_pointer = (void *) &minLevel;
+        PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
+        pforest->forest->user_pointer = (void *) dm;
+        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        /* we will have to change the offset after we compute the overlap */
+        if (computeAdaptSF) {
+          ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),pforest->forest,0,apforest->forest,apforest->cLocalStart,&coarseToPreFine,NULL);CHKERRQ(ierr);
+        }
+      }
+      else if (!numValues && defaultValue == DM_FOREST_REFINE) { /* uniform refine */
+        PetscInt maxLevel;
 
-      ierr = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
-      pforest->forest->user_pointer = (void *) &maxLevel;
-      PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_uniform,NULL));
-      pforest->forest->user_pointer = (void *) dm;
-    }
-    else if (numValues) {
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"non-uniform adaptivity not implemented");
-    }
-    PetscStackCallP4est(p4est_reset_data,(pforest->forest,0,NULL,(void *)dm)); /* this dm is the user context for the new forest */
-    PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
-    {
-      PetscInt numLabels, l;
+        ierr = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
+        pforest->forest->user_pointer = (void *) &maxLevel;
+        PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_uniform,NULL));
+        pforest->forest->user_pointer = (void *) dm;
+        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        /* we will have to change the offset after we compute the overlap */
+        if (computeAdaptSF) {
+          ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),apforest->forest,apforest->cLocalStart,pforest->forest,0,&preCoarseToFine,NULL);CHKERRQ(ierr);
+        }
+      }
+      else if (numValues) {
+        SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"non-uniform adaptivity not implemented");
+        PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        if (computeAdaptSF) {
+          ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),apforest->forest,apforest->cLocalStart,pforest->forest,0,&preCoarseToFine,&coarseToPreFine);CHKERRQ(ierr);
+        }
+      }
+      {
+        PetscInt numLabels, l;
 
-      ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
-      for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost, isVTK;
-        DMLabel    label, labelNew;
-        PetscInt   defVal;
-        const char *name;
+        ierr = DMGetNumLabels(adaptFrom,&numLabels);CHKERRQ(ierr);
+        for (l = 0; l < numLabels; l++) {
+          PetscBool  isDepth, isGhost, isVTK;
+          DMLabel    label, labelNew;
+          PetscInt   defVal;
+          const char *name;
 
-        ierr = DMGetLabelName(adaptFrom, l, &name);CHKERRQ(ierr);
-        ierr = DMGetLabelByNum(adaptFrom, l, &label);CHKERRQ(ierr);
-        ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
-        if (isDepth) continue;
-        ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
-        if (isGhost) continue;
-        ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
-        if (isVTK) continue;
-        ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
-        ierr = DMGetLabel(dm,name,&labelNew);CHKERRQ(ierr);
-        ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
-        ierr = DMLabelSetDefaultValue(labelNew,defVal);CHKERRQ(ierr);
+          ierr = DMGetLabelName(adaptFrom, l, &name);CHKERRQ(ierr);
+          ierr = DMGetLabelByNum(adaptFrom, l, &label);CHKERRQ(ierr);
+          ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
+          if (isDepth) continue;
+          ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
+          if (isGhost) continue;
+          ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
+          if (isVTK) continue;
+          ierr = DMCreateLabel(dm,name);CHKERRQ(ierr);
+          ierr = DMGetLabel(dm,name,&labelNew);CHKERRQ(ierr);
+          ierr = DMLabelGetDefaultValue(label,&defVal);CHKERRQ(ierr);
+          ierr = DMLabelSetDefaultValue(labelNew,defVal);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -723,15 +871,35 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMDestroy(&coarseDM);CHKERRQ(ierr);
     }
   }
-  if (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity != 1. || forest->weightsFactor != 1.) {
-    if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
-      PetscStackCallP4est(p4est_partition,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
-    }
-    else {
-      /* TODO: handle non-uniform partition cases */
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
+  {
+    PetscMPIInt size;
+
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
+    if ((size > 1) && (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity != 1. || forest->weightsFactor != 1.)) {
+      if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
+        PetscBool copyForest = PETSC_FALSE;
+        p4est_t *forest_copy = NULL;
+        if (preCoarseToFine || coarseToPreFine) {
+          copyForest = PETSC_TRUE;
+        }
+        if (copyForest) {
+          PetscStackCallP4estReturn(forest_copy,p4est_copy,(pforest->forest,0));
+        }
+        PetscStackCallP4est(p4est_partition,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
+        if (forest_copy) {
+          if (preCoarseToFine || coarseToPreFine) {
+          }
+          PetscStackCallP4est(p4est_destroy,(forest_copy));
+        }
+      }
+      else {
+        /* TODO: handle non-uniform partition cases */
+        SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
+      }
     }
   }
+  forest->preCoarseToFine = preCoarseToFine;
+  forest->coarseToPreFine = preCoarseToFine;
   PetscFunctionReturn(0);
 }
 

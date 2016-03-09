@@ -211,8 +211,8 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   if (--forest->refct > 0) PetscFunctionReturn(0);
   if (forest->destroy) {ierr = forest->destroy(dm);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&forest->cellSF);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&forest->adaptSFCoarseToFine);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&forest->adaptSFFineToCoarse);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&forest->preCoarseToFine);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&forest->coarseToPreFine);CHKERRQ(ierr);
   ierr = PetscFree(forest->adaptLabel);CHKERRQ(ierr);
   ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
@@ -963,14 +963,14 @@ PetscErrorCode DMForestGetComputeAdaptivitySF(DM dm, PetscBool *computeSF)
   dm - the post-adaptation forest
 
   Output Parameter:
-  coarseToFineSF - pre-adaptation coarse cells to post-adaptation fine cells: BCast goes from pre- to post-
-  fineToCoarseSF - pre-adaptation fine cells to post-adaptation coarse cells: BCase goes from post- to pre-
+  preCoarseToFine - pre-adaptation coarse cells to post-adaptation fine cells: BCast goes from pre- to post-
+  coarseToPreFine - post-adaptation coarse cells to pre-adaptation fine cells: BCast goes from post- to pre-
 
   Level: advanced
 
 .seealso: DMForestGetComputeAdaptivitySF(), DMForestSetComputeAdaptivitySF()
 @*/
-PetscErrorCode DMForestGetAdaptivitySF(DM dm, PetscSF *coarseToFineSF, PetscSF *fineToCoarseSF)
+PetscErrorCode DMForestGetAdaptivitySF(DM dm, PetscSF *preCoarseToFine, PetscSF *coarseToPreFine)
 {
   DM_Forest      *forest;
   PetscErrorCode ierr;
@@ -979,11 +979,11 @@ PetscErrorCode DMForestGetAdaptivitySF(DM dm, PetscSF *coarseToFineSF, PetscSF *
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
   forest = (DM_Forest *) dm->data;
-  if (coarseToFineSF) {
-    *coarseToFineSF = forest->adaptSFCoarseToFine;
+  if (preCoarseToFine) {
+    *preCoarseToFine = forest->preCoarseToFine;
   }
-  if (fineToCoarseSF) {
-    *fineToCoarseSF = forest->adaptSFFineToCoarse;
+  if (coarseToPreFine) {
+    *coarseToPreFine = forest->coarseToPreFine;
   }
   PetscFunctionReturn(0);
 }

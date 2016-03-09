@@ -28,8 +28,8 @@ typedef struct {
   PetscInt                   cStart;
   PetscInt                   cEnd;
   PetscSF                    cellSF;
-  PetscSF                    adaptSFCoarseToFine;
-  PetscSF                    adaptSFFineToCoarse;
+  PetscSF                    preCoarseToFine;
+  PetscSF                    coarseToPreFine;
   char                       *adaptLabel;
   DMForestAdaptivityStrategy adaptStrategy;
   PetscInt                   gradeFactor;
