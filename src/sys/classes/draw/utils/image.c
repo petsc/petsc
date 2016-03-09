@@ -137,6 +137,9 @@ static PetscErrorCode PetscDrawImageSave_PNG(const char filename[],unsigned char
 #define EGifOpenFileName(n,b,err) EGifOpenFileName(n,b)
 #define EGifOpenFileHandle(h,err) EGifOpenFileName(h)
 #define EGifCloseFile(f,err)      EGifCloseFile(f)
+#define DGifOpenFileName(n,err)   DGifOpenFileName(n)
+#define DGifOpenFileHandle(h,err) DGifOpenFileName(h)
+#define DGifCloseFile(f,err)      DGifCloseFile(f)
 #endif
 
 #undef __FUNCT__
@@ -175,6 +178,68 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveGIF(const char filename[],unsigned
 
 static PetscErrorCode PetscDrawImageSave_GIF(const char filename[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
 { return PetscDrawImageSaveGIF(filename,palette,w,h,pixels); }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawMovieSaveGIF"
+PETSC_EXTERN PetscErrorCode PetscDrawMovieSaveGIF(const char pattern[],PetscInt count,const char movie[])
+{
+  int            i,j,Row;
+  char           image[PETSC_MAX_PATH_LEN];
+  GifFileType    *GifMovie = NULL;
+  GifFileType    *GifImage = NULL;
+  PetscErrorCode ierr;
+# define         SETERRGIF(msg,fn) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,msg" GIF file %s",fn)
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(pattern,1);
+  PetscValidCharPointer(movie,3);
+  if (count < 1) PetscFunctionReturn(0);
+
+  for (i = 0; i < count; i++) {
+    ierr = PetscSNPrintf(image,sizeof(image),pattern,(int)i);CHKERRQ(ierr);
+    /* open and read image file */
+    if ((GifImage = DGifOpenFileName(image, NULL)) == NULL) SETERRGIF("Opening input",image);
+    if (DGifSlurp(GifImage) != GIF_OK) SETERRGIF("Reading input",image);
+    /* open movie file and write header */
+    if (i == 0) {
+      if ((GifMovie = EGifOpenFileName(movie, 0, NULL)) == NULL) SETERRGIF("Opening output",movie);
+      if (EGifPutScreenDesc(GifMovie,
+                            GifImage->SWidth,
+                            GifImage->SHeight,
+                            GifImage->SColorResolution,
+                            GifImage->SBackGroundColor,
+                            GifImage->SColorMap) != GIF_OK) SETERRGIF("Writing screen descriptor,",movie);
+    }
+    /* loop over all frames in image */
+    for (j = 0; j < GifImage->ImageCount; j++) {
+      SavedImage *sp = &GifImage->SavedImages[j];
+      GifImageDesc *GifFrame = &sp->ImageDesc;
+      ColorMapObject *FrameColorMap = GifFrame->ColorMap ? GifFrame->ColorMap : GifImage->SColorMap;
+      if (GifMovie->SColorMap && GifMovie->SColorMap->ColorCount == FrameColorMap->ColorCount &&
+          !memcmp(GifMovie->SColorMap->Colors,FrameColorMap->Colors,
+                  (size_t)FrameColorMap->ColorCount*sizeof(GifColorType)))
+        FrameColorMap = NULL;
+      /* add frame to movie */
+      if (EGifPutImageDesc(GifMovie,
+                           GifFrame->Left,
+                           GifFrame->Top,
+                           GifFrame->Width,
+                           GifFrame->Height,
+                           GifFrame->Interlace,
+                           FrameColorMap) != GIF_OK) SETERRGIF("Writing image descriptor,",movie);
+      for (Row = 0; Row < GifFrame->Height; Row++) {
+        if (EGifPutLine(GifMovie,
+                        sp->RasterBits + Row * GifFrame->Width,
+                        GifFrame->Width) != GIF_OK) SETERRGIF("Writing image pixels,",movie);
+      }
+    }
+    if (DGifCloseFile(GifImage, NULL) != GIF_OK) SETERRGIF("Closing input",image);
+  }
+  if (EGifCloseFile(GifMovie, NULL) != GIF_OK) SETERRGIF("Closing output",movie);
+
+# undef SETERRGIF
+  PetscFunctionReturn(0);
+}
 
 #endif/*!PETSC_HAVE_GIFLIB*/
 
@@ -340,7 +405,9 @@ PetscErrorCode PetscDrawMovieCheckFormat(const char *ext[])
 #define __FUNCT__ "PetscDrawMovieSave"
 PetscErrorCode PetscDrawMovieSave(const char basename[],PetscInt count,const char imext[],PetscInt fps,const char mvext[])
 {
-  PetscBool      imgif;
+  char           input[PETSC_MAX_PATH_LEN];
+  char           output[PETSC_MAX_PATH_LEN];
+  PetscBool      gifinput;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -349,34 +416,39 @@ PetscErrorCode PetscDrawMovieSave(const char basename[],PetscInt count,const cha
   if (mvext) PetscValidCharPointer(mvext,4);
   if (count < 1) PetscFunctionReturn(0);
 
-  ierr = PetscStrcasecmp(imext,".gif",&imgif);CHKERRQ(ierr);
+  ierr = PetscStrcasecmp(imext,".gif",&gifinput);CHKERRQ(ierr);
   ierr = PetscDrawMovieCheckFormat(&mvext);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(input,sizeof(input),"%s/%s_%%d%s",basename,basename,imext);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(output,sizeof(output),"%s%s",basename,mvext);CHKERRQ(ierr);
 
+  /* use GIFLIB to generate an intermediate GIF animation */
+#if defined(PETSC_HAVE_GIFLIB)
+  if (gifinput) {
+    char gifmovie[PETSC_MAX_PATH_LEN];
+    ierr = PetscSNPrintf(gifmovie,sizeof(gifmovie),"%s/%s_movie.gif",basename,basename);CHKERRQ(ierr);
+    ierr = PetscDrawMovieSaveGIF(input,count,gifmovie);CHKERRQ(ierr);
+    ierr = PetscStrcpy(input,gifmovie);CHKERRQ(ierr);
+  }
+#endif
+
+  /* use FFmpeg to generate a movie */
 #if defined(PETSC_HAVE_POPEN)
-  /* use ffmpeg to generate a movie */
   {
-    PetscInt i;
-    FILE     *fd;
-    char     ffmpeg[64] = "ffmpeg -loglevel error -y", framerate[24] = "";
-    char     input[PETSC_MAX_PATH_LEN], output[PETSC_MAX_PATH_LEN];
-    char     command[sizeof(ffmpeg)+sizeof(framerate)+PETSC_MAX_PATH_LEN*2];
-    if (fps > 0 && !imgif) { /* ffmpeg seems to have trouble with non-animated GIF input */
-      ierr = PetscSNPrintf(framerate,sizeof(framerate)," -framerate %d",(int)fps);CHKERRQ(ierr);
-      ierr = PetscStrcat(ffmpeg,framerate);CHKERRQ(ierr);
+    FILE *fd; int err;
+    char options[64] = "-loglevel error -y", extraopts[32] = "", framerate[24] = "";
+    char command[sizeof(options)+sizeof(extraopts)+sizeof(framerate)+PETSC_MAX_PATH_LEN*2];
+    if (fps > 0) {ierr = PetscSNPrintf(framerate,sizeof(framerate),"-r %d",(int)fps);CHKERRQ(ierr);}
+    if (gifinput) {
+      ierr = PetscStrcat(options," -f gif");CHKERRQ(ierr);
+      ierr = PetscSNPrintf(extraopts,sizeof(extraopts)," -default_delay %d",(fps > 0) ? 100/(int)fps : 4);CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrcat(options," -f image2");CHKERRQ(ierr);
+      if (fps > 0) {ierr = PetscSNPrintf(extraopts,sizeof(extraopts)," -framerate %d",(int)fps);CHKERRQ(ierr);}
     }
-    ierr = PetscSNPrintf(input,sizeof(input),"%s/%s_%%d%s",basename,basename,imext);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(output,sizeof(output),"%s%s",basename,mvext);CHKERRQ(ierr);
-    if (imgif) {
-      ierr = PetscStrcat(ffmpeg," -f concat");CHKERRQ(ierr);
-      ierr = PetscSNPrintf(input,sizeof(input),"%s/%s.filelist",basename,basename);CHKERRQ(ierr);
-      ierr = PetscFOpen(PETSC_COMM_SELF,input,"w",&fd);CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"# ffmpeg%s -f concat -i \"%s.filelist\" \"%s\"\n",framerate,basename,output);CHKERRQ(ierr);
-      for (i=0; i<count; i++) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"file '%s_%d%s'\n",basename,i,imext);CHKERRQ(ierr);}
-      ierr = PetscFClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
-    }
-    ierr = PetscSNPrintf(command,sizeof(command),"%s -i \"%s\" \"%s\"",ffmpeg,input,output);CHKERRQ(ierr);
+    if (extraopts[0]) {ierr = PetscStrcat(options,extraopts);CHKERRQ(ierr);}
+    ierr = PetscSNPrintf(command,sizeof(command),"ffmpeg %s -i \"%s\" %s \"%s\"",options,input,framerate,output);CHKERRQ(ierr);
     ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(PETSC_COMM_SELF,fd,NULL);CHKERRQ(ierr);
+    ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);
