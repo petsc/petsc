@@ -58,7 +58,7 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 {
   PetscBool      isnull;
-  PetscReal      xl = 0.0,yl = 0.0,xr = 2.0,yr = 1.0,value;
+  PetscReal      xl = 0.0,yl = 0.0,xr = 1.0,yr = 1.0;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
   int            i;
@@ -73,19 +73,20 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
   ierr = PetscDrawCheckResizedWindow(popup);CHKERRQ(ierr);
   ierr = PetscDrawClear(popup);CHKERRQ(ierr);
   ierr = PetscDrawSetTitle(popup,"Contour Scale");CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(popup,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawCollectiveBegin(popup);CHKERRQ(ierr);
   if (!rank) {
     for (i=0; i<10; i++) {
       int c = PetscDrawRealToColor((PetscReal)i/9,0,1);
       ierr = PetscDrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);CHKERRQ(ierr);
-      yl += 0.1; yr += 0.1;
+      yl += 0.1;
     }
     for (i=0; i<10; i++) {
-      value = min + i*(max-min)/9.0;
+      PetscReal value = min + i*(max-min)/9;
       /* look for a value that should be zero, but is not due to round-off */
       if (PetscAbsReal(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
       ierr = PetscSNPrintf(string,sizeof(string),"%18.16e",(double)value);CHKERRQ(ierr);
-      ierr = PetscDrawString(popup,0.2,0.02 + i/10.0,PETSC_DRAW_BLACK,string);CHKERRQ(ierr);
+      ierr = PetscDrawString(popup,0.2,0.02+i/10.0,PETSC_DRAW_BLACK,string);CHKERRQ(ierr);
     }
   }
   ierr = PetscDrawCollectiveEnd(popup);CHKERRQ(ierr);
