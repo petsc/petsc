@@ -2664,15 +2664,28 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
         }
       }
     }
-    ierr = PetscFree(rootType);CHKERRQ(ierr);
 
     /* now every cell has labeled the points in its closure, so we first make sure everyone agrees by reducing to roots, and the broadcast the agreements */
     if (size > 1) {
+      PetscInt *rootTypeCopy, p;
+
+      ierr = PetscMalloc1(pEndF-pStartF,&rootTypeCopy);CHKERRQ(ierr);
+      ierr = PetscMemcpy(rootTypeCopy,rootType,(pEndF-pStartF)*sizeof(*rootTypeCopy));CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(pointSF,MPIU_INT,rootTypeCopy,rootTypeCopy,MPIU_MAX);CHKERRQ(ierr);
+      for (p = pStartF; p < pEndF; p++) {
+        if (rootTypeCopy[p-pStartF] > rootType[p-pStartF]) { /* another process found a root of higher type (e.g. vertex instead of edge), which we want to accept, so nullify this */
+          roots[p-pStartF].rank = -1;
+          roots[p-pStartF].index = -1;
+        }
+      }
+      ierr = PetscFree(rootTypeCopy);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(pointSF,nodeType,roots,roots,sfNodeReduce);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(pointSF,nodeType,roots,roots,sfNodeReduce);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(pointSF,nodeType,roots,roots);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(pointSF,nodeType,roots,roots);CHKERRQ(ierr);
     }
+    ierr = PetscFree(rootType);CHKERRQ(ierr);
 
     {
       PetscInt pStartC, pEndC;
