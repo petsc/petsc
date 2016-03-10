@@ -101,9 +101,8 @@ typedef struct {
   PetscInt            coarse_adj_red;
   PetscInt            current_level;
   PetscInt            max_levels;
-  PetscInt            redistribute_coarse;
+  PetscInt            coarse_eqs_per_proc;
   IS                  coarse_subassembling;
-  IS                  coarse_subassembling_init;
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
   PetscInt            vertex_size;
