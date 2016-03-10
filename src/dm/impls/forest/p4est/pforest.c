@@ -2416,6 +2416,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     PetscInt cLocalStartF;
     PetscSF  pointSF;
     PetscSFNode *roots;
+    PetscInt *rootType;
     DM       plexF, refTree = NULL;
     DMLabel  canonical;
     PetscInt *childClosures[P4EST_CHILDREN] = {NULL};
@@ -2427,10 +2428,12 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     ierr = DMPforestGetPlex(fine,&plexF);CHKERRQ(ierr);
     ierr = DMPlexGetChart(plexF,&pStartF,&pEndF);CHKERRQ(ierr);
     ierr = PetscMalloc1(pEndF-pStartF,&roots);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pEndF-pStartF,&rootType);CHKERRQ(ierr);
     ierr = DMGetPointSF(fine,&pointSF);CHKERRQ(ierr);
     for (p = pStartF; p < pEndF; p++) {
       roots[p-pStartF].rank  = -1;
       roots[p-pStartF].index = -1;
+      rootType[p-pStartF] = -1;
     }
     if (childIds) {
       PetscInt child;
@@ -2480,7 +2483,10 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
           for (j = 0; j < numClosureIndices; j++) {
             PetscInt p = closurePointsF[numClosureIndices * c + j].index;
 
-            roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + j];
+            if (j > rootType[p-pStartF]) {
+              roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + j];
+              rootType[p-pStartF] = j;
+            }
           }
         }
         else {
@@ -2646,7 +2652,10 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
               if (closureIndices[m] == l) {
                 PetscInt p = closurePointsF[numClosureIndices * c + j].index;
 
-                roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + m];
+                if (m > rootType[p-pStartF]) {
+                  roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + m];
+                  rootType[p-pStartF] = m;
+                }
                 break;
               }
             }
@@ -2654,6 +2663,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
         }
       }
     }
+    ierr = PetscFree(rootType);CHKERRQ(ierr);
 
     /* now every cell has labeled the points in its closure, so we first make sure everyone agrees by reducing to roots, and the broadcast the agreements */
     if (size > 1) {
