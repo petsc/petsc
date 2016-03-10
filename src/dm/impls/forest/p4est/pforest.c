@@ -3245,7 +3245,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
   }
   else {
     PetscInt    dofPerDim[4]={1, 1, 1, 1};
-    PetscSF     transferForward, transferBackward;
+    PetscSF     transferForward, transferBackward, pointSF;
     PetscInt    pStart, pEnd, pStartA, pEndA;
     PetscInt    *values, *adaptValues;
     DMLabelLink next = adapt->labels->next;
@@ -3256,6 +3256,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     ierr = DMPlexGetChart(plex,&pStart,&pEnd);CHKERRQ(ierr);
     ierr = DMPlexGetChart(adaptPlex,&pStartA,&pEndA);CHKERRQ(ierr);
     ierr = PetscMalloc2(pEnd-pStart,&values,pEndA-pStartA,&adaptValues);CHKERRQ(ierr);
+    ierr = DMGetPointSF(plex,&pointSF);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
     {
       PetscInt p;
@@ -3273,6 +3274,8 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
         ierr = PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX);CHKERRQ(ierr);
         ierr = PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX);CHKERRQ(ierr);
       }
+      ierr = PetscSFBcastBegin(pointSF,MPIU_INT,values,values);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(pointSF,MPIU_INT,values,values);CHKERRQ(ierr);
       for (p = pStart; p < pEnd; p++) {
         if (values[p-pStart] == -2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"uncovered point %D",p);
       }
@@ -3322,6 +3325,8 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       if (transferBackward) {
         ierr = PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX);CHKERRQ(ierr);
       }
+      ierr = PetscSFBcastBegin(pointSF,MPIU_INT,values,values);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(pointSF,MPIU_INT,values,values);CHKERRQ(ierr);
 
       for (p = pStart; p < pEnd; p++) {
         ierr = DMLabelSetValue(label,p,values[p]);CHKERRQ(ierr);
