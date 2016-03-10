@@ -15,6 +15,7 @@ cdef extern from * nogil:
     PetscTSType TSARKIMEX
     PetscTSType TSROSW
     PetscTSType TSEIMEX
+    PetscTSType TSMIMEX
 
     ctypedef enum PetscTSProblemType "TSProblemType":
       TS_LINEAR
@@ -41,11 +42,14 @@ cdef extern from * nogil:
       # converged
       TS_CONVERGED_TIME
       TS_CONVERGED_ITS
+      TS_CONVERGED_USER
+      TS_CONVERGED_EVENT
       # diverged
       TS_DIVERGED_NONLINEAR_SOLVE
       TS_DIVERGED_STEP_REJECTED
 
     ctypedef enum PetscTSExactFinalTimeOption "TSExactFinalTimeOption":
+      TS_EXACTFINALTIME_UNSPECIFIED
       TS_EXACTFINALTIME_STEPOVER
       TS_EXACTFINALTIME_INTERPOLATE
       TS_EXACTFINALTIME_MATCHSTEP
@@ -90,8 +94,10 @@ cdef extern from * nogil:
     ctypedef int (*PetscTSPostStepFunction) (PetscTS) except PETSC_ERR_PYTHON
 
     int TSCreate(MPI_Comm comm,PetscTS*)
+    int TSClone(PetscTS,PetscTS*)
     int TSDestroy(PetscTS*)
     int TSView(PetscTS,PetscViewer)
+    int TSLoad(PetscTS,PetscViewer)
 
     int TSSetProblemType(PetscTS,PetscTSProblemType)
     int TSGetProblemType(PetscTS,PetscTSProblemType*)
@@ -133,6 +139,7 @@ cdef extern from * nogil:
 
     int TSSetTime(PetscTS,PetscReal)
     int TSGetTime(PetscTS,PetscReal*)
+    int TSGetPrevTime(PetscTS,PetscReal*)
     int TSSetInitialTimeStep(PetscTS,PetscReal,PetscReal)
     int TSSetTimeStep(PetscTS,PetscReal)
     int TSGetTimeStep(PetscTS,PetscReal*)
@@ -142,6 +149,7 @@ cdef extern from * nogil:
     int TSSetExactFinalTime(PetscTS,PetscTSExactFinalTimeOption)
     int TSSetConvergedReason(PetscTS,PetscTSConvergedReason)
     int TSGetConvergedReason(PetscTS,PetscTSConvergedReason*)
+    int TSGetTotalSteps(PetscTS,PetscInt*)
     int TSGetSNESIterations(PetscTS,PetscInt*)
     int TSGetKSPIterations(PetscTS,PetscInt*)
     int TSGetStepRejections(PetscTS,PetscInt*)

@@ -16,9 +16,11 @@ class TSType(object):
     ARKIMEX  = S_(TSARKIMEX)
     ROSW     = S_(TSROSW)
     EIMEX    = S_(TSEIMEX)
+    MIMEX    = S_(TSMIMEX)
     # aliases
     FE = EULER
     BE = BEULER
+    TH = THETA
     CRANK_NICOLSON = CN
     RUNGE_KUTTA    = RK
 
@@ -41,7 +43,8 @@ class TSEquationType(object):
     DAE_IMPLICIT_INDEX3       = TS_EQ_DAE_IMPLICIT_INDEX3
     DAE_IMPLICIT_INDEXHI      = TS_EQ_DAE_IMPLICIT_INDEXHI
 
-class TSExactFinalTimeOption(object):
+class TSExactFinalTime(object):
+    UNSPECIFIED = TS_EXACTFINALTIME_UNSPECIFIED
     STEPOVER    = TS_EXACTFINALTIME_STEPOVER
     INTERPOLATE = TS_EXACTFINALTIME_INTERPOLATE
     MATCHSTEP   = TS_EXACTFINALTIME_MATCHSTEP
@@ -53,6 +56,8 @@ class TSConvergedReason(object):
     # converged
     CONVERGED_TIME           = TS_CONVERGED_TIME
     CONVERGED_ITS            = TS_CONVERGED_ITS
+    CONVERGED_USER           = TS_CONVERGED_USER
+    CONVERGED_EVENT          = TS_CONVERGED_EVENT
     # diverged
     DIVERGED_NONLINEAR_SOLVE = TS_DIVERGED_NONLINEAR_SOLVE
     DIVERGED_STEP_REJECTED   = TS_DIVERGED_STEP_REJECTED
@@ -64,7 +69,8 @@ cdef class TS(Object):
     Type = TSType
     ProblemType = TSProblemType
     EquationType = TSEquationType
-    ExactFinalTimeOption = TSExactFinalTimeOption
+    ExactFinalTime = TSExactFinalTime
+    ExactFinalTimeOption = TSExactFinalTime
     ConvergedReason = TSConvergedReason
 
     # --- xxx ---
@@ -80,6 +86,9 @@ cdef class TS(Object):
         if viewer is not None: cviewer = viewer.vwr
         CHKERR( TSView(self.ts, cviewer) )
 
+    def load(self, Viewer viewer not None):
+        CHKERR( TSLoad(self.ts, viewer.vwr) )
+
     def destroy(self):
         CHKERR( TSDestroy(&self.ts) )
         return self
@@ -90,6 +99,11 @@ cdef class TS(Object):
         CHKERR( TSCreate(ccomm, &newts) )
         PetscCLEAR(self.obj); self.ts = newts
         return self
+
+    def clone(self):
+        cdef TS ts = TS()
+        CHKERR( TSClone(self.ts, &ts.ts) )
+        return ts
 
     def setType(self, ts_type):
         cdef const_char *cval = NULL
@@ -310,6 +324,11 @@ cdef class TS(Object):
         CHKERR( TSGetTime(self.ts, &rval) )
         return toReal(rval)
 
+    def getPrevTime(self):
+        cdef PetscReal rval = 0
+        CHKERR( TSGetPrevTime(self.ts, &rval) )
+        return toReal(rval)
+
     def getSolveTime(self):
         cdef PetscReal rval = 0
         CHKERR( TSGetSolveTime(self.ts, &rval) )
@@ -373,6 +392,11 @@ cdef class TS(Object):
         cdef PetscReal rval = 0
         CHKERR( TSGetDuration(self.ts, &ival, &rval) )
         return (toReal(rval), toInt(ival))
+
+    def getTotalSteps(self):
+        cdef PetscInt ival = 0
+        CHKERR( TSGetTotalSteps(self.ts, &ival) )
+        return toInt(ival)
 
     def getSNESIterations(self):
         cdef PetscInt n = 0
@@ -722,7 +746,7 @@ cdef class TS(Object):
 del TSType
 del TSProblemType
 del TSEquationType
-del TSExactFinalTimeOption
+del TSExactFinalTime
 del TSConvergedReason
 
 # -----------------------------------------------------------------------------
