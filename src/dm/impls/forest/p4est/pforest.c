@@ -2171,6 +2171,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
   ierr = MPI_Waitall((PetscMPIInt)(endF-startF),sendReqs,NULL);CHKERRQ(ierr);
   ierr = PetscFree2(send,sendReqs);CHKERRQ(ierr);
   ierr = PetscFree2(recv,recvReqs);CHKERRQ(ierr);
+  *coveringSF = sf;
   PetscFunctionReturn(0);
 }
 
@@ -2963,8 +2964,16 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         if (cStart <= point && point < cEnd) {
           ierr = DMPlexGetTransitiveClosure(plex,point,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
           for (l = 0; l < closureSize; l++) {
-            if (closure[2 * l] == p) {
-              c = point;
+            PetscInt qParent = closure[2 * l], q;
+            do {
+              q = qParent;
+              if (q == p) {
+                c = point;
+                break;
+              }
+              ierr = DMPlexGetTreeParent(plex,q,&qParent,NULL);CHKERRQ(ierr);
+            } while (qParent != q);
+            if (c != -1) {
               break;
             }
           }
@@ -2974,8 +2983,8 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
           }
         }
       }
-      ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,NULL,&star);CHKERRQ(ierr);
       if (s == starSize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %d in its closure",p);
+      ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,NULL,&star);CHKERRQ(ierr);
 
       if (c < cLocalStart) {
         /* get from the beginning of the ghost layer */
