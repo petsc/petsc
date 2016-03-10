@@ -177,19 +177,20 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd,
   PetscScalar   *refSpaceDer;
   PetscReal    **basisField, **basisFieldDer;
   PetscInt       dOffset = 0, fOffset = 0;
-  PetscInt       Nf, Nc, dim, d, f;
+  PetscInt       Nf, Nc, dimRef, dimReal, d, f;
   PetscErrorCode ierr;
 
   if (!prob) return 0;
-  ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
-  if (bd) dim -= 1;
+  ierr = PetscDSGetSpatialDimension(prob, &dimReal);CHKERRQ(ierr);
+  dimRef = dimReal;
+  if (bd) dimRef -= 1;
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, NULL, &refSpaceDer);CHKERRQ(ierr);
   if (bd) {ierr = PetscDSGetBdTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);}
   else    {ierr = PetscDSGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);}
   for (d = 0; d < Nc; ++d)          {u[d]   = 0.0;}
-  for (d = 0; d < dim*Nc; ++d)      {u_x[d] = 0.0;}
+  for (d = 0; d < dimReal*Nc; ++d)      {u_x[d] = 0.0;}
   if (u_t) for (d = 0; d < Nc; ++d) {u_t[d] = 0.0;}
   for (f = 0; f < Nf; ++f) {
     const PetscReal *basis    = basisField[f];
@@ -213,16 +214,16 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd,
       Nb   = 1;
       ierr = PetscFVGetNumComponents(fv, &Ncf);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
-    for (d = 0; d < dim*Ncf; ++d) refSpaceDer[d] = 0.0;
+    for (d = 0; d < dimRef*Ncf; ++d) refSpaceDer[d] = 0.0;
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Ncf; ++c) {
         const PetscInt cidx = b*Ncf+c;
 
         u[fOffset+c]   += coefficients[dOffset+cidx]*basis[q*Nb*Ncf+cidx];
-        for (d = 0; d < dim; ++d) refSpaceDer[c*dim+d] += coefficients[dOffset+cidx]*basisDer[(q*Nb*Ncf+cidx)*dim+d];
+        for (d = 0; d < dimRef; ++d) refSpaceDer[c*dimRef+d] += coefficients[dOffset+cidx]*basisDer[(q*Nb*Ncf+cidx)*dimRef+d];
       }
     }
-    for (c = 0; c < Ncf; ++c) for (d = 0; d < dim; ++d) for (e = 0; e < dim; ++e) u_x[(fOffset+c)*dim+d] += invJ[e*dim+d]*refSpaceDer[c*dim+e];
+    for (c = 0; c < Ncf; ++c) for (d = 0; d < dimReal; ++d) for (e = 0; e < dimRef; ++e) u_x[(fOffset+c)*dimReal+d] += invJ[e*dimReal+d]*refSpaceDer[c*dimRef+e];
     if (u_t) {
       for (b = 0; b < Nb; ++b) {
         for (c = 0; c < Ncf; ++c) {
@@ -236,8 +237,8 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd,
     for (c = 0; c < Ncf; ++c) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "    u[%d,%d]: %g\n", f, c, PetscRealPart(u[fOffset+c]));CHKERRQ(ierr);
       if (u_t) {ierr = PetscPrintf(PETSC_COMM_SELF, "    u_t[%d,%d]: %g\n", f, c, PetscRealPart(u_t[fOffset+c]));CHKERRQ(ierr);}
-      for (d = 0; d < dim; ++d) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d,%d]_%c: %g\n", f, c, 'x'+d, PetscRealPart(u_x[(fOffset+c)*dim+d]));CHKERRQ(ierr);
+      for (d = 0; d < dimRef; ++d) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d,%d]_%c: %g\n", f, c, 'x'+d, PetscRealPart(u_x[(fOffset+c)*dimReal+d]));CHKERRQ(ierr);
       }
     }
 #endif
@@ -275,24 +276,24 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFaceFields(PetscDS prob, PetscInt fie
 
 #undef __FUNCT__
 #define __FUNCT__ "TransformF"
-PETSC_STATIC_INLINE void TransformF(PetscInt dim, PetscInt Nc, PetscInt q, const PetscReal invJ[], PetscReal detJ, const PetscReal quadWeights[], PetscScalar refSpaceDer[], PetscScalar f0[], PetscScalar f1[])
+PETSC_STATIC_INLINE void TransformF(PetscInt dimReal, PetscInt dimRef, PetscInt Nc, PetscInt q, const PetscReal invJ[], PetscReal detJ, const PetscReal quadWeights[], PetscScalar refSpaceDer[], PetscScalar f0[], PetscScalar f1[])
 {
   PetscInt c, d, e;
 
   for (c = 0; c < Nc; ++c) f0[q*Nc+c] *= detJ*quadWeights[q];
   for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) {
-      f1[(q*Nc + c)*dim+d] = 0.0;
-      for (e = 0; e < dim; ++e) f1[(q*Nc + c)*dim+d] += invJ[d*dim+e]*refSpaceDer[c*dim+e];
-      f1[(q*Nc + c)*dim+d] *= detJ*quadWeights[q];
+    for (d = 0; d < dimRef; ++d) {
+      f1[(q*Nc + c)*dimRef+d] = 0.0;
+      for (e = 0; e < dimReal; ++e) f1[(q*Nc + c)*dimRef+d] += invJ[d*dimReal+e]*refSpaceDer[c*dimReal+e];
+      f1[(q*Nc + c)*dimRef+d] *= detJ*quadWeights[q];
     }
   }
 #if 0
   if (debug > 1) {
     for (c = 0; c < Nc; ++c) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "    f0[%d]: %g\n", c, PetscRealPart(f0[q*Nc+c]));CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]_%c: %g\n", c, 'x'+d, PetscRealPart(f1[(q*Nc + c)*dim+d]));CHKERRQ(ierr);
+      for (d = 0; d < dimRef; ++d) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]_%c: %g\n", c, 'x'+d, PetscRealPart(f1[(q*Nc + c)*dimRef+d]));CHKERRQ(ierr);
       }
     }
   }

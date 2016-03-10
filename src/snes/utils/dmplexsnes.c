@@ -1554,8 +1554,8 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Vec
     if ((id != PETSCFE_CLASSID) || isEssential) continue;
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumSize(label, 1, &numPoints);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumIS(label, 1, &pointIS);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumSize(label, values[0], &numPoints);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, values[0], &pointIS);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     for (p = 0, numFaces = 0; p < numPoints; ++p) {
       ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
@@ -2351,8 +2351,8 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     if ((id != PETSCFE_CLASSID) || isEssential) continue;
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumSize(label, 1, &numPoints);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumIS(label, 1, &pointIS);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumSize(label, values[0], &numPoints);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, values[0], &pointIS);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     for (p = 0, numFaces = 0; p < numPoints; ++p) {
       ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
