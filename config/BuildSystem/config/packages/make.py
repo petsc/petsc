@@ -24,6 +24,7 @@ class Configure(config.package.GNUPackage):
     help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
     help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
     help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
+    help.addArgument('MAKE', '-with-make-exec=<executable>',                 nargs.Arg(None, None, 'Make executable to look for'))
     return
 
   def formGNUConfigureArgs(self):
@@ -62,55 +63,79 @@ class Configure(config.package.GNUPackage):
     self.postInstall(output1+err1, conffile)
     return self.installDir
 
-  def configureMake(self):
-    '''Check for user specified make - or gmake, make'''
-    if self.framework.clArgDB.has_key('with-make'):
-      if not self.getExecutable(self.argDB['with-make'],getFullPath = 1,resultName = 'make'):
-        raise RuntimeError('Error! User provided make not found :'+self.argDB['with-make'])
-      self.found = 1
-      return
-    if not self.getExecutable('gmake', getFullPath = 1,resultName = 'make') and not self.getExecutable('make', getFullPath = 1,resultName = 'make'):
-      import os
-      if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/make'):
+  def generateGMakeGuesses(self):
+    if os.path.exists('/usr/bin/cygcheck.exe'):
+      if os.path.exists('/usr/bin/make'):
+        yield '/usr/bin/make'
+      else:
         raise RuntimeError('''\
 *** Incomplete cygwin install detected . /usr/bin/make is missing. **************
 *** Please rerun cygwin-setup and select module "make" for install.**************''')
-      else:
-        raise RuntimeError('Could not locate the make utility on your system, try --download-make')
-    self.found = 1
+    yield 'gmake'
+    yield 'make'
     return
 
-  def configureCheckGNUMake(self):
+  def generateMakeGuesses(self):
+    yield 'make'
+    yield 'gmake'
+    return
+
+  def configureMake(self):
+    '''Check for user specified make - or gmake, make'''
+    if 'with-make-exec' in self.argDB:
+      self.log.write('Looking for specified Make executable '+self.argDB['with-make-exec']+'\n')
+      if not self.getExecutable(self.argDB['with-make-exec'], getFullPath=1, resultName='make'):
+        raise RuntimeError('Error! User provided make not found :'+self.argDB['with-make-exec'])
+      self.found = 1
+      return
+    for gmake in self.generateGMakeGuesses():
+      if self.getExecutable(gmake,getFullPath = 1,resultName = 'make'):
+        if self.checkGNUMake(self.make):
+          self.found = 1
+          return
+    for make in self.generateMakeGuesses():
+      if self.getExecutable(make,getFullPath = 1,resultName = 'make'):
+        self.found = 1
+        return
+    raise RuntimeError('Could not locate the make utility on your system, try --download-make')
+
+  def checkGNUMake(self,make):
     '''Check for GNU make'''
+    haveGNUMake  = 0
+    haveGNUMake4 = 0
     try:
       import re
-      # set self.haveGNUMake only if using gnumake version > 3.80 [as older version break with gmakefile]
-      (output, error, status) = config.base.Configure.executeShellCommand(self.make+' --version', log = self.log)
+      # accept gnumake version > 3.80 only [as older version break with gmakefile]
+      (output, error, status) = config.base.Configure.executeShellCommand(make+' --version', log = self.log)
       gver = re.compile('GNU Make ([0-9]+).([0-9]+)').match(output)
       if not status and gver:
         major = int(gver.group(1))
         minor = int(gver.group(2))
-        if ((major > 3) or (major == 3 and minor > 80)):
-          self.haveGNUMake = 1
-        if (major > 3) and not self.setCompilers.isDarwin(self.log) and not self.setCompilers.isFreeBSD(self.log):
-          self.paroutflg = "--output-sync=recurse"
+        if ((major > 3) or (major == 3 and minor > 80)): haveGNUMake = 1
+        if (major > 3): haveGNUMake4 = 1
     except RuntimeError, e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
+    return haveGNUMake, haveGNUMake4
 
-    # Setup make flags
+  def configureCheckGNUMake(self):
+    '''Setup other GNU make stuff'''
+    # make sure this gets called by --download-make or --with-make-exec etc paths.
+    self.haveGNUMake, self.haveGNUMake4 = self.checkGNUMake(self.make)
+
+    if self.haveGNUMake4 and not self.setCompilers.isDarwin(self.log) and not self.setCompilers.isFreeBSD(self.log):
+      self.paroutflg = "--output-sync=recurse"
+
     if self.haveGNUMake:
+      # Setup make flags
       self.printdirflag = ' --print-directory'
       self.noprintdirflag = ' --no-print-directory'
       self.addMakeMacro('MAKE_IS_GNUMAKE',1)
-    else:
-      self.logPrintBox('Warning: '+self.make+' is not GNUMake (3.81 or higher). Suggest using --download-make')
-
-    # Check to see if make allows rules which look inside archives
-    if self.haveGNUMake:
+      # Use rules which look inside archives
       self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
       self.addMakeRule('libcxx','${LIBNAME}(${OBJSCXX})')
       self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
     else:
+      self.logPrintBox('Warning: '+self.make+' is not GNUMake (3.81 or higher). Suggest using --download-make')
       self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
       self.addMakeRule('libcxx','${OBJSCXX}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCXX}')
       self.addMakeRule('libcu','${OBJSCU}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCU}')
