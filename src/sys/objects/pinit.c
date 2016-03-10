@@ -6,16 +6,16 @@
 #include <petscvalgrind.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_CUDA)
-#include <cublas.h>
-#endif
-
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogInitialize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
 PetscFPT PetscFPTData = 0;
+#endif
+
+#if defined(PETSC_HAVE_CUDA)
+cublasHandle_t cublasv2handle = NULL;
 #endif
 
 #if defined(PETSC_HAVE_SAWS)
@@ -736,6 +736,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscMPIInt    flag, size;
   PetscBool      flg;
   char           hostname[256];
+#if defined(PETSC_HAVE_CUDA)
+  cublasStatus_t cberr;
+#endif
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -914,7 +917,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (flg) {
     PetscMPIInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) cublasInit();
+      if (p == PetscGlobalRank) {
+        cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
+      }
       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
   }
@@ -985,6 +990,9 @@ PetscErrorCode  PetscFinalize(void)
   PetscBool      flg;
 #if defined(PETSC_USE_LOG)
   char           mname[PETSC_MAX_PATH_LEN];
+#endif
+#if defined(PETSC_HAVE_CUDA)
+  cublasStatus_t cberr;
 #endif
 
   PetscFunctionBegin;
@@ -1319,7 +1327,11 @@ PetscErrorCode  PetscFinalize(void)
   if (flg) {
     PetscInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) cublasShutdown();
+      if (p == PetscGlobalRank) {
+        if (cublasv2handle) {
+          cberr = cublasDestroy(cublasv2handle);CHKERRCUBLAS(cberr);
+        }
+      }
       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
   }

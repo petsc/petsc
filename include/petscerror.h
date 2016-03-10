@@ -466,6 +466,9 @@ M*/
 
 #endif
 
+#define CHKERRCUDA(err) do {if (PetscUnlikely(((int)err) != (int)CUDA_SUCCESS)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err);} while(0)
+#define CHKERRCUBLAS(err) do {if (PetscUnlikely(((int)err) != (int)CUBLAS_STATUS_SUCCESS)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "CUBLAS error %d",err);} while(0)
+
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 
@@ -519,6 +522,8 @@ M*/
 #define CHKERRABORT(comm,n) ;
 #define CHKERRCONTINUE(n) ;
 #define CHKMEMQ        ;
+#define CHKERRCUDA(err) ;
+#define CHKERRCUBLAS(err) ;
 
 #ifdef PETSC_CLANGUAGE_CXX
 #define CHKERRXX(n) ;

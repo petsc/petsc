@@ -164,10 +164,14 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecCUSPCopyFrom",   VEC_CLASSID,&VEC_CUSPCopyFromGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUSPCopyToGPUSome);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCopyFromSome",   VEC_CLASSID,&VEC_CUSPCopyFromGPUSome);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
+#elif defined(PETSC_HAVE_VIENNACL)
   ierr = PetscLogEventRegister("VecViennaCLCopyTo",     VEC_CLASSID,&VEC_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecViennaCLCopyFrom",   VEC_CLASSID,&VEC_ViennaCLCopyFromGPU);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_VECCUDA)
+  ierr = PetscLogEventRegister("VecCUDACopyTo",     VEC_CLASSID,&VEC_CUDACopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCUDACopyFrom",   VEC_CLASSID,&VEC_CUDACopyFromGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUDACopyToGPUSome);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopyFromSome",   VEC_CLASSID,&VEC_CUDACopyFromGPUSome);CHKERRQ(ierr);
 #endif
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);CHKERRQ(ierr);

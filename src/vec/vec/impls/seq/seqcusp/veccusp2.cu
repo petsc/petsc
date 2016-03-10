@@ -12,7 +12,6 @@
 
 #include <cuda_runtime.h>
 
-
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPAllocateCheck"
 /*
@@ -1197,6 +1196,7 @@ PetscErrorCode VecSwap_SeqCUSP(Vec xin,Vec yin)
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn;
   CUSPARRAY      *xarray,*yarray;
+  cublasStatus_t cberr;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
@@ -1206,18 +1206,17 @@ PetscErrorCode VecSwap_SeqCUSP(Vec xin,Vec yin)
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    cublasCswap(bn,(cuFloatComplex*)VecCUSPCastToRawPtr(*xarray),one,(cuFloatComplex*)VecCUSPCastToRawPtr(*yarray),one);
+    cberr = cublasCswap(cublasv2handle,bn,(cuFloatComplex*)VecCUSPCastToRawPtr(*xarray),one,(cuFloatComplex*)VecCUSPCastToRawPtr(*yarray),one);CHKERRCUBLAS(cberr);
 #else
-    cublasZswap(bn,(cuDoubleComplex*)VecCUSPCastToRawPtr(*xarray),one,(cuDoubleComplex*)VecCUSPCastToRawPtr(*yarray),one);
+    cberr = cublasZswap(cublasv2handle,bn,(cuDoubleComplex*)VecCUSPCastToRawPtr(*xarray),one,(cuDoubleComplex*)VecCUSPCastToRawPtr(*yarray),one);CHKERRCUBLAS(cberr);
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-    cublasSswap(bn,VecCUSPCastToRawPtr(*xarray),one,VecCUSPCastToRawPtr(*yarray),one);
+    cberr = cublasSswap(cublasv2handle,bn,VecCUSPCastToRawPtr(*xarray),one,VecCUSPCastToRawPtr(*yarray),one);CHKERRCUBLAS(cberr);
 #else
-    cublasDswap(bn,VecCUSPCastToRawPtr(*xarray),one,VecCUSPCastToRawPtr(*yarray),one);
+    cberr = cublasDswap(cublasv2handle,bn,VecCUSPCastToRawPtr(*xarray),one,VecCUSPCastToRawPtr(*yarray),one);CHKERRCUBLAS(cberr);
 #endif
 #endif
-    ierr = cublasGetError();CHKERRCUSP(ierr);
     ierr = WaitForGPU();CHKERRCUSP(ierr);
     ierr = VecCUSPRestoreArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPRestoreArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
@@ -1420,6 +1419,7 @@ PetscErrorCode VecNorm_SeqCUSP(Vec xin,NormType type,PetscReal *z)
   PetscInt          n = xin->map->n;
   PetscBLASInt      one = 1, bn;
   CUSPARRAY         *xarray;
+  cublasStatus_t    cberr;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
@@ -1450,18 +1450,17 @@ PetscErrorCode VecNorm_SeqCUSP(Vec xin,NormType type,PetscReal *z)
     ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    *z = cublasScasum(bn,(cuFloatComplex*)VecCUSPCastToRawPtr(*xarray),one);
+    cberr = cublasSasum(cublasv2handle,bn,(cuFloatComplex*)VecCUSPCastToRawPtr(*xarray),one,z);CHKERRCUBLAS(cberr);
 #else
-    *z = cublasDzasum(bn,(cuDoubleComplex*)VecCUSPCastToRawPtr(*xarray),one);
+    cberr = cublasDasum(cublasv2handle,bn,(cuDoubleComplex*)VecCUSPCastToRawPtr(*xarray),one,z);CHKERRCUBLAS(cberr);
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-    *z = cublasSasum(bn,VecCUSPCastToRawPtr(*xarray),one);
+    cberr = cublasSasum(cublasv2handle,bn,VecCUSPCastToRawPtr(*xarray),one,z);CHKERRCUBLAS(cberr);
 #else
-    *z = cublasDasum(bn,VecCUSPCastToRawPtr(*xarray),one);
+    cberr = cublasDasum(cublasv2handle,bn,VecCUSPCastToRawPtr(*xarray),one,z);CHKERRCUBLAS(cberr);
 #endif
 #endif
-    ierr = cublasGetError();CHKERRCUSP(ierr);
     ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = WaitForGPU();CHKERRCUSP(ierr);
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);

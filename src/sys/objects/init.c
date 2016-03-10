@@ -83,6 +83,7 @@ PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDe
 */
 PetscBool PetscCUSPSynchronize = PETSC_FALSE;
 PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
+PetscBool PetscCUDASynchronize = PETSC_FALSE;
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -246,7 +247,7 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 }
 
 #if defined(PETSC_HAVE_CUDA)
-#include <cublas.h>
+#include <driver_types.h>
 #endif
 
 #if defined(PETSC_USE_LOG)
@@ -687,7 +688,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #elif defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsGetBool(NULL,NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscViennaCLSynchronize = flg3;
+#elif defined(PETSC_HAVE_VECCUDA)
+  ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_synchronize",&flg3,NULL);CHKERRQ(ierr);
+  PetscCUDASynchronize = flg3;
 #endif
+
   PetscFunctionReturn(0);
 }
 

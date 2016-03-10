@@ -10,7 +10,6 @@
 #include <vector>
 #include <string>
 
-#include <cublas.h>
 #if defined(CUSP_VERSION) && CUSP_VERSION >= 500
 #include <cusp/blas/blas.h>
 #else
