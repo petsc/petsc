@@ -795,6 +795,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
 PetscErrorCode PCBDDCBenignGetOrSetP0(PC pc, Vec v, PetscBool get)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
+  PetscScalar    *array;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -802,17 +803,16 @@ PetscErrorCode PCBDDCBenignGetOrSetP0(PC pc, Vec v, PetscBool get)
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)pc),&pcbddc->benign_sf);CHKERRQ(ierr);
     ierr = PetscSFSetGraphLayout(pcbddc->benign_sf,pc->pmat->rmap,pcbddc->benign_n,NULL,PETSC_OWN_POINTER,pcbddc->benign_p0_gidx);CHKERRQ(ierr);
   }
-  if (get) { /* use SF to get values */
-    PetscScalar *array;
-
+  if (get) {
     ierr = VecGetArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(pcbddc->benign_sf,MPIU_SCALAR,array,pcbddc->benign_p0);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(v,(const PetscScalar**)&array);CHKERRQ(ierr);
-  } else { /* use VecSetValues (not scalable, I should try to find a better solution (defining a new MPI_OP for reduction) */
-    ierr = VecSetValues(v,pcbddc->benign_n,pcbddc->benign_p0_gidx,pcbddc->benign_p0,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArray(v,&array);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPIU_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(pcbddc->benign_sf,MPIU_SCALAR,pcbddc->benign_p0,array,MPIU_REPLACE);CHKERRQ(ierr);
+    ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
