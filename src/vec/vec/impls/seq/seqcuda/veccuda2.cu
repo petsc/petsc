@@ -1463,3 +1463,105 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDAPlaceArray"
+/*@C
+   VecCUDAPlaceArray - Allows one to replace the GPU array in a vector with a
+   GPU array provided by the user. This is useful to avoid copying an
+   array into a vector.
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the GPU array
+
+   Notes:
+   You can return to the original GPU array with a call to VecCUDAResetArray()
+   It is not possible to use VecCUDAPlaceArray() and VecPlaceArray() at the
+   same time on the same vector.
+
+   Level: developer
+
+.seealso: VecPlaceArray(), VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray(), VecCUDAResetArray(), VecCUDAReplaceArray()
+
+@*/
+PetscErrorCode VecCUDAPlaceArray(Vec vin,PetscScalar *a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCUDACopyToGPU(vin);CHKERRQ(ierr);
+  if (((Vec_Seq*)vin->data)->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecCUDAPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUDAResetArray()/VecResetArray()");
+  ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_CUDA*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
+  ((Vec_CUDA*)vin->spptr)->GPUarray = a;
+  vin->valid_GPU_array = PETSC_CUDA_GPU;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDAReplaceArray"
+/*@C
+   VecCUDAReplaceArray - Allows one to replace the GPU array in a vector
+   with a GPU array provided by the user. This is useful to avoid copying
+   a GPU array into a vector.
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the GPU array
+
+   Notes:
+   This permanently replaces the GPU array and frees the memory associated
+   with the old GPU array.
+
+   The memory passed in CANNOT be freed by the user. It will be freed
+   when the vector is destroyed.
+
+   Not supported from Fortran
+
+   Level: developer
+
+.seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray(), VecResetArray(), VecCUDAResetArray(), VecCUDAPlaceArray(), VecReplaceArray()
+
+@*/
+PetscErrorCode VecCUDAReplaceArray(Vec vin,PetscScalar *a)
+{
+  cudaError_t err;
+
+  PetscFunctionBegin;
+  err = cudaFree(((Vec_CUDA*)vin->spptr)->GPUarray);CHKERRCUDA(err);
+  ((Vec_CUDA*)vin->spptr)->GPUarray = a;
+  vin->valid_GPU_array = PETSC_CUDA_GPU;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDAResetArray"
+/*@C
+   VecCUDAResetArray - Resets a vector to use its default memory. Call this
+   after the use of VecCUDAPlaceArray().
+
+   Not Collective
+
+   Input Parameters:
+.  vec - the vector
+
+   Level: developer
+
+.seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecPlaceArray(), VecResetArray(), VecCUDAPlaceArray(), VecCUDAReplaceArray()
+
+@*/
+PetscErrorCode VecCUDAResetArray(Vec vin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCUDACopyToGPU(vin);CHKERRQ(ierr);
+  ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar *) ((Vec_Seq*)vin->data)->unplacedarray;
+  ((Vec_Seq*)vin->data)->unplacedarray = 0;
+  vin->valid_GPU_array = PETSC_CUDA_GPU;
+  PetscFunctionReturn(0);
+}
