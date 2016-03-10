@@ -271,7 +271,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
        resulting partition results need to be stretched to match the original matrix */
     nold = mat->rmap->n;
     ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&mat);CHKERRQ(ierr);
-    bs   = nold/mat->rmap->n;
+    if (mat->rmap->n > 0) bs = nold/mat->rmap->n;
     adj  = (Mat_MPIAdj*)mat->data;
   }
 
