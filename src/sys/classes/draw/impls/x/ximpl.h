@@ -51,7 +51,7 @@ PETSC_STATIC_INLINE void PetscDrawXiSetPixVal(PetscDraw_X *W,PetscDrawXiPixVal p
 #define PetscDrawXiValidColor(W,color) \
 do { if (PetscUnlikely((color)<0||(color)>=256)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value %D out of range [0..255]",(PetscInt)(color)); } while (0)
 #else
-#define PetscDrawXiCheckColor(W,color) do {} while (0)
+#define PetscDrawXiValidColor(W,color) do {} while (0)
 #endif
 
 #define PetscDrawXiSetColor(W,color) do { PetscDrawXiValidColor(W,color); PetscDrawXiSetPixVal(W,(W)->cmapping[(color)]); } while (0)
