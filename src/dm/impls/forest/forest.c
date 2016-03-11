@@ -479,6 +479,39 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMForestAdaptivityPurpose pur
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivityPurpose"
+/*@
+  DMForestGetAdaptivityPurpose - Get whether the current DM is being adapted from its source (set with
+  DMForestSetAdaptivityForest()) for the purpose of refinement (DM_FOREST_REFINE), coarsening (DM_FOREST_COARSEN), or
+  undefined (DM_FOREST_NONE).  This only matters for the purposes of reference counting: during DMDestroy(), cyclic
+  references can be found between DMs only if the cyclic reference is due to a fine/coarse relationship (see
+  DMSetFineDM()/DMSetCoarseDM()).  If the purpose is not refinement or coarsening, and the user does not maintain a
+  reference to the post-adaptation forest (i.e., the one created by DMForestTemplate()), then this can cause a memory
+  leak.  This method is used by subtypes of DMForest when automatically constructing mesh hierarchies.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. purpose - the adaptivity purpose (DM_FOREST_NONE/DM_FOREST_REFINE/DM_FOREST_COARSEN)
+
+  Level: advanced
+
+.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest()
+@*/
+PetscErrorCode DMForestGetAdaptivityPurpose(DM dm, DMForestAdaptivityPurpose *purpose)
+{
+  DM_Forest      *forest;
+
+  PetscFunctionBegin;
+  forest = (DM_Forest *) dm->data;
+  *purpose = forest->adaptPurpose;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMForestSetAdjacencyDimension"
 /*@
   DMForestSetAdjacencyDimension - During the pre-setup phase, set the dimension of interface points that determine

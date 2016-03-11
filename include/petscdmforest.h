@@ -36,6 +36,7 @@ enum {DM_FOREST_KEEP = 0,
 
 typedef PetscInt DMForestAdaptivityPurpose;
 PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityPurpose(DM, DMForestAdaptivityPurpose);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityPurpose(DM, DMForestAdaptivityPurpose*);
 
 /* what we consider adjacent, for the purposes of cell grading, overlap, etc. */
 PETSC_EXTERN PetscErrorCode DMForestSetAdjacencyDimension(DM, PetscInt);
