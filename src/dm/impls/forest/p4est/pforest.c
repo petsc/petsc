@@ -198,6 +198,10 @@ typedef struct {
   PetscInt             cLocalEnd;
   DM                   plex;
   char                *ghostName;
+  PetscSF              pointAdaptToSelfSF;
+  PetscSF              pointSelfToAdaptSF;
+  PetscInt            *pointAdaptToSelfCids;
+  PetscInt            *pointSelfToAdaptCids;
 } DM_Forest_pforest;
 
 #define DMFTopologyDestroy_pforest _append_pforest(DMFTopologyDestroy)
@@ -394,6 +398,10 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(pforest->ghostName);CHKERRQ(ierr);
   ierr = DMDestroy(&pforest->plex);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&pforest->pointAdaptToSelfSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&pforest->pointSelfToAdaptSF);CHKERRQ(ierr);
+  ierr = PetscFree(pforest->pointAdaptToSelfCids);CHKERRQ(ierr);
+  ierr = PetscFree(pforest->pointSelfToAdaptCids);CHKERRQ(ierr);
   ierr = PetscFree(forest->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2178,7 +2186,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
 #undef __FUNCT__
 #define __FUNCT__ "DMPforestGetCellSFNodes"
 /* closure points for locally-owned cells */
-static PetscErrorCode DMPforestGetCellSFNodes(DM dm, PetscInt numClosureIndices, const PetscInt closureIndices[], PetscInt *numClosurePoints, PetscSFNode **closurePoints,PetscBool redirect)
+static PetscErrorCode DMPforestGetCellSFNodes(DM dm, PetscInt numClosureIndices, PetscInt *numClosurePoints, PetscSFNode **closurePoints,PetscBool redirect)
 {
   PetscInt          cStart, cEnd, cEndInterior;
   PetscInt          count, c;
@@ -2209,8 +2217,7 @@ static PetscErrorCode DMPforestGetCellSFNodes(DM dm, PetscInt numClosureIndices,
     ierr = DMPlexGetTransitiveClosure(plex,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
 
     for (i = 0; i < numClosureIndices; i++, count++) {
-      PetscInt j = closureIndices[i];
-      PetscInt p = closure[2 * j];
+      PetscInt p = closure[2 * i];
       PetscInt loc = -1;
 
       ierr = PetscFindInt(p,nleaves,ilocal,&loc);CHKERRQ(ierr);
@@ -2243,15 +2250,14 @@ static void DMPforestMaxSFNode(void *a, void *b, PetscMPIInt *len, MPI_Datatype 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPforestGetTransferSF_Internal"
-/* children are sf leaves of parents */
-static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const PetscInt dofPerDim[], PetscSF *sf, PetscBool transferIdent, PetscInt *childIds[])
+#define __FUNCT__ "DMPforestGetTransferSF_Point"
+static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *sf, PetscBool transferIdent, PetscInt *childIds[])
 {
   MPI_Comm          comm;
   PetscMPIInt       rank, size;
   DM_Forest_pforest *pforestC, *pforestF;
   p4est_t           *p4estC, *p4estF;
-  PetscInt          numClosureIndices, *closureIndices;
+  PetscInt          numClosureIndices;
   PetscInt          numClosurePointsC, numClosurePointsF;
   PetscSFNode       *closurePointsC, *closurePointsF;
   p4est_quadrant_t  *coverQuads = NULL;
@@ -2261,7 +2267,12 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   MPI_Datatype      nodeClosureType;
   MPI_Op            sfNodeReduce;
   p4est_topidx_t    fltF, lltF, t;
-  DM                plexC;
+  DM                plexC, plexF;
+  PetscInt          pStartF, pEndF, pStartC, pEndC;
+  PetscBool         saveInCoarse = PETSC_FALSE;
+  PetscBool         saveInFine   = PETSC_FALSE;
+  PetscBool         formCids     = (childIds != NULL);
+  PetscInt          *cids = NULL;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -2273,50 +2284,51 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   comm = PetscObjectComm((PetscObject)coarse);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(fine,&plexF);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(plexF,&pStartF,&pEndF);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(coarse,&plexC);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(plexC,&pStartC,&pEndC);CHKERRQ(ierr);
+  { /* check if the results have been cached */
+    DM adaptCoarse, adaptFine;
 
-  /* count the number of closure points that have dofs and create a list */
-  numClosureIndices = 0;
-  if (dofPerDim[P4EST_DIM]     > 0) numClosureIndices += 1;
-  if (dofPerDim[P4EST_DIM - 1] > 0) numClosureIndices += P4EST_FACES;
-#if defined(P4_TO_P8)
-  if (dofPerDim[P4EST_DIM - 2] > 0) numClosureIndices += P8EST_EDGES;
-#endif
-  if (dofPerDim[0]             > 0) numClosureIndices += P4EST_CHILDREN;
-  ierr = PetscMalloc1(numClosureIndices,&closureIndices);CHKERRQ(ierr);
-  {
-    PetscInt count = 0, offset = 0;
-    if (dofPerDim[P4EST_DIM] > 0) {
-      closureIndices[count++] = offset;
-    }
-    offset++;
-    if (dofPerDim[P4EST_DIM - 1] > 0) {
-      PetscInt i;
-
-      for (i = 0; i < P4EST_FACES; i++) {
-        closureIndices[count + i] = offset + i;
+    ierr = DMForestGetAdaptivityForest(coarse,&adaptCoarse);CHKERRQ(ierr);
+    ierr = DMForestGetAdaptivityForest(fine,&adaptFine);CHKERRQ(ierr);
+    if (adaptCoarse && adaptCoarse->data == fine->data) { /* coarse is adapted from fine */
+      if (pforestC->pointSelfToAdaptSF) {
+        ierr = PetscObjectReference((PetscObject)(pforestC->pointSelfToAdaptSF));CHKERRQ(ierr);
+        *sf = pforestC->pointSelfToAdaptSF;
+        if (childIds) {
+          ierr = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
+          ierr = PetscMemcpy(cids,pforestC->pointSelfToAdaptCids,(pEndF-pStartF) * sizeof(PetscInt));CHKERRQ(ierr);
+          *childIds = cids;
+        }
+        PetscFunctionReturn(0);
       }
-      count += P4EST_FACES;
-    }
-    offset += P4EST_FACES;
-#if defined(P4_TO_P8)
-    if (dofPerDim[P4EST_DIM - 2] > 0) {
-      PetscInt i;
-
-      for (i = 0; i < P8EST_EDGES; i++) {
-        closureIndices[count + i] = offset + i;
+      else {
+        saveInCoarse = PETSC_TRUE;
+        formCids = PETSC_TRUE;
       }
-      count += P8EST_EDGES;
     }
-    offset += P8EST_EDGES;
-#endif
-    if (dofPerDim[0] > 0) {
-      PetscInt i;
-
-      for (i = 0; i < P4EST_CHILDREN; i++) {
-        closureIndices[count + i] = offset + i;
+    else if (adaptFine && adaptFine->data == coarse->data) { /* fine is adapted from coarse */
+      if (pforestF->pointAdaptToSelfSF) {
+        ierr = PetscObjectReference((PetscObject)(pforestF->pointAdaptToSelfSF));CHKERRQ(ierr);
+        *sf = pforestF->pointAdaptToSelfSF;
+        if (childIds) {
+          ierr = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
+          ierr = PetscMemcpy(cids,pforestF->pointAdaptToSelfCids,(pEndF-pStartF) * sizeof(PetscInt));CHKERRQ(ierr);
+          *childIds = cids;
+        }
+        PetscFunctionReturn(0);
+      }
+      else {
+        saveInFine = PETSC_TRUE;
+        formCids = PETSC_TRUE;
       }
     }
   }
+
+  /* count the number of closure points that have dofs and create a list */
+  numClosureIndices = P4EST_INSUL;
   /* create the datatype */
   ierr = MPI_Type_contiguous(2,MPIU_INT,&nodeType);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&nodeType);CHKERRQ(ierr);
@@ -2325,13 +2337,12 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   ierr = MPI_Type_commit(&nodeClosureType);CHKERRQ(ierr);
   /* everything has to go through cells: for each cell, create a list of the sfnodes in its closure */
   /* get lists of closure point SF nodes for every cell */
-  ierr = DMPforestGetCellSFNodes(coarse,numClosureIndices,closureIndices,&numClosurePointsC,&closurePointsC,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPforestGetCellSFNodes(fine  ,numClosureIndices,closureIndices,&numClosurePointsF,&closurePointsF,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMPforestGetCellSFNodes(coarse,numClosureIndices,&numClosurePointsC,&closurePointsC,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPforestGetCellSFNodes(fine  ,numClosureIndices,&numClosurePointsF,&closurePointsF,PETSC_FALSE);CHKERRQ(ierr);
   /* create pointers for tree lists */
   fltF = p4estF->first_local_tree;
   lltF = p4estF->last_local_tree;
   ierr = PetscCalloc2(lltF + 1  - fltF, &treeQuads, lltF + 1 - fltF, &treeQuadCounts);CHKERRQ(ierr);
-  ierr = DMPforestGetPlex(coarse,&plexC);CHKERRQ(ierr);
   /* if the partitions don't match, ship the coarse to cover the fine */
   if (size > 1) {
     PetscInt p;
@@ -2413,21 +2424,18 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   }
 
   {
-    PetscInt pStartF, pEndF, p;
+    PetscInt p;
     PetscInt cLocalStartF;
     PetscSF  pointSF;
     PetscSFNode *roots;
     PetscInt *rootType;
-    DM       plexF, refTree = NULL;
+    DM       refTree = NULL;
     DMLabel  canonical;
     PetscInt *childClosures[P4EST_CHILDREN] = {NULL};
     PetscInt *rootClosure = NULL;
-    PetscInt *cids = NULL;
     PetscInt coarseOffset;
     PetscInt numCoarseQuads;
 
-    ierr = DMPforestGetPlex(fine,&plexF);CHKERRQ(ierr);
-    ierr = DMPlexGetChart(plexF,&pStartF,&pEndF);CHKERRQ(ierr);
     ierr = PetscMalloc1(pEndF-pStartF,&roots);CHKERRQ(ierr);
     ierr = PetscMalloc1(pEndF-pStartF,&rootType);CHKERRQ(ierr);
     ierr = DMGetPointSF(fine,&pointSF);CHKERRQ(ierr);
@@ -2436,7 +2444,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
       roots[p-pStartF].index = -1;
       rootType[p-pStartF] = -1;
     }
-    if (childIds) {
+    if (formCids) {
       PetscInt child;
 
       ierr = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
@@ -2484,14 +2492,12 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
           for (j = 0; j < numClosureIndices; j++) {
             PetscInt p = closurePointsF[numClosureIndices * c + j].index;
 
-            if (j > rootType[p-pStartF]) {
-              roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + j];
-              rootType[p-pStartF] = j;
-            }
+            roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + j];
+            rootType[p-pStartF] = PETSC_MAX_INT; /* unconditionally accept */
           }
         }
         else {
-          if (childIds) {
+          if (formCids) {
             PetscInt cl;
             PetscInt *pointClosure = NULL;
             int cid;
@@ -2551,14 +2557,14 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
             fineBound[1][j]   = fineBound[0][j]   + P4EST_QUADRANT_LEN(quad->level);
           }
           for (j = 0; j < numClosureIndices; j++) {
-            PetscInt k = closureIndices[j];
-            PetscInt l, m;
+            PetscInt l, p;
+            PetscSFNode q;
 
-            if (k == 0) { /* volume: ancestor is volume */
+            if (j == 0) { /* volume: ancestor is volume */
               l = 0;
             }
-            else if (k < 1 + P4EST_FACES) { /* facet */
-              PetscInt face = PetscFaceToP4estFace[k - 1];
+            else if (j < 1 + P4EST_FACES) { /* facet */
+              PetscInt face = PetscFaceToP4estFace[j - 1];
               PetscInt direction = face / 2;
               PetscInt coarseFace = -1;
 
@@ -2571,8 +2577,8 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
               }
             }
 #if defined(P4_TO_P8)
-            else if (k < 1 + P4EST_FACES + P8EST_EDGES) {
-              PetscInt edge = PetscEdgeToP4estEdge[k - (1 + P4EST_FACES)];
+            else if (j < 1 + P4EST_FACES + P8EST_EDGES) {
+              PetscInt edge = PetscEdgeToP4estEdge[j - (1 + P4EST_FACES)];
               PetscInt direction = edge / 4;
               PetscInt mod = edge % 4;
               PetscInt coarseEdge = -1, coarseFace = -1;
@@ -2601,7 +2607,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
             }
 #endif
             else {
-              PetscInt vertex = PetscVertToP4estVert[P4EST_CHILDREN - (P4EST_INSUL - k)];
+              PetscInt vertex = PetscVertToP4estVert[P4EST_CHILDREN - (P4EST_INSUL - j)];
               PetscBool dirTest[P4EST_DIM];
               PetscInt m;
               PetscInt numMatch = 0;
@@ -2649,16 +2655,11 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
                 l = 0;
               }
             }
-            for (m = 0; m < numClosureIndices; m++) {
-              if (closureIndices[m] == l) {
-                PetscInt p = closurePointsF[numClosureIndices * c + j].index;
-
-                if (m > rootType[p-pStartF]) {
-                  roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + m];
-                  rootType[p-pStartF] = m;
-                }
-                break;
-              }
+            p = closurePointsF[numClosureIndices * c + j].index;
+            q = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
+            if (l > rootType[p-pStartF]) {
+              roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
+              rootType[p-pStartF] = l;
             }
           }
         }
@@ -2688,18 +2689,12 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
     ierr = PetscFree(rootType);CHKERRQ(ierr);
 
     {
-      PetscInt pStartC, pEndC;
       PetscInt numRoots;
       PetscInt numLeaves;
       PetscInt *leaves;
-      PetscInt d;
       PetscSFNode *iremote;
-      PetscSF  pointTransferSF;
-      PetscSection leafSection, rootSection;
-      PetscInt endInterior[4];
       /* count leaves */
 
-      ierr = DMPlexGetChart(plexC,&pStartC,&pEndC);CHKERRQ(ierr);
       numRoots = pEndC - pStartC;
 
       numLeaves = 0;
@@ -2719,104 +2714,58 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
         }
       }
       ierr = PetscFree(roots);CHKERRQ(ierr);
-      ierr = PetscSFCreate(comm,&pointTransferSF);CHKERRQ(ierr);
-      ierr = PetscSFSetGraph(pointTransferSF,numRoots,numLeaves,leaves,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-      ierr = PetscSectionCreate(PETSC_COMM_SELF,&rootSection);CHKERRQ(ierr);
-      ierr = PetscSectionCreate(PETSC_COMM_SELF,&leafSection);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(rootSection,pStartC,pEndC);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(leafSection,pStartF,pEndF);CHKERRQ(ierr);
-
-      ierr = DMPlexGetHybridBounds(plexC,&endInterior[P4EST_DIM],&endInterior[P4EST_DIM - 1],&endInterior[1],&endInterior[0]);CHKERRQ(ierr);
-      for (d = 0; d <= P4EST_DIM; d++) {
-        PetscInt startC, endC, e;
-
-        ierr = DMPlexGetDepthStratum(plexC,d,&startC,&endC);CHKERRQ(ierr);
-        endC = endInterior[d] < 0 ? endC : endInterior[d];
-        for (e = startC; e < endC; e++) {
-          ierr = PetscSectionSetDof(rootSection,e,dofPerDim[d]);CHKERRQ(ierr);
-        }
+      ierr = PetscSFCreate(comm,sf);CHKERRQ(ierr);
+      if (numLeaves == (pEndF-pStartF)) {
+        ierr = PetscFree(leaves);CHKERRQ(ierr);
+        ierr = PetscSFSetGraph(*sf,numRoots,numLeaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
       }
-
-      ierr = DMPlexGetHybridBounds(plexF,&endInterior[P4EST_DIM],&endInterior[P4EST_DIM - 1],&endInterior[1],&endInterior[0]);CHKERRQ(ierr);
-      for (d = 0; d <= P4EST_DIM; d++) {
-        PetscInt startF, endF, e;
-
-        ierr = DMPlexGetDepthStratum(plexF,d,&startF,&endF);CHKERRQ(ierr);
-        endF = endInterior[d] < 0 ? endF : endInterior[d];
-        for (e = startF; e < endF; e++) {
-          ierr = PetscSectionSetDof(leafSection,e,dofPerDim[d]);CHKERRQ(ierr);
-        }
+      else {
+        ierr = PetscSFSetGraph(*sf,numRoots,numLeaves,leaves,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
       }
-
-      ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
-      ierr = PetscSectionSetUp(leafSection);CHKERRQ(ierr);
-      {
-        PetscInt nroots, nleaves;
-        PetscInt *mine, i, p;
-        PetscInt *offsets, *offsetsRoot;
-        PetscSFNode *remote;
-
-        ierr = PetscMalloc1(pEndF-pStartF,&offsets);CHKERRQ(ierr);
-        ierr = PetscMalloc1(pEndC-pStartC,&offsetsRoot);CHKERRQ(ierr);
-        for (p = pStartC; p < pEndC; p++) {
-          ierr = PetscSectionGetOffset(rootSection,p,&offsetsRoot[p-pStartC]);CHKERRQ(ierr);
-        }
-        ierr = PetscSFBcastBegin(pointTransferSF,MPIU_INT,offsetsRoot,offsets);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(pointTransferSF,MPIU_INT,offsetsRoot,offsets);CHKERRQ(ierr);
-        ierr = PetscSectionGetStorageSize(rootSection,&nroots);CHKERRQ(ierr);
-        nleaves = 0;
-        for (i = 0; i < numLeaves; i++) {
-          PetscInt leaf = leaves[i];
-          PetscInt dof;
-
-          ierr = PetscSectionGetDof(leafSection,leaf,&dof);CHKERRQ(ierr);
-          nleaves += dof;
-        }
-        ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
-        ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
-        nleaves = 0;
-        for (i = 0; i < numLeaves; i++) {
-          PetscInt leaf = leaves[i];
-          PetscInt dof;
-          PetscInt off, j;
-
-          ierr = PetscSectionGetDof(leafSection,leaf,&dof);CHKERRQ(ierr);
-          ierr = PetscSectionGetOffset(leafSection,leaf,&off);CHKERRQ(ierr);
-          for (j = 0; j < dof; j++) {
-            remote[nleaves].rank = iremote[i].rank;
-            remote[nleaves].index = offsets[leaf] + j;
-            mine[nleaves++] = off + j;
-          }
-        }
-        ierr = PetscFree(offsetsRoot);CHKERRQ(ierr);
-        ierr = PetscFree(offsets);CHKERRQ(ierr);
-        ierr = PetscSFCreate(comm,sf);CHKERRQ(ierr);
-        ierr = PetscSFSetGraph(*sf,nroots,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&pointTransferSF);CHKERRQ(ierr);
     }
-    if (childIds) {
-      PetscSF  sf;
+    if (formCids) {
+      PetscSF  pointSF;
       PetscInt child;
 
       ierr = DMPlexGetReferenceTree(plexF,&refTree);CHKERRQ(ierr);
-      ierr = DMGetPointSF(plexF,&sf);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(sf,MPIU_INT,cids,cids,MPIU_MAX);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(sf,MPIU_INT,cids,cids,MPIU_MAX);CHKERRQ(ierr);
-      *childIds = cids;
+      ierr = DMGetPointSF(plexF,&pointSF);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(pointSF,MPIU_INT,cids,cids,MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(pointSF,MPIU_INT,cids,cids,MPIU_MAX);CHKERRQ(ierr);
+      if (childIds) {
+        *childIds = cids;
+      }
       for (child = 0; child < P4EST_CHILDREN; child++) {
         ierr = DMPlexRestoreTransitiveClosure(refTree,child+1,PETSC_TRUE,NULL,&childClosures[child]);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreTransitiveClosure(refTree,0,PETSC_TRUE,NULL,&rootClosure);CHKERRQ(ierr);
     }
   }
+  if (saveInCoarse) { /* cache results */
+    ierr = PetscObjectReference((PetscObject)*sf);CHKERRQ(ierr);
+    pforestC->pointSelfToAdaptSF = *sf;
+    if (!childIds) {
+      pforestC->pointSelfToAdaptCids = cids;
+    }
+    else {
+      ierr = PetscMalloc1(pEndF-pStartF,&pforestC->pointSelfToAdaptCids);CHKERRQ(ierr);
+      ierr = PetscMemcpy(pforestC->pointSelfToAdaptCids,cids,(pEndF-pStartF)*sizeof(PetscInt));CHKERRQ(ierr);
+    }
+  }
+  else if (saveInFine) {
+    ierr = PetscObjectReference((PetscObject)*sf);CHKERRQ(ierr);
+    pforestF->pointAdaptToSelfSF = *sf;
+    if (!childIds) {
+      pforestF->pointAdaptToSelfCids = cids;
+    }
+    else {
+      ierr = PetscMalloc1(pEndF-pStartF,&pforestF->pointAdaptToSelfCids);CHKERRQ(ierr);
+      ierr = PetscMemcpy(pforestC->pointAdaptToSelfCids,cids,(pEndF-pStartF)*sizeof(PetscInt));CHKERRQ(ierr);
+    }
+  }
   ierr = PetscFree2(treeQuads,treeQuadCounts);CHKERRQ(ierr);
   ierr = PetscFree(coverQuads);CHKERRQ(ierr);
   ierr = PetscFree(closurePointsC);CHKERRQ(ierr);
   ierr = PetscFree(closurePointsF);CHKERRQ(ierr);
-  ierr = PetscFree(closureIndices);CHKERRQ(ierr);
   ierr = MPI_Type_free(&nodeClosureType);CHKERRQ(ierr);
   ierr = MPI_Op_free(&sfNodeReduce);CHKERRQ(ierr);
   ierr = MPI_Type_free(&nodeType);CHKERRQ(ierr);
@@ -2824,12 +2773,174 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPforestGetTransferSF"
-static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofPerDim[], PetscSF *sfAtoB, PetscSF *sfBtoA)
+#define __FUNCT__ "DMPforestGetTransferSF_Internal"
+/* children are sf leaves of parents */
+static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const PetscInt dofPerDim[], PetscSF *sf, PetscBool transferIdent, PetscInt *childIds[])
 {
+  MPI_Comm          comm;
+  PetscMPIInt       rank, size;
+  DM_Forest_pforest *pforestC, *pforestF;
+  p4est_t           *p4estC, *p4estF;
+  PetscInt          numClosureIndices;
+  DM                plexC, plexF;
+  PetscInt          pStartC, pEndC, pStartF, pEndF;
+  PetscSF           pointTransferSF;
+  PetscBool         allOnes = PETSC_TRUE;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  pforestC = (DM_Forest_pforest *) ((DM_Forest *) coarse->data)->data;
+  pforestF = (DM_Forest_pforest *) ((DM_Forest *) fine->data)->data;
+  p4estC   = pforestC->forest;
+  p4estF   = pforestF->forest;
+  if (pforestC->topo != pforestF->topo) SETERRQ(PetscObjectComm((PetscObject)coarse),PETSC_ERR_ARG_INCOMP,"DM's must have the same base DM");
+  comm = PetscObjectComm((PetscObject)coarse);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  /* count the number of closure points that have dofs and create a list */
+  numClosureIndices = 0;
+  if (dofPerDim[P4EST_DIM]     > 0) numClosureIndices += 1;
+  if (dofPerDim[P4EST_DIM - 1] > 0) numClosureIndices += P4EST_FACES;
+#if defined(P4_TO_P8)
+  if (dofPerDim[P4EST_DIM - 2] > 0) numClosureIndices += P8EST_EDGES;
+#endif
+  if (dofPerDim[0]             > 0) numClosureIndices += P4EST_CHILDREN;
+  {
+    PetscInt i;
+    for (i = 0; i <= P4EST_DIM; i++) {
+      if (dofPerDim[i] != 1) {
+        allOnes = PETSC_FALSE;
+        break;
+      }
+    }
+  }
+  ierr = DMPforestGetTransferSF_Point(coarse,fine,&pointTransferSF,transferIdent,childIds);CHKERRQ(ierr);
+  if (allOnes) {
+    *sf = pointTransferSF;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = DMPforestGetPlex(fine,&plexF);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(plexF,&pStartF,&pEndF);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(coarse,&plexC);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(plexC,&pStartC,&pEndC);CHKERRQ(ierr);
+  {
+    PetscInt numRoots;
+    PetscInt numLeaves;
+    const PetscInt *leaves;
+    const PetscSFNode *iremote;
+    PetscInt d;
+    PetscSection leafSection, rootSection;
+    PetscInt endInterior[4];
+    /* count leaves */
+
+    ierr = PetscSFGetGraph(pointTransferSF,&numRoots,&numLeaves,&leaves,&iremote);CHKERRQ(ierr);
+    ierr = PetscSectionCreate(PETSC_COMM_SELF,&rootSection);CHKERRQ(ierr);
+    ierr = PetscSectionCreate(PETSC_COMM_SELF,&leafSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(rootSection,pStartC,pEndC);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(leafSection,pStartF,pEndF);CHKERRQ(ierr);
+
+    ierr = DMPlexGetHybridBounds(plexC,&endInterior[P4EST_DIM],&endInterior[P4EST_DIM - 1],&endInterior[1],&endInterior[0]);CHKERRQ(ierr);
+    for (d = 0; d <= P4EST_DIM; d++) {
+      PetscInt startC, endC, e;
+
+      ierr = DMPlexGetDepthStratum(plexC,d,&startC,&endC);CHKERRQ(ierr);
+      endC = endInterior[d] < 0 ? endC : endInterior[d];
+      for (e = startC; e < endC; e++) {
+        ierr = PetscSectionSetDof(rootSection,e,dofPerDim[d]);CHKERRQ(ierr);
+      }
+    }
+
+    ierr = DMPlexGetHybridBounds(plexF,&endInterior[P4EST_DIM],&endInterior[P4EST_DIM - 1],&endInterior[1],&endInterior[0]);CHKERRQ(ierr);
+    for (d = 0; d <= P4EST_DIM; d++) {
+      PetscInt startF, endF, e;
+
+      ierr = DMPlexGetDepthStratum(plexF,d,&startF,&endF);CHKERRQ(ierr);
+      endF = endInterior[d] < 0 ? endF : endInterior[d];
+      for (e = startF; e < endF; e++) {
+        ierr = PetscSectionSetDof(leafSection,e,dofPerDim[d]);CHKERRQ(ierr);
+      }
+    }
+
+    ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(leafSection);CHKERRQ(ierr);
+    {
+      PetscInt nroots, nleaves;
+      PetscInt *mine, i, p;
+      PetscInt *offsets, *offsetsRoot;
+      PetscSFNode *remote;
+
+      ierr = PetscMalloc1(pEndF-pStartF,&offsets);CHKERRQ(ierr);
+      ierr = PetscMalloc1(pEndC-pStartC,&offsetsRoot);CHKERRQ(ierr);
+      for (p = pStartC; p < pEndC; p++) {
+        ierr = PetscSectionGetOffset(rootSection,p,&offsetsRoot[p-pStartC]);CHKERRQ(ierr);
+      }
+      ierr = PetscSFBcastBegin(pointTransferSF,MPIU_INT,offsetsRoot,offsets);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(pointTransferSF,MPIU_INT,offsetsRoot,offsets);CHKERRQ(ierr);
+      ierr = PetscSectionGetStorageSize(rootSection,&nroots);CHKERRQ(ierr);
+      nleaves = 0;
+      for (i = 0; i < numLeaves; i++) {
+        PetscInt leaf = leaves ? leaves[i] : i;
+        PetscInt dof;
+
+        ierr = PetscSectionGetDof(leafSection,leaf,&dof);CHKERRQ(ierr);
+        nleaves += dof;
+      }
+      ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+      nleaves = 0;
+      for (i = 0; i < numLeaves; i++) {
+        PetscInt leaf = leaves ? leaves[i] : i;
+        PetscInt dof;
+        PetscInt off, j;
+
+        ierr = PetscSectionGetDof(leafSection,leaf,&dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(leafSection,leaf,&off);CHKERRQ(ierr);
+        for (j = 0; j < dof; j++) {
+          remote[nleaves].rank = iremote[i].rank;
+          remote[nleaves].index = offsets[leaf] + j;
+          mine[nleaves++] = off + j;
+        }
+      }
+      ierr = PetscFree(offsetsRoot);CHKERRQ(ierr);
+      ierr = PetscFree(offsets);CHKERRQ(ierr);
+      ierr = PetscSFCreate(comm,sf);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(*sf,nroots,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&pointTransferSF);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPforestGetTransferSF"
+static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofPerDim[], PetscSF *sfAtoB, PetscSF *sfBtoA)
+{
+  DM                        adaptA, adaptB;
+  DMForestAdaptivityPurpose purpose;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = DMForestGetAdaptivityForest(dmA,&adaptA);CHKERRQ(ierr);
+  ierr = DMForestGetAdaptivityForest(dmB,&adaptB);CHKERRQ(ierr);
+  /* it is more efficient when the coarser mesh is the first argument: reorder if we know one is coarser than the other */
+  if (adaptA && adaptA->data == dmB->data) { /* dmA was adapted from dmB */
+    ierr = DMForestGetAdaptivityPurpose(dmA,&purpose);CHKERRQ(ierr);
+    if (purpose == DM_FOREST_REFINE) {
+      ierr = DMPforestGetTransferSF(dmB, dmA, dofPerDim, sfBtoA, sfAtoB);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+  else if (adaptB && adaptB->data == dmA->data) { /* dmB was adapted from dmA */
+    ierr = DMForestGetAdaptivityPurpose(dmB,&purpose);CHKERRQ(ierr);
+    if (purpose == DM_FOREST_COARSEN) {
+      ierr = DMPforestGetTransferSF(dmB, dmA, dofPerDim, sfBtoA, sfAtoB);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
   if (sfAtoB) {
     ierr = DMPforestGetTransferSF_Internal(dmA,dmB,dofPerDim,sfAtoB,PETSC_TRUE,NULL);CHKERRQ(ierr);
   }
