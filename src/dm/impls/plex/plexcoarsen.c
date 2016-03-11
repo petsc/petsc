@@ -70,7 +70,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
     }
     /* Create boundary mesh */
     ierr = DMLabelCreate("boundary", &bd);CHKERRQ(ierr);
-    ierr = DMMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(bd, 1, &bdIS);CHKERRQ(ierr);
     ierr = DMLabelGetStratumSize(bd, 1, &numBdFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(bdIS, &faces);CHKERRQ(ierr);
