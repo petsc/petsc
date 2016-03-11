@@ -501,7 +501,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_short","Monitor preconditioned residual norm with fewer digits","KSPMonitorDefaultShort",KSPMonitorDefaultShort);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_solution","Monitor the solution","KSPMonitorSolution",KSPMonitorSolution);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_monitor_singular_value","Monitor singular values","KSPMonitorSingularValue",KSPMonitorSingularValue);CHKERRQ(ierr);
-  
+  ierr = PetscOptionsHasName(NULL,((PetscObject)ksp)->prefix,"-ksp_monitor_singular_value",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
+  }
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCKSP,&flg);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCBJACOBI,&flag);CHKERRQ(ierr);
 
