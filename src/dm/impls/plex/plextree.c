@@ -2641,7 +2641,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     PetscInt     **refPointFieldN;
     PetscScalar  ***refPointFieldMats;
     PetscSection refConSec, refAnSec;
-    PetscInt     pRefStart,pRefEnd,maxConDof,maxAnDof;
+    PetscInt     pRefStart,pRefEnd,maxConDof,maxColumns;
     PetscScalar  *pointWork;
 
     ierr = PetscSectionGetConstrainedStorageSize(globalFine,&nGlobal);CHKERRQ(ierr);
@@ -2831,8 +2831,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     ierr = DMPlexGetAnchors(refTree,&refAnSec,NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetMaxDof(refConSec,&maxConDof);CHKERRQ(ierr);
-    ierr = PetscSectionGetMaxDof(refAnSec,&maxAnDof);CHKERRQ(ierr);
-    ierr = PetscMalloc1(maxConDof*maxConDof*maxAnDof,&pointWork);CHKERRQ(ierr);
+    ierr = PetscSectionGetMaxDof(leafIndicesSec,&maxColumns);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxConDof*maxColumns,&pointWork);CHKERRQ(ierr);
     for (p = pStartF; p < pEndF; p++) {
       PetscInt    gDof, gcDof, gOff;
       PetscInt    numColIndices, pIndOff, *pInd;
