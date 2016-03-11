@@ -1151,9 +1151,9 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   /* Right now just eat the extra work for FE (could make a cell loop) */
   for (face = fStart, iface = 0; face < fEnd; ++face) {
     const PetscInt        *cells;
-    const PetscFVFaceGeom *fg;
-    const PetscFVCellGeom *cgL, *cgR;
-    const PetscScalar     *xL, *xR, *gL, *gR;
+    PetscFVFaceGeom       *fg;
+    PetscFVCellGeom       *cgL, *cgR;
+    PetscScalar           *xL, *xR, *gL, *gR;
     PetscScalar           *uLl = *uL, *uRl = *uR;
     PetscInt               ghost, nsupp;
 
@@ -1318,8 +1318,8 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
   ierr = DMGetWorkArray(dm, numFaces*2, PETSC_SCALAR, vol);CHKERRQ(ierr);
   for (face = fStart, iface = 0; face < fEnd; ++face) {
     const PetscInt        *cells;
-    const PetscFVFaceGeom *fg;
-    const PetscFVCellGeom *cgL, *cgR;
+    PetscFVFaceGeom       *fg;
+    PetscFVCellGeom       *cgL, *cgR;
     PetscFVFaceGeom       *fgeoml = *fgeom;
     PetscReal             *voll   = *vol;
     PetscInt               ghost, d;
@@ -1396,8 +1396,8 @@ static PetscErrorCode DMPlexApplyLimiter_Internal (DM dm, DM dmCell, PetscLimite
     }
   }
   else {
-    const PetscScalar     *ncx;
-    const PetscFVCellGeom *ncg;
+    PetscScalar           *ncx;
+    PetscFVCellGeom       *ncg;
     const PetscInt        *fcells;
     PetscInt               ncell, d;
     PetscReal              v[3];
@@ -1451,8 +1451,8 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscInt fStart, Petsc
   /* Reconstruct gradients */
   for (face = fStart; face < fEnd; ++face) {
     const PetscInt        *cells;
-    const PetscFVFaceGeom *fg;
-    const PetscScalar     *cx[2];
+    PetscFVFaceGeom       *fg;
+    PetscScalar           *cx[2];
     PetscScalar           *cgrad[2];
     PetscBool              boundary;
     PetscInt               ghost, c, pd, d, numChildren, numCells;
@@ -1485,8 +1485,8 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscInt fStart, Petsc
   ierr = DMGetWorkArray(dm, totDim, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
   for (cell = dmGrad && lim ? cStart : cEnd; cell < cEndInterior; ++cell) {
     const PetscInt        *faces;
-    const PetscScalar     *cx;
-    const PetscFVCellGeom *cg;
+    PetscScalar           *cx;
+    PetscFVCellGeom       *cg;
     PetscScalar           *cgrad;
     PetscInt               coneSize, f, pd, d;
 

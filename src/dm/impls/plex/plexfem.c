@@ -630,7 +630,7 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f) {
       const PetscInt         face = faces[f], *cells;
-      const PetscFVFaceGeom *fg;
+      PetscFVFaceGeom        *fg;
 
       if ((face < fStart) || (face >= fEnd)) continue; /* Refinement adds non-faces to labels */
       ierr = PetscFindInt(face, nleaves, (PetscInt *) leaves, &loc);CHKERRQ(ierr);
@@ -638,8 +638,8 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
       ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
       ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
       if (Grad) {
-        const PetscFVCellGeom *cg;
-        const PetscScalar     *cx, *cgrad;
+        PetscFVCellGeom       *cg;
+        PetscScalar           *cx, *cgrad;
         PetscScalar           *xG;
         PetscReal              dx[3];
         PetscInt               d;
@@ -652,7 +652,7 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
         for (d = 0; d < pdim; ++d) fx[d] = cx[d] + DMPlex_DotD_Internal(dim, &cgrad[d*dim], dx);
         ierr = (*func)(time, fg->centroid, fg->normal, fx, xG, ctx);CHKERRQ(ierr);
       } else {
-        const PetscScalar *xI;
+        PetscScalar       *xI;
         PetscScalar       *xG;
 
         ierr = DMPlexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);

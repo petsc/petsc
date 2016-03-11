@@ -358,7 +358,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         for (i=0; i<bs; i++) {
           PetscInt cnt;
           for (c=cStart,cnt=0; c<cEnd; c++) {
-            const PetscScalar *xpoint;
+            PetscScalar *xpoint;
             if (hasLabel) {     /* Ignore some cells */
               PetscInt value;
               ierr = DMGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
@@ -386,7 +386,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         for (i=0; i<bs; i++) {
           PetscInt cnt;
           for (v=vStart,cnt=0; v<vEnd; v++) {
-            const PetscScalar *xpoint;
+            PetscScalar *xpoint;
             ierr     = DMPlexPointLocalRead(dm,v,x,&xpoint);CHKERRQ(ierr);
             y[cnt++] = xpoint[i];
           }
