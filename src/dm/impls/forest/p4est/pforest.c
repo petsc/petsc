@@ -3398,6 +3398,20 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
         ierr = PetscSFReduceBegin(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX);CHKERRQ(ierr);
         ierr = PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX);CHKERRQ(ierr);
       }
+      for (p = pStart; p < pEnd; p++) {
+        PetscInt q = p, parent;
+
+        ierr = DMPlexGetTreeParent(plex,q,&parent,NULL);CHKERRQ(ierr);
+        while (parent != q) {
+          if (values[parent] == -2) {
+            values[parent] = values[q];
+          }
+          q = parent;
+          ierr = DMPlexGetTreeParent(plex,q,&parent,NULL);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscSFReduceBegin(pointSF,MPIU_INT,values,values,MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(pointSF,MPIU_INT,values,values,MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(pointSF,MPIU_INT,values,values);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(pointSF,MPIU_INT,values,values);CHKERRQ(ierr);
       for (p = pStart; p < pEnd; p++) {
@@ -3449,6 +3463,20 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       if (transferBackward) {
         ierr = PetscSFReduceEnd(transferBackward,MPIU_INT,adaptValues,values,MPIU_MAX);CHKERRQ(ierr);
       }
+      for (p = pStart; p < pEnd; p++) {
+        PetscInt q = p, parent;
+
+        ierr = DMPlexGetTreeParent(plex,q,&parent,NULL);CHKERRQ(ierr);
+        while (parent != q) {
+          if (values[parent] == -2) {
+            values[parent] = values[q];
+          }
+          q = parent;
+          ierr = DMPlexGetTreeParent(plex,q,&parent,NULL);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscSFReduceBegin(pointSF,MPIU_INT,values,values,MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(pointSF,MPIU_INT,values,values,MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(pointSF,MPIU_INT,values,values);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(pointSF,MPIU_INT,values,values);CHKERRQ(ierr);
 
