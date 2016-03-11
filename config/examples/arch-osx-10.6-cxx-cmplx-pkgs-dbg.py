@@ -6,7 +6,7 @@ configure_options = [
   '--with-cc=clang',
   '--with-fc=gfortran', # http://brew.sh/
   '--with-cxx=clang++',
-  'CXXCPPFLAGS=-x -c++',
+  'CXXCPPFLAGS=-x c++',
 
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
