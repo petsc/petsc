@@ -2283,7 +2283,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = PetscSectionSetChart(rootMatricesSec,pStartC,pEndC);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(globalCoarse,&numFields);CHKERRQ(ierr);
   {
-    PetscInt maxFields = PetscMax(1,numFields);CHKERRQ(ierr);
+    PetscInt maxFields = PetscMax(1,numFields) + 1;
     ierr = PetscMalloc7(maxFields,&offsets,maxFields,&offsetsCopy,maxFields,&newOffsets,maxFields,&newOffsetsCopy,maxFields,&rowOffsets,maxFields,&numD,maxFields,&numO);CHKERRQ(ierr);
   }
 
@@ -2463,7 +2463,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             }
           }
           /* apply hanging node constraints on the right, get the new points and the new offsets */
-          ierr = DMPlexAnchorsModifyMat(coarse,localCoarse,closureSize,numRowIndices,closure,pMat,&numPoints,NULL,&points,&pMatModified,newOffsets,PETSC_FALSE);CHKERRQ(ierr);
+          ierr = DMPlexAnchorsModifyMat(coarse,localCoarse,closureSize,numRowIndices,closure,pMatIn,&numPoints,NULL,&points,&pMatModified,newOffsets,PETSC_FALSE);CHKERRQ(ierr);
           if (!numFields) {
             for (i = 0; i < numRowIndices * numColIndices; i++) {
               pMat[i] = pMatModified[i];
@@ -2540,11 +2540,11 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           }
         }
         else {
-          indicesPoint_private(cSec,p,cOff,offsets,PETSC_TRUE,0,rowIndices);CHKERRQ(ierr);
+          indicesPoint_private(cSec,p,cOff,offsetsCopy,PETSC_TRUE,0,rowIndices);CHKERRQ(ierr);
           for (a = 0; a < aDof; a++) {
             PetscInt anchor = anchors[a + aOff], lOff;
             ierr = PetscSectionGetOffset(localCoarse,anchor,&lOff);CHKERRQ(ierr);
-            indicesPoint_private(localCoarse,anchor,lOff,newOffsets,PETSC_TRUE,0,colIndices);CHKERRQ(ierr);
+            indicesPoint_private(localCoarse,anchor,lOff,newOffsetsCopy,PETSC_TRUE,0,colIndices);CHKERRQ(ierr);
           }
         }
         if (numFields) {
@@ -2619,9 +2619,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     ierr = PetscSectionGetStorageSize(leafMatricesSec,&numLeafMatrices);CHKERRQ(ierr);
     ierr = PetscMalloc2(numLeafIndices,&leafIndices,numLeafMatrices,&leafMatrices);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(indicesSF,MPIU_INT,rootIndices,leafIndices);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(matricesSF,MPIU_INT,rootMatrices,leafMatrices);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(matricesSF,MPIU_SCALAR,rootMatrices,leafMatrices);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(indicesSF,MPIU_INT,rootIndices,leafIndices);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(matricesSF,MPIU_INT,rootMatrices,leafMatrices);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(matricesSF,MPIU_SCALAR,rootMatrices,leafMatrices);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&matricesSF);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&indicesSF);CHKERRQ(ierr);
     ierr = PetscFree2(rootIndices,rootMatrices);CHKERRQ(ierr);
@@ -2944,7 +2944,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               count += numCols * numInRows;
             }
           }
-          else { /* every dof get a full row */
+          else { /* every dof gets a full row */
             PetscInt numRows   = gDof;
             PetscInt numCols   = numColIndices;
             PetscInt numInRows = matSize / numColIndices;
