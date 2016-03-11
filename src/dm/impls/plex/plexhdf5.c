@@ -3,7 +3,6 @@
 #include <petsc/private/vecimpl.h>
 #include <petscviewerhdf5.h>
 
-PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 #if defined(PETSC_HAVE_HDF5)

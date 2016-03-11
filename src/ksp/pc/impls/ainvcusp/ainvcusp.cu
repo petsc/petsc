@@ -14,6 +14,7 @@
 #define VecType char*
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
+#include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 #define cuspainvprecondscaled cusp::precond::scaled_bridson_ainv<PetscScalar,cusp::device_memory>
 #define cuspainvprecond cusp::precond::bridson_ainv<PetscScalar,cusp::device_memory>

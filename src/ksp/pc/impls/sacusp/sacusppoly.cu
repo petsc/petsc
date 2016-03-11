@@ -21,6 +21,7 @@
 #undef USE_POLY_SMOOTHER
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
+#include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 /*
    Private context (data structure) for the SACUSPPoly preconditioner.
