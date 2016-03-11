@@ -116,7 +116,6 @@ typedef struct {
   Vec                 work_scaling;
   PetscBool           use_deluxe_scaling;
   PCBDDCDeluxeScaling deluxe_ctx;
-  PetscBool           faster_deluxe;
   PetscBool           deluxe_zerorows;
 
   /* schur complements on interface's subsets */

@@ -407,7 +407,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscBool exact_schur, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool faster_deluxe, Vec scaling, PetscBool compute_Stilda, PetscBool reuse_solvers, PetscBool benign_trick, PetscInt benign_n, PetscInt benign_p0_lidx[], IS benign_zerodiag_subs[], Mat change, IS change_primal)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin, PetscBool exact_schur, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, Vec scaling, PetscBool compute_Stilda, PetscBool reuse_solvers, PetscBool benign_trick, PetscInt benign_n, PetscInt benign_p0_lidx[], IS benign_zerodiag_subs[], Mat change, IS change_primal)
 {
   Mat                    F,A_II,A_IB,A_BI,A_BB,AE_II;
   Mat                    S_all;
@@ -1552,48 +1552,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatGetSubMatrices(global_schur_subsets,1,&all_subsets_n,&all_subsets_n,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
   }
 
-
-  /* Compute explicitly (\sum_j S_Ej)^-1 (faster scaling during PCApply, needs extra work when doing setup) */
-#if 0
-  if (faster_deluxe) {
-    Mat         tmpmat;
-    PetscScalar *array;
-    PetscInt    cum;
-
-    ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_all,&array);CHKERRQ(ierr);
-    cum = 0;
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-      ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      if (!use_getr) {
-        PetscInt j,k;
-
-        PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,array+cum,&B_N,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
-        PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,array+cum,&B_N,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
-        for (j=0;j<B_N;j++) {
-          for (k=j+1;k<B_N;k++) {
-            array[k*B_N+j+cum] = array[j*B_N+k+cum];
-          }
-        }
-      } else {
-        PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array+cum,&B_N,pivots,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-      }
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      cum += subset_size*subset_size;
-    }
-    ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_all,&array);CHKERRQ(ierr);
-    ierr = MatMatMult(sub_schurs->S_Ej_all,sub_schurs->sum_S_Ej_all,MAT_INITIAL_MATRIX,1.0,&tmpmat);CHKERRQ(ierr);
-    ierr = MatDestroy(&sub_schurs->S_Ej_all);CHKERRQ(ierr);
-    ierr = MatDestroy(&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
-    sub_schurs->S_Ej_all = tmpmat;
-  }
-#endif
   /* Get local part of (\sum_j S^-1_Ej) (\sum_j St^-1_Ej) */
   if (compute_Stilda) {
     ierr = MatISSetLocalMat(work_mat,sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);

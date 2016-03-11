@@ -3819,7 +3819,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         pcbddc->primal_indices_local_idxs[total_primal_vertices++] = constraints_idxs[constraints_idxs_ptr[i]+k];
       }
       pcbddc->local_primal_size_cc += constraints_n[i];
-      if (constraints_n[i] > 1 || pcbddc->use_qr_single || pcbddc->faster_deluxe) {
+      if (constraints_n[i] > 1 || pcbddc->use_qr_single) {
         PetscBTSet(qr_needed_idx,i);
         qr_needed = PETSC_TRUE;
       }
@@ -6211,7 +6211,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
   if (!sub_schurs->schur_explicit) {
     /* pcbddc->ksp_D up to date only if not using MatFactor with Schur complement support */
     ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,PETSC_FALSE,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,NULL,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE,0,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,PETSC_FALSE,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,NULL,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE,0,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {
     PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
     PetscBool isseqaij,need_change = PETSC_FALSE;;
@@ -6294,7 +6294,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       ierr = PCDestroy(&pcf);CHKERRQ(ierr);
     }
     if (!pcbddc->use_deluxe_scaling) scaling = pcis->D;
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->faster_deluxe,scaling,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs,change,change_primal);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,scaling,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs,change,change_primal);CHKERRQ(ierr);
     ierr = MatDestroy(&change);CHKERRQ(ierr);
     ierr = ISDestroy(&change_primal);CHKERRQ(ierr);
   }
