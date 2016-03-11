@@ -276,37 +276,30 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode PetscDrawMovieSave(const char[],PetscInt,const char[],PetscInt,const char[]);
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawDestroy_Private"
 static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 {
-  PetscBool      match;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_X,&match);CHKERRQ(ierr);
-  if (!match) PetscFunctionReturn(0);
-#if defined(PETSC_HAVE_POPEN)
-  if (draw->savefilemovie && draw->savefilename && !draw->savesinglefile) {
-    PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
+  if (draw->savefilename && draw->savemovieext) {
     if (!rank) {
-      char       command[PETSC_MAX_PATH_LEN];
-      const char *name = draw->savefilename;
-      const char *ext  = draw->savefilenameext;
-      FILE       *fd;
-      ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg -i %s/%s_%%d%s %s.m4v",name,name,ext,name);CHKERRQ(ierr);
-      ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-      ierr = PetscPClose(PETSC_COMM_SELF,fd,NULL);CHKERRQ(ierr);
+      const char *fname = draw->savefilename;
+      const char *imext = draw->saveimageext;
+      const char *mvext = draw->savemovieext;
+      ierr = PetscDrawMovieSave(fname,draw->savefilecount,imext,draw->savemoviefps,mvext);CHKERRQ(ierr);
     }
-    ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
+    ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
-#endif
   if (draw->savefinalfilename) {
-    draw->savefilecount  = 0;
     draw->savesinglefile = PETSC_TRUE;
-    draw->savefilemovie  = PETSC_FALSE;
-    ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscDrawSetSave(draw,draw->savefinalfilename,NULL);CHKERRQ(ierr);
     ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   }
   ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
@@ -354,7 +347,8 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   ierr = PetscFree((*draw)->title);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->display);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefilename);CHKERRQ(ierr);
-  ierr = PetscFree((*draw)->savefilenameext);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->saveimageext);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->savemovieext);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefinalfilename);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);

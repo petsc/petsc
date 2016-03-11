@@ -241,8 +241,6 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
 #define __FUNCT__ "PetscDrawXiQuickWindow"
 PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin,char *name,int x,int y,int nx,int ny)
 {
-  Window         root;
-  unsigned int   w,h,dummy;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -250,12 +248,6 @@ PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin,char *name,int x,int y,
   ierr = PetscDrawXiDisplayWindow(XiWin,name,x,y,nx,ny);CHKERRQ(ierr);
   XSetWindowBackground(XiWin->disp,XiWin->win,XiWin->background);
   XClearWindow(XiWin->disp,XiWin->win);
-
-  XGetGeometry(XiWin->disp,XiWin->win,&root,&x,&y,&w,&h,&dummy,&dummy);
-  XiWin->x = x;
-  XiWin->y = y;
-  XiWin->w = (int)w;
-  XiWin->h = (int)h;
   PetscFunctionReturn(0);
 }
 
@@ -266,9 +258,6 @@ PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin,char *name,int x,int y,
 #define __FUNCT__ "PetscDrawXiQuickWindowFromWindow"
 PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin,Window win)
 {
-  Window            root;
-  int               x,y;
-  unsigned int      w,h,dummy;
   XWindowAttributes attributes;
   PetscErrorCode    ierr;
 
@@ -276,12 +265,6 @@ PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin,Window win)
   XiWin->win = win;
   XGetWindowAttributes(XiWin->disp,XiWin->win,&attributes);
   ierr = PetscDrawSetColormap_X(XiWin,attributes.colormap);CHKERRQ(ierr);
-
-  XGetGeometry(XiWin->disp,XiWin->win,&root,&x,&y,&w,&h,&dummy,&dummy);
-  XiWin->x = x;
-  XiWin->y = y;
-  XiWin->w = (int)w;
-  XiWin->h = (int)h;
   PetscFunctionReturn(0);
 }
 
@@ -295,5 +278,32 @@ PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X* XiWin)
   PetscDrawXiSetPixVal(XiWin,XiWin->background);
   XFillRectangle(XiWin->disp,XiWin->drw,XiWin->gc.set,0,0,XiWin->w,XiWin->h);
   XSync(XiWin->disp,False);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiGetGeometry"
+PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *XiWin,int *x,int *y,int *w,int *h)
+{
+  XWindowAttributes attributes;
+  Window            root,parent,child;
+  int               xx=0,yy=0;
+  unsigned int      ww=0,hh=0,dummy;
+  PetscFunctionBegin;
+  if (XiWin->win) {
+    XGetGeometry(XiWin->disp,XiWin->win,&parent,&xx,&yy,&ww,&hh,&dummy,&dummy);
+    root = RootWindow(XiWin->disp,XiWin->screen);
+    if (!XTranslateCoordinates(XiWin->disp,XiWin->win,root,0,0,&xx,&yy,&child)) {
+      XGetWindowAttributes(XiWin->disp,XiWin->win,&attributes);
+      root = attributes.screen->root;
+      (void)XTranslateCoordinates(XiWin->disp,XiWin->win,root,0,0,&xx,&yy,&child);
+    }
+  } else if (XiWin->drw) {
+    XGetGeometry(XiWin->disp,XiWin->drw,&root,&xx,&yy,&ww,&hh,&dummy,&dummy);
+  }
+  if (x) *x = xx;
+  if (y) *y = yy;
+  if (w) *w = (int)ww;
+  if (h) *h = (int)hh;
   PetscFunctionReturn(0);
 }

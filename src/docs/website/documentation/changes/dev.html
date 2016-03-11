@@ -139,9 +139,18 @@ PetscOptionsGetAll(PetscOptions,char*[]);
       <ul>
         <li>Added --download-packages-dir=directory to support easy use of --download-xxx behind firewalls</li>
         <li>--download-package for externalpackage with a gitrepo will never be stale. Each time configure is invoked - it will do a 'git fetch' and 'git checkout commit-id'. And if the commit-id changes from the previous build - the package will be rebuilt. To prevent this sync [and use previous snapshot] - one can use --download-package-commit=HEAD</li>
+        <li>Added --with-libpng/--with-giflib/--with-libjpeg to support PNG/GIF/JPEG image generation</li>
+        <li>Removed support for AfterImage in favor of libpng/GIFLIB/libjpeg</li>
       </ul>
+
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
+      <ul>
+        <li>Added option -draw_cmap to use a named colormap (e.g., hue (default), jet, coolwarm, parula, viridis) in the drawing of contour plots.</li>
+        <li>Support for saving images and movies was improved. Support for generating binary PPM images is built-in, but the format is uncompressed and images are large (640x480 pixels ~ 900 KiB). PETSc can optionally generate PNG/GIF/JPEG images using the libpng/GIFLIB/libjpeg packages (configure --with-package/--download-package). These libraries are popular, well maintained, and available through most packages managers (dnf/yum, apt, brew). For most users, PNG images should be enough.</li>
+        <li>Added routine PetscDrawSave(), users should explicitly call it to save images after configuring with PetscDrawSetSave().</li>
+        <li>The PetscDrawSynchronizedXXX() routines were removed, the corresponding PetscDrawXXX() are now collective.</li>
+      </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>
       <ul>

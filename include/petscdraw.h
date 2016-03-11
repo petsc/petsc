@@ -18,8 +18,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetType(PetscDraw,PetscDrawType);
 PETSC_EXTERN PetscErrorCode PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawSetFromOptions(PetscDraw);
-PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
-PETSC_EXTERN PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw,const char*);
+PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawView(PetscDraw,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 

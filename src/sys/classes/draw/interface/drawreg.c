@@ -149,9 +149,13 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 
   ierr = PetscOptionsGetReal(NULL,NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
   if (flag) draw->pause = dpause;
-  draw->savefilename  = NULL;
-  draw->savefilecount = 0;
-  draw->savefilemovie = PETSC_FALSE;
+
+  draw->savefilename   = NULL;
+  draw->saveimageext   = NULL;
+  draw->savemovieext   = NULL;
+  draw->savefilecount  = 0;
+  draw->savesinglefile = PETSC_FALSE;
+  draw->savemoviefps   = PETSC_DECIDE;
 
   ierr = PetscDrawSetCurrentPoint(draw,.5,.9);CHKERRQ(ierr);
 
@@ -353,11 +357,10 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 
    Level: intermediate
 
-   Notes:
-    Must be called after PetscDrawCreate() before the PetscDraw is used.
+   Notes: Must be called after PetscDrawCreate() before the PetscDraw is used.
 
-    Concepts: drawing^setting options
-    Concepts: graphics^setting options
+   Concepts: drawing^setting options
+   Concepts: graphics^setting options
 
 .seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave(), PetscDrawSetSaveFinalImage()
 
@@ -404,20 +407,18 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   ierr = PetscOptionsName("-nox","Run without graphics","None",&nox);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_X)
   {
-    char      filename[PETSC_MAX_PATH_LEN];
-    PetscBool save,movie = PETSC_FALSE;
-    ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-draw_save_single_file","Each new image replaces previous image in file","PetscDrawSetSave",draw->savesinglefile,&draw->savesinglefile,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-draw_save","Save graphics to file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
-    if (save) {
-      ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
-    }
+    char      filename[PETSC_MAX_PATH_LEN] = "";
+    char      movieext[PETSC_MAX_PATH_LEN] = ".m4v";
+    PetscBool save,movie;
+    ierr = PetscOptionsString("-draw_save","Save graphics to image file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movieext,movieext,PETSC_MAX_PATH_LEN,&movie);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-draw_save_movie_fps","Set frames per second in saved movie (X Windows only)",__FUNCT__,draw->savemoviefps,&draw->savemoviefps,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_single_file","Each new image replaces previous image in file",__FUNCT__,draw->savesinglefile,&draw->savesinglefile,NULL);CHKERRQ(ierr);
+    if (save || movie) {ierr = PetscDrawSetSave(draw,save?filename:NULL,movie?movieext:NULL);CHKERRQ(ierr);}
     ierr = PetscOptionsString("-draw_save_final_image","Save graphics to file (X Windows only)","PetscDrawSetSaveFinalImage",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
-    if (save) {
-      ierr = PetscDrawSetSaveFinalImage(draw,filename);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsBool("-draw_save_on_clear","Save graphics to file (X Windows only) on each clear","PetscDrawSetSave",draw->saveonclear,&draw->saveonclear,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file (X Windows only) on each flush","PetscDrawSetSave",draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
+    if (save) {ierr = PetscDrawSetSaveFinalImage(draw,filename);CHKERRQ(ierr);}
+    ierr = PetscOptionsBool("-draw_save_on_clear","Save graphics to file (X Windows only) on each clear",__FUNCT__,draw->saveonclear,&draw->saveonclear,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file (X Windows only) on each flush",__FUNCT__,draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
   }
 #endif
   ierr = PetscOptionsReal("-draw_pause","Amount of time that program pauses after plots","PetscDrawSetPause",draw->pause,&draw->pause,NULL);CHKERRQ(ierr);
