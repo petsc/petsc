@@ -1056,6 +1056,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
+  if (!*dm1->ops->getinjection) SETERRQ(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DMCreateInjection not implemented for this type");
   ierr = (*dm1->ops->getinjection)(dm1,dm2,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
