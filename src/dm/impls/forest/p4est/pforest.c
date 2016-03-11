@@ -2494,6 +2494,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
 
             roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + j];
             rootType[p-pStartF] = PETSC_MAX_INT; /* unconditionally accept */
+            cids[p-pStartF] = -1;
           }
         }
         else {
@@ -2506,9 +2507,12 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             PetscStackCallP4estReturn(cid,p4est_quadrant_child_id,(quad));
             ierr = DMPlexGetTransitiveClosure(plexF,c,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
             for (cl = 0; cl < P4EST_INSUL; cl++) {
+              PetscInt p     = pointClosure[2 * cl];
               PetscInt point = childClosures[cid][2 * cl];
               PetscInt ornt  = childClosures[cid][2 * cl + 1];
               PetscInt newcid = -1;
+
+              if (rootType[p-pStartF] == PETSC_MAX_INT) continue;
               if (!cl) {
                 newcid = cid + 1;
               } else {
@@ -2533,10 +2537,11 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                 }
               }
               if (newcid >= 0) {
+
                 if (canonical) {
                   ierr = DMLabelGetValue(canonical,newcid,&newcid);CHKERRQ(ierr);
                 }
-                cids[pointClosure[2 * cl] - pStartF] = newcid;
+                cids[p - pStartF] = newcid;
               }
             }
             ierr = DMPlexRestoreTransitiveClosure(plexF,c,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
@@ -2560,6 +2565,8 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             PetscInt l, p;
             PetscSFNode q;
 
+            p = closurePointsF[numClosureIndices * c + j].index;
+            if (rootType[p-pStartF] == PETSC_MAX_INT) continue;
             if (j == 0) { /* volume: ancestor is volume */
               l = 0;
             }
@@ -2655,11 +2662,18 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                 l = 0;
               }
             }
-            p = closurePointsF[numClosureIndices * c + j].index;
             q = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
             if (l > rootType[p-pStartF]) {
               roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
-              rootType[p-pStartF] = l;
+              if (l >= P4EST_INSUL - P4EST_CHILDREN) { /* vertex on vertex: unconditional acceptance */
+                rootType[p-pStartF] = PETSC_MAX_INT;
+                if (formCids) {
+                  cids[p-pStartF] = -1;
+                }
+              }
+              else {
+                rootType[p-pStartF] = l;
+              }
             }
           }
         }
@@ -2678,6 +2692,9 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         if (rootTypeCopy[p-pStartF] > rootType[p-pStartF]) { /* another process found a root of higher type (e.g. vertex instead of edge), which we want to accept, so nullify this */
           roots[p-pStartF].rank = -1;
           roots[p-pStartF].index = -1;
+        }
+        if (formCids && rootTypeCopy[p-pStartF] == PETSC_MAX_INT) {
+          cids[p-pStartF] = -1; /* we have found an antecedent that is the same: no child id */
         }
       }
       ierr = PetscFree(rootTypeCopy);CHKERRQ(ierr);
