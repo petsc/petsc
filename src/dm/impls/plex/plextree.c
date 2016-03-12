@@ -2296,6 +2296,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     PetscInt numColIndices  = 0;
 
     ierr = PetscSectionGetDof(globalCoarse,p,&dof);CHKERRQ(ierr);
+    if (dof < 0) {
+      dof = -(dof + 1);
+    }
     if (p >= aStart && p < aEnd) {
       ierr = PetscSectionGetDof(aSec,p,&aDof);CHKERRQ(ierr);
     }
@@ -2415,6 +2418,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         pMat = &rootMatrices[pMatOff];
       }
       ierr = PetscSectionGetDof(globalCoarse,p,&dof);CHKERRQ(ierr);
+      if (dof < 0) {
+        dof = -(dof + 1);
+      }
       if (maxChildId >= 0) { /* build an identity matrix, apply matrix constraints on the right */
         PetscInt i, j;
         PetscInt numRowIndices = matSize / numColIndices;
