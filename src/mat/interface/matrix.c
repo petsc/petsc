@@ -4104,21 +4104,20 @@ PetscErrorCode MatSolverPackageGet(const MatSolverPackage package,const MatType 
       }
       next = next->next;
     }
-  }
-
-  if (!package || !(*foundmtype)) { /* found first working package */
-    if (foundpackage) *foundpackage = PETSC_FALSE;
-    next = MatSolverPackageHolders;
-    inext = next->handlers;
-    while (inext) {
-      ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
-      if (flg) {
-        if (foundpackage) *foundpackage = PETSC_TRUE;
-        if (foundmtype)   *foundmtype   = PETSC_TRUE;
-        if (getfactor)    *getfactor    = inext->getfactor[(int)ftype-1];
-        PetscFunctionReturn(0);
+  } else {
+    while (next) {
+      inext = next->handlers;
+      while (inext) {
+        ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
+        if (flg && inext->getfactor[(int)ftype-1]) {
+          if (foundpackage) *foundpackage = PETSC_TRUE;
+          if (foundmtype)   *foundmtype   = PETSC_TRUE;
+          if (getfactor)    *getfactor    = inext->getfactor[(int)ftype-1];
+          PetscFunctionReturn(0);
+        }
+        inext = inext->next;
       }
-      inext = inext->next;
+      next = next->next;
     }
   }
   PetscFunctionReturn(0);

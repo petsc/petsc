@@ -85,6 +85,8 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         if (!foundpack) { /* reset default ksp and pc */
           ierr = KSPSetType(red->ksp,KSPGMRES);CHKERRQ(ierr);
           ierr = PCSetType(red->pc,PCBJACOBI);CHKERRQ(ierr);
+        } else {
+          ierr = PCFactorSetMatSolverPackage(red->pc,NULL);CHKERRQ(ierr);
         }
       }
 

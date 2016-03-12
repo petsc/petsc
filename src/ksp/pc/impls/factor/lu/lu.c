@@ -320,7 +320,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   dir->col                              = 0;
   dir->row                              = 0;
 
-  ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)dir)->solvertype);CHKERRQ(ierr); /* default SolverPackage */
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERINGND,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);

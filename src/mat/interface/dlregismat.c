@@ -288,6 +288,39 @@ PetscErrorCode  MatInitializePackage(void)
     }
   }
 
+  /* Register the PETSc built in factorization based solvers */
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_LU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_CHOLESKY,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_ICC,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
+
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_LU,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
+
+  ierr = MatSolverPackageRegister(MATSOLVERBAS,   MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_bas);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERBSTRM, MATSEQBAIJ,       MAT_FACTOR_LU,MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERBSTRM, MATSEQBAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSBSTRM,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSBSTRM,MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
+
   /*
      Register the external package factorization based solvers
         Eventually we don't want to have these hardwired here at compile time of PETSc
@@ -334,41 +367,6 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_CLIQUE)
   ierr = MatSolverPackageRegister_Clique();CHKERRQ(ierr);
 #endif
-
-  /* Register the PETSc built in factorization based solvers */
-  ierr = MatSolverPackageRegister(MATSOLVERBAS,   MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_bas);CHKERRQ(ierr);
-
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_LU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_CHOLESKY,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_ICC,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-
-  ierr = MatSolverPackageRegister(MATSOLVERBSTRM, MATSEQBAIJ,       MAT_FACTOR_LU,MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERBSTRM, MATSEQBAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
-
-  ierr = MatSolverPackageRegister(MATSOLVERSBSTRM,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSBSTRM,MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
-
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
-
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_LU,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
 
   ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
