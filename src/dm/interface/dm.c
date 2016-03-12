@@ -4,7 +4,7 @@
 #include <petscds.h>
 
 PetscClassId  DM_CLASSID;
-PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation;
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation, DM_CreateRestriction;
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DM_BOUNDARY_",0};
 
@@ -1011,7 +1011,7 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
         EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
 
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction()
 
 @*/
 PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
@@ -1024,6 +1024,43 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   ierr = PetscLogEventBegin(DM_CreateInterpolation,dm1,dm2,0,0);CHKERRQ(ierr);
   ierr = (*dm1->ops->createinterpolation)(dm1,dm2,mat,vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DM_CreateInterpolation,dm1,dm2,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateRestriction"
+/*@
+    DMCreateRestriction - Gets restriction matrix between two DM objects
+
+    Collective on DM
+
+    Input Parameter:
++   dm1 - the DM object
+-   dm2 - the second, finer DM object
+
+    Output Parameter:
+.  mat - the restriction
+
+
+    Level: developer
+
+    Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
+        DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
+
+ 
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateInterpolation()
+
+@*/
+PetscErrorCode  DMCreateRestriction(DM dm1,DM dm2,Mat *mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
+  ierr = PetscLogEventBegin(DM_CreateRestriction,dm1,dm2,0,0);CHKERRQ(ierr);
+  ierr = (*dm1->ops->createrestriction)(dm1,dm2,mat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DM_CreateRestriction,dm1,dm2,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2808,6 +2845,31 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
 {
   PetscFunctionBegin;
   *flg =  (dm->ops->getcoloring) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMHasCreateRestriction"
+/*@
+    DMHasCreateRestriction - does the DM object have a method of providing a restriction?
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object
+
+    Output Parameter:
+.   flg - PETSC_TRUE if the DM has facilities for DMCreateRestriction().
+
+    Level: developer
+
+.seealso DMHasFunction(), DMCreateRestriction()
+
+@*/
+PetscErrorCode  DMHasCreateRestriction(DM dm,PetscBool  *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->createrestriction) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

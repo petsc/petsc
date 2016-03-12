@@ -28,6 +28,7 @@ struct _DMOps {
   PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
   PetscErrorCode (*creatematrix)(DM, Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
+  PetscErrorCode (*createrestriction)(DM,DM,Mat*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
   PetscErrorCode (*getinjection)(DM,DM,Mat*);
 
@@ -231,7 +232,7 @@ struct _p_DM {
   PetscObject             dmksp,dmsnes,dmts;
 };
 
-PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation;
+PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation, DM_CreateRestriction;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);

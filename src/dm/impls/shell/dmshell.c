@@ -680,7 +680,7 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*)
 
    Level: advanced
 
-.seealso: DMShellSetCreateInjection(), DMCreateInterpolation()
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation(), DMShellSetCreateRestriction()
 @*/
 PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,DM,Mat*,Vec*))
 {
@@ -692,6 +692,34 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createinterpolation = interp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateRestriction"
+/*@C
+   DMShellSetCreateRestriction - Set the routine used to create the restriction operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  striction- the routine to create the restriction
+
+   Level: advanced
+
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation()
+@*/
+PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(DM,DM,Mat*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createrestriction = restriction;
   PetscFunctionReturn(0);
 }
 

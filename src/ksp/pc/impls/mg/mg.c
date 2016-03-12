@@ -620,7 +620,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     /* Separately create them so we do not get DMKSP interference between levels */
     for (i=n-2; i>-1; i--) {ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);}
     for (i=n-2; i>-1; i--) {
-      DMKSP kdm;
+      DMKSP     kdm;
+      PetscBool dmhasrestrict;
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMGetDMKSPWrite(dms[i],&kdm);CHKERRQ(ierr);
@@ -633,6 +634,12 @@ PetscErrorCode PCSetUp_MG(PC pc)
         ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
         if (rscale) {ierr = PCMGSetRScale(pc,i+1,rscale);CHKERRQ(ierr);}
         ierr = VecDestroy(&rscale);CHKERRQ(ierr);
+        ierr = MatDestroy(&p);CHKERRQ(ierr);
+      }
+      ierr = DMHasCreateRestriction(dms[i],&dmhasrestrict);CHKERRQ(ierr);
+      if (dmhasrestrict && !mglevels[i+1]->restrct){
+        ierr = DMCreateRestriction(dms[i],dms[i+1],&p);CHKERRQ(ierr);
+        ierr = PCMGSetRestriction(pc,i+1,p);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
     }
@@ -731,9 +738,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
         ierr = KSPSetFromOptions(mglevels[i]->smoothu);CHKERRQ(ierr);
       }
     }
+    /* insure that if either interpolation or restriction is set the other other one is set */
     for (i=1; i<n; i++) {
-      ierr = PCMGGetInterpolation(pc,i,&mglevels[i]->interpolate);CHKERRQ(ierr);
-      ierr = PCMGGetRestriction(pc,i,&mglevels[i]->restrct);CHKERRQ(ierr);
+      ierr = PCMGGetInterpolation(pc,i,NULL);CHKERRQ(ierr);
+      ierr = PCMGGetRestriction(pc,i,NULL);CHKERRQ(ierr);
     }
     for (i=0; i<n-1; i++) {
       if (!mglevels[i]->b) {
