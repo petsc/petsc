@@ -438,7 +438,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     ierr = MatISGetLocalMat(pc->mat,&A);CHKERRQ(ierr);
     ierr = MatMult(A,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
     ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
-    if (!pcbddc->current_level && PetscAbsScalar(vals[0]) > PETSC_SMALL) {
+    if (PetscAbsScalar(vals[0]) > 1.e-1) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %1.6e (should be numerically 0.)",PetscAbsScalar(vals[0]));
     }
     ierr = PetscFree(vals);CHKERRQ(ierr);
