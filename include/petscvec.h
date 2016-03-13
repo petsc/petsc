@@ -104,9 +104,6 @@ typedef const char* VecType;
 #define VECMPIVIENNACL "mpiviennacl"
 #define VECVIENNACL    "viennacl"   /* seqviennacl on one process and mpiviennacl on several */
 #define VECNEST        "nest"
-#define VECSEQPTHREAD  "seqpthread"
-#define VECMPIPTHREAD  "mpipthread"
-#define VECPTHREAD     "pthread"    /* seqpthread on one process and mpipthread on several */
 
 
 /* Logging support */

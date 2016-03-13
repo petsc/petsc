@@ -103,6 +103,9 @@ J*/
 #define MATSOLVERSUPERLU_DIST "superlu_dist"
 #define MATSOLVERUMFPACK      "umfpack"
 #define MATSOLVERCHOLMOD      "cholmod"
+#define MATSOLVERCLIQUE       "clique"
+#define MATSOLVERKLU          "klu"
+#define MATSOLVERELEMENTAL    "elemental"
 #define MATSOLVERESSL         "essl"
 #define MATSOLVERLUSOL        "lusol"
 #define MATSOLVERMUMPS        "mumps"
@@ -115,9 +118,6 @@ J*/
 #define MATSOLVERCUSPARSE     "cusparse"
 #define MATSOLVERBSTRM        "bstrm"
 #define MATSOLVERSBSTRM       "sbstrm"
-#define MATSOLVERELEMENTAL    "elemental"
-#define MATSOLVERCLIQUE       "clique"
-#define MATSOLVERKLU          "klu"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
