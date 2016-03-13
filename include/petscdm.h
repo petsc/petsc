@@ -151,6 +151,7 @@ PETSC_EXTERN PetscErrorCode DMCreateDomainDecomposition(DM,PetscInt*,char***,IS*
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionScatters(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
 PETSC_EXTERN PetscErrorCode DMGetRefineLevel(DM,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSetRefineLevel(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetCoarsenLevel(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMFinalizePackage(void);
 

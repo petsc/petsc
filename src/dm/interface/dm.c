@@ -1659,6 +1659,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (!dm->ops->refine) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This DM cannot refine");
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
   if (*dmf) {
     (*dmf)->ops->creatematrix = dm->ops->creatematrix;
@@ -1788,6 +1789,32 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *level = dm->levelup;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetRefineLevel"
+/*@
+    DMSetRefineLevel - Set's the number of refinements that have generated this DM.
+
+    Not Collective
+
+    Input Parameter:
++   dm - the DM object
+-   level - number of refinements
+
+    Level: advanced
+
+    Notes: This value is used by PCMG to determine how many multigrid levels to use
+
+.seealso DMCoarsen(), DMGetCoarsenLevel(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
+
+@*/
+PetscErrorCode  DMSetRefineLevel(DM dm,PetscInt level)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->levelup = level;
   PetscFunctionReturn(0);
 }
 
@@ -2324,6 +2351,7 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (!dm->ops->coarsen) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This DM cannot coarsen");
   ierr = PetscLogEventBegin(DM_Coarsen,dm,0,0,0);CHKERRQ(ierr);
   ierr                      = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
   if (!(*dmc)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "NULL coarse mesh produced");
