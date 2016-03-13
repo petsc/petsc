@@ -47,6 +47,7 @@ cdef extern from * nogil:
     PetscMatType MATDAAD
     PetscMatType MATMFFD
     PetscMatType MATNORMAL
+    PetscMatType MATNORMALHERMITIAN
     PetscMatType MATLRC
     PetscMatType MATSCATTER
     PetscMatType MATBLOCKMAT
@@ -62,6 +63,7 @@ cdef extern from * nogil:
     PetscMatType MATSUBMATRIX
     PetscMatType MATLOCALREF
     PetscMatType MATNEST
+    PetscMatType MATPREALLOCATOR
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MATORDERINGNATURAL
@@ -70,6 +72,8 @@ cdef extern from * nogil:
     PetscMatOrderingType MATORDERINGRCM
     PetscMatOrderingType MATORDERINGQMD
     PetscMatOrderingType MATORDERINGROWLENGTH
+    PetscMatOrderingType MATORDERINGWBM
+    PetscMatOrderingType MATORDERINGSPECTRAL
     PetscMatOrderingType MATORDERINGAMD
 
     ctypedef enum PetscMatReuse "MatReuse":
@@ -113,9 +117,7 @@ cdef extern from * nogil:
         MAT_REUSE_MATRIX
 
     ctypedef enum PetscMatOption "MatOption":
-        MAT_NEW_NONZERO_LOCATION_ERR
         MAT_UNUSED_NONZERO_LOCATION_ERR
-        MAT_NEW_NONZERO_ALLOCATION_ERR
         MAT_ROW_ORIENTED
         MAT_SYMMETRIC
         MAT_STRUCTURALLY_SYMMETRIC
@@ -127,7 +129,7 @@ cdef extern from * nogil:
         MAT_USE_INODES
         MAT_HERMITIAN
         MAT_SYMMETRY_ETERNAL
-        MAT_DUMMY
+        MAT_NEW_NONZERO_LOCATION_ERR
         MAT_IGNORE_LOWER_TRIANGULAR
         MAT_ERROR_LOWER_TRIANGULAR
         MAT_GETROW_UPPERTRIANGULAR
@@ -135,6 +137,8 @@ cdef extern from * nogil:
         MAT_NO_OFF_PROC_ZERO_ROWS
         MAT_NO_OFF_PROC_ENTRIES
         MAT_NEW_NONZERO_LOCATIONS
+        MAT_NEW_NONZERO_ALLOCATION_ERR
+        MAT_SUBSET_OFF_PROC_ENTRIES
 
     int MatView(PetscMat,PetscViewer)
     int MatDestroy(PetscMat*)

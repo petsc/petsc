@@ -47,6 +47,7 @@ class MatType(object):
     DAAD            = S_(MATDAAD)
     MFFD            = S_(MATMFFD)
     NORMAL          = S_(MATNORMAL)
+    NORMALHERMITIAN = S_(MATNORMALHERMITIAN)
     LRC             = S_(MATLRC)
     SCATTER         = S_(MATSCATTER)
     BLOCKMAT        = S_(MATBLOCKMAT)
@@ -62,11 +63,10 @@ class MatType(object):
     SUBMATRIX       = S_(MATSUBMATRIX)
     LOCALREF        = S_(MATLOCALREF)
     NEST            = S_(MATNEST)
+    PREALLOCATOR    = S_(MATPREALLOCATOR)
 
 class MatOption(object):
-    NEW_NONZERO_LOCATION_ERR    = MAT_NEW_NONZERO_LOCATION_ERR
     UNUSED_NONZERO_LOCATION_ERR = MAT_UNUSED_NONZERO_LOCATION_ERR
-    NEW_NONZERO_ALLOCATION_ERR  = MAT_NEW_NONZERO_ALLOCATION_ERR
     ROW_ORIENTED                = MAT_ROW_ORIENTED
     SYMMETRIC                   = MAT_SYMMETRIC
     STRUCTURALLY_SYMMETRIC      = MAT_STRUCTURALLY_SYMMETRIC
@@ -78,7 +78,7 @@ class MatOption(object):
     USE_INODES                  = MAT_USE_INODES
     HERMITIAN                   = MAT_HERMITIAN
     SYMMETRY_ETERNAL            = MAT_SYMMETRY_ETERNAL
-    # DUMMY                       = MAT_DUMMY
+    NEW_NONZERO_LOCATION_ERR    = MAT_NEW_NONZERO_LOCATION_ERR
     IGNORE_LOWER_TRIANGULAR     = MAT_IGNORE_LOWER_TRIANGULAR
     ERROR_LOWER_TRIANGULAR      = MAT_ERROR_LOWER_TRIANGULAR
     GETROW_UPPERTRIANGULAR      = MAT_GETROW_UPPERTRIANGULAR
@@ -86,6 +86,8 @@ class MatOption(object):
     NO_OFF_PROC_ZERO_ROWS       = MAT_NO_OFF_PROC_ZERO_ROWS
     NO_OFF_PROC_ENTRIES         = MAT_NO_OFF_PROC_ENTRIES
     NEW_NONZERO_LOCATIONS       = MAT_NEW_NONZERO_LOCATIONS
+    NEW_NONZERO_ALLOCATION_ERR  = MAT_NEW_NONZERO_ALLOCATION_ERR
+    SUBSET_OFF_PROC_ENTRIES     = MAT_SUBSET_OFF_PROC_ENTRIES
 
 class MatAssemblyType(object):
     # native
@@ -117,6 +119,8 @@ class MatOrderingType(object):
     RCM         = S_(MATORDERINGRCM)
     QMD         = S_(MATORDERINGQMD)
     ROWLENGTH   = S_(MATORDERINGROWLENGTH)
+    WBM         = S_(MATORDERINGWBM)
+    SPECTRAL    = S_(MATORDERINGSPECTRAL)
     AMD         = S_(MATORDERINGAMD)
 
 class MatFactorShiftType(object):
@@ -130,15 +134,16 @@ class MatFactorShiftType(object):
     PD = MAT_SHIFT_POSITIVE_DEFINITE
 
 class MatSORType(object):
-    FORWARD_SWEEP        = SOR_FORWARD_SWEEP
-    BACKWARD_SWEEP       = SOR_BACKWARD_SWEEP
-    SYMMETRY_SWEEP       = SOR_SYMMETRIC_SWEEP
-    LOCAL_FORWARD_SWEEP  = SOR_LOCAL_FORWARD_SWEEP
-    LOCAL_BACKWARD_SWEEP = SOR_LOCAL_BACKWARD_SWEEP
-    ZERO_INITIAL_GUESS   = SOR_ZERO_INITIAL_GUESS
-    EISENSTAT            = SOR_EISENSTAT
-    APPLY_UPPER          = SOR_APPLY_UPPER
-    APPLY_LOWER          = SOR_APPLY_LOWER
+    FORWARD_SWEEP         = SOR_FORWARD_SWEEP
+    BACKWARD_SWEEP        = SOR_BACKWARD_SWEEP
+    SYMMETRY_SWEEP        = SOR_SYMMETRIC_SWEEP
+    LOCAL_FORWARD_SWEEP   = SOR_LOCAL_FORWARD_SWEEP
+    LOCAL_BACKWARD_SWEEP  = SOR_LOCAL_BACKWARD_SWEEP
+    LOCAL_SYMMETRIC_SWEEP = SOR_LOCAL_SYMMETRIC_SWEEP
+    ZERO_INITIAL_GUESS    = SOR_ZERO_INITIAL_GUESS
+    EISENSTAT             = SOR_EISENSTAT
+    APPLY_UPPER           = SOR_APPLY_UPPER
+    APPLY_LOWER           = SOR_APPLY_LOWER
 
 # --------------------------------------------------------------------
 
@@ -147,11 +152,11 @@ cdef class Mat(Object):
     Type            = MatType
     Option          = MatOption
     AssemblyType    = MatAssemblyType
+    InfoType        = MatInfoType
     Structure       = MatStructure
     OrderingType    = MatOrderingType
     FactorShiftType = MatFactorShiftType
     SORType         = MatSORType
-    InfoType        = MatInfoType
     #
 
     def __cinit__(self):
