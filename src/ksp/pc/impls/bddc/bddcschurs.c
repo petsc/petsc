@@ -7,24 +7,6 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat,PetscBool,MatReuse,Mat*);
 static PetscErrorCode PCBDDCReuseSolvers_Interior(PC,Vec,Vec);
 static PetscErrorCode PCBDDCReuseSolvers_Correction(PC,Vec,Vec);
 
-/* performs S = S + a * v_2 *v_1^T on the lower-triangular part, n the size of the matrix */
-#undef __FUNCT__
-#define __FUNCT__ "SparseRankOneUpdate"
-PETSC_STATIC_INLINE PetscErrorCode SparseRankOneUpdate(PetscScalar *S,PetscInt n,PetscScalar a,PetscScalar *v1,PetscScalar *v2)
-{
-  PetscInt i;
-
-  PetscFunctionBegin;
-  for (i=0;i<n;i++) {
-    if (PetscUnlikely(PetscAbsScalar(v2[i]) > PETSC_SMALL)) {
-      PetscScalar  v2v = a*v2[i];
-      PetscBLASInt B_N = n-i,B_one = 1;
-      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&B_N,&v2v,v1+i,&B_one,S+i*(n+1),&B_one));
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 /* if v2 is not present, correction is done in-place */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCReuseSolversBenignAdapt"
@@ -1037,9 +1019,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatDenseGetArray(benign_AIIm1_ones_mat,&AIIm1_data);CHKERRQ(ierr);
         for (i=0;i<benign_n;i++) {
           Vec            benign_AIIm1_ones;
-          PetscScalar    *array,sum = 0.;
+          PetscScalar    *array,sum = 0.,one = 1.;
           const PetscInt *idxs;
           PetscInt       j,nz;
+          PetscBLASInt   B_k,B_n;
 
           ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,sizeA,AIIm1_data+sizeA*i,&benign_AIIm1_ones);CHKERRQ(ierr);
           ierr = VecCopy(benign_AIIm1_ones,v);CHKERRQ(ierr);
@@ -1051,13 +1034,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           ierr = ISRestoreIndices(is_p_r[i],&idxs);CHKERRQ(ierr);
           ierr = MatMult(A,benign_AIIm1_ones,v);CHKERRQ(ierr);
           ierr = VecGetArray(v,&array);CHKERRQ(ierr);
-          /* perform sparse rank-1 updates on symmetric Schur (TODO: use dense linear algebra?)*/
-          /* cs_AIB already scaled by 1./nz */;
+          /* perform sparse rank updates on symmetric Schur (TODO: move outside of the loop?) */
+          /* cs_AIB already scaled by 1./nz */
           sum  = -sum;
-          ierr = SparseRankOneUpdate(S_data,size_schur,sum,cs_AIB+i*size_schur,cs_AIB+i*size_schur);CHKERRQ(ierr);
+          B_k = 1;
+          ierr = PetscBLASIntCast(size_schur,&B_n);CHKERRQ(ierr);
+          PetscStackCallBLAS("BLASsyrk",BLASsyrk_("L","N",&B_n,&B_k,&sum,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
           sum  = 1.;
-          ierr = SparseRankOneUpdate(S_data,size_schur,sum,array+n_I,cs_AIB+i*size_schur);CHKERRQ(ierr);
-          ierr = SparseRankOneUpdate(S_data,size_schur,sum,cs_AIB+i*size_schur,array+n_I);CHKERRQ(ierr);
+          PetscStackCallBLAS("BLASsyr2k",BLASsyr2k_("L","N",&B_n,&B_k,&sum,array+n_I,&B_n,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
           ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
           /* set p0 entry of AIIm1_ones to zero */
           ierr = ISGetIndices(is_p_r[i],&idxs);CHKERRQ(ierr);
