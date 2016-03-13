@@ -65,6 +65,8 @@ class BaseTestTSNonlinear(object):
 
     def setUp(self):
         self.ts = PETSc.TS().create(PETSc.COMM_SELF)
+        eft = PETSc.TS.ExactFinalTime.STEPOVER
+        self.ts.setExactFinalTime(eft)
         ptype = PETSc.TS.ProblemType.NONLINEAR
         self.ts.setProblemType(ptype)
         self.ts.setType(self.TYPE)

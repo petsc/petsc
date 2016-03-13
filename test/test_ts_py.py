@@ -70,6 +70,8 @@ class TestTSPython(unittest.TestCase):
     def setUp(self):
         self.ts = PETSc.TS()
         self.ts.createPython(MyTS(), comm=PETSc.COMM_SELF)
+        eft = PETSc.TS.ExactFinalTime.STEPOVER
+        self.ts.setExactFinalTime(eft)
         ctx = self.ts.getPythonContext()
         self.assertEqual(getrefcount(ctx),  3)
         self.assertEqual(ctx.log['create'], 1)
