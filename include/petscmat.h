@@ -32,8 +32,6 @@ typedef const char* MatType;
 #define MATIS              "is"
 #define MATAIJ             "aij"
 #define MATSEQAIJ          "seqaij"
-#define MATSEQAIJPTHREAD   "seqaijpthread"
-#define MATAIJPTHREAD      "aijpthread"
 #define MATMPIAIJ          "mpiaij"
 #define MATAIJCRL          "aijcrl"
 #define MATSEQAIJCRL       "seqaijcrl"
@@ -373,8 +371,6 @@ PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizes(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatSetNThreads(Mat,PetscInt);
-PETSC_EXTERN PetscErrorCode MatGetNThreads(Mat,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode MatMult(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultDiagonalBlock(Mat,Vec,Vec);
