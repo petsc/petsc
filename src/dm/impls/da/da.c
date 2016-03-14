@@ -126,7 +126,7 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMBoundaryType bx,DMBoundaryType by,DM
   Level: intermediate
 
 .keywords:  distributed array, degrees of freedom
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: DMDAGetDof(), DMDACreate(), DMDestroy(), DMDA
 @*/
 PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
 {
@@ -138,6 +138,35 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->w  = dof;
   da->bs = dof;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetDof"
+/*@
+  DMDAGetDof - Gets the number of degrees of freedom per vertex
+
+  Not collective
+
+  Input Parameter:
+. da  - The DMDA
+
+  Output Parameter:
+. dof - Number of degrees of freedom
+
+  Level: intermediate
+
+.keywords:  distributed array, degrees of freedom
+.seealso: DMDASetDof(), DMDACreate(), DMDestroy(), DMDA
+@*/
+PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
+{
+  DM_DA *dd = (DM_DA *) da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidPointer(dof,2);
+  *dof = dd->w;
   PetscFunctionReturn(0);
 }
 
@@ -458,6 +487,35 @@ PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAGetStencilType"
+/*@
+  DMDAGetStencilType - Gets the type of the communication stencil
+
+  Not collective
+
+  Input Parameter:
+. da    - The DMDA
+
+  Output Parameter:
+. stype - The stencil type, use either DMDA_STENCIL_BOX or DMDA_STENCIL_STAR.
+
+  Level: intermediate
+
+.keywords:  distributed array, stencil
+.seealso: DMDACreate(), DMDestroy(), DMDA
+@*/
+PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidPointer(stype,2);
+  *stype = dd->stencil_type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDASetStencilWidth"
 /*@
   DMDASetStencilWidth - Sets the width of the communication stencil
@@ -482,6 +540,35 @@ PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
   PetscValidLogicalCollectiveInt(da,width,2);
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->s = width;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetStencilWidth"
+/*@
+  DMDAGetStencilWidth - Gets the width of the communication stencil
+
+  Not collective
+
+  Input Parameter:
+. da    - The DMDA
+
+  Output Parameter:
+. width - The stencil width
+
+  Level: intermediate
+
+.keywords:  distributed array, stencil
+.seealso: DMDACreate(), DMDestroy(), DMDA
+@*/
+PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
+{
+  DM_DA *dd = (DM_DA *) da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidPointer(width,2);
+  *width = dd->s;
   PetscFunctionReturn(0);
 }
 
