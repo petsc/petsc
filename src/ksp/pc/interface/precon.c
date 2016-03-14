@@ -475,9 +475,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);CHKERRQ(ierr);
   VecLocked(y,3);
 
-  if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-  }
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->apply) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply");
   ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
@@ -521,9 +519,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
-  if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-  }
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->applysymmetricleft) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
   ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
@@ -567,9 +563,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
-  if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-  }
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->applysymmetricright) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
   ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
@@ -614,9 +608,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
-  if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-  }
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->applytranspose) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
   ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
@@ -695,10 +687,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   if (pc->diagonalscale && side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
   if (pc->erroriffailure) {ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);}
 
-  if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-  }
-
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (pc->diagonalscale) {
     if (pc->ops->applyBA) {
       Vec work2; /* this is expensive, but to fix requires a second work vector argument to PCApplyBAorAB() */
@@ -785,10 +774,7 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
   }
   if (side != PC_LEFT && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
 
-  if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-  }
-
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (side == PC_RIGHT) {
     ierr = PCApplyTranspose(pc,x,work);CHKERRQ(ierr);
     ierr = MatMultTranspose(pc->mat,work,y);CHKERRQ(ierr);
@@ -880,9 +866,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   PetscValidHeaderSpecific(w,VEC_CLASSID,4);
   if (b == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"b and y must be different vectors");
-  if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-  }
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!pc->ops->applyrichardson) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply richardson");
   ierr = (*pc->ops->applyrichardson)(pc,b,y,w,rtol,abstol,dtol,its,guesszero,outits,reason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
