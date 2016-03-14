@@ -423,6 +423,8 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
   DM             coordDA;
   Vec            coordinates;
   DMDACoor2d   **coords;
+  Vec            bcv = NULL;
+  PetscScalar  **bcx = NULL;
 
   PetscFunctionBeginUser;
   lambda = user->param;
@@ -434,11 +436,13 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
   hy     = info->ym ? coords[info->ys+1][info->xs].y - coords[info->ys][info->xs].y : 1.0;
   hxdhy  = hx/hy;
   hydhx  = hy/hx;
+  ierr = DMGetNamedLocalVector(info->da, "_petsc_boundary_conditions_", &bcv);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(info->da, bcv, &bcx);CHKERRQ(ierr);
   /* Compute function over the locally owned part of the grid */
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        f[j][i] = 2.0*(hydhx+hxdhy)*vx[j][i];
+        f[j][i] = 2.0*(hydhx+hxdhy)*(vx[j][i] - bcx[j][i]);
       } else {
         x  = PetscRealPart(coords[j][i].x);
         y  = PetscRealPart(coords[j][i].y);
@@ -448,10 +452,10 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
         un = vx[j-1][i];
         us = vx[j+1][i];
 
-        if (i-1 == 0) uw = 0.;
-        if (i+1 == info->mx-1) ue = 0.;
-        if (j-1 == 0) un = 0.;
-        if (j+1 == info->my-1) us = 0.;
+        if (i-1 == 0)          uw = bcx[j][i-1];
+        if (i+1 == info->mx-1) ue = bcx[j][i+1];
+        if (j-1 == 0)          un = bcx[j-1][i];
+        if (j+1 == info->my-1) us = bcx[j+1][i];
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
@@ -459,6 +463,8 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
       }
     }
   }
+  ierr = DMDAVecRestoreArray(info->da, bcv, &bcx);CHKERRQ(ierr);
+  ierr = DMRestoreNamedLocalVector(info->da, "_petsc_boundary_conditions_", &bcv);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -477,6 +483,8 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
   DM             coordDA;
   Vec            coordinates;
   DMDACoor2d   **coords;
+  Vec            bcv = NULL;
+  PetscScalar  **bcx = NULL;
 
   PetscFunctionBeginUser;
   lambda = user->param;
@@ -488,11 +496,13 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
   hy     = info->ym ? coords[info->ys+1][info->xs].y - coords[info->ys][info->xs].y : 1.0;
   hxdhy  = hx/hy;
   hydhx  = hy/hx;
+  ierr = DMGetNamedLocalVector(info->da, "_petsc_boundary_conditions_", &bcv);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(info->da, bcv, &bcx);CHKERRQ(ierr);
   /* Compute function over the locally owned part of the grid */
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        f[j][i] = 2.0*(hydhx+hxdhy)*vx[j][i];
+        f[j][i] = 2.0*(hydhx+hxdhy)*(vx[j][i] - bcx[j][i]);
       } else {
         x  = PetscRealPart(coords[j][i].x);
         y  = PetscRealPart(coords[j][i].y);
@@ -502,10 +512,10 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
         un = vx[j-1][i];
         us = vx[j+1][i];
 
-        if (i-1 == 0) uw = 0.;
-        if (i+1 == info->mx-1) ue = 0.;
-        if (j-1 == 0) un = 0.;
-        if (j+1 == info->my-1) us = 0.;
+        if (i-1 == 0)          uw = bcx[j][i-1];
+        if (i+1 == info->mx-1) ue = bcx[j][i+1];
+        if (j-1 == 0)          un = bcx[j-1][i];
+        if (j+1 == info->my-1) us = bcx[j+1][i];
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
@@ -513,6 +523,8 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
       }
     }
   }
+  ierr = DMDAVecRestoreArray(info->da, bcv, &bcx);CHKERRQ(ierr);
+  ierr = DMRestoreNamedLocalVector(info->da, "_petsc_boundary_conditions_", &bcv);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
