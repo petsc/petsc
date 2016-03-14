@@ -6072,10 +6072,11 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
     ierr = VecGetArray(pcis->vec2_N,&array2);CHKERRQ(ierr);
     for (i=0;i<pcis->n;i++) {
       if (array[i] != 0.0 && array[i] != array2[i]) {
-        PetscInt owned = (PetscInt)PetscRealPart(array[i]);
+        PetscInt owned = (PetscInt)PetscRealPart(array[i]),gi;
         PetscInt neigh = (PetscInt)PetscRealPart(array2[i]);
         set_error = PETSC_TRUE;
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d: local index %d owned by a %d processes instead of %d!\n",PetscGlobalRank,i,owned,neigh);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingApply(pcis->mapping,1,&i,&gi);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d: local index %d (gid %d) owned by %d processes instead of %d!\n",PetscGlobalRank,i,gi,owned,neigh);CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(pcis->vec2_N,&array2);CHKERRQ(ierr);
