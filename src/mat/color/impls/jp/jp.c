@@ -12,7 +12,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringDestroy_JP"
-PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
+static PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 {
   PetscErrorCode ierr;
 
@@ -23,7 +23,7 @@ PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_JP"
-PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOptionsObject,MatColoring mc)
+static PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOptionsObject,MatColoring mc)
 {
   PetscErrorCode ierr;
   MC_JP          *jp = (MC_JP*)mc->data;
@@ -37,7 +37,7 @@ PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOptionsObject
 
 #undef __FUNCT__
 #define __FUNCT__ "MCJPGreatestWeight_Private"
-PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal *weights,PetscReal *maxweights)
+static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal *weights,PetscReal *maxweights)
 {
   MC_JP          *jp = (MC_JP*)mc->data;
   PetscErrorCode ierr;
@@ -142,7 +142,7 @@ PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal *weight
 
 #undef __FUNCT__
 #define __FUNCT__ "MCJPInitialLocalColor_Private"
-PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISColoringValue *colors)
+static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISColoringValue *colors)
 {
   PetscInt       j,i,s,e,n,bidx,cidx,idx,dist,distance=mc->dist;
   Mat            G=mc->mat,dG,oG;
@@ -287,7 +287,7 @@ PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISCo
 
 #undef __FUNCT__
 #define __FUNCT__ "MCJPMinColor_Private"
-PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcolor,const ISColoringValue *colors,ISColoringValue *mincolors)
+static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcolor,const ISColoringValue *colors,ISColoringValue *mincolors)
 {
   MC_JP          *jp = (MC_JP*)mc->data;
   PetscErrorCode ierr;
@@ -424,7 +424,7 @@ PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcolor,cons
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_JP"
-PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
+static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   MC_JP          *jp = (MC_JP*)mc->data;

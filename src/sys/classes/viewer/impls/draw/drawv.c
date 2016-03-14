@@ -4,7 +4,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerDestroy_Draw"
-PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
+static PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
 {
   PetscErrorCode   ierr;
   PetscInt         i;
@@ -28,7 +28,7 @@ PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFlush_Draw"
-PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
+static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 {
   PetscErrorCode   ierr;
   PetscInt         i;

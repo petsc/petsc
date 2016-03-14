@@ -367,7 +367,7 @@ PetscErrorCode TSSSPGetNumStages(TS ts,PetscInt *nstages)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPSetType_SSP"
-PETSC_EXTERN PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
+static PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 {
   PetscErrorCode ierr,(*r)(TS,PetscReal,PetscReal,Vec);
   TS_SSP         *ssp = (TS_SSP*)ts->data;
@@ -382,7 +382,7 @@ PETSC_EXTERN PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPGetType_SSP"
-PetscErrorCode TSSSPGetType_SSP(TS ts,TSSSPType *type)
+static PetscErrorCode TSSSPGetType_SSP(TS ts,TSSSPType *type)
 {
   TS_SSP *ssp = (TS_SSP*)ts->data;
 
@@ -392,7 +392,7 @@ PetscErrorCode TSSSPGetType_SSP(TS ts,TSSSPType *type)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPSetNumStages_SSP"
-PetscErrorCode TSSSPSetNumStages_SSP(TS ts,PetscInt nstages)
+static PetscErrorCode TSSSPSetNumStages_SSP(TS ts,PetscInt nstages)
 {
   TS_SSP *ssp = (TS_SSP*)ts->data;
 
@@ -402,7 +402,7 @@ PetscErrorCode TSSSPSetNumStages_SSP(TS ts,PetscInt nstages)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPGetNumStages_SSP"
-PetscErrorCode TSSSPGetNumStages_SSP(TS ts,PetscInt *nstages)
+static PetscErrorCode TSSSPGetNumStages_SSP(TS ts,PetscInt *nstages)
 {
   TS_SSP *ssp = (TS_SSP*)ts->data;
 

@@ -55,7 +55,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_ASILS"
-PetscErrorCode TaoSetUp_ASILS(Tao tao)
+static PetscErrorCode TaoSetUp_ASILS(Tao tao)
 {
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;

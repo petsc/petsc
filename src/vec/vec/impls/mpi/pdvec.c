@@ -772,7 +772,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_MPI"
-PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
+PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii,isbinary,isdraw;

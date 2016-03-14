@@ -9,7 +9,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringDestroy_Greedy"
-PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
+static PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
 {
   PetscErrorCode ierr;
 
@@ -20,7 +20,7 @@ PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "GreedyColoringLocalDistanceOne_Private"
-PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
+static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
   PetscInt        i,j,k,s,e,n,no,nd,nd_global,n_global,idx,ncols,maxcolors,masksize,ccol,*mask;
   PetscErrorCode  ierr;
@@ -190,11 +190,9 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "GreedyColoringLocalDistanceTwo_Private"
-PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
+static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
   MC_Greedy       *gr = (MC_Greedy *) mc->data;
   PetscInt        i,j,k,l,s,e,n,nd,nd_global,n_global,idx,ncols,maxcolors,mcol,mcol_global,nd1cols,*mask,masksize,*d1cols,*bad,*badnext,nbad,badsize,ccol,no,cbad;
@@ -558,7 +556,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_Greedy"
-PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscoloring)
+static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        finalcolor,finalcolor_global;
@@ -600,7 +598,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_Greedy"
-PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOptionsObject, MatColoring mc)
+static PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOptionsObject, MatColoring mc)
 {
   MC_Greedy     *gr = (MC_Greedy *) mc->data;
   PetscErrorCode ierr;

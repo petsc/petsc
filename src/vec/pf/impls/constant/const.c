@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PFApply_Constant"
-PetscErrorCode PFApply_Constant(void *value,PetscInt n,const PetscScalar *x,PetscScalar *y)
+static PetscErrorCode PFApply_Constant(void *value,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt    i;
   PetscScalar v = ((PetscScalar*)value)[0];
@@ -16,7 +16,7 @@ PetscErrorCode PFApply_Constant(void *value,PetscInt n,const PetscScalar *x,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PFApplyVec_Constant"
-PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
+static PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -44,7 +44,7 @@ PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 }
 #undef __FUNCT__
 #define __FUNCT__ "PFDestroy_Constant"
-PetscErrorCode PFDestroy_Constant(void *value)
+static PetscErrorCode PFDestroy_Constant(void *value)
 {
   PetscErrorCode ierr;
 
@@ -55,7 +55,7 @@ PetscErrorCode PFDestroy_Constant(void *value)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions_Constant"
-PetscErrorCode PFSetFromOptions_Constant(PetscOptionItems *PetscOptionsObject,PF pf)
+static PetscErrorCode PFSetFromOptions_Constant(PetscOptionItems *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
   PetscScalar    *value = (PetscScalar*)pf->data;
@@ -101,7 +101,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF pf,PetscErrorCode (*function)(void
 /* -------------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PFApply_Identity"
-PetscErrorCode PFApply_Identity(void *value,PetscInt n,const PetscScalar *x,PetscScalar *y)
+static PetscErrorCode PFApply_Identity(void *value,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i;
 
@@ -113,7 +113,7 @@ PetscErrorCode PFApply_Identity(void *value,PetscInt n,const PetscScalar *x,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PFApplyVec_Identity"
-PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
+static PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -123,7 +123,7 @@ PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 }
 #undef __FUNCT__
 #define __FUNCT__ "PFView_Identity"
-PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
+static PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -137,7 +137,7 @@ PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
 }
 #undef __FUNCT__
 #define __FUNCT__ "PFDestroy_Identity"
-PetscErrorCode PFDestroy_Identity(void *value)
+static PetscErrorCode PFDestroy_Identity(void *value)
 {
   PetscErrorCode ierr;
 

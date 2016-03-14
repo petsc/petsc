@@ -43,8 +43,8 @@ PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetNSmooths_GAMG"
-PetscErrorCode PCGAMGSetNSmooths_GAMG(PC pc, PetscInt n)
+#define __FUNCT__ "PCGAMGSetNSmooths_AGG"
+static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 {
   PC_MG       *mg          = (PC_MG*)pc->data;
   PC_GAMG     *pc_gamg     = (PC_GAMG*)mg->innerctx;
@@ -85,8 +85,8 @@ PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetSymGraph_GAMG"
-PetscErrorCode PCGAMGSetSymGraph_GAMG(PC pc, PetscBool n)
+#define __FUNCT__ "PCGAMGSetSymGraph_AGG"
+static PetscErrorCode PCGAMGSetSymGraph_AGG(PC pc, PetscBool n)
 {
   PC_MG       *mg          = (PC_MG*)pc->data;
   PC_GAMG     *pc_gamg     = (PC_GAMG*)mg->innerctx;
@@ -127,8 +127,8 @@ PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscInt n)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetSquareGraph_GAMG"
-PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscInt n)
+#define __FUNCT__ "PCGAMGSetSquareGraph_AGG"
+static PetscErrorCode PCGAMGSetSquareGraph_AGG(PC pc, PetscInt n)
 {
   PC_MG       *mg          = (PC_MG*)pc->data;
   PC_GAMG     *pc_gamg     = (PC_GAMG*)mg->innerctx;
@@ -148,7 +148,7 @@ PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscInt n)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG_AGG"
-PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)pc->data;
@@ -186,7 +186,7 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsObject,PC
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCDestroy_GAMG_AGG"
-PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
+static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)pc->data;
@@ -630,7 +630,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetData_AGG"
-PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
+static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 {
   PetscErrorCode ierr;
   PC_MG          *mg      = (PC_MG*)pc->data;
@@ -883,7 +883,7 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGraph_AGG"
-PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
+static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
 {
   PetscErrorCode            ierr;
   PC_MG                     *mg          = (PC_MG*)pc->data;
@@ -923,7 +923,7 @@ PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGCoarsen_AGG"
-PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lists)
+static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lists)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)a_pc->data;
@@ -1027,7 +1027,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
  */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGProlongator_AGG"
-PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *agg_lists,Mat *a_P_out)
+static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *agg_lists,Mat *a_P_out)
 {
   PC_MG          *mg       = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg  = (PC_GAMG*)mg->innerctx;
@@ -1173,7 +1173,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGOptProlongator_AGG"
-PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
+static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)pc->data;
@@ -1287,6 +1287,9 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   pc_gamg->ops->createdefaultdata = PCSetData_AGG;
   pc_gamg->ops->view              = PCView_GAMG_AGG;
 
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNSmooths_C",PCGAMGSetNSmooths_AGG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetSymGraph_C",PCGAMGSetSymGraph_AGG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetSquareGraph_C",PCGAMGSetSquareGraph_AGG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_AGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

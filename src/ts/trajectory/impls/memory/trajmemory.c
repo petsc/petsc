@@ -1753,7 +1753,7 @@ PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryDestroy_Memory"
-PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
+static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
   PetscErrorCode ierr;

@@ -102,7 +102,7 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_Spectral"
-PETSC_EXTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type, IS *row, IS *col)
+PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type, IS *row, IS *col)
 {
   Mat             L;
   PetscInt       *perm, tmp;
