@@ -380,7 +380,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   ilu->col                              = 0;
   ilu->row                              = 0;
   ilu->inplace                          = PETSC_FALSE;
-  ierr                                  = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
   ierr                                  = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ilu->reuseordering                    = PETSC_FALSE;
   ((PC_Factor*)ilu)->info.dt            = PETSC_DEFAULT;

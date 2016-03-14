@@ -2836,6 +2836,7 @@ struct _n_PetscSubcomm {
   PetscMPIInt      color;            /* color of processors belong to this communicator */
   PetscMPIInt      *subsize;         /* size of subcommunicator[color] */
   PetscSubcommType type;
+  char             *subcommprefix;
 };
 
 PETSC_STATIC_INLINE MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
@@ -2848,6 +2849,7 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetType(PetscSubcomm,PetscSubcommType);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt);
 PETSC_EXTERN PetscErrorCode PetscSubcommView(PetscSubcomm,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm);
+PETSC_EXTERN PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm,const char[]);
 
 /*S
    PetscSegBuffer - a segmented extendable buffer
