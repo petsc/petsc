@@ -16,6 +16,9 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
+#if defined(PETSC_HAVE_CUDA)
+#include <cuda_runtime.h>
+#endif
 
 /* ------------------------Nasty global variables -------------------------------*/
 /*
