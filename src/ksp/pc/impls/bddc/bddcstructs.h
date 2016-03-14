@@ -12,6 +12,7 @@
 
 /* Structure for local graph partitioning */
 struct _PCBDDCGraph {
+  PetscBool              setupcalled;
   /* graph information */
   ISLocalToGlobalMapping l2gmap;
   PetscInt               nvtxs;
@@ -34,8 +35,8 @@ struct _PCBDDCGraph {
   PetscBool              queue_sorted;
   /* data for interface subsets */
   PetscInt               n_subsets;
-  PetscInt               *subsets_size;
-  PetscInt               **subsets;
+  PetscInt               *subset_size;
+  PetscInt               **subset_idxs;
   PetscInt               *subset_ncc;
   PetscInt               *subset_ref_node;
   /* data for periodic dofs */
