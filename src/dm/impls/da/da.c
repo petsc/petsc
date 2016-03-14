@@ -119,7 +119,7 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMBoundaryType bx,DMBoundaryType by,DM
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + da  - The DMDA
 - dof - Number of degrees of freedom
 
