@@ -249,10 +249,6 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CUDA)
-#include <driver_types.h>
-#endif
-
 #if defined(PETSC_USE_LOG)
 extern PetscBool   PetscObjectsLog;
 #endif
