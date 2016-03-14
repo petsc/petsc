@@ -8,8 +8,6 @@ cdef extern from * nogil:
     PetscMatType MATIS
     PetscMatType MATAIJ
     PetscMatType   MATSEQAIJ
-    PetscMatType   MATSEQAIJPTHREAD
-    PetscMatType   MATAIJPTHREAD
     PetscMatType   MATMPIAIJ
     PetscMatType     MATAIJCRL
     PetscMatType       MATSEQAIJCRL

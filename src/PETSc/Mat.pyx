@@ -8,8 +8,6 @@ class MatType(object):
     IS              = S_(MATIS)
     AIJ             = S_(MATAIJ)
     SEQAIJ          = S_(MATSEQAIJ)
-    SEQAIJPTHREAD   = S_(MATSEQAIJPTHREAD)
-    AIJPTHREAD      = S_(MATAIJPTHREAD)
     MPIAIJ          = S_(MATMPIAIJ)
     AIJCRL          = S_(MATAIJCRL)
     SEQAIJCRL       = S_(MATSEQAIJCRL)
