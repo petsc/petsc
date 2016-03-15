@@ -11,6 +11,9 @@
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
 #include <cuda_runtime.h>
+#include <thrust/device_ptr.h>
+#include <thrust/transform.h>
+#include <thrust/functional.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck"
@@ -229,47 +232,34 @@ PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
   PetscFunctionReturn(0);
 }
 
-//
-// CUDA kernel for PointwiseDivide to follow
-//
-
-// set work group size to be a power of 2 (128 is usually a good compromise between portability and speed)
-#define DEFAULT_WORKGROUP_SIZE 128
-#define DEFAULT_WORKGROUP_NUM  128
-
-__global__ void VecPointwiseDivide_SeqCUDA_kernel(PetscScalar *w,PetscScalar *x,PetscScalar *y,PetscInt size) {
-  PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
-  entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
-  PetscInt vec_start_index = blockIdx.x * entries_per_group;
-  PetscInt vec_stop_index  = PetscMin((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
-
-  for (PetscInt i = vec_start_index + threadIdx.x; i < vec_stop_index; i += blockDim.x) {
-    w[i] = x[i] / y[i];
-  }
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "VecPointwiseDivide_SeqCUDA"
 PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
 {
-  PetscScalar    *warray=NULL,*xarray=NULL,*yarray=NULL;
-  PetscInt       n = xin->map->n;
-  PetscErrorCode ierr;
+  PetscInt                        n = xin->map->n;
+  PetscScalar                     *warray=NULL,*xarray=NULL,*yarray=NULL;
+  thrust::device_ptr<PetscScalar> wptr,xptr,yptr;
+  PetscErrorCode                  ierr;
 
   PetscFunctionBegin;
+  ierr = VecCUDAGetArrayWrite(win,&warray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(yin,&yarray);CHKERRQ(ierr);
-  ierr = VecCUDAGetArrayWrite(win,&warray);CHKERRQ(ierr);
-  VecPointwiseDivide_SeqCUDA_kernel<<<DEFAULT_WORKGROUP_NUM,DEFAULT_WORKGROUP_SIZE>>>(warray,xarray,yarray,n);
-  ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+  try {
+    wptr = thrust::device_pointer_cast(warray);
+    xptr = thrust::device_pointer_cast(xarray);
+    yptr = thrust::device_pointer_cast(yarray);
+    thrust::transform(xptr,xptr+n,yptr,wptr,thrust::divides<PetscScalar>());
+    ierr = WaitForGPU();CHKERRCUDA(ierr);
+  } catch (char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+  }
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(yin,&yarray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(win,&warray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef DEFAULT_WORKGROUP_SIZE
-#undef DEFAULT_WORKGROUP_NUM
 
 #undef __FUNCT__
 #define __FUNCT__ "VecWAXPY_SeqCUDA"
@@ -766,47 +756,32 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
 #undef MDOT_WORKGROUP_SIZE
 #undef MDOT_WORKGROUP_NUM
 
-//
-// CUDA kernel for VecSet_SeqCUDA to follow
-//
-
-// set work group size to be a power of 2 (128 is usually a good compromise between portability and speed)
-#define DEFAULT_WORKGROUP_SIZE 128
-#define DEFAULT_WORKGROUP_NUM  128
-
-__global__ void VecSet_SeqCUDA_kernel(PetscScalar *x,PetscScalar alpha,PetscInt size) {
-  PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
-  entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
-  PetscInt vec_start_index = blockIdx.x * entries_per_group;
-  PetscInt vec_stop_index  = PetscMin((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
-
-  for (PetscInt i = vec_start_index + threadIdx.x; i < vec_stop_index; i += blockDim.x) {
-    x[i] = alpha;
-  }
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "VecSet_SeqCUDA"
 PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
 {
-  PetscScalar    *xarray=NULL;
-  PetscErrorCode ierr;
-  cudaError_t    err;
+  PetscInt                        n = xin->map->n;
+  PetscScalar                     *xarray=NULL;
+  thrust::device_ptr<PetscScalar> xptr;
+  PetscErrorCode                  ierr;
+  cudaError_t                     err;
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArrayWrite(xin,&xarray);CHKERRQ(ierr);
   if (alpha == (PetscScalar)0.0) {
-    err = cudaMemset(xarray,alpha,xin->map->n*sizeof(PetscScalar));CHKERRCUDA(err);
+    err = cudaMemset(xarray,alpha,n*sizeof(PetscScalar));CHKERRCUDA(err);
   } else {
-    VecSet_SeqCUDA_kernel<<<DEFAULT_WORKGROUP_NUM,DEFAULT_WORKGROUP_SIZE>>>(xarray,alpha,xin->map->n);
+    try {
+      xptr = thrust::device_pointer_cast(xarray);
+      thrust::fill(xptr,xptr+n,alpha);
+    } catch (char *ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    }
   }
   ierr = WaitForGPU();CHKERRCUDA(ierr);
   ierr = VecCUDARestoreArrayWrite(xin,&xarray);
   PetscFunctionReturn(0);
 }
-
-#undef DEFAULT_WORKGROUP_SIZE
-#undef DEFAULT_WORKGROUP_NUM
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScale_SeqCUDA"
@@ -996,48 +971,34 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
   PetscFunctionReturn(0);
 }
 
-//
-// CUDA kernel for PointwiseMult to follow
-//
-
-// set work group size to be a power of 2 (128 is usually a good compromise between portability and speed)
-#define DEFAULT_WORKGROUP_SIZE 128
-#define DEFAULT_WORKGROUP_NUM  128
-
-__global__ void VecPointwiseMult_SeqCUDA_kernel(PetscScalar *w,PetscScalar *x,PetscScalar *y,PetscInt size) {
-  PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
-  entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
-  PetscInt vec_start_index = blockIdx.x * entries_per_group;
-  PetscInt vec_stop_index  = PetscMin((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
-
-  for (PetscInt i = vec_start_index + threadIdx.x; i < vec_stop_index; i += blockDim.x) {
-    w[i] = x[i] * y[i];
-  }
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMult_SeqCUDA"
 PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
 {
+  PetscInt                        n = win->map->n;
+  PetscScalar                     *warray,*xarray,*yarray;
+  thrust::device_ptr<PetscScalar> wptr,xptr,yptr;
   PetscErrorCode ierr;
-  PetscInt       n = win->map->n;
-  PetscScalar    *xarray,*yarray,*warray;
 
   PetscFunctionBegin;
+  ierr = VecCUDAGetArrayReadWrite(win,&warray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(yin,&yarray);CHKERRQ(ierr);
-  ierr = VecCUDAGetArrayReadWrite(win,&warray);CHKERRQ(ierr);
-  VecPointwiseMult_SeqCUDA_kernel<<<DEFAULT_WORKGROUP_NUM,DEFAULT_WORKGROUP_SIZE>>>(warray,xarray,yarray,n);
+  try {
+    wptr = thrust::device_pointer_cast(warray);
+    xptr = thrust::device_pointer_cast(xarray);
+    yptr = thrust::device_pointer_cast(yarray);
+    thrust::transform(xptr,xptr+n,yptr,wptr,thrust::multiplies<PetscScalar>());
+    ierr = WaitForGPU();CHKERRCUDA(ierr);
+  } catch (char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+  }
   ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(yin,&yarray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayReadWrite(win,&warray);CHKERRQ(ierr);
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
-  ierr = WaitForGPU();CHKERRCUDA(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef DEFAULT_WORKGROUP_SIZE
-#undef DEFAULT_WORKGROUP_NUM
 
 /* should do infinity norm in cuda */
 
@@ -1117,46 +1078,42 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
   PetscFunctionReturn(0);
 }
 
-//
-// CUDA kernel for Conjugate to follow
-//
-
-// set work group size to be a power of 2 (128 is usually a good compromise between portability and speed)
-#define DEFAULT_WORKGROUP_SIZE 128
-#define DEFAULT_WORKGROUP_NUM  128
-
-__global__ void VecConjugate_SeqCUDA_kernel(PetscScalar *x,PetscInt size) {
-  PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
-  entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
-  PetscInt vec_start_index = blockIdx.x * entries_per_group;
-  PetscInt vec_stop_index  = PetscMin((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
-
-  for (PetscInt i = vec_start_index + threadIdx.x; i < vec_stop_index; i += blockDim.x) {
-    x[i] = PetscConj(x[i]);
-  }
-}
+#if defined(PETSC_USE_COMPLEX)
+struct conjugate
+{
+  __host__ __device__
+    PetscScalar operator()(PetscScalar x)
+    {
+      return PetscConj(x);
+    }
+};
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecConjugate_SeqCUDA"
 PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *xarray;
+  PetscScalar                     *xarray;
+  PetscErrorCode                  ierr;
 #if defined(PETSC_USE_COMPLEX)
-  PetscInt       n = xin->map->n;
+  PetscInt                        n = xin->map->n;
+  thrust::device_ptr<PetscScalar> xptr;
 #endif
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-  VecConjugate_SeqCUDA_kernel<<<DEFAULT_WORKGROUP_NUM,DEFAULT_WORKGROUP_SIZE>>>(xarray,n);
+  try {
+    xptr = thrust::device_pointer_cast(xarray);
+    thrust::transform(xptr,xptr+n,xptr,conjugate());
+    ierr = WaitForGPU();CHKERRCUDA(ierr);
+  } catch (char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+  }
 #endif
   ierr = VecCUDARestoreArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef DEFAULT_WORKGROUP_SIZE
-#undef DEFAULT_WORKGROUP_NUM
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetLocalVector_SeqCUDA"
