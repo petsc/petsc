@@ -14,7 +14,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c ex7.c \
                 ex25.c ex28.c ex30.c ex33.c \
                 ex35.c ex42.c ex46.c ex48.c \
                 ex58.c ex59.c \
-                ex62.c ex70.c \
+                ex62.c ex70.c ex77.c\
                 ex47cu.cu
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex40f90.F90 ex74f.F90
 EXAMPLESCH	 =
@@ -239,6 +239,9 @@ ex73f90t: ex73f90t.o  chkopts
 ex74f: ex74f.o  chkopts
 	-${FLINKER} -o ex74f ex74f.o ${PETSC_SNES_LIB}
 #	${RM} ex74f.o
+ex77: ex77.o  chkopts
+	-${CLINKER} -o ex77 ex77.o ${PETSC_SNES_LIB}
+	${RM} ex77.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \
