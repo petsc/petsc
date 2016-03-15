@@ -276,30 +276,18 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscDrawMovieSave(const char[],PetscInt,const char[],PetscInt,const char[]);
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawDestroy_Private"
 static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 {
-  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  if (draw->savefilename && draw->savemovieext) {
-    if (!rank) {
-      const char *fname = draw->savefilename;
-      const char *imext = draw->saveimageext;
-      const char *mvext = draw->savemovieext;
-      ierr = PetscDrawMovieSave(fname,draw->savefilecount,imext,draw->savemoviefps,mvext);CHKERRQ(ierr);
-    }
-    ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
-  }
+  ierr = PetscDrawSaveMovie(draw);CHKERRQ(ierr);
   if (draw->savefinalfilename) {
     draw->savesinglefile = PETSC_TRUE;
-    ierr = PetscDrawSetSave(draw,draw->savefinalfilename,NULL);CHKERRQ(ierr);
+    ierr = PetscDrawSetSave(draw,draw->savefinalfilename);CHKERRQ(ierr);
     ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   }
   ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
