@@ -301,6 +301,7 @@ PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM dm, PetscReal time, DMLabel l
       PetscInt        n, p;
 
       ierr = DMLabelGetStratumIS(label, ids[i], &pointIS);CHKERRQ(ierr);
+      if (!pointIS) continue; /* No points with that id on this process */
       ierr = ISGetLocalSize(pointIS, &n);CHKERRQ(ierr);
       ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
       for (p = 0; p < n; ++p) {

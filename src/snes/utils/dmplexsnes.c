@@ -1556,6 +1556,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Vec
     for (v = 0; v < numValues; ++v) {
       ierr = DMLabelGetStratumSize(label, values[v], &numPoints);CHKERRQ(ierr);
       ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
+      if (!pointIS) continue; /* No points with that id on this process */
       ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
       for (p = 0, numFaces = 0; p < numPoints; ++p) {
         ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
@@ -2354,6 +2355,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     for (v = 0; v < numValues; ++v) {
       ierr = DMLabelGetStratumSize(label, values[v], &numPoints);CHKERRQ(ierr);
       ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
+      if (!pointIS) continue; /* No points with that id on this process */
       ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
       for (p = 0, numFaces = 0; p < numPoints; ++p) {
         ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
