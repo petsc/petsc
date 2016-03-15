@@ -445,35 +445,37 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
 
       ierr = DMGetStratumIS(*dm, "boundary", 1,  &is);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
-      ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
+      if (is) {
+        ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
+        ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
 
-      ierr = DMCreateLabel(*dm, "Faces");CHKERRQ(ierr);
+        ierr = DMCreateLabel(*dm, "Faces");CHKERRQ(ierr);
 
-      ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
-      ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
-      ierr = DMGetDefaultSection(cdm, &cs);
+        ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
+        ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
+        ierr = DMGetDefaultSection(cdm, &cs);
 
-      /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
-      PetscReal faceCoord;
-      PetscInt  v;
-      for (f = 0; f < Nf; ++f) {
-        ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
-        /* Calculate mean coordinate vector */
-        const PetscInt Nv = csize/dim;
-        for (d = 0; d < dim; ++d) {
-          faceCoord = 0.0;
-          for (v = 0; v < Nv; ++v) faceCoord += coords[v*dim+d];
-          faceCoord /= Nv;
-          for (b = 0; b < 2; ++b) {
-            if (PetscAbs(faceCoord - b*1.0) < PETSC_SMALL) {
-              ierr = DMSetLabelValue(*dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
+        /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
+        PetscReal faceCoord;
+        PetscInt  v;
+        for (f = 0; f < Nf; ++f) {
+          ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
+          /* Calculate mean coordinate vector */
+          const PetscInt Nv = csize/dim;
+          for (d = 0; d < dim; ++d) {
+            faceCoord = 0.0;
+            for (v = 0; v < Nv; ++v) faceCoord += coords[v*dim+d];
+            faceCoord /= Nv;
+            for (b = 0; b < 2; ++b) {
+              if (PetscAbs(faceCoord - b*1.0) < PETSC_SMALL) {
+                ierr = DMSetLabelValue(*dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
+              }
             }
           }
+          ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
         }
-        ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
+        ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
       }
-      ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
       /* Distribute mesh over processes */
       ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
       if (distributedMesh) {
