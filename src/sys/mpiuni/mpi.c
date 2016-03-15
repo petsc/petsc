@@ -40,6 +40,7 @@ typedef struct {
 
 static MPI_Attr_keyval attr_keyval[MAX_ATTR];
 static MPI_Attr        attr[MAX_COMM][MAX_ATTR];
+static int             comm_active[MAX_COMM];
 static int             num_attr = 1,mpi_tag_ub = 100000000;
 static void*           MPIUNIF_mpi_in_place = 0;
 
@@ -124,7 +125,15 @@ int MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 
 int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 {
+  int j;
   if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  for (j=3; j<MaxComm; j++) {
+    if (!comm_active[j-1]) {
+      comm_active[j-1] = 1;
+      *newcomm = j;
+      return MPI_SUCCESS;
+    }
+  }
   if (MaxComm > MAX_COMM) return MPI_FAILURE;
   *newcomm =  MaxComm++;
   return MPI_SUCCESS;
@@ -132,7 +141,15 @@ int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 
 int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
+  int j;
   if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  for (j=3; j<MaxComm; j++) {
+    if (!comm_active[j-1]) {
+      comm_active[j-1] = 1;
+      *out = j;
+      return MPI_SUCCESS;
+    }
+  }
   if (MaxComm > MAX_COMM) return MPI_FAILURE;
   *out = MaxComm++;
   return 0;
@@ -148,6 +165,7 @@ int MPI_Comm_free(MPI_Comm *comm)
     attr[*comm-1][i].active        = 0;
     attr[*comm-1][i].attribute_val = 0;
   }
+  if (*comm >= 3) comm_active[*comm-1] = 0;
   *comm = 0;
   return MPI_SUCCESS;
 }

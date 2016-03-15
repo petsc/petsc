@@ -3336,12 +3336,12 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
   if (section) {
     PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
     ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)section),&result);CHKERRQ(ierr);
-    if (result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint section must have local communicator");
+    if (result != MPI_CONGRUENT && result != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint section must have local communicator");
   }
   if (mat) {
     PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
     ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)mat),&result);CHKERRQ(ierr);
-    if (result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint matrix must have local communicator");
+    if (result != MPI_CONGRUENT && result != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint matrix must have local communicator");
   }
   ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&dm->defaultConstraintSection);CHKERRQ(ierr);
