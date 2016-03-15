@@ -12,7 +12,6 @@ typedef struct {
   Vec        x,y;           /* work space for matrix vector product */
   PetscBool  pure_neumann;
   PetscSF    sf;
-  PetscInt   sf_nroots,sf_nleaves;
   PetscInt   *sf_rootdata,*sf_leafdata;
 } Mat_IS;
 
