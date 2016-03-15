@@ -2,6 +2,7 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
+#include <petsc/private/sfimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCBenignMatMult_Private_Private"
@@ -678,21 +679,21 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
 
     /* decide which of the sharing ranks (per dof) has to insert the values (should just be a matter of having a different orientation) */
     ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
-    for (i=0;i<matis->sf_nroots;i++) matis->sf_rootdata[i] = -1;
-    for (i=0;i<matis->sf_nleaves;i++) matis->sf_leafdata[i] = PetscGlobalRank;
+    for (i=0;i<matis->sf->nroots;i++) matis->sf_rootdata[i] = -1;
+    for (i=0;i<matis->sf->nleaves;i++) matis->sf_leafdata[i] = PetscGlobalRank;
     ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_MAX);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_MAX);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
     ierr = VecGetArray(matis->y,&pvals);CHKERRQ(ierr);
-    for (i=0;i<matis->sf_nleaves;i++) {
+    for (i=0;i<matis->sf->nleaves;i++) {
       if (PetscGlobalRank != matis->sf_leafdata[i]) {
         pvals[i] = 0.;
       }
     }
-    ierr = PetscMalloc1(matis->sf_nleaves,&dummyins);CHKERRQ(ierr);
-    for (i=0;i<matis->sf_nleaves;i++) dummyins[i] = i;
-    ierr = VecSetValuesLocal(quad_vec,matis->sf_nleaves,dummyins,pvals,ADD_VALUES);CHKERRQ(ierr);
+    ierr = PetscMalloc1(matis->sf->nleaves,&dummyins);CHKERRQ(ierr);
+    for (i=0;i<matis->sf->nleaves;i++) dummyins[i] = i;
+    ierr = VecSetValuesLocal(quad_vec,matis->sf->nleaves,dummyins,pvals,ADD_VALUES);CHKERRQ(ierr);
     ierr = VecRestoreArray(matis->y,&pvals);CHKERRQ(ierr);
     ierr = PetscFree(dummyins);CHKERRQ(ierr);
 
@@ -4777,6 +4778,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
     }
     *n_subdomains = active_procs;
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),issize,&isidx,PETSC_COPY_VALUES,is_sends);CHKERRQ(ierr);
+    ierr = PetscFree(procs_candidates);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscOptionsGetBool(NULL,NULL,"-matis_partitioning_use_square",&use_square,NULL);CHKERRQ(ierr);
