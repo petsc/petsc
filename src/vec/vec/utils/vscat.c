@@ -1973,9 +1973,11 @@ PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBo
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VECCUDA)
+
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterInitializeForGPU"
-/*@
+/*@C
    VecScatterInitializeForGPU - Initializes a generalized scatter from one vector
    to another for GPU based computation.
 
@@ -1999,12 +2001,9 @@ PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBo
 
 .seealso: VecScatterFinalizeForGPU(), VecScatterCreate(), VecScatterEnd()
 @*/
-PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mode)
+PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mode)
 {
-#if defined(PETSC_HAVE_VIENNACL) || !(defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VECCUDA))
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This function requires CUSP or CUDA");
-#else
   VecScatter_MPI_General *to,*from;
   PetscErrorCode         ierr;
   PetscInt               i,*indices,*sstartsSends,*sstartsRecvs,nrecvs,nsends,bs;
@@ -2073,12 +2072,11 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
     }
   }
   PetscFunctionReturn(0);
-#endif
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterFinalizeForGPU"
-/*@
+/*@C
    VecScatterFinalizeForGPU - Finalizes a generalized scatter from one vector to
    another for GPU based computation.
 
@@ -2095,8 +2093,11 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
 
 .seealso: VecScatterInitializeForGPU(), VecScatterCreate(), VecScatterEnd()
 @*/
-PetscErrorCode  VecScatterFinalizeForGPU(VecScatter inctx)
+PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter inctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+
+#endif
+
