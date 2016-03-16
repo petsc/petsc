@@ -22,7 +22,7 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers ctx, Vec v, Vec 
     PetscInt n_I,size_schur;
 
     /* get sizes */
-    ierr = MatGetSize(ctx->benign_csAIB,NULL,&size_schur);CHKERRQ(ierr);
+    ierr = MatGetSize(ctx->benign_csAIB,&size_schur,NULL);CHKERRQ(ierr);
     ierr = VecGetSize(v,&n_I);CHKERRQ(ierr);
     n_I = n_I - size_schur;
     /* get schur sol from array */
@@ -30,7 +30,7 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers ctx, Vec v, Vec 
     ierr = VecPlaceArray(ctx->benign_dummy_schur_vec,array+n_I);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
     /* apply interior sol correction */
-    ierr = MatMult(ctx->benign_csAIB,ctx->benign_dummy_schur_vec,ctx->benign_corr_work);CHKERRQ(ierr);
+    ierr = MatMultTranspose(ctx->benign_csAIB,ctx->benign_dummy_schur_vec,ctx->benign_corr_work);CHKERRQ(ierr);
     ierr = VecResetArray(ctx->benign_dummy_schur_vec);CHKERRQ(ierr);
     ierr = MatMultAdd(ctx->benign_AIIm1ones,ctx->benign_corr_work,v,v);CHKERRQ(ierr);
   }
@@ -87,7 +87,7 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers ctx, Vec v, Vec 
     PetscInt n_I,size_schur;
 
     /* get sizes */
-    ierr = MatGetSize(ctx->benign_csAIB,NULL,&size_schur);CHKERRQ(ierr);
+    ierr = MatGetSize(ctx->benign_csAIB,&size_schur,NULL);CHKERRQ(ierr);
     ierr = VecGetSize(v,&n_I);CHKERRQ(ierr);
     n_I = n_I - size_schur;
     /* compute schur rhs correction */
@@ -101,7 +101,7 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers ctx, Vec v, Vec 
     ierr = VecGetArrayRead(usedv,(const PetscScalar**)&array);CHKERRQ(ierr);
     ierr = VecPlaceArray(ctx->benign_dummy_schur_vec,array+n_I);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(usedv,(const PetscScalar**)&array);CHKERRQ(ierr);
-    ierr = MatMultTransposeAdd(ctx->benign_csAIB,ctx->benign_corr_work,ctx->benign_dummy_schur_vec,ctx->benign_dummy_schur_vec);CHKERRQ(ierr);
+    ierr = MatMultAdd(ctx->benign_csAIB,ctx->benign_corr_work,ctx->benign_dummy_schur_vec,ctx->benign_dummy_schur_vec);CHKERRQ(ierr);
     ierr = VecResetArray(ctx->benign_dummy_schur_vec);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -915,7 +915,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatCreateVecs(A,&v,NULL);CHKERRQ(ierr);
       ierr = VecGetSize(v,&sizeA);CHKERRQ(ierr);
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,sizeA,benign_n,NULL,&benign_AIIm1_ones_mat);CHKERRQ(ierr);
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,benign_n,size_schur,NULL,&cs_AIB_mat);CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(PETSC_COMM_SELF,size_schur,benign_n,NULL,&cs_AIB_mat);CHKERRQ(ierr);
       ierr = MatDenseGetArray(cs_AIB_mat,&cs_AIB);CHKERRQ(ierr);
       ierr = MatDenseGetArray(benign_AIIm1_ones_mat,&AIIm1_data);CHKERRQ(ierr);
       ierr = PetscMalloc1(benign_n,&is_p_r);CHKERRQ(ierr);
@@ -1029,14 +1029,13 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           ierr = MatSolve(F,v,benign_AIIm1_ones);CHKERRQ(ierr);
           ierr = ISGetLocalSize(is_p_r[i],&nz);CHKERRQ(ierr);
           ierr = ISGetIndices(is_p_r[i],&idxs);CHKERRQ(ierr);
-          for (j=0;j<nz;j++) sum += AIIm1_data[idxs[j]+sizeA*i];
-          sum -= 1.; /* p0 dof (eliminated) is excluded from the sum */
+          /* p0 dof (eliminated) is excluded from the sum */
+          for (j=0;j<nz-1;j++) sum -= AIIm1_data[idxs[j]+sizeA*i];
           ierr = ISRestoreIndices(is_p_r[i],&idxs);CHKERRQ(ierr);
           ierr = MatMult(A,benign_AIIm1_ones,v);CHKERRQ(ierr);
           ierr = VecGetArray(v,&array);CHKERRQ(ierr);
           /* perform sparse rank updates on symmetric Schur (TODO: move outside of the loop?) */
           /* cs_AIB already scaled by 1./nz */
-          sum  = -sum;
           B_k = 1;
           ierr = PetscBLASIntCast(size_schur,&B_n);CHKERRQ(ierr);
           PetscStackCallBLAS("BLASsyrk",BLASsyrk_("L","N",&B_n,&B_k,&sum,cs_AIB+i*size_schur,&B_n,&one,S_data,&B_n));
@@ -1045,7 +1044,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
           /* set p0 entry of AIIm1_ones to zero */
           ierr = ISGetIndices(is_p_r[i],&idxs);CHKERRQ(ierr);
-          AIIm1_data[idxs[nz-1]+sizeA*i] = 0.;
+          for (j=0;j<benign_n;j++) AIIm1_data[idxs[nz-1]+sizeA*j] = 0.;
           ierr = ISRestoreIndices(is_p_r[i],&idxs);CHKERRQ(ierr);
           ierr = VecDestroy(&benign_AIIm1_ones);CHKERRQ(ierr);
         }
@@ -1158,7 +1157,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         msolv_ctx->benign_zerodiag_subs = is_p_r;
         ierr = PetscMalloc1(benign_n,&msolv_ctx->benign_save_vals);CHKERRQ(ierr);
         msolv_ctx->benign_csAIB = cs_AIB_mat;
-        ierr = MatCreateVecs(cs_AIB_mat,NULL,&msolv_ctx->benign_corr_work);CHKERRQ(ierr);
+        ierr = MatCreateVecs(cs_AIB_mat,&msolv_ctx->benign_corr_work,NULL);CHKERRQ(ierr);
         ierr = VecGetArray(msolv_ctx->benign_corr_work,&array);CHKERRQ(ierr);
         ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,size_schur,array,&msolv_ctx->benign_dummy_schur_vec);CHKERRQ(ierr);
         ierr = VecRestoreArray(msolv_ctx->benign_corr_work,&array);CHKERRQ(ierr);
