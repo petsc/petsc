@@ -65,6 +65,7 @@ int main(int argc,char **argv)
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = DMDestroy(&shell);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -83,7 +84,7 @@ static PetscErrorCode CreateMatrix(DM shell,Mat *A)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CreateGlobalVector"
+#define __FUNCT__ "CreateInterpolation"
 static PetscErrorCode CreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   DM             da1,da2;
@@ -104,6 +105,7 @@ static PetscErrorCode CreateGlobalVector(DM shell,Vec *x)
 
   ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,x);CHKERRQ(ierr);
+  ierr = VecSetDM(*x,shell);CHKERRQ(ierr);
   return 0;
 }
 
@@ -116,6 +118,7 @@ static PetscErrorCode CreateLocalVector(DM shell,Vec *x)
 
   ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,x);CHKERRQ(ierr);
+  ierr = VecSetDM(*x,shell);CHKERRQ(ierr);
   return 0;
 }
 
@@ -156,6 +159,7 @@ static PetscErrorCode Coarsen(DM shell,MPI_Comm comm,DM *dmnew)
   ierr = DMShellSetRefine(*dmnew,Refine);CHKERRQ(ierr);
   ierr = DMShellSetCoarsen(*dmnew,Coarsen);CHKERRQ(ierr);
   ierr = DMShellSetCreateInterpolation(*dmnew,CreateInterpolation);CHKERRQ(ierr);
+  ierr = DMDestroy(&dacoarse);CHKERRQ(ierr);
   return 0;
 }
 
