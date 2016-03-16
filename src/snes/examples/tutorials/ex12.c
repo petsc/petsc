@@ -332,6 +332,21 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateBCLabel"
+static PetscErrorCode CreateBCLabel(DM dm, const char name[])
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -387,18 +402,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
-  }
-  else if (user->bcType == DIRICHLET) {
+  } else if (user->bcType == DIRICHLET) {
     PetscBool hasLabel;
-    DMLabel   label;
 
     ierr = DMHasLabel(*dm,"marker",&hasLabel);CHKERRQ(ierr);
-    if (!hasLabel) {
-      ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
-      ierr = DMGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-      ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
-      ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
-    }
+    if (!hasLabel) {ierr = CreateBCLabel(*dm, "marker");CHKERRQ(ierr);}
   }
   {
     char      convType[256];
@@ -582,6 +590,12 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
       ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dmCh", (PetscObject) dmCh);CHKERRQ(ierr);
       ierr = DMDestroy(&dmCh);CHKERRQ(ierr);
+    }
+    if (user->bcType == DIRICHLET) {
+      PetscBool hasLabel;
+
+      ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
+      if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
     }
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
     ierr = DMAddBoundary(cdm, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
