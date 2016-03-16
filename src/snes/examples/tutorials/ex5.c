@@ -432,8 +432,8 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
   ierr = DMGetCoordinateDM(info->da, &coordDA);CHKERRQ(ierr);
   ierr = DMGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  hx     = info->xm ? coords[info->ys][info->xs+1].x - coords[info->ys][info->xs].x : 1.0;
-  hy     = info->ym ? coords[info->ys+1][info->xs].y - coords[info->ys][info->xs].y : 1.0;
+  hx     = info->xm ? PetscRealPart(coords[info->ys][info->xs+1].x) - PetscRealPart(coords[info->ys][info->xs].x) : 1.0;
+  hy     = info->ym ? PetscRealPart(coords[info->ys+1][info->xs].y) - PetscRealPart(coords[info->ys][info->xs].y) : 1.0;
   hxdhy  = hx/hy;
   hydhx  = hy/hx;
   ierr = DMGetNamedLocalVector(info->da, "_petsc_boundary_conditions_", &bcv);CHKERRQ(ierr);
@@ -492,8 +492,8 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
   ierr = DMGetCoordinateDM(info->da, &coordDA);CHKERRQ(ierr);
   ierr = DMGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  hx     = info->xm ? coords[info->ys][info->xs+1].x - coords[info->ys][info->xs].x : 1.0;
-  hy     = info->ym ? coords[info->ys+1][info->xs].y - coords[info->ys][info->xs].y : 1.0;
+  hx     = info->xm ? PetscRealPart(coords[info->ys][info->xs+1].x) - PetscRealPart(coords[info->ys][info->xs].x) : 1.0;
+  hy     = info->ym ? PetscRealPart(coords[info->ys+1][info->xs].y) - PetscRealPart(coords[info->ys][info->xs].y) : 1.0;
   hxdhy  = hx/hy;
   hydhx  = hy/hx;
   ierr = DMGetNamedLocalVector(info->da, "_petsc_boundary_conditions_", &bcv);CHKERRQ(ierr);
