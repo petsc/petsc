@@ -594,14 +594,22 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
   PetscInt       i,j,k;
   MatStencil     col[5],row;
   PetscScalar    lambda,v[5],hx,hy,hxdhy,hydhx,sc;
+  DM             coordDA;
+  Vec            coordinates;
+  DMDACoor2d   **coords;
 
   PetscFunctionBeginUser;
   lambda = user->param;
-  hx     = 1.0/(PetscReal)(info->mx-1);
-  hy     = 1.0/(PetscReal)(info->my-1);
-  sc     = hx*hy*lambda;
+  /* Extract coordinates */
+  ierr = DMGetCoordinateDM(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  hx     = info->xm ? PetscRealPart(coords[info->ys][info->xs+1].x) - PetscRealPart(coords[info->ys][info->xs].x) : 1.0;
+  hy     = info->ym ? PetscRealPart(coords[info->ys+1][info->xs].y) - PetscRealPart(coords[info->ys][info->xs].y) : 1.0;
+  ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   hxdhy  = hx/hy;
   hydhx  = hy/hx;
+  sc     = hx*hy*lambda;
 
 
   /*
