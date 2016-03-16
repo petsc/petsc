@@ -752,7 +752,7 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
  .  pc - the preconditioner context
  
  Output Parameter:
- .  v - Use PETSC_TRUE to ignore any DM
+ .  v - Use PETSC_TRUE to ignore the method (if defined) set via KSPSetComputeOperators on pc
  
  Level: advanced
  
