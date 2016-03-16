@@ -7,7 +7,7 @@
    PetscDrawLGAddCommonPoint - Adds another point to each of the line graphs. All the points share
       the same new X coordinate.  The new point must have an X coordinate larger than the old points.
 
-   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  lg - the LineGraph data structure
@@ -59,7 +59,7 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
    PetscDrawLGAddPoint - Adds another point to each of the line graphs.
    The new point must have an X coordinate larger than the old points.
 
-   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  lg - the LineGraph data structure
@@ -117,7 +117,7 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
    PetscDrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
 
-   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  lg - the LineGraph data structure
@@ -182,7 +182,7 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  xlg - the line graph context

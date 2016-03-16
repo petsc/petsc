@@ -84,7 +84,7 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_MPIAIJ_MPIAIJ"
-PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
   PetscBool      rap=PETSC_TRUE; /* do R=P^T locally, then C=R*A*P */

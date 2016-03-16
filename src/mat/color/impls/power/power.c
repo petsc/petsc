@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_Power"
-PETSC_EXTERN PetscErrorCode MatColoringApply_Power(MatColoring mc,ISColoring *iscoloring)
+static PetscErrorCode MatColoringApply_Power(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   Mat             m = mc->mat,mp,ms;

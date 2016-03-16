@@ -13,7 +13,7 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringDegreeSequence_Minpack"
-PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const PetscInt *cja,const PetscInt *cia,const PetscInt *rja,const PetscInt *ria,PetscInt **seq)
+PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const PetscInt *cja,const PetscInt *cia,const PetscInt *rja,const PetscInt *ria,PetscInt **seq)
 {
   PetscInt       *work;
   PetscErrorCode ierr;
@@ -47,7 +47,7 @@ PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_SL"
-PETSC_EXTERN PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
+static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*seq,*coloring,n;
@@ -145,7 +145,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_LF"
-PETSC_EXTERN PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
+static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,*seq,*coloring,n;
@@ -242,7 +242,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_ID"
-PETSC_EXTERN PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
+static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*seq,*coloring,n;

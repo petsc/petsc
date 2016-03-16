@@ -2862,7 +2862,7 @@ PetscErrorCode  MatGetDiagonalBlock_MPIBAIJ(Mat A,Mat *a)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR_MPIBAIJ"
@@ -3038,7 +3038,7 @@ extern PetscErrorCode  MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIBAIJ_MPIAdj"
-PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,MatReuse reuse,Mat *adj)
+PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,MatReuse reuse,Mat *adj)
 {
   Mat_MPIBAIJ    *b = (Mat_MPIBAIJ*)B->data;
   PetscErrorCode ierr;
@@ -3080,11 +3080,11 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,Mat
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat,MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIBAIJ_MPIAIJ"
-PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
@@ -3132,7 +3132,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatR
 .seealso: MatCreateMPIBAIJ
 M*/
 
-PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat,MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIBAIJ"

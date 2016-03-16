@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatShift_Basic"
-PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
+PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
   PetscInt       i,start,end;

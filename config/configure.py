@@ -449,6 +449,8 @@ def petsc_configure(configure_options):
   except SystemExit, e:
     if e.code is None or e.code == 0:
       return
+    if e.code is 10:
+      sys.exit(10)
     msg ='*******************************************************************************\n'\
     +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
     +'*******************************************************************************\n'

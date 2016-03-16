@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit         = '94a52a891996fe5a1db39c0a1eaac11601561d2b'
+    self.gitcommit         = 'bb9a9951012012511da503e226f9dc98302fd9f2'
     self.download          = ['git://https://bitbucket.org/petsc/petsc4py'] #'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-'+self.gitcommit+'.tar.gz'
     self.functions         = []
     self.includes          = []
@@ -91,13 +91,13 @@ class Configure(config.package.Package):
           if os.path.realpath(i) == os.path.join(prefix,'Python'):
             self.addDefine('PYTHON_LIB','"'+os.path.join(i)+'"')
             return
-        raise RuntimeError('realpath of /usr/lib/libpython.dylib ('+os.path.realpath('/usr/lib/libpython.dylib')+') does not point to the expected Python library path ('+os.path.join(prefix,'Python')+') for current Python;\n')
-      elif os.path.isfile(os.path.join(prefix,'lib','libpython.dylib')):
+      if os.path.isfile(os.path.join(prefix,'lib','libpython.dylib')):
         self.addDefine('PYTHON_LIB','"'+os.path.join(prefix,'lib','libpython.dylib')+'"')
-      elif os.path.isfile(os.path.join(prefix,'lib','libpython'+sys.version[:3]+'.dylib')):
+        return
+      if os.path.isfile(os.path.join(prefix,'lib','libpython'+sys.version[:3]+'.dylib')):
         self.addDefine('PYTHON_LIB','"'+os.path.join(prefix,'lib','libpython'+sys.version[:3]+'.dylib')+'"')
-      else:
-        raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
+        return
+      raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
 
   def alternateConfigureLibrary(self):
     self.addMakeRule('petsc4py-build','')

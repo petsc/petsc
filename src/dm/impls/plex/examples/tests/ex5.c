@@ -299,10 +299,11 @@ Test 1:
 */
 
 typedef struct {
-  PetscInt  debug;       /* The debugging level */
-  PetscInt  dim;         /* The topological mesh dimension */
-  PetscBool cellSimplex; /* Use simplices or hexes */
-  PetscInt  testNum;     /* The particular mesh to test */
+  PetscInt  debug;         /* The debugging level */
+  PetscInt  dim;           /* The topological mesh dimension */
+  PetscBool cellSimplex;   /* Use simplices or hexes */
+  PetscBool testPartition; /* Use a fixed partitioning for testing */
+  PetscInt  testNum;       /* The particular mesh to test */
 } AppCtx;
 
 #undef __FUNCT__
@@ -312,15 +313,17 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug       = 0;
-  options->dim         = 2;
-  options->cellSimplex = PETSC_TRUE;
-  options->testNum     = 0;
+  options->debug         = 0;
+  options->dim           = 2;
+  options->cellSimplex   = PETSC_TRUE;
+  options->testPartition = PETSC_TRUE;
+  options->testNum       = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex5.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex5.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex5.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex5.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-test_num", "The particular mesh to test", "ex5.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -631,11 +634,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim          = user->dim;
   PetscBool      cellSimplex  = user->cellSimplex, hasFaultB;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
@@ -686,6 +690,58 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = dmHybrid;
+  }
+  if (user->testPartition && numProcs > 1) {
+    PetscPartitioner part;
+    const PetscInt  *sizes  = NULL;
+    const PetscInt  *points = NULL;
+
+    if (!rank) {
+      if (dim == 2 && cellSimplex && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt triSizes_p2[2]  = {1, 2};
+          PetscInt triPoints_p2[3] = {0, 1, 2};
+
+          sizes = triSizes_p2; points = triPoints_p2;break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt quadSizes_p2[2]  = {1, 2};
+          PetscInt quadPoints_p2[3] = {0, 1, 2};
+
+          sizes = quadSizes_p2; points = quadPoints_p2;break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 3 && cellSimplex && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt tetSizes_p2[2]  = {1, 2};
+          PetscInt tetPoints_p2[3] = {0, 1, 2};
+
+          sizes = tetSizes_p2; points = tetPoints_p2;break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 3 && !cellSimplex && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt hexSizes_p2[2]  = {1, 2};
+          PetscInt hexPoints_p2[3] = {0, 1, 2};
+
+          sizes = hexSizes_p2; points = hexPoints_p2;break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+        }
+      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition");
+    }
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
   }
   {
     DM distributedMesh = NULL;

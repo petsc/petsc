@@ -1600,12 +1600,13 @@ static PetscErrorCode MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
 
   /* loop over matrix elements drawing boxes */
 
   if (format != PETSC_VIEWER_DRAW_CONTOUR) {
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+    /* Blue for negative, Cyan for zero and  Red for positive */
     color = PETSC_DRAW_BLUE;
     for (i=0,row=0; i<mbs; i++,row+=bs) {
       for (j=a->i[i]; j<a->i[i+1]; j++) {
@@ -1648,6 +1649,7 @@ static PetscErrorCode MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
         }
       }
     }
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   } else {
     /* use contour shading to indicate magnitude of values */
     /* first determine max of all nonzero values */
@@ -1657,8 +1659,11 @@ static PetscErrorCode MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
     for (i=0; i<a->nz*a->bs2; i++) {
       if (PetscAbsScalar(a->a[i]) > maxv) maxv = PetscAbsScalar(a->a[i]);
     }
+    if (minv >= maxv) maxv = minv + PETSC_SMALL;
     ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
     if (popup) {ierr = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);}
+
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     for (i=0,row=0; i<mbs; i++,row+=bs) {
       for (j=a->i[i]; j<a->i[i+1]; j++) {
         y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
@@ -1666,12 +1671,14 @@ static PetscErrorCode MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
         aa  = a->a + j*bs2;
         for (k=0; k<bs; k++) {
           for (l=0; l<bs; l++) {
-            color = PetscDrawRealToColor(PetscAbsScalar(*aa++),minv,maxv);
+            MatScalar v = *aa++;
+            color = PetscDrawRealToColor(PetscAbsScalar(v),minv,maxv);
             ierr  = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
           }
         }
       }
     }
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1689,12 +1696,13 @@ static PetscErrorCode MatView_SeqBAIJ_Draw(Mat A,PetscViewer viewer)
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
   xr   = A->cmap->n; yr = A->rmap->N; h = yr/10.0; w = xr/10.0;
-  xr  += w;    yr += h;  xl = -w;     yl = -h;
+  xr  += w;          yr += h;        xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,MatView_SeqBAIJ_Draw_Zoom,A);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",NULL);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2811,8 +2819,8 @@ PetscErrorCode  MatRetrieveValues_SeqBAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*);
-PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat, MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJSetPreallocation_SeqBAIJ"
@@ -3013,7 +3021,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
 .seealso: MatCreateSeqBAIJ()
 M*/
 
-PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat, MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqBAIJ"

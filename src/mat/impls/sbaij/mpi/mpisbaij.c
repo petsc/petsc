@@ -5,7 +5,7 @@
 #include <petscblaslapack.h>
 
 #if defined(PETSC_HAVE_ELEMENTAL)
-PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "MatStoreValues_MPISBAIJ"
@@ -783,7 +783,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat,PetscViewer);
+extern PetscErrorCode MatView_SeqSBAIJ(Mat,PetscViewer);
 extern PetscErrorCode MatSetValues_MPIBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 #include <petscdraw.h>
 #undef __FUNCT__
@@ -898,7 +898,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr = PetscObjectGetName((PetscObject)mat,&matname);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscObjectSetName((PetscObject)((Mat_MPISBAIJ*)(A->data))->A,matname);CHKERRQ(ierr);
-      ierr = MatView_SeqSBAIJ_ASCII(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
+      ierr = MatView_SeqSBAIJ(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -2059,7 +2059,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
 .seealso: MatCreateMPISBAIJ
 M*/
 
-PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat,MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPISBAIJ"

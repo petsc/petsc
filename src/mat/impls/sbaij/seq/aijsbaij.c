@@ -5,7 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqAIJ"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
@@ -117,7 +117,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqSBAIJ"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -172,7 +172,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqBAIJ"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
@@ -267,7 +267,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqSBAIJ"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;

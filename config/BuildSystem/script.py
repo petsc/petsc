@@ -52,6 +52,16 @@ class Script(logger.Logger):
       return 0
     return 1
 
+  def hasListFlag(self):
+    '''Decide whether to display the list of download files and exit'''
+    import nargs
+
+    if not self.showHelp:
+      return 0
+    if nargs.Arg.findArgument('with-packages-dir', self.clArgs) is None:
+      return 0
+    return 1
+
   def setupArguments(self, argDB):
     '''This method now also creates the help and action logs'''
     import help
@@ -72,6 +82,7 @@ class Script(logger.Logger):
     import nargs
 
     help.addArgument('Script', '-help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)
+    help.addArgument('Script', '-with-packages-dir', nargs.ArgDir(None,None, 'Directory to store downloaded external package tarballs', isTemporary = 1), ignoreDuplicates = 1)
     help.addArgument('Script', '-h',    nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)
     return help
 
@@ -89,6 +100,9 @@ class Script(logger.Logger):
         sections = self.argDB.target
       self.help.output(sections = sections)
       sys.exit()
+    if self.hasListFlag():
+      self.argDB.readonly = True
+      self.help.outputDownload()
     return
 
   def cleanup(self):

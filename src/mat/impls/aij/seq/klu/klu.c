@@ -315,7 +315,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_klu"
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Mat *F)
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_KLU       *lu;

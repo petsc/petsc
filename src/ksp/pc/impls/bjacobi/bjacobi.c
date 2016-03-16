@@ -605,7 +605,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCReset_BJacobi_Singleblock"
-PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
+static PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
 {
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
@@ -620,7 +620,7 @@ PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCDestroy_BJacobi_Singleblock"
-PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
+static PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
 {
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
@@ -640,7 +640,7 @@ PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
 #include <petsc/private/kspimpl.h>  
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Singleblock"
-PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
+static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
 {
   PetscErrorCode ierr;
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
@@ -656,7 +656,7 @@ PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCApply_BJacobi_Singleblock"
-PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
@@ -677,7 +677,7 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricLeft_BJacobi_Singleblock"
-PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
@@ -710,7 +710,7 @@ PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricRight_BJacobi_Singleblock"
-PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
@@ -744,7 +744,7 @@ PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCApplyTranspose_BJacobi_Singleblock"
-PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
@@ -851,7 +851,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 /* ---------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCReset_BJacobi_Multiblock"
-PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
+static PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
@@ -881,7 +881,7 @@ PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCDestroy_BJacobi_Multiblock"
-PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
+static PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
@@ -906,7 +906,7 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Multiblock"
-PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
+static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -927,7 +927,7 @@ PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCApply_BJacobi_Multiblock"
-PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode        ierr;
@@ -965,7 +965,7 @@ PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCApplyTranspose_BJacobi_Multiblock"
-PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode        ierr;

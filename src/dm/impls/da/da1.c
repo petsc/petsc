@@ -9,7 +9,7 @@
 #include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "DMView_DA_1d"
-PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
+static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -51,44 +51,46 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
     PetscBool isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+    ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+    if (isnull) PetscFunctionReturn(0);
 
+    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-    ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
 
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     /* first processor draws all node lines */
     if (!rank) {
       PetscInt xmin_tmp;
       ymin = 0.0; ymax = 0.3;
-
       for (xmin_tmp=0; xmin_tmp < dd->M; xmin_tmp++) {
         ierr = PetscDrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
-
       xmin = 0.0; xmax = dd->M - 1;
       ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
     }
-
-    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
 
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     /* draw my box */
     ymin = 0; ymax = 0.3; xmin = dd->xs / dd->w; xmax = (dd->xe / dd->w)  - 1;
     ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmin,ymax,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xmax,ymin,xmax,ymax,PETSC_DRAW_RED);CHKERRQ(ierr);
-
     /* Put in index numbers */
     base = dd->base / dd->w;
     for (x=xmin; x<=xmax; x++) {
-      sprintf(node,"%d",(int)base++);
+      ierr = PetscSNPrintf(node,sizeof(node),"%d",(int)base++);CHKERRQ(ierr);
       ierr = PetscDrawString(draw,x,ymin,PETSC_DRAW_RED,node);CHKERRQ(ierr);
     }
-
-    ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = DMView_DA_Binary(da,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)

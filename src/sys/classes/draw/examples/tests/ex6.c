@@ -3,9 +3,11 @@ static char help[] = "Demonstrates named colormaps\n";
 #include <petscsys.h>
 #include <petscdraw.h>
 
+
+typedef PetscReal (*Function)(PetscReal,PetscReal);
+
 #define Exp PetscExpReal
 #define Pow PetscPowReal
-
 static PetscReal Peaks(PetscReal x,PetscReal y)
 {
   return 3 * Pow(1-x,2) * Exp(-Pow(x,2) - Pow(y+1,2))
@@ -14,39 +16,57 @@ static PetscReal Peaks(PetscReal x,PetscReal y)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "main"
-int main(int argc,char **argv)
+#define __FUNCT__ "DrawFunction"
+static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
 {
-  char           title[64],cmap[32] = "";
-  PetscDraw      draw,popup;
+  int            i,j,w,h;
+  Function       function = (Function)ctx;
+  PetscReal      min = PETSC_MAX_REAL, max = PETSC_MIN_REAL;
+  MPI_Comm       comm = PetscObjectComm((PetscObject)draw);
   PetscMPIInt    size,rank;
-  int            i,j, w = 400, h = 400;
+  PetscDraw      popup;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-draw_cmap",cmap,sizeof(cmap),NULL);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PetscDrawGetWindowSize(draw,&w,&h);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,NULL,title,PETSC_DECIDE,PETSC_DECIDE,w,h,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(draw,-3,-3,3,3);CHKERRQ(ierr);
   for (j=rank; j<h; j+=size) {
     for (i=0; i<w; i++) {
       PetscReal x,y,f; int color;
       ierr = PetscDrawPixelToCoordinate(draw,i,j,&x,&y);CHKERRQ(ierr);
-      f = Peaks(x,y); color = PetscDrawRealToColor(f,-8,+8);
+      f = function(x,y); color = PetscDrawRealToColor(f,-8,+8);
       ierr = PetscDrawPointPixel(draw,i,j,color);CHKERRQ(ierr);
+      min = PetscMin(f,min); max = PetscMax(f,max);
     }
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+
   ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
   if (popup) {ierr = PetscDrawScalePopup(popup,-8,+8);CHKERRQ(ierr);}
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv)
+{
+  char           title[64],cmap[32] = "";
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+
+  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-draw_cmap",cmap,sizeof(cmap),NULL);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap);CHKERRQ(ierr);
+
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,NULL,title,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)draw,"Peaks");CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw,-3,-3,+3,+3);CHKERRQ(ierr);
+  ierr = PetscDrawZoom(draw,DrawFunction,(void*)Peaks);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();

@@ -4,6 +4,8 @@
 */
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
 
+PETSC_INTERN PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X*,int,int,int,int,int,int,int,int,int);
+
 #define SHIFT_VAL 6
 
 #undef __FUNCT__

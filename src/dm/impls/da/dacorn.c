@@ -205,7 +205,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 #define __FUNCT__ "DMDAGetCorners"
 /*@
    DMDAGetCorners - Returns the global (x,y,z) indices of the lower left
-   corner of the local region, excluding ghost points.
+   corner and size of the local region, excluding ghost points.
 
    Not Collective
 

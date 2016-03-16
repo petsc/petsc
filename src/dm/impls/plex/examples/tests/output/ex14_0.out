@@ -5,5 +5,5 @@ Test Mesh in 2 dimensions:
   1-cells: 56
   2-cells: 32
 Labels:
-  marker: 2 strata of sizes (32, 13)
+  marker: 1 strata of sizes (32)
   depth: 3 strata of sizes (25, 56, 32)

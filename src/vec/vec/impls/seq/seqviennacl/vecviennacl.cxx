@@ -140,7 +140,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectViennaCLSetFromOptions(PetscObject obj)
     Does NOT change the PetscViennaCLFlag for the vector
     Does NOT zero the ViennaCL array
  */
-PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
+PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;

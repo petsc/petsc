@@ -1001,6 +1001,12 @@ extern PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
 extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
+extern PetscErrorCode DMProjectFunctionLocal_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
+extern PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
+extern PetscErrorCode DMProjectFieldLocal_Plex(DM,Vec,void (**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],PetscScalar[]),InsertMode,Vec);
+extern PetscErrorCode DMComputeL2Diff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
+extern PetscErrorCode DMComputeL2GradientDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[], const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,const PetscReal [],PetscReal *);
+extern PetscErrorCode DMComputeL2FieldDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexReplace_Static"
@@ -1012,7 +1018,7 @@ extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
 static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 {
   PetscSF          sf;
-  DM               coordDM;
+  DM               coordDM, coarseDM;
   Vec              coords;
   const PetscReal *maxCell, *L;
   const DMBoundaryType *bd;
@@ -1046,6 +1052,8 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   }
   dm->labels = dmNew->labels;
   dm->depthLabel = dmNew->depthLabel;
+  ierr = DMGetCoarseDM(dmNew,&coarseDM);CHKERRQ(ierr);
+  ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1087,6 +1095,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   ierr = DMSetCoordinatesLocal(dmA, coordsB);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmB, coordsA);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject) coordsA);CHKERRQ(ierr);
+
   tmp       = dmA->data;
   dmA->data = dmB->data;
   dmB->data = tmp;
@@ -1110,7 +1119,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptio
   PetscFunctionBegin;
   /* Handle boundary conditions */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) dm), NULL, "Boundary condition options", "");CHKERRQ(ierr);
-  for (b = mesh->boundary; b; b = b->next) {
+  for (b = dm->boundary->next; b; b = b->next) {
     char      optname[1024];
     PetscInt  ids[1024], len = 1024, i;
     PetscBool flg;
@@ -1172,21 +1181,25 @@ PetscErrorCode  DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm
   ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
   if (refine) {ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);}
   if (refine && isHierarchy) {
-    DM *dms;
+    DM *dms, coarseDM;
 
+    ierr = DMGetCoarseDM(dm, &coarseDM);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)coarseDM);CHKERRQ(ierr);
     ierr = PetscMalloc1(refine,&dms);CHKERRQ(ierr);
     ierr = DMRefineHierarchy(dm, refine, dms);CHKERRQ(ierr);
     /* Total hack since we do not pass in a pointer */
     ierr = DMPlexSwap_Static(dm, dms[refine-1]);CHKERRQ(ierr);
     if (refine == 1) {
-      ierr = DMPlexSetCoarseDM(dm, dms[0]);CHKERRQ(ierr);
+      ierr = DMSetCoarseDM(dm, dms[0]);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dm, PETSC_TRUE);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexSetCoarseDM(dm, dms[refine-2]);CHKERRQ(ierr);
+      ierr = DMSetCoarseDM(dm, dms[refine-2]);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dm, PETSC_TRUE);CHKERRQ(ierr);
-      ierr = DMPlexSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
+      ierr = DMSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
       ierr = DMPlexSetRegularRefinement(dms[0], PETSC_TRUE);CHKERRQ(ierr);
     }
+    ierr = DMSetCoarseDM(dms[refine-1], coarseDM);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)coarseDM);CHKERRQ(ierr);
     /* Free DMs */
     for (r = 0; r < refine; ++r) {
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
@@ -1318,6 +1331,12 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->createsubdm                     = DMCreateSubDM_Plex;
   dm->ops->getdimpoints                    = DMGetDimPoints_Plex;
   dm->ops->locatepoints                    = DMLocatePoints_Plex;
+  dm->ops->projectfunctionlocal            = DMProjectFunctionLocal_Plex;
+  dm->ops->projectfunctionlabellocal       = DMProjectFunctionLabelLocal_Plex;
+  dm->ops->projectfieldlocal               = DMProjectFieldLocal_Plex;
+  dm->ops->computel2diff                   = DMComputeL2Diff_Plex;
+  dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
+  dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
   PetscFunctionReturn(0);
 }
 
@@ -1383,7 +1402,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
-  mesh->coarseMesh          = NULL;
   mesh->regularRefinement   = PETSC_FALSE;
   mesh->depthState          = -1;
   mesh->globalVertexNumbers = NULL;
@@ -1768,6 +1786,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
 PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *refdm)
 {
   DM             rdm;
+  Vec            coords;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -1841,7 +1860,27 @@ PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool 
   }
   *refdm = NULL;
   ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(rdm, *refdm);CHKERRQ(ierr);
+  if (rdm->coordinateDM) {
+    DM           ncdm;
+    PetscSection cs;
+    PetscInt     pEnd = -1;
+
+    ierr = DMGetDefaultSection(rdm->coordinateDM, &cs);CHKERRQ(ierr);
+    if (cs) {ierr = PetscSectionGetChart(cs, NULL, &pEnd);CHKERRQ(ierr);}
+    if (pEnd >= 0) {
+      ierr = DMClone(rdm->coordinateDM, &ncdm);CHKERRQ(ierr);
+      ierr = DMSetDefaultSection(ncdm, cs);CHKERRQ(ierr);
+      ierr = DMSetCoordinateDM(*refdm, ncdm);CHKERRQ(ierr);
+      ierr = DMDestroy(&ncdm);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMGetCoordinatesLocal(rdm, &coords);CHKERRQ(ierr);
+  if (coords) {
+    ierr = DMSetCoordinatesLocal(*refdm, coords);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetCoordinates(rdm, &coords);CHKERRQ(ierr);
+    if (coords) {ierr = DMSetCoordinates(*refdm, coords);CHKERRQ(ierr);}
+  }
   ierr = DMDestroy(&rdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

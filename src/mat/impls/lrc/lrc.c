@@ -1,6 +1,5 @@
 
 #include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
-#include <../src/mat/impls/dense/seq/dense.h>
 
 typedef struct {
   Mat         A,U,V;
@@ -9,6 +8,8 @@ typedef struct {
 } Mat_LRC;
 
 
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat,Vec,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_LRC"

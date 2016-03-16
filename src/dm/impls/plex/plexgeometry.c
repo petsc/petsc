@@ -1159,7 +1159,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   if (dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support 2D edges right now");
-  ierr = DMPlexLocalizeCoordinate_Internal(dm, dim, coords, &coords[dim], tmp);CHKERRQ(ierr);
+  ierr = DMLocalizeCoordinate_Internal(dm, dim, coords, &coords[dim], tmp);CHKERRQ(ierr);
   if (centroid) {
     centroid[0] = 0.5*PetscRealPart(coords[0] + tmp[0]);
     centroid[1] = 0.5*PetscRealPart(coords[1] + tmp[1]);
@@ -1527,8 +1527,8 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       else {
         rcentroid = fg->centroid;
       }
-      ierr = DMPlexLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, lcentroid, l);CHKERRQ(ierr);
-      ierr = DMPlexLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, rcentroid, r);CHKERRQ(ierr);
+      ierr = DMLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, lcentroid, l);CHKERRQ(ierr);
+      ierr = DMLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, rcentroid, r);CHKERRQ(ierr);
       DMPlex_WaxpyD_Internal(dim, -1, l, r, v);
       if (DMPlex_DotRealD_Internal(dim, fg->normal, v) < 0) {
         for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
@@ -1566,7 +1566,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
     for (s = 0; s < 2; ++s) {
       /* Reflect ghost centroid across plane of face */
       if (support[s] == c) {
-        const PetscFVCellGeom *ci;
+        PetscFVCellGeom       *ci;
         PetscFVCellGeom       *cg;
         PetscReal              c2f[3], a;
 
@@ -1655,7 +1655,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
   for (c = cStart; c < cEndInterior; c++) {
     const PetscInt        *faces;
     PetscInt               numFaces, usedFaces, f, d;
-    const PetscFVCellGeom *cg;
+    PetscFVCellGeom        *cg;
     PetscBool              boundary;
     PetscInt               ghost;
 
@@ -1664,13 +1664,13 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
     ierr = DMPlexGetCone(dm, c, &faces);CHKERRQ(ierr);
     if (numFaces < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
     for (f = 0, usedFaces = 0; f < numFaces; ++f) {
-      const PetscFVCellGeom *cg1;
+      PetscFVCellGeom       *cg1;
       PetscFVFaceGeom       *fg;
       const PetscInt        *fcells;
       PetscInt               ncell, side;
 
       ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
-      ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      ierr = DMIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
       if ((ghost >= 0) || boundary) continue;
       ierr  = DMPlexGetSupport(dm, faces[f], &fcells);CHKERRQ(ierr);
       side  = (c != fcells[0]); /* c is on left=0 or right=1 of face */
@@ -1684,7 +1684,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
     ierr = PetscFVComputeGradient(fvm, usedFaces, dx, grad);CHKERRQ(ierr);
     for (f = 0, usedFaces = 0; f < numFaces; ++f) {
       ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
-      ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      ierr = DMIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
       if ((ghost >= 0) || boundary) continue;
       for (d = 0; d < dim; ++d) gref[usedFaces][d] = grad[usedFaces*dim+d];
       ++usedFaces;
@@ -1724,7 +1724,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     PetscInt               numChildren, numCells, c;
 
     if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
-    ierr = DMPlexIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
+    ierr = DMIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
     ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
     if ((ghost >= 0) || boundary || numChildren) continue;
     ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
@@ -1753,7 +1753,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     PetscInt               numChildren, numCells, c;
 
     if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
-    ierr = DMPlexIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
+    ierr = DMIsBoundaryPoint(dm, f, &boundary);CHKERRQ(ierr);
     ierr = DMPlexGetTreeChildren(dm, f, &numChildren, NULL);CHKERRQ(ierr);
     if ((ghost >= 0) || boundary || numChildren) continue;
     ierr = DMPlexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
@@ -1775,7 +1775,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   ierr = PetscMalloc3(maxNumFaces*dim, &dx, maxNumFaces*dim, &grad, maxNumFaces, &gref);CHKERRQ(ierr);
   for (c = cStart; c < cEndInterior; c++) {
     PetscInt               numFaces, f, d, off, ghost = -1;
-    const PetscFVCellGeom *cg;
+    PetscFVCellGeom        *cg;
 
     ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(neighSec, c, &numFaces);CHKERRQ(ierr);
@@ -1783,7 +1783,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
     if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, c, &ghost);CHKERRQ(ierr);}
     if (ghost < 0 && numFaces < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
     for (f = 0; f < numFaces; ++f) {
-      const PetscFVCellGeom *cg1;
+      PetscFVCellGeom       *cg1;
       PetscFVFaceGeom       *fg;
       const PetscInt        *fcells;
       PetscInt               ncell, side, nface;
