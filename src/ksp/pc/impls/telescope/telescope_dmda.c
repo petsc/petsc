@@ -796,9 +796,10 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
         Ak = *A;
         Bk = *A;
       }
-      /* There is no need to assemble the operator now, the sub KSP will call SetComputeOperators() during KSPSetUp() */
-      /*ierr = DMKSPGetComputeOperators(dmrepart,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);*/
-      /*ierr = dmksp_func(sred->ksp,Ak,Bk,dmksp_ctx);CHKERRQ(ierr);*/
+      /*
+       There is no need to explicitly assemble the operator now,
+       the sub-KSP will call the method provided to KSPSetComputeOperators() during KSPSetUp()
+      */
     }
   } else {
     ierr = PCTelescopeMatCreate_dmda_dmactivefalse(pc,sred,reuse,A);CHKERRQ(ierr);
