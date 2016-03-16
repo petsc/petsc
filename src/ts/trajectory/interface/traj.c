@@ -75,7 +75,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 -   viewer - visualization context
 
     Options Database Key:
-.   -tstrajectory_view - calls TSTrajectoryView() at end of TSAdjointStep()
+.   -ts_trajectory_view - calls TSTrajectoryView() at end of TSAdjointStep()
 
     Notes:
     The available visualization contexts include
@@ -167,7 +167,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 - type - A known method
 
   Options Database Command:
-. -tstrajectory_type <type> - Sets the method; use -help for a list of available methods (for instance, basic)
+. -ts_trajectory_type <type> - Sets the method; use -help for a list of available methods (for instance, basic)
 
    Level: intermediate
 
@@ -290,7 +290,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
   else defaultType = TSTRAJECTORYBASIC;
 
   if (!TSRegisterAllCalled) {ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscOptionsFList("-tstrajectory_type","TSTrajectory method"," TSTrajectorySetType",TSTrajectoryList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ts_trajectory_type","TSTrajectory method"," TSTrajectorySetType",TSTrajectoryList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrcmp(typeName,TSTRAJECTORYMEMORY,&flg);
     ierr = TSTrajectorySetType(tj,ts,typeName);CHKERRQ(ierr);
@@ -311,8 +311,8 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 .  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 
    Options Database Keys:
-.  -tstrajectory_type <type> - TSTRAJECTORYBASIC
-.  -tstrajectory_max_cps <int>  
+.  -ts_trajectory_type <type> - TSTRAJECTORYBASIC
+.  -ts_trajectory_max_cps <int>
 
    Level: advanced
 
