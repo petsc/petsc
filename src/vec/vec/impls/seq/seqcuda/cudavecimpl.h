@@ -34,7 +34,7 @@ PETSC_INTERN PetscErrorCode VecReplaceArray_SeqCUDA(Vec,const PetscScalar*);
 PETSC_INTERN PetscErrorCode VecDot_SeqCUDA(Vec,Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecTDot_SeqCUDA(Vec,Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecScale_SeqCUDA(Vec,PetscScalar);
-PETSC_INTERN PetscErrorCode VecCopy_SeqCUDA(Vec,Vec);
+PETSC_EXTERN PetscErrorCode VecCopy_SeqCUDA(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecSwap_SeqCUDA(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecAXPY_SeqCUDA(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecAXPBY_SeqCUDA(Vec,PetscScalar,PetscScalar,Vec);
