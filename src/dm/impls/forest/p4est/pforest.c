@@ -3487,7 +3487,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 
         ierr = DMPlexGetTreeParent(plex,q,&parent,NULL);CHKERRQ(ierr);
         while (parent != q) {
-          if (values[parent] == -2) {
+          if (values[parent] == PETSC_MIN_INT) {
             values[parent] = values[q];
           }
           q = parent;
