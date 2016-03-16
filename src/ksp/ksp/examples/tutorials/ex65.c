@@ -31,6 +31,23 @@ static PetscErrorCode CreateLocalVector(DM,Vec*);
 static PetscErrorCode Refine(DM,MPI_Comm,DM*);
 static PetscErrorCode Coarsen(DM,MPI_Comm,DM*);
 static PetscErrorCode CreateInterpolation(DM,DM,Mat*,Vec*);
+static PetscErrorCode CreateRestriction(DM,DM,Mat*);
+
+static PetscErrorCode MyDMShellCreate(MPI_Comm comm,DM da,DM *shell)
+{
+  PetscErrorCode ierr;
+
+  ierr = DMShellCreate(comm,shell);CHKERRQ(ierr);
+  ierr = DMShellSetContext(*shell,da);CHKERRQ(ierr);
+  ierr = DMShellSetCreateMatrix(*shell,CreateMatrix);CHKERRQ(ierr);
+  ierr = DMShellSetCreateGlobalVector(*shell,CreateGlobalVector);CHKERRQ(ierr);
+  ierr = DMShellSetCreateLocalVector(*shell,CreateLocalVector);CHKERRQ(ierr);
+  ierr = DMShellSetRefine(*shell,Refine);CHKERRQ(ierr);
+  ierr = DMShellSetCoarsen(*shell,Coarsen);CHKERRQ(ierr);
+  ierr = DMShellSetCreateInterpolation(*shell,CreateInterpolation);CHKERRQ(ierr);
+  ierr = DMShellSetCreateRestriction(*shell,CreateRestriction);CHKERRQ(ierr);
+  return 0;
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -45,17 +62,10 @@ int main(int argc,char **argv)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-129,1,1,0,&da);CHKERRQ(ierr);
-  ierr = DMShellCreate(PETSC_COMM_WORLD,&shell);CHKERRQ(ierr);
+  ierr = MyDMShellCreate(PETSC_COMM_WORLD,da,&shell);CHKERRQ(ierr);
   /* these two lines are not needed but allow PCMG to automatically know how many multigrid levels the user wants */
   ierr = DMGetRefineLevel(da,&levels);CHKERRQ(ierr);
   ierr = DMSetRefineLevel(shell,levels);CHKERRQ(ierr);
-  ierr = DMShellSetContext(shell,da);CHKERRQ(ierr);
-  ierr = DMShellSetCreateMatrix(shell,CreateMatrix);CHKERRQ(ierr);
-  ierr = DMShellSetCreateGlobalVector(shell,CreateGlobalVector);CHKERRQ(ierr);
-  ierr = DMShellSetCreateLocalVector(shell,CreateLocalVector);CHKERRQ(ierr);
-  ierr = DMShellSetRefine(shell,Refine);CHKERRQ(ierr);
-  ierr = DMShellSetCoarsen(shell,Coarsen);CHKERRQ(ierr);
-  ierr = DMShellSetCreateInterpolation(shell,CreateInterpolation);CHKERRQ(ierr);
 
   ierr = KSPSetDM(ksp,shell);CHKERRQ(ierr);
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,NULL);CHKERRQ(ierr);
@@ -97,6 +107,19 @@ static PetscErrorCode CreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateRestriction"
+static PetscErrorCode CreateRestriction(DM dm1,DM dm2,Mat *mat)
+{
+  DM             da1,da2;
+  PetscErrorCode ierr;
+
+  ierr = DMShellGetContext(dm1,(void**)&da1);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm2,(void**)&da2);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(da1,da2,mat,NULL);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateGlobalVector"
 static PetscErrorCode CreateGlobalVector(DM shell,Vec *x)
 {
@@ -131,14 +154,7 @@ static PetscErrorCode Refine(DM shell,MPI_Comm comm,DM *dmnew)
 
   ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
   ierr = DMRefine(da,comm,&dafine);CHKERRQ(ierr);
-  ierr = DMShellCreate(PetscObjectComm((PetscObject)shell),dmnew);CHKERRQ(ierr);
-  ierr = DMShellSetContext(*dmnew,dafine);CHKERRQ(ierr);
-  ierr = DMShellSetCreateMatrix(*dmnew,CreateMatrix);CHKERRQ(ierr);
-  ierr = DMShellSetCreateGlobalVector(*dmnew,CreateGlobalVector);CHKERRQ(ierr);
-  ierr = DMShellSetCreateLocalVector(*dmnew,CreateLocalVector);CHKERRQ(ierr);
-  ierr = DMShellSetRefine(*dmnew,Refine);CHKERRQ(ierr);
-  ierr = DMShellSetCoarsen(*dmnew,Coarsen);CHKERRQ(ierr);
-  ierr = DMShellSetCreateInterpolation(*dmnew,CreateInterpolation);CHKERRQ(ierr);
+  ierr = MyDMShellCreate(PetscObjectComm((PetscObject)shell),dafine,dmnew);CHKERRQ(ierr);
   return 0;
 }
 
@@ -151,14 +167,8 @@ static PetscErrorCode Coarsen(DM shell,MPI_Comm comm,DM *dmnew)
 
   ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
   ierr = DMCoarsen(da,comm,&dacoarse);CHKERRQ(ierr);
-  ierr = DMShellCreate(PetscObjectComm((PetscObject)shell),dmnew);CHKERRQ(ierr);
-  ierr = DMShellSetContext(*dmnew,dacoarse);CHKERRQ(ierr);
-  ierr = DMShellSetCreateMatrix(*dmnew,CreateMatrix);CHKERRQ(ierr);
-  ierr = DMShellSetCreateGlobalVector(*dmnew,CreateGlobalVector);CHKERRQ(ierr);
-  ierr = DMShellSetCreateLocalVector(*dmnew,CreateLocalVector);CHKERRQ(ierr);
-  ierr = DMShellSetRefine(*dmnew,Refine);CHKERRQ(ierr);
-  ierr = DMShellSetCoarsen(*dmnew,Coarsen);CHKERRQ(ierr);
-  ierr = DMShellSetCreateInterpolation(*dmnew,CreateInterpolation);CHKERRQ(ierr);
+  ierr = MyDMShellCreate(PetscObjectComm((PetscObject)shell),dacoarse,dmnew);CHKERRQ(ierr);
+  /* discard an "extra" reference count to dacoarse */
   ierr = DMDestroy(&dacoarse);CHKERRQ(ierr);
   return 0;
 }
