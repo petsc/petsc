@@ -722,17 +722,17 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
 
 /*@
  PCTelescopeGetIgnoreKSPComputeOperators - Get the flag indicating if KSPComputeOperators will be used.
- 
+
  Not Collective
- 
+
  Input Parameter:
  .  pc - the preconditioner context
- 
+
  Output Parameter:
  .  v - the flag
- 
+
  Level: advanced
- 
+
  .keywords: PC, telescoping solve
  @*/
 PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
@@ -745,17 +745,17 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
 
 /*@
  PCTelescopeSetIgnoreKSPComputeOperators - Set a flag to ignore KSPComputeOperators.
- 
+
  Not Collective
- 
+
  Input Parameter:
  .  pc - the preconditioner context
- 
+
  Output Parameter:
  .  v - Use PETSC_TRUE to ignore the method (if defined) set via KSPSetComputeOperators on pc
- 
+
  Level: advanced
- 
+
  .keywords: PC, telescoping solve
  @*/
 PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)

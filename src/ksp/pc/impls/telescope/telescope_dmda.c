@@ -471,13 +471,13 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
   {
     PetscErrorCode (*dmksp_func)(KSP,Mat,Mat,void*);
     void           *dmksp_ctx;
-    
+
     ierr = DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
 
     /* attach dm to ksp on sub communicator */
     if (isActiveRank(sred->psubcomm)) {
       ierr = KSPSetDM(sred->ksp,ctx->dmrepart);CHKERRQ(ierr);
-      
+
       if (!dmksp_func || sred->ignore_kspcomputeoperators) {
         ierr = KSPSetDMActive(sred->ksp,PETSC_FALSE);CHKERRQ(ierr);
       } else {
@@ -776,7 +776,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   DM             dm;
   PetscErrorCode (*dmksp_func)(KSP,Mat,Mat,void*);
   void           *dmksp_ctx;
-  
+
   PetscFunctionBegin;
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   ierr = DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
