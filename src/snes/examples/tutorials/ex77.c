@@ -375,6 +375,55 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);}
   else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  /* Label the faces (bit of a hack here, until it is properly implemented for simplices) */
+  {
+    DM              cdm;
+    DMLabel         label;
+    IS              is;
+    PetscInt        d, dim = user->dim, b, f, Nf;
+    const PetscInt *faces;
+    PetscInt        csize;
+    PetscReal      *coords = NULL;
+    PetscSection    cs;
+    Vec             coordinates ;
+
+    ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
+    ierr = DMGetStratumIS(*dm, "boundary", 1,  &is);CHKERRQ(ierr);
+    ierr = DMCreateLabel(*dm, "Faces");CHKERRQ(ierr);
+    if (is) {
+      ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
+      ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
+
+      ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
+      ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
+      ierr = DMGetDefaultSection(cdm, &cs);
+
+      /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
+      PetscReal faceCoord;
+      PetscInt  v;
+      for (f = 0; f < Nf; ++f) {
+        ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
+        /* Calculate mean coordinate vector */
+        const PetscInt Nv = csize/dim;
+        for (d = 0; d < dim; ++d) {
+          faceCoord = 0.0;
+          for (v = 0; v < Nv; ++v) faceCoord += coords[v*dim+d];
+          faceCoord /= Nv;
+          for (b = 0; b < 2; ++b) {
+            if (PetscAbs(faceCoord - b*1.0) < PETSC_SMALL) {
+              ierr = DMSetLabelValue(*dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
+            }
+          }
+        }
+        ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
+      }
+      ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
+    }
+    ierr = DMGetLabel(*dm, "Faces", &label);CHKERRQ(ierr);
+    ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
+  }
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
@@ -428,66 +477,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
     }
-    /* Label the faces (bit of a hack here, until it is properly implemented for simplices) */
-    {
-      DM              cdm;
-      DMLabel         label;
-      IS              is;
-      PetscInt        d, dim = user->dim, b, f, Nf;
-      const PetscInt *faces;
-      PetscInt        csize;
-      PetscReal      *coords = NULL;
-      PetscSection    cs;
-      Vec             coordinates ;
-
-      ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
-      ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
-      ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
-
-      ierr = DMGetStratumIS(*dm, "boundary", 1,  &is);CHKERRQ(ierr);
-      if (is) {
-        ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
-        ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
-
-        ierr = DMCreateLabel(*dm, "Faces");CHKERRQ(ierr);
-
-        ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
-        ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
-        ierr = DMGetDefaultSection(cdm, &cs);
-
-        /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
-        PetscReal faceCoord;
-        PetscInt  v;
-        for (f = 0; f < Nf; ++f) {
-          ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
-          /* Calculate mean coordinate vector */
-          const PetscInt Nv = csize/dim;
-          for (d = 0; d < dim; ++d) {
-            faceCoord = 0.0;
-            for (v = 0; v < Nv; ++v) faceCoord += coords[v*dim+d];
-            faceCoord /= Nv;
-            for (b = 0; b < 2; ++b) {
-              if (PetscAbs(faceCoord - b*1.0) < PETSC_SMALL) {
-                ierr = DMSetLabelValue(*dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
-              }
-            }
-          }
-          ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
-        }
-        ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
-      }
-      /* Distribute mesh over processes */
-      ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-      if (distributedMesh) {
-        ierr = DMDestroy(dm);CHKERRQ(ierr);
-        *dm  = distributedMesh;
-      }
+    /* Distribute mesh over processes */
+    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+    if (distributedMesh) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = distributedMesh;
     }
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
   }
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  
+  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
