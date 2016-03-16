@@ -96,6 +96,7 @@ typedef struct {
   IS                  NeumannBoundariesLocal;
   IS                  DirichletBoundaries;
   IS                  DirichletBoundariesLocal;
+  PetscBool           eliminate_dirdofs;
   PetscBool           switch_static;
   PetscInt            coarsening_ratio;
   PetscInt            coarse_adj_red;

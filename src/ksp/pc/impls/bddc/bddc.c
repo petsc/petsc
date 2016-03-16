@@ -76,6 +76,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_bddc_benign_trick","Apply the benign subspace trick to saddle point problems with discontinuous pressures","none",pcbddc->benign_saddle_point,&pcbddc->benign_saddle_point,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_benign_nonetflux","Automatic computation of no-net-flux quadrature weights","none",pcbddc->benign_compute_nonetflux,&pcbddc->benign_compute_nonetflux,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_detect_disconnected","Detects disconnected subdomains","none",pcbddc->detect_disconnected,&pcbddc->detect_disconnected,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_eliminate_dirichlet","Whether or not we want to eliminate dirichlet dofs during presolve","none",pcbddc->eliminate_dirdofs,&pcbddc->eliminate_dirdofs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -116,6 +117,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Use change of basis on local face nodes: %d\n",pcbddc->use_change_on_faces);CHKERRQ(ierr);
 
     /* Switch between M_2 (default) and M_3 preconditioners (as defined by C. Dohrmann in the ref. article) */
+    ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Eliminate dirichlet dofs: %d\n",pcbddc->eliminate_dirdofs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Switch on static condensation ops around the interface preconditioner: %d\n",pcbddc->switch_static);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Multilevel coarsening ratio: %d\n",pcbddc->coarsening_ratio);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Multilevel max levels: %d\n",pcbddc->max_levels);CHKERRQ(ierr);
@@ -1149,7 +1151,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 
   pcbddc->rhs_change = PETSC_FALSE;
   /* Take into account zeroed rows -> change rhs and store solution removed */
-  if (rhs) {
+  if (rhs && pcbddc->eliminate_dirdofs) {
     IS dirIS = NULL;
 
     /* DirichletBoundariesLocal may not be consistent among neighbours; gets a dirichlet dofs IS from graph (may be cached) */
