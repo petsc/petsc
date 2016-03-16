@@ -521,8 +521,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
   ierr = MatCreate(comm,&Pscalar);CHKERRQ(ierr);
   ierr = MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr);CHKERRQ(ierr);
   ierr = MatSetType(Pscalar,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Pscalar,2,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pscalar,2,NULL,2,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Pscalar,1,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Pscalar,1,NULL,1,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],&lenI[2]);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dm,&startI[0],&startI[1],&startI[2],&endI[0],&endI[1],&endI[2]);CHKERRQ(ierr);
@@ -596,8 +596,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
   ierr = MatCreate(comm,&Pscalar);CHKERRQ(ierr);
   ierr = MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr);CHKERRQ(ierr);
   ierr = MatSetType(Pscalar,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Pscalar,2,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pscalar,2,NULL,2,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Pscalar,1,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Pscalar,1,NULL,1,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],NULL);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dm,&startI[0],&startI[1],NULL,&endI[0],&endI[1],NULL);CHKERRQ(ierr);
