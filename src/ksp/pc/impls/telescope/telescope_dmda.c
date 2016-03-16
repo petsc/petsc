@@ -841,7 +841,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   for (k=0; k<n; k++) {
     const PetscScalar *x_array;
     PetscScalar       *LA_sub_vec;
-    PetscInt          st,ed,bs;
+    PetscInt          st,ed;
 
     /* permute vector into ordering associated with re-partitioned dmda */
     ierr = MatMultTranspose(ctx->permutation,vecs[k],ctx->xp);CHKERRQ(ierr);
@@ -851,7 +851,6 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
     ierr = VecScatterEnd(sred->scatter,ctx->xp,sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
     /* copy vector entires into xred */
-    ierr = VecGetBlockSize(sred->xtmp,&bs);CHKERRQ(ierr);
     ierr = VecGetArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
     if (sub_vecs[k]) {
       ierr = VecGetOwnershipRange(sub_vecs[k],&st,&ed);CHKERRQ(ierr);
@@ -885,7 +884,7 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   PetscErrorCode    ierr;
   Mat               perm;
   Vec               xtmp,xp,xred,yred;
-  PetscInt          i,st,ed,bs;
+  PetscInt          i,st,ed;
   VecScatter        scatter;
   PetscScalar       *array;
   const PetscScalar *x_array;
@@ -911,7 +910,6 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
     ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
     /* copy vector entires into xred */
-    ierr = VecGetBlockSize(xtmp,&bs);CHKERRQ(ierr);
     ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
     if (yred) {
       PetscScalar *LA_yred;
@@ -933,7 +931,6 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* copy vector entires into xred */
-  ierr = VecGetBlockSize(xtmp,&bs);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
   if (xred) {
     PetscScalar *LA_xred;
@@ -953,7 +950,6 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   }
 
   /* return vector */
-  ierr = VecGetBlockSize(xtmp,&bs);CHKERRQ(ierr);
   ierr = VecGetArray(xtmp,&array);CHKERRQ(ierr);
   if (yred) {
     const PetscScalar *LA_yred;
