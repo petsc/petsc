@@ -77,20 +77,23 @@ class BaseTestPlex(object):
                 self.assertIn(p, point_closure)
 
     def testBoundaryLabel(self):
+        self.assertFalse(self.plex.hasLabel("boundary"))
         self.plex.markBoundaryFaces("boundary")
         self.assertTrue(self.plex.hasLabel("boundary"))
 
         faces = self.plex.getStratumIS("boundary", 1)
         for f in faces.getIndices():
-            for p in self.plex.getTransitiveClosure(f)[0]:
+            points, orient = self.plex.getTransitiveClosure(f, useCone=True)
+            for p in points:
                 self.plex.setLabelValue("boundary", p, 1)
+
         pStart, pEnd = self.plex.getChart()
         for p in range(pStart, pEnd):
             if self.plex.getLabelValue("boundary", p) != 1:
-                self.plex.setLabelValue("boundary", p, -1)
+                self.plex.setLabelValue("boundary", p, 2)
 
         numBoundary = self.plex.getStratumSize("boundary", 1)
-        numInterior = self.plex.getStratumSize("boundary", -1)
+        numInterior = self.plex.getStratumSize("boundary", 2)
         self.assertNotEqual(numBoundary, pEnd - pStart)
         self.assertNotEqual(numInterior, pEnd - pStart)
         self.assertEqual(numBoundary + numInterior, pEnd - pStart)
