@@ -1226,11 +1226,6 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   /*
-     Close any open dynamic libraries
-  */
-  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
-
-  /*
      Destroy any packages that registered a finalize
   */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
@@ -1312,6 +1307,11 @@ PetscErrorCode  PetscFinalize(void)
     }
   }
 #endif
+
+  /*
+     Close any open dynamic libraries
+  */
+  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
   flg  = PETSC_TRUE;
