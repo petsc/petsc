@@ -25,7 +25,10 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     self.setCompilers.pushLanguage('C')
-    MAKEARGS = 'MACHINE="" CC="'+self.setCompilers.getCompiler()+' '+self.setCompilers.getCompilerFlags()+'" HDF5_INCLUDE_DIR="'+self.hdf5.include[0]+'"'
+    if self.hdf5.include:
+      MAKEARGS = 'MACHINE="" CC="'+self.setCompilers.getCompiler()+' '+self.setCompilers.getCompilerFlags()+'" HDF5_INCLUDE_DIR="'+self.hdf5.include[0]+'"'
+    else:
+      MAKEARGS = 'MACHINE="" CC="'+self.setCompilers.getCompiler()+' '+self.setCompilers.getCompilerFlags()+'"'
     self.setCompilers.popLanguage()
     INSTALLARGS = 'ASCEMIO_INSTALL_DIR="'+self.installDir+'"'
     g = open(os.path.join(self.packageDir,'compiledata'),'w')

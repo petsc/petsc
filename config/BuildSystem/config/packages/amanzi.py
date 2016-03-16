@@ -69,7 +69,8 @@ class Configure(config.package.CMakePackage):
       raise RuntimeError("Amanzi requires Boost")
 
     if self.hdf5.found:
-      args.append('-DHDF5_ROOT='+os.path.dirname(self.hdf5.include[0]))
+      if self.hdf5.include:
+        args.append('-DHDF5_ROOT='+os.path.dirname(self.hdf5.include[0]))
     else:
       raise RuntimeError("Amanzi requires HDF5")
 
