@@ -104,8 +104,8 @@ PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 {
   const PetscInt Ncomp = dim;
 
-  PetscInt       d;
-  for (d = 0; d < Ncomp; ++d) u[d] = 0.0;
+  PetscInt       comp;
+  for (comp = 0; comp < Ncomp; ++comp) u[comp] = 0.0;
   return 0;
 }
 
@@ -113,8 +113,8 @@ PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 {
   const PetscInt Ncomp = dim;
 
-  PetscInt       d;
-  for (d = 0; d < Ncomp; ++d) u[d] = x[d];
+  PetscInt       comp;
+  for (comp = 0; comp < Ncomp; ++comp) u[comp] = x[comp];
   return 0;
 }
 
@@ -280,8 +280,6 @@ void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
            PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[])
 {
-  const PetscInt Ncomp = dim;
-
   Cof3D(g1, u_x);
 }
 
@@ -290,8 +288,6 @@ void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscReal a[], const PetscReal a_t[], const PetscReal a_x[],
            PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscReal g2[])
 {
-  const PetscInt Ncomp = dim;
-
   Cof3D(g2, u_x);
 }
 
@@ -518,7 +514,7 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
   PetscErrorCode (*matFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {elasticityMaterial};
   Vec            nu;
-  void *ctxs[] = {user, user};
+  void *ctxs[] = {user};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
