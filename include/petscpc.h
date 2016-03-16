@@ -328,6 +328,8 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetReductionFactor(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetReductionFactor(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreDM(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreDM(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
 
 #endif /* __PETSCPC_H */

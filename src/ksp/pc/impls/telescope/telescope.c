@@ -582,6 +582,21 @@ static PetscErrorCode PCTelescopeSetIgnoreDM_Telescope(PC pc,PetscBool v)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators_Telescope(PC pc,PetscBool *v)
+{
+  PC_Telescope red = (PC_Telescope)pc->data;
+  PetscFunctionBegin;
+  if (v) *v = red->ignore_kspcomputeoperators;
+  PetscFunctionReturn(0);
+}
+static PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators_Telescope(PC pc,PetscBool v)
+{
+  PC_Telescope red = (PC_Telescope)pc->data;
+  PetscFunctionBegin;
+  red->ignore_kspcomputeoperators = v;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -702,6 +717,52 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCTelescopeSetIgnoreDM_C",(PC,PetscBool),(pc,v));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+ PCTelescopeGetIgnoreKSPComputeOperators - Get the flag indicating if KSPComputeOperators will be used.
+ 
+ Not Collective
+ 
+ Input Parameter:
+ .  pc - the preconditioner context
+ 
+ Output Parameter:
+ .  v - the flag
+ 
+ Level: advanced
+ 
+ .keywords: PC, telescoping solve
+ @*/
+PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(pc,"PCTelescopeGetIgnoreKSPComputeOperators_C",(PC,PetscBool*),(pc,v));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+ PCTelescopeSetIgnoreKSPComputeOperators - Set a flag to ignore KSPComputeOperators.
+ 
+ Not Collective
+ 
+ Input Parameter:
+ .  pc - the preconditioner context
+ 
+ Output Parameter:
+ .  v - Use PETSC_TRUE to ignore any DM
+ 
+ Level: advanced
+ 
+ .keywords: PC, telescoping solve
+ @*/
+PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(pc,"PCTelescopeSetIgnoreKSPComputeOperators_C",(PC,PetscBool),(pc,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -845,6 +906,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetReductionFactor_C",PCTelescopeSetReductionFactor_Telescope);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetIgnoreDM_C",PCTelescopeGetIgnoreDM_Telescope);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetIgnoreDM_C",PCTelescopeSetIgnoreDM_Telescope);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetIgnoreKSPComputeOperators_C",PCTelescopeGetIgnoreKSPComputeOperators_Telescope);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeSetIgnoreKSPComputeOperators_C",PCTelescopeSetIgnoreKSPComputeOperators_Telescope);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCTelescopeGetDM_C",PCTelescopeGetDM_Telescope);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
