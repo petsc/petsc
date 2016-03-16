@@ -446,13 +446,13 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
       else if (isVTK) {
         ierr = PetscSNPrintf(buf, 256, "ex12-%d.vtu", i);CHKERRQ(ierr);
-        ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
       }
       else {
         ierr = PetscSNPrintf(buf, 256, "ex12-%d", i);CHKERRQ(ierr);
       }
-      ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
       ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
       ierr = DMView(cdm, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
