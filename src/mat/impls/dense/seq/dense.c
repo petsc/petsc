@@ -9,6 +9,52 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "MatZeroRowsColumns_SeqDense"
+PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqDense      *l = (Mat_SeqDense*)A->data;
+  PetscInt          m  = l->lda, n = A->cmap->n,r = A->rmap->n, i,j;
+  PetscScalar       *slot,*bb;
+  const PetscScalar *xx;
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  for (i=0; i<N; i++) {
+    if (rows[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row requested to be zeroed");
+    if (rows[i] >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D requested to be zeroed greater than or equal number of rows %D",rows[i],A->rmap->n);
+    if (rows[i] >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Col %D requested to be zeroed greater than or equal number of cols %D",rows[i],A->cmap->n);
+  }
+#endif
+
+  /* fix right hand side if needed */
+  if (x && b) {
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+    for (i=0; i<N; i++) bb[rows[i]] = diag*xx[rows[i]];
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  }
+
+  for (i=0; i<N; i++) {
+    slot = l->v + rows[i]*m;
+    ierr = PetscMemzero(slot,r*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  for (i=0; i<N; i++) {
+    slot = l->v + rows[i];
+    for (j=0; j<n; j++) { *slot = 0.0; slot += m;}
+  }
+  if (diag != 0.0) {
+    if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only coded for square matrices");
+    for (i=0; i<N; i++) {
+      slot  = l->v + (m+1)*rows[i];
+      *slot = diag;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatPtAPNumeric_SeqDense_SeqDense"
 PetscErrorCode MatPtAPNumeric_SeqDense_SeqDense(Mat A,Mat P,Mat C)
 {
@@ -2144,7 +2190,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         MatScale_SeqDense,
                                         MatShift_Basic,
                                         0,
-                                        0,
+                                        MatZeroRowsColumns_SeqDense,
                                 /* 49*/ MatSetRandom_SeqDense,
                                         0,
                                         0,
