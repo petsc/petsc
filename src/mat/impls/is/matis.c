@@ -627,8 +627,17 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
   Mat_IS         *a = (Mat_IS*)A->data;
   PetscErrorCode ierr;
   PetscViewer    sviewer;
+  PetscBool      isascii,view = PETSC_TRUE;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii)  {
+    PetscViewerFormat format;
+
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO) view = PETSC_FALSE;
+  }
+  if (!view) PetscFunctionReturn(0);
   ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   ierr = MatView(a->A,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
