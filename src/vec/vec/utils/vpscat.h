@@ -47,6 +47,16 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     }
   }
   xv = *((PetscScalar**)xin->data);
+#elif defined(PETSC_HAVE_VECCUDA)
+  VecCUDAAllocateCheckHost(xin);
+  if (xin->valid_GPU_array == PETSC_CUDA_GPU) {
+    if (xin->spptr && ctx->spptr) {
+      ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr);CHKERRQ(ierr);
+    } else {
+      ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+    }
+  }
+  xv = *((PetscScalar**)xin->data);
 #else
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #endif
@@ -112,15 +122,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       }
     }
   }
-#if defined(PETSC_HAVE_CUSP)
-  if (xin->valid_GPU_array != PETSC_CUSP_GPU) {
-    ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-  } else {
-    ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-  }
-#else
   ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-#endif
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
