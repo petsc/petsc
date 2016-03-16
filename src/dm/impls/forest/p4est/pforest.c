@@ -2888,16 +2888,58 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPforestMapCoordinates_Cell"
+static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, p4est_geometry_t *geom, PetscInt cell, p4est_topidx_t t, PetscScalar *coords)
+{
+  PetscInt closureSize, c, coordStart, coordEnd, coordDim, p4estCoordDim;
+  PetscInt *closure = NULL;
+  PetscSection coordSec;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateSection(plex,&coordSec);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSec,&coordStart,&coordEnd);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(plex,&coordDim);CHKERRQ(ierr);
+  p4estCoordDim = PetscMin(coordDim,3);
+  ierr = DMPlexGetTransitiveClosure(plex,cell,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  for (c = 0; c < closureSize; c++) {
+    PetscInt point = closure[2 * c];
+
+    if (point >= coordStart && point < coordEnd) {
+      PetscInt dof, off;
+      PetscInt nCoords, i;
+      ierr = PetscSectionGetDof(coordSec,point,&dof);CHKERRQ(ierr);
+      if (dof % coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Did not understand coordinate layout");
+      nCoords = dof / coordDim;
+      ierr = PetscSectionGetOffset(coordSec,point,&off);CHKERRQ(ierr);
+      for (i = 0; i < nCoords; i++) {
+        PetscScalar *coord = &coords[off + i * coordDim];
+        double coordP4est[3] = {0.};
+        double coordP4estMapped[3] = {0.};
+        PetscInt j;
+
+        for (j = 0; j < p4estCoordDim; j++) {
+          coordP4est[j] = (double) PetscRealPart(coord[j]);
+        }
+        (geom->X)(geom,t,coordP4est,coordP4estMapped);
+        for (j = 0; j < p4estCoordDim; j++) {
+          coord[j] = (PetscScalar) coordP4estMapped[j];
+        }
+      }
+    }
+  }
+  ierr = DMPlexRestoreTransitiveClosure(plex,cell,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPforestMapCoordinates"
 static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
 {
   DM_Forest *forest;
   DM_Forest_pforest *pforest;
   p4est_geometry_t *geom;
-  PetscInt cLocalStart;
-  PetscSection coordSec;
-  PetscInt coordStart, coordEnd;
-  PetscInt coordDim, p4estCoordDim;
+  PetscInt cLocalStart, cLocalEnd;
   Vec coordLocalVec;
   PetscScalar *coords;
   p4est_topidx_t flt, llt, t;
@@ -2910,12 +2952,9 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
   geom = pforest->topo->geom;
   if (!geom) PetscFunctionReturn(0);
   cLocalStart = pforest->cLocalStart;
-  ierr = DMGetCoordinateSection(plex,&coordSec);CHKERRQ(ierr);
+  cLocalEnd   = pforest->cLocalEnd;
   ierr = DMGetCoordinatesLocal(plex,&coordLocalVec);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(plex,&coordDim);CHKERRQ(ierr);
-  p4estCoordDim = PetscMin(coordDim,3);
   ierr = VecGetArray(coordLocalVec,&coords);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(coordSec,&coordStart,&coordEnd);CHKERRQ(ierr);
   if (cLocalStart > 0) {
     p4est_quadrant_t *ghosts = (p4est_quadrant_t *) pforest->ghost->ghosts.array;
     PetscInt count;
@@ -2923,37 +2962,8 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
     for (count = 0; count < cLocalStart; count++) {
       p4est_quadrant_t *quad = &ghosts[count];
       p4est_topidx_t t = quad->p.which_tree;
-      PetscInt closureSize, c;
-      PetscInt *closure = NULL;
 
-      ierr = DMPlexGetTransitiveClosure(plex,count,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-      for (c = 0; c < closureSize; c++) {
-        PetscInt point = closure[2 * c];
-
-        if (point >= coordStart && point < coordEnd) {
-          PetscInt dof, off;
-          PetscInt nCoords, i;
-          ierr = PetscSectionGetDof(coordSec,point,&dof);CHKERRQ(ierr);
-          if (dof % coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Did not understand coordinate layout");
-          nCoords = dof / coordDim;
-          ierr = PetscSectionGetOffset(coordSec,point,&off);CHKERRQ(ierr);
-          for (i = 0; i < nCoords; i++) {
-            PetscScalar *coord = &coords[off + i * coordDim];
-            double coordP4est[3] = {0.};
-            double coordP4estMapped[3] = {0.};
-            PetscInt j;
-
-            for (j = 0; j < p4estCoordDim; j++) {
-              coordP4est[j] = (double) PetscRealPart(coord[j]);
-            }
-            (geom->X)(geom,t,coordP4est,coordP4estMapped);
-            for (j = 0; j < p4estCoordDim; j++) {
-              coord[j] = (PetscScalar) coordP4estMapped[j];
-            }
-          }
-        }
-      }
-      ierr = DMPlexRestoreTransitiveClosure(plex,count,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      ierr = DMPforestMapCoordinates_Cell(plex,geom,count,t,coords);CHKERRQ(ierr);
     }
   }
   flt = pforest->forest->first_local_tree;
@@ -2965,39 +2975,24 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
     PetscInt numQuads = (PetscInt) tree->quadrants.elem_count;
 
     for (i = 0; i < numQuads; i++) {
-      PetscInt closureSize, *closure = NULL;
-      PetscInt count = i + offset, c;
+      PetscInt count = i + offset;
 
-      ierr = DMPlexGetTransitiveClosure(plex,count,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-      for (c = 0; c < closureSize; c++) {
-        PetscInt point = closure[2 * c];
-
-        if (point >= coordStart && point < coordEnd) {
-          PetscInt dof, off;
-          PetscInt nCoords, i;
-          ierr = PetscSectionGetDof(coordSec,point,&dof);CHKERRQ(ierr);
-          if (dof % coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Did not understand coordinate layout");
-          nCoords = dof / coordDim;
-          ierr = PetscSectionGetOffset(coordSec,point,&off);CHKERRQ(ierr);
-          for (i = 0; i < nCoords; i++) {
-            PetscScalar *coord = &coords[off + i * coordDim];
-            double coordP4est[3] = {0.};
-            double coordP4estMapped[3] = {0.};
-            PetscInt j;
-
-            for (j = 0; j < p4estCoordDim; j++) {
-              coordP4est[j] = (double) PetscRealPart(coord[j]);
-            }
-            (geom->X)(geom,t,coordP4est,coordP4estMapped);
-            for (j = 0; j < p4estCoordDim; j++) {
-              coord[j] = (PetscScalar) coordP4estMapped[j];
-            }
-          }
-        }
-      }
-      ierr = DMPlexRestoreTransitiveClosure(plex,count,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      ierr = DMPforestMapCoordinates_Cell(plex,geom,count,t,coords);CHKERRQ(ierr);
     }
   }
+  if (cLocalStart > 0) {
+    p4est_quadrant_t *ghosts = (p4est_quadrant_t *) pforest->ghost->ghosts.array;
+    PetscInt numGhosts = (PetscInt) pforest->ghost->ghosts.elem_count;
+    PetscInt count;
+
+    for (count = cLocalStart; count < numGhosts; count++) {
+      p4est_quadrant_t *quad = &ghosts[count];
+      p4est_topidx_t t = quad->p.which_tree;
+
+      ierr = DMPforestMapCoordinates_Cell(plex,geom,count+cLocalEnd,t,coords);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecRestoreArray(coordLocalVec,&coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
