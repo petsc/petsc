@@ -783,18 +783,16 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   /* We assume that dmksp_func = NULL, is equivalent to dmActive = PETSC_FALSE */
   if (dmksp_func && !sred->ignore_kspcomputeoperators) {
     DM  dmrepart;
-    Mat Ak,Bk;
+    Mat Ak;
 
     *A = NULL;
     if (isActiveRank(sred->psubcomm)) {
       ierr = KSPGetDM(sred->ksp,&dmrepart);CHKERRQ(ierr);
       if (reuse == MAT_INITIAL_MATRIX) {
         ierr = DMCreateMatrix(dmrepart,&Ak);CHKERRQ(ierr);
-        Bk = Ak;
         *A = Ak;
       } else if (reuse == MAT_REUSE_MATRIX) {
         Ak = *A;
-        Bk = *A;
       }
       /*
        There is no need to explicitly assemble the operator now,
