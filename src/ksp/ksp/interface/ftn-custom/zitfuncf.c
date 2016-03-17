@@ -150,19 +150,19 @@ PETSC_EXTERN void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *mon
   CHKFORTRANNULLFUNCTION(monitordestroy);
 
   if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitordefault_) {
-    *ierr = KSPMonitorSet(*ksp,KSPMonitorDefault,0,0);
+    ; /* *ierr = KSPMonitorSet(*ksp,KSPMonitorDefault,0,0); */
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorlgresidualnorm_) {
-    *ierr = KSPMonitorSet(*ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGResidualNorm,0,0);
+    ; /* *ierr = KSPMonitorSet(*ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGResidualNorm,0,0); */
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorlgtrueresidualnorm_) {
-    *ierr = KSPMonitorSet(*ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGTrueResidualNorm,0,0);
+    ; /* *ierr = KSPMonitorSet(*ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGTrueResidualNorm,0,0);*/
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorsolution_) {
-    *ierr = KSPMonitorSet(*ksp,KSPMonitorSolution,0,0);
+    ; /* *ierr = KSPMonitorSet(*ksp,KSPMonitorSolution,0,0); */
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitortrueresidualnorm_) {
-    *ierr = KSPMonitorSet(*ksp,KSPMonitorTrueResidualNorm,0,0);
+    ; /* *ierr = KSPMonitorSet(*ksp,KSPMonitorTrueResidualNorm,0,0); */
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorsingularvalue_) {
-    *ierr = KSPMonitorSet(*ksp,KSPMonitorSingularValue,0,0);
+    ; /* *ierr = KSPMonitorSet(*ksp,KSPMonitorSingularValue,0,0); */
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspgmresmonitorkrylov_) {
-    *ierr = KSPMonitorSet(*ksp,KSPGMRESMonitorKrylov,0,0);
+    ; /* *ierr = KSPMonitorSet(*ksp,KSPGMRESMonitorKrylov,0,0); */
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.monitor,(PetscVoidFunction)monitor,mctx); if (*ierr) return;
     if (!monitordestroy) {

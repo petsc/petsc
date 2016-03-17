@@ -110,6 +110,31 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerAndFormatDestroy"
+/*@C
+   PetscViewerAndFormatDestroy - Destroys a PetscViewerAndFormat struct.
+
+   Collective on PetscViewer
+
+   Input Parameters:
+.  viewer - the PetscViewerAndFormat to be destroyed.
+
+   Level: beginner
+
+.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen()
+
+@*/
+PetscErrorCode  PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerDestroy(&(*vf)->viewer);CHKERRQ(ierr);
+  ierr = PetscFree(*vf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerGetType"
 /*@C
    PetscViewerGetType - Returns the type of a PetscViewer.
