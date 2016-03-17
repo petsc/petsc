@@ -703,7 +703,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt triSizes_p2[2]  = {1, 2};
           PetscInt triPoints_p2[3] = {0, 1, 2};
 
-          sizes = triSizes_p2; points = triPoints_p2;break;}
+          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  triSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, triPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
@@ -713,7 +715,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt quadSizes_p2[2]  = {1, 2};
           PetscInt quadPoints_p2[3] = {0, 1, 2};
 
-          sizes = quadSizes_p2; points = quadPoints_p2;break;}
+          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  quadSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, quadPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
@@ -723,7 +727,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt tetSizes_p2[2]  = {1, 2};
           PetscInt tetPoints_p2[3] = {0, 1, 2};
 
-          sizes = tetSizes_p2; points = tetPoints_p2;break;}
+          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, tetPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
@@ -733,7 +739,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt hexSizes_p2[2]  = {1, 2};
           PetscInt hexPoints_p2[3] = {0, 1, 2};
 
-          sizes = hexSizes_p2; points = hexPoints_p2;break;}
+          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  hexSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, hexPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
@@ -742,6 +750,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
     ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
   {
     DM distributedMesh = NULL;

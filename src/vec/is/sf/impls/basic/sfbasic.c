@@ -1022,11 +1022,11 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
       (*UnpackOp)(n,link->bs,rootloc+rootoffset[i],rootdata,(const void *)packstart);
     }
 #if PETSC_HAVE_MPI_REDUCE_LOCAL
-    else if (n) {
-      PetscInt j, stride = link->bs * typesize;
+    else if (n) { /* the op should be defined to operate on the whole datatype, so we ignore link->bs */
+      PetscInt j;
 
       for (j = 0; j < n; j++) {
-        ierr = MPI_Reduce_local(packstart+j*stride,((char *) rootdata)+(rootloc[rootoffset[i]+j])*stride,link->bs,unit,op);CHKERRQ(ierr);
+        ierr = MPI_Reduce_local(packstart+j*typesize,((char *) rootdata)+(rootloc[rootoffset[i]+j])*typesize,1,unit,op);CHKERRQ(ierr);
       }
     }
 #else

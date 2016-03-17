@@ -1849,7 +1849,7 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
   same grade, and this function calculates the strata. This grade can be seen as the height (or depth) of the point in
   the DAG.
 
-  Not collective
+  Collective on dm
 
   Input Parameter:
 . mesh - The DMPlex
@@ -1940,6 +1940,16 @@ PetscErrorCode DMPlexStratify(DM dm)
     }
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
+  { /* just in case there is an empty process */
+    PetscInt numValues, maxValues = 0, v;
+
+    ierr = DMLabelGetNumValues(label,&numValues);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&numValues,&maxValues,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    for (v = numValues; v < maxValues; v++) {
+      DMLabelAddStratum(label,v);CHKERRQ(ierr);
+    }
+  }
+
   ierr = DMLabelGetState(label, &mesh->depthState);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

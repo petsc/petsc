@@ -14,10 +14,12 @@ typedef struct {
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);
   PetscErrorCode             (*destroy)(DM);
   PetscErrorCode             (*ftemplate)(DM,DM);
-  PetscBool                  setFromOptions;
+  PetscBool                  setfromoptionscalled;
+  PetscBool                  computeAdaptSF;
   DMForestTopology           topology;
   DM                         base;
   DM                         adapt;
+  DMForestAdaptivityPurpose  adaptPurpose;
   PetscInt                   adjDim;
   PetscInt                   overlap;
   PetscInt                   minRefinement;
@@ -26,6 +28,8 @@ typedef struct {
   PetscInt                   cStart;
   PetscInt                   cEnd;
   PetscSF                    cellSF;
+  PetscSF                    preCoarseToFine;
+  PetscSF                    coarseToPreFine;
   char                       *adaptLabel;
   DMForestAdaptivityStrategy adaptStrategy;
   PetscInt                   gradeFactor;

@@ -75,10 +75,8 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-  if (nroots > 0) {
-    ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
-    ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
-  }
+  ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
+  ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
   for (*numVertices = 0, p = pStart; p < pEnd; p++) {
     /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
     if (nroots > 0) {if (cellNum[p] < 0) continue;}
@@ -108,7 +106,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   vOffsets[*numVertices] = size;
   if (offsets) *offsets = vOffsets;
   ierr = PetscSegBufferExtractAlloc(adjBuffer, &graph);CHKERRQ(ierr);
-  if (nroots > 0) {
+  {
     ISLocalToGlobalMapping ltogCells;
     PetscInt n, size, *cells_arr;
     /* In parallel, apply a global cell numbering to the graph */
