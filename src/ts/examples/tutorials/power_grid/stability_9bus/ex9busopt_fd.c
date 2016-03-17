@@ -1,42 +1,9 @@
-static char help[] = "Power grid stability analysis of WECC 9 bus system.\n\
-This example is based on the 9-bus (node) example given in the book Power\n\
-Systems Dynamics and Stability (Chapter 7) by P. Sauer and M. A. Pai.\n\
-The power grid in this example consists of 9 buses (nodes), 3 generators,\n\
-3 loads, and 9 transmission lines. The network equations are written\n\
-in current balance form using rectangular coordiantes.\n\n";
+static char help[] = "Using finite difference for the problem in ex9busopt.c \n\n";
 
 /*
-   The equations for the stability analysis are described by the DAE
+  Use finite difference approximations to solve the same optimization problem as in ex9busopt.c.
+ */
 
-   \dot{x} = f(x,y,t)
-     0     = g(x,y,t)
-
-   where the generators are described by differential equations, while the algebraic
-   constraints define the network equations.
-
-   The generators are modeled with a 4th order differential equation describing the electrical
-   and mechanical dynamics. Each generator also has an exciter system modeled by 3rd order
-   diff. eqns. describing the exciter, voltage regulator, and the feedback stabilizer
-   mechanism.
-
-   The network equations are described by nodal current balance equations.
-    I(x,y) - Y*V = 0
-
-   where:
-    I(x,y) is the current injected from generators and loads.
-      Y    is the admittance matrix, and
-      V    is the voltage vector
-*/
-
-/*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
 #include <petsctao.h>
 #include <petscts.h>
 #include <petscdm.h>
