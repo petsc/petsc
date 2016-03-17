@@ -12,8 +12,7 @@
 
    Input Parameters:
 +  draw - the drawing context
-.  xl - the coordinates of lower left corner of text
-.  yl - the coordinates of lower left corner of text
+.  xl,yl - the coordinates of lower left corner of text
 .  cl - the color of the text
 -  text - the text to draw
 
@@ -35,6 +34,7 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
   PetscValidCharPointer(text,5);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
+
   if (!draw->ops->string) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing strings",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->string)(draw,xl,yl,cl,text);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -62,6 +62,9 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
 @*/
 PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
+  int            i;
+  char           chr[2] = {0, 0};
+  PetscReal      tw,th;
   PetscErrorCode ierr;
   PetscBool      isnull;
 
@@ -70,8 +73,15 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
   PetscValidCharPointer(text,5);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  if (!draw->ops->stringvertical) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing vertical strings",((PetscObject)draw)->type_name);
-  ierr = (*draw->ops->stringvertical)(draw,xl,yl,cl,text);CHKERRQ(ierr);
+
+  if (draw->ops->stringvertical) {
+    ierr = (*draw->ops->stringvertical)(draw,xl,yl,cl,text);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  for (i = 0; (chr[0] = text[i]); i++) {
+    ierr = PetscDrawString(draw,xl,yl-th*(i+1),cl,chr);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -111,8 +121,8 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
   if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
-  ierr =  PetscStrlen(text,&len);CHKERRQ(ierr);
-  xc   = xc - .5*len*tw;
+  ierr = PetscStrlen(text,&len);CHKERRQ(ierr);
+  xc   = xc - len*tw/2;
   ierr = PetscDrawString(draw,xc,yl,cl,text);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
