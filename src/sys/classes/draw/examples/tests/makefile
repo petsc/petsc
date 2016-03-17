@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR   = src/sys/classes/draw/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex9.c ex10.c ex11.c ex12.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex9.c ex10.c ex11.c ex12.c
 EXAMPLESF       = ex4f.F ex5f.F
 MANSEC          = Draw
 
@@ -72,14 +72,16 @@ runex3:
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4
 runex6:
-	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap hue
-	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap gray
-	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap bone
-	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap jet
-	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap coolwarm
-	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap parula
-	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap viridis
-	-@${MPIEXEC} -n 1 ./ex6 -draw_pause ${DRAW_PAUSE} -draw_cmap plasma
+	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap hue
+	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap gray
+	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap bone
+	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap jet
+	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap coolwarm
+	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap parula
+	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap viridis
+	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap plasma
+runex7:
+	-@${MPIEXEC} -n 1 ./ex7
 runex9:
 	-@${MPIEXEC} -n 1 ./ex9
 runex10:
@@ -89,9 +91,9 @@ runex11:
 runex12:
 	-@${MPIEXEC} -n 1 ./ex12
 
-TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex10.PETSc \
-                            runex10 ex10.rm ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm ex9.PETSc runex9 ex9.rm \
-                            ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 ex12.rm
+TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm \
+                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex9.PETSc runex9 ex9.rm \
+                            ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_FORTRAN	  = ex4f.PETSc ex4f.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc ex1.rm
 TESTEXAMPLES_13		  = ex9.PETSc ex9.rm
