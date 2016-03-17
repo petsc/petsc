@@ -200,6 +200,45 @@ typedef struct {
   char                *ghostName;
 } DM_Forest_pforest;
 
+#define DM_Forest_geometry_pforest _append_pforest(DM_Forest_geometry)
+typedef struct {
+  PetscErrorCode (*map) (PetscInt, const PetscReal[], PetscReal[], void *);
+  void *mapCtx;
+  PetscInt coordDim;
+}
+DM_Forest_geometry_pforest;
+
+#define GeometryMapping_pforest _append_pforest(Geometry)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(GeometryMapping_pforest)
+static void GeometryMapping_pforest(p4est_geometry_t *geom, p4est_topidx_t which_tree, const double abc[3], double xyz[3])
+{
+  DM_Forest_geometry_pforest *geom_pforest = (DM_Forest_geometry_pforest *)geom->user;
+  PetscReal PetscABC[3] = {0.};
+  PetscReal PetscXYZ[3] = {0.};
+  PetscInt i, d = PetscMin(3,geom_pforest->coordDim);
+  PetscErrorCode ierr;
+
+  for (i = 0; i < d; i++) {
+    PetscABC[i] = abc[i];
+  }
+  ierr = (geom_pforest->map)(geom_pforest->coordDim,PetscABC,PetscXYZ,geom_pforest->mapCtx);P4EST_ASSERT(!ierr);
+  for (i = 0; i < d; i++) {
+    xyz[i] = PetscXYZ[i];
+  }
+}
+
+#define GeometryDestroy_pforest _append_pforest(GeometryDestroy)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(GeometryDestroy_pforest)
+static void GeometryDestroy_pforest(p4est_geometry_t *geom)
+{
+  PetscErrorCode ierr;
+
+  ierr = PetscFree(geom->user);P4EST_ASSERT(!ierr);
+  ierr = PetscFree(geom);P4EST_ASSERT(!ierr);
+}
+
 #define DMFTopologyDestroy_pforest _append_pforest(DMFTopologyDestroy)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMFTopologyDestroy_pforest)
@@ -510,7 +549,29 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = PetscNewLog(dm,&topo);CHKERRQ(ierr);
       topo->refct             = 1;
       topo->conn              = conn;
-      PetscStackCallP4estReturn(topo->geom,p4est_geometry_new_connectivity,(conn));
+      {
+        PetscErrorCode (*map) (PetscInt,const PetscReal[],PetscReal[],void *);
+        void *mapCtx;
+
+        ierr = DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx);CHKERRQ(ierr);
+        if (map) {
+          DM_Forest_geometry_pforest *geom_pforest;
+          p4est_geometry_t *geom;
+
+          ierr = PetscNew(&geom_pforest);CHKERRQ(ierr);
+          ierr = DMGetCoordinateDim(dm,&geom_pforest->coordDim);CHKERRQ(ierr);
+          geom_pforest->map = map;
+          geom_pforest->mapCtx = mapCtx;
+          ierr = PetscNew(&geom);CHKERRQ(ierr);
+          geom->name = topoName;
+          geom->user = geom_pforest;
+          geom->X = GeometryMapping_pforest;
+          geom->destroy = GeometryDestroy_pforest;
+        }
+        else {
+          PetscStackCallP4estReturn(topo->geom,p4est_geometry_new_connectivity,(conn));
+        }
+      }
       topo->tree_face_to_uniq = tree_face_to_uniq;
       pforest->topo           = topo;
     }

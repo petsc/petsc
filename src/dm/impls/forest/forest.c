@@ -92,6 +92,8 @@ PETSC_EXTERN PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   DMForestTopology topology;
   PetscInt         dim, overlap, ref, factor;
   DMForestAdaptivityStrategy strat;
+  PetscErrorCode   (*map) (PetscInt, const PetscReal[], PetscReal[], void *);
+  void             *mapCtx;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -115,6 +117,8 @@ PETSC_EXTERN PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   ierr = DMForestSetAdaptivityStrategy(*tdm,strat);CHKERRQ(ierr);
   ierr = DMForestGetGradeFactor(dm,&factor);CHKERRQ(ierr);
   ierr = DMForestSetGradeFactor(*tdm,factor);CHKERRQ(ierr);
+  ierr = DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx);CHKERRQ(ierr);
+  ierr = DMForestSetBaseCoordinateMapping(dm,map,mapCtx);CHKERRQ(ierr);
   if (forest->ftemplate) {
     ierr = (forest->ftemplate) (dm, *tdm);CHKERRQ(ierr);
   }
