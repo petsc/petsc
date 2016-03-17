@@ -14,6 +14,8 @@ typedef struct {
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);
   PetscErrorCode             (*destroy)(DM);
   PetscErrorCode             (*ftemplate)(DM,DM);
+  PetscErrorCode             (*mapcoordinates)(PetscInt,const PetscReal[],PetscReal[],void*);
+  void                       *mapcoordinatesctx;
   PetscBool                  setFromOptions;
   DMForestTopology           topology;
   DM                         base;

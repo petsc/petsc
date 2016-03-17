@@ -23,6 +23,8 @@ PETSC_EXTERN PetscErrorCode DMForestGetTopology(DM, DMForestTopology *);
  * convert to a DMForest (right now: plex) */
 PETSC_EXTERN PetscErrorCode DMForestSetBaseDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMForestGetBaseDM(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMForestSetBaseCoordinateMapping(DM, PetscErrorCode(*)(PetscInt,const PetscReal[],PetscReal[],void*),void*);
+PETSC_EXTERN PetscErrorCode DMForestGetBaseCoordinateMapping(DM, PetscErrorCode(**)(PetscInt,const PetscReal[],PetscReal[],void*),void*);
 
 /* this is the forest from which we adapt */
 PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityForest(DM, DM);

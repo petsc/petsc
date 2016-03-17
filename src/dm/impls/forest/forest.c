@@ -227,6 +227,32 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMForestSetBaseCoordinateMapping"
+PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  forest->mapcoordinates = func;
+  forest->mapcoordinatesctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetBaseCoordinateMapping"
+PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (func) *func = forest->mapcoordinates;
+  if (ctx) *((void **) ctx) = forest->mapcoordinatesctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMForestSetAdaptivityForest"
 PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
 {
