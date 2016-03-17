@@ -56,5 +56,5 @@ class Configure(config.package.GNUPackage):
       try:
         self.executeShellCommand('./bootstrap',cwd=self.packageDir,log=self.log)
       except RuntimeError,e:
-        raise RuntimeError('Could not bootstrap p4est using autotools: maybe autotools (or recent enough autotools) could not be found?\nError: '+e)
+        raise RuntimeError('Could not bootstrap p4est using autotools: maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
     return config.package.GNUPackage.Install(self)
