@@ -287,7 +287,6 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* make sure the X server processed requests from all processes */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   XSync(XiWin->disp,False);
@@ -303,8 +302,6 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
-
-  if (draw->saveonflush) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -317,8 +314,6 @@ static PetscErrorCode PetscDrawClear_X(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (draw->saveonclear) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
-
   /* make sure the X server processed requests from all processes */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   XSync(XiWin->disp,False);
