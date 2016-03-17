@@ -94,6 +94,7 @@ class Package(config.base.Configure):
     self.libraries     = framework.require('config.libraries', self)
     self.programs      = framework.require('config.programs', self)
     self.sourceControl = framework.require('config.sourceControl',self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
     if not self.isMPI and not self.package == 'make':
@@ -809,6 +810,14 @@ class Package(config.base.Configure):
       rejects.extend([arg for arg in args if arg.startswith(i)])
     return self.rmArgs(args,rejects)
 
+  def checkSharedLibrariesEnabled(self):
+    if self.framework.clArgDB.has_key('download-'+self.package+'-shared') and self.argDB['download-'+self.package+'-shared']:
+      raise RuntimeError(self.package+' cannot use download-'+self.package+'-shared=1. This flag can only be used to disable '+self.package+' shared libraries')
+    if not self.sharedLibraries.useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
+      return False
+    else:
+      return True
+
 '''
 config.package.GNUPackage is a helper class whose intent is to simplify writing configure modules
 for GNU-style packages that are installed using the "configure; make; make install" idiom.
@@ -1147,7 +1156,7 @@ class GNUPackage(Package):
       args.append('--disable-fc')
       args.append('--disable-f77')
       args.append('--disable-f90')
-    if (self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']:
+    if self.checkSharedLibrariesEnabled():
       args.append('--enable-shared')
     else:
       args.append('--disable-shared')
@@ -1254,7 +1263,7 @@ class CMakePackage(Package):
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
-    if (self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']:
+    if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS=on')
     else:
       args.append('-DBUILD_SHARED_LIBS=off')

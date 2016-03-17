@@ -56,7 +56,7 @@ class Configure(config.package.CMakePackage):
     if self.setCompilers.isDarwin(self.log):
       # shared library build doesn't work on Apple
       args.append('-DBUILD_SHARED_LIBS=off')
-    if not self.sharedLibraries.useShared:
+    if not self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS=off')
 
     self.framework.pushLanguage('C')
