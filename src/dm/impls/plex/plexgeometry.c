@@ -448,7 +448,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   numPoints /= bs;
   ierr = PetscMalloc1(numPoints, &cells);CHKERRQ(ierr);
   if (hash) {
-    if (!mesh->lbox) {ierr = DMPlexComputeGridHash_Internal(dm, &mesh->lbox);CHKERRQ(ierr);}
+    if (!mesh->lbox) {ierr = PetscInfo(dm, "Initializing grid hashing");CHKERRQ(ierr);ierr = DMPlexComputeGridHash_Internal(dm, &mesh->lbox);CHKERRQ(ierr);}
     /* Designate the local box for each point */
     /* Send points to correct process */
     /* Search cells that lie in each subbox */

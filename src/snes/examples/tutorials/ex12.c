@@ -34,7 +34,7 @@ typedef struct {
   PC            pcmg;              /* This is needed for error monitoring */
 } AppCtx;
 
-PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
   return 0;
@@ -61,7 +61,7 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y} \cdot \hat n = 2 (x + y)
 */
-PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
   return 0;
@@ -133,7 +133,7 @@ void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     -\div \nu \grad u + f = -6 (x + y) + 6 (x + y) = 0
 */
-PetscErrorCode nu_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode nu_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0] + x[1];
   return 0;
@@ -264,7 +264,7 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y, 2z} \cdot \hat n = 2 (x + y + z)
 */
-PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = 2.0*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2])/3.0;
   return 0;
@@ -272,7 +272,7 @@ PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscReal x[],
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
   const char    *runTypes[3] = {"full", "test", "perf"};
@@ -332,8 +332,23 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateBCLabel"
+static PetscErrorCode CreateBCLabel(DM dm, const char name[])
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
   const char    *filename        = user->filename;
@@ -387,18 +402,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
-  }
-  else if (user->bcType == DIRICHLET) {
+  } else if (user->bcType == DIRICHLET) {
     PetscBool hasLabel;
-    DMLabel   label;
 
     ierr = DMHasLabel(*dm,"marker",&hasLabel);CHKERRQ(ierr);
-    if (!hasLabel) {
-      ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
-      ierr = DMGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-      ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
-      ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
-    }
+    if (!hasLabel) {ierr = CreateBCLabel(*dm, "marker");CHKERRQ(ierr);}
   }
   {
     char      convType[256];
@@ -446,13 +454,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
       else if (isVTK) {
         ierr = PetscSNPrintf(buf, 256, "ex12-%d.vtu", i);CHKERRQ(ierr);
-        ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
       }
       else {
         ierr = PetscSNPrintf(buf, 256, "ex12-%d", i);CHKERRQ(ierr);
       }
-      ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
       ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
       ierr = DMView(cdm, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
@@ -464,7 +472,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupProblem"
-PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
   PetscDS        prob;
   PetscErrorCode ierr;
@@ -507,7 +515,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupMaterial"
-PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
+static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
   PetscErrorCode (*matFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {nu_2d};
   Vec            nu;
@@ -523,7 +531,7 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupDiscretization"
-PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
+static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM             cdm   = dm;
   const PetscInt dim   = user->dim;
@@ -583,6 +591,12 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
       ierr = PetscObjectCompose((PetscObject) dm, "dmCh", (PetscObject) dmCh);CHKERRQ(ierr);
       ierr = DMDestroy(&dmCh);CHKERRQ(ierr);
     }
+    if (user->bcType == DIRICHLET) {
+      PetscBool hasLabel;
+
+      ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
+      if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
+    }
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
     ierr = DMAddBoundary(cdm, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
@@ -614,7 +628,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 .keywords: KSP, default, monitor, residual
 .seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorDefault()
 @*/
-PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
+static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
   DM             dm;
@@ -693,7 +707,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, void *ctx
 .keywords: SNES, nonlinear, default, monitor, norm
 .seealso: SNESMonitorDefault(), SNESMonitorSet(), SNESMonitorSolution()
 @*/
-PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *ctx)
+static PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
   DM             dm;
