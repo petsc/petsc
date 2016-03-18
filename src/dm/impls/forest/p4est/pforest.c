@@ -205,6 +205,7 @@ typedef struct {
   PetscErrorCode (*map) (PetscInt, const PetscReal[], PetscReal[], void *);
   void *mapCtx;
   PetscInt coordDim;
+  p4est_geometry_t *inner;
 }
 DM_Forest_geometry_pforest;
 
@@ -214,13 +215,16 @@ DM_Forest_geometry_pforest;
 static void GeometryMapping_pforest(p4est_geometry_t *geom, p4est_topidx_t which_tree, const double abc[3], double xyz[3])
 {
   DM_Forest_geometry_pforest *geom_pforest = (DM_Forest_geometry_pforest *)geom->user;
-  PetscReal PetscABC[3] = {0.};
-  PetscReal PetscXYZ[3] = {0.};
-  PetscInt i, d = PetscMin(3,geom_pforest->coordDim);
+  PetscReal      PetscABC[3] = {0.};
+  PetscReal      PetscXYZ[3] = {0.};
+  PetscInt       i, d = PetscMin(3,geom_pforest->coordDim);
+  double         ABC[3];
   PetscErrorCode ierr;
 
+  (geom_pforest->inner->X)(geom_pforest->inner,which_tree,abc,ABC);
+
   for (i = 0; i < d; i++) {
-    PetscABC[i] = abc[i];
+    PetscABC[i] = ABC[i];
   }
   ierr = (geom_pforest->map)(geom_pforest->coordDim,PetscABC,PetscXYZ,geom_pforest->mapCtx);P4EST_ASSERT(!ierr);
   for (i = 0; i < d; i++) {
@@ -233,8 +237,10 @@ static void GeometryMapping_pforest(p4est_geometry_t *geom, p4est_topidx_t which
 #define __FUNCT__ _pforest_string(GeometryDestroy_pforest)
 static void GeometryDestroy_pforest(p4est_geometry_t *geom)
 {
+  DM_Forest_geometry_pforest *geom_pforest = (DM_Forest_geometry_pforest *)geom->user;
   PetscErrorCode ierr;
 
+  p4est_geometry_destroy(geom_pforest->inner);
   ierr = PetscFree(geom->user);P4EST_ASSERT(!ierr);
   ierr = PetscFree(geom);P4EST_ASSERT(!ierr);
 }
@@ -562,11 +568,13 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           ierr = DMGetCoordinateDim(dm,&geom_pforest->coordDim);CHKERRQ(ierr);
           geom_pforest->map = map;
           geom_pforest->mapCtx = mapCtx;
+          PetscStackCallP4estReturn(geom_pforest->inner,p4est_geometry_new_connectivity,(conn));
           ierr = PetscNew(&geom);CHKERRQ(ierr);
           geom->name = topoName;
           geom->user = geom_pforest;
           geom->X = GeometryMapping_pforest;
           geom->destroy = GeometryDestroy_pforest;
+          topo->geom = geom;
         }
         else {
           PetscStackCallP4estReturn(topo->geom,p4est_geometry_new_connectivity,(conn));
