@@ -5283,6 +5283,8 @@ either explicit or implicit solvers in TS, depending on the problem
 properties. Currently supported method types are TSRK (Runge-Kutta) explicit
 methods and TSTHETA implicit methods, which include TSBEULER and TSCN.
 
+\section{Using the discrete adjoint methods}
+
 Consider the ODE/DAE
 \[
     F(t,y,\dot{y},p) = 0, \quad y(t_0)=y_0(p) \quad t_0 \le t \le t_F
@@ -5311,7 +5313,7 @@ One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there ar
 TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 \end{tabbing}
 
-If $F()$ is a function of $p$ one needs to also provide the Jacobian $F_p$ with
+If $F()$ is a function of $p$ one needs to also provide the Jacobian $-F_p$ with
 \begin{tabbing}
 TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 \end{tabbing}
@@ -5389,7 +5391,6 @@ backward solve and thus must call
                   \>        void*),void *fP);
 \end{tabbing}
 
-
 Examples
 include:
 \begin{itemize}
@@ -5402,9 +5403,49 @@ methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20adj.c},
 \item an optimization using the discrete adjoint models of Theta
 methods for stiff DAEs
 \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_p.c},
-\item an optimization using the discrete adjoint models of Theta
-methods for cost function with an integral term \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c}.
+\item an ODE-constrained optimization using the discrete adjoint
+models of Theta methods for cost function with an integral term \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c},
+\item a discrete adjoint sensitivity using TSCN (Crank-Nicolson)
+methods for DAEs with discontinuities \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/stability_9bus/ex9busadj.c},
+\item a DAE-constrained optimization using the discrete adjoint
+models of TSCN (Crank-Nicolson) methods for cost function with an
+integral term \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/stability_9bus/ex9busopt.c},
+\item a discrete adjoint sensitivity using TSCN methods for a
+PDE problem \trl{${PETSC_DIR}/src/ts/examples/tutorials/advection-diffusion-reaction/ex5adj.c}.
 \end{itemize}
+
+\section{Checkpointing}
+
+The discrete adjoint model requires the states (and stage values
+in the context of multistage timestepping methods) to evaluate the
+Jacobian matrices during the adjoint (backwarad) run. By default,
+PETSc stores the whole trajectory to disk as binary files, each of
+which contains the information for a single time step including
+state, time, and stage values (optional). One can also make PETsc
+store the trajectory to memory with the option \trl{-ts_trajectory_type memory}.
+However, there might not be sufficient memory capacity especially
+for large-scale problems and long-time integration.
+
+A so-called checkpointing scheme is needed to solve this problem.
+The scheme stores checkpoints at selective time steps and recompute
+missing information. The \trl{revolve} library is used by PETSc
+TSTrajectory to generate optimal checkpointing schemes which minizie
+the recomputations given a limited number of available checkpoints.
+One can specify the number of available checkpoints with the option \trl{-ts_trajectory_max_cps_ram [maximum number of checkpoints in RAM]}. Note that one checkpoint
+corresponds to one time step.
+
+The \trl{revolve} library also provides an optimal multistage
+checkpointing scheme which use both RAM and disk for storage.
+This scheme is automatically chosen if one uses both the option \trl{-ts_trajectory_max_cps_ram [maximum number of checkpoints in RAM]}
+and the option \trl{-ts_trajectory_max_cps_disk [maximum number of checkpoints on disk]}.
+
+Some other useful options are listed below.
+\begin{itemize}
+\item \trl{-ts_trajectory_view} prints the total number of recomputations,
+\item \trl{-ts_monitor} and \trl{-ts_adjoint_monitor} allow users to monitor the progress of the adjoint work flow,
+\item \trl{-ts_trajectory_type visualization} may be used to save the whole trajectory for visualization. It stores the solution and the time, but no stage values. The binary files generated can be read into MATLAB via the script \trl{${PETSC_DIR}/share/petsc/matlab/PetscReadBinaryTrajectory.m}.
+\end{itemize}
+
 \vspace{.2cm}
 
  \chapter{Solving Steady-State Problems with Pseudo-Timestepping}
