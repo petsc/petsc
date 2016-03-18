@@ -336,7 +336,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
   PetscErrorCode    ierr;
   SNES              snes;
   PetscScalar       *f;
-  const PetscScalar *xdot;  
+  const PetscScalar *xdot;
   PetscInt          i;
 
   PetscFunctionBegin;
@@ -770,9 +770,9 @@ static PetscErrorCode MonitorUpdateQ(TS ts,PetscInt stepnum,PetscReal time,Vec X
   PetscErrorCode ierr;
   Vec            C,*Y;
   PetscInt       Nr;
-  PetscReal      h,theta; 
+  PetscReal      h,theta;
   Userctx        *ctx=(Userctx*)ctx0;
- 
+
   PetscFunctionBegin;
   theta = 0.5;
   ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
@@ -783,7 +783,7 @@ static PetscErrorCode MonitorUpdateQ(TS ts,PetscInt stepnum,PetscReal time,Vec X
     ierr = CostIntegrand(ts,time,X,C,ctx);CHKERRQ(ierr);
     ierr = VecAXPY(ctx->vec_q,h*theta,C);CHKERRQ(ierr);
     ierr = CostIntegrand(ts,time+h*theta,Y[0],C,ctx);CHKERRQ(ierr);
-    ierr = VecAXPY(ctx->vec_q,h*(1-theta),C);CHKERRQ(ierr);  
+    ierr = VecAXPY(ctx->vec_q,h*(1-theta),C);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -811,7 +811,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&user.vec_q);CHKERRQ(ierr); 
+  ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&user.vec_q);CHKERRQ(ierr);
 
   user.neqs_gen   = 9*ngen; /* # eqs. for generator subsystem */
   user.neqs_net   = 2*nbus; /* # eqs. for network subsystem   */

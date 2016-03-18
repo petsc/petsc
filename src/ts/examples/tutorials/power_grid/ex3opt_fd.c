@@ -46,7 +46,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *c
 PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec X,PetscBool forwardsolve,void* ctx)
 {
   AppCtx *user=(AppCtx*)ctx;
-  
+
   PetscFunctionBegin;
 
   if (event_list[0] == 0) {
