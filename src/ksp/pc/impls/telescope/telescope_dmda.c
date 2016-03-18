@@ -899,29 +899,6 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
 
-  if (pc->nonzero_guess) {
-    ierr = PetscInfo(pc,"PCTelescopeDMDA: Scattering y for non-zero-initial guess\n");CHKERRQ(ierr);
-    /* permute vector into ordering associated with re-partitioned dmda */
-    ierr = MatMultTranspose(perm,y,xp);CHKERRQ(ierr);
-
-    /* pull in vector x->xtmp */
-    ierr = VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-    /* copy vector entires into xred */
-    ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
-    if (yred) {
-      PetscScalar *LA_yred;
-      ierr = VecGetOwnershipRange(yred,&st,&ed);CHKERRQ(ierr);
-      ierr = VecGetArray(yred,&LA_yred);CHKERRQ(ierr);
-      for (i=0; i<ed-st; i++) {
-        LA_yred[i] = x_array[i];
-      }
-      ierr = VecRestoreArray(yred,&LA_yred);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArrayRead(xtmp,&x_array);CHKERRQ(ierr);
-  }
-
   /* permute vector into ordering associated with re-partitioned dmda */
   ierr = MatMultTranspose(perm,x,xp);CHKERRQ(ierr);
 
