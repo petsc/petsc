@@ -1347,7 +1347,7 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts,PetscBool flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXGetType_ARKIMEX"
-PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,TSARKIMEXType *arktype)
+static PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,TSARKIMEXType *arktype)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;
@@ -1361,7 +1361,7 @@ PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,TSARKIMEXType *arktype)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXSetType_ARKIMEX"
-PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
+static PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;
@@ -1384,9 +1384,10 @@ PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
   SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",arktype);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXSetFullyImplicit_ARKIMEX"
-PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
+static PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX*)ts->data;
 

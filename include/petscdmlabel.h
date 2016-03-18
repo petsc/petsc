@@ -16,6 +16,8 @@ PETSC_EXTERN PetscErrorCode DMLabelCreate(const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMLabelDestroy(DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelGetState(DMLabel, PetscObjectState *);
+PETSC_EXTERN PetscErrorCode DMLabelGetDefaultValue(DMLabel, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMLabelSetDefaultValue(DMLabel, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelDuplicate(DMLabel, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelGetName(DMLabel, const char **);
 PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
@@ -37,6 +39,7 @@ PETSC_EXTERN PetscErrorCode DMLabelHasPoint(DMLabel, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMLabelFilter(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelPermute(DMLabel, IS, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelDistribute(DMLabel, PetscSF, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMLabelGather(DMLabel, PetscSF, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelConvertToSection(DMLabel, PetscSection *, IS *);
 
 #endif

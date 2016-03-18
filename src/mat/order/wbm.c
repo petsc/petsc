@@ -32,7 +32,7 @@ PETSC_EXTERN PetscInt mc64ad_dist(const PetscInt*, PetscInt*, PetscInt*, const P
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_WBM"
-PETSC_EXTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS *row, IS *col)
+PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS *row, IS *col)
 {
   PetscScalar    *a, *dw;
   const PetscInt *ia, *ja;

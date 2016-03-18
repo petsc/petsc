@@ -373,7 +373,7 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
   ierr = PetscOptionsGetBool(((PetscObject)draw)->options,((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
   if (!flg || !win->win) {*popup = NULL; PetscFunctionReturn(0);}
 
-  ierr = PetscDrawCreate(PetscObjectComm((PetscObject)draw),draw->display,NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(PetscObjectComm((PetscObject)draw),draw->display,NULL,win->x,win->y+win->h+10,220,220,popup);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_");CHKERRQ(ierr);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)*popup,((PetscObject)draw)->prefix);CHKERRQ(ierr);
   ierr = PetscDrawSetType(*popup,PETSC_DRAW_X);CHKERRQ(ierr);
@@ -421,16 +421,10 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) {
-    Window       root;
-    int          x,y;
-    unsigned int w,h,border,depth;
-    XGetGeometry(win->disp,win->win,&root,&x,&y,&w,&h,&border,&depth);
-    xywh[0] = x; xywh[1] = y; xywh[2] = (int)w; xywh[3] = (int)h;
-  }
+  if (!rank) {ierr = PetscDrawXiGetGeometry(win,xywh,xywh+1,xywh+2,xywh+3);CHKERRQ(ierr);}
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-
   ierr = MPI_Bcast(xywh,4,MPI_INT,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+
   /* record new window position */
   draw->x = win->x = xywh[0];
   draw->y = win->y = xywh[1];
@@ -582,8 +576,7 @@ static PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
 
 static       PetscErrorCode PetscDrawGetSingleton_X(PetscDraw,PetscDraw*);
 static       PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw,PetscDraw*);
-PETSC_INTERN PetscErrorCode PetscDrawSave_X(PetscDraw);
-PETSC_INTERN PetscErrorCode PetscDrawSetSave_X(PetscDraw,const char[]);
+PETSC_INTERN PetscErrorCode PetscDrawGetImage_X(PetscDraw,unsigned char[][3],unsigned int*,unsigned int*,unsigned char*[]);
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                       PetscDrawFlush_X,
@@ -613,8 +606,8 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                       0,
                                       PetscDrawGetSingleton_X,
                                       PetscDrawRestoreSingleton_X,
-                                      PetscDrawSave_X,
-                                      PetscDrawSetSave_X,
+                                      0,
+                                      PetscDrawGetImage_X,
                                       0,
                                       PetscDrawArrow_X,
                                       PetscDrawCoordinateToPixel_X,
@@ -663,6 +656,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
     ierr = PetscDrawXiColormap(sXwin);CHKERRQ(ierr);
     sXwin->drw = Xwin->drw;
   }
+  ierr = PetscDrawXiGetGeometry(sXwin,&sXwin->x,&sXwin->y,&sXwin->w,&sXwin->h);CHKERRQ(ierr);
   (*sdraw)->x = sXwin->x; (*sdraw)->y = sXwin->y;
   (*sdraw)->w = sXwin->w; (*sdraw)->h = sXwin->h;
   PetscFunctionReturn(0);
@@ -809,7 +803,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
        PETSc tries to place windows starting in the upper left corner
         and moving across to the right.
 
-       0,0+----------------------------------------------+
+       +0,0-------------------------------------------+
        |  Region used so far  +xavailable,yavailable  |
        |                      |                       |
        |                      |                       |
@@ -818,18 +812,16 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
        |                                              |
        +----------------------------------------------+xmax,ymax
 
-       */
+      */
       /*  First: can we add it to the right? */
-      if (xavailable+w+10 <= xmax) {
+      if (xavailable + w + 10 <= xmax) {
         x       = xavailable;
         y       = yavailable;
         ybottom = PetscMax(ybottom,y + h + 30);
       } else {
         /* No, so add it below on the left */
-        x          = 0;
-        xavailable = 0;
-        y          = ybottom;
-        yavailable = ybottom;
+        xavailable = x = 0;
+        yavailable = y = ybottom;
         ybottom    = ybottom + h + 30;
       }
     }
@@ -869,6 +861,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
     if (!rank) {ierr = PetscDrawXiQuickPixmap(Xwin);CHKERRQ(ierr);}
     ierr = MPI_Bcast(&Xwin->drw,1,MPI_UNSIGNED_LONG,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
+  ierr = PetscDrawXiGetGeometry(Xwin,&Xwin->x,&Xwin->y,&Xwin->w,&Xwin->h);CHKERRQ(ierr);
   draw->x = Xwin->x; draw->y = Xwin->y;
   draw->w = Xwin->w; draw->h = Xwin->h;
 

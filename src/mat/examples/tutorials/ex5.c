@@ -1,18 +1,9 @@
 
 static char help[] = "Each process opens the file and reads its part. Not scalable do not copy\n";
 
-#define USE_FAST_MAT_SET_VALUES
-
 #include <petscsys.h>
 #include <petscviewer.h>
-
-#if defined(USE_FAST_MAT_SET_VALUES)
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
-#define MatSetValues MatSetValues_MPIAIJ
-#else
 #include <petscmat.h>
-#endif
-
 
 /*
    Opens a separate file for each process and reads in ITS portion

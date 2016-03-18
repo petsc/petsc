@@ -41,7 +41,7 @@ struct _PetscDrawOps {
   PetscErrorCode (*getsingleton)(PetscDraw,PetscDraw*);
   PetscErrorCode (*restoresingleton)(PetscDraw,PetscDraw*);
   PetscErrorCode (*save)(PetscDraw);
-  PetscErrorCode (*setsave)(PetscDraw,const char*);
+  PetscErrorCode (*getimage)(PetscDraw,unsigned char[][3],unsigned int*,unsigned int*,unsigned char*[]);
   PetscErrorCode (*setcoordinates)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
   PetscErrorCode (*arrow)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
   PetscErrorCode (*coordinatetopixel)(PetscDraw,PetscReal,PetscReal,PetscInt*,PetscInt*);
@@ -64,10 +64,11 @@ struct _p_PetscDraw {
   PetscDraw           popup;
   int                 x,y,h,w;
   char                *savefilename;
-  char                *savefilenameext;
+  char                *saveimageext;
+  char                *savemovieext;
   PetscInt            savefilecount;
-  PetscBool           savefilemovie;
   PetscBool           savesinglefile;
+  PetscInt            savemoviefps;
   char                *savefinalfilename;
   PetscBool           saveonclear; /* save a new image for every PetscDrawClear() called */
   PetscBool           saveonflush; /* save a new image for every PetscDrawFlush() called */

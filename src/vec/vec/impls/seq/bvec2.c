@@ -610,7 +610,7 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Seq"
-PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
+PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isdraw,iascii,issocket,isbinary;

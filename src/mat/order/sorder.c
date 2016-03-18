@@ -24,7 +24,7 @@ PetscErrorCode MatGetOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *ico
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_Natural"
-PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
+PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,i,*ii;
@@ -65,7 +65,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_RowLength"
-PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
+PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,*permr,*lens,i;

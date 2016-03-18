@@ -461,6 +461,11 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatMult_SeqDense(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqDense(Mat,Vec,Vec,Vec);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_MPIDense"
 PetscErrorCode MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
@@ -1280,7 +1285,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 #if defined(PETSC_HAVE_ELEMENTAL)
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIDense_Elemental"
-PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat_elemental;
   PetscErrorCode ierr;
@@ -1969,7 +1974,7 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_MPIDense_MPIDense"
-PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 

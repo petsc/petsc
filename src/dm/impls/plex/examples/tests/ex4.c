@@ -8,6 +8,7 @@ typedef struct {
   PetscInt  numRefinements; /* The number of refinement steps */
   PetscBool cellHybrid;     /* Use a hybrid mesh */
   PetscBool cellSimplex;    /* Use simplices or hexes */
+  PetscBool testPartition;  /* Use a fixed partitioning for testing */
   PetscInt  testNum;        /* The particular mesh to test */
   PetscBool uninterpolate;  /* Uninterpolate the mesh at the end */
 } AppCtx;
@@ -24,6 +25,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->numRefinements = 0;
   options->cellHybrid     = PETSC_TRUE;
   options->cellSimplex    = PETSC_TRUE;
+  options->testPartition  = PETSC_TRUE;
   options->testNum        = 0;
   options->uninterpolate  = PETSC_FALSE;
 
@@ -33,6 +35,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-num_refinements", "The number of refinement steps", "ex4.c", options->numRefinements, &options->numRefinements, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_hybrid", "Use a hyrbid mesh", "ex4.c", options->cellHybrid, &options->cellHybrid, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex4.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex4.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-test_num", "The particular mesh to test", "ex4.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -607,11 +610,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       numRefinements = user->numRefinements;
   PetscBool      cellHybrid     = user->cellHybrid;
   PetscBool      cellSimplex    = user->cellSimplex;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
@@ -652,6 +656,136 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
+  }
+  if (user->testPartition && numProcs > 1) {
+    PetscPartitioner part;
+    const PetscInt  *sizes  = NULL;
+    const PetscInt  *points = NULL;
+
+    if (!rank) {
+      if (dim == 2 && cellSimplex && !cellHybrid && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt triSizes_p2[2]  = {1, 1};
+          PetscInt triPoints_p2[2] = {0, 1};
+
+          ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  triSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, triPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 2 && cellSimplex && cellHybrid && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt triSizes_p2[2]  = {1, 2};
+          PetscInt triPoints_p2[3] = {0, 1, 2};
+
+          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  triSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, triPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular hybrid mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 2 && !cellSimplex && !cellHybrid && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt quadSizes_p2[2]  = {1, 1};
+          PetscInt quadPoints_p2[2] = {0, 1};
+
+          ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  quadSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, quadPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 2 && !cellSimplex && cellHybrid && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt quadSizes_p2[2]  = {1, 2};
+          PetscInt quadPoints_p2[3] = {0, 1, 2};
+
+          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  quadSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, quadPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral hybrid mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 3 && cellSimplex && !cellHybrid && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt tetSizes_p2[2]  = {1, 1};
+          PetscInt tetPoints_p2[2] = {0, 1};
+
+          ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, tetPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        case 1: {
+          PetscInt tetSizes_p2[2]  = {1, 1};
+          PetscInt tetPoints_p2[2] = {0, 1};
+
+          ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, tetPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 3 && cellSimplex && cellHybrid && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt tetSizes_p2[2]  = {1, 2};
+          PetscInt tetPoints_p2[3] = {0, 1, 2};
+
+          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, tetPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        case 1: {
+          PetscInt tetSizes_p2[2]  = {3, 4};
+          PetscInt tetPoints_p2[7] = {0, 3, 5, 1, 2, 4, 6};
+
+          ierr = PetscMalloc2(2, &sizes, 7, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  tetSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, tetPoints_p2, 7 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral hybrid mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 3 && !cellSimplex && !cellHybrid && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt hexSizes_p2[2]  = {1, 1};
+          PetscInt hexPoints_p2[2] = {0, 1};
+
+          ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  hexSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, hexPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for hexahedral mesh on 2 procs", user->testNum);
+        }
+      } else if (dim == 3 && !cellSimplex && cellHybrid && numProcs == 2) {
+        switch (user->testNum) {
+        case 0: {
+          PetscInt hexSizes_p2[2]  = {1, 1};
+          PetscInt hexPoints_p2[2] = {0, 1};
+
+          ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  hexSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, hexPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        case 1: {
+          PetscInt hexSizes_p2[2]  = {5, 4};
+          PetscInt hexPoints_p2[9] = {3, 4, 5, 7, 8, 0, 1, 2, 6};
+
+          ierr = PetscMalloc2(2, &sizes, 9, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  hexSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, hexPoints_p2, 9 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        default:
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for hexahedral hybrid mesh on 2 procs", user->testNum);
+        }
+      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition");
+    }
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
   {
     DM refinedMesh     = NULL;

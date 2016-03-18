@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_Natural"
-PETSC_EXTERN PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscoloring)
+static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        start,end,i,bs = 1,n;

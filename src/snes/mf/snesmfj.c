@@ -59,7 +59,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
     base from the SNES context
 
 */
-PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
+static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 {
   PetscErrorCode ierr;
   MatMFFD        j    = (MatMFFD)J->data;
@@ -86,7 +86,7 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetBase_SNESMF"
-PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
+static PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
 

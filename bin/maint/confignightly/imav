@@ -1,6 +1,0 @@
-#! /bin/csh
-
-set MACH=imav
-set USR=petsc
-set LOC=/Users/petsc/${RNAME}
-set CONF=arch-osx-cxx-cmplx-pkgs-64idx

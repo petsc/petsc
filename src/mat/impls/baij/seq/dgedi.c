@@ -17,7 +17,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLINPACKgedi"
-PetscErrorCode PetscLINPACKgedi(MatScalar *a,PetscInt n,PetscInt *ipvt,MatScalar *work)
+PETSC_INTERN PetscErrorCode PetscLINPACKgedi(MatScalar *a,PetscInt n,PetscInt *ipvt,MatScalar *work)
 {
   PetscInt  i__2,kb,kp1,nm1,i,j,k,l,ll,kn,knp1,jn1;
   MatScalar *aa,*ax,*ay,tmp;

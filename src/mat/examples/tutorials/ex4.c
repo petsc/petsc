@@ -90,7 +90,6 @@ int main(int argc,char **args)
 }
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>
-#include <petsc/private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "LowRankUpdate"
@@ -106,16 +105,21 @@ PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscIn
 {
   Mat            Ulocal = ((Mat_MPIDense*)U->data)->A;
   Mat            Vlocal = ((Mat_MPIDense*)V->data)->A;
-  PetscInt       Nsave  = x->map->N;
+  PetscInt       n;
   PetscErrorCode ierr;
-  PetscScalar    *w1,*w2;
-
+  PetscScalar    *w1,*w2,*array;
+  Vec            xseq,yseq;
+  
   PetscFunctionBegin;
   /* First multiply the local part of U with the local part of x */
-  x->map->N = x->map->n; /* this tricks the silly error checking in MatMultTranspose();*/
-  ierr      = MatMultTranspose(Ulocal,x,work1);CHKERRQ(ierr); /* note in this call x is treated as a sequential vector  */
-  x->map->N = Nsave;
-
+  /* this tricks the silly error checking in MatMultTranspose();*/
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&array);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,array,&xseq);CHKERRQ(ierr);
+  ierr = MatMultTranspose(Ulocal,xseq,work1);CHKERRQ(ierr); /* note in this call x is treated as a sequential vector  */
+  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
+  ierr = VecDestroy(&xseq);CHKERRQ(ierr);
+  
   /* Form the sum of all the local multiplies : this is work2 = U'*x = sum_{all processors} work1 */
   ierr = VecGetArray(work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(work2,&w2);CHKERRQ(ierr);
@@ -124,8 +128,12 @@ PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscIn
   ierr = VecRestoreArray(work2,&w2);CHKERRQ(ierr);
 
   /* multiply y = V*work2 */
-  y->map->N = y->map->n; /* this tricks the silly error checking in MatMult() */
-  ierr      = MatMult(Vlocal,work2,y);CHKERRQ(ierr); /* note in this call y is treated as a sequential vector  */
-  y->map->N = Nsave;
+  /* this tricks the silly error checking in MatMult() */
+  ierr = VecGetLocalSize(y,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&array);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,array,&yseq);CHKERRQ(ierr);
+  ierr = MatMult(Vlocal,work2,y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&array);CHKERRQ(ierr);
+  ierr = VecDestroy(&yseq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -6,7 +6,7 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = ${X_INCLUDE}
-SOURCEC   = xinit.c xsave.c xcolor.c xops.c xioerr.c xtext.c xtone.c drawopenx.c
+SOURCEC   = xinit.c ximage.c xcolor.c xops.c xioerr.c xtext.c xtone.c drawopenx.c
 SOURCEF   =
 SOURCEH   = ximpl.h
 MANSEC    = Draw

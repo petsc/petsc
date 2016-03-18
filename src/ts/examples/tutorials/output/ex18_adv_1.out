@@ -10,14 +10,14 @@ Labels:
   Face Sets: 4 strata of sizes (3, 3, 3, 3)
   marker: 1 strata of sizes (24)
   depth: 3 strata of sizes (16, 24, 21)
-  0  time        0  |x| (       0,    3.333)  
-  1  time   0.9934  |x| (       0,    1.464)  
-  2  time    1.987  |x| (       0,    1.892)  
-  3  time     2.98  |x| (       0,    1.978)  
+  0  time        0  |x| (       0,    3.333) |x|_1 (       0,       18)  
+  1  time   0.9934  |x| (       0,    1.464) |x|_1 (       0,    9.842)  
+  2  time    1.987  |x| (       0,    1.892) |x|_1 (       0,    16.17)  
+  3  time     2.98  |x| (       0,    1.978) |x|_1 (       0,     17.6)  
 TS Object: 1 MPI processes
   type: ssp
   maximum steps=1000
-  maximum time=2
+  maximum time=2.
   total number of nonlinear solver iterations=0
   total number of nonlinear solve failures=0
   total number of linear solver iterations=0

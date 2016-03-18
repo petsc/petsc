@@ -3208,7 +3208,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_SeqAIJ_SeqMAIJ"
-PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
@@ -3248,7 +3248,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_MPIAIJ_MPIMAIJ"
-PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
@@ -3266,7 +3266,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqMAIJ_SeqAIJ"
-PETSC_EXTERN PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_SeqMAIJ    *b   = (Mat_SeqMAIJ*)A->data;
   Mat            a    = b->AIJ,B;
@@ -3312,7 +3312,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIMAIJ_MPIAIJ"
-PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_MPIMAIJ    *maij   = (Mat_MPIMAIJ*)A->data;
   Mat            MatAIJ  = ((Mat_SeqMAIJ*)maij->AIJ->data)->AIJ,B;

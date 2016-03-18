@@ -1,17 +1,17 @@
 
 #include <petsc/private/matimpl.h>     /*I       "petscmat.h"   I*/
 
-PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrdering_ND(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrdering_1WD(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrdering_QMD(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrdering_RCM(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrdering_DSC(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrdering_WBM(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrdering_Spectral(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_ND(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_1WD(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_QMD(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_RCM(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_DSC(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat,MatOrderingType,IS*,IS*);
 #if defined(PETSC_HAVE_SUITESPARSE)
-PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat,MatOrderingType,IS*,IS*);
+PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat,MatOrderingType,IS*,IS*);
 #endif
 
 #undef __FUNCT__

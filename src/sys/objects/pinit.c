@@ -1225,19 +1225,14 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
 #endif
 
-#if defined(PETSC_USE_LOG)
-  ierr = PetscLogDestroy();CHKERRQ(ierr);
-#endif
-
-  /*
-     Close any open dynamic libraries
-  */
-  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
-
   /*
      Destroy any packages that registered a finalize
   */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
+
+#if defined(PETSC_USE_LOG)
+  ierr = PetscLogDestroy();CHKERRQ(ierr);
+#endif
 
   /*
      Print PetscFunctionLists that have not been properly freed
@@ -1312,6 +1307,11 @@ PetscErrorCode  PetscFinalize(void)
     }
   }
 #endif
+
+  /*
+     Close any open dynamic libraries
+  */
+  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
   flg  = PETSC_TRUE;

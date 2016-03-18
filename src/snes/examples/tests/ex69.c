@@ -34,7 +34,7 @@ extern PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 extern PetscErrorCode MatMult_MyShell(Mat,Vec,Vec);
 extern PetscErrorCode MatAssemblyEnd_MyShell(Mat,MatAssemblyType);
 extern PetscErrorCode PCApply_MyShell(PC,Vec,Vec);
-extern PetscErrorCode SNESComputeJacobian_MyShell(SNES,Vec,Mat,Mat,void*);
+PETSC_EXTERN PetscErrorCode SNESComputeJacobian_MyShell(SNES,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -403,7 +403,7 @@ PetscErrorCode PCApply_MyShell(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
+PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobian_MyShell"

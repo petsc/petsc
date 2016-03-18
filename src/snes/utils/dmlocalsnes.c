@@ -4,8 +4,10 @@
 typedef struct {
   PetscErrorCode (*residuallocal)(DM,Vec,Vec,void*);
   PetscErrorCode (*jacobianlocal)(DM,Vec,Mat,Mat,void*);
+  PetscErrorCode (*boundarylocal)(DM,Vec,void*);
   void *residuallocalctx;
   void *jacobianlocalctx;
+  void *boundarylocalctx;
 } DMSNES_Local;
 
 #undef __FUNCT__
@@ -68,6 +70,7 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
   ierr = DMGetLocalVector(dm,&Xloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&Floc);CHKERRQ(ierr);
   ierr = VecZeroEntries(Xloc);CHKERRQ(ierr);
+  if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
   ierr = VecZeroEntries(Floc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
@@ -96,6 +99,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,vo
   if (dmlocalsnes->jacobianlocal) {
     ierr = DMGetLocalVector(dm,&Xloc);CHKERRQ(ierr);
     ierr = VecZeroEntries(Xloc);CHKERRQ(ierr);
+    if (dmlocalsnes->boundarylocal) {ierr = (*dmlocalsnes->boundarylocal)(dm,Xloc,dmlocalsnes->boundarylocalctx);CHKERRQ(ierr);}
     ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     CHKMEMQ;
@@ -177,6 +181,41 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Vec,vo
   if (!sdm->ops->computejacobian) {  /* Call us for the Jacobian too, can be overridden by the user. */
     ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMLocal,dmlocalsnes);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSNESSetBoundaryLocal"
+/*@C
+   DMSNESSetBoundaryLocal - set a local boundary value function. This function is called with local vector
+      containing the local vector information PLUS ghost point information. It should insert values into the local
+      vector that do not come from the global vector, such as essential boundary condition data.
+
+   Logically Collective
+
+   Input Arguments:
++  dm - DM to associate callback with
+.  func - local boundary value evaluation
+-  ctx - optional context for local boundary value evaluation
+
+   Level: intermediate
+
+.seealso: DMSNESSetFunctionLocal(), DMDASNESSetJacobianLocal()
+@*/
+PetscErrorCode DMSNESSetBoundaryLocal(DM dm,PetscErrorCode (*func)(DM,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMSNES         sdm;
+  DMSNES_Local   *dmlocalsnes;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
+
+  dmlocalsnes->boundarylocal    = func;
+  dmlocalsnes->boundarylocalctx = ctx;
+
   PetscFunctionReturn(0);
 }
 

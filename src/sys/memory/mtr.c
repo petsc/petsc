@@ -526,19 +526,33 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
 PetscErrorCode  PetscMallocDump(FILE *fp)
 {
   TRSPACE        *head;
+  PetscInt       libAlloc = 0;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!fp) fp = PETSC_STDOUT;
-  if (TRallocated > 0) fprintf(fp,"[%d]Total space allocated %.0f bytes\n",rank,(PetscLogDouble)TRallocated);
   head = TRhead;
   while (head) {
-    fprintf(fp,"[%2d]%.0f bytes %s() line %d in %s\n",rank,(PetscLogDouble)head->size,head->functionname,head->lineno,head->filename);
+    PetscBool isLib;
+
+    ierr = PetscStrcmp(head->functionname, "PetscDLLibraryOpen", &isLib);CHKERRQ(ierr);
+    libAlloc += head->size;
+    head = head->next;
+  }
+  if (TRallocated - libAlloc > 0) fprintf(fp,"[%d]Total space allocated %.0f bytes\n",rank,(PetscLogDouble)TRallocated);
+  head = TRhead;
+  while (head) {
+    PetscBool isLib;
+
+    ierr = PetscStrcmp(head->functionname, "PetscDLLibraryOpen", &isLib);CHKERRQ(ierr);
+    if (!isLib) {
+      fprintf(fp,"[%2d]%.0f bytes %s() line %d in %s\n",rank,(PetscLogDouble)head->size,head->functionname,head->lineno,head->filename);
 #if defined(PETSC_USE_DEBUG)
-    ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
+      ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif
+    }
     head = head->next;
   }
   PetscFunctionReturn(0);
