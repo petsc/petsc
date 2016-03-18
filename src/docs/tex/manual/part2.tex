@@ -5421,21 +5421,22 @@ in the context of multistage timestepping methods) to evaluate the
 Jacobian matrices during the adjoint (backwarad) run. By default,
 PETSc stores the whole trajectory to disk as binary files, each of
 which contains the information for a single time step including
-state, time, and stage values (optional). One can also make PETsc
+state, time, and stage values (optional). One can also make PETSc
 store the trajectory to memory with the option \trl{-ts_trajectory_type memory}.
 However, there might not be sufficient memory capacity especially
 for large-scale problems and long-time integration.
 
 A so-called checkpointing scheme is needed to solve this problem.
-The scheme stores checkpoints at selective time steps and recompute
-missing information. The \trl{revolve} library is used by PETSc
-TSTrajectory to generate optimal checkpointing schemes which minizie
-the recomputations given a limited number of available checkpoints.
-One can specify the number of available checkpoints with the option \trl{-ts_trajectory_max_cps_ram [maximum number of checkpoints in RAM]}. Note that one checkpoint
-corresponds to one time step.
+The scheme stores checkpoints at selective time steps and recomputes
+the missing information. The \trl{revolve} library is used by PETSc
+TSTrajectory to generate an optimal checkpointing schedule that
+minimizes the recomputations given a limited number of available
+checkpoints. One can specify the number of available checkpoints
+with the option \trl{-ts_trajectory_max_cps_ram [maximum number of checkpoints in RAM]}.
+Note that one checkpoint corresponds to one time step.
 
 The \trl{revolve} library also provides an optimal multistage
-checkpointing scheme which use both RAM and disk for storage.
+checkpointing scheme that uses both RAM and disk for storage.
 This scheme is automatically chosen if one uses both the option \trl{-ts_trajectory_max_cps_ram [maximum number of checkpoints in RAM]}
 and the option \trl{-ts_trajectory_max_cps_disk [maximum number of checkpoints on disk]}.
 
