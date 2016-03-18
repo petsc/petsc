@@ -91,6 +91,7 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
   }
   ierr = PetscDrawCollectiveEnd(popup);CHKERRQ(ierr);
   ierr = PetscDrawFlush(popup);CHKERRQ(ierr);
+  ierr = PetscDrawSave(popup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

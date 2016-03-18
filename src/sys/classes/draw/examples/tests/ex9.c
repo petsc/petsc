@@ -45,6 +45,7 @@ int main(int argc,char **argv)
   }
   ierr = PetscDrawHGSetColor(hist,color);CHKERRQ(ierr);
   ierr = PetscDrawHGDraw(hist);CHKERRQ(ierr);
+  ierr = PetscDrawHGSave(hist);CHKERRQ(ierr);
 
   ierr = PetscDrawHGDestroy(&hist);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);

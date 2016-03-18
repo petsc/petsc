@@ -25,6 +25,7 @@ PetscErrorCode  PetscDrawClear(PetscDraw draw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  if (draw->saveonclear) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   if (draw->ops->clear) {
     ierr = (*draw->ops->clear)(draw);CHKERRQ(ierr);
   }

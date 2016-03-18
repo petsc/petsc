@@ -104,6 +104,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawOpenGLUT(MPI_Comm,const char[],const char[]
 #define PETSC_DRAW_THIRD_SIZE   -5
 #define PETSC_DRAW_QUARTER_SIZE -6
 
+PETSC_EXTERN PetscErrorCode PetscDrawOpenImage(MPI_Comm,const char[],int,int,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawOpenNull(MPI_Comm,PetscDraw *);
 PETSC_EXTERN PetscErrorCode PetscDrawDestroy(PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawIsNull(PetscDraw,PetscBool *);

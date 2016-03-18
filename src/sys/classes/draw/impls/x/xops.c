@@ -7,26 +7,28 @@
 /*
      These macros transform from the users coordinates to the  X-window pixel coordinates.
 */
-#define XTRANS(draw,xwin,x)  (int)(((xwin)->w)*((draw)->port_xl + (((x - (draw)->coor_xl)*((draw)->port_xr - (draw)->port_xl))/((draw)->coor_xr - (draw)->coor_xl))))
-#define YTRANS(draw,xwin,y)  (int)(((xwin)->h)*(1 - (draw)->port_yl - (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
+#define XTRANS(draw,xwin,x)  ((int)(((xwin)->w-1)*((draw)->port_xl + (((x - (draw)->coor_xl)*((draw)->port_xr - (draw)->port_xl))/((draw)->coor_xr - (draw)->coor_xl)))))
+#define YTRANS(draw,xwin,y)  (((xwin)->h-1) - (int)(((xwin)->h-1)*((draw)->port_yl + (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl)))))
 
-#define ITRANS(draw,xwin,i)  (draw)->coor_xl + (i*((draw)->coor_xr - (draw)->coor_xl)/((xwin)->w) - (draw)->port_xl)/((draw)->port_xr - (draw)->port_xl)
-#define JTRANS(draw,xwin,j)  draw->coor_yl + (((PetscReal)j)/xwin->h + draw->port_yl - 1)*(draw->coor_yr - draw->coor_yl)/(draw->port_yl - draw->port_yr)
+#define ITRANS(draw,xwin,i)  ((draw)->coor_xl + (((PetscReal)(i))*((draw)->coor_xr - (draw)->coor_xl)/((xwin)->w-1) - (draw)->port_xl)/((draw)->port_xr - (draw)->port_xl))
+#define JTRANS(draw,xwin,j)  ((draw)->coor_yl + (((PetscReal)(j))/((xwin)->h-1) + (draw)->port_yl - 1)*((draw)->coor_yr - (draw)->coor_yl)/((draw)->port_yl - (draw)->port_yr))
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawSetViewport_X"
 static PetscErrorCode PetscDrawSetViewport_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   PetscDraw_X    *XiWin = (PetscDraw_X*)draw->data;
+  int            xa,ya,xb,yb,xmax = XiWin->w-1,ymax = XiWin->h-1;
   XRectangle     box;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  xa = (int)(xl*xmax); ya = ymax - (int)(yr*ymax);
+  xb = (int)(xr*xmax); yb = ymax - (int)(yl*ymax);
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  box.x = (short)(xl*XiWin->w);
-  box.y = (short)((1-yr)*XiWin->h);
-  box.width  = (unsigned short)((xr-xl)*XiWin->w);
-  box.height = (unsigned short)((yr-yl)*XiWin->h);
+  box.x = (short)xa; box.width  = (unsigned short)(xb + 1 - xa);
+  box.y = (short)ya; box.height = (unsigned short)(yb + 1 - ya);
   XSetClipRectangles(XiWin->disp,XiWin->gc.set,0,0,&box,1,Unsorted);
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -64,7 +66,8 @@ static PetscErrorCode PetscDrawPoint_X(PetscDraw draw,PetscReal x,PetscReal y,in
   int         xx,yy,i,j;
 
   PetscFunctionBegin;
-  xx = XTRANS(draw,XiWin,x);  yy = YTRANS(draw,XiWin,y);
+  xx = XTRANS(draw,XiWin,x);
+  yy = YTRANS(draw,XiWin,y);
   PetscDrawXiSetColor(XiWin,c);
   for (i=-1; i<2; i++) {
     for (j=-1; j<2; j++) {
@@ -91,14 +94,13 @@ static PetscErrorCode PetscDrawPointPixel_X(PetscDraw draw,PetscInt x,PetscInt y
 static PetscErrorCode PetscDrawLine_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
-  int         x1,y_1,x2,y2;
+  int         x_1,y_1,x_2,y_2;
 
   PetscFunctionBegin;
   PetscDrawXiSetColor(XiWin,cl);
-  x1  = XTRANS(draw,XiWin,xl);   x2  = XTRANS(draw,XiWin,xr);
-  y_1 = YTRANS(draw,XiWin,yl);   y2  = YTRANS(draw,XiWin,yr);
-  if (x1 == x2 && y_1 == y2) PetscFunctionReturn(0);
-  XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x1,y_1,x2,y2);
+  x_1 = XTRANS(draw,XiWin,xl); x_2  = XTRANS(draw,XiWin,xr);
+  y_1 = YTRANS(draw,XiWin,yl); y_2  = YTRANS(draw,XiWin,yr);
+  XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_1,y_1,x_2,y_2);
   PetscFunctionReturn(0);
 }
 
@@ -107,21 +109,30 @@ static PetscErrorCode PetscDrawLine_X(PetscDraw draw,PetscReal xl,PetscReal yl,P
 static PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
-  int         x1,y_1,x2,y2;
+  int         x_1,y_1,x_2,y_2;
 
   PetscFunctionBegin;
   PetscDrawXiSetColor(XiWin,cl);
-  x1  = XTRANS(draw,XiWin,xl);   x2  = XTRANS(draw,XiWin,xr);
-  y_1 = YTRANS(draw,XiWin,yl);   y2  = YTRANS(draw,XiWin,yr);
-  if (x1 == x2 && y_1 == y2) PetscFunctionReturn(0);
-  XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x1,y_1,x2,y2);
-  if (x1 == x2 && PetscAbs(y_1 - y2) > 7) {
-    if (y2 > y_1) {
-      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2-3);
-      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2-3);
+  x_1 = XTRANS(draw,XiWin,xl); x_2 = XTRANS(draw,XiWin,xr);
+  y_1 = YTRANS(draw,XiWin,yl); y_2 = YTRANS(draw,XiWin,yr);
+  XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_1,y_1,x_2,y_2);
+  if (x_1 == x_2 && y_1 == y_2) PetscFunctionReturn(0);
+  if (x_1 == x_2 && PetscAbs(y_1 - y_2) > 7) {
+    if (y_2 > y_1) {
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_2,y_2,x_2-3,y_2-3);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_2,y_2,x_2+3,y_2-3);
     } else {
-      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2+3);
-      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2+3);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_2,y_2,x_2-3,y_2+3);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_2,y_2,x_2+3,y_2+3);
+    }
+  }
+  if (y_1 == y_2 && PetscAbs(x_1 - x_2) > 7) {
+    if (x_2 > x_1) {
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_2-3,y_2-3,x_2,y_2);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_2-3,y_2+3,x_2,y_2);
+    } else {
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_2,y_2,x_2+3,y_2-3);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x_2,y_2,x_2+3,y_2+3);
     }
   }
   PetscFunctionReturn(0);
@@ -132,30 +143,28 @@ static PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,
 static PetscErrorCode PetscDrawRectangle_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
-  int         x1,y_1,w,h,c = (c1 + c2 + c3 + c4)/4;
+  int         x,y,w,h,c = (c1 + c2 + c3 + c4)/4;
 
   PetscFunctionBegin;
   PetscDrawXiSetColor(XiWin,c);
-  x1  = XTRANS(draw,XiWin,xl);   w  = XTRANS(draw,XiWin,xr) - x1;
-  y_1 = YTRANS(draw,XiWin,yr);   h  = YTRANS(draw,XiWin,yl) - y_1;
-  if (w <= 0) w = 1;
-  if (h <= 0) h = 1;
-  XFillRectangle(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x1,y_1,w,h);
+  x = XTRANS(draw,XiWin,xl); w = XTRANS(draw,XiWin,xr) + 1 - x; if (w <= 0) w = 1;
+  y = YTRANS(draw,XiWin,yr); h = YTRANS(draw,XiWin,yl) + 1 - y; if (h <= 0) h = 1;
+  XFillRectangle(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x,y,w,h);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawEllipse_X"
-static PetscErrorCode PetscDrawEllipse_X(PetscDraw Win,PetscReal x,PetscReal y,PetscReal a,PetscReal b,int c)
+static PetscErrorCode PetscDrawEllipse_X(PetscDraw draw,PetscReal x,PetscReal y,PetscReal a,PetscReal b,int c)
 {
-  PetscDraw_X *XiWin = (PetscDraw_X*) Win->data;
+  PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
   int         xA,yA,w,h;
 
   PetscFunctionBegin;
   PetscDrawXiSetColor(XiWin, c);
-  xA = XTRANS(Win, XiWin, x - a/2.0); w = XTRANS(Win, XiWin, x + a/2.0) - xA;
-  yA = YTRANS(Win, XiWin, y + b/2.0); h = PetscAbs(YTRANS(Win, XiWin, y - b/2.0) - yA);
-  XFillArc(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xA, yA, w, h, 0, 23040);
+  xA = XTRANS(draw,XiWin, x - a/2); w = XTRANS(draw,XiWin, x + a/2) + 1 - xA; w = PetscAbs(w);
+  yA = YTRANS(draw,XiWin, y + b/2); h = YTRANS(draw,XiWin, y - b/2) + 1 - yA; h = PetscAbs(h);
+  XFillArc(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xA,yA,w,h,0,360*64);
   PetscFunctionReturn(0);
 }
 
@@ -227,7 +236,7 @@ static PetscErrorCode PetscDrawStringGetSize_X(PetscDraw draw,PetscReal *x,Petsc
 static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscDraw_X    *XiWin = (PetscDraw_X*)draw->data;
-  int            xx,yy;
+  int            xx,yy,descent = XiWin->font->font_descent;
   size_t         len;
   char           *substr;
   PetscToken     token;
@@ -240,13 +249,10 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal y,i
 
   ierr = PetscTokenCreate(chrs,'\n',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
-  ierr = PetscStrlen(substr,&len);CHKERRQ(ierr);
-  XDrawString(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xx,yy - XiWin->font->font_descent,substr,len);
-  ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
   while (substr) {
-    yy  += 4*XiWin->font->font_descent;
     ierr = PetscStrlen(substr,&len);CHKERRQ(ierr);
-    XDrawString(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xx,yy - XiWin->font->font_descent,substr,len);
+    XDrawString(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xx,yy-descent,substr,len);
+    yy  += XiWin->font->font_h;
     ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
   }
   ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
@@ -255,25 +261,19 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal y,i
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawStringVertical_X"
-static PetscErrorCode PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
+static PetscErrorCode PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal y,int c,const char text[])
 {
   PetscDraw_X    *XiWin = (PetscDraw_X*)draw->data;
-  int            xx,yy;
-  char           tmp[2];
-  PetscReal      tw,th;
-  size_t         i,n;
-  PetscErrorCode ierr;
+  int            xx,yy,offset = XiWin->font->font_h - XiWin->font->font_descent;
+  char           chr[2] = {0, 0};
 
   PetscFunctionBegin;
-  ierr   = PetscStrlen(chrs,&n);CHKERRQ(ierr);
-  tmp[1] = 0;
+  xx = XTRANS(draw,XiWin,x);
+  yy = YTRANS(draw,XiWin,y);
   PetscDrawXiSetColor(XiWin,c);
-  ierr = PetscDrawStringGetSize_X(draw,&tw,&th);CHKERRQ(ierr);
-  xx   = XTRANS(draw,XiWin,x);
-  for (i=0; i<n; i++) {
-    tmp[0] = chrs[i];
-    yy     = YTRANS(draw,XiWin,y-th*i);
-    XDrawString(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set, xx,yy - XiWin->font->font_descent,tmp,1);
+  while ((chr[0] = *text++)) {
+    XDrawString(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xx,yy+offset,chr,1);
+    yy += XiWin->font->font_h;
   }
   PetscFunctionReturn(0);
 }
@@ -287,7 +287,6 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* make sure the X server processed requests from all processes */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   XSync(XiWin->disp,False);
@@ -303,8 +302,6 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
-
-  if (draw->saveonflush) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -313,12 +310,13 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
 static PetscErrorCode PetscDrawClear_X(PetscDraw draw)
 {
   PetscDraw_X    *XiWin = (PetscDraw_X*)draw->data;
+  int            xmax = XiWin->w-1,  ymax = XiWin->h-1;
+  PetscReal      xl = draw->port_xl, yl = draw->port_yl;
+  PetscReal      xr = draw->port_xr, yr = draw->port_yr;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (draw->saveonclear) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
-
   /* make sure the X server processed requests from all processes */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   XSync(XiWin->disp,False);
@@ -329,12 +327,12 @@ static PetscErrorCode PetscDrawClear_X(PetscDraw draw)
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
   if (!rank) {
-    int x = (int)(draw->port_xl*XiWin->w);
-    int y = (int)((1-draw->port_yr)*XiWin->h);
-    int w = (int)((draw->port_xr - draw->port_xl)*XiWin->w);
-    int h = (int)((draw->port_yr - draw->port_yl)*XiWin->h);
+    int xa = (int)(xl*xmax), ya = ymax - (int)(yr*ymax);
+    int xb = (int)(xr*xmax), yb = ymax - (int)(yl*ymax);
+    unsigned int w = (unsigned int)(xb + 1 - xa);
+    unsigned int h = (unsigned int)(yb + 1 - ya);
     PetscDrawXiSetPixVal(XiWin,XiWin->background);
-    XFillRectangle(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x,y,w,h);
+    XFillRectangle(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xa,ya,w,h);
     XSync(XiWin->disp,False);
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
