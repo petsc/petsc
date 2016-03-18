@@ -166,16 +166,56 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TestDistribution"
+static PetscErrorCode TestDistribution(MPI_Comm comm)
+{
+  DM             dm, dmDist;
+  DMLabel        label;
+  const char     filename[2048];
+  const char    *name    = "test label";
+  PetscInt       overlap = 0, cStart, cEnd, c;
+  PetscMPIInt    rank;
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, NULL, "-filename", filename, 2048, &flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+  ierr = PetscOptionsGetInt(NULL, NULL, "-overlap", &overlap, NULL);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm); CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    ierr = DMLabelSetValue(label, c, c);CHKERRQ(ierr);
+  }
+  ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
+  if (dmDist) {
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    dm   = dmDist;
+  }
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  /*AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   /*ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);*/
   ierr = TestInsertion();CHKERRQ(ierr);
   ierr = TestEmptyStrata(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = TestDistribution(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
