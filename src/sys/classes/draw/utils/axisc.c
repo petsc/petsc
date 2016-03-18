@@ -20,15 +20,12 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 @*/
 PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
-  PetscBool      isnull;
   PetscDrawAxis  ad;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(axis,2);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) {*axis = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscHeaderCreate(ad,PETSC_DRAWAXIS_CLASSID,"PetscDrawAxis","Draw Axis","Draw",PetscObjectComm((PetscObject)draw),PetscDrawAxisDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)ad);CHKERRQ(ierr);
@@ -101,7 +98,6 @@ PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis *axis)
 PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 {
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   PetscValidLogicalCollectiveInt(axis,ac,2);
   PetscValidLogicalCollectiveInt(axis,tc,3);
@@ -133,7 +129,6 @@ PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   ierr = PetscFree(axis->xlabel);CHKERRQ(ierr);
   ierr = PetscFree(axis->ylabel);CHKERRQ(ierr);
@@ -168,7 +163,6 @@ PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const
 PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool hold)
 {
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   PetscValidLogicalCollectiveBool(axis,hold,2);
   axis->hold = hold;
@@ -205,7 +199,6 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   ierr = PetscDrawIsNull(axis->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);

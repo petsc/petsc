@@ -224,6 +224,8 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,Colormap);
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawSetColormap_X"
 PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,Colormap colormap)

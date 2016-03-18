@@ -1067,7 +1067,8 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
     PetscDraw draw;
     PetscBool isnull;
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+    ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+    if (isnull) PetscFunctionReturn(0);
   }
 
   {

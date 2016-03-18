@@ -45,7 +45,7 @@ static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-  if (popup) {ierr = PetscDrawScalePopup(popup,-8,+8);CHKERRQ(ierr);}
+  ierr = PetscDrawScalePopup(popup,-8,+8);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

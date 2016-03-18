@@ -295,7 +295,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     }
 
     ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
+    ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);
     ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
     ierr = PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
     if (!useports) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}

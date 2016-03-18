@@ -404,6 +404,7 @@ static PetscErrorCode PetscDrawDestroy_Image(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   ierr = PetscFree(img->buffer);CHKERRQ(ierr);
   ierr = PetscFree(draw->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -637,7 +638,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
   draw->coor_yl = 0; draw->coor_yr = 1;
   draw->port_xl = 0; draw->port_xr = 1;
   draw->port_yl = 0; draw->port_yr = 1;
-  ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
 
   size[0] = w; if (size[0] < 1) size[0] = 300;
   size[1] = h; if (size[1] < 1) size[1] = size[0];

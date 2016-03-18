@@ -20,12 +20,12 @@
    Level: developer
 
 @*/
-PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax,int c,PetscErrorCode (*f)(void*,PetscReal,PetscReal,PetscBool*),void *ctx)
+PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,int c,PetscErrorCode (*indicator)(void*,PetscReal,PetscReal,PetscBool*),void *ctx)
 {
-  PetscInt       xstart,ystart,xend,yend,i,j,tmp;
-  PetscErrorCode ierr;
+  PetscInt       i,j,xstart,ystart,xend,yend;
   PetscReal      x,y;
   PetscBool      isnull,flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -34,15 +34,12 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
 
   ierr = PetscDrawCoordinateToPixel(draw,xmin,ymin,&xstart,&ystart);CHKERRQ(ierr);
   ierr = PetscDrawCoordinateToPixel(draw,xmax,ymax,&xend,&yend);CHKERRQ(ierr);
-  if (yend < ystart) {
-    tmp    = ystart;
-    ystart = yend;
-    yend   = tmp;
-  }
-  for (i=xstart; i<xend+1; i++) {
-    for (j=ystart; j<yend+1; j++) {
+  if (yend < ystart) { PetscInt tmp = ystart; ystart = yend; yend = tmp; }
+
+  for (i=xstart; i<=xend; i++) {
+    for (j=ystart; j<=yend; j++) {
       ierr = PetscDrawPixelToCoordinate(draw,i,j,&x,&y);CHKERRQ(ierr);
-      ierr = f(ctx,x,y,&flg);CHKERRQ(ierr);
+      ierr = indicator(ctx,x,y,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = PetscDrawPointPixel(draw,i,j,c);CHKERRQ(ierr);
       }
@@ -72,12 +69,9 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
 PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y,PetscInt *i,PetscInt *j)
 {
   PetscErrorCode ierr;
-  PetscBool      isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->coordinatetopixel) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support locating pixels",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->coordinatetopixel)(draw,x,y,i,j);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -103,12 +97,9 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y
 PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,PetscInt i,PetscInt j,PetscReal *x,PetscReal *y)
 {
   PetscErrorCode ierr;
-  PetscBool      isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->pixeltocoordinate) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support locating coordinates",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->pixeltocoordinate)(draw,i,j,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -136,12 +127,9 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,PetscInt i,PetscInt j,P
 PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
   PetscErrorCode ierr;
-  PetscBool      isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->rectangle) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing rectangles",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4);CHKERRQ(ierr);
   PetscFunctionReturn(0);
