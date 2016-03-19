@@ -1,12 +1,12 @@
-    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
-  tolerances: relative=1e-08, absolute=-1., solution=1e-08
-  total number of linear solver iterations=29
-  total number of function evaluations=267
+  tolerances: relative=0.0001, absolute=-1., solution=1e-08
+  total number of linear solver iterations=20
+  total number of function evaluations=186
   norm schedule ALWAYS
   total number of grid sequence refinements=2
   SNESLineSearch Object:   2 MPI processes
@@ -76,7 +76,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.129643, max = 1.42607
+          Chebyshev: eigenvalue estimates:  min = 0.129652, max = 1.42618
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object:          (mg_levels_1_esteig_)           2 MPI processes
             type: gmres
@@ -104,7 +104,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object:      (mg_levels_2_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.127794, max = 1.40574
+          Chebyshev: eigenvalue estimates:  min = 0.127656, max = 1.40421
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object:          (mg_levels_2_esteig_)           2 MPI processes
             type: gmres
