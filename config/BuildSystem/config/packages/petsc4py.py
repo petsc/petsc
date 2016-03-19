@@ -36,7 +36,7 @@ class Configure(config.package.Package):
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix']:
-       newdir = 'PETSC_DIR='+os.path.abspath(self.argDB['prefix'])+' '+'PETSC_ARCH= MPICC=${PCC} '
+       newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' '+'PETSC_ARCH= MPICC=${PCC} '
     else:
        newdir = 'MPICC=${PCC} '
 
