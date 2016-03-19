@@ -128,6 +128,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#matlab">How can I use PETSc with MATLAB? How can I get PETSc Vecs and Mats to MATLAB or vice versa?</a></li>
         <li><a href="#cython">How do I get started with Cython so that I can extend petsc4py?</a></li>
         <li><a href="#customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></li>
+        <li><a href="#parallelsolvesequentialcode">If I have a sequential program can I use a parallel direct solver?</a></li>
       </ul>
 
       <h4><a href="#Execution">Execution</a></h4>
@@ -1211,6 +1212,22 @@ PETSC_COMM_WORLD = NewComm;
       norm as provided by the method. See also
       <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetPCSide.html">KSPSetPCSide</a>()
 
+      <h3><a name="parallelsolvesequentialcode">If I have a sequential program can I use a parallel direct solver?</a></h3>
+
+      <p> Yes, you must ./configure PETSc with MPI (even though you will not use MPI) and the options --download-superlu_dist
+        --download-parmetis --download-metis --with-openmp</p>
+
+      <p> Your compiler must support OpenMP. To have the linear solver run in parallel run your program with</p>
+
+      <p> OMP_NUM_THREADS=n ./programname -pc_type lu -pc_factor_mat_solver superlu_dist</p>
+
+      <p> where n is the number of threads and should be less than or equal to the number of cores available. Do not expect to get
+        great speedups but you should see some reduction in the time for the linear solvers.</p>
+
+      <p> If your code is MPI parallel you can also use these same options to have SuperLU_dist utilize multiple threads per MPI process for
+        the direct solver. Make sure that the OMP_NUM_THREADS you use per MPI process is less than or equal to the number of cores available
+        for each MPI process. For example if your compute nodes have 6 cores and you use 2 MPI processes per node then set OMP_NUM_THREADS to 2 or 3.
+
       <hr>
 
       <h2><a name="execution">Execution</a></h2>
@@ -1604,6 +1621,8 @@ PETSC_COMM_WORLD = NewComm;
           or use a method that orthogonalizes differently, e.g. <code>-ksp_type gcr</code>.
         </li>
       </ul>
+
+
 
       <hr>
 
