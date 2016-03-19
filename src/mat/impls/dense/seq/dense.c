@@ -1229,8 +1229,8 @@ static PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
       if (PetscAbsScalar(v[i]) > maxv) maxv = PetscAbsScalar(v[i]);
     }
     if (minv >= maxv) maxv = minv + PETSC_SMALL;
-    ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {ierr = PetscDrawScalePopup(popup,minv,maxv);CHKERRQ(ierr);}
+    ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
+    ierr = PetscDrawScalePopup(popup,minv,maxv);CHKERRQ(ierr);
 
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     for (j=0; j<n; j++) {

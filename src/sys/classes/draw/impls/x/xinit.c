@@ -13,7 +13,7 @@
 
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
 
-extern PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,Colormap);
+PETSC_INTERN PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,Colormap);
 
 /*
   PetscDrawXiOpenDisplay - Open and setup a display

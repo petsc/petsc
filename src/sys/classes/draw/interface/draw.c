@@ -379,36 +379,6 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawDestroy_Null"
-static PetscErrorCode PetscDrawDestroy_Null(PetscDraw draw)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawOpenNull"
-/*
-  PetscDrawOpenNull - Opens a null drawing context. All draw commands to
-  it are ignored.
-
-  Output Parameter:
-. win - the drawing context
-
-   Level: advanced
-
-*/
-PetscErrorCode  PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscDrawCreate(comm,NULL,NULL,0,0,1,1,win);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(*win,PETSC_DRAW_NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscDrawSetDisplay"
 /*@
   PetscDrawSetDisplay - Sets the display where a PetscDraw object will be displayed
@@ -430,31 +400,33 @@ PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCreate_Null"
-/*
-  PetscDrawCreate_Null - Opens a null drawing context. All draw commands to
-  it are ignored.
 
-  Input Parameter:
-. win - the drawing context
-*/
-PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetDoubleBuffer"
+/*@
+   PetscDrawSetDoubleBuffer - Sets a window to be double buffered.
+
+   Logically Collective on PetscDraw
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Level: intermediate
+
+   Concepts: drawing^double buffer
+   Concepts: graphics^double buffer
+   Concepts: double buffer
+
+@*/
+PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps));CHKERRQ(ierr);
-  draw->data         = NULL;
-  draw->ops->destroy = PetscDrawDestroy_Null;
-  draw->ops->view    = NULL;
-
-  draw->pause        = 0.0;
-  draw->coor_xl      = 0.0;  draw->coor_xr = 1.0;
-  draw->coor_yl      = 0.0;  draw->coor_yr = 1.0;
-  draw->port_xl      = 0.0;  draw->port_xr = 1.0;
-  draw->port_yl      = 0.0;  draw->port_yr = 1.0;
-  draw->popup        = NULL;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  if (draw->ops->setdoublebuffer) {
+    ierr = (*draw->ops->setdoublebuffer)(draw);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

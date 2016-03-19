@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = draw.c dcoor.c dtext.c dpoint.c dmarker.c dline.c \
-           dpause.c dbuff.c dflush.c dsave.c dclear.c dmouse.c dviewp.c \
+           dpause.c dflush.c dsave.c dclear.c dmouse.c dviewp.c \
            dtri.c drect.c dellipse.c drawreg.c drawregall.c
 SOURCEF  =
 SOURCEH  =

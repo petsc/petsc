@@ -903,7 +903,7 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
     }
     if (minv >= maxv) maxv = minv + PETSC_SMALL;
     ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    if (popup) {ierr = PetscDrawScalePopup(popup,minv,maxv);CHKERRQ(ierr);}
+    ierr = PetscDrawScalePopup(popup,minv,maxv);CHKERRQ(ierr);
 
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     for (i=0; i<m; i++) {

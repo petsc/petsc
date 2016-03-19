@@ -26,7 +26,6 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
@@ -79,7 +78,6 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
   PetscReal      xx;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
@@ -139,7 +137,6 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
   PetscReal      *x,*y;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
@@ -196,7 +193,6 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
 PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
 {
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   (lg)->xmin = x_min;

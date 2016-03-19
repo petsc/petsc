@@ -296,7 +296,7 @@ static PetscErrorCode FinalizeShader(void)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw);
+PETSC_INTERN PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw);
 
 #if defined(PETSC_HAVE_GLUT)
 #include <GLUT/glut.h>

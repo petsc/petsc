@@ -6,7 +6,7 @@
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
 
-   Logically Collective on PetscDrawAxis
+    Logically Collective on PetscDrawAxis
 
     Input Parameters:
 +   axis - the axis
@@ -26,7 +26,6 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   if (axis->hold) PetscFunctionReturn(0);
   axis->xlow = xmin;
@@ -57,7 +56,6 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
 PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscReal *xmax,PetscReal *ymin,PetscReal *ymax)
 {
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   *xmin = axis->xlow;
   *xmax = axis->xhigh;
@@ -223,9 +221,3 @@ PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal *Ba
   *Base = base;
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-

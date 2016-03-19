@@ -45,7 +45,6 @@ struct _p_PetscDrawSP {
 @*/
 PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
-  PetscBool      isnull;
   PetscDrawSP    sp;
   PetscErrorCode ierr;
 
@@ -53,10 +52,8 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidLogicalCollectiveInt(draw,dim,2);
   PetscValidPointer(drawsp,3);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) {*drawsp = NULL; PetscFunctionReturn(0);}
 
-  ierr = PetscHeaderCreate(sp,PETSC_DRAWSP_CLASSID,"PetscDrawSP","Scatter plot","Draw",PetscObjectComm((PetscObject)draw),PetscDrawSPDestroy,NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,PETSC_DRAWSP_CLASSID,"PetscDrawSP","Scatter Plot","Draw",PetscObjectComm((PetscObject)draw),PetscDrawSPDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)sp);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
@@ -105,7 +102,6 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(sp,dim,2);
   if (sp->dim == dim) PetscFunctionReturn(0);
@@ -136,7 +132,6 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
 {
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   sp->xmin  = 1.e20;
   sp->ymin  = 1.e20;
@@ -201,7 +196,6 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
 
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
@@ -255,7 +249,6 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
   PetscReal      *x,*y;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
 
   if (sp->loc+n*sp->dim >= sp->len) { /* allocate more space */
@@ -316,7 +309,6 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   PetscDraw      draw;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   ierr = PetscDrawIsNull(sp->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
@@ -372,7 +364,6 @@ PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   ierr = PetscDrawSave(sp->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -399,7 +390,6 @@ PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
 PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
 {
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   sp->xmin = x_min;
   sp->xmax = x_max;
@@ -430,9 +420,8 @@ PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_
 PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  PetscValidPointer(axis,2);
-  if (!sp) {*axis = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
+  PetscValidPointer(axis,2);
   *axis = sp->axis;
   PetscFunctionReturn(0);
 }
@@ -456,9 +445,8 @@ PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 PetscErrorCode  PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
 {
   PetscFunctionBegin;
-  PetscValidPointer(draw,2);
-  if (!sp) {*draw = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
+  PetscValidPointer(draw,2);
   *draw = sp->win;
   PetscFunctionReturn(0);
 }

@@ -627,12 +627,8 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   ierr = PetscMemcpy((*sdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   if (draw->popup) {
-    PetscBool isnull;
-    ierr = PetscDrawIsNull(draw->popup,&isnull);CHKERRQ(ierr);
-    if (isnull) {ierr = PetscDrawOpenNull(PETSC_COMM_SELF,&(*sdraw)->popup);CHKERRQ(ierr);}
-    else        {ierr = PetscDrawGetSingleton(draw->popup,&(*sdraw)->popup);CHKERRQ(ierr);}
+    ierr = PetscDrawGetSingleton(draw->popup,&(*sdraw)->popup);CHKERRQ(ierr);
   }
-
   (*sdraw)->pause   = draw->pause;
   (*sdraw)->coor_xl = draw->coor_xl;
   (*sdraw)->coor_xr = draw->coor_xr;
