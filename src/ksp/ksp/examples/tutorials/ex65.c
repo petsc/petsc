@@ -202,7 +202,7 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,mx,xm,xs;
-  PetscScalar    v[3],h,xlow,xhigh;
+  PetscScalar    v[3],h;
   MatStencil     row,col[3];
   DM             da,shell;
 
@@ -219,8 +219,6 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
       v[0] = 2.0/h;
       ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
     } else {
-      xlow  = h*(PetscReal)i - .5*h;
-      xhigh = xlow + h;
       v[0]  = (-1.0)/h;col[0].i = i-1;
       v[1]  = (2.0)/h;col[1].i = row.i;
       v[2]  = (-1.0)/h;col[2].i = i+1;
