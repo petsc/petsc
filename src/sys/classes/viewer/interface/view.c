@@ -110,6 +110,41 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerAndFormatCreate"
+/*@C
+   PetscViewerAndFormatCreate - Creates a PetscViewerAndFormat struct.
+
+   Collective on PetscViewer
+
+   Input Parameters:
++  viewer - the viewer
+-  format - the format 
+
+   Output Parameter:
+.   vf - viewer and format object
+
+   Notes: This increases the reference count of the viewer so you can destroy the viewer object after this call
+   Level: developer
+
+   This is used as the context variable for many of the TS, SNES, and KSP monitor functions
+
+.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewerAndFormatDestroy()
+
+@*/
+PetscErrorCode  PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat format,PetscViewerAndFormat **vf)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
+  ierr = PetscNew(vf);CHKERRQ(ierr);
+  (*vf)->viewer = viewer;
+  (*vf)->format = format;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerAndFormatDestroy"
 /*@C
    PetscViewerAndFormatDestroy - Destroys a PetscViewerAndFormat struct.
@@ -119,9 +154,9 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
    Input Parameters:
 .  viewer - the PetscViewerAndFormat to be destroyed.
 
-   Level: beginner
+   Level: developer
 
-.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen()
+.seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewerAndFormatCreate()
 
 @*/
 PetscErrorCode  PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)

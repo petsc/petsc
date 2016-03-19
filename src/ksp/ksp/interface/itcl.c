@@ -298,7 +298,7 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 .  name - the monitor type one is seeking
 .  help - message indicating what monitoring is done
 .  manual - manual page for the monitor
--  monitor - the monitor function, the context for this object is a PetscViewer
+-  monitor - the monitor function, the context for this object is a PetscViewerAndFormat
 
    Level: developer
 
@@ -321,9 +321,8 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewerAndFormat *vf;
-    ierr = PetscNew(&vf);CHKERRQ(ierr);
-    vf->viewer = viewer;
-    vf->format = format;
+    ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
