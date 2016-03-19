@@ -358,7 +358,8 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
     sred->pctelescope_reset_type              = NULL;
     break;
   case TELESCOPE_DMDA:
-    pc->ops->apply                          = PCApply_Telescope_dmda;
+    pc->ops->apply                            = PCApply_Telescope_dmda;
+    pc->ops->applyrichardson                  = PCApplyRichardson_Telescope_dmda;
     sred->pctelescope_setup_type              = PCTelescopeSetUp_dmda;
     sred->pctelescope_matcreate_type          = PCTelescopeMatCreate_dmda;
     sred->pctelescope_matnullspacecreate_type = PCTelescopeMatNullSpaceCreate_dmda;
@@ -450,6 +451,63 @@ static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
   ierr = VecRestoreArray(xtmp,&array);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,xtmp,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,xtmp,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCApplyRichardson_Telescope"
+static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
+{
+  PC_Telescope      sred = (PC_Telescope)pc->data;
+  PetscErrorCode    ierr;
+  Vec               xtmp,xred,yred;
+  PetscInt          i,st,ed;
+  VecScatter        scatter;
+  const PetscScalar *x_array;
+  PetscBool         default_init_guess_value;
+
+  PetscFunctionBegin;
+  xtmp    = sred->xtmp;
+  scatter = sred->scatter;
+  xred    = sred->xred;
+  yred    = sred->yred;
+
+  if (its > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope only supports max_it = 1");
+  *reason = (PCRichardsonConvergedReason)0;
+
+  if (!zeroguess) {
+    ierr = PetscInfo(pc,"PCTelescope: Scattering y for non-zero initial guess\n");CHKERRQ(ierr);
+    /* pull in vector y->xtmp */
+    ierr = VecScatterBegin(scatter,y,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter,y,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    /* copy vector entires into xred */
+    ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
+    if (yred) {
+      PetscScalar *LA_yred;
+      ierr = VecGetOwnershipRange(yred,&st,&ed);CHKERRQ(ierr);
+      ierr = VecGetArray(yred,&LA_yred);CHKERRQ(ierr);
+      for (i=0; i<ed-st; i++) {
+        LA_yred[i] = x_array[i];
+      }
+      ierr = VecRestoreArray(yred,&LA_yred);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArrayRead(xtmp,&x_array);CHKERRQ(ierr);
+  }
+
+  if (isActiveRank(sred->psubcomm)) {
+    ierr = KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value);CHKERRQ(ierr);
+    if (!zeroguess) ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
+  ierr = PCApply_Telescope(pc,x,y);CHKERRQ(ierr);
+
+  if (isActiveRank(sred->psubcomm)) {
+    ierr = KSPSetInitialGuessNonzero(sred->ksp,default_init_guess_value);CHKERRQ(ierr);
+  }
+
+  if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
+  *outits = 1;
   PetscFunctionReturn(0);
 }
 
@@ -863,13 +921,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
   sred->ignore_kspcomputeoperators = PETSC_FALSE;
   pc->data             = (void*)sred;
 
-  pc->ops->apply          = PCApply_Telescope;
-  pc->ops->applytranspose = NULL;
-  pc->ops->setup          = PCSetUp_Telescope;
-  pc->ops->destroy        = PCDestroy_Telescope;
-  pc->ops->reset          = PCReset_Telescope;
-  pc->ops->setfromoptions = PCSetFromOptions_Telescope;
-  pc->ops->view           = PCView_Telescope;
+  pc->ops->apply           = PCApply_Telescope;
+  pc->ops->applytranspose  = NULL;
+  pc->ops->applyrichardson = PCApplyRichardson_Telescope;
+  pc->ops->setup           = PCSetUp_Telescope;
+  pc->ops->destroy         = PCDestroy_Telescope;
+  pc->ops->reset           = PCReset_Telescope;
+  pc->ops->setfromoptions  = PCSetFromOptions_Telescope;
+  pc->ops->view            = PCView_Telescope;
 
   sred->pctelescope_setup_type              = PCTelescopeSetUp_default;
   sred->pctelescope_matcreate_type          = PCTelescopeMatCreate_default;

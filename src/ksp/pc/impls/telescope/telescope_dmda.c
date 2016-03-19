@@ -944,6 +944,70 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCApplyRichardson_Telescope_dmda"
+PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
+{
+  PC_Telescope      sred = (PC_Telescope)pc->data;
+  PetscErrorCode    ierr;
+  Mat               perm;
+  Vec               xtmp,xp,xred,yred;
+  PetscInt          i,st,ed;
+  VecScatter        scatter;
+  const PetscScalar *x_array;
+  PetscBool         default_init_guess_value;
+  PC_Telescope_DMDACtx *ctx;
+
+  ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
+  xtmp    = sred->xtmp;
+  scatter = sred->scatter;
+  xred    = sred->xred;
+  yred    = sred->yred;
+  perm  = ctx->permutation;
+  xp    = ctx->xp;
+
+  if (its > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope_dmda only supports max_it = 1");
+  *reason = (PCRichardsonConvergedReason)0;
+
+  if (!zeroguess) {
+    ierr = PetscInfo(pc,"PCTelescopeDMDA: Scattering y for non-zero-initial guess\n");CHKERRQ(ierr);
+    /* permute vector into ordering associated with re-partitioned dmda */
+    ierr = MatMultTranspose(perm,y,xp);CHKERRQ(ierr);
+
+    /* pull in vector x->xtmp */
+    ierr = VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    /* copy vector entires into xred */
+    ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
+    if (yred) {
+      PetscScalar *LA_yred;
+      ierr = VecGetOwnershipRange(yred,&st,&ed);CHKERRQ(ierr);
+      ierr = VecGetArray(yred,&LA_yred);CHKERRQ(ierr);
+      for (i=0; i<ed-st; i++) {
+        LA_yred[i] = x_array[i];
+      }
+      ierr = VecRestoreArray(yred,&LA_yred);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArrayRead(xtmp,&x_array);CHKERRQ(ierr);
+  }
+
+  if (isActiveRank(sred->psubcomm)) {
+    ierr = KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value);CHKERRQ(ierr);
+    if (!zeroguess) ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
+  ierr = PCApply_Telescope_dmda(pc,x,y);CHKERRQ(ierr);
+
+  if (isActiveRank(sred->psubcomm)) {
+    ierr = KSPSetInitialGuessNonzero(sred->ksp,default_init_guess_value);CHKERRQ(ierr);
+  }
+
+  if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
+  *outits = 1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_Telescope_dmda"
 PetscErrorCode PCReset_Telescope_dmda(PC pc)
 {
