@@ -10,15 +10,16 @@ int main(int argc,char **argv)
   PetscDraw      draw;
   PetscErrorCode ierr;
 
-  int i,j,w,h;
-  int k  = PETSC_DRAW_BLACK;
-  int r  = PETSC_DRAW_RED;
-  int g  = PETSC_DRAW_GREEN;
-  int b  = PETSC_DRAW_BLUE;
-  int y  = PETSC_DRAW_YELLOW;
-  int c0 = PETSC_DRAW_BASIC_COLORS;
-  int c2 = 255;
-  int c1 = (c0+c2)/2;
+  PetscInt i,j;
+  int      w,h;
+  int      k  = PETSC_DRAW_BLACK;
+  int      r  = PETSC_DRAW_RED;
+  int      g  = PETSC_DRAW_GREEN;
+  int      b  = PETSC_DRAW_BLUE;
+  int      y  = PETSC_DRAW_YELLOW;
+  int      c0 = PETSC_DRAW_BASIC_COLORS;
+  int      c2 = 255;
+  int      c1 = (c0+c2)/2;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
