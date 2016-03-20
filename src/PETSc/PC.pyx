@@ -67,6 +67,12 @@ class PCGASMType(object):
     RESTRICT    = PC_GASM_RESTRICT
     INTERPOLATE = PC_GASM_INTERPOLATE
 
+class PCMGType(object):
+    MULTIPLICATIVE = PC_MG_MULTIPLICATIVE
+    ADDITIVE       = PC_MG_ADDITIVE
+    FULL           = PC_MG_FULL
+    KASKADE        = PC_MG_KASKADE
+
 class PCGAMGType(object):
     AGG       = S_(PCGAMGAGG)
     GEO       = S_(PCGAMGGEO)
@@ -101,6 +107,7 @@ cdef class PC(Object):
 
     ASMType       = PCASMType
     GASMType      = PCGASMType
+    MGType        = PCMGType
     GAMGType      = PCGAMGType
     CompositeType = PCCompositeType
     SchurFactType = PCFieldSplitSchurFactType
@@ -469,6 +476,16 @@ cdef class PC(Object):
         return ksp
 
     # --- MG ---
+
+    def getMGType(self):
+        cdef PetscPCMGType cval = PC_MG_ADDITIVE
+        CHKERR( PCMGGetType(self.pc, &cval) )
+        return cval
+
+    def setMGType(self, mgtype):
+        cdef PetscPCMGType cval = mgtype
+        CHKERR( PCMGSetType(self.pc, cval) )
+
     def getMGLevels(self):
         cdef PetscInt levels = 0
         CHKERR( PCMGGetLevels(self.pc, &levels) )
@@ -557,6 +574,7 @@ del PCType
 del PCSide
 del PCASMType
 del PCGASMType
+del PCMGType
 del PCGAMGType
 del PCCompositeType
 del PCFieldSplitSchurPreType

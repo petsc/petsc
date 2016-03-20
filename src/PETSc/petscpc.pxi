@@ -62,6 +62,12 @@ cdef extern from * nogil:
         PC_GASM_INTERPOLATE
         PC_GASM_NONE
 
+    ctypedef enum PetscPCMGType "PCMGType":
+        PC_MG_MULTIPLICATIVE
+        PC_MG_ADDITIVE
+        PC_MG_FULL
+        PC_MG_KASKADE
+
     ctypedef char* PetscPCGAMGType "const char*"
     PetscPCGAMGType PCGAMGAGG
     PetscPCGAMGType PCGAMGGEO
@@ -190,6 +196,8 @@ cdef extern from * nogil:
     int PCSetReusePreconditioner(PetscPC,PetscBool)
 
     # --- MG ---
+    int PCMGSetType(PetscPC,PetscPCMGType)
+    int PCMGGetType(PetscPC,PetscPCMGType*)
     int PCMGSetInterpolation(PetscPC,PetscInt,PetscMat)
     int PCMGGetInterpolation(PetscPC,PetscInt,PetscMat*)
     int PCMGSetRestriction(PetscPC,PetscInt,PetscMat)
