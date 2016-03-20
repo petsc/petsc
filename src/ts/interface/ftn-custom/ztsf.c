@@ -245,13 +245,13 @@ PETSC_EXTERN void PETSC_STDCALL tsgetijacobian_(TS *ts,Mat *J,Mat *M,int *func,v
 
 /* ---------------------------------------------------------*/
 
-PETSC_EXTERN void PETSC_STDCALL tsmonitordefault_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*);
+/* PETSC_EXTERN void PETSC_STDCALL tsmonitordefault_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*); */
 
 PETSC_EXTERN void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL*func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL*d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
-  if ((PetscVoidFunction)func == (PetscVoidFunction)tsmonitordefault_) {
-    *ierr = TSMonitorSet(*ts,TSMonitorDefault,0,0);
+  if ((PetscVoidFunction)func == (PetscVoidFunction) 0) {
+    *ierr = 0; /* *ierr = TSMonitorSet(*ts,TSMonitorDefault,0,0);*/
   } else {
     ((PetscObject)*ts)->fortran_func_pointers[OUR_MONITOR]        = (PetscVoidFunction)func;
     ((PetscObject)*ts)->fortran_func_pointers[OUR_MONITORDESTROY] = (PetscVoidFunction)d;
