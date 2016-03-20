@@ -3325,22 +3325,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscFree2(pcbddc->local_primal_ref_node,pcbddc->local_primal_ref_mult);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
 
-  /* print some info */
-  if (pcbddc->dbg_flag) {
-    IS       vertices;
-    PetscInt nv,nedges,nfaces;
-    ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&nfaces,NULL,&nedges,NULL,&vertices);CHKERRQ(ierr);
-    ierr = ISGetSize(vertices,&nv);CHKERRQ(ierr);
-    ierr = ISDestroy(&vertices);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate vertices (%d)\n",PetscGlobalRank,nv,pcbddc->use_vertices);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate edges    (%d)\n",PetscGlobalRank,nedges,pcbddc->use_edges);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate faces    (%d)\n",PetscGlobalRank,nfaces,pcbddc->use_faces);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
-  }
-
   if (!pcbddc->adaptive_selection) {
     IS           ISForVertices,*ISForFaces,*ISForEdges;
     MatNullSpace nearnullsp;
@@ -3365,6 +3349,21 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
     /* Get index sets for faces, edges and vertices from graph */
     ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);CHKERRQ(ierr);
+    /* print some info */
+    if (pcbddc->dbg_flag) {
+      PetscInt nv;
+
+      ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = ISGetSize(ISForVertices,&nv);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate vertices (%d)\n",PetscGlobalRank,nv,pcbddc->use_vertices);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate edges    (%d)\n",PetscGlobalRank,n_ISForEdges,pcbddc->use_edges);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate faces    (%d)\n",PetscGlobalRank,n_ISForFaces,pcbddc->use_faces);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    }
+
     /* free unneeded index sets */
     if (!pcbddc->use_vertices) {
       ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
@@ -4465,7 +4464,6 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PC_IS       *pcis = (PC_IS*)pc->data;
   Mat_IS      *matis  = (Mat_IS*)pc->pmat->data;
   PetscInt    ierr,i,N;
-  PetscViewer viewer=pcbddc->dbg_viewer;
 
   PetscFunctionBegin;
   /* Reset previously computed graph */
@@ -4552,11 +4550,6 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
   /* Graph's connected components analysis */
   ierr = PCBDDCGraphComputeConnectedComponents(pcbddc->mat_graph);CHKERRQ(ierr);
-
-  /* print some info to stdout */
-  if (pcbddc->dbg_flag) {
-    ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,viewer);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -5569,6 +5562,11 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
   if (multilevel_allowed && have_void) restr = PETSC_TRUE;
 
+  /* dump subassembling pattern */
+  if (pcbddc->dbg_flag && multilevel_allowed) {
+    ierr = ISView(pcbddc->coarse_subassembling,pcbddc->dbg_viewer);CHKERRQ(ierr);
+  }
+
   /* compute dofs splitting and neumann boundaries for coarse dofs */
   if (multilevel_allowed && (pcbddc->n_ISForDofsLocal || pcbddc->NeumannBoundariesLocal || (pcbddc->benign_saddle_point && pcbddc->user_primal_vertices_local))) { /* protects from unneded computations */
     PetscInt               *tidxs,*tidxs2,nout,tsize,i;
@@ -5883,7 +5881,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (CoarseNullSpace) {
       PetscBool isnull;
       ierr = MatNullSpaceTest(CoarseNullSpace,coarse_mat,&isnull);CHKERRQ(ierr);
-      if (0) {
+      if (1) {
         if (isbddc && !pcbddc->benign_saddle_point) {
           ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
         } else {
@@ -5914,6 +5912,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetErrorIfNotConverged(pcbddc->coarse_ksp,pc->erroriffailure);CHKERRQ(ierr);
       ierr = KSPSetOperators(check_ksp,coarse_mat,coarse_mat);CHKERRQ(ierr);
       ierr = KSPSetTolerances(check_ksp,1.e-12,1.e-12,PETSC_DEFAULT,pcbddc->coarse_size);CHKERRQ(ierr);
+      /* prevent from setup unneeded object */
+      ierr = KSPGetPC(check_ksp,&check_pc);CHKERRQ(ierr);
+      ierr = PCSetType(check_pc,PCNONE);CHKERRQ(ierr);
       if (ispreonly) {
         check_ksp_type = KSPPREONLY;
         compute_eigs = PETSC_FALSE;
@@ -5968,7 +5969,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = VecNorm(check_vec,NORM_INFINITY,&infty_error);CHKERRQ(ierr);
         ierr = MatMult(coarse_mat,check_vec,coarse_vec);CHKERRQ(ierr);
         ierr = VecNorm(coarse_vec,NORM_INFINITY,&abs_infty_error);CHKERRQ(ierr);
-        ierr = VecDestroy(&check_vec);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem details (use estimates %d)\n",pcbddc->use_coarse_estimates);CHKERRQ(ierr);
         ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(pcbddc->coarse_ksp),dbg_viewer);CHKERRQ(ierr);
         ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(check_pc),dbg_viewer);CHKERRQ(ierr);
@@ -5990,6 +5990,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PetscViewerFlush(dbg_viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(dbg_viewer,2*(pcbddc->current_level+1));CHKERRQ(ierr);
       }
+      ierr = VecDestroy(&check_vec);CHKERRQ(ierr);
       ierr = KSPDestroy(&check_ksp);CHKERRQ(ierr);
       if (compute_eigs) {
         ierr = PetscFree(eigs_r);CHKERRQ(ierr);
@@ -6259,9 +6260,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       PC_BDDC *pcbddcf;
       PC      pcf;
 
-      if (pcbddc->sub_schurs_rebuild) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute change of basis with a different graph");
-      }
+      if (pcbddc->sub_schurs_rebuild) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute change of basis with a different graph");
       ierr = PCCreate(PetscObjectComm((PetscObject)pc),&pcf);CHKERRQ(ierr);
       ierr = PCSetOperators(pcf,pc->mat,pc->pmat);CHKERRQ(ierr);
       ierr = PCSetType(pcf,PCBDDC);CHKERRQ(ierr);
@@ -6337,13 +6336,24 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
     ierr = PCBDDCGraphSetUp(graph,pcbddc->mat_graph->custom_minimal_size,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticescomm);CHKERRQ(ierr);
     ierr = ISDestroy(&verticescomm);CHKERRQ(ierr);
     ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
-/*
-    if (pcbddc->dbg_flag) {
-      ierr = PCBDDCGraphASCIIView(graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
-    }
-*/
   } else {
     graph = pcbddc->mat_graph;
+  }
+  /* print some info */
+  if (pcbddc->dbg_flag) {
+    IS       vertices;
+    PetscInt nv,nedges,nfaces;
+    ierr = PCBDDCGraphASCIIView(graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PCBDDCGraphGetCandidatesIS(graph,&nfaces,NULL,&nedges,NULL,&vertices);CHKERRQ(ierr);
+    ierr = ISGetSize(vertices,&nv);CHKERRQ(ierr);
+    ierr = ISDestroy(&vertices);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate vertices (%d)\n",PetscGlobalRank,nv,pcbddc->use_vertices);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate edges    (%d)\n",PetscGlobalRank,nedges,pcbddc->use_edges);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate faces    (%d)\n",PetscGlobalRank,nfaces,pcbddc->use_faces);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
 
   /* sub_schurs init */
