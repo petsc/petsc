@@ -455,7 +455,7 @@ static PetscErrorCode PetscDrawResizeWindow_X(PetscDraw draw,int w,int h)
 
   if (win->win) {
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-    if (!rank) XResizeWindow(win->disp,win->win,(unsigned int)w,(unsigned int)h);
+    if (!rank) {ierr = PetscDrawXiResizeWindow(win,w,h);CHKERRQ(ierr);}
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
     ierr = PetscDrawCheckResizedWindow_X(draw);CHKERRQ(ierr);
   } else if (win->drw) {

@@ -63,6 +63,7 @@ PETSC_INTERN PetscErrorCode PetscDrawXiColormap(PetscDraw_X*);
 PETSC_INTERN PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X*,char*,int,int,int,int);
 PETSC_INTERN PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X*,Window);
 PETSC_INTERN PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X*);
+PETSC_INTERN PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X*,int,int);
 PETSC_INTERN PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X*,int*,int*,int*,int*);
 
 #endif

@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   ierr = PetscDrawSave(draw);CHKERRQ(ierr);
 
-  /*ierr = PetscDrawResizeWindow(draw,600,600);CHKERRQ(ierr);*/
+  ierr = PetscDrawResizeWindow(draw,600,600);CHKERRQ(ierr);
   ierr = PetscDrawGetWindowSize(draw,&width,&height);CHKERRQ(ierr);
   ierr = PetscDrawSetViewPort(draw,0,0,1,1);CHKERRQ(ierr);
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);

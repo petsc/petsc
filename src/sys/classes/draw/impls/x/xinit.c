@@ -282,6 +282,19 @@ PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X* XiWin)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiResizeWindow"
+PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X* XiWin,int w,int h)
+{
+  XEvent event;
+  PetscFunctionBegin;
+  XSelectInput(XiWin->disp,XiWin->win,StructureNotifyMask);
+  XResizeWindow(XiWin->disp,XiWin->win,(unsigned int)w,(unsigned int)h);
+  XWindowEvent(XiWin->disp,XiWin->win,StructureNotifyMask,&event);
+  XSelectInput(XiWin->disp,XiWin->win,NoEventMask);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiGetGeometry"
 PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *XiWin,int *x,int *y,int *w,int *h)
 {
