@@ -161,6 +161,7 @@ PetscOptionsGetAll(PetscOptions,char*[]);
       <h4>Mat:</h4>
       <h4>PC:</h4>
       <ul>
+        <li>Removed PCSetInitialGuessNonzero() and PCGetInitialGuessNonzero() they make no sense since PCApply() is a linear operator and cannot depend on the initial guess and were not used anyway</li>        
         <li>Added -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())</li>
         <li>Added -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())</li>
         <li>see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG</li>

@@ -1778,69 +1778,6 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "PCSetInitialGuessNonzero"
-/*@
-   PCSetInitialGuessNonzero - Tells the iterative solver that the
-   initial guess is nonzero; otherwise PC assumes the initial guess
-   is to be zero (and thus zeros it out before solving).
-
-   Logically Collective on PC
-
-   Input Parameters:
-+  pc - iterative context obtained from PCCreate()
--  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
-
-   Level: Developer
-
-   Notes:
-    This is a weird function. Since PC's are linear operators on the right hand side they
-    CANNOT use an initial guess. This function is for the "pass-through" preconditioners
-    PCKSP and PCREDUNDANT  and causes the inner KSP object to use the nonzero
-    initial guess. Not currently working for PCREDUNDANT, that has to be rewritten to use KSP.
-
-
-.keywords: PC, set, initial guess, nonzero
-
-.seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll()
-@*/
-PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
-{
-  PetscFunctionBegin;
-  PetscValidLogicalCollectiveBool(pc,flg,2);
-  pc->nonzero_guess = flg;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCGetInitialGuessNonzero"
-/*@
-   PCGetInitialGuessNonzero - Determines if the iterative solver assumes that the
-   initial guess is nonzero; otherwise PC assumes the initial guess
-   is to be zero (and thus zeros it out before solving).
-
-   Logically Collective on PC
-
-   Input Parameter:
-.   pc - iterative context obtained from PCCreate()
-
-   Output Parameter:
-.  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
-
-   Level: Developer
-
-.keywords: PC, set, initial guess, nonzero
-
-.seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll(), PCSetInitialGuessNonzero()
-@*/
-PetscErrorCode  PCGetInitialGuessNonzero(PC pc,PetscBool *flg)
-{
-  PetscFunctionBegin;
-  *flg = pc->nonzero_guess;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "PCRegister"
 /*@C
