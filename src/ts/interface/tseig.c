@@ -113,6 +113,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   SNES              snes;
 
   PetscFunctionBegin;
+  if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) PetscFunctionReturn(0);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = VecDuplicate(v,&xdot);CHKERRQ(ierr);

@@ -337,6 +337,9 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
   ierr = VecAYPX(mon->x,-1,x);CHKERRQ(ierr);
   ierr = VecNorm(mon->x,NORM_2,&nrm_diff);CHKERRQ(ierr);
   ierr = TSGetTimeStep(ts,&h);CHKERRQ(ierr);
+  if (step < 0) {
+    ierr = PetscPrintf(mon->comm,"Interpolated final solution ");CHKERRQ(ierr);
+  }
   ierr = PetscPrintf(mon->comm,"step %4D t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,(double)t,(double)h,(double)nrm_x,(double)nrm_exact,(double)nrm_diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -448,9 +451,6 @@ int main(int argc,char **argv)
   ierr = TSGetSNESIterations(ts,&nonlinits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&linits);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %g, nonlinits %D, linits %D\n",steps,rejects,snesfails,(double)ftime,nonlinits,linits);CHKERRQ(ierr);
-  if (problem->hasexact) {
-    ierr = MonitorError(ts,steps,ftime,x,&mon);CHKERRQ(ierr);
-  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -1083,7 +1083,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   /* Create and initialize the time-integrator                            */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   /* Default time integration options                                     */
-  ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxiter,tfinal);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);

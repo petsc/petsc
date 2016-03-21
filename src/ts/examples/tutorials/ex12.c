@@ -259,7 +259,9 @@ PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
   PetscFunctionBeginUser;
   ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"timestep %D time %g norm %g\n",step,(double)ptime,(double)norm);CHKERRQ(ierr);
+  if (step > -1) { /* -1 is used to indicate an interpolated value */
+    ierr = PetscPrintf(comm,"timestep %D time %g norm %g\n",step,(double)ptime,(double)norm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
