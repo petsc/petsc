@@ -9,6 +9,7 @@ typedef struct  {
   VecScatter gtol;
   VecScatter ltog;
   VecScatter ltol;
+  void       *ctx;
 } DM_Shell;
 
 #undef __FUNCT__
@@ -282,6 +283,66 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMShellSetContext"
+/*@
+   DMShellSetContext - set some data to be usable by this DM
+
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+-  ctx - the context
+
+   Level: advanced
+
+.seealso: DMCreateMatrix(), DMShellGetContext()
+@*/
+PetscErrorCode DMShellSetContext(DM dm,void *ctx)
+{
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  shell->ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellGetContext"
+/*@
+   DMShellGetContext - set some data to be usable by this DM
+
+   Collective
+
+   Input Argument:
+.  dm - shell DM
+
+   Output Argument:
+.  ctx - the context
+
+   Level: advanced
+
+.seealso: DMCreateMatrix(), DMShellSetContext()
+@*/
+PetscErrorCode DMShellGetContext(DM dm,void **ctx)
+{
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  *ctx = shell->ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMShellSetMatrix"
 /*@
    DMShellSetMatrix - sets a template matrix associated with the DMShell
@@ -294,7 +355,7 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
 
    Level: advanced
 
-.seealso: DMCreateMatrix(), DMShellSetCreateMatrix()
+.seealso: DMCreateMatrix(), DMShellSetCreateMatrix(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
 {
@@ -326,7 +387,7 @@ PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
 
    Level: advanced
 
-.seealso: DMCreateMatrix(), DMShellSetMatrix()
+.seealso: DMCreateMatrix(), DMShellSetMatrix(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateMatrix(DM dm,PetscErrorCode (*func)(DM,Mat*))
 {
@@ -382,7 +443,7 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
 
    Level: advanced
 
-.seealso: DMShellSetGlobalVector(), DMShellSetCreateMatrix()
+.seealso: DMShellSetGlobalVector(), DMShellSetCreateMatrix(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateGlobalVector(DM dm,PetscErrorCode (*func)(DM,Vec*))
 {
@@ -438,7 +499,7 @@ PetscErrorCode DMShellSetLocalVector(DM dm,Vec X)
 
    Level: advanced
 
-.seealso: DMShellSetLocalVector(), DMShellSetCreateMatrix()
+.seealso: DMShellSetLocalVector(), DMShellSetCreateMatrix(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*))
 {
@@ -624,7 +685,7 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
 
    Level: advanced
 
-.seealso: DMShellSetRefine(), DMCoarsen()
+.seealso: DMShellSetRefine(), DMCoarsen(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*))
 {
@@ -652,7 +713,7 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM
 
    Level: advanced
 
-.seealso: DMShellSetCoarsen(), DMRefine()
+.seealso: DMShellSetCoarsen(), DMRefine(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*))
 {
@@ -680,7 +741,7 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*)
 
    Level: advanced
 
-.seealso: DMShellSetCreateInjection(), DMCreateInterpolation()
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation(), DMShellSetCreateRestriction(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,DM,Mat*,Vec*))
 {
@@ -692,6 +753,34 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
   dm->ops->createinterpolation = interp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateRestriction"
+/*@C
+   DMShellSetCreateRestriction - Set the routine used to create the restriction operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  striction- the routine to create the restriction
+
+   Level: advanced
+
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation(), DMShellSetContext(), DMShellGetContext()
+@*/
+PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(DM,DM,Mat*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createrestriction = restriction;
   PetscFunctionReturn(0);
 }
 
@@ -708,7 +797,7 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
 
    Level: advanced
 
-.seealso: DMShellSetCreateInterpolation(), DMCreateInjection()
+.seealso: DMShellSetCreateInterpolation(), DMCreateInjection(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,Mat*))
 {
@@ -736,7 +825,7 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
 
    Level: advanced
 
-.seealso: DMCreateFieldDecomposition()
+.seealso: DMCreateFieldDecomposition(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp)(DM,PetscInt*,char***, IS**,DM**))
 {
@@ -762,7 +851,7 @@ PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp
 
    Level: advanced
 
-.seealso: DMCreateSubDM()
+.seealso: DMCreateSubDM(), DMShellSetContext(), DMShellGetContext()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMShellSetCreateSubDM"
@@ -879,7 +968,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMCreateLocalVector()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMCreateLocalVector(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode  DMShellCreate(MPI_Comm comm,DM *dm)
 {
