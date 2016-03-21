@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCoordinateToPixel_Null"
-static PetscErrorCode PetscDrawCoordinateToPixel_Null(PetscDraw draw,PetscReal x,PetscReal y,PetscInt *i,PetscInt *j)
+static PetscErrorCode PetscDrawCoordinateToPixel_Null(PetscDraw draw,PetscReal x,PetscReal y,int *i,int *j)
 {
   PetscFunctionBegin;
   *i = *j = 0;
@@ -11,7 +11,7 @@ static PetscErrorCode PetscDrawCoordinateToPixel_Null(PetscDraw draw,PetscReal x
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawPixelToCoordinate_Null"
-static PetscErrorCode PetscDrawPixelToCoordinate_Null(PetscDraw draw,PetscInt i,PetscInt j,PetscReal *x,PetscReal *y)
+static PetscErrorCode PetscDrawPixelToCoordinate_Null(PetscDraw draw,int i,int j,PetscReal *x,PetscReal *y)
 {
   PetscFunctionBegin;
   *x = *y = 0;
@@ -28,7 +28,7 @@ static PetscErrorCode PetscDrawPoint_Null(PetscDraw draw,PetscReal x,PetscReal y
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawPointPixel_Null"
-static PetscErrorCode PetscDrawPointPixel_Null(PetscDraw draw,PetscInt x,PetscInt y,int c)
+static PetscErrorCode PetscDrawPointPixel_Null(PetscDraw draw,int x,int y,int c)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

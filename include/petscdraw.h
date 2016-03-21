@@ -110,14 +110,13 @@ PETSC_EXTERN PetscErrorCode PetscDrawDestroy(PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawIsNull(PetscDraw,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PetscDrawGetPopup(PetscDraw,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal);
+
 PETSC_EXTERN PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawResizeWindow(PetscDraw,int,int);
 PETSC_EXTERN PetscErrorCode PetscDrawGetWindowSize(PetscDraw,int*,int*);
-
-PETSC_EXTERN PetscErrorCode PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal);
-
-PETSC_EXTERN PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw,PetscInt,PetscInt,PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw,PetscReal,PetscReal,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw,int,int,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw,PetscReal,PetscReal,int*,int*);
 
 PETSC_EXTERN PetscErrorCode PetscDrawIndicatorFunction(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,PetscErrorCode (*)(void*,PetscReal,PetscReal,PetscBool*),void*);
 
@@ -146,7 +145,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetMarkerType(PetscDraw,PetscDrawMarkerType
 PETSC_EXTERN PetscErrorCode PetscDrawGetMarkerType(PetscDraw,PetscDrawMarkerType*);
 
 PETSC_EXTERN PetscErrorCode PetscDrawPoint(PetscDraw,PetscReal,PetscReal,int);
-PETSC_EXTERN PetscErrorCode PetscDrawPointPixel(PetscDraw,PetscInt,PetscInt,int);
+PETSC_EXTERN PetscErrorCode PetscDrawPointPixel(PetscDraw,int,int,int);
 PETSC_EXTERN PetscErrorCode PetscDrawPointSetSize(PetscDraw,PetscReal);
 
 PETSC_EXTERN PetscErrorCode PetscDrawRectangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);

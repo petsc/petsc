@@ -42,7 +42,7 @@ static PetscErrorCode PetscDrawSetCoordinates_Image(PetscDraw draw,PetscReal xl,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCoordinateToPixel_Image"
-static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw,PetscReal x,PetscReal y,PetscInt *i,PetscInt *j)
+static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw,PetscReal x,PetscReal y,int *i,int *j)
 {
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
@@ -53,7 +53,7 @@ static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw,PetscReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawPixelToCoordinate_Image"
-static PetscErrorCode PetscDrawPixelToCoordinate_Image(PetscDraw draw,PetscInt i,PetscInt j,PetscReal *x,PetscReal *y)
+static PetscErrorCode PetscDrawPixelToCoordinate_Image(PetscDraw draw,int i,int j,PetscReal *x,PetscReal *y)
 {
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
@@ -91,13 +91,13 @@ static PetscErrorCode PetscDrawPoint_Image(PetscDraw draw,PetscReal x,PetscReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawPointPixel_Image"
-static PetscErrorCode PetscDrawPointPixel_Image(PetscDraw draw,PetscInt x,PetscInt y,int c)
+static PetscErrorCode PetscDrawPointPixel_Image(PetscDraw draw,int x,int y,int c)
 {
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   PetscDrawValidColor(c);
   {
-    PetscImageDrawPixel(img,(int)x,(int)y,c);
+    PetscImageDrawPixel(img,x,y,c);
   }
   PetscFunctionReturn(0);
 }
