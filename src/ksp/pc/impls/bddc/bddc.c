@@ -76,6 +76,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_bddc_benign_trick","Apply the benign subspace trick to saddle point problems with discontinuous pressures","none",pcbddc->benign_saddle_point,&pcbddc->benign_saddle_point,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_benign_nonetflux","Automatic computation of no-net-flux quadrature weights","none",pcbddc->benign_compute_nonetflux,&pcbddc->benign_compute_nonetflux,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_benign_change","Compute the pressure change of basis explicitly","none",pcbddc->benign_change_explicit,&pcbddc->benign_change_explicit,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_benign_compute_correction","Compute the benign correction during PreSolve","none",pcbddc->benign_compute_correction,&pcbddc->benign_compute_correction,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_detect_disconnected","Detects disconnected subdomains","none",pcbddc->detect_disconnected,&pcbddc->detect_disconnected,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_eliminate_dirichlet","Whether or not we want to eliminate dirichlet dofs during presolve","none",pcbddc->eliminate_dirdofs,&pcbddc->eliminate_dirdofs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -121,8 +122,11 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use QR for single constraints on cc: %d\n",pcbddc->use_qr_single);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use change of basis on local edge nodes: %d\n",pcbddc->use_change_of_basis);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use change of basis on local face nodes: %d\n",pcbddc->use_change_on_faces);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Eliminate dirichlet dofs: %d\n",pcbddc->eliminate_dirdofs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: User defined change of basis matrix: %d\n",!!pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Has change of basis matrix: %d\n",!!pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Eliminate dirichlet boundary dofs: %d\n",pcbddc->eliminate_dirdofs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Switch on static condensation ops around the interface preconditioner: %d\n",pcbddc->switch_static);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use exact dirichlet trick: %d\n",pcbddc->use_exact_dirichlet_trick);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Multilevel max levels: %d\n",pcbddc->max_levels);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Multilevel coarsening ratio: %d\n",pcbddc->coarsening_ratio);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use estimated eigs for coarse problem: %d\n",pcbddc->use_coarse_estimates);CHKERRQ(ierr);
@@ -139,8 +143,8 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Num. Procs. to map coarse adjacency list: %d\n",pcbddc->coarse_adj_red);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Coarse eqs per proc (significant at the coarsest level): %d\n",pcbddc->coarse_eqs_per_proc);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Detect disconnected: %d\n",pcbddc->detect_disconnected);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick: %d (algebraic computation of no-net-flux %d)\n",pcbddc->benign_saddle_point,pcbddc->benign_compute_nonetflux);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick: %d\n",pcbddc->benign_saddle_point);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick is active: %d (algebraic computation of no-net-flux %d)\n",pcbddc->benign_have_null,pcbddc->benign_compute_nonetflux);CHKERRQ(ierr);
 
     /* compute some number on the domain decomposition */
     ierr = VecSet(pcis->vec1_B,1.0);CHKERRQ(ierr);
@@ -173,7 +177,8 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Interior  dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[1],(PetscInt)gmax[1],(PetscInt)(gsum[1]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Interface dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[2],(PetscInt)gmax[2],(PetscInt)(gsum[2]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Primal    dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[3],(PetscInt)gmax[3],(PetscInt)(gsum[3]/gsum[0]));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: *******************************************************************************************\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: ********************************** COARSE PROBLEM DETAILS *********************************\n",pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
     /* the coarse problem can be handled with a different communicator */
     if (pcbddc->coarse_ksp) color = 1;
@@ -1169,14 +1174,18 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)(pc->data);
   Vec            used_vec;
-  PetscBool      copy_rhs = PETSC_TRUE;
-  PetscBool      iscg = PETSC_FALSE;
+  PetscBool      save_rhs = PETSC_TRUE, benign_correction_computed;
 
   PetscFunctionBegin;
-  /* if we are working with cg, one dirichlet solve can be avoided during Krylov iterations */
+  /* if we are working with CG or CHEBYSHEV, one dirichlet solve can be avoided during Krylov iterations */
   if (ksp) {
+    PetscBool iscg = PETSC_FALSE, ischeby = PETSC_FALSE;
+    PetscBool isgroppcg = PETSC_FALSE, ispipecg = PETSC_FALSE;
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
-    if (!iscg || pcbddc->switch_static) {
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPGROPPCG,&isgroppcg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipecg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCHEBYSHEV,&ischeby);CHKERRQ(ierr);
+    if (pcbddc->switch_static || (!iscg && !ischeby && !isgroppcg && !ispipecg)) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
@@ -1188,7 +1197,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecDuplicate(pcis->vec1_global,&pcbddc->temp_solution);CHKERRQ(ierr);
   }
 
-  ierr = VecSet(pcbddc->temp_solution,0.);CHKERRQ(ierr);
+  pcbddc->temp_solution_used = PETSC_FALSE;
   if (x) {
     ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
     used_vec = x;
@@ -1196,6 +1205,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = PetscObjectReference((PetscObject)pcbddc->temp_solution);CHKERRQ(ierr);
     used_vec = pcbddc->temp_solution;
     ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
+    pcbddc->temp_solution_used = PETSC_TRUE;
   }
 
   /* hack into ksp data structure since PCPreSolve comes earlier than setting to zero the guess in src/ksp/ksp/interface/itfunc.c */
@@ -1243,63 +1253,59 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 
   /* remove the computed solution or the initial guess from the rhs */
   if (pcbddc->rhs_change || (ksp && pcbddc->ksp_guess_nonzero) ) {
-    /* store the original rhs */
-    if (copy_rhs) {
-      ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
-      copy_rhs = PETSC_FALSE;
+    /* save the original rhs */
+    if (save_rhs) {
+      ierr = VecSwap(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+      save_rhs = PETSC_FALSE;
     }
     pcbddc->rhs_change = PETSC_TRUE;
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
-    ierr = MatMultAdd(pc->mat,used_vec,rhs,rhs);CHKERRQ(ierr);
+    ierr = MatMultAdd(pc->mat,used_vec,pcbddc->original_rhs,rhs);CHKERRQ(ierr);
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
     ierr = VecCopy(used_vec,pcbddc->temp_solution);CHKERRQ(ierr);
+    pcbddc->temp_solution_used = PETSC_TRUE;
     if (ksp) {
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
   ierr = VecDestroy(&used_vec);CHKERRQ(ierr);
 
-  /* compute initial vector in benign space (TODO: what about FETI-DP?)*/
-  if (rhs && pcbddc->benign_saddle_point) {
+  /* compute initial vector in benign space if needed (TODO: FETI-DP is untested)
+     and remove non-benign solution from the rhs */
+  benign_correction_computed = PETSC_FALSE;
+  if (rhs && pcbddc->benign_compute_correction && pcbddc->benign_have_null) {
     /* compute u^*_h as in Xuemin Tu's thesis (see Section 4.8.1) */
     if (!pcbddc->benign_vec) {
       ierr = VecDuplicate(rhs,&pcbddc->benign_vec);CHKERRQ(ierr);
     }
     pcbddc->benign_apply_coarse_only = PETSC_TRUE;
-    ierr = PCApply_BDDC(pc,rhs,pcbddc->benign_vec);CHKERRQ(ierr);
-    pcbddc->benign_apply_coarse_only = PETSC_FALSE;
-    /* TODO: what about Stokes? */
-#if 0
-    ierr = VecNorm(pcbddc->benign_vec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    if (norm < PETSC_SMALL) benign_correction_is_zero = PETSC_TRUE;
-#endif
-  }
-
-  /* remove non-benign solution from the rhs */
-  if (pcbddc->benign_saddle_point) {
-    /* store the original rhs */
-    if (copy_rhs) {
-      ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
-      copy_rhs = PETSC_FALSE;
-    }
-    /* this code is disabled, until I test against incompressible Stokes */
-#if 0
-    if (benign_correction_is_zero) { /* still need to understand why it works great */
-      ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
+    if (!pcbddc->benign_skip_correction) {
       ierr = PCApply_BDDC(pc,rhs,pcbddc->benign_vec);CHKERRQ(ierr);
+      /* store the original rhs if not done earlier */
+      if (save_rhs) {
+        ierr = VecSwap(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+        save_rhs = PETSC_FALSE;
+      }
+      benign_correction_computed = PETSC_TRUE;
+      if (pcbddc->temp_solution_used) {
+        ierr = VecAXPY(pcbddc->temp_solution,1.0,pcbddc->benign_vec);CHKERRQ(ierr);
+      }
+      ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
+      if (pcbddc->rhs_change) {
+        ierr = MatMultAdd(pc->mat,pcbddc->benign_vec,rhs,rhs);CHKERRQ(ierr);
+      } else {
+        ierr = MatMultAdd(pc->mat,pcbddc->benign_vec,pcbddc->original_rhs,rhs);CHKERRQ(ierr);
+      }
+      pcbddc->rhs_change = PETSC_TRUE;
     }
-#endif
-    ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
-    ierr = MatMultAdd(pc->mat,pcbddc->benign_vec,rhs,rhs);CHKERRQ(ierr);
-    pcbddc->rhs_change = PETSC_TRUE;
-    ierr = VecAXPY(pcbddc->temp_solution,-1.0,pcbddc->benign_vec);CHKERRQ(ierr);
+    pcbddc->benign_apply_coarse_only = PETSC_FALSE;
   }
 
   /* set initial guess if using PCG */
   if (x && pcbddc->use_exact_dirichlet_trick) {
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior) {
-      if (pcbddc->benign_saddle_point) { /* we have already saved the changed rhs */
+      if (benign_correction_computed) { /* we have already saved the changed rhs */
         ierr = VecLockPop(pcis->vec1_global);CHKERRQ(ierr);
       } else {
         ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,pcis->vec1_global);CHKERRQ(ierr);
@@ -1352,11 +1358,17 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionBegin;
   /* add solution removed in presolve */
   if (x && pcbddc->rhs_change) {
-    ierr = VecAXPY(x,1.0,pcbddc->temp_solution);CHKERRQ(ierr);
+    if (pcbddc->temp_solution_used) {
+      ierr = VecAXPY(x,1.0,pcbddc->temp_solution);CHKERRQ(ierr);
+    } else if (pcbddc->benign_compute_correction) {
+      ierr = VecAXPY(x,-1.0,pcbddc->benign_vec);CHKERRQ(ierr);
+    }
   }
+  pcbddc->temp_solution_used = PETSC_FALSE;
+
   /* restore rhs to its original state */
   if (rhs && pcbddc->rhs_change) {
-    ierr = VecCopy(pcbddc->original_rhs,rhs);CHKERRQ(ierr);
+    ierr = VecSwap(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
   }
   pcbddc->rhs_change = PETSC_FALSE;
   /* restore ksp guess state */
@@ -1483,6 +1495,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       pcis->reusesubmatrices = PETSC_FALSE;
     }
   }
+
   /* propagate relevant information */
 #if !defined(PETSC_USE_COMPLEX) /* workaround for reals */
   if (matis->A->symmetric_set) {
@@ -1670,21 +1683,21 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   PetscFunctionBegin;
   if (pcbddc->ChangeOfBasisMatrix) {
     Vec swap;
-    ierr = VecCopy(r,pcbddc->work_change);CHKERRQ(ierr);
+
+    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,r,pcbddc->work_change);CHKERRQ(ierr);
     swap = pcbddc->work_change;
     pcbddc->work_change = r;
     r = swap;
-    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcbddc->work_change,r);CHKERRQ(ierr);
     /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
     if (pcbddc->benign_apply_coarse_only && pcbddc->use_exact_dirichlet_trick && pcbddc->change_interior) {
       ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
       ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
     }
   }
-  if (pcbddc->benign_saddle_point) { /* get p0 from r */
+  if (pcbddc->benign_have_null) { /* get p0 from r */
     ierr = PCBDDCBenignGetOrSetP0(pc,r,PETSC_TRUE);CHKERRQ(ierr);
   }
-  if (!pcbddc->use_exact_dirichlet_trick) {
+  if (!pcbddc->use_exact_dirichlet_trick && !pcbddc->benign_apply_coarse_only) {
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     /* First Dirichlet solve */
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1772,7 +1785,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   }
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
 
-  if (!pcbddc->use_exact_dirichlet_trick) {
+  if (!pcbddc->use_exact_dirichlet_trick && !pcbddc->benign_apply_coarse_only) {
     if (pcbddc->switch_static) {
       ierr = VecAXPBYPCZ(pcis->vec2_D,m_one,one,m_one,pcis->vec4_D,pcis->vec1_D);CHKERRQ(ierr);
     } else {
@@ -1790,7 +1803,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     ierr = VecScatterEnd(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
 
-  if (pcbddc->benign_saddle_point) { /* set p0 (computed in PCBDDCApplyInterface) */
+  if (pcbddc->benign_have_null) { /* set p0 (computed in PCBDDCApplyInterface) */
     if (pcbddc->benign_apply_coarse_only) {
       ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
     }
@@ -1836,16 +1849,21 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
   PetscFunctionBegin;
   if (pcbddc->ChangeOfBasisMatrix) {
     Vec swap;
-    ierr = VecCopy(r,pcbddc->work_change);CHKERRQ(ierr);
+
+    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,r,pcbddc->work_change);CHKERRQ(ierr);
     swap = pcbddc->work_change;
     pcbddc->work_change = r;
     r = swap;
-    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcbddc->work_change,r);CHKERRQ(ierr);
+    /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
+    if (pcbddc->benign_apply_coarse_only && pcbddc->use_exact_dirichlet_trick && pcbddc->change_interior) {
+      ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
+      ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
+    }
   }
-  if (pcbddc->benign_saddle_point) { /* get p0 from r */
+  if (pcbddc->benign_have_null) { /* get p0 from r */
     ierr = PCBDDCBenignGetOrSetP0(pc,r,PETSC_TRUE);CHKERRQ(ierr);
   }
-  if (!pcbddc->use_exact_dirichlet_trick) {
+  if (!pcbddc->use_exact_dirichlet_trick && !pcbddc->benign_apply_coarse_only) {
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     /* First Dirichlet solve */
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1930,7 +1948,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     }
   }
   ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
-  if (!pcbddc->use_exact_dirichlet_trick) {
+  if (!pcbddc->use_exact_dirichlet_trick && !pcbddc->benign_apply_coarse_only) {
     if (pcbddc->switch_static) {
       ierr = VecAXPBYPCZ(pcis->vec2_D,m_one,one,m_one,pcis->vec4_D,pcis->vec1_D);CHKERRQ(ierr);
     } else {
@@ -1947,7 +1965,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     ierr = VecScatterBegin(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcis->global_to_D,pcis->vec4_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
-  if (pcbddc->benign_saddle_point) { /* set p0 (computed in PCBDDCApplyInterface) */
+  if (pcbddc->benign_have_null) { /* set p0 (computed in PCBDDCApplyInterface) */
     ierr = PCBDDCBenignGetOrSetP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
   }
   if (pcbddc->ChangeOfBasisMatrix) {
@@ -2379,6 +2397,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->use_qr_single       = PETSC_FALSE;
   pcbddc->symmetric_primal    = PETSC_TRUE;
   pcbddc->benign_saddle_point = PETSC_FALSE;
+  pcbddc->benign_have_null    = PETSC_FALSE;
   pcbddc->vertex_size         = 1;
   pcbddc->dbg_flag            = 0;
   /* private */
@@ -2443,6 +2462,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   /* benign subspace trick */
   pcbddc->benign_change              = 0;
+  pcbddc->benign_compute_correction  = PETSC_TRUE;
   pcbddc->benign_vec                 = 0;
   pcbddc->benign_original_mat        = 0;
   pcbddc->benign_sf                  = 0;

@@ -55,8 +55,12 @@ typedef struct {
   PetscBool     use_exact_dirichlet_trick;
   PetscBool     ksp_guess_nonzero;
   PetscBool     rhs_change;
+  PetscBool     temp_solution_used;
   /* benign subspace trick */
   PetscBool     benign_saddle_point;
+  PetscBool     benign_have_null;
+  PetscBool     benign_skip_correction;
+  PetscBool     benign_compute_correction;
   PetscBool     benign_compute_nonetflux;
   Mat           benign_change;
   Mat           benign_original_mat;
