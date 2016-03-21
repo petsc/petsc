@@ -36,7 +36,7 @@ static PetscErrorCode PetscDrawSetViewport_X(PetscDraw draw,PetscReal xl,PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCoordinateToPixel_X"
-static PetscErrorCode PetscDrawCoordinateToPixel_X(PetscDraw draw,PetscReal x,PetscReal y,PetscInt *i,PetscInt *j)
+static PetscErrorCode PetscDrawCoordinateToPixel_X(PetscDraw draw,PetscReal x,PetscReal y,int *i,int *j)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
 
@@ -48,7 +48,7 @@ static PetscErrorCode PetscDrawCoordinateToPixel_X(PetscDraw draw,PetscReal x,Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawPixelToCoordinate_X"
-static PetscErrorCode PetscDrawPixelToCoordinate_X(PetscDraw draw,PetscInt i,PetscInt j,PetscReal *x,PetscReal *y)
+static PetscErrorCode PetscDrawPixelToCoordinate_X(PetscDraw draw,int i,int j,PetscReal *x,PetscReal *y)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
 
@@ -79,7 +79,7 @@ static PetscErrorCode PetscDrawPoint_X(PetscDraw draw,PetscReal x,PetscReal y,in
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawPointPixel_X"
-static PetscErrorCode PetscDrawPointPixel_X(PetscDraw draw,PetscInt x,PetscInt y,int c)
+static PetscErrorCode PetscDrawPointPixel_X(PetscDraw draw,int x,int y,int c)
 {
   PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
 

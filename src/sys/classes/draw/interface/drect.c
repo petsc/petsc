@@ -22,7 +22,7 @@
 @*/
 PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,int c,PetscErrorCode (*indicator)(void*,PetscReal,PetscReal,PetscBool*),void *ctx)
 {
-  PetscInt       i,j,xstart,ystart,xend,yend;
+  int            i,j,xstart,ystart,xend,yend;
   PetscReal      x,y;
   PetscBool      isnull,flg;
   PetscErrorCode ierr;
@@ -66,7 +66,7 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscRea
    Level: developer
 
 @*/
-PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y,PetscInt *i,PetscInt *j)
+PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y,int *i,int *j)
 {
   PetscErrorCode ierr;
 
@@ -94,7 +94,7 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y
    Level: developer
 
 @*/
-PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,PetscInt i,PetscInt j,PetscReal *x,PetscReal *y)
+PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,int i,int j,PetscReal *x,PetscReal *y)
 {
   PetscErrorCode ierr;
 
