@@ -16,10 +16,10 @@
       PetscScalar       xd,yd
       PetscInt          i,n,w,h
 
-      n      = 20
+      n      = 15
       x      = 0
       y      = 0
-      w      = 300
+      w      = 400
       h      = 300
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

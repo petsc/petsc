@@ -55,7 +55,7 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(bar,2);
 
-  ierr = PetscHeaderCreate(h,PETSC_DRAWBAR_CLASSID,"PetscDrawBar","Bar Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawBarDestroy,NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(h,PETSC_DRAWBAR_CLASSID,"DrawBar","Bar Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawBarDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)h);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 
 
 @*/
-PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins,const PetscReal data[],const char *const *labels)
+PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscReal data[],const char *const *labels)
 {
   PetscErrorCode ierr;
 
@@ -175,7 +175,7 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   if (bar->numBins < 1) PetscFunctionReturn(0);
 
   color = bar->color;
-  if (color == PETSC_DRAW_ROTATE) bcolor = 2;
+  if (color == PETSC_DRAW_ROTATE) bcolor = PETSC_DRAW_BLACK+1;
   else bcolor = color;
 
   numValues = bar->numBins;
@@ -231,10 +231,10 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
       if (labels) {
         PetscReal h;
         ierr = PetscDrawStringGetSize(draw,NULL,&h);CHKERRQ(ierr);
-        ierr = PetscDrawStringCentered(draw,.5*(binLeft+binRight),ymin - 1.2*h,bcolor,labels[idx]);CHKERRQ(ierr);
+        ierr = PetscDrawStringCentered(draw,.5*(binLeft+binRight),ymin - 1.5*h,bcolor,labels[idx]);CHKERRQ(ierr);
       }
       if (color == PETSC_DRAW_ROTATE) bcolor++;
-      if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = 2;
+      if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = PETSC_DRAW_BLACK+1;
     }
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
@@ -421,10 +421,10 @@ PetscErrorCode  PetscDrawBarSetFromOptions(PetscDrawBar bar)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
 
-  ierr = PetscOptionsHasName(((PetscObject)bar)->options,NULL,"-bar_sort",&set);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&set);CHKERRQ(ierr);
   if (set) {
     PetscReal tol = bar->sorttolerance;
-    ierr = PetscOptionsGetReal(((PetscObject)bar)->options,NULL,"-bar_sort",&tol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&tol,NULL);CHKERRQ(ierr);
     ierr = PetscDrawBarSort(bar,PETSC_TRUE,tol);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
