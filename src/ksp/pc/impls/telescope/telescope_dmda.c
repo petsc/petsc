@@ -950,7 +950,7 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscRea
   PC_Telescope      sred = (PC_Telescope)pc->data;
   PetscErrorCode    ierr;
   Mat               perm;
-  Vec               xtmp,xp,xred,yred;
+  Vec               xtmp,xp,yred;
   PetscInt          i,st,ed;
   VecScatter        scatter;
   const PetscScalar *x_array;
@@ -960,7 +960,6 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscRea
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
   xtmp    = sred->xtmp;
   scatter = sred->scatter;
-  xred    = sred->xred;
   yred    = sred->yred;
   perm  = ctx->permutation;
   xp    = ctx->xp;

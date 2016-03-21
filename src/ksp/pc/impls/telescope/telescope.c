@@ -460,7 +460,7 @@ static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscR
 {
   PC_Telescope      sred = (PC_Telescope)pc->data;
   PetscErrorCode    ierr;
-  Vec               xtmp,xred,yred;
+  Vec               xtmp,yred;
   PetscInt          i,st,ed;
   VecScatter        scatter;
   const PetscScalar *x_array;
@@ -469,7 +469,6 @@ static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscR
   PetscFunctionBegin;
   xtmp    = sred->xtmp;
   scatter = sred->scatter;
-  xred    = sred->xred;
   yred    = sred->yred;
 
   if (its > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope only supports max_it = 1");
