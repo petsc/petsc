@@ -561,7 +561,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     ierr = DMGetLocalVector(dmfv,&locX);CHKERRQ(ierr);
     /* get the local projection of the rigid body mode */
     for (c = cStart; c < cEnd; c++) {
-      const PetscFVCellGeom *cg;
+      PetscFVCellGeom *cg;
       PetscScalar cx[3] = {0.,0.,0.};
 
       ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
@@ -590,7 +590,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     }
     maxDiff = 0.;
     for (c = cStart; c < cEndInterior; c++) {
-      const PetscScalar *compGrad;
+      PetscScalar *compGrad;
       PetscInt i, j, k;
       PetscReal FrobDiff = 0.;
 
