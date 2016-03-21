@@ -1946,7 +1946,7 @@ PetscErrorCode DMPlexStratify(DM dm)
     PetscInt numValues, maxValues = 0, v;
 
     ierr = DMLabelGetNumValues(label,&numValues);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&numValues,&maxValues,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&numValues,&maxValues,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     for (v = numValues; v < maxValues; v++) {
       DMLabelAddStratum(label,v);CHKERRQ(ierr);
     }
