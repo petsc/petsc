@@ -365,6 +365,8 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
 #endif
 }
 
+PETSC_INTERN PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorRange_Private"
 PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
