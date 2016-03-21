@@ -404,7 +404,8 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscBool flg)
         fas->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)levelsnes));CHKERRQ(ierr);
         /* set the monitors for the upsmoother and downsmoother */
         ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);
-        ierr = SNESMonitorSet(levelsnes,SNESMonitorDefault,NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+        /* the next line is wrong, you cannot pass a NULL for the viewer and format struct */
+        ierr = SNESMonitorSet(levelsnes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorDefault,NULL,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
       } else if (i != fas->levels - 1) {
         /* unset the monitors on the coarse levels */
         ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);
