@@ -459,8 +459,8 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
     p4est_tree_t *treeTo   = &(((p4est_tree_t *) p4estTo->trees->array)[t]);
     p4est_quadrant_t *firstFrom = &treeFrom->first_desc;
     p4est_quadrant_t *firstTo   = &treeTo->first_desc;
-    PetscInt numFrom = (PetscInt) &treeFrom->quadrants.elem_count;
-    PetscInt numTo   = (PetscInt) &treeTo->quadrants.elem_count;
+    PetscInt numFrom = (PetscInt) treeFrom->quadrants.elem_count;
+    PetscInt numTo   = (PetscInt) treeTo->quadrants.elem_count;
     p4est_quadrant_t *quadsFrom = (p4est_quadrant_t *) treeFrom->quadrants.array;
     p4est_quadrant_t *quadsTo   = (p4est_quadrant_t *) treeTo->quadrants.array;
     PetscInt currentFrom, currentTo;
@@ -535,7 +535,6 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
 /* assumes a matching partition */
 static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t *p4estFrom, PetscInt FromOffset, p4est_t *p4estTo, PetscInt ToOffset, PetscSF *fromCoarseToFine, PetscSF *toCoarseFromFine)
 {
-  p4est_connectivity_t * conn;
   p4est_topidx_t flt, llt;
   PetscSF fromCoarse, toCoarse;
   PetscInt numRootsFrom, numRootsTo, numLeavesFrom, numLeavesTo;
@@ -544,7 +543,6 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  conn = p4estFrom->connectivity;
   flt  = p4estFrom->first_local_tree;
   llt  = p4estFrom->last_local_tree;
   ierr = PetscSFCreate(comm,&fromCoarse);CHKERRQ(ierr);
@@ -1030,7 +1028,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
 
       if (overlap > 0) {
-        PetscInt i, cLocalStart, cLocalEnd;
+        PetscInt i, cLocalStart;
         PetscInt cEnd;
         PetscSF  preCellSF, cellSF;
 
@@ -1042,7 +1040,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         }
 
         cLocalStart = pforest->cLocalStart = pforest->ghost->proc_offsets[rank];
-        cLocalEnd = pforest->cLocalEnd = cLocalStart + pforest->forest->local_num_quadrants;
         cEnd = pforest->forest->local_num_quadrants + pforest->ghost->proc_offsets[size];
 
         /* shift sfs by cLocalStart, expand by cell SFs */
@@ -2664,7 +2661,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             }
             q = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
             if (l > rootType[p-pStartF]) {
-              roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
+              roots[p-pStartF] = q;
               if (l >= P4EST_INSUL - P4EST_CHILDREN) { /* vertex on vertex: unconditional acceptance */
                 rootType[p-pStartF] = PETSC_MAX_INT;
                 if (formCids) {
@@ -2799,7 +2796,6 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   MPI_Comm          comm;
   PetscMPIInt       rank, size;
   DM_Forest_pforest *pforestC, *pforestF;
-  p4est_t           *p4estC, *p4estF;
   PetscInt          numClosureIndices;
   DM                plexC, plexF;
   PetscInt          pStartC, pEndC, pStartF, pEndF;
@@ -2810,8 +2806,6 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   PetscFunctionBegin;
   pforestC = (DM_Forest_pforest *) ((DM_Forest *) coarse->data)->data;
   pforestF = (DM_Forest_pforest *) ((DM_Forest *) fine->data)->data;
-  p4estC   = pforestC->forest;
-  p4estF   = pforestF->forest;
   if (pforestC->topo != pforestF->topo) SETERRQ(PetscObjectComm((PetscObject)coarse),PETSC_ERR_ARG_INCOMP,"DM's must have the same base DM");
   comm = PetscObjectComm((PetscObject)coarse);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
