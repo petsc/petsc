@@ -2,76 +2,50 @@
 #define c12 0
 #define c21 2.0
 #define c22 1.0
-static char help[] = "Solves the van der Pol equation.\n\
-Input parameters include:\n";
+static char help[] = "Performs adjoint sensitivity analysis for the van der Pol equation.\n";
 
 /*
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation DAE equivalent
+   Concepts: TS^adjoint sensitivity analysis
    Processors: 1
 */
 /* ------------------------------------------------------------------------
 
    This program solves the van der Pol DAE ODE equivalent
-       y' = z                 (1)
-       z' = mu[(1-y^2)z-y]
+      [ u_1' ] = [      u_2              ]  (2)
+      [ u_2' ]   [ mu[(1-u_1^2)u_2-u_1]  ]
    on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = 2, y'(0) = -6.666665432100101e-01,
+       u_1(0) = 2, u_2(0) = -6.666665432100101e-01,
    and
-       mu = 10^6.
-   This is a nonlinear equation.
+       mu = 10^6,
+   and computes the sensitivities of the final solution w.r.t. initial conditions and parameter \mu with the implicit theta method and its discrete adjoint.
 
    Notes:
-   This code demonstrates the TS solver interface to a variant of
-   linear problems, u_t = f(u,t), namely turning (1) into a system of
-   first order differential equations,
+   This code demonstrates the TSAdjoint interface to a DAE system.
 
-   [ y' ] = [          z          ]
-   [ z' ]   [     mu[(1-y^2)z-y]  ]
+   The user provides the implicit right-hand-side function
+   [ G(u',u,t) ] = [u' - f(u,t)] = [ u_1'] - [        u_2           ]
+                                   [ u_2']   [ mu[(1-u_1^2)u_2-u_1] ]
 
-   which then we can write as a vector equation
-
-   [ u_1' ] = [      u_2              ]  (2)
-   [ u_2' ]   [ mu[(1-u_1^2)u_2-u_1]  ]
-
-   which is now in the desired form of u_t = f(u,t). One way that we
-   can split f(u,t) in (2) is to split by component,
-
-   [ u_1' ] = [  u_2 ] + [       0              ]
-   [ u_2' ]   [  0   ]   [ mu[(1-u_1^2)u_2-u_1] ]
-
-   where
-
-   [ F(u,t) ] = [  u_2 ]
-                [  0   ]
-
-   and
-
-   [ G(u',u,t) ] = [ u_1' ] - [            0         ]
-                   [ u_2' ]   [ mu[(1-u_1^2)u_2-u_1] ]
-
-   Using the definition of the Jacobian of G (from the PETSc user manual),
-   in the equation G(u',u,t) = F(u,t),
+   and the Jacobian of G (from the PETSc user manual)
 
               dG   dG
    J(G) = a * -- + --
               du'  du
 
-   where d is the partial derivative. In this example,
+   and the JacobianP of the explicit right-hand side of (2) f(u,t) ( which is equivalent to -G(0,u,t) ).
+   df   [       0         ]
+   -- = [                 ]
+   dp   [ (1 - u_1^2) u_2 ].
 
-   dG   [ 1 ; 0 ]
-   -- = [       ]
-   du'  [ 0 ; 1 ]
+   See ex20.c for more details on the Jacobian.
 
-   dG   [ 0                       ;         0         ]
-   -- = [                                             ]
-   du   [ mu*(1.0 + 2.0*u_1*u_2) ; -mu*(1-u_1*u_1)    ]
-
-   Hence,
-
-          [      a                 ;         0          ]
-   J(G) = [                                             ]
-          [ mu*(1.0 + 2.0*u_1*u_2) ; a - mu*(1-u_1*u_1) ]
+   Many DAEs can be represented in a general form M u_t = f(u,t).
+   Thus both sides of (1) are multiplied by an artificial matrix
+   M = [ c11 c12 ]
+       [ c21 c22 ]
+   to turn (1) into the general form. This operation does not change the solution and it is intended for illustration only.
 
   ------------------------------------------------------------------------- */
 #include <petscts.h>
@@ -81,8 +55,8 @@ typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
   PetscReal next_output;
- 
-  /* Sensitivity analysis support */ 
+
+  /* Sensitivity analysis support */
   PetscInt  steps;
   PetscReal ftime;
   Mat       A;                       /* Jacobian matrix */
@@ -129,7 +103,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   J[0][0] = a;     J[0][1] =  -1.0;
   J[1][0] = c21*a + user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = -c21 + a - user->mu*(1.0-x[0]*x[0]);
- 
+
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
@@ -207,7 +181,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,NULL,help);
-  
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -256,7 +230,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
@@ -282,7 +256,7 @@ int main(int argc,char **argv)
   y_ptr[0] = 1.0; y_ptr[1] = 0.0;
   ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = MatCreateVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr); 
+  ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 0.0; y_ptr[1] = 1.0;
   ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
 

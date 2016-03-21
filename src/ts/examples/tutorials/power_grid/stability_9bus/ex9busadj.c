@@ -1,5 +1,5 @@
 
-static char help[] = "Power grid stability analysis of WECC 9 bus system.\n\
+static char help[] = "Sensitivity analysis applied in power grid stability analysis of WECC 9 bus system.\n\
 This example is based on the 9-bus (node) example given in the book Power\n\
 Systems Dynamics and Stability (Chapter 7) by P. Sauer and M. A. Pai.\n\
 The power grid in this example consists of 9 buses (nodes), 3 generators,\n\
@@ -7,37 +7,11 @@ The power grid in this example consists of 9 buses (nodes), 3 generators,\n\
 in current balance form using rectangular coordiantes.\n\n";
 
 /*
-   The equations for the stability analysis are described by the DAE
-
-   \dot{x} = f(x,y,t)
-     0     = g(x,y,t)
-
-   where the generators are described by differential equations, while the algebraic
-   constraints define the network equations.
-
-   The generators are modeled with a 4th order differential equation describing the electrical
-   and mechanical dynamics. Each generator also has an exciter system modeled by 3rd order
-   diff. eqns. describing the exciter, voltage regulator, and the feedback stabilizer
-   mechanism.
-
-   The network equations are described by nodal current balance equations.
-    I(x,y) - Y*V = 0
-
-   where:
-    I(x,y) is the current injected from generators and loads.
-      Y    is the admittance matrix, and
-      V    is the voltage vector
+   The equations for the stability analysis are described by the DAE. See ex9bus.c for details.
+   The system has 'jumps' due to faults, thus the time interval is split into multiple sections, and TSSolve is called for each of them. But TSAdjointSolve only needs to be called once since the whole trajectory has been saved in the forward run.
+   The code computes the sensitivity of a final state w.r.t. initial conditions.
 */
 
-/*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
 #include <petscts.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -777,7 +751,7 @@ int main(int argc,char **argv)
   Vec            F_alg;
   PetscInt       row_loc,col_loc;
   PetscScalar    val;
-  
+
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
@@ -854,8 +828,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
-  ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,(TSIJacobian)IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);

@@ -1,36 +1,19 @@
-
-static char help[] = "Solves the van der Pol equation.\n\
+static char help[] = "Solves an ODE-constrained optimization problem -- finding the optimal initial conditions for the van der Pol equation.\n\
 Input parameters include:\n\
       -mu : stiffness parameter\n\n";
 
 /*
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation
-   Concepts: Optimization using adjoint sensitivity analysis
+   Concepts: Optimization using adjoint sensitivities
    Processors: 1
 */
 /* ------------------------------------------------------------------------
 
-   This program solves the van der Pol equation
-       y'' - \mu (1-y^2)*y' + y = 0        (1)
-   on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = 2, y'(0) = 0,
-   This is a nonlinear equation.
-
    Notes:
-   This code demonstrates the TS solver interface to two variants of
-   linear problems, u_t = f(u,t), namely turning (1) into a system of
-   first order differential equations,
-
-   [ y' ] = [          z          ]
-   [ z' ]   [ \mu (1 - y^2) z - y ]
-
-   which then we can write as a vector equation
-
-   [ u_1' ] = [             u_2           ]  (2)
-   [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
-
-   which is now in the desired form of u_t = f(u,t). 
+   This code demonstrates how to solve an ODE-constrained optimization problem with TAO, TSAdjoint and TS.
+   The objective is to minimize the difference between observation and model prediction by finding optimal values for initial conditions.
+   The gradient is computed with the discrete adjoint of an explicit Runge-Kutta method, see ex16adj.c for details.
   ------------------------------------------------------------------------- */
 #include <petsctao.h>
 #include <petscts.h>
@@ -218,12 +201,12 @@ int main(int argc,char **argv)
   x_ptr[0]  = 2.1;
   x_ptr[1]  = 0.7;
   ierr = VecRestoreArray(ic,&x_ptr);CHKERRQ(ierr);
-  
+
   ierr = TaoSetInitialVector(tao,ic);CHKERRQ(ierr);
 
   /* Set routine for function and gradient evaluation */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
-  
+
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
@@ -231,7 +214,7 @@ int main(int argc,char **argv)
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
-  
+
   ierr = TaoSetTolerances(tao,1e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
@@ -242,7 +225,7 @@ int main(int argc,char **argv)
   if (reason <= 0){
       ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
   }
-  
+
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
@@ -291,7 +274,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,user);CHKERRQ(ierr);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set time
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -306,7 +289,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
     Save trajectory of solution so that TSAdjointSolve() may be used
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -327,7 +310,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*   Redet initial conditions for the adjoint integration */
   ierr = VecGetArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);   
+  y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);
   y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,user->lambda,NULL);CHKERRQ(ierr);
