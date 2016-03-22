@@ -121,21 +121,22 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
 #define __FUNCT__ "DMInterpolationSetUp"
 PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints)
 {
-  MPI_Comm       comm = ctx->comm;
-  PetscScalar   *a;
-  PetscInt       p, q, i;
-  PetscMPIInt    rank, size;
-  PetscErrorCode ierr;
-  Vec            pointVec;
-  IS             cellIS;
-  PetscLayout    layout;
-  PetscReal      *globalPoints;
-  PetscScalar    *globalPointsScalar;
-  const PetscInt *ranges;
-  PetscMPIInt    *counts, *displs;
-  const PetscInt *foundCells;
-  PetscMPIInt    *foundProcs, *globalProcs;
-  PetscInt       n, N;
+  MPI_Comm          comm = ctx->comm;
+  PetscScalar       *a;
+  PetscInt          p, q, i;
+  PetscMPIInt       rank, size;
+  PetscErrorCode    ierr;
+  Vec               pointVec;
+  PetscSF           cellSF;
+  PetscLayout       layout;
+  PetscReal         *globalPoints;
+  PetscScalar       *globalPointsScalar;
+  const PetscInt    *ranges;
+  PetscMPIInt       *counts, *displs;
+  const PetscSFNode *foundCells;
+  const PetscInt    *foundPoints;
+  PetscMPIInt       *foundProcs, *globalProcs;
+  PetscInt          n, N, numFound;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -176,12 +177,13 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
 #endif
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N*ctx->dim, globalPointsScalar, &pointVec);CHKERRQ(ierr);
   ierr = PetscMalloc2(N,&foundProcs,N,&globalProcs);CHKERRQ(ierr);
-  ierr = DMLocatePoints(dm, pointVec, &cellIS);CHKERRQ(ierr);
-  ierr = ISGetIndices(cellIS, &foundCells);CHKERRQ(ierr);
+  cellSF = NULL;
+  ierr = DMLocatePoints(dm, pointVec, &cellSF);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(cellSF,NULL,&numFound,&foundPoints,&foundCells);CHKERRQ(ierr);
 #endif
-  for (p = 0; p < N; ++p) {
-    if (foundCells[p] >= 0) foundProcs[p] = rank;
-    else foundProcs[p] = size;
+  for (p = 0; p < numFound; ++p) {
+    if (foundCells[p].index >= 0) foundProcs[foundPoints ? foundPoints[p] : p] = rank;
+    else foundProcs[foundPoints ? foundPoints[p] : p] = size;
   }
   /* Let the lowest rank process own each point */
   ierr   = MPIU_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
@@ -202,7 +204,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
       PetscInt d;
 
       for (d = 0; d < ctx->dim; ++d, ++i) a[i] = globalPoints[p*ctx->dim+d];
-      ctx->cells[q++] = foundCells[p];
+      ctx->cells[q++] = foundCells[p].index;
     }
   }
   ierr = VecRestoreArray(ctx->coords, &a);CHKERRQ(ierr);
@@ -210,8 +212,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr = PetscFree3(foundCells,foundProcs,globalProcs);CHKERRQ(ierr);
 #else
   ierr = PetscFree2(foundProcs,globalProcs);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(cellIS, &foundCells);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&cellSF);CHKERRQ(ierr);
   ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
 #endif
   if ((void*)globalPointsScalar != (void*)globalPoints) {ierr = PetscFree(globalPointsScalar);CHKERRQ(ierr);}
