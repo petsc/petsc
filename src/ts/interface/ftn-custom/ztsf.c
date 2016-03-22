@@ -245,7 +245,7 @@ PETSC_EXTERN void PETSC_STDCALL tsgetijacobian_(TS *ts,Mat *J,Mat *M,int *func,v
 
 PETSC_EXTERN void tsmonitordefault_(TS *ts,PetscInt *its,PetscReal *fgnorm,Vec *u,PetscViewerAndFormat **dummy,PetscErrorCode *ierr)
 {
-  *ierr = TSMonitorDefault(*ts,*its,*fgnorm,*u,dummy);
+  *ierr = TSMonitorDefault(*ts,*its,*fgnorm,*u,*dummy);
 }
 
 /* ---------------------------------------------------------*/

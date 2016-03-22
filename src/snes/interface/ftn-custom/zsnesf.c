@@ -340,17 +340,17 @@ PETSC_EXTERN void snesmonitorlgresidualnorm_(SNES *snes,PetscInt *its,PetscReal 
 
 PETSC_EXTERN void snesmonitordefault_(SNES *snes,PetscInt *its,PetscReal *fgnorm,PetscViewerAndFormat **dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESMonitorDefault(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorDefault(*snes,*its,*fgnorm,*dummy);
 }
 
 PETSC_EXTERN void snesmonitorsolution_(SNES *snes,PetscInt *its,PetscReal *fgnorm,PetscViewerAndFormat **dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESMonitorSolution(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorSolution(*snes,*its,*fgnorm,*dummy);
 }
 
 PETSC_EXTERN void snesmonitorsolutionupdate_(SNES *snes,PetscInt *its,PetscReal *fgnorm,PetscViewerAndFormat **dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESMonitorSolutionUpdate(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorSolutionUpdate(*snes,*its,*fgnorm,*dummy);
 }
 
 
