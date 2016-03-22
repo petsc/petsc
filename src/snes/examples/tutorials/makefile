@@ -414,6 +414,12 @@ runex5_5_fas:
 	   else  printf "${PWD}\nPossible problem with ex5_5_fas, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_fas.tmp
 
+runex5_5_fas_monitor:
+   -@${MPIEXEC} -n 1 ./ex5 -da_refine 1 -snes_type fas -snes_fas_monitor > ex5_5_fas_monitor.tmp 2>&1; \
+      if (${DIFF} output/ex5_5_fas_monitor.out ex5_5_fas_monitor.tmp) then true; \
+      else  printf "${PWD}\nPossible problem with ex5_5_fas_monitor, diffs above\n=========================================\n"; fi; \
+      ${RM} -f ex5_5_fas_monitor.tmp
+
 runex5_5_fas_additive:
 	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly  -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive -snes_max_it 50 > ex5_5_fas_additive.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas_additive.out ex5_5_fas_additive.tmp) then true; \
@@ -1133,7 +1139,7 @@ TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden \
                                  runex5_5_ngmres_fas runex5_5_fas_additive \
-                                 runex5_5_nasm   \
+                                 runex5_5_nasm runex5_5_fas_monitor \
                                  ex5.rm ex7.PETSc runex7 ex7.rm\
                                  ex14.PETSc runex14 runex14_2 runex14_3 ex14.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
