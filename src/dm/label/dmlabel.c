@@ -970,9 +970,9 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   /* Turn leafStrata into indices rather than stratum values */
   offset = 0;
   ierr = PetscHashIGetKeys(stratumHash, &offset, (*labelNew)->stratumValues);CHKERRQ(ierr);
-  for (s = 0; s < (*labelNew)->numStrata; ++s) {
-    for (p = 0; p < size; ++p) {
-      if (leafStrata[p] == (*labelNew)->stratumValues[s]) leafStrata[p] = s;
+  for (p = 0; p < size; ++p) {
+    for (s = 0; s < (*labelNew)->numStrata; ++s) {
+      if (leafStrata[p] == (*labelNew)->stratumValues[s]) {leafStrata[p] = s; break;}
     }
   }
   /* Rebuild the point strata on the receiver */

@@ -261,7 +261,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'num': 'group_2', 'numProcs': 1, 'args': '-num_groups 2 -num_dof 1,0,0 -is_view -perm_mat_view'},
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex11': [{'numProcs': 1, 'args': ''},
-                                                                  {'numProcs': 2, 'args': '', 'requires': ['chaco']}],
+                                                                  {'numProcs': 2, 'args': '-filename %(meshes)s/2Dgrd.exo -overlap 1', 'requires': ['Chaco']}],
                         'src/dm/impls/plex/examples/tests/ex12': [{'numProcs': 1, 'args': '-dm_view ascii:mesh.tex:ascii_latex'},
                                                                   # Parallel, no overlap tests 1-2
                                                                   {'numProcs': 3, 'args': '-test_partition -dm_view ::ascii_info_detail'},
