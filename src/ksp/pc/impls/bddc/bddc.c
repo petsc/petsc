@@ -1179,13 +1179,13 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionBegin;
   /* if we are working with CG or CHEBYSHEV, one dirichlet solve can be avoided during Krylov iterations */
   if (ksp) {
-    PetscBool iscg = PETSC_FALSE, ischeby = PETSC_FALSE;
-    PetscBool isgroppcg = PETSC_FALSE, ispipecg = PETSC_FALSE;
+    PetscBool iscg, ischeby, isgroppcg, ispipecg, ispipecgrr;
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPGROPPCG,&isgroppcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipecg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCHEBYSHEV,&ischeby);CHKERRQ(ierr);
-    if (pcbddc->switch_static || (!iscg && !ischeby && !isgroppcg && !ispipecg)) {
+    if (pcbddc->switch_static || (!iscg && !ischeby && !isgroppcg && !ispipecg && !ispipecgrr)) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
