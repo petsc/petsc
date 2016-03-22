@@ -358,11 +358,11 @@ PETSC_EXTERN void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *
 {
   CHKFORTRANNULLOBJECT(mctx);
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitordefault_) {
-    *ierr = 0; /* SNESMonitorSet(*snes,SNESMonitorDefault,0,0);*/
+    *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorDefault,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorsolution_) {
-    *ierr = 0; /*  SNESMonitorSet(*snes,SNESMonitorSolution,0,0);*/
+    *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorSolution,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorsolutionupdate_) {
-    *ierr = 0; /* SNESMonitorSet(*snes,SNESMonitorSolutionUpdate,0,0); */
+    *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorSolutionUpdate,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorlgresidualnorm_) {
     *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorLGResidualNorm,0,0);
   } else {
