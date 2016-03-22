@@ -243,6 +243,11 @@ PETSC_EXTERN void PETSC_STDCALL tsgetijacobian_(TS *ts,Mat *J,Mat *M,int *func,v
   *ierr = TSGetIJacobian(*ts,J,M,0,ctx);
 }
 
+PETSC_EXTERN void tsmonitordefault_(TS *ts,PetscInt *its,PetscReal *fgnorm,Vec *u,PetscViewerAndFormat **dummy,PetscErrorCode *ierr)
+{
+  *ierr = TSMonitorDefault(*ts,*its,*fgnorm,*u,dummy);
+}
+
 /* ---------------------------------------------------------*/
 
 /* PETSC_EXTERN void PETSC_STDCALL tsmonitordefault_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*); */
@@ -250,7 +255,7 @@ PETSC_EXTERN void PETSC_STDCALL tsgetijacobian_(TS *ts,Mat *J,Mat *M,int *func,v
 PETSC_EXTERN void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL*func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL*d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
-  if ((PetscVoidFunction)func == (PetscVoidFunction) 0) {
+  if ((PetscVoidFunction)func == (PetscVoidFunction) tsmonitordefault_) {
     *ierr = TSMonitorSet(*ts,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,void*))TSMonitorDefault,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else {
     ((PetscObject)*ts)->fortran_func_pointers[OUR_MONITOR]        = (PetscVoidFunction)func;
