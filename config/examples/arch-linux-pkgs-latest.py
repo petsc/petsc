@@ -7,6 +7,8 @@ configure_options = [
   '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
+  '--download-triangle=1', # for hdf5 tests
+  '--download-chaco=1', # for hdf5 tests
   '--download-hdf5=1',
   #test latest snapshot
   '--download-superlu=1',
