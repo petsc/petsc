@@ -1214,8 +1214,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
       if (sub_schurs->change) {
         Mat            change_sub,SEj,T;
-        const PetscInt *idxs;
-        PetscInt       nz;
 
         /* change basis */
         ierr = KSPGetOperators(sub_schurs->change[i],&change_sub,NULL);CHKERRQ(ierr);
@@ -1231,17 +1229,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         }
         ierr = MatCopy(T,SEj,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatDestroy(&T);CHKERRQ(ierr);
-        /* currently there's no support for ZeroRowsColumns with A dense */
-        ierr = ISGetIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
-        ierr = ISGetLocalSize(sub_schurs->change_primal_sub[i],&nz);CHKERRQ(ierr);
-        for (j=0;j<nz;j++) {
-          PetscInt k;
-
-          ierr = PetscMemzero(work+subset_size*idxs[j],subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
-          for (k=0;k<subset_size;k++) work[idxs[j]+k*subset_size] = 0.;
-          work[idxs[j]*(subset_size+1)] = 1.0;
-        }
-        ierr = ISRestoreIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
+        ierr = MatZeroRowsColumnsIS(SEj,sub_schurs->change_primal_sub[i],1.0,NULL,NULL);CHKERRQ(ierr);
         ierr = MatDestroy(&SEj);CHKERRQ(ierr);
       }
       if (deluxe) {
@@ -1409,20 +1397,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             ierr = MatCopy(T,SEj,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
             ierr = MatDestroy(&T);CHKERRQ(ierr);
             /* set diagonal entry to a very large value to pick the basis we are eliminating as the first eigenvectors with adaptive selection */
-            {
-              const PetscInt *idxs;
-              PetscInt n,j;
-              ierr = ISGetLocalSize(sub_schurs->change_primal_sub[i],&n);CHKERRQ(ierr);
-              ierr = ISGetIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
-              for (j=0;j<n;j++) {
-                PetscInt k;
-                for (k=0;k<subset_size;k++) {
-                  work[k+idxs[j]*subset_size] = work[idxs[j]+k*subset_size] = 0.;
-                }
-                work[idxs[j] + idxs[j]*subset_size] = 1./PETSC_SMALL;
-              }
-              ierr = ISRestoreIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
-            }
+            ierr = MatZeroRowsColumnsIS(SEj,sub_schurs->change_primal_sub[i],1./PETSC_SMALL,NULL,NULL);CHKERRQ(ierr);
             ierr = MatDestroy(&SEj);CHKERRQ(ierr);
           }
           for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
