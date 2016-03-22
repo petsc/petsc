@@ -55,7 +55,11 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers ctx, Vec v, Vec 
       ierr = ISGetLocalSize(ctx->benign_zerodiag_subs[n],&nz);CHKERRQ(ierr);
       ierr = ISGetIndices(ctx->benign_zerodiag_subs[n],&cols);CHKERRQ(ierr);
       for (i=0;i<nz-1;i++) sum += array[cols[i]];
+#if defined(PETSC_USE_COMPLEX)
+      sum = -(PetscRealPart(sum)/nz + PETSC_i*(PetscImaginaryPart(sum)/nz));
+#else
       sum = -sum/nz;
+#endif
       for (i=0;i<nz-1;i++) array2[cols[i]] += sum;
       ctx->benign_save_vals[n] = array2[cols[nz-1]];
       array2[cols[nz-1]] = sum;
@@ -70,7 +74,11 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers ctx, Vec v, Vec 
       ierr = ISGetLocalSize(ctx->benign_zerodiag_subs[n],&nz);CHKERRQ(ierr);
       ierr = ISGetIndices(ctx->benign_zerodiag_subs[n],&cols);CHKERRQ(ierr);
       for (i=0;i<nz-1;i++) sum += array[cols[i]];
+#if defined(PETSC_USE_COMPLEX)
+      sum = -(PetscRealPart(sum)/nz + PETSC_i*(PetscImaginaryPart(sum)/nz));
+#else
       sum = -sum/nz;
+#endif
       for (i=0;i<nz-1;i++) array2[cols[i]] += sum;
       array2[cols[nz-1]] = ctx->benign_save_vals[n];
       ierr = ISRestoreIndices(ctx->benign_zerodiag_subs[n],&cols);CHKERRQ(ierr);
@@ -935,7 +943,13 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatMult(A,benign_AIIm1_ones,v);CHKERRQ(ierr);
         ierr = VecDestroy(&benign_AIIm1_ones);CHKERRQ(ierr);
         ierr = VecGetArray(v,&array);CHKERRQ(ierr);
-        for (j=0;j<size_schur;j++) cs_AIB[i*size_schur + j] = array[j+n_I]/nz;
+        for (j=0;j<size_schur;j++) {
+#if defined(PETSC_USE_COMPLEX)
+          cs_AIB[i*size_schur + j] = (PetscRealPart(array[j+n_I])/nz + PETSC_i*(PetscImaginaryPart(array[j+n_I])/nz));
+#else
+          cs_AIB[i*size_schur + j] = array[j+n_I]/nz;
+#endif
+        }
         ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
       }
       ierr = MatDenseRestoreArray(cs_AIB_mat,&cs_AIB);CHKERRQ(ierr);

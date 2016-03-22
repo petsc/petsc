@@ -891,7 +891,7 @@ PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
         ierr = VecGetArray(matis->y,&array);CHKERRQ(ierr);
         cum = 0;
         for (j=0;j<n;j++) {
-          if (PetscUnlikely(PetscAbsReal(array[j]) > PETSC_SMALL)) {
+          if (PetscUnlikely(PetscAbsScalar(array[j]) > PETSC_SMALL)) {
             vals[cum] = array[j];
             idxs_ins[cum] = j;
             cum++;
@@ -1570,7 +1570,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatGetFactorType(F,&type);CHKERRQ(ierr);
     if (type == MAT_FACTOR_CHOLESKY) isCHOL = PETSC_TRUE;
     ierr = MatGetSize(F,&lda_rhs,NULL);CHKERRQ(ierr);
-    need_benign_correction = !!reuse_solver->benign_n;
+    need_benign_correction = (PetscBool)(!!reuse_solver->benign_n);
   } else {
     F = NULL;
   }
@@ -4907,7 +4907,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
         ierr = VecGetLocalSize(v,&nl);CHKERRQ(ierr);
         ierr = VecGetArrayRead(v,&array);CHKERRQ(ierr);
         ierr = PetscMalloc1(nl,&v_wgt);CHKERRQ(ierr);
-        for (i=0;i<nl;i++) v_wgt[i] = (PetscInt)array[i];
+        for (i=0;i<nl;i++) v_wgt[i] = (PetscInt)PetscRealPart(array[i]);
         ierr = VecRestoreArrayRead(v,&array);CHKERRQ(ierr);
         ierr = VecDestroy(&v);CHKERRQ(ierr);
       }
@@ -6287,9 +6287,9 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
        We need a global reduction to avoid possible deadlocks.
        We assume that sub_schurs->change is created once, and then reused for different solves, unless the topography has been recomputed */
     if (pcbddc->adaptive_userdefined || (pcbddc->deluxe_zerorows && !pcbddc->use_change_of_basis)) {
-      PetscBool have_loc_change = !!(sub_schurs->change);
+      PetscBool have_loc_change = (PetscBool)(!!sub_schurs->change);
       ierr = MPIU_Allreduce(&have_loc_change,&need_change,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-      need_change = !need_change;
+      need_change = (PetscBool)(!need_change);
     }
     /* If the user defines additional constraints, we import them here.
        We need to compute the change of basis according to the quadrature weights attached to pmat via MatSetNearNullSpace, and this could not be done (at the moment) without some hacking */
