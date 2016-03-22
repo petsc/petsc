@@ -187,6 +187,8 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
   nkdm->ops->rhsjacobian = kdm->ops->rhsjacobian;
   nkdm->ops->ifunction   = kdm->ops->ifunction;
   nkdm->ops->ijacobian   = kdm->ops->ijacobian;
+  nkdm->ops->i2function  = kdm->ops->i2function;
+  nkdm->ops->i2jacobian  = kdm->ops->i2jacobian;
   nkdm->ops->solution    = kdm->ops->solution;
   nkdm->ops->destroy     = kdm->ops->destroy;
   nkdm->ops->duplicate   = kdm->ops->duplicate;
@@ -195,6 +197,8 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
   nkdm->rhsjacobianctx = kdm->rhsjacobianctx;
   nkdm->ifunctionctx   = kdm->ifunctionctx;
   nkdm->ijacobianctx   = kdm->ijacobianctx;
+  nkdm->i2functionctx  = kdm->i2functionctx;
+  nkdm->i2jacobianctx  = kdm->i2jacobianctx;
   nkdm->solutionctx    = kdm->solutionctx;
 
   nkdm->data = kdm->data;
@@ -387,6 +391,141 @@ PetscErrorCode DMTSGetIFunction(DM dm,TSIFunction *func,void **ctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetI2Function"
+/*@C
+   DMTSSetI2Function - set TS implicit function evaluation function for 2nd order systems
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  fun - function evaluation function, see TSSetI2Function() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetI2Function() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.
+
+.seealso: TSSetI2Function()
+@*/
+PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
+{
+  DMTS           tsdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (fun) tsdm->ops->i2function = fun;
+  if (ctx) tsdm->i2functionctx   = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSGetI2Function"
+/*@C
+   DMTSGetI2Function - get TS implicit residual evaluation function for 2nd order systems
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  fun - function evaluation function, see TSSetI2Function() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSGetI2Function() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.
+
+.seealso: DMTSSetI2Function(),TSGetI2Function()
+@*/
+PetscErrorCode DMTSGetI2Function(DM dm,TSI2Function *fun,void **ctx)
+{
+  DMTS           tsdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
+  if (fun) *fun = tsdm->ops->i2function;
+  if (ctx) *ctx = tsdm->i2functionctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetI2Jacobian"
+/*@C
+   DMTSSetI2Jacobian - set TS implicit Jacobian evaluation function for 2nd order systems
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  fun - Jacobian evaluation function, see TSSetI2Jacobian() for calling sequence
+-  ctx - context for Jacobian evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetI2Jacobian() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.
+
+.seealso: TSSetI2Jacobian()
+@*/
+PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
+{
+  DMTS           tsdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (jac) tsdm->ops->i2jacobian = jac;
+  if (ctx) tsdm->i2jacobianctx   = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSGetI2Jacobian"
+/*@C
+   DMTSGetI2Jacobian - get TS implicit Jacobian evaluation function for 2nd order systems
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  jac - Jacobian evaluation function, see TSSetI2Jacobian() for calling sequence
+-  ctx - context for Jacobian evaluation
+
+   Level: advanced
+
+   Note:
+   TSGetI2Jacobian() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.
+
+.seealso: DMTSSetI2Jacobian(),TSGetI2Jacobian()
+@*/
+PetscErrorCode DMTSGetI2Jacobian(DM dm,TSI2Jacobian *jac,void **ctx)
+{
+  DMTS           tsdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
+  if (jac) *jac = tsdm->ops->i2jacobian;
+  if (ctx) *ctx = tsdm->i2jacobianctx;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSSetRHSFunction"
