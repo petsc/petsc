@@ -88,7 +88,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->interpolate            = NULL;
   fas->restrct                = NULL;
   fas->inject                 = NULL;
-  fas->monitor                = NULL;
   fas->usedmfornumberoflevels = PETSC_FALSE;
   fas->fastype                = SNES_FAS_MULTIPLICATIVE;
   fas->full_downsweep         = PETSC_FALSE;
@@ -318,7 +317,6 @@ PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES 
   PetscInt       levels = 1;
   PetscBool      flg    = PETSC_FALSE, upflg = PETSC_FALSE, downflg = PETSC_FALSE, monflg = PETSC_FALSE, galerkinflg = PETSC_FALSE,continuationflg = PETSC_FALSE;
   PetscErrorCode ierr;
-  char           monfilename[PETSC_MAX_PATH_LEN];
   SNESFASType    fastype;
   const char     *optionsprefix;
   SNESLineSearch linesearch;
@@ -369,9 +367,18 @@ PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES 
 
     ierr = PetscOptionsInt("-snes_fas_smoothdown","Number of pre-smoothing steps","SNESFASSetNumberSmoothDown",fas->max_down_it,&n_down,&downflg);CHKERRQ(ierr);
 
-    ierr = PetscOptionsString("-snes_fas_monitor","Monitor FAS progress","SNESFASSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&monflg);CHKERRQ(ierr);
-    if (monflg) ierr = SNESFASSetMonitor(snes, PETSC_TRUE);CHKERRQ(ierr);
-
+    {
+      PetscViewer viewer;
+      PetscViewerFormat format;
+      ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,
+                                   "-snes_fas_monitor",&viewer,&format,&monflg);CHKERRQ(ierr);
+      if (monflg) {
+        PetscViewerAndFormat *vf;
+        ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
+        ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
+        ierr = SNESFASSetMonitor(snes,vf,PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
     flg    = PETSC_FALSE;
     monflg = PETSC_TRUE;
     ierr   = PetscOptionsBool("-snes_fas_log","Log times for each FAS level","SNESFASSetLog",monflg,&monflg,&flg);CHKERRQ(ierr);

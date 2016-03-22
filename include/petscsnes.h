@@ -807,7 +807,7 @@ PETSC_EXTERN PetscErrorCode SNESFASGetCycleSNES(SNES, PetscInt, SNES*);
 PETSC_EXTERN PetscErrorCode SNESFASSetNumberSmoothUp(SNES, PetscInt);
 PETSC_EXTERN PetscErrorCode SNESFASSetNumberSmoothDown(SNES, PetscInt);
 PETSC_EXTERN PetscErrorCode SNESFASSetCycles(SNES, PetscInt);
-PETSC_EXTERN PetscErrorCode SNESFASSetMonitor(SNES, PetscBool);
+PETSC_EXTERN PetscErrorCode SNESFASSetMonitor(SNES, PetscViewerAndFormat *, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASSetLog(SNES, PetscBool);
 
 PETSC_EXTERN PetscErrorCode SNESFASSetGalerkin(SNES, PetscBool);
