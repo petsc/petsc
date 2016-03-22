@@ -1,17 +1,11 @@
-/*
-   Second step toward adjoint ERK solver
-   Features:
-     1. checkpointed data stored in the RK context;
-     2. adjoint solver is implemented inside TS;
-     3. support arrays of lambda and mu.
-*/
-static char help[] = "Solves the van der Pol equation.\n\
+static char help[] = "Performs adjoint sensitivity analysis for the van der Pol equation.\n\
 Input parameters include:\n\
       -mu : stiffness parameter\n\n";
 
 /*
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation
+   Concepts: TS^adjoint sensitivity analysis
    Processors: 1
 */
 /* ------------------------------------------------------------------------
@@ -20,13 +14,12 @@ Input parameters include:\n\
        y'' - \mu (1-y^2)*y' + y = 0        (1)
    on the domain 0 <= x <= 1, with the boundary conditions
        y(0) = 2, y'(0) = 0,
-   This is a nonlinear equation.
+   and computes the sensitivities of the final solution w.r.t. initial conditions and parameter \mu with an explicit Runge-Kutta method and its discrete adjoint.
 
    Notes:
-   This code demonstrates the TS solver interface to two variants of
-   linear problems, u_t = f(u,t), namely turning (1) into a system of
-   first order differential equations,
+   This code demonstrates the TSAdjoint interface to a system of ordinary differential equations (ODEs) in the form of u_t = F(u,t).
 
+   (1) can be turned into a system of first order ODEs
    [ y' ] = [          z          ]
    [ z' ]   [ \mu (1 - y^2) z - y ]
 
@@ -35,7 +28,26 @@ Input parameters include:\n\
    [ u_1' ] = [             u_2           ]  (2)
    [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
 
-   which is now in the desired form of u_t = f(u,t). 
+   which is now in the form of u_t = F(u,t).
+
+   The user provides the right-hand-side function
+
+   [ F(u,t) ] = [ u_2                       ]
+                [ \mu (1 - u_1^2) u_2 - u_1 ]
+
+   the Jacobian function
+
+   dF   [       0           ;         1        ]
+   -- = [                                      ]
+   du   [ -2 \mu u_1*u_2 - 1;  \mu (1 - u_1^2) ]
+
+   and the JacobainP (the Jacobian w.r.t. parameter) function
+
+   dF      [       0          ]
+   ---   = [                  ]
+   d\mu    [ (1 - u_1^2) u_2  ]
+
+
   ------------------------------------------------------------------------- */
 
 #include <petscts.h>
@@ -134,7 +146,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",(double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"t %.6f (tprev = %.6f) \n",(double)t,(double)tprev);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);  
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -186,7 +198,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(Jacp,PETSC_DECIDE,PETSC_DECIDE,2,1);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Jacp);CHKERRQ(ierr);
   ierr = MatSetUp(Jacp);CHKERRQ(ierr);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -198,7 +210,7 @@ int main(int argc,char **argv)
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

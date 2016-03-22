@@ -38,3 +38,13 @@ class Configure(config.package.CMakePackage):
     elif self.scalartypes.precision == 'quad':
       raise RuntimeError('METIS cannot be built with quad precision')
     return args
+
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    if self.libraries.check(self.lib, 'ParMETIS_ComputeVertexSeparator',otherLibs=self.metis.lib+self.mpi.lib+self.libraries.math):
+      self.ComputeVertexSeparator = 1
+    else:
+      self.ComputeVertexSeparator = 0
+    return
+
+

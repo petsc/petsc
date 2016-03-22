@@ -17,6 +17,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
 #endif
 PETSC_EXTERN PetscErrorCode DMCreate_Network(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
+#if defined(PETSC_HAVE_P4EST)
+PETSC_EXTERN PetscErrorCode DMCreate_p4est(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_p8est(DM);
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
@@ -52,6 +57,11 @@ PetscErrorCode  DMRegisterAll()
   ierr = DMRegister(DMMOAB,       DMCreate_Moab);CHKERRQ(ierr);
 #endif
   ierr = DMRegister(DMNETWORK,    DMCreate_Network);CHKERRQ(ierr);
+  ierr = DMRegister(DMFOREST,     DMCreate_Forest);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_P4EST)
+  ierr = DMRegister(DMP4EST,      DMCreate_p4est);CHKERRQ(ierr);
+  ierr = DMRegister(DMP8EST,      DMCreate_p8est);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -59,6 +69,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner);
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPartitionerRegisterAll"
@@ -87,6 +98,7 @@ PetscErrorCode PetscPartitionerRegisterAll()
   ierr = PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERSHELL,    PetscPartitionerCreate_Shell);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERSIMPLE,   PetscPartitionerCreate_Simple);CHKERRQ(ierr);
+  ierr = PetscPartitionerRegister(PETSCPARTITIONERGATHER,   PetscPartitionerCreate_Gather);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #include <petscfe.h>     /*I  "petscfe.h"  I*/

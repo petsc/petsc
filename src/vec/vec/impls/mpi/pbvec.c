@@ -96,8 +96,40 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode VecSetOption_MPI(Vec,VecOption,PetscBool);
-extern PetscErrorCode VecResetArray_MPI(Vec);
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetOption_MPI"
+static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
+{
+  Vec_MPI        *v = (Vec_MPI*)V->data;
+  PetscFunctionBegin;
+  switch (op) {
+  case VEC_IGNORE_OFF_PROC_ENTRIES: V->stash.donotstash = flag;
+    break;
+  case VEC_IGNORE_NEGATIVE_INDICES: V->stash.ignorenegidx = flag;
+    break;
+  case VEC_SUBSET_OFF_PROC_ENTRIES: v->assembly_subset = flag;
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecResetArray_MPI"
+static PetscErrorCode VecResetArray_MPI(Vec vin)
+{
+  Vec_MPI        *v = (Vec_MPI*)vin->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->array         = v->unplacedarray;
+  v->unplacedarray = 0;
+  if (v->localrep) {
+    ierr = VecResetArray(v->localrep);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecAssemblySend_MPI_Private"

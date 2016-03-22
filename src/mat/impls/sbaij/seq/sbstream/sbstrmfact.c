@@ -684,7 +684,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFac
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqsbaij_sbstrm"
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *F)
+PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscInt       bs = A->rmap->bs;

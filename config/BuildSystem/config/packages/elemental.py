@@ -30,6 +30,8 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     if not self.cmake.found:
       raise RuntimeError('CMake > 2.8.12 is needed to build Elemental')
+    if not self.parmetis.ComputeVertexSeparator:
+      raise RuntimeError('Elemental requires modified Parmetis! Use options: --download-metis=1 --download-parmetis=1')
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     if self.compilerFlags.debugging:
       args.append('-DEL_ZERO_INIT=ON')
@@ -44,9 +46,11 @@ class Configure(config.package.CMakePackage):
     args.append('-DEL_PREVENT_PARMETIS_DOWNLOAD=ON')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
     args.append('-DEL_DISABLE_SCALAPACK=ON')
-    args.append('-DMETIS_INCLUDE_DIR:STRING="'+self.metis.include[0]+'"')
+    if self.metis.include:
+      args.append('-DMETIS_INCLUDE_DIR:STRING="'+self.metis.include[0]+'"')
     args.append('-DMETIS_LIBRARY:STRING="'+self.libraries.toString(self.metis.lib)+'"')
-    args.append('-DPARMETIS_INCLUDE_DIR:STRING="'+self.parmetis.include[0]+'"')
+    if self.parmetis.include:
+      args.append('-DPARMETIS_INCLUDE_DIR:STRING="'+self.parmetis.include[0]+'"')
     args.append('-DPARMETIS_LIBRARY:STRING="'+self.libraries.toString(self.parmetis.lib)+'"')
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     if self.setCompilers.isDarwin(self.log):

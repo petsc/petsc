@@ -22,8 +22,9 @@ int main(int argc,char **argv)
     PetscReal y = ((PetscReal)i)/(height-1);
     ierr = PetscDrawLine(draw,0.0,y,1.0,y,i%256);CHKERRQ(ierr);
   }
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

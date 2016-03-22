@@ -7,7 +7,7 @@
    PetscDrawLGAddCommonPoint - Adds another point to each of the line graphs. All the points share
       the same new X coordinate.  The new point must have an X coordinate larger than the old points.
 
-   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  lg - the LineGraph data structure
@@ -26,7 +26,6 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
@@ -59,7 +58,7 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
    PetscDrawLGAddPoint - Adds another point to each of the line graphs.
    The new point must have an X coordinate larger than the old points.
 
-   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  lg - the LineGraph data structure
@@ -79,7 +78,6 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
   PetscReal      xx;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
@@ -117,7 +115,7 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
    PetscDrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
 
-   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  lg - the LineGraph data structure
@@ -139,7 +137,6 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
   PetscReal      *x,*y;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
@@ -182,7 +179,7 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  xlg - the line graph context
@@ -196,7 +193,6 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
 PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
 {
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   (lg)->xmin = x_min;

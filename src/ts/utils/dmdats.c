@@ -482,6 +482,7 @@ PetscErrorCode  TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u,
   ierr = VecRestoreArrayRead(v, &a);CHKERRQ(ierr);
   if (((lgctx->howoften > 0) && (!(step % lgctx->howoften))) || ((lgctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(lgctx->lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lgctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

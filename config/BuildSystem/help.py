@@ -67,6 +67,9 @@ class Info(logger.Logger):
         f.write(format % (name.split('@')[0], self.getDescription(section, name)))
     return
 
+# I don't know how to not have this stupid global variable
+_outputDownloadDone = 0
+
 class Help(Info):
   '''Help provides a simple help system for RDict'''
   def __init__(self, argDB):
@@ -104,6 +107,12 @@ class Help(Info):
     self.argDB.setType(self.getArgName(name), argType, forceLocal = 1)
     return
 
+  def addDownload(self,name,dlist):
+    if not hasattr(self.argDB,'dlist'):
+      self.argDB.dlist = {}
+    else:
+      self.argDB.dlist[name] = dlist
+
   def output(self, f = None, sections = None):
     '''Print a help screen with all the argument information.'''
     if f is  None:
@@ -129,3 +138,49 @@ class Help(Info):
         else:
           f.write(format % (name, type.help))
     return
+
+
+  def outputDownload(self):
+    ''' Looks for downloaded packages in --with-packages-dir
+        For any it finds it updates the --download-xxx= argument to point to this local copy
+        If it does not find some needed packages then prints the packages that need to be downloaded and exits'''
+    import nargs
+    import os
+    import sys
+    global _outputDownloadDone
+    if _outputDownloadDone: return
+    _outputDownloadDone = 1
+    pkgdir = os.path.abspath(os.path.expanduser(nargs.Arg.findArgument('with-packages-dir', self.clArgs)))
+    missing = 0
+    for i in self.argDB.dlist.keys():
+      if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
+        dlist = self.argDB.dlist[i]
+        found = 0
+        for k in range(0,len(dlist)):
+          fd = os.path.join(pkgdir,os.path.basename(dlist[k]))
+          if os.path.isdir(fd) or os.path.isfile(fd):
+            found = 1
+            break
+        if not found:
+          missing = 1
+    if missing:
+      print 'Download the following packages to '+pkgdir+' \n'
+    for i in self.argDB.dlist.keys():
+      if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
+        dlist = self.argDB.dlist[i]
+        found = 0
+        for k in range(0,len(dlist)):
+          fd = os.path.join(pkgdir,os.path.basename(dlist[k]))
+          if os.path.isdir(fd) or os.path.isfile(fd):
+            found = 1
+            for k in range(0,len(self.clArgs)):
+              if self.clArgs[k].startswith('--download-'+i):
+                self.clArgs[k] = 'download-'+i+'='+fd
+                self.argDB.insertArgs([self.clArgs[k]])
+            break
+        if not found:
+          print i + ' ' + str(self.argDB.dlist[i])
+    if missing:
+      print '\nThen run the script again\n'
+      sys.exit(10)
+

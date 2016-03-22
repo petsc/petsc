@@ -33,7 +33,7 @@ static PetscErrorCode KSPSetUp_CGLS(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_CGLS"
-PetscErrorCode KSPSolve_CGLS(KSP ksp)
+static PetscErrorCode KSPSolve_CGLS(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CGLS       *cgls = (KSP_CGLS*)ksp->data;
@@ -94,7 +94,7 @@ PetscErrorCode KSPSolve_CGLS(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_CGLS"
-PetscErrorCode KSPDestroy_CGLS(KSP ksp)
+static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
 {
   KSP_CGLS       *cgls = (KSP_CGLS*)ksp->data;
   PetscErrorCode ierr;

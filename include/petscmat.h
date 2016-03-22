@@ -32,8 +32,6 @@ typedef const char* MatType;
 #define MATIS              "is"
 #define MATAIJ             "aij"
 #define MATSEQAIJ          "seqaij"
-#define MATSEQAIJPTHREAD   "seqaijpthread"
-#define MATAIJPTHREAD      "aijpthread"
 #define MATMPIAIJ          "mpiaij"
 #define MATAIJCRL          "aijcrl"
 #define MATSEQAIJCRL       "seqaijcrl"
@@ -103,6 +101,9 @@ J*/
 #define MATSOLVERSUPERLU_DIST "superlu_dist"
 #define MATSOLVERUMFPACK      "umfpack"
 #define MATSOLVERCHOLMOD      "cholmod"
+#define MATSOLVERCLIQUE       "clique"
+#define MATSOLVERKLU          "klu"
+#define MATSOLVERELEMENTAL    "elemental"
 #define MATSOLVERESSL         "essl"
 #define MATSOLVERLUSOL        "lusol"
 #define MATSOLVERMUMPS        "mumps"
@@ -115,9 +116,6 @@ J*/
 #define MATSOLVERCUSPARSE     "cusparse"
 #define MATSOLVERBSTRM        "bstrm"
 #define MATSOLVERSBSTRM       "sbstrm"
-#define MATSOLVERELEMENTAL    "elemental"
-#define MATSOLVERCLIQUE       "clique"
-#define MATSOLVERKLU          "klu"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -373,8 +371,6 @@ PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizes(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatSetNThreads(Mat,PetscInt);
-PETSC_EXTERN PetscErrorCode MatGetNThreads(Mat,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode MatMult(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultDiagonalBlock(Mat,Vec,Vec);

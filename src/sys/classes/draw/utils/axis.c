@@ -6,7 +6,7 @@
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
 
-    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+    Logically Collective on PetscDrawAxis
 
     Input Parameters:
 +   axis - the axis
@@ -26,7 +26,6 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   if (axis->hold) PetscFunctionReturn(0);
   axis->xlow = xmin;
@@ -42,7 +41,7 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
 /*@
     PetscDrawAxisGetLimits -  Gets the limits (in user coords) of the axis
 
-    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+    Not Collective
 
     Input Parameters:
 +   axis - the axis
@@ -57,7 +56,6 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
 PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscReal *xmax,PetscReal *ymin,PetscReal *ymax)
 {
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
   *xmin = axis->xlow;
   *xmax = axis->xhigh;
@@ -97,11 +95,11 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 #undef __FUNCT__
 #define __FUNCT__ "PetscADefTicks"
 /* Finds "nice" locations for the ticks */
-PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int maxtick)
+PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal *tickloc,int maxtick)
 {
   PetscErrorCode ierr;
   int            i,power;
-  PetscReal      x = 0.0,base=0.0;
+  PetscReal      x = 0.0,base=0.0,eps;
 
   PetscFunctionBegin;
   ierr = PetscAGetBase(low,high,num,&base,&power);CHKERRQ(ierr);
@@ -111,12 +109,12 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
   /* Find the starting value */
   if (x < low) x += base;
 
-  i = 0;
-  while (i < maxtick && x <= high) {
-    tickloc[i++] = x;
-    x           += base;
+  i = 0; eps = base/10;
+  while (i < maxtick && x <= high+eps) {
+    tickloc[i++] = x; x += base;
   }
   *ntick = i;
+  tickloc[i-1] = PetscMin(tickloc[i-1],high);
 
   if (i < 2 && num < 10) {
     ierr = PetscADefTicks(low,high,num+1,ntick,tickloc,maxtick);CHKERRQ(ierr);
@@ -223,9 +221,3 @@ PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal *Ba
   *Base = base;
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-

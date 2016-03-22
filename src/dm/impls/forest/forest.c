@@ -1,0 +1,1666 @@
+#include <petsc/private/dmforestimpl.h> /*I "petscdmforest.h" I*/
+#include <petsc/private/dmimpl.h>       /*I "petscdm.h" I*/
+#include <petscsf.h>
+
+PetscBool DMForestPackageInitialized = PETSC_FALSE;
+
+typedef struct _DMForestTypeLink *DMForestTypeLink;
+
+struct _DMForestTypeLink
+{
+  char *name;
+  DMForestTypeLink next;
+};
+
+DMForestTypeLink DMForestTypeList;
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestPackageFinalize"
+static PetscErrorCode DMForestPackageFinalize(void)
+{
+  DMForestTypeLink oldLink, link = DMForestTypeList;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (link) {
+    oldLink = link;
+    ierr = PetscFree(oldLink->name);
+    link = oldLink->next;
+    ierr = PetscFree(oldLink);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestPackageInitialize"
+static PetscErrorCode DMForestPackageInitialize(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (DMForestPackageInitialized) PetscFunctionReturn(0);
+  DMForestPackageInitialized = PETSC_TRUE;
+  ierr = DMForestRegisterType(DMFOREST);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(DMForestPackageFinalize);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestRegisterType"
+/*@C
+  DMForestRegisterType - Registers a DMType as a subtype of DMFOREST (so that DMIsForest() will be correct)
+
+  Not Collective
+
+  Input parameter:
+. name - the name of the type
+
+  Level: advanced
+
+.seealso: DMFOREST, DMIsForest()
+@*/
+PetscErrorCode DMForestRegisterType(DMType name)
+{
+  DMForestTypeLink link;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMForestPackageInitialize();CHKERRQ(ierr);
+  ierr = PetscNew(&link);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
+  link->next = DMForestTypeList;
+  DMForestTypeList = link;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIsForest"
+/*@
+  DMIsForest - Check whether a DM uses the DMFOREST interface for hierarchically-refined meshes
+
+  Not Collective
+
+  Input parameter:
+. dm - the DM object
+
+  Output parameter:
+. isForest - whether dm is a subtype of DMFOREST
+
+  Level: intermediate
+
+.seealso: DMFOREST, DMForestRegisterType()
+@*/
+PetscErrorCode DMIsForest(DM dm, PetscBool *isForest)
+{
+  DMForestTypeLink link = DMForestTypeList;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (link) {
+    PetscBool sameType;
+    ierr = PetscObjectTypeCompare((PetscObject)dm,link->name,&sameType);CHKERRQ(ierr);
+    if (sameType) {
+      *isForest = PETSC_TRUE;
+      PetscFunctionReturn(0);
+    }
+    link = link->next;
+  }
+  *isForest = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestTemplate"
+/*@
+  DMForestTemplate - Create a new DM that will be adapted from a source DM.  The new DM reproduces the configuration
+  of the source, but is not yet setup, so that the user can then define only the ways that the new DM should differ
+  (by, e.g., refinement or repartitioning).  The source DM is also set as the adaptivity source DM of the new DM (see
+  DMForestSetAdaptivityForest()).
+
+  Collective on dm
+
+  Input Parameters:
++ dm - the source DM object
+- comm - the communicator for the new DM (this communicator is currently ignored, but is present so that DMForestTemplate() can be used within DMCoarsen())
+
+  Output Parameter:
+. tdm - the new DM object
+
+  Level: intermediate
+
+.seealso: DMForestSetAdaptivityForest()
+@*/
+PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
+{
+  DM_Forest        *forest = (DM_Forest *) dm->data;
+  DMType           type;
+  DM               base;
+  DMForestTopology topology;
+  PetscInt         dim, overlap, ref, factor;
+  DMForestAdaptivityStrategy strat;
+  PetscDS          ds;
+  void             *ctx;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMCreate(PetscObjectComm((PetscObject)dm),tdm);CHKERRQ(ierr);
+  ierr = DMGetType(dm,&type);CHKERRQ(ierr);
+  ierr = DMSetType(*tdm,type);CHKERRQ(ierr);
+  ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
+  ierr = DMForestSetBaseDM(*tdm,base);CHKERRQ(ierr);
+  ierr = DMForestGetTopology(dm,&topology);CHKERRQ(ierr);
+  ierr = DMForestSetTopology(*tdm,topology);CHKERRQ(ierr);
+  ierr = DMForestGetAdjacencyDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMForestSetAdjacencyDimension(*tdm,dim);CHKERRQ(ierr);
+  ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
+  ierr = DMForestSetPartitionOverlap(*tdm,overlap);CHKERRQ(ierr);
+  ierr = DMForestGetMinimumRefinement(dm,&ref);CHKERRQ(ierr);
+  ierr = DMForestSetMinimumRefinement(*tdm,ref);CHKERRQ(ierr);
+  ierr = DMForestGetMaximumRefinement(dm,&ref);CHKERRQ(ierr);
+  ierr = DMForestSetMaximumRefinement(*tdm,ref);CHKERRQ(ierr);
+  ierr = DMForestGetAdaptivityStrategy(dm,&strat);CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityStrategy(*tdm,strat);CHKERRQ(ierr);
+  ierr = DMForestGetGradeFactor(dm,&factor);CHKERRQ(ierr);
+  ierr = DMForestSetGradeFactor(*tdm,factor);CHKERRQ(ierr);
+  if (forest->ftemplate) {
+    ierr = (forest->ftemplate) (dm, *tdm);CHKERRQ(ierr);
+  }
+  ierr = DMForestSetAdaptivityForest(*tdm,dm);CHKERRQ(ierr);
+  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+  ierr = DMSetDS(*tdm,ds);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*tdm,&ctx);CHKERRQ(ierr);
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    const DMBoundaryType *bd;
+
+    ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*tdm,maxCell,L,bd);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMInitialize_Forest(DM dm);
+
+#undef __FUNCT__
+#define __FUNCT__ "DMClone_Forest"
+PETSC_EXTERN PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
+{
+  DM_Forest        *forest = (DM_Forest *) dm->data;
+  const char       *type;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  forest->refct++;
+  (*newdm)->data = forest;
+  ierr = PetscObjectGetType((PetscObject) dm, &type);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, type);CHKERRQ(ierr);
+  ierr = DMInitialize_Forest(*newdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDestroy_Forest"
+static PetscErrorCode DMDestroy_Forest(DM dm)
+{
+  DM_Forest     *forest = (DM_Forest*) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (--forest->refct > 0) PetscFunctionReturn(0);
+  if (forest->destroy) {ierr = forest->destroy(dm);CHKERRQ(ierr);}
+  ierr = PetscSFDestroy(&forest->cellSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&forest->preCoarseToFine);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&forest->coarseToPreFine);CHKERRQ(ierr);
+  ierr = PetscFree(forest->adaptLabel);CHKERRQ(ierr);
+  ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
+  ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
+  ierr = DMDestroy(&forest->adapt);CHKERRQ(ierr);
+  ierr = PetscFree(forest->topology);CHKERRQ(ierr);
+  ierr = PetscFree(forest);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetTopology"
+/*@C
+  DMForestSetTopology - Set the topology of a DMForest during the pre-setup phase.  The topology is a string (e.g.
+  "cube", "shell") and can be interpreted by subtypes of DMFOREST) to construct the base DM of a forest durint
+  DMSetUp().
+
+  Logically collective on dm
+
+  Input parameters:
++ dm - the forest
+- topology - the topology of the forest
+
+  Level: intermediate
+
+.seealso(): DMForestGetTopology(), DMForestSetBaseDM()
+@*/
+PetscErrorCode DMForestSetTopology(DM dm, DMForestTopology topology)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the topology after setup");
+  ierr = PetscFree(forest->topology);CHKERRQ(ierr);
+  ierr = PetscStrallocpy((const char *)topology,(char **) &forest->topology);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetTopology"
+/*@C
+  DMForestGetTopology - Get a string describing the topology of a DMForest.
+
+  Not collective
+
+  Input parameter:
+. dm - the forest
+
+  Output parameter:
+. topology - the topology of the forest (e.g., 'cube', 'shell')
+
+  Level: intermediate
+
+.seealso: DMForestSetTopology()
+@*/
+PetscErrorCode DMForestGetTopology(DM dm, DMForestTopology *topology)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(topology,2);
+  *topology = forest->topology;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetBaseDM"
+/*@
+  DMForestSetBaseDM - During the pre-setup phase, set the DM that defines the base mesh of a DMForest forest.  The
+  forest will be hierarchically refined from the base, and all refinements/coarsenings of the forest will share its
+  base.  In general, two forest must share a bse to be comparable, to do things like construct interpolators.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- base - the base DM of the forest
+
+  Level: intermediate
+
+.seealso(): DMForestGetBaseDM()
+@*/
+PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscInt       dim, dimEmbed;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the base after setup");
+  ierr = PetscObjectReference((PetscObject)base);CHKERRQ(ierr);
+  ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
+  forest->base = base;
+  if (base) {
+    PetscValidHeaderSpecific(base, DM_CLASSID, 2);
+    ierr = DMGetDimension(base,&dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(dm,dim);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(base,&dimEmbed);CHKERRQ(ierr);
+    ierr = DMSetCoordinateDim(dm,dimEmbed);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetBaseDM"
+/*@
+  DMForestGetBaseDM - Get the base DM of a DMForest forest.  The forest will be hierarchically refined from the base,
+  and all refinements/coarsenings of the forest will share its base.  In general, two forest must share a bse to be
+  comparable, to do things like construct interpolators.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. base - the base DM of the forest
+
+  Level: intermediate
+
+.seealso(); DMForestSetBaseDM()
+@*/
+PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(base, 2);
+  *base = forest->base;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdaptivityForest"
+/*@
+  DMForestSetAdaptivityForest - During the pre-setup phase, set the forest from which the current forest will be
+  adapted (e.g., the current forest will be refined/coarsened/repartitioned from it) im DMSetUp().  Usually not needed
+  by users directly: DMForestTemplate() constructs a new forest to be adapted from an old forest and calls this
+  routine.
+
+  Logically collective on dm
+
+  Input Parameter:
++ dm - the new forest, which will be constructed from adapt
+- adapt - the old forest
+
+  Level: intermediate
+
+.seealso: DMForestGetAdaptivityForest(), DMForestSetAdaptivityPurpose()
+@*/
+PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
+{
+  DM_Forest        *forest;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  forest = (DM_Forest *) dm->data;
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  switch (forest->adaptPurpose) {
+  case DM_FOREST_KEEP:
+    ierr = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);
+    ierr = DMDestroy(&(forest->adapt));CHKERRQ(ierr);
+    forest->adapt = adapt;
+    break;
+  case DM_FOREST_REFINE:
+    ierr = DMSetCoarseDM(dm,adapt);CHKERRQ(ierr);
+    break;
+  case DM_FOREST_COARSEN:
+    ierr = DMSetFineDM(dm,adapt);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid adaptivity purpose");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivityForest"
+/*@
+  DMForestGetAdaptivityForest - Get the forest from which the current forest is adapted.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. adapt - the forest from which dm is/was adapted
+
+  Level: intermediate
+
+.seealso: DMForestSetAdaptivityForest(), DMForestSetAdaptivityPurpose()
+@*/
+PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
+{
+  DM_Forest        *forest;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  forest = (DM_Forest *) dm->data;
+  switch (forest->adaptPurpose) {
+  case DM_FOREST_KEEP:
+    *adapt = forest->adapt;
+    break;
+  case DM_FOREST_REFINE:
+    ierr = DMGetCoarseDM(dm,adapt);CHKERRQ(ierr);
+    break;
+  case DM_FOREST_COARSEN:
+    ierr = DMGetFineDM(dm,adapt);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid adaptivity purpose");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdaptivityPurpose"
+/*@
+  DMForestSetAdaptivityPurpose - During the pre-setup phase, set whether the current DM is being adapted from its
+  source (set with DMForestSetAdaptivityForest()) for the purpose of refinement (DM_FOREST_REFINE), coarsening
+  (DM_FOREST_COARSEN), or undefined (DM_FOREST_NONE).  This only matters for the purposes of reference counting:
+  during DMDestroy(), cyclic references can be found between DMs only if the cyclic reference is due to a fine/coarse
+  relationship (see DMSetFineDM()/DMSetCoarseDM()).  If the purpose is not refinement or coarsening, and the user does
+  not maintain a reference to the post-adaptation forest (i.e., the one created by DMForestTemplate()), then this can
+  cause a memory leak.  This method is used by subtypes of DMForest when automatically constructing mesh hierarchies.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- purpose - the adaptivity purpose (DM_FOREST_NONE/DM_FOREST_REFINE/DM_FOREST_COARSEN)
+
+  Level: advanced
+
+.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest()
+@*/
+PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMForestAdaptivityPurpose purpose)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  forest = (DM_Forest *) dm->data;
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  if (purpose != forest->adaptPurpose) {
+    DM adapt;
+
+    ierr = DMForestGetAdaptivityForest(dm,&adapt);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);
+    ierr = DMForestSetAdaptivityForest(dm,NULL);CHKERRQ(ierr);
+    forest->adaptPurpose = purpose;
+    ierr = DMForestSetAdaptivityForest(dm,adapt);CHKERRQ(ierr);
+    ierr = DMDestroy(&adapt);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivityPurpose"
+/*@
+  DMForestGetAdaptivityPurpose - Get whether the current DM is being adapted from its source (set with
+  DMForestSetAdaptivityForest()) for the purpose of refinement (DM_FOREST_REFINE), coarsening (DM_FOREST_COARSEN), or
+  undefined (DM_FOREST_NONE).  This only matters for the purposes of reference counting: during DMDestroy(), cyclic
+  references can be found between DMs only if the cyclic reference is due to a fine/coarse relationship (see
+  DMSetFineDM()/DMSetCoarseDM()).  If the purpose is not refinement or coarsening, and the user does not maintain a
+  reference to the post-adaptation forest (i.e., the one created by DMForestTemplate()), then this can cause a memory
+  leak.  This method is used by subtypes of DMForest when automatically constructing mesh hierarchies.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. purpose - the adaptivity purpose (DM_FOREST_NONE/DM_FOREST_REFINE/DM_FOREST_COARSEN)
+
+  Level: advanced
+
+.seealso: DMForestTemplate(), DMForestSetAdaptivityForest(), DMForestGetAdaptivityForest()
+@*/
+PetscErrorCode DMForestGetAdaptivityPurpose(DM dm, DMForestAdaptivityPurpose *purpose)
+{
+  DM_Forest      *forest;
+
+  PetscFunctionBegin;
+  forest = (DM_Forest *) dm->data;
+  *purpose = forest->adaptPurpose;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdjacencyDimension"
+/*@
+  DMForestSetAdjacencyDimension - During the pre-setup phase, set the dimension of interface points that determine
+  cell adjacency (for the purposes of partitioning and overlap).
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- adjDim - default 0 (i.e., vertices determine adjacency)
+
+  Level: intermediate
+
+.seealso: DMForestGetAdjacencyDimension(), DMForestSetAdjacencyCodimension(), DMForestSetPartitionOverlap()
+@*/
+PetscErrorCode DMForestSetAdjacencyDimension(DM dm, PetscInt adjDim)
+{
+  PetscInt        dim;
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adjacency dimension after setup");
+  if (adjDim < 0) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be < 0: %d", adjDim);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (adjDim > dim) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be > %d: %d", dim, adjDim);
+  forest->adjDim = adjDim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdjacencyCodimension"
+/*@
+  DMForestSetAdjacencyCodimension - Like DMForestSetAdjacencyDimension(), but specified as a co-dimension (so that,
+  e.g., adjacency based on facets can be specified by codimension 1 in all cases)
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- adjCodim - default isthe dimension of the forest (see DMGetDimension()), since this is the codimension of vertices
+
+  Level: intermediate
+
+.seealso: DMForestGetAdjacencyCodimension(), DMForestSetAdjacencyDimension()
+@*/
+PetscErrorCode DMForestSetAdjacencyCodimension(DM dm, PetscInt adjCodim)
+{
+  PetscInt        dim;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMForestSetAdjacencyDimension(dm,dim-adjCodim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdjacencyDimension"
+/*@
+  DMForestGetAdjacencyDimension - Get the dimension of interface points that determine cell adjacency (for the
+  purposes of partitioning and overlap).
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. adjDim - default 0 (i.e., vertices determine adjacency)
+
+  Level: intermediate
+
+.seealso: DMForestSetAdjacencyDimension(), DMForestGetAdjacencyCodimension(), DMForestSetPartitionOverlap()
+@*/
+PetscErrorCode DMForestGetAdjacencyDimension(DM dm, PetscInt *adjDim)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(adjDim,2);
+  *adjDim = forest->adjDim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdjacencyCodimension"
+/*@
+  DMForestGetAdjacencyCodimension - Like DMForestGetAdjacencyDimension(), but specified as a co-dimension (so that,
+  e.g., adjacency based on facets can be specified by codimension 1 in all cases)
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. adjCodim - default isthe dimension of the forest (see DMGetDimension()), since this is the codimension of vertices
+
+  Level: intermediate
+
+.seealso: DMForestSetAdjacencyCodimension(), DMForestGetAdjacencyDimension()
+@*/
+PetscErrorCode DMForestGetAdjacencyCodimension(DM dm, PetscInt *adjCodim)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(adjCodim,2);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  *adjCodim = dim - forest->adjDim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetPartitionOverlap"
+/*@
+  DMForestSetPartitionOverlap - During the pre-setup phase, set the amount of cell-overlap present in parallel
+  partitions of a forest, with values > 0 indicating subdomains that are expanded by that many iterations of adding
+  adjacent cells
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- overlap - default 0
+
+  Level: intermediate
+
+.seealso: DMForestGetPartitionOverlap(), DMForestSetAdjacencyDimension(), DMForestSetAdjacencyCodimension()
+@*/
+PetscErrorCode DMForestSetPartitionOverlap(DM dm, PetscInt overlap)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the overlap after setup");
+  if (overlap < 0) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"overlap cannot be < 0: %d", overlap);
+  forest->overlap = overlap;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetPartitionOverlap"
+/*@
+  DMForestGetPartitionOverlap - Get the amount of cell-overlap present in parallel partitions of a forest, with values
+  > 0 indicating subdomains that are expanded by that many iterations of adding adjacent cells
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. overlap - default 0
+
+  Level: intermediate
+
+.seealso: DMForestGetPartitionOverlap(), DMForestSetAdjacencyDimension(), DMForestSetAdjacencyCodimension()
+@*/
+PetscErrorCode DMForestGetPartitionOverlap(DM dm, PetscInt *overlap)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(overlap,2);
+  *overlap = forest->overlap;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetMinimumRefinement"
+/*@
+  DMForestSetMinimumRefinement - During the pre-setup phase, set the minimum level of refinement (relative to the base
+  DM, see DMForestGetBaseDM()) allowed in the forest.  If the forest is being created by coarsening a previous forest
+  (see DMForestGetAdaptivityForest()) this limits the amount of coarsening.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- minRefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
+
+  Level: intermediate
+
+.seealso: DMForestGetMinimumRefinement(), DMForestSetMaximumRefinement(), DMForestSetInitialRefinement(), DMForestGetBaseDM(), DMForestGetAdaptivityForest()
+@*/
+PetscErrorCode DMForestSetMinimumRefinement(DM dm, PetscInt minRefinement)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the minimum refinement after setup");
+  forest->minRefinement = minRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetMinimumRefinement"
+/*@
+  DMForestGetMinimumRefinement - Get the minimum level of refinement (relative to the base DM, see
+  DMForestGetBaseDM()) allowed in the forest.  If the forest is being created by coarsening a previous forest (see
+  DMForestGetAdaptivityForest()), this limits the amount of coarsening.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. minRefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
+
+  Level: intermediate
+
+.seealso: DMForestSetMinimumRefinement(), DMForestGetMaximumRefinement(), DMForestGetInitialRefinement(), DMForestGetBaseDM(), DMForestGetAdaptivityForest()
+@*/
+PetscErrorCode DMForestGetMinimumRefinement(DM dm, PetscInt *minRefinement)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(minRefinement,2);
+  *minRefinement = forest->minRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetInitialRefinement"
+/*@
+  DMForestSetInitialRefinement - During the pre-setup phase, set the initial level of refinement (relative to the base
+  DM, see DMForestGetBaseDM()) allowed in the forest.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- initefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
+
+  Level: intermediate
+
+.seealso: DMForestSetMinimumRefinement(), DMForestSetMaximumRefinement(), DMForestGetBaseDM()
+@*/
+PetscErrorCode DMForestSetInitialRefinement(DM dm, PetscInt initRefinement)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the initial refinement after setup");
+  forest->initRefinement = initRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetInitialRefinement"
+/*@
+  DMForestGetInitialRefinement - Get the initial level of refinement (relative to the base DM, see
+  DMForestGetBaseDM()) allowed in the forest.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Paramater:
+. initefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
+
+  Level: intermediate
+
+.seealso: DMForestSetMinimumRefinement(), DMForestSetMaximumRefinement(), DMForestGetBaseDM()
+@*/
+PetscErrorCode DMForestGetInitialRefinement(DM dm, PetscInt *initRefinement)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(initRefinement,2);
+  *initRefinement = forest->initRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetMaximumRefinement"
+/*@
+  DMForestSetMaximumRefinement - During the pre-setup phase, set the maximum level of refinement (relative to the base
+  DM, see DMForestGetBaseDM()) allowed in the forest.  If the forest is being created by refining a previous forest
+  (see DMForestGetAdaptivityForest()), this limits the amount of refinement.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- maxRefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
+
+  Level: intermediate
+
+.seealso: DMForestGetMinimumRefinement(), DMForestSetMaximumRefinement(), DMForestSetInitialRefinement(), DMForestGetBaseDM(), DMForestGetAdaptivityDM()
+@*/
+PetscErrorCode DMForestSetMaximumRefinement(DM dm, PetscInt maxRefinement)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the maximum refinement after setup");
+  forest->maxRefinement = maxRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetMaximumRefinement"
+/*@
+  DMForestGetMaximumRefinement - Get the maximum level of refinement (relative to the base DM, see
+  DMForestGetBaseDM()) allowed in the forest.  If the forest is being created by refining a previous forest (see
+  DMForestGetAdaptivityForest()), this limits the amount of refinement.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. maxRefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
+
+  Level: intermediate
+
+.seealso: DMForestSetMaximumRefinement(), DMForestGetMinimumRefinement(), DMForestGetInitialRefinement(), DMForestGetBaseDM(), DMForestGetAdaptivityForest()
+@*/
+PetscErrorCode DMForestGetMaximumRefinement(DM dm, PetscInt *maxRefinement)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(maxRefinement,2);
+  *maxRefinement = forest->maxRefinement;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdaptivityStrategy"
+/*@C
+  DMForestSetAdaptivityStrategy - During the pre-setup phase, set the strategy for combining adaptivity labels from multiple processes.
+  Subtypes of DMForest may define their own strategies.  Two default strategies are DMFORESTADAPTALL, which indicates that all processes must agree
+  for a refinement/coarsening flag to be valid, and DMFORESTADAPTANY, which indicates that only one process needs to
+  specify refinement/coarsening.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- adaptStrategy - default DMFORESTADAPTALL
+
+  Level: advanced
+
+.seealso: DMForestGetAdaptivityStrategy()
+@*/
+PetscErrorCode DMForestSetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy adaptStrategy)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
+  ierr = PetscStrallocpy((const char *) adaptStrategy,(char **)&forest->adaptStrategy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivityStrategy"
+/*@C
+  DMForestSetAdaptivityStrategy - Get the strategy for combining adaptivity labels from multiple processes.  Subtypes
+  of DMForest may define their own strategies.  Two default strategies are DMFORESTADAPTALL, which indicates that all
+  processes must agree for a refinement/coarsening flag to be valid, and DMFORESTADAPTANY, which indicates that only
+  one process needs to specify refinement/coarsening.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. adaptStrategy - the adaptivity strategy (default DMFORESTADAPTALL)
+
+  Level: advanced
+
+.seealso: DMForestSetAdaptivityStrategy()
+@*/
+PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *adaptStrategy)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(adaptStrategy,2);
+  *adaptStrategy = forest->adaptStrategy;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetComputeAdaptivitySF"
+/*@
+  DMForestSetComputeAdaptivitySF - During the pre-setup phase, set whether transfer PetscSFs should be computed
+  relating the cells of the pre-adaptation forest to the post-adaptiation forest.  After DMSetUp() is called, these transfer PetscSFs can be accessed with DMForestGetAdaptivitySF().
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the post-adaptation forest
+- computeSF - default PETSC_TRUE
+
+  Level: advanced
+
+.seealso: DMForestGetComputeAdaptivitySF(), DMForestGetAdaptivitySF()
+@*/
+PetscErrorCode DMForestSetComputeAdaptivitySF(DM dm, PetscBool computeSF)
+{
+  DM_Forest *forest;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot compute adaptivity PetscSFs after setup is called");
+  forest = (DM_Forest *) dm->data;
+  forest->computeAdaptSF = computeSF;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetComputeAdaptivitySF"
+/*@
+  DMForestGetComputeAdaptivitySF - Get whether transfer PetscSFs should be computed relating the cells of the
+  pre-adaptation forest to the post-adaptiation forest.  After DMSetUp() is called, these transfer PetscSFs can be
+  accessed with DMForestGetAdaptivitySF().
+
+  Not collective
+
+  Input Parameter:
+. dm - the post-adaptation forest
+
+  Output Parameter:
+. computeSF - default PETSC_TRUE
+
+  Level: advanced
+
+.seealso: DMForestSetComputeAdaptivitySF(), DMForestGetAdaptivitySF()
+@*/
+PetscErrorCode DMForestGetComputeAdaptivitySF(DM dm, PetscBool *computeSF)
+{
+  DM_Forest *forest;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  forest = (DM_Forest *) dm->data;
+  *computeSF = forest->computeAdaptSF;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivitySF"
+/*@
+  DMForestGetAdaptivitySF - Get PetscSFs that relate the pre-adaptation forest to the post-adaptation forest.
+  Adaptation can be any combination of refinement, coarsening, repartition, and change of overlap, so there may be
+  some cells of the pre-adaptation that are parents of post-adaptation cells, and vice versa.  Therefore there are two
+  PetscSFs: one that relates pre-adaptation coarse cells to post-adaptation fine cells, and one that relates
+  pre-adaptation fine cells to post-adaptation coarse cells.
+
+  Not collective
+
+  Input Parameter:
+  dm - the post-adaptation forest
+
+  Output Parameter:
+  preCoarseToFine - pre-adaptation coarse cells to post-adaptation fine cells: BCast goes from pre- to post-
+  coarseToPreFine - post-adaptation coarse cells to pre-adaptation fine cells: BCast goes from post- to pre-
+
+  Level: advanced
+
+.seealso: DMForestGetComputeAdaptivitySF(), DMForestSetComputeAdaptivitySF()
+@*/
+PetscErrorCode DMForestGetAdaptivitySF(DM dm, PetscSF *preCoarseToFine, PetscSF *coarseToPreFine)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  forest = (DM_Forest *) dm->data;
+  if (preCoarseToFine) {
+    *preCoarseToFine = forest->preCoarseToFine;
+  }
+  if (coarseToPreFine) {
+    *coarseToPreFine = forest->coarseToPreFine;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetGradeFactor"
+/*@
+  DMForestSetGradeFactor - During the pre-setup phase, set the desired amount of grading in the mesh, e.g. give 2 to
+  indicate that the diameter of neighboring cells should differ by at most a factor of 2.  Subtypes of DMForest may
+  only support one particular choice of grading factor.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- grade - the grading factor
+
+  Level: advanced
+
+.seealso: DMForestGetGradeFactor()
+@*/
+PetscErrorCode DMForestSetGradeFactor(DM dm, PetscInt grade)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the grade factor after setup");
+  forest->gradeFactor = grade;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetGradeFactor"
+/*@
+  DMForestGetGradeFactor - Get the desired amount of grading in the mesh, e.g. give 2 to indicate that the diameter of
+  neighboring cells should differ by at most a factor of 2.  Subtypes of DMForest may only support one particular
+  choice of grading factor.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. grade - the grading factor
+
+  Level: advanced
+
+.seealso: DMForestSetGradeFactor()
+@*/
+PetscErrorCode DMForestGetGradeFactor(DM dm, PetscInt *grade)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(grade,2);
+  *grade = forest->gradeFactor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetCellWeightFactor"
+/*@
+  DMForestSetCellWeightFactor - During the pre-setup phase, set the factor by which the level of refinement changes
+  the cell weight (see DMForestSetCellWeights()) when calculating partitions.  The final weight of a cell will be
+  (cellWeight) * (weightFactor^refinementLevel).  A factor of 1 indicates that the weight of a cell does not depend on
+  its level; a factor of 2, for example, might be appropriate for sub-cycling time-stepping methods, when the
+  computation associated with a cell is multiplied by a factor of 2 for each additional level of refinement.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+- weightsFactors - default 1.
+
+  Level: advanced
+
+.seealso: DMForestGetCellWeightFactor(), DMForestSetCellWeights()
+@*/
+PetscErrorCode DMForestSetCellWeightFactor(DM dm, PetscReal weightsFactor)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weights factor after setup");
+  forest->weightsFactor = weightsFactor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetCellWeightFactor"
+/*@
+  DMForestGetCellWeightFactor - Get the factor by which the level of refinement changes the cell weight (see
+  DMForestSetCellWeights()) when calculating partitions.  The final weight of a cell will be (cellWeight) *
+  (weightFactor^refinementLevel).  A factor of 1 indicates that the weight of a cell does not depend on its level; a
+  factor of 2, for example, might be appropriate for sub-cycling time-stepping methods, when the computation
+  associated with a cell is multiplied by a factor of 2 for each additional level of refinement.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. weightsFactors - default 1.
+
+  Level: advanced
+
+.seealso: DMForestSetCellWeightFactor(), DMForestSetCellWeights()
+@*/
+PetscErrorCode DMForestGetCellWeightFactor(DM dm, PetscReal *weightsFactor)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidRealPointer(weightsFactor,2);
+  *weightsFactor = forest->weightsFactor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetCellChart"
+/*@
+  DMForestGetCellChart - After the setup phase, get the local half-open interval of the chart of cells on this process
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameters:
++ cStart - the first cell on this process
+- cEnd - one after the final cell on this process
+
+  level: intermediate
+
+.seealso: DMForestGetCellSF()
+@*/
+PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(cStart,2);
+  PetscValidIntPointer(cEnd,2);
+  if (((forest->cStart == PETSC_DETERMINE) || (forest->cEnd == PETSC_DETERMINE)) && forest->createcellchart) {
+    ierr = forest->createcellchart(dm,&forest->cStart,&forest->cEnd);CHKERRQ(ierr);
+  }
+  *cStart =  forest->cStart;
+  *cEnd   =  forest->cEnd;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetCellSF"
+/*@
+  DMForestGetCellSF - After the setup phase, get the PetscSF for overlapping cells between processes
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. cellSF - the PetscSF
+
+  level: intermediate
+
+.seealso: DMForestGetCellChart()
+@*/
+PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(cellSF,2);
+  if ((!forest->cellSF) && forest->createcellsf) {
+    ierr = forest->createcellsf(dm,&forest->cellSF);CHKERRQ(ierr);
+  }
+  *cellSF = forest->cellSF;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdaptivityLabel"
+/*@C
+  DMForestSetAdaptivityLabel - During the pre-setup phase, set the label of the pre-adaptation forest (see
+  DMForestGetAdaptivityForest()) that holds the adaptation flags (refinement, coarsening, or some combination).  The
+  interpretation of the label values is up to the subtype of DMForest, but DM_FOREST_KEEP, DM_FOREST_REFINE, and
+  DM_FOREST_COARSEN have been reserved as choices that should be accepted by all subtypes.
+
+  Logically collective on dm
+
+  Input Parameters:
+- dm - the forest
++ adaptLabel - the name of the label in the pre-adaptation forest
+
+  Level: intermediate
+
+.seealso DMForestGetAdaptivityLabel()
+@*/
+PetscErrorCode DMForestSetAdaptivityLabel(DM dm, const char * adaptLabel)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscFree(forest->adaptLabel);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(adaptLabel,&forest->adaptLabel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivityLabel"
+/*@C
+  DMForestGetAdaptivityLabel - Get the label of the pre-adaptation forest (see DMForestGetAdaptivityForest()) that
+  holds the adaptation flags (refinement, coarsening, or some combination).  The interpretation of the label values is
+  up to the subtype of DMForest, but DM_FOREST_KEEP, DM_FOREST_REFINE, and DM_FOREST_COARSEN have been reserved as
+  choices that should be accepted by all subtypes.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. adaptLabel - the name of the label in the pre-adaptation forest
+
+  Level: intermediate
+
+.seealso DMForestSetAdaptivityLabel()
+@*/
+PetscErrorCode DMForestGetAdaptivityLabel(DM dm, const char ** adaptLabel)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  *adaptLabel = forest->adaptLabel;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetCellWeights"
+/*@
+  DMForestSetCellWeights - Set the weights assigned to each of the cells (see DMForestGetCellChart()) of the current
+  process: weights are used to determine parallel partitioning.  Partitions will be created so that each process's
+  ratio of weight to capacity (see DMForestSetWeightCapacity()) is roughly equal. If NULL, each cell receives a weight
+  of 1.
+
+  Logically collective on dm
+
+  Input Parameters:
++ dm - the forest
+. weights - the array of weights for all cells, or NULL to indicate each cell has weight 1.
+- copyMode - how weights should reference weights
+
+  Level: advanced
+
+.seealso: DMForestGetCellWeights(), DMForestSetWeightCapacity()
+@*/
+PetscErrorCode DMForestSetCellWeights(DM dm, PetscReal weights[], PetscCopyMode copyMode)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscInt       cStart, cEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMForestGetCellChart(dm,&cStart,&cEnd);CHKERRQ(ierr);
+  if (cEnd < cStart) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cell chart [%d,%d) is not valid",cStart,cEnd);
+  if (copyMode == PETSC_COPY_VALUES) {
+    if (forest->cellWeightsCopyMode != PETSC_OWN_POINTER || forest->cellWeights == weights) {
+      ierr = PetscMalloc1(cEnd-cStart,&forest->cellWeights);CHKERRQ(ierr);
+    }
+    ierr = PetscMemcpy(forest->cellWeights,weights,(cEnd-cStart)*sizeof(*weights));CHKERRQ(ierr);
+    forest->cellWeightsCopyMode = PETSC_OWN_POINTER;
+    PetscFunctionReturn(0);
+  }
+  if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) {
+    ierr = PetscFree(forest->cellWeights);CHKERRQ(ierr);
+  }
+  forest->cellWeights  = weights;
+  forest->cellWeightsCopyMode = copyMode;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetCellWeights"
+/*@
+  DMForestGetCellWeights - Get the weights assigned to each of the cells (see DMForestGetCellChart()) of the current
+  process: weights are used to determine parallel partitioning.  Partitions will be created so that each process's
+  ratio of weight to capacity (see DMForestSetWeightCapacity()) is roughly equal. If NULL, each cell receives a weight
+  of 1.
+
+  Not collective
+
+  Input Parameter:
+. dm - the forest
+
+  Output Parameter:
+. weights - the array of weights for all cells, or NULL to indicate each cell has weight 1.
+
+  Level: advanced
+
+.seealso: DMForestSetCellWeights(), DMForestSetWeightCapacity()
+@*/
+PetscErrorCode DMForestGetCellWeights(DM dm, PetscReal **weights)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(weights,2);
+  *weights = forest->cellWeights;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetWeightCapacity"
+/*@
+  DMForestSetWeightCapacity - During the pre-setup phase, set the capacity of the current process when repartitioning
+  a pre-adaptation forest (see DMForestGetAdaptivityForest()).  After partitioning, the ratio of the weight of each
+  process's cells to the process's capacity will be roughly equal for all processes.  A capacity of 0 indicates that
+  the current process should not have any cells after repartitioning.
+
+  Logically Collective on dm
+
+  Input parameters:
++ dm - the forest
+- capacity - this process's capacity
+
+  Level: advanced
+
+.seealso DMForestGetWeightCapacity(), DMForestSetCellWeights(), DMForestSetCellWeightFactor()
+@*/
+PetscErrorCode DMForestSetWeightCapacity(DM dm, PetscReal capacity)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weight capacity after setup");
+  if (capacity < 0.) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative weight capacity; %f",capacity);
+  forest->weightCapacity = capacity;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetWeightCapacity"
+/*@
+  DMForestGetWeightCapacity - Set the capacity of the current process when repartitioning a pre-adaptation forest (see
+  DMForestGetAdaptivityForest()).  After partitioning, the ratio of the weight of each process's cells to the
+  process's capacity will be roughly equal for all processes.  A capacity of 0 indicates that the current process
+  should not have any cells after repartitioning.
+
+  Not collective
+
+  Input parameter:
+. dm - the forest
+
+  Output parameter:
+. capacity - this process's capacity
+
+  Level: advanced
+
+.seealso DMForestSetWeightCapacity(), DMForestSetCellWeights(), DMForestSetCellWeightFactor()
+@*/
+PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidRealPointer(capacity,2);
+  *capacity = forest->weightCapacity;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetFromOptions_Forest"
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptionsObject,DM dm)
+{
+  DM_Forest                  *forest = (DM_Forest *) dm->data;
+  PetscBool                  flg, flg1, flg2, flg3, flg4;
+  DMForestTopology           oldTopo;
+  char                       stringBuffer[256];
+  PetscViewer                viewer;
+  PetscViewerFormat          format;
+  PetscInt                   adjDim, adjCodim, overlap, minRefinement, initRefinement, maxRefinement, grade;
+  PetscReal                  weightsFactor;
+  DMForestAdaptivityStrategy adaptStrategy;
+  PetscErrorCode             ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  forest->setfromoptionscalled = PETSC_TRUE;
+  ierr = DMForestGetTopology(dm, &oldTopo);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMForest Options");CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,256,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-dm_forest_base_dm","load the base DM from a viewer specification","DMForestSetBaseDM",&viewer,&format,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-dm_forest_coarse_forest","load the coarse forest from a viewer specification","DMForestSetCoarseForest",&viewer,&format,&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-dm_forest_fine_forest","load the fine forest from a viewer specification","DMForestSetFineForest",&viewer,&format,&flg4);CHKERRQ(ierr);
+  if ((PetscInt) flg1 + (PetscInt) flg2 + (PetscInt) flg3 + (PetscInt) flg4 > 1) {
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Specify only one of -dm_forest_{topology,base_dm,coarse_forest,fine_forest}");
+  }
+  if (flg1) {
+    ierr = DMForestSetTopology(dm,(DMForestTopology)stringBuffer);CHKERRQ(ierr);
+    ierr = DMForestSetBaseDM(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetAdaptivityForest(dm,NULL);CHKERRQ(ierr);
+  }
+  if (flg2) {
+    DM         base;
+
+    ierr = DMCreate(PetscObjectComm((PetscObject)dm),&base);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = DMLoad(base,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
+    ierr = DMDestroy(&base);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetAdaptivityForest(dm,NULL);CHKERRQ(ierr);
+  }
+  if (flg3) {
+    DM         coarse;
+
+    ierr = DMCreate(PetscObjectComm((PetscObject)dm),&coarse);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = DMLoad(coarse,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = DMForestSetAdaptivityForest(dm,coarse);CHKERRQ(ierr);
+    ierr = DMDestroy(&coarse);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetBaseDM(dm,NULL);CHKERRQ(ierr);
+  }
+  if (flg4) {
+    DM         fine;
+
+    ierr = DMCreate(PetscObjectComm((PetscObject)dm),&fine);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = DMLoad(fine,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = DMForestSetAdaptivityForest(dm,fine);CHKERRQ(ierr);
+    ierr = DMDestroy(&fine);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,NULL);CHKERRQ(ierr);
+    ierr = DMForestSetBaseDM(dm,NULL);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetAdjacencyDimension(dm,&adjDim);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_adjacency_dimension","set the dimension of points that define adjacency in the forest","DMForestSetAdjacencyDimension",adjDim,&adjDim,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetAdjacencyDimension(dm,adjDim);CHKERRQ(ierr);
+  }
+  else {
+    ierr = DMForestGetAdjacencyCodimension(dm,&adjCodim);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dm_forest_adjacency_codimension","set the codimension of points that define adjacency in the forest","DMForestSetAdjacencyCodimension",adjCodim,&adjCodim,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DMForestSetAdjacencyCodimension(dm,adjCodim);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_partition_overlap","set the degree of partition overlap","DMForestSetPartitionOverlap",overlap,&overlap,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetPartitionOverlap(dm,overlap);CHKERRQ(ierr);
+  }
+#if 0
+  ierr = PetscOptionsInt("-dm_refine","equivalent to -dm_forest_set_minimum_refinement and -dm_forest_set_initial_refinement with the same value",NULL,minRefinement,&minRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMinimumRefinement(dm,minRefinement);CHKERRQ(ierr);
+    ierr = DMForestSetInitialRefinement(dm,minRefinement);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-dm_refine_hierarchy","equivalent to -dm_forest_set_minimum_refinement 0 and -dm_forest_set_initial_refinement",NULL,initRefinement,&initRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMinimumRefinement(dm,0);CHKERRQ(ierr);
+    ierr = DMForestSetInitialRefinement(dm,initRefinement);CHKERRQ(ierr);
+  }
+#endif
+  ierr = DMForestGetMinimumRefinement(dm,&minRefinement);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_minimum_refinement","set the minimum level of refinement in the forest","DMForestSetMinimumRefinement",minRefinement,&minRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMinimumRefinement(dm,minRefinement);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetInitialRefinement(dm,&initRefinement);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_initial_refinement","set the initial level of refinement in the forest","DMForestSetInitialRefinement",initRefinement,&initRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetInitialRefinement(dm,initRefinement);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetMaximumRefinement(dm,&maxRefinement);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_maximum_refinement","set the maximum level of refinement in the forest","DMForestSetMaximumRefinement",maxRefinement,&maxRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMaximumRefinement(dm,maxRefinement);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetAdaptivityStrategy(dm,&adaptStrategy);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_forest_adaptivity_strategy","the forest's adaptivity-flag resolution strategy","DMForestSetAdaptivityStrategy",adaptStrategy,stringBuffer,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetAdaptivityStrategy(dm,(DMForestAdaptivityStrategy)stringBuffer);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetGradeFactor(dm,&grade);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_grade_factor","grade factor between neighboring cells","DMForestSetGradeFactor",grade,&grade,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetGradeFactor(dm,grade);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetCellWeightFactor(dm,&weightsFactor);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_forest_cell_weight_factor","multiplying weight factor for cell refinement","DMForestSetCellWeightFactor",weightsFactor,&weightsFactor,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetCellWeightFactor(dm,weightsFactor);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateSubDM_Forest"
+PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (subdm) {ierr = DMClone(dm, subdm);CHKERRQ(ierr);}
+  ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRefine_Forest"
+PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
+{
+  DMLabel        refine;
+  DM             fineDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetFineDM(dm,&fineDM);CHKERRQ(ierr);
+  if (fineDM) {
+    ierr = PetscObjectReference((PetscObject)fineDM);CHKERRQ(ierr);
+    *dmRefined = fineDM;
+    PetscFunctionReturn(0);
+  }
+  ierr = DMForestTemplate(dm,comm,dmRefined);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm,"refine",&refine);CHKERRQ(ierr);
+  if (!refine) {
+    ierr = DMCreateLabel(dm,"refine");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm,"refine",&refine);CHKERRQ(ierr);
+    ierr = DMLabelSetDefaultValue(refine,DM_FOREST_REFINE);CHKERRQ(ierr);
+  }
+  ierr = DMForestSetAdaptivityLabel(*dmRefined,"refine");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsen_Forest"
+PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
+{
+  DMLabel        coarsen;
+  DM             coarseDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);
+  if (coarseDM) {
+    ierr = PetscObjectReference((PetscObject)coarseDM);CHKERRQ(ierr);
+    *dmCoarsened = coarseDM;
+    PetscFunctionReturn(0);
+  }
+  ierr = DMForestTemplate(dm,comm,dmCoarsened);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
+  if (!coarsen) {
+    ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
+    ierr = DMLabelSetDefaultValue(coarsen,DM_FOREST_COARSEN);CHKERRQ(ierr);
+  }
+  ierr = DMForestSetAdaptivityLabel(*dmCoarsened,"coarsen");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMInitialize_Forest"
+static PetscErrorCode DMInitialize_Forest(DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(dm->ops,sizeof(*(dm->ops)));CHKERRQ(ierr);
+
+  dm->ops->clone          = DMClone_Forest;
+  dm->ops->setfromoptions = DMSetFromOptions_Forest;
+  dm->ops->destroy        = DMDestroy_Forest;
+  dm->ops->createsubdm    = DMCreateSubDM_Forest;
+  dm->ops->refine         = DMRefine_Forest;
+  dm->ops->coarsen        = DMCoarsen_Forest;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  DMFOREST = "forest" - A DM object that encapsulates a hierarchically refined mesh.  Forests usually have a base DM (see DMForestGetBaseDM()), from which it is refined.  The refinement and partitioning of forests is considered immutable after DMSetUp() is called.  To adapt a mesh, one should call DMForestTemplate() to create a new mesh that will default to being identical to it, specify how that mesh should differ, and then calling DMSetUp() on the new mesh.
+
+  To specify that a mesh should be refined or coarsened from the previous mesh, a label should be defined on the previous mesh whose values indicate which cells should be refined (DM_FOREST_REFINE) or coarsened (DM_FOREST_COARSEN) and how (subtypes are free to allow additional values for things like anisotropic refinement).  The name of the label should be given to the *new* mesh with DMForestSetAdaptivityLabel().
+
+  Level: advanced
+
+.seealso: DMType, DMCreate(), DMSetType(), DMForestGetBaseDM(), DMForestSetBaseDM(), DMForestTemplate(), DMForestSetAdaptivityLabel()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreate_Forest"
+PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr                        = PetscNewLog(dm,&forest);CHKERRQ(ierr);
+  dm->dim                     = 0;
+  dm->data                    = forest;
+  forest->refct               = 1;
+  forest->data                = NULL;
+  forest->setfromoptionscalled      = PETSC_FALSE;
+  forest->topology            = NULL;
+  forest->base                = NULL;
+  forest->adjDim              = PETSC_DEFAULT;
+  forest->overlap             = PETSC_DEFAULT;
+  forest->minRefinement       = PETSC_DEFAULT;
+  forest->maxRefinement       = PETSC_DEFAULT;
+  forest->initRefinement      = PETSC_DEFAULT;
+  forest->cStart              = PETSC_DETERMINE;
+  forest->cEnd                = PETSC_DETERMINE;
+  forest->cellSF              = 0;
+  forest->adaptLabel          = NULL;
+  forest->gradeFactor         = 2;
+  forest->cellWeights         = NULL;
+  forest->cellWeightsCopyMode = PETSC_USE_POINTER;
+  forest->weightsFactor       = 1.;
+  forest->weightCapacity      = 1.;
+  ierr = DMForestSetAdaptivityStrategy(dm,DMFORESTADAPTALL);CHKERRQ(ierr);
+  ierr = DMInitialize_Forest(dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

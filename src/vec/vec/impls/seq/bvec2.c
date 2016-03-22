@@ -462,34 +462,37 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_Seq_Draw_LG"
 PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
+  PetscDraw         draw;
+  PetscBool         isnull;
+  PetscDrawLG       lg;
   PetscErrorCode    ierr;
   PetscInt          i,c,bs = PetscAbs(xin->map->bs),n = xin->map->n/bs;
-  PetscDraw         win;
-  PetscReal         *xx;
-  PetscDrawLG       lg;
   const PetscScalar *xv;
-  PetscReal         *yy;
+  PetscReal         *xx,*yy;
+  int               colors[] = {PETSC_DRAW_RED};
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(n,&xx);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&yy);CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
+  ierr = PetscMalloc2(n,&xx,n,&yy);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
   for (c=0; c<bs; c++) {
     ierr = PetscViewerDrawGetDrawLG(v,c,&lg);CHKERRQ(ierr);
-    ierr = PetscDrawLGGetDraw(lg,&win);CHKERRQ(ierr);
-    ierr = PetscDrawCheckResizedWindow(win);CHKERRQ(ierr);
     ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetDimension(lg,1);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetColors(lg,colors);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      xx[i] = (PetscReal) i;
+      xx[i] = (PetscReal)i;
       yy[i] = PetscRealPart(xv[c + i*bs]);
     }
     ierr = PetscDrawLGAddPoints(lg,n,&xx,&yy);CHKERRQ(ierr);
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
-    ierr = PetscDrawSynchronizedFlush(win);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(lg);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
-  ierr = PetscFree(yy);CHKERRQ(ierr);
-  ierr = PetscFree(xx);CHKERRQ(ierr);
+  ierr = PetscFree2(xx,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -503,7 +506,8 @@ PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
   ierr = PetscViewerPushFormat(v,PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
   ierr = VecView_Seq_Draw_LG(xin,v);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
@@ -606,7 +610,7 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Seq"
-PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
+PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isdraw,iascii,issocket,isbinary;

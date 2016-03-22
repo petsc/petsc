@@ -621,7 +621,8 @@ PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KS
 }
 
 /*MC
-  A Pipelined, Flexible Conjugate Gradient method 
+
+ KSPCreate_PIPEFCG - A Pipelined, Flexible Conjugate Gradient method
 
     The natural norm for this method is (u,Au). This norm is available at no computational costs. Choosing norm types preconditioned or unpreconditioned involves an extra blocking global reduction, thus removing any benefit from pipelining.
 
@@ -638,7 +639,7 @@ PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KS
 
  .seealso : KSPFCG, KSPPIPECG, KSPPIPECR, KSPGCR, KSPPIPEGCR, KSPFGMRES, KSPCG, KSPPIPEFCGSetMmax(), KSPPIPEFCGGetMmax(), KSPPIPEFCGSetNprealloc(), KSPPIPEFCGGetNprealloc(), KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetTruncationType()
 
-MC*/
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PIPEFCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)

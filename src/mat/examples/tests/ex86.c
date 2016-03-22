@@ -53,8 +53,8 @@ int main(int argc,char **argv)
   }
   ierr = MatAssemblyBegin(seqmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(seqmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (rank == 1) {
-    printf("[%d] seqmat:\n",rank);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] seqmat:\n",rank);
     ierr = MatView(seqmat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

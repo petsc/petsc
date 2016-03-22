@@ -28,15 +28,12 @@ const char *const PetscDrawMarkerTypes[]     = {"CROSS","POINT","PLUS","CIRCLE",
 PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 {
   PetscErrorCode ierr;
-  PetscBool      isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   if (draw->markertype == PETSC_DRAW_MARKER_CROSS){
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
-      PetscInt i,j,k;
+      int i,j,k;
       ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
       for (k=-2; k<=2; k++) {
         ierr = (*draw->ops->pointpixel)(draw,i+k,j+k,cl);CHKERRQ(ierr);
@@ -47,7 +44,7 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing marker type CROSS");
   } else if (draw->markertype == PETSC_DRAW_MARKER_PLUS){
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
-      PetscInt i,j,k;
+      int i,j,k;
       ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
       for (k=-2; k<=2; k++) {
         ierr = (*draw->ops->pointpixel)(draw,i,j+k,cl);CHKERRQ(ierr);
@@ -58,7 +55,7 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing marker type PLUS");
   } else if (draw->markertype == PETSC_DRAW_MARKER_CIRCLE){
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
-      PetscInt i,j,k;
+      int i,j,k;
       ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
       for (k=-1; k<=1; k++) {
         ierr = (*draw->ops->pointpixel)(draw,i+2,j+k,cl);CHKERRQ(ierr);

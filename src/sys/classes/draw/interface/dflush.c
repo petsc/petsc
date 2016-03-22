@@ -6,37 +6,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawFlush"
 /*@
-   PetscDrawFlush - Flushs graphical output.
-
-   Not collective (Use PetscDrawSynchronizedFlush() for collective)
-
-   Input Parameters:
-.  draw - the drawing context
-
-   Level: beginner
-
-   Concepts: flushing^graphics
-
-.seealso: PetscDrawSynchronizedFlush()
-@*/
-PetscErrorCode  PetscDrawFlush(PetscDraw draw)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->flush) {
-    ierr = (*draw->ops->flush)(draw);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSynchronizedFlush"
-/*@
-   PetscDrawSynchronizedFlush - Flushes graphical output. This waits until all
-   processors have arrived and flushed, then does a global flush.
-   This is usually done to change the frame for double buffered graphics.
+   PetscDrawFlush - Flushes graphical output.
 
    Collective on PetscDraw
 
@@ -47,17 +17,17 @@ PetscErrorCode  PetscDrawFlush(PetscDraw draw)
 
    Concepts: flushing^graphics
 
-.seealso: PetscDrawFlush()
-
+.seealso: PetscDrawClear()
 @*/
-PetscErrorCode  PetscDrawSynchronizedFlush(PetscDraw draw)
+PetscErrorCode  PetscDrawFlush(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->synchronizedflush) {
-    ierr = (*draw->ops->synchronizedflush)(draw);CHKERRQ(ierr);
+  if (draw->ops->flush) {
+    ierr = (*draw->ops->flush)(draw);CHKERRQ(ierr);
   }
+  if (draw->saveonflush) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

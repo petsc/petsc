@@ -154,7 +154,7 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 -  l - the level (0 is coarsest) to supply [Do not supply 0]
 
    Output Parameter:
-.  mat - the interpolation matrix
+.  mat - the interpolation matrix, can be NULL
 
    Level: advanced
 
@@ -170,14 +170,14 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(mat,3);
+  if (mat) PetscValidPointer(mat,3);
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (l <= 0 || mg->nlevels <= l) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
   if (!mglevels[l]->interpolate) {
     if (!mglevels[l]->restrct) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInterpolation() or PCMGSetRestriction()");
     ierr = PCMGSetInterpolation(pc,l,mglevels[l]->restrct);CHKERRQ(ierr);
   }
-  *mat = mglevels[l]->interpolate;
+  if (mat) *mat = mglevels[l]->interpolate;
   PetscFunctionReturn(0);
 }
 
@@ -257,14 +257,14 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(mat,3);
+  if (mat) PetscValidPointer(mat,3);
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (l <= 0 || mg->nlevels <= l) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
   if (!mglevels[l]->restrct) {
     if (!mglevels[l]->interpolate) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetRestriction() or PCMGSetInterpolation()");
     ierr = PCMGSetRestriction(pc,l,mglevels[l]->interpolate);CHKERRQ(ierr);
   }
-  *mat = mglevels[l]->restrct;
+  if (mat) *mat = mglevels[l]->restrct;
   PetscFunctionReturn(0);
 }
 

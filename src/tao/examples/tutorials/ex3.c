@@ -223,7 +223,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   /* y_d = interpolate(Expression("sin(x[0]) + .."), V) */
   ierr = PetscMalloc(1 * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &wtf);CHKERRQ(ierr);
   wtf[0] = data_kernel;
-  ierr = DMPlexProjectFunction(dm, wtf, NULL, INSERT_VALUES, user->data);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, wtf, NULL, INSERT_VALUES, user->data);CHKERRQ(ierr);
   ierr = PetscFree(wtf);CHKERRQ(ierr);
 
   /* assemble(inner(u, v)*dx), almost */
@@ -248,7 +248,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   ierr = DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL);CHKERRQ(ierr);
 
   /* Code from Matt to get the indices associated with the boundary dofs */
-  ierr = DMPlexAddBoundary(dm_laplace, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);
+  ierr = DMAddBoundary(dm_laplace, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);
   ierr = DMGetDefaultSection(dm_laplace, &section);CHKERRQ(ierr);
   ierr = DMGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(label, 1, &n);CHKERRQ(ierr);

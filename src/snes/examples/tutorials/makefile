@@ -311,7 +311,7 @@ runex5_2:
 	   else  printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_2.tmp
 runex5_3:
-	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_mf_operator -snes_converged_reason -snes_view -pc_type mg -snes_atol -1 > ex5_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_mf_operator -snes_converged_reason -snes_view -pc_type mg -snes_atol -1 -snes_rtol 1.e-2 | grep -v "otal number of function evaluations" > ex5_3.tmp 2>&1; \
 	   if (${DIFF} output/ex5_3.out ex5_3.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_3.tmp

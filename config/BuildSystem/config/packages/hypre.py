@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit = 'v2.10.1-140-g36b814d'
+    self.gitcommit = 'v2.10.1-173-g604910c'
     self.download  = ['git://https://github.com/LLNL/hypre']
 #    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.10.0b-p3.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']

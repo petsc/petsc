@@ -25,11 +25,12 @@ struct _p_PetscDS {
   PetscObject *disc;      /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
   PetscObject *discBd;    /* The boundary discretization for each solution field (PetscFE, PetscFV, etc.) */
   PetscPointFunc   *obj;  /* Scalar integral (like an objective function) */
-  PetscPointFunc   *f;    /* Weak form integrands f_0, f_1 */
-  PetscPointJac    *g;    /* Weak form integrands g_0, g_1, g_2, g_3 */
-  PetscPointJac    *gp;   /* Weak form integrands g_0, g_1, g_2, g_3 */
-  PetscBdPointFunc *fBd;  /* Weak form boundary integrands f_0, f_1 */
-  PetscBdPointJac  *gBd;  /* Weak form boundary integrands g_0, g_1, g_2, g_3 */
+  PetscPointFunc   *f;    /* Weak form integrands for F, f_0, f_1 */
+  PetscPointJac    *g;    /* Weak form integrands for J = dF/du, g_0, g_1, g_2, g_3 */
+  PetscPointJac    *gp;   /* Weak form integrands for preconditioner for J, g_0, g_1, g_2, g_3 */
+  PetscPointJac    *gt;   /* Weak form integrands for dF/du_t, g_0, g_1, g_2, g_3 */
+  PetscBdPointFunc *fBd;  /* Weak form boundary integrands F_bd, f_0, f_1 */
+  PetscBdPointJac  *gBd;  /* Weak form boundary integrands J_bd = dF_bd/du, g_0, g_1, g_2, g_3 */
   PetscRiemannFunc *r;    /* Riemann solvers */
   void       **ctx;       /* User contexts for each field */
   PetscInt     dim;       /* The spatial dimension */

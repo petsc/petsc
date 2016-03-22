@@ -29,7 +29,7 @@ typedef struct  {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerGetSubViewer_Binary"
-PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
+static PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   int                rank;
   PetscErrorCode     ierr;
@@ -49,7 +49,7 @@ PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,P
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerRestoreSubViewer_Binary"
-PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
+static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscErrorCode rank;
@@ -166,7 +166,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File *
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryGetUseMPIIO_Binary"
-PetscErrorCode PetscViewerBinaryGetUseMPIIO_Binary(PetscViewer viewer,PetscBool  *flg)
+static PetscErrorCode PetscViewerBinaryGetUseMPIIO_Binary(PetscViewer viewer,PetscBool  *flg)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
     
@@ -218,7 +218,7 @@ PetscErrorCode PetscViewerBinaryGetUseMPIIO(PetscViewer viewer,PetscBool *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryGetFlowControl_Binary"
-PetscErrorCode  PetscViewerBinaryGetFlowControl_Binary(PetscViewer viewer,PetscInt *fc)
+static PetscErrorCode  PetscViewerBinaryGetFlowControl_Binary(PetscViewer viewer,PetscInt *fc)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -256,7 +256,7 @@ PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinarySetFlowControl_Binary"
-PetscErrorCode PetscViewerBinarySetFlowControl_Binary(PetscViewer viewer,PetscInt fc)
+static PetscErrorCode PetscViewerBinarySetFlowControl_Binary(PetscViewer viewer,PetscInt fc)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -373,7 +373,7 @@ PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinarySetSkipInfo_Binary"
-PetscErrorCode PetscViewerBinarySetSkipInfo_Binary(PetscViewer viewer,PetscBool skip)
+static PetscErrorCode PetscViewerBinarySetSkipInfo_Binary(PetscViewer viewer,PetscBool skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -413,7 +413,7 @@ PetscErrorCode PetscViewerBinarySetSkipInfo(PetscViewer viewer,PetscBool skip)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryGetSkipInfo_Binary"
-PetscErrorCode PetscViewerBinaryGetSkipInfo_Binary(PetscViewer viewer,PetscBool *skip)
+static PetscErrorCode PetscViewerBinaryGetSkipInfo_Binary(PetscViewer viewer,PetscBool *skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -455,7 +455,7 @@ PetscErrorCode PetscViewerBinaryGetSkipInfo(PetscViewer viewer,PetscBool *skip)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinarySetSkipOptions_Binary"
-PetscErrorCode PetscViewerBinarySetSkipOptions_Binary(PetscViewer viewer,PetscBool skip)
+static PetscErrorCode PetscViewerBinarySetSkipOptions_Binary(PetscViewer viewer,PetscBool skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -498,7 +498,7 @@ PetscErrorCode PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool skip
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryGetSkipOptions_Binary"
-PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,PetscBool *skip)
+static PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,PetscBool *skip)
 {
   PetscViewer_Binary *vbinary;
 
@@ -542,7 +542,7 @@ PetscErrorCode PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool *ski
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinarySetSkipHeader_Binary"
-PetscErrorCode PetscViewerBinarySetSkipHeader_Binary(PetscViewer viewer,PetscBool skip)
+static PetscErrorCode PetscViewerBinarySetSkipHeader_Binary(PetscViewer viewer,PetscBool skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -585,7 +585,7 @@ PetscErrorCode PetscViewerBinarySetSkipHeader(PetscViewer viewer,PetscBool skip)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryGetSkipHeader_Binary"
-PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer,PetscBool  *skip)
+static PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer,PetscBool  *skip)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -628,7 +628,7 @@ PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer viewer,PetscBool  *ski
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryGetInfoPointer_Binary"
-PetscErrorCode PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,FILE **file)
+static PetscErrorCode PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,FILE **file)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -743,7 +743,7 @@ static PetscErrorCode PetscViewerFileClose_BinaryMPIIO(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerDestroy_Binary"
-PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
+static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
   PetscErrorCode     ierr;
@@ -1044,7 +1044,7 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileGetName_Binary"
-PetscErrorCode PetscViewerFileGetName_Binary(PetscViewer viewer,const char **name)
+static PetscErrorCode PetscViewerFileGetName_Binary(PetscViewer viewer,const char **name)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -1148,7 +1148,7 @@ PetscErrorCode PetscViewerFileSetMode(PetscViewer viewer,PetscFileMode type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileGetMode_Binary"
-PetscErrorCode PetscViewerFileGetMode_Binary(PetscViewer viewer,PetscFileMode *type)
+static PetscErrorCode PetscViewerFileGetMode_Binary(PetscViewer viewer,PetscFileMode *type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -1159,7 +1159,7 @@ PetscErrorCode PetscViewerFileGetMode_Binary(PetscViewer viewer,PetscFileMode *t
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetMode_Binary"
-PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFileMode type)
+static PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFileMode type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -1170,7 +1170,7 @@ PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer,PetscFileMode ty
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetName_Binary"
-PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[])
+static PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[])
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -1343,7 +1343,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinarySetUseMPIIO_Binary"
-PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer,PetscBool flg)
+static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer,PetscBool flg)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscFunctionBegin;
@@ -1354,7 +1354,7 @@ PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer,PetscBool 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerView_Binary"
-PetscErrorCode PetscViewerView_Binary(PetscViewer v,PetscViewer viewer)
+static PetscErrorCode PetscViewerView_Binary(PetscViewer v,PetscViewer viewer)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *binary = (PetscViewer_Binary*)v->data;

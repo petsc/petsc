@@ -26,24 +26,16 @@
 @*/
 PetscErrorCode  PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
-  PetscReal      bcast[4];
-  PetscBool      isnull;
-  PetscMPIInt    rank;
+  PetscReal      bcast[4] = {0,0,0,0};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(button,2);
   *button = PETSC_BUTTON_NONE;
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->getmousebutton) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) {ierr = (*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);}
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+  ierr = (*draw->ops->getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);
 
   ierr = MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   if (x_user) bcast[0] = *x_user;

@@ -6,35 +6,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawClear"
 /*@
-   PetscDrawClear - Clears graphical output.
-
-   Not collective (Use PetscDrawSynchronizedClear() for collective)
-
-   Input Parameter:
-.  draw - the drawing context
-
-   Level: beginner
-
-   Concepts: clear^window
-
-.seealso: PetscDrawBOP(), PetscDrawEOP(), PetscDrawSynchronizedClear()
-@*/
-PetscErrorCode  PetscDrawClear(PetscDraw draw)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->clear) {
-    ierr = (*draw->ops->clear)(draw);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSynchronizedClear"
-/*@
-   PetscDrawSynchronizedClear - Clears graphical output. All processors must call this routine.
+   PetscDrawClear - Clears graphical output. All processors must call this routine.
    Does not return until the draw in context is clear.
 
    Collective on PetscDraw
@@ -47,14 +19,15 @@ PetscErrorCode  PetscDrawClear(PetscDraw draw)
    Concepts: clear^window
 
 @*/
-PetscErrorCode  PetscDrawSynchronizedClear(PetscDraw draw)
+PetscErrorCode  PetscDrawClear(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->ops->synchronizedclear) {
-    ierr = (*draw->ops->synchronizedclear)(draw);CHKERRQ(ierr);
+  if (draw->saveonclear) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
+  if (draw->ops->clear) {
+    ierr = (*draw->ops->clear)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

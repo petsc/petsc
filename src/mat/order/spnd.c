@@ -7,7 +7,7 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_ND"
-PETSC_EXTERN PetscErrorCode MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *row,IS *col)
+PETSC_INTERN PetscErrorCode MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       i, *mask,*xls,*ls,nrow,*perm;

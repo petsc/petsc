@@ -254,9 +254,10 @@ typedef struct _p_TSTrajectory* TSTrajectory;
 .seealso: TSSetType(), TS, TSRegister(), TSTrajectoryCreate(), TSTrajectorySetType()
 J*/
 typedef const char* TSTrajectoryType;
-#define TSTRAJECTORYBASIC      "basic"
-#define TSTRAJECTORYSINGLEFILE "singlefile"
-#define TSTRAJECTORYMEMORY     "memory"
+#define TSTRAJECTORYBASIC         "basic"
+#define TSTRAJECTORYSINGLEFILE    "singlefile"
+#define TSTRAJECTORYMEMORY        "memory"
+#define TSTRAJECTORYVISUALIZATION "visualization"
 
 PETSC_EXTERN PetscFunctionList TSTrajectoryList;
 PETSC_EXTERN PetscClassId      TSTRAJECTORY_CLASSID;
@@ -407,6 +408,7 @@ PETSC_EXTERN PetscErrorCode TSComputeLinearStability(TS,PetscReal,PetscReal,Pets
 
 PETSC_EXTERN PetscErrorCode TSVISetVariableBounds(TS,Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode DMTSSetBoundaryLocal(DM, PetscErrorCode (*)(DM, PetscReal, Vec, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode DMTSSetRHSFunction(DM,TSRHSFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetRHSFunction(DM,TSRHSFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetRHSJacobian(DM,TSRHSJacobian,void*);

@@ -420,6 +420,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def filterCompileOutput(self, output):
     if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
     if output.find('warning: ISO C90 does not support complex types') >= 0: return output
+    if output.find('Warning: attribute visibility is unsupported and will be skipped') >= 0: return output
     elif self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:

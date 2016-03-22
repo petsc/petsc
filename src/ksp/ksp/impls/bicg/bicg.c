@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_BiCG"
-PetscErrorCode KSPSetUp_BiCG(KSP ksp)
+static PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -17,7 +17,7 @@ PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_BiCG"
-PetscErrorCode  KSPSolve_BiCG(KSP ksp)
+static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;

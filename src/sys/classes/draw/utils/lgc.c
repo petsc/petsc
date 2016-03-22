@@ -25,9 +25,8 @@ PetscClassId PETSC_DRAWLG_CLASSID = 0;
 PetscErrorCode  PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  PetscValidPointer(axis,2);
-  if (!lg) {*axis = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  PetscValidPointer(axis,2);
   *axis = lg->axis;
   PetscFunctionReturn(0);
 }
@@ -51,9 +50,8 @@ PetscErrorCode  PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
 PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 {
   PetscFunctionBegin;
-  PetscValidPointer(draw,2);
-  if (!lg) {*draw = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  PetscValidPointer(draw,2);
   *draw = lg->win;
   PetscFunctionReturn(0);
 }
@@ -64,7 +62,7 @@ PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 /*@
    PetscDrawLGSPDraw - Redraws a line graph.
 
-   Not Collective,but ignored by all processors except processor 0 in PetscDrawLG
+   Collective on PetscDrawLG
 
    Input Parameter:
 .  lg - the line graph context
@@ -86,24 +84,22 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   PetscDraw      draw;
 
   PetscFunctionBegin;
-  if (!lg || !spin) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,2);
-
-  draw = lg->win;
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(lg->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
 
+  draw = lg->win;
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
 
   xmin = PetscMin(lg->xmin,sp->xmin); ymin = PetscMin(lg->ymin,sp->ymin);
   xmax = PetscMax(lg->xmax,sp->xmax); ymax = PetscMax(lg->ymax,sp->ymax);
   ierr = PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   if (!rank) {
     int i,j,dim,nopts;
     dim   = lg->dim;
@@ -124,10 +120,10 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
       }
     }
   }
-
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(lg->win);CHKERRQ(ierr);
-  ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
+
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -137,7 +133,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 /*@
     PetscDrawLGCreate - Creates a line graph data structure.
 
-    Collective over PetscDraw
+    Collective on PetscDraw
 
     Input Parameters:
 +   draw - the window where the graph will be made.
@@ -154,7 +150,6 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 @*/
 PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg)
 {
-  PetscBool      isnull;
   PetscDrawLG    lg;
   PetscErrorCode ierr;
 
@@ -163,11 +158,9 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
   PetscValidLogicalCollectiveInt(draw,dim,2);
   PetscValidPointer(outlg,3);
 
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) {*outlg = NULL; PetscFunctionReturn(0);}
-
-  ierr = PetscHeaderCreate(lg,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawLGDestroy,NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(lg,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawLGDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetOptionsPrefix(lg,((PetscObject)draw)->prefix);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
   lg->win = draw;
@@ -184,9 +177,9 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
   ierr = PetscMalloc2(dim*CHUNCKSIZE,&lg->x,dim*CHUNCKSIZE,&lg->y);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
 
-  lg->len     = dim*CHUNCKSIZE;
-  lg->loc     = 0;
-  lg->use_markers= PETSC_FALSE;
+  lg->len         = dim*CHUNCKSIZE;
+  lg->loc         = 0;
+  lg->use_markers = PETSC_FALSE;
 
   ierr = PetscDrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)lg,(PetscObject)lg->axis);CHKERRQ(ierr);
@@ -200,7 +193,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
 /*@
    PetscDrawLGSetColors - Sets the color of each line graph drawn
 
-   Logically Collective over PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameter:
 +  lg - the line graph context.
@@ -211,13 +204,13 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
    Concepts: line graph^setting number of lines
 
 @*/
-PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int *colors)
+PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int colors[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  if (lg->dim) PetscValidIntPointer(colors,2);
 
   ierr = PetscFree(lg->colors);CHKERRQ(ierr);
   ierr = PetscMalloc1(lg->dim,&lg->colors);CHKERRQ(ierr);
@@ -231,7 +224,7 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int *colors)
 /*@C
    PetscDrawLGSetLegend - sets the names of each curve plotted
 
-   Logically Collective over PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameter:
 +  lg - the line graph context.
@@ -248,8 +241,8 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  if (names) PetscValidPointer(names,2);
 
   if (lg->legend) {
     for (i=0; i<lg->dim; i++) {
@@ -271,7 +264,7 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
 /*@
    PetscDrawLGGetDimension - Change the number of lines that are to be drawn.
 
-   Logically Collective over PetscDrawLG
+   Not Collective
 
    Input Parameter:
 .  lg - the line graph context.
@@ -287,9 +280,8 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
 PetscErrorCode  PetscDrawLGGetDimension(PetscDrawLG lg,PetscInt *dim)
 {
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
-
+  PetscValidIntPointer(dim,2);
   *dim = lg->dim;
   PetscFunctionReturn(0);
 }
@@ -299,7 +291,7 @@ PetscErrorCode  PetscDrawLGGetDimension(PetscDrawLG lg,PetscInt *dim)
 /*@
    PetscDrawLGSetDimension - Change the number of lines that are to be drawn.
 
-   Logically Collective over PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameter:
 +  lg - the line graph context.
@@ -316,7 +308,6 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   PetscValidLogicalCollectiveInt(lg,dim,2);
   if (lg->dim == dim) PetscFunctionReturn(0);
@@ -341,7 +332,7 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
 /*@
    PetscDrawLGReset - Clears line graph to allow for reuse with new data.
 
-   Logically Collective over PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameter:
 .  lg - the line graph context.
@@ -354,7 +345,6 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
 PetscErrorCode  PetscDrawLGReset(PetscDrawLG lg)
 {
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
@@ -370,7 +360,7 @@ PetscErrorCode  PetscDrawLGReset(PetscDrawLG lg)
 /*@
    PetscDrawLGDestroy - Frees all space taken up by line graph data structure.
 
-   Collective over PetscDrawLG
+   Collective on PetscDrawLG
 
    Input Parameter:
 .  lg - the line graph context
@@ -407,7 +397,7 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
 /*@
    PetscDrawLGSetUseMarkers - Causes LG to draw a marker for each data-point.
 
-   Logically Collective over PetscDrawLG
+   Logically Collective on PetscDrawLG
 
    Input Parameters:
 +  lg - the linegraph context
@@ -424,9 +414,8 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
 PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
 {
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
-
+  PetscValidLogicalCollectiveBool(lg,flg,2);
   lg->use_markers = flg;
   PetscFunctionReturn(0);
 }
@@ -436,7 +425,7 @@ PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
 /*@
    PetscDrawLGDraw - Redraws a line graph.
 
-   Collective, but ignored by all processors except processor 0 in PetscDrawLG
+   Collective on PetscDrawLG
 
    Input Parameter:
 .  lg - the line graph context
@@ -455,22 +444,20 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   PetscBool      isnull;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   ierr = PetscDrawIsNull(lg->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-
-  draw = lg->win;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
 
+  draw = lg->win;
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
 
   xmin = lg->xmin; xmax = lg->xmax; ymin = lg->ymin; ymax = lg->ymax;
   ierr = PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   if (!rank) {
     int i,j,dim=lg->dim,nopts=lg->nopts,cl;
     for (i=0; i<dim; i++) {
@@ -504,10 +491,36 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
     ierr = PetscDrawLine(draw,xr - 2*tw,yr - 3*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - (4+lg->dim)*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   }
-
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawLGSave"
+/*@
+  PetscDrawLGSave - Saves a drawn image
+
+  Collective on PetscDrawLG
+
+  Input Parameter:
+. lg - The line graph context
+
+  Level: intermediate
+
+  Concepts: line graph^saving
+
+.seealso:  PetscDrawLGCreate(), PetscDrawLGGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+@*/
+PetscErrorCode  PetscDrawLGSave(PetscDrawLG lg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  ierr = PetscDrawSave(lg->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -516,7 +529,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 /*@
   PetscDrawLGView - Prints a line graph.
 
-  Not collective
+  Collective on PetscDrawLG
 
   Input Parameter:
 . lg - the line graph context
@@ -532,7 +545,6 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   if (nopts < 1)                  PetscFunctionReturn(0);
@@ -552,11 +564,39 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawLGSetOptionsPrefix"
+/*@C
+   PetscDrawLGSetOptionsPrefix - Sets the prefix used for searching for all
+   PetscDrawLG options in the database.
+
+   Logically Collective on PetscDrawLG
+
+   Input Parameter:
++  lg - the line graph context
+-  prefix - the prefix to prepend to all option names
+
+   Level: advanced
+
+.keywords: PetscDrawLG, set, options, prefix, database
+
+.seealso: PetscDrawLGSetFromOptions()
+@*/
+PetscErrorCode  PetscDrawLGSetOptionsPrefix(PetscDrawLG lg,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)lg,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawLGSetFromOptions"
 /*@
     PetscDrawLGSetFromOptions - Sets options related to the PetscDrawLG
 
-    Collective over PetscDrawLG
+    Collective on PetscDrawLG
 
     Options Database:
 
@@ -572,7 +612,6 @@ PetscErrorCode  PetscDrawLGSetFromOptions(PetscDrawLG lg)
   PetscBool      flg=PETSC_FALSE, set;
 
   PetscFunctionBegin;
-  if (!lg) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
   ierr = PetscOptionsGetBool(((PetscObject)lg)->options,NULL,"-lg_use_markers",&flg,&set);CHKERRQ(ierr);

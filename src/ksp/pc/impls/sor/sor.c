@@ -462,10 +462,6 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
           For SeqBAIJ the diagonal blocks are inverted using dense LU with partial pivoting. If a zero pivot is detected 
           the computation is stopped with an error
 
-  Developer Notes: We should add support for diagonal blocks that are singular to generate a Inf and thus cause KSPSolve()
-           to terminate with KSP_DIVERGED_NANORIF instead of stopping the program allowing
-           a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT
 M*/

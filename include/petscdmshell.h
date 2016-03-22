@@ -4,6 +4,8 @@
 #include <petscdm.h>
 
 PETSC_EXTERN PetscErrorCode DMShellCreate(MPI_Comm,DM*);
+PETSC_EXTERN PetscErrorCode DMShellSetContext(DM,void *);
+PETSC_EXTERN PetscErrorCode DMShellGetContext(DM,void **);
 PETSC_EXTERN PetscErrorCode DMShellSetMatrix(DM,Mat);
 PETSC_EXTERN PetscErrorCode DMShellSetGlobalVector(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMShellSetLocalVector(DM,Vec);
@@ -19,6 +21,7 @@ PETSC_EXTERN PetscErrorCode DMShellSetCreateMatrix(DM,PetscErrorCode (*)(DM,Mat*
 PETSC_EXTERN PetscErrorCode DMShellSetCoarsen(DM,PetscErrorCode (*)(DM,MPI_Comm,DM*));
 PETSC_EXTERN PetscErrorCode DMShellSetRefine(DM,PetscErrorCode (*)(DM,MPI_Comm,DM*));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateInterpolation(DM,PetscErrorCode (*)(DM,DM,Mat*,Vec*));
+PETSC_EXTERN PetscErrorCode DMShellSetCreateRestriction(DM, PetscErrorCode (*)(DM,DM,Mat*));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateInjection(DM,PetscErrorCode (*)(DM,DM,Mat*));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateFieldDecomposition(DM,PetscErrorCode (*)(DM,PetscInt*,char***,IS**,DM**));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateSubDM(DM,PetscErrorCode (*)(DM,PetscInt,PetscInt[],IS*,DM*));

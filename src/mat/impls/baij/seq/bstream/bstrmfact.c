@@ -244,7 +244,7 @@ PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorIn
 /*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqbaij_bstrm"
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
+PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
   Mat_SeqBSTRM   *bstrm;

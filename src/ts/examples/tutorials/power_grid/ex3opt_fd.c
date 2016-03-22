@@ -1,5 +1,5 @@
 
-static char help[] = "Basic equation for generator stability analysis.\n";
+static char help[] = "Finds optimal parameter P_m for the generator system while maintaining generator stability.\n";
 
 /*F
 
@@ -11,13 +11,8 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 F*/
 
 /*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+  Solve the same optimization problem as in ex3opt.c.
+  Use finite difference to approximate the gradients.
 */
 #include <petsctao.h>
 #include <petscts.h>
@@ -51,7 +46,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *c
 PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec X,PetscBool forwardsolve,void* ctx)
 {
   AppCtx *user=(AppCtx*)ctx;
-  
+
   PetscFunctionBegin;
 
   if (event_list[0] == 0) {

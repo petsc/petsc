@@ -290,7 +290,8 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
    MatCreateMFFD_WP() to properly compute ||U|| only the first time
    in the linear solver rather than every time.
 
-   This function is referenced directly from MatAssemblyEnd_SNESMF(), which may be in a different shared library.
+   This function is referenced directly from MatAssemblyEnd_SNESMF(), which may be in a different shared library hence
+   it must be labeled as PETSC_EXTERN
 */
 PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
 {

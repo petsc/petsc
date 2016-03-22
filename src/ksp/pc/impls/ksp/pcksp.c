@@ -36,7 +36,6 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  ierr      = KSPSetInitialGuessNonzero(jac->ksp,pc->nonzero_guess);CHKERRQ(ierr);
   ierr      = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
@@ -197,9 +196,14 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
    Notes: Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the other Krylov method
 
-   Developer Notes: PCApply_KSP() uses the flag set by PCSetInitialGuessNonzero(), I think this is totally wrong, because it is then not
-     using this inner KSP as a preconditioner (that is a linear operator applied to some vector), it is actually just using
-     the inner KSP just like the outer KSP.
+   Developer Notes: If the outer Krylov method has a nonzero initial guess it will compute a new residual based on that initial guess
+    and pass that as the right hand side into this KSP (and hence this KSP will always have a zero initial guess). For all outer Krylov methods
+    except Richardson this is neccessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
+    input (current residual) vector, the action of the preconditioner cannot depend also on some other vector (the "initial guess"). For 
+    KSPRICHARDSON it is possible to provide a PCApplyRichardson_PCKSP() that short circuits returning to the KSP object at each iteration to compute the 
+    residual, see for example PCApplyRichardson_SOR(). We do not implement a PCApplyRichardson_PCKSP()  because (1) using a KSP directly inside a Richardson 
+    is not an efficient algorithm anyways and (2) implementing it for its > 1 would essentially require that we implement Richardson (reimplementing the 
+    Richardson code) inside the PCApplyRichardson_PCKSP() leading to duplicate code.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSHELL, PCCOMPOSITE, PCSetUseAmat(), PCKSPGetKSP()

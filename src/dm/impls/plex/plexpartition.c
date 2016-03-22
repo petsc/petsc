@@ -75,10 +75,8 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-  if (nroots > 0) {
-    ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
-    ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
-  }
+  ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
+  ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
   for (*numVertices = 0, p = pStart; p < pEnd; p++) {
     /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
     if (nroots > 0) {if (cellNum[p] < 0) continue;}
@@ -108,7 +106,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   vOffsets[*numVertices] = size;
   if (offsets) *offsets = vOffsets;
   ierr = PetscSegBufferExtractAlloc(adjBuffer, &graph);CHKERRQ(ierr);
-  if (nroots > 0) {
+  {
     ISLocalToGlobalMapping ltogCells;
     PetscInt n, size, *cells_arr;
     /* In parallel, apply a global cell numbering to the graph */
@@ -580,7 +578,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 
   Level: beginner
 
-.seealso: PetscPartitionerSetType(), PETSCPARTITIONERCHACO, PETSCPARTITIONERPARMETIS, PETSCPARTITIONERSHELL, PETSCPARTITIONERSIMPLE
+.seealso: PetscPartitionerSetType(), PETSCPARTITIONERCHACO, PETSCPARTITIONERPARMETIS, PETSCPARTITIONERSHELL, PETSCPARTITIONERSIMPLE, PETSCPARTITIONERGATHER
 @*/
 PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 {
@@ -949,6 +947,98 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner part)
   ierr = PetscPartitionerInitialize_Simple(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerDestroy_Gather"
+PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part)
+{
+  PetscPartitioner_Gather *p = (PetscPartitioner_Gather *) part->data;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(p);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Gather_Ascii"
+PetscErrorCode PetscPartitionerView_Gather_Ascii(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Gather Graph Partitioner:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerView_Gather"
+PetscErrorCode PetscPartitionerView_Gather(PetscPartitioner part, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscPartitionerView_Gather_Ascii(part, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerPartition_Gather"
+PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
+{
+  PetscInt       np;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition);CHKERRQ(ierr);
+  ierr = PetscSectionSetDof(partSection,0,numVertices);CHKERRQ(ierr);
+  for (np = 1; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, 0);CHKERRQ(ierr);}
+  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerInitialize_Gather"
+PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part)
+{
+  PetscFunctionBegin;
+  part->ops->view      = PetscPartitionerView_Gather;
+  part->ops->destroy   = PetscPartitionerDestroy_Gather;
+  part->ops->partition = PetscPartitionerPartition_Gather;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCPARTITIONERGATHER = "gather" - A PetscPartitioner object
+
+  Level: intermediate
+
+.seealso: PetscPartitionerType, PetscPartitionerCreate(), PetscPartitionerSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerCreate_Gather"
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner part)
+{
+  PetscPartitioner_Gather *p;
+  PetscErrorCode           ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  part->data = p;
+
+  ierr = PetscPartitionerInitialize_Gather(part);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPartitionerDestroy_Chaco"
@@ -1496,6 +1586,70 @@ PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
   ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
   ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
   ierr = PetscFree(adj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelPropagate"
+/*@
+  DMPlexPartitionLabelPropagate - Propagate points in a partition label over the point SF
+
+  Input Parameters:
++ dm     - The DM
+- label  - DMLabel assinging ranks to remote roots
+
+  Level: developer
+
+  Note: This is required when generating multi-level overlaps to capture
+  overlap points from non-neighbouring partitions.
+
+.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
+{
+  MPI_Comm        comm;
+  PetscMPIInt     rank;
+  PetscSF         sfPoint;
+  DMLabel         lblRoots, lblLeaves;
+  IS              rankIS, pointIS;
+  const PetscInt *ranks;
+  PetscInt        numRanks, r;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  /* Pull point contributions from remote leaves into local roots */
+  ierr = DMLabelGather(label, sfPoint, &lblLeaves);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(lblLeaves, &rankIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
+  ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+  for (r = 0; r < numRanks; ++r) {
+    const PetscInt remoteRank = ranks[r];
+    if (remoteRank == rank) continue;
+    ierr = DMLabelGetStratumIS(lblLeaves, remoteRank, &pointIS);CHKERRQ(ierr);
+    ierr = DMLabelInsertIS(label, pointIS, remoteRank);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
+  ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&lblLeaves);CHKERRQ(ierr);
+  /* Push point contributions from roots into remote leaves */
+  ierr = DMLabelDistribute(label, sfPoint, &lblRoots);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(lblRoots, &rankIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
+  ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+  for (r = 0; r < numRanks; ++r) {
+    const PetscInt remoteRank = ranks[r];
+    if (remoteRank == rank) continue;
+    ierr = DMLabelGetStratumIS(lblRoots, remoteRank, &pointIS);CHKERRQ(ierr);
+    ierr = DMLabelInsertIS(label, pointIS, remoteRank);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
+  ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&lblRoots);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

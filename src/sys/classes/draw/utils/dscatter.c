@@ -28,7 +28,7 @@ struct _p_PetscDrawSP {
 /*@C
     PetscDrawSPCreate - Creates a scatter plot data structure.
 
-    Collective over PetscDraw
+    Collective on PetscDraw
 
     Input Parameters:
 +   win - the window where the graph will be made.
@@ -45,7 +45,6 @@ struct _p_PetscDrawSP {
 @*/
 PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
-  PetscBool      isnull;
   PetscDrawSP    sp;
   PetscErrorCode ierr;
 
@@ -54,10 +53,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscValidLogicalCollectiveInt(draw,dim,2);
   PetscValidPointer(drawsp,3);
 
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) {*drawsp = NULL; PetscFunctionReturn(0);}
-
-  ierr = PetscHeaderCreate(sp,PETSC_DRAWSP_CLASSID,"PetscDrawSP","Scatter plot","Draw",PetscObjectComm((PetscObject)draw),PetscDrawSPDestroy,NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,PETSC_DRAWSP_CLASSID,"PetscDrawSP","Scatter Plot","Draw",PetscObjectComm((PetscObject)draw),PetscDrawSPDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)sp);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
@@ -90,7 +86,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 /*@
    PetscDrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
-   Logically Collective over PetscDrawSP
+   Logically Collective on PetscDrawSP
 
    Input Parameter:
 +  sp - the line graph context.
@@ -106,7 +102,6 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(sp,dim,2);
   if (sp->dim == dim) PetscFunctionReturn(0);
@@ -124,7 +119,7 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 /*@
    PetscDrawSPReset - Clears line graph to allow for reuse with new data.
 
-   Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
+   Logically Collective on PetscDrawSP
 
    Input Parameter:
 .  sp - the line graph context.
@@ -137,7 +132,6 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
 {
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   sp->xmin  = 1.e20;
   sp->ymin  = 1.e20;
@@ -153,7 +147,7 @@ PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
 /*@C
    PetscDrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
-   Collective over PetscDrawSP
+   Collective on PetscDrawSP
 
    Input Parameter:
 .  sp - the line graph context
@@ -183,7 +177,7 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
 /*@
    PetscDrawSPAddPoint - Adds another point to each of the scatter plots.
 
-   Logically Collective over PetscDrawSP
+   Logically Collective on PetscDrawSP
 
    Input Parameters:
 +  sp - the scatter plot data structure
@@ -202,7 +196,6 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
 
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
@@ -235,7 +228,7 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 /*@C
    PetscDrawSPAddPoints - Adds several points to each of the scatter plots.
 
-   Logically Collective over PetscDrawSP
+   Logically Collective on PetscDrawSP
 
    Input Parameters:
 +  sp - the LineGraph data structure
@@ -256,7 +249,6 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
   PetscReal      *x,*y;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
 
   if (sp->loc+n*sp->dim >= sp->len) { /* allocate more space */
@@ -297,7 +289,7 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 /*@
    PetscDrawSPDraw - Redraws a scatter plot.
 
-   Collective, but ignored by all processors except processor 0 in PetscDrawSP
+   Collective on PetscDrawSP
 
    Input Parameter:
 +  sp - the line graph context
@@ -317,26 +309,25 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   PetscDraw      draw;
 
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   ierr = PetscDrawIsNull(sp->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-
-  draw = sp->win;
-  if (sp->xmin > sp->xmax || sp->ymin > sp->ymax) PetscFunctionReturn(0);
-  if (sp->nopts < 1) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sp),&rank);CHKERRQ(ierr);
 
+  if (sp->xmin > sp->xmax || sp->ymin > sp->ymax) PetscFunctionReturn(0);
+  if (sp->nopts < 1) PetscFunctionReturn(0);
+
+  draw = sp->win;
   if (clear) {
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-    ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   }
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
 
   xmin = sp->xmin; xmax = sp->xmax; ymin = sp->ymin; ymax = sp->ymax;
   ierr = PetscDrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
 
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   if (!rank) {
     int i,j,dim=sp->dim,nopts=sp->nopts;
     for (i=0; i<dim; i++) {
@@ -345,10 +336,36 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
       }
     }
   }
-
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPSave"
+/*@
+   PetscDrawSPSave - Saves a drawn image
+
+   Collective on PetscDrawSP
+
+   Input Parameter:
+.  sp - the scatter plot context
+
+   Level: intermediate
+
+   Concepts: scatter plot^saving
+
+.seealso:  PetscDrawSPCreate(), PetscDrawSPGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+@*/
+PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
+  ierr = PetscDrawSave(sp->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -359,7 +376,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Logically Collective over PetscDrawSP
+   Logically Collective on PetscDrawSP
 
    Input Parameters:
 +  xsp - the line graph context
@@ -373,7 +390,6 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
 {
   PetscFunctionBegin;
-  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   sp->xmin = x_min;
   sp->xmax = x_max;
@@ -404,9 +420,8 @@ PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_
 PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  PetscValidPointer(axis,2);
-  if (!sp) {*axis = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
+  PetscValidPointer(axis,2);
   *axis = sp->axis;
   PetscFunctionReturn(0);
 }
@@ -430,9 +445,8 @@ PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 PetscErrorCode  PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
 {
   PetscFunctionBegin;
-  PetscValidPointer(draw,2);
-  if (!sp) {*draw = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
+  PetscValidPointer(draw,2);
   *draw = sp->win;
   PetscFunctionReturn(0);
 }

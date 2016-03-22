@@ -16,7 +16,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('Types', '-known-endian=<big or little>', nargs.Arg(None, None, 'Are bytes stored in big or little endian?'))
-    help.addArgument('Visibility', '-with-visibility=<bool>', nargs.Arg(None, 0, 'Use compiler visibility flags to limit symbol visibility'))
+    help.addArgument('Visibility', '-with-visibility=<bool>', nargs.Arg(None, 1, 'Use compiler visibility flags to limit symbol visibility'))
     return
 
   def setupDependencies(self, framework):
@@ -355,9 +355,23 @@ void (*signal())();
 
   def checkVisibility(self):
     if self.argDB['with-visibility']:
-      if not self.checkCompile('','__attribute__((visibility ("default"))) int foo(void);'):
-        raise RuntimeError('Cannot use visibility attributes')
-      self.addDefine('USE_VISIBILITY',1)
+      self.pushLanguage('C')
+      if self.checkCompile('','__attribute__((visibility ("default"))) int foo(void);'):
+        self.addDefine('USE_VISIBILITY_C',1)
+      else:
+        self.log.write('Cannot use visibility attributes with C')
+        self.argDB['with-visibility'] = 0
+      self.popLanguage()
+      if hasattr(self.compilers, 'CXX'):
+        self.pushLanguage('C++')
+        if self.checkCompile('','__attribute__((visibility ("default"))) int foo(void);'):
+          self.addDefine('USE_VISIBILITY_CXX',1)
+        else:
+          self.log.write('Cannot use visibility attributes with C++')
+        self.popLanguage()
+    else:
+      self.log.write('User turned off visibility attributes')
+
 
   def configure(self):
     self.executeTest(self.check_siginfo_t)

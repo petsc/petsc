@@ -73,7 +73,8 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMLocalToGlobal",        DM_CLASSID,&DM_LocalToGlobal);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMLocatePoints",         DM_CLASSID,&DM_LocatePoints);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMCoarsen",              DM_CLASSID,&DM_Coarsen);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMCreateInterpolation",  DM_CLASSID,&DM_CreateInterpolation);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMCreateInterp",         DM_CLASSID,&DM_CreateInterpolation);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMCreateRestrict",       DM_CLASSID,&DM_CreateRestriction);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 

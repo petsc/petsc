@@ -1,4 +1,3 @@
-
 /*
     Defines the operations for the X PetscDraw implementation.
 */
@@ -42,7 +41,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawDestroy_TikZ"
-PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
+static PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
   PetscErrorCode ierr;
@@ -72,33 +71,25 @@ PETSC_STATIC_INLINE const char *TikZColorMap(int cl)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawClear_TikZ"
-PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
+static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
+  PetscBool      written;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* often PETSc generates unneeded clears, we want avoid creating empy pictures for them */
-  if (!win->written) PetscFunctionReturn(0);
+  ierr = MPI_Allreduce(&win->written,&written,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)(draw)));CHKERRQ(ierr);
+  if (!written) PetscFunctionReturn(0);
   ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_END_FRAME);CHKERRQ(ierr);
   ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_BEGIN_FRAME);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSynchronizedClear_TikZ"
-PetscErrorCode PetscDrawSynchronizedClear_TikZ(PetscDraw draw)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscDrawClear_TikZ(draw);CHKERRQ(ierr);
+  win->written = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawLine_TikZ"
-PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
   PetscErrorCode ierr;
@@ -111,7 +102,7 @@ PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawString_TikZ"
-PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
+static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
   PetscErrorCode ierr;
@@ -124,7 +115,7 @@ PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawStringVertical_TikZ"
-PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
+static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
   PetscErrorCode ierr;
@@ -145,7 +136,7 @@ PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw,PetscReal xl,PetscRea
 /*
     Does not handle multiline strings correctly
 */
-PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,int ct,const char text[],PetscReal *w,PetscReal *h)
+static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,int ct,const char text[],PetscReal *w,PetscReal *h)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
   PetscErrorCode ierr;
@@ -164,7 +155,7 @@ PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw,PetscReal xl,PetscReal y
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawStringGetSize_TikZ"
-PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw,PetscReal *x,PetscReal  *y)
+static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   PetscFunctionBegin;
   if (x) *x = .014*(draw->coor_xr - draw->coor_xl)/((draw->port_xr - draw->port_xl));
@@ -190,8 +181,6 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0,
                                       0,
                                       0,
-                                      0,
-                                      PetscDrawSynchronizedClear_TikZ,
                                       0,
                                       0,
                                       0,
@@ -239,12 +228,3 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)
   win->written = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
-

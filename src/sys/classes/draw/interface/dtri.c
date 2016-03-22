@@ -26,12 +26,9 @@
 PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,int c1,int c2,int c3)
 {
   PetscErrorCode ierr;
-  PetscBool      isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->triangle) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing triangles",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -40,51 +37,58 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawScalePopup"
 /*@
-       PetscDrawScalePopup - PetscDraws a contour scale window.
+   PetscDrawScalePopup - PetscDraws a contour scale window.
 
-     Collective on PetscDraw
+   Collective on PetscDraw
 
-  Input Parameters:
-+    popup - the window (often a window obtained via PetscDrawGetPopup()
-.    min - minimum value being plotted
--    max - maximum value being plotted
+   Input Parameters:
++  popup - the window (often a window obtained via PetscDrawGetPopup()
+.  min - minimum value being plotted
+-  max - maximum value being plotted
 
-  Level: intermediate
+   Level: intermediate
 
-  Notes:
-     All processors that share the draw MUST call this routine
+   Notes: All processors that share the draw MUST call this routine
 
 @*/
 PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 {
-  PetscReal      xl = 0.0,yl = 0.0,xr = 2.0,yr = 1.0,value;
+  PetscBool      isnull;
+  PetscReal      xl = 0.0,yl = 0.0,xr = 1.0,yr = 1.0;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
   int            i;
   char           string[32];
 
   PetscFunctionBegin;
-  ierr = PetscDrawCheckResizedWindow(popup);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedClear(popup);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveBegin(popup);CHKERRQ(ierr);
+  if (!popup) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(popup,PETSC_DRAW_CLASSID,1);
+  ierr = PetscDrawIsNull(popup,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)popup),&rank);CHKERRQ(ierr);
+
+  ierr = PetscDrawCheckResizedWindow(popup);CHKERRQ(ierr);
+  ierr = PetscDrawClear(popup);CHKERRQ(ierr);
+  ierr = PetscDrawSetTitle(popup,"Contour Scale");CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(popup,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = PetscDrawCollectiveBegin(popup);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscDrawSetTitle(popup,"Contour Scale");CHKERRQ(ierr);
     for (i=0; i<10; i++) {
       int c = PetscDrawRealToColor((PetscReal)i/9,0,1);
       ierr = PetscDrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);CHKERRQ(ierr);
-      yl += 0.1; yr += 0.1;
+      yl += 0.1;
     }
     for (i=0; i<10; i++) {
-      value = min + i*(max-min)/9.0;
+      PetscReal value = min + i*(max-min)/9;
       /* look for a value that should be zero, but is not due to round-off */
       if (PetscAbsReal(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
       ierr = PetscSNPrintf(string,sizeof(string),"%18.16e",(double)value);CHKERRQ(ierr);
-      ierr = PetscDrawString(popup,0.2,0.02 + i/10.0,PETSC_DRAW_BLACK,string);CHKERRQ(ierr);
+      ierr = PetscDrawString(popup,0.2,0.02+i/10.0,PETSC_DRAW_BLACK,string);CHKERRQ(ierr);
     }
-    ierr = PetscDrawFlush(popup);CHKERRQ(ierr);
   }
   ierr = PetscDrawCollectiveEnd(popup);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(popup);CHKERRQ(ierr);
+  ierr = PetscDrawSave(popup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +177,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
 
   /* PetscDraw the scale window */
   ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-  if (popup) {ierr = PetscDrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);}
+  ierr = PetscDrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);
 
   ctx.showgrid = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)draw)->options,NULL,"-draw_contour_grid",&ctx.showgrid,NULL);CHKERRQ(ierr);

@@ -101,9 +101,40 @@ PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidLogicalCollectiveInt(draw,w,2);
+  PetscValidLogicalCollectiveInt(draw,h,3);
   if (draw->ops->resizewindow) {
     ierr = (*draw->ops->resizewindow)(draw,w,h);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawGetWindowSize"
+/*@
+   PetscDrawGetWindowSize - Gets the size of the window.
+
+   Not collective
+
+   Input Parameter:
+.  draw - the window
+
+   Output Parameters:
+.  w,h - the window width and height
+
+   Level: intermediate
+
+.seealso: PetscDrawResizeWindow(), PetscDrawCheckResizedWindow()
+@*/
+PetscErrorCode  PetscDrawGetWindowSize(PetscDraw draw,int *w,int *h)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  if (w) PetscValidPointer(w,2);
+  if (h) PetscValidPointer(h,3);
+  if (w) *w = draw->w;
+  if (h) *h = draw->h;
   PetscFunctionReturn(0);
 }
 
@@ -127,6 +158,7 @@ PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->checkresizedwindow) {
     ierr = (*draw->ops->checkresizedwindow)(draw);CHKERRQ(ierr);
   }
@@ -164,7 +196,7 @@ PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,char **title)
 /*@C
    PetscDrawSetTitle - Sets the title of a PetscDraw context.
 
-   Not collective (any processor or all may call this)
+   Collective on PetscDraw
 
    Input Parameters:
 +  draw - the graphics context
@@ -202,7 +234,7 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
 /*@C
    PetscDrawAppendTitle - Appends to the title of a PetscDraw context.
 
-   Not collective (any processor or all can call this)
+   Collective on PetscDraw
 
    Input Parameters:
 +  draw - the graphics context
@@ -219,18 +251,18 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
 PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
 {
   PetscErrorCode ierr;
-  size_t         len1,len2,len;
-  char           *newtitle;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (!title) PetscFunctionReturn(0);
+  if (title) PetscValidCharPointer(title,2);
+  if (!title || !title[0]) PetscFunctionReturn(0);
 
   if (draw->title) {
+    size_t len1,len2;
+    char   *newtitle;
     ierr = PetscStrlen(title,&len1);CHKERRQ(ierr);
     ierr = PetscStrlen(draw->title,&len2);CHKERRQ(ierr);
-    len  = len1 + len2;
-    ierr = PetscMalloc1(len + 1,&newtitle);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len1 + len2 + 1,&newtitle);CHKERRQ(ierr);
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     ierr = PetscFree(draw->title);CHKERRQ(ierr);
@@ -248,35 +280,18 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
 #define __FUNCT__ "PetscDrawDestroy_Private"
 static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 {
-  PetscBool      match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_X,&match);CHKERRQ(ierr);
-  if (match) {
-#if defined(PETSC_HAVE_POPEN)
-    PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
-    if (!rank && draw->savefilename && draw->savefilemovie) {
-      char       command[PETSC_MAX_PATH_LEN];
-      const char *fname = draw->savefilename;
-      const char *ext   = draw->savefilenameext;
-      FILE       *fd;
-      ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg  -i %s/%s_%%d%s %s.m4v",fname,fname,ext,fname);CHKERRQ(ierr);
-      ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-      ierr = PetscPClose(PETSC_COMM_SELF,fd,NULL);CHKERRQ(ierr);
-    }
-    ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
-#endif
-    if (draw->savefinalfilename) {
-      ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
-      draw->savefilecount = 0;
-      ierr = PetscDrawSave(draw);CHKERRQ(ierr);
-    }
-    ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
+  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
+  ierr = PetscDrawSaveMovie(draw);CHKERRQ(ierr);
+  if (draw->savefinalfilename) {
+    draw->savesinglefile = PETSC_TRUE;
+    ierr = PetscDrawSetSave(draw,draw->savefinalfilename);CHKERRQ(ierr);
+    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   }
+  ierr = PetscBarrier((PetscObject)draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__
@@ -320,7 +335,8 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   ierr = PetscFree((*draw)->title);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->display);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefilename);CHKERRQ(ierr);
-  ierr = PetscFree((*draw)->savefilenameext);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->saveimageext);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->savemovieext);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefinalfilename);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -363,36 +379,6 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawDestroy_Null"
-PetscErrorCode PetscDrawDestroy_Null(PetscDraw draw)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawOpenNull"
-/*
-  PetscDrawOpenNull - Opens a null drawing context. All draw commands to
-  it are ignored.
-
-  Output Parameter:
-. win - the drawing context
-
-   Level: advanced
-
-*/
-PetscErrorCode  PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscDrawCreate(comm,NULL,NULL,0,0,1,1,win);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(*win,PETSC_DRAW_NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscDrawSetDisplay"
 /*@
   PetscDrawSetDisplay - Sets the display where a PetscDraw object will be displayed
@@ -414,31 +400,33 @@ PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCreate_Null"
-/*
-  PetscDrawCreate_Null - Opens a null drawing context. All draw commands to
-  it are ignored.
 
-  Input Parameter:
-. win - the drawing context
-*/
-PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetDoubleBuffer"
+/*@
+   PetscDrawSetDoubleBuffer - Sets a window to be double buffered.
+
+   Logically Collective on PetscDraw
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Level: intermediate
+
+   Concepts: drawing^double buffer
+   Concepts: graphics^double buffer
+   Concepts: double buffer
+
+@*/
+PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps));CHKERRQ(ierr);
-  draw->data         = NULL;
-  draw->ops->destroy = PetscDrawDestroy_Null;
-  draw->ops->view    = NULL;
-
-  draw->pause        = 0.0;
-  draw->coor_xl      = 0.0;  draw->coor_xr = 1.0;
-  draw->coor_yl      = 0.0;  draw->coor_yr = 1.0;
-  draw->port_xl      = 0.0;  draw->port_xr = 1.0;
-  draw->port_yl      = 0.0;  draw->port_yr = 1.0;
-  draw->popup        = NULL;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  if (draw->ops->setdoublebuffer) {
+    ierr = (*draw->ops->setdoublebuffer)(draw);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -471,8 +459,10 @@ PetscErrorCode  PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscValidPointer(sdraw,2);
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
-  if (size == 1) *sdraw = draw;
-  else {
+  if (size == 1) {
+    ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
+    *sdraw = draw;
+  } else {
     if (draw->ops->getsingleton) {
       ierr = (*draw->ops->getsingleton)(draw,sdraw);CHKERRQ(ierr);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get singleton for this type %s of draw object",((PetscObject)draw)->type_name);
@@ -508,7 +498,12 @@ PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscValidHeaderSpecific(*sdraw,PETSC_DRAW_CLASSID,2);
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
-  if (size != 1) {
+  if (size == 1) {
+    if (draw == *sdraw) {
+      ierr = PetscObjectDereference((PetscObject)draw);CHKERRQ(ierr);
+      *sdraw = NULL;
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore singleton, it is not the parent draw");
+  } else {
     if (draw->ops->restoresingleton) {
       ierr = (*draw->ops->restoresingleton)(draw,sdraw);CHKERRQ(ierr);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore singleton for this type %s of draw object",((PetscObject)draw)->type_name);

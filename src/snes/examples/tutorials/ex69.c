@@ -3304,14 +3304,14 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
     comp = 1;
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     comp = 0;
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallR", "markerRight",  0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallR", "markerRight",  0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     comp = 1;
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     comp = 0;
-    ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
-    ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
@@ -3339,7 +3339,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNu
 
   PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(dm, &vec);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
   ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) vec, "Pressure Null Space");CHKERRQ(ierr);
   ierr = VecViewFromOptions(vec, NULL, "-null_space_vec_view");CHKERRQ(ierr);
@@ -3392,8 +3392,7 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexSNESComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))DMPlexSNESComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(dm, &user, &nullVec, &nullSpace);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -3403,21 +3402,21 @@ int main(int argc, char **argv)
   ierr = SNESGetJacobian(snes, NULL, &J, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
 
-  ierr = DMPlexProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions(snes, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Initial Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-initial_vec_view");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2Diff(dm, 0.0, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2FieldDiff(dm, 0.0, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
+  ierr = DMComputeL2FieldDiff(dm, 0.0, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);
@@ -3425,7 +3424,7 @@ int main(int argc, char **argv)
     Vec r;
 
     ierr = DMGetGlobalVector(dm, &r);CHKERRQ(ierr);
-    ierr = DMPlexProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
     ierr = VecAXPY(r, -1.0, u);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) r, "Solution Error");CHKERRQ(ierr);
     ierr = VecViewFromOptions(r, NULL, "-error_vec_view");CHKERRQ(ierr);

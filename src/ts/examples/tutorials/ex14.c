@@ -1565,6 +1565,7 @@ static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *c
   char           filename3[PETSC_MAX_PATH_LEN],filename2[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
+  if (step < 0) PetscFunctionReturn(0); /* negative one is used to indicate an interpolated solution */
   ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"%3D: t=%g\n",step,(double)t);CHKERRQ(ierr);
   if (thi->monitor_interval && step % thi->monitor_interval) PetscFunctionReturn(0);
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);

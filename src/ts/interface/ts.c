@@ -13,12 +13,10 @@ const char *const TSExactFinalTimeOptions[] = {"UNSPECIFIED","STEPOVER","INTERPO
 
 struct _n_TSMonitorDrawCtx {
   PetscViewer   viewer;
-  PetscDrawAxis axis;
   Vec           initialsolution;
   PetscBool     showinitial;
   PetscInt      howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscBool     showtimestepandtime;
-  int           color;
 };
 
 #undef __FUNCT__
@@ -134,9 +132,9 @@ PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const cha
 .  -ts_adjoint_solve <yes,no> After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
 .  -ts_fd_color - Use finite differences with coloring to compute IJacobian
 .  -ts_monitor - print information at each timestep
-.  -ts_monitor_lg_timestep - Monitor timestep size graphically
 .  -ts_monitor_lg_solution - Monitor solution graphically
 .  -ts_monitor_lg_error - Monitor error graphically
+.  -ts_monitor_lg_timestep - Monitor timestep size graphically
 .  -ts_monitor_lg_snes_iterations - Monitor number nonlinear iterations for each timestep graphically
 .  -ts_monitor_lg_ksp_iterations - Monitor number nonlinear iterations for each timestep graphically
 .  -ts_monitor_sp_eig - Monitor eigenvalues of linearized operator graphically
@@ -218,15 +216,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
 
-  ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
-  if (opt) {
-    TSMonitorLGCtx ctx;
-    PetscInt       howoften = 1;
-
-    ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
-    ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
   if (opt) {
     TSMonitorLGCtx ctx;
@@ -244,6 +233,16 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorLGCtx ctx;
+    PetscInt       howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,NULL);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
   ierr = PetscOptionsName("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",&opt);CHKERRQ(ierr);
   if (opt) {
@@ -269,7 +268,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt          howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorSPEig,ctx,(PetscErrorCode (*)(void**))TSMonitorSPEigCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -279,7 +278,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -289,7 +288,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_adjoint_monitor_draw_sensi","Monitor adjoint sensitivities (lambda only) graphically","TSAdjointMonitorDrawSensi",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSAdjointMonitorSet(ts,TSAdjointMonitorDrawSensi,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -299,17 +298,15 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscReal        bounds[4];
     PetscInt         n = 4;
     PetscDraw        draw;
+    PetscDrawAxis    axis;
 
     ierr = PetscOptionsRealArray("-ts_monitor_draw_solution_phase","Monitor solution graphically","TSMonitorDrawSolutionPhase",bounds,&n,NULL);CHKERRQ(ierr);
     if (n != 4) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Must provide bounding box of phase field");
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,1,&ctx);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(ctx->viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = PetscDrawAxisCreate(draw,&ctx->axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLimits(ctx->axis,bounds[0],bounds[2],bounds[1],bounds[3]);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(ctx->axis,"Phase Diagram","Variable 1","Variable 2");CHKERRQ(ierr);
-    ierr = PetscDrawAxisDraw(ctx->axis);CHKERRQ(ierr);
-    /* ierr = PetscDrawSetCoordinates(draw,bounds[0],bounds[1],bounds[2],bounds[3]);CHKERRQ(ierr); */
+    ierr = PetscViewerDrawGetDrawAxis(ctx->viewer,0,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(axis,bounds[0],bounds[2],bounds[1],bounds[3]);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Phase Diagram","Variable 1","Variable 2");CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolutionPhase,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -319,7 +316,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
 
@@ -1838,9 +1835,12 @@ PetscErrorCode  TSGetTimeStep(TS ts,PetscReal *dt)
    Output Parameter:
 .  v - the vector containing the solution
 
+   Note: If you used TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP); this does not return the solution at the requested
+   final time. It returns the solution at the next timestep.
+
    Level: intermediate
 
-.seealso: TSGetTimeStep()
+.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime()
 
 .keywords: TS, timestep, get, solution
 @*/
@@ -3023,8 +3023,7 @@ PetscErrorCode  TSPostStep(TS ts)
 $    int monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
 
 +    ts - the TS context
-.    steps - iteration number (after the final time step the monitor routine is called with a step of -1, this is at the final time which may have
-                               been interpolated to)
+.    steps - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
 .    time - current time
 .    u - current iterate
 -    mctx - [optional] monitoring context
@@ -3096,7 +3095,7 @@ PetscErrorCode  TSMonitorCancel(TS ts)
 
 .keywords: TS, set, monitor
 
-.seealso: TSMonitorDefault(), TSMonitorSet()
+.seealso:  TSMonitorSet()
 @*/
 PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *dummy)
 {
@@ -3110,7 +3109,11 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
+    if (step == -1){ /* this indicates it is an interpolated solution */
+      ierr = PetscViewerASCIIPrintf(viewer,"Interpolated solution at time %g between steps %D and %D\n",(double)ptime,ts->steps-1,ts->steps);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   } else if (ibinary) {
     PetscMPIInt rank;
@@ -3497,7 +3500,8 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
 
    Input Parameter:
 +  ts - the TS context obtained from TSCreate()
--  u - the solution vector  (can be null if TSSetSolution() was used, otherwise must contain the initial conditions)
+-  u - the solution vector  (can be null if TSSetSolution() was used and TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP) was not used,
+                             otherwise must contain the initial conditions and will contain the solution at the final requested time
 
    Level: beginner
 
@@ -3508,7 +3512,7 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
 
 .keywords: TS, timestep, solve
 
-.seealso: TSCreate(), TSSetSolution(), TSStep()
+.seealso: TSCreate(), TSSetSolution(), TSStep(), TSGetTime(), TSGetSolveTime()
 @*/
 PetscErrorCode TSSolve(TS ts,Vec u)
 {
@@ -3520,7 +3524,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
-    
+
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     PetscValidHeaderSpecific(u,VEC_CLASSID,2);
     if (!ts->vec_sol || u == ts->vec_sol) {
@@ -3575,21 +3579,21 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
       ts->solvetime = ts->max_time;
       solution = u;
+      ierr = TSMonitor(ts,-1,ts->solvetime,solution);CHKERRQ(ierr);
     } else {
       if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
       ts->solvetime = ts->ptime;
       solution = ts->vec_sol;
     }
-    ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(solution,(PetscObject) ts,"-ts_view_solution");CHKERRQ(ierr);
   }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ts->vec_sol,NULL,"-ts_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(solution,NULL,"-ts_view_solution");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
@@ -3680,7 +3684,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
   ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
   ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
   ts->solvetime = ts->ptime;
-  ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-tstrajectory_view");CHKERRQ(ierr);
+  ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-ts_trajectory_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3701,6 +3705,8 @@ PetscErrorCode TSAdjointSolve(TS ts)
    Notes:
    TSMonitor() is typically used automatically within the time stepping implementations.
    Users would almost never call this routine directly.
+
+   A step of -1 indicates that the monitor is being called on a solution obtained by interpolating from computed solutions
 
    Level: developer
 
@@ -3838,16 +3844,18 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,voi
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (step < 0) PetscFunctionReturn(0); /* -1 indicates an interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time Step");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3897,7 +3905,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-.  t  - the current time
+.  t  - the current time. This time may not corresponds to the final time set with TSSetDuration(), use TSGetSolveTime().
 
    Level: beginner
 
@@ -3905,7 +3913,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
    When called during time step evaluation (e.g. during residual evaluation or via hooks set using TSSetPreStep(),
    TSSetPreStage(), TSSetPostStage(), or TSSetPostStep()), the time is the time at the start of the step being evaluated.
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+.seealso: TSSetInitialTimeStep(), TSGetTimeStep(), TSGetSolveTime()
 
 .keywords: TS, get, time
 @*/
@@ -4269,7 +4277,6 @@ PetscErrorCode  TSAdjointMonitorDrawSensi(TS ts,PetscInt step,PetscReal ptime,Ve
   h    = yl + .95*(yr - yl);
   ierr = PetscDrawStringCentered(draw,.5*(xl+xr),h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -4297,39 +4304,44 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
   PetscErrorCode    ierr;
   TSMonitorDrawCtx  ictx = (TSMonitorDrawCtx)dummy;
   PetscDraw         draw;
-  MPI_Comm          comm;
+  PetscDrawAxis     axis;
   PetscInt          n;
   PetscMPIInt       size;
-  PetscReal         xl,yl,xr,yr,h;
+  PetscReal         U0,U1,xl,yl,xr,yr,h;
   char              time[32];
   const PetscScalar *U;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(comm,PETSC_ERR_SUP,"Only allowed for sequential runs");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ts),&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Only allowed for sequential runs");
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
-  if (n != 2) SETERRQ(comm,PETSC_ERR_SUP,"Only for ODEs with two unknowns");
+  if (n != 2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Only for ODEs with two unknowns");
 
   ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDrawAxis(ictx->viewer,0,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisGetLimits(axis,&xl,&xr,&yl,&yr);CHKERRQ(ierr);
+  if (!step) {
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
+  }
 
   ierr = VecGetArrayRead(u,&U);CHKERRQ(ierr);
-  ierr = PetscDrawAxisGetLimits(ictx->axis,&xl,&xr,&yl,&yr);CHKERRQ(ierr);
-  if ((PetscRealPart(U[0]) < xl) || (PetscRealPart(U[1]) < yl) || (PetscRealPart(U[0]) > xr) || (PetscRealPart(U[1]) > yr)) {
-      ierr = VecRestoreArrayRead(u,&U);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-  }
-  if (!step) ictx->color++;
-  ierr = PetscDrawPoint(draw,PetscRealPart(U[0]),PetscRealPart(U[1]),ictx->color);CHKERRQ(ierr);
+  U0 = PetscRealPart(U[0]);
+  U1 = PetscRealPart(U[1]);
   ierr = VecRestoreArrayRead(u,&U);CHKERRQ(ierr);
+  if ((U0 < xl) || (U1 < yl) || (U0 > xr) || (U1 > yr)) PetscFunctionReturn(0);
 
+  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawPoint(draw,U0,U1,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   if (ictx->showtimestepandtime) {
     ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
     ierr = PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime);CHKERRQ(ierr);
     h    = yl + .95*(yr - yl);
     ierr = PetscDrawStringCentered(draw,.5*(xl+xr),h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
   }
+  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4355,7 +4367,6 @@ PetscErrorCode  TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawAxisDestroy(&(*ictx)->axis);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&(*ictx)->viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&(*ictx)->initialsolution);CHKERRQ(ierr);
   ierr = PetscFree(*ictx);CHKERRQ(ierr);
@@ -4399,7 +4410,6 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 
   (*ctx)->showtimestepandtime = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-ts_monitor_draw_solution_show_time",&(*ctx)->showtimestepandtime,NULL);CHKERRQ(ierr);
-  (*ctx)->color = PETSC_DRAW_WHITE;
   PetscFunctionReturn(0);
 }
 
@@ -4876,7 +4886,7 @@ PetscErrorCode  TSSetConvergedReason(TS ts,TSConvergedReason reason)
 .  ts - the TS context
 
    Output Parameter:
-.  ftime - the final time. This time should correspond to the final time set with TSSetDuration()
+.  ftime - the final time. This time corresponds to the final time set with TSSetDuration()
 
    Level: beginner
 
@@ -5206,6 +5216,7 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
   PetscViewer    viewer;
 
   PetscFunctionBegin;
+  if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   ierr = PetscSNPrintf(filename,sizeof(filename),(const char*)filenametemplate,step);CHKERRQ(ierr);
   ierr = PetscViewerVTKOpen(PetscObjectComm((PetscObject)ts),filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(u,viewer);CHKERRQ(ierr);
@@ -5975,7 +5986,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
    Level: intermediate
 
-    Notes: each process in a parallel run displays its component solutions in a separate window
+   Notes: Each process in a parallel run displays its component solutions in a separate window
 
 .keywords: TS,  vector, monitor, view
 
@@ -5989,18 +6000,18 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
   PetscErrorCode    ierr;
   TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dctx;
   const PetscScalar *yy;
-  PetscInt          dim;
   Vec               v;
 
   PetscFunctionBegin;
+  if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
+    PetscInt      dim;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
     if (ctx->names && !ctx->displaynames) {
       char      **displaynames;
       PetscBool flg;
-
       ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
       ierr = PetscMalloc((dim+1)*sizeof(char*),&displaynames);CHKERRQ(ierr);
       ierr = PetscMemzero(displaynames,(dim+1)*sizeof(char*));CHKERRQ(ierr);
@@ -6023,39 +6034,34 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     }
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
   }
-  if (ctx->transform) {
-    ierr = (*ctx->transform)(ctx->transformctx,u,&v);CHKERRQ(ierr);
-  } else {
-    v = u;
-  }
+
+  if (!ctx->transform) v = u;
+  else {ierr = (*ctx->transform)(ctx->transformctx,u,&v);CHKERRQ(ierr);}
   ierr = VecGetArrayRead(v,&yy);CHKERRQ(ierr);
+  if (ctx->displaynames) {
+    PetscInt i;
+    for (i=0; i<ctx->ndisplayvariables; i++)
+      ctx->displayvalues[i] = PetscRealPart(yy[ctx->displayvariables[i]]);
+    ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,ctx->displayvalues);CHKERRQ(ierr);
+  } else {
 #if defined(PETSC_USE_COMPLEX)
-  {
-    PetscReal *yreal;
     PetscInt  i,n;
+    PetscReal *yreal;
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&yreal);CHKERRQ(ierr);
     for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
     ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yreal);CHKERRQ(ierr);
     ierr = PetscFree(yreal);CHKERRQ(ierr);
-  }
 #else
-  if (ctx->displaynames) {
-    PetscInt i;
-    for (i=0; i<ctx->ndisplayvariables; i++) {
-      ctx->displayvalues[i] = yy[ctx->displayvariables[i]];
-    }
-    ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,ctx->displayvalues);CHKERRQ(ierr);
-  } else {
     ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy);CHKERRQ(ierr);
-  }
 #endif
-  ierr = VecRestoreArrayRead(v,&yy);CHKERRQ(ierr);
-  if (ctx->transform) {
-    ierr = VecDestroy(&v);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArrayRead(v,&yy);CHKERRQ(ierr);
+  if (ctx->transform) {ierr = VecDestroy(&v);CHKERRQ(ierr);}
+
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -6321,8 +6327,7 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 
    Level: intermediate
 
-   Notes:
-   Only for sequential solves.
+   Notes: Each process in a parallel run displays its component errors in a separate window
 
    The user must provide the solution using TSSetSolutionFunction() to use this monitor.
 
@@ -6339,11 +6344,11 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
   TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dummy;
   const PetscScalar *yy;
   Vec               y;
-  PetscInt          dim;
 
   PetscFunctionBegin;
   if (!step) {
     PetscDrawAxis axis;
+    PetscInt      dim;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Error in solution as function of time","Time","Solution");CHKERRQ(ierr);
     ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
@@ -6371,6 +6376,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -6385,13 +6391,12 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,
   PetscInt       its;
 
   PetscFunctionBegin;
+  if (n < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!n) {
     PetscDrawAxis axis;
-
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Nonlinear iterations as function of time","Time","SNES Iterations");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
-
     ctx->snes_its = 0;
   }
   ierr = TSGetSNESIterations(ts,&its);CHKERRQ(ierr);
@@ -6399,6 +6404,7 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(ctx->lg);CHKERRQ(ierr);
   }
   ctx->snes_its = its;
   PetscFunctionReturn(0);
@@ -6414,13 +6420,12 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
   PetscInt       its;
 
   PetscFunctionBegin;
+  if (n < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!n) {
     PetscDrawAxis axis;
-
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Linear iterations as function of time","Time","KSP Iterations");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
-
     ctx->ksp_its = 0;
   }
   ierr = TSGetKSPIterations(ts,&its);CHKERRQ(ierr);
@@ -6428,6 +6433,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGSave(ctx->lg);CHKERRQ(ierr);
   }
   ctx->ksp_its = its;
   PetscFunctionReturn(0);

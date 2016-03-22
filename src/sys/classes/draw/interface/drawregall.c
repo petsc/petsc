@@ -4,6 +4,7 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw);
 #if defined(PETSC_HAVE_X)
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw);
@@ -40,6 +41,7 @@ PetscErrorCode  PetscDrawRegisterAll(void)
   if (PetscDrawRegisterAllCalled) PetscFunctionReturn(0);
   PetscDrawRegisterAllCalled = PETSC_TRUE;
 
+  ierr = PetscDrawRegister(PETSC_DRAW_IMAGE,    PetscDrawCreate_Image);CHKERRQ(ierr);
   ierr = PetscDrawRegister(PETSC_DRAW_TIKZ,     PetscDrawCreate_TikZ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_OPENGLES)
   ierr = PetscDrawRegister(PETSC_DRAW_OPENGLES, PetscDrawCreate_OpenGLES);CHKERRQ(ierr);

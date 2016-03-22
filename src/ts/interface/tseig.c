@@ -113,6 +113,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   SNES              snes;
 
   PetscFunctionBegin;
+  if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) PetscFunctionReturn(0);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = VecDuplicate(v,&xdot);CHKERRQ(ierr);
@@ -173,13 +174,13 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
       ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
       ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
-
       if (ts->ops->linearstability) {
         ierr = PetscDrawSPGetAxis(drawsp,&axis);CHKERRQ(ierr);
         ierr = PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax);CHKERRQ(ierr);
         ierr = PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,(PetscErrorCode (*)(void*,PetscReal,PetscReal,PetscBool*))TSLinearStabilityIndicator,ts);CHKERRQ(ierr);
         ierr = PetscDrawSPDraw(drawsp,PETSC_FALSE);CHKERRQ(ierr);
       }
+      ierr = PetscDrawSPSave(drawsp);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }

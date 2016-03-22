@@ -107,7 +107,10 @@
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 #  define MPIUni_PETSC_DLLEXPORT __declspec(dllexport)
 #  define MPIUni_PETSC_DLLIMPORT __declspec(dllimport)
-#elif defined(PETSC_USE_VISIBILITY)
+#elif defined(PETSC_USE_VISIBILITY_CXX) && defined(__cplusplus)
+#  define MPIUni_PETSC_DLLEXPORT __attribute__((visibility ("default")))
+#  define MPIUni_PETSC_DLLIMPORT __attribute__((visibility ("default")))
+#elif defined(PETSC_USE_VISIBILITY_C) && !defined(__cplusplus)
 #  define MPIUni_PETSC_DLLEXPORT __attribute__((visibility ("default")))
 #  define MPIUni_PETSC_DLLIMPORT __attribute__((visibility ("default")))
 #else
@@ -141,12 +144,12 @@ typedef unknownuniptr MPIUNI_INTPTR;
 #endif
 
 /* old 32bit MS compiler does not support long long */
-#if defined(PETSC_HAVE___INT64)
-typedef _int64 MPIUNI_INT64;
-typedef unsigned _int64 MPIUNI_UINT64;
-#elif defined(PETSC_SIZEOF_LONG_LONG)
+#if defined(PETSC_SIZEOF_LONG_LONG)
 typedef long long MPIUNI_INT64;
 typedef unsigned long long MPIUNI_UINT64;
+#elif defined(PETSC_HAVE___INT64)
+typedef _int64 MPIUNI_INT64;
+typedef unsigned _int64 MPIUNI_UINT64;
 #else
 #error "cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
 #endif

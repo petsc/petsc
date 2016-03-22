@@ -34,7 +34,7 @@ struct _p_PetscDrawHG {
 /*@C
    PetscDrawHGCreate - Creates a histogram data structure.
 
-   Collective over PetscDraw
+   Collective on PetscDraw
 
    Input Parameters:
 +  draw  - The window where the graph will be made
@@ -50,9 +50,8 @@ struct _p_PetscDrawHG {
 .seealso: PetscDrawHGDestroy()
 
 @*/
-PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
+PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 {
-  PetscBool      isnull;
   PetscDrawHG    h;
   PetscErrorCode ierr;
 
@@ -61,10 +60,7 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   PetscValidLogicalCollectiveInt(draw,bins,2);
   PetscValidPointer(hist,3);
 
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull) {*hist = NULL; PetscFunctionReturn(0);}
-
-  ierr = PetscHeaderCreate(h, PETSC_DRAWHG_CLASSID,  "PetscDrawHG", "Histogram", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawHGDestroy, NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(h,PETSC_DRAWHG_CLASSID,"PetscDrawHG","Histogram","Draw",PetscObjectComm((PetscObject)draw),PetscDrawHGDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)h);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
@@ -102,7 +98,7 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
 /*@
    PetscDrawHGSetNumberBins - Change the number of bins that are to be drawn.
 
-   Not Collective (ignored except on processor 0 of PetscDrawHG)
+   Logically Collective on PetscDrawHG
 
    Input Parameter:
 +  hist - The histogram context.
@@ -118,7 +114,6 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
   PetscValidLogicalCollectiveInt(hist,bins,2);
 
@@ -137,7 +132,7 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
 /*@
   PetscDrawHGReset - Clears histogram to allow for reuse with new data.
 
-  Not Collective (ignored except on processor 0 of PetscDrawHG)
+  Logically Collective on PetscDrawHG
 
   Input Parameter:
 . hist - The histogram context.
@@ -149,7 +144,6 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
 PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
 {
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
 
   hist->xmin      = PETSC_MAX_REAL;
@@ -165,7 +159,7 @@ PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
 /*@C
   PetscDrawHGDestroy - Frees all space taken up by histogram data structure.
 
-  Collective over PetscDrawHG
+  Collective on PetscDrawHG
 
   Input Parameter:
 . hist - The histogram context
@@ -196,7 +190,7 @@ PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 /*@
   PetscDrawHGAddValue - Adds another value to the histogram.
 
-  Not Collective (ignored except on processor 0 of PetscDrawHG)
+  Logically Collective on PetscDrawHG
 
   Input Parameters:
 + hist  - The histogram
@@ -211,7 +205,6 @@ PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
 
   /* Allocate more memory if necessary */
@@ -261,7 +254,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 /*@
   PetscDrawHGDraw - Redraws a histogram.
 
-  Collective, but ignored by all processors except processor 0 in PetscDrawHG
+  Collective on PetscDrawHG
 
   Input Parameter:
 . hist - The histogram context
@@ -281,15 +274,13 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
   ierr = PetscDrawIsNull(hist->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)hist),&rank);CHKERRQ(ierr);
 
-  draw = hist->win;
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)hist),&rank);CHKERRQ(ierr);
 
   color = hist->color;
   if (color == PETSC_DRAW_ROTATE) bcolor = 2;
@@ -304,9 +295,9 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   mean      = 0.0;
   var       = 0.0;
 
+  draw = hist->win;
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-  ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
 
   if (xmin == xmax) {
     /* Calculate number of points in each bin */
@@ -330,6 +321,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL);CHKERRQ(ierr);
     }
     ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     if (!rank) { /* Draw bins */
       binLeft  = xmin;
       binRight = xmax;
@@ -340,6 +332,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       if (color == PETSC_DRAW_ROTATE && bins[0] != 0.0) bcolor++;
       if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = 2;
     }
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
@@ -378,12 +371,12 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       mean /= numValues;
       if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
       else var = 0.0;
-
       ierr = PetscSNPrintf(title, 256,"Mean: %g  Var: %g", (double)mean, (double)var);CHKERRQ(ierr);
       ierr = PetscSNPrintf(xlabel,256, "Total: %D", numValues);CHKERRQ(ierr);
       ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL);CHKERRQ(ierr);
     }
     ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     if (!rank) { /* Draw bins */
       for (i = 0; i < numBins; i++) {
         binLeft  = xmin + binSize*i;
@@ -396,12 +389,38 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
         if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = 2;
       }
     }
-    ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);CHKERRQ(ierr);
+    ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
+    ierr = PetscDrawHGSetNumberBins(hist,numBinsOld);CHKERRQ(ierr);
   }
 
-  ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGSave"
+/*@
+  PetscDrawHGSave - Saves a drawn image
+
+  Collective on PetscDrawHG
+
+  Input Parameter:
+. hist - The histogram context
+
+  Level: intermediate
+
+  Concepts: histogram^saving
+
+.seealso:  PetscDrawHGCreate(), PetscDrawHGGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+@*/
+PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(hg,PETSC_DRAWHG_CLASSID,1);
+  ierr = PetscDrawSave(hg->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -426,7 +445,6 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
   PetscInt       numBins,numBinsOld,numValues,initSize,i,p;
 
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
 
   if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
@@ -506,7 +524,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
 /*@
   PetscDrawHGSetColor - Sets the color the bars will be drawn with.
 
-  Not Collective (ignored except on processor 0 of PetscDrawHG)
+  Logically Collective on PetscDrawHG
 
   Input Parameters:
 + hist - The histogram context
@@ -516,10 +534,9 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
   Level: intermediate
 
 @*/
-PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist, int color)
+PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist,int color)
 {
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
 
   hist->color = color;
@@ -533,7 +550,7 @@ PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist, int color)
   points are added after this call, the limits will be adjusted to
   include those additional points.
 
-  Not Collective (ignored except on processor 0 of PetscDrawHG)
+  Logically Collective on PetscDrawHG
 
   Input Parameters:
 + hist - The histogram context
@@ -546,7 +563,6 @@ PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist, int color)
 PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max)
 {
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
 
   hist->xmin = x_min;
@@ -575,7 +591,6 @@ PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscRea
 PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
 {
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
 
   hist->calcStats = calc;
@@ -600,7 +615,6 @@ PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
 PetscErrorCode  PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
 {
   PetscFunctionBegin;
-  if (!hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
 
   hist->integerBins = ints;
@@ -615,7 +629,7 @@ PetscErrorCode  PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
   labels, color, etc. The axis context should not be destroyed by the
   application code.
 
-  Not Collective (ignored except on processor 0 of PetscDrawHG)
+  Not Collective, PetscDrawAxis is parallel if PetscDrawHG is parallel
 
   Input Parameter:
 . hist - The histogram context
@@ -626,13 +640,11 @@ PetscErrorCode  PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
   Level: intermediate
 
 @*/
-PetscErrorCode  PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
+PetscErrorCode  PetscDrawHGGetAxis(PetscDrawHG hist,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  PetscValidPointer(axis,2);
-  if (!hist) {*axis = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
-
+  PetscValidPointer(axis,2);
   *axis = hist->axis;
   PetscFunctionReturn(0);
 }
@@ -653,13 +665,11 @@ PetscErrorCode  PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
   Level: intermediate
 
 @*/
-PetscErrorCode  PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *draw)
+PetscErrorCode  PetscDrawHGGetDraw(PetscDrawHG hist,PetscDraw *draw)
 {
   PetscFunctionBegin;
-  PetscValidPointer(draw,2);
-  if (!hist) {*draw = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
-
+  PetscValidPointer(draw,2);
   *draw = hist->win;
   PetscFunctionReturn(0);
 }

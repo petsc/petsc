@@ -85,7 +85,6 @@ static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer p
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(pv,"  maxf=%D, ftol=%g, gtol=%g\n",ls->max_funcs, (double)ls->rtol, (double)ls->ftol);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"  OWArmijo linesearch",armP->alpha);CHKERRQ(ierr);
     if (armP->nondescending) {
       ierr = PetscViewerASCIIPrintf(pv, " (nondescending)");CHKERRQ(ierr);

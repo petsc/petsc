@@ -28,6 +28,7 @@ struct _DMOps {
   PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
   PetscErrorCode (*creatematrix)(DM, Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
+  PetscErrorCode (*createrestriction)(DM,DM,Mat*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
   PetscErrorCode (*getinjection)(DM,DM,Mat*);
 
@@ -54,7 +55,18 @@ struct _DMOps {
 
   PetscErrorCode (*getdimpoints)(DM,PetscInt,PetscInt*,PetscInt*);
   PetscErrorCode (*locatepoints)(DM,Vec,IS*);
+
+  PetscErrorCode (*projectfunctionlocal)(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
+  PetscErrorCode (*projectfunctionlabellocal)(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
+  PetscErrorCode (*projectfieldlocal)(DM,Vec,void(**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],PetscScalar[]),InsertMode,Vec);
+  PetscErrorCode (*computel2diff)(DM,PetscReal,PetscErrorCode(**)(PetscInt, PetscReal,const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
+  PetscErrorCode (*computel2gradientdiff)(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal [],const PetscReal[],PetscInt, PetscScalar *,void *),void **,Vec,const PetscReal[],PetscReal *);
+  PetscErrorCode (*computel2fielddiff)(DM,PetscReal,PetscErrorCode(**)(PetscInt, PetscReal,const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
 };
+
+PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode DMLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
 struct _DMCoarsenHookLink {
@@ -127,6 +139,33 @@ struct _n_DMLabelLinkList {
 };
 typedef struct _n_DMLabelLinkList *DMLabelLinkList;
 
+typedef struct _n_Boundary *DMBoundary;
+
+struct _n_Boundary {
+  const char *name;
+  const char *labelname;
+  DMLabel     label;
+  PetscBool   essential;
+  PetscInt    field;
+  PetscInt    numcomps;
+  PetscInt   *comps;
+  void      (*func)();
+  PetscInt    numids;
+  PetscInt   *ids;
+  void       *ctx;
+  DMBoundary  next;
+};
+
+struct _n_DMBoundaryLinkList {
+  PetscInt   refct;
+  DMBoundary next;
+};
+
+typedef struct _n_DMBoundaryLinkList *DMBoundaryLinkList;
+
+PETSC_EXTERN PetscErrorCode DMDestroyLabelLinkList(DM);
+PETSC_EXTERN PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList*);
+PETSC_EXTERN PetscErrorCode DMBoundaryDuplicate(DMBoundaryLinkList,DMBoundaryLinkList*);
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
@@ -150,6 +189,9 @@ struct _p_DM {
   PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
   void                    *data;
+  /* Hierarchy / Submeshes */
+  DM                      coarseMesh;
+  DM                      fineMesh;
   DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMRefineHookLink        refinehook;
   DMSubDomainHookLink     subdomainhook;
@@ -181,6 +223,7 @@ struct _p_DM {
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscDS                 prob;
+  DMBoundaryLinkList      boundary;          /* List of boundary conditions */
   /* Output structures */
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */
@@ -189,7 +232,7 @@ struct _p_DM {
   PetscObject             dmksp,dmsnes,dmts;
 };
 
-PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation;
+PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation, DM_CreateRestriction;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);

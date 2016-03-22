@@ -123,7 +123,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   FILE                     *fp;
   PetscMPIInt              rank,size,tag;
   PetscErrorCode           ierr;
-  PetscInt                 dim,cellHeight,cStart,cEnd,vStart,vEnd,cMax,numLabelCells,hasLabel,c,v,r,i;
+  PetscInt                 dimEmbed,cellHeight,cStart,cEnd,vStart,vEnd,cMax,numLabelCells,hasLabel,c,v,r,i;
   PieceInfo                piece,*gpiece = NULL;
   void                     *buffer = NULL;
 
@@ -145,7 +145,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 #endif
   ierr = PetscFPrintf(comm,fp,"  <UnstructuredGrid>\n");CHKERRQ(ierr);
 
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -218,19 +218,36 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         ierr = PetscSectionGetNumFields(dm->defaultSection,&nfields);CHKERRQ(ierr);
         for (field=0,i=0; field<(nfields?nfields:1); field++) {
-          PetscInt   fbs,j;
+          PetscInt     fbs,j;
+          PetscFV      fv = NULL;
+          PetscObject  f;
+          PetscClassId fClass;
           const char *fieldname = NULL;
           char       buf[256];
           if (nfields) {        /* We have user-defined fields/components */
             ierr = PetscSectionGetFieldDof(dm->defaultSection,cStart,field,&fbs);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
           } else fbs = bs;      /* Say we have one field with 'bs' components */
+          ierr = DMGetField(dm,field,&f);CHKERRQ(ierr);
+          ierr = PetscObjectGetClassId(f,&fClass);CHKERRQ(ierr);
+          if (fClass == PETSCFV_CLASSID) {
+            fv = (PetscFV) f;
+          }
           if (!fieldname) {
             ierr = PetscSNPrintf(buf,sizeof(buf),"CellField%D",field);CHKERRQ(ierr);
             fieldname = buf;
           }
           for (j=0; j<fbs; j++) {
-            ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%D\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,j,boffset);CHKERRQ(ierr);
+            const char *compName = NULL;
+            if (fv) {
+              ierr = PetscFVGetComponentName(fv,j,&compName);CHKERRQ(ierr);
+            }
+            if (compName) {
+              ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,compName,boffset);CHKERRQ(ierr);
+            }
+            else {
+              ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%D\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,j,boffset);CHKERRQ(ierr);
+            }
             boffset += gpiece[r].ncells*sizeof(PetscScalar) + sizeof(int);
             i++;
           }
@@ -300,11 +317,11 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         nsend = piece.nvertices*3;
         ierr  = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
         ierr  = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
-        if (dim != 3) {
+        if (dimEmbed != 3) {
           ierr = PetscMalloc1(piece.nvertices*3,&y);CHKERRQ(ierr);
           for (i=0; i<piece.nvertices; i++) {
-            y[i*3+0] = x[i*dim+0];
-            y[i*3+1] = (dim > 1) ? x[i*dim+1] : 0;
+            y[i*3+0] = x[i*dimEmbed+0];
+            y[i*3+1] = (dimEmbed > 1) ? x[i*dimEmbed+1] : 0;
             y[i*3+2] = 0;
           }
         }
@@ -341,7 +358,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         for (i=0; i<bs; i++) {
           PetscInt cnt;
           for (c=cStart,cnt=0; c<cEnd; c++) {
-            const PetscScalar *xpoint;
+            PetscScalar *xpoint;
             if (hasLabel) {     /* Ignore some cells */
               PetscInt value;
               ierr = DMGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
@@ -369,7 +386,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         for (i=0; i<bs; i++) {
           PetscInt cnt;
           for (v=vStart,cnt=0; v<vEnd; v++) {
-            const PetscScalar *xpoint;
+            PetscScalar *xpoint;
             ierr     = DMPlexPointLocalRead(dm,v,x,&xpoint);CHKERRQ(ierr);
             y[cnt++] = xpoint[i];
           }

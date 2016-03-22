@@ -210,6 +210,43 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMClearLocalVectors"
+/*@
+   DMClearLocalVectors - Destroys all the local vectors that have been stashed in this DM
+
+   Collective on DM
+
+   Input Parameter:
+.  dm - the distributed array
+
+   Level: developer
+
+.keywords: distributed array, create, Local, vector
+
+.seealso: DMCreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMLocalToLocalBegin(),
+          DMLocalToLocalEnd(), DMLocalToLocalBegin(), DMCreateLocalVector(), DMRestoreLocalVector()
+          VecStrideMax(), VecStrideMin(), VecStrideNorm()
+
+@*/
+PetscErrorCode  DMClearLocalVectors(DM dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    Vec g;
+    if (dm->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
+    g = dm->localin[i];
+    dm->localin[i] = NULL;
+    ierr = VecDestroy(&g);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMRestoreGlobalVector"
 /*@
    DMRestoreGlobalVector - Returns a Seq PETSc vector that
@@ -252,6 +289,47 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
   *g = NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMHasNamedGlobalVector"
+/*@C
+   DMHasNamedGlobalVector - check for a named, persistent global vector
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to hold named vectors
+-  name - unique name for Vec
+
+   Output Arguments:
+.  exists - true if the vector was previously created
+
+   Level: developer
+
+   Note: If a Vec with the given name does not exist, it is created.
+
+.seealso: DMGetNamedGlobalVector(),DMRestoreNamedLocalVector()
+@*/
+PetscErrorCode DMHasNamedGlobalVector(DM dm,const char *name,PetscBool *exists)
+{
+  PetscErrorCode ierr;
+  DMNamedVecLink link;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(exists,3);
+  *exists = PETSC_FALSE;
+  for (link=dm->namedglobal; link; link=link->next) {
+    PetscBool match;
+    ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
+    if (match) {
+      *exists = PETSC_TRUE;
+      break;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -346,6 +424,47 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
     }
   }
   SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMHasNamedLocalVector"
+/*@C
+   DMHasNamedLocalVector - check for a named, persistent local vector
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to hold named vectors
+-  name - unique name for Vec
+
+   Output Arguments:
+.  exists - true if the vector was previously created
+
+   Level: developer
+
+   Note: If a Vec with the given name does not exist, it is created.
+
+.seealso: DMGetNamedGlobalVector(),DMRestoreNamedLocalVector()
+@*/
+PetscErrorCode DMHasNamedLocalVector(DM dm,const char *name,PetscBool *exists)
+{
+  PetscErrorCode ierr;
+  DMNamedVecLink link;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(exists,3);
+  *exists = PETSC_FALSE;
+  for (link=dm->namedlocal; link; link=link->next) {
+    PetscBool match;
+    ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
+    if (match) {
+      *exists = PETSC_TRUE;
+      break;
+    }
+  }
   PetscFunctionReturn(0);
 }
 

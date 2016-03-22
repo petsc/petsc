@@ -259,7 +259,7 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetRadius_Alpha"
-PetscErrorCode  TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
+static PetscErrorCode  TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -273,7 +273,7 @@ PetscErrorCode  TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetParams_Alpha"
-PetscErrorCode  TSAlphaSetParams_Alpha(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma)
+static PetscErrorCode  TSAlphaSetParams_Alpha(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -286,7 +286,7 @@ PetscErrorCode  TSAlphaSetParams_Alpha(TS ts,PetscReal alpha_m,PetscReal alpha_f
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaGetParams_Alpha"
-PetscErrorCode  TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma)
+static PetscErrorCode  TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
@@ -299,7 +299,7 @@ PetscErrorCode  TSAlphaGetParams_Alpha(TS ts,PetscReal *alpha_m,PetscReal *alpha
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetAdapt_Alpha"
-PetscErrorCode  TSAlphaSetAdapt_Alpha(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
+static PetscErrorCode  TSAlphaSetAdapt_Alpha(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
 

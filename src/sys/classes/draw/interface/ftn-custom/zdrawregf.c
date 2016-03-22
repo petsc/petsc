@@ -2,11 +2,13 @@
 #include <petscdraw.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscdrawsettype_         PETSCDRAWSETTYPE
-#define petscdrawcreate_          PETSCDRAWCREATE
+#define petscdrawsettype_          PETSCDRAWSETTYPE
+#define petscdrawcreate_           PETSCDRAWCREATE
+#define petscdrawsetoptionsprefix_ PETSCDRAWSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscdrawsettype_         petscdrawsettype
-#define petscdrawcreate_          petscdrawcreate
+#define petscdrawsettype_          petscdrawsettype
+#define petscdrawcreate_           petscdrawcreate
+#define petscdrawsetoptionsprefix_ petscdrawsetoptionsprefix
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petscdrawsettype_(PetscDraw *ctx,CHAR text PETSC_MIXED_LEN(len),
@@ -31,3 +33,11 @@ PETSC_EXTERN void PETSC_STDCALL petscdrawcreate_(MPI_Comm *comm,CHAR display PET
   FREECHAR(title,t2);
 }
 
+PETSC_EXTERN void PETSC_STDCALL petscdrawsetoptionsprefix_(PetscDraw *ctx,CHAR text PETSC_MIXED_LEN(len),
+                                     PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(text,len,t);
+  *ierr = PetscDrawSetOptionsPrefix(*ctx,t);
+  FREECHAR(text,t);
+}
