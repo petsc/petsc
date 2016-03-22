@@ -20,8 +20,9 @@ struct _p_DMNetworkComponentValue {
   void* data[MAX_DATA_AT_POINT];
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
+#define DMNETWORKCOMPONENTNAMESIZE (sizeof(PetscScalar) - sizeof(PetscInt)) > 20 ? (sizeof(PetscScalar) - sizeof(PetscInt)) : 20
 typedef struct {
-  char     name[20];
+  char     name[DMNETWORKCOMPONENTNAMESIZE];
   PetscInt size;
 }DMNetworkComponent PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
