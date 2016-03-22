@@ -5826,8 +5826,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       if (pcbddc_coarse->benign_saddle_point) {
         pcbddc_coarse->benign_compute_nonetflux = PETSC_TRUE;
         pcbddc_coarse->adaptive_userdefined = PETSC_TRUE;
-      } else {
-        pcbddc_coarse->deluxe_zerorows = PETSC_FALSE;
+        if (pcbddc->adaptive_threshold < 1.0) pcbddc_coarse->deluxe_zerorows = PETSC_TRUE;
       }
     }
 
