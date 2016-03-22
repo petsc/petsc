@@ -281,7 +281,6 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   ierr = PetscDrawSetCoordinates(draw,0,0,1,1);CHKERRQ(ierr);
   ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
   /* lower spacing */
-  //if (axis->xlabelstr || axis->xlabel) dyl = 0.5*th;
   if (axis->xlabelstr) dyl += 1.5*th;
   if (axis->xlabel)    dyl += 1.5*th;
   /* left spacing */
