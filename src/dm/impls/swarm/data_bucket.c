@@ -702,7 +702,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	}
   
 #ifdef DATA_BUCKET_LOG
-	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);
+	PetscPrintf(PETSC_COMM_SELF,"  ** read L=%D; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);
 #endif
 	
 	
@@ -720,7 +720,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	/* copy contents of file */
 	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
 #ifdef DATA_BUCKET_LOG
-	printf("  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
+	PetscPrintf(PETSC_COMM_SELF,"  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
 #endif
 	/* finish reading meta data */
 	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
@@ -791,7 +791,7 @@ PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBuck
 	
 	
 #ifdef DATA_BUCKET_LOG
-	printf("** DataBucketLoadFromFile **\n");
+	PetscPrintf(PETSC_COMM_SELF,"** DataBucketLoadFromFile **\n");
 #endif
 	
 	/* open file */
@@ -836,7 +836,7 @@ PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataB
 	MPI_Comm_rank(comm,&rank);
   
 #ifdef DATA_BUCKET_LOG
-	printf("** DataBucketLoadFromFile **\n");
+	PetscPrintf(PETSC_COMM_SELF,"** DataBucketLoadFromFile **\n");
 #endif
 	if (type == DATABUCKET_VIEW_STDOUT) {
 		
@@ -893,19 +893,19 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
 			PetscInt f;
 			double memory_usage_total = 0.0;
 			
-			printf("DataBucketView(SEQ): (\"%s\")\n",filename);
-			printf("  L                  = %d \n", db->L );
-			printf("  buffer             = %d \n", db->buffer );
-			printf("  allocated          = %d \n", db->allocated );
+			PetscPrintf(PETSC_COMM_SELF,"DataBucketView(SEQ): (\"%s\")\n",filename);
+			PetscPrintf(PETSC_COMM_SELF,"  L                  = %D \n", db->L );
+			PetscPrintf(PETSC_COMM_SELF,"  buffer             = %D \n", db->buffer );
+			PetscPrintf(PETSC_COMM_SELF,"  allocated          = %D \n", db->allocated );
 			
-			printf("  nfields registered = %d \n", db->nfields );
+			PetscPrintf(PETSC_COMM_SELF,"  nfields registered = %D \n", db->nfields );
 			for( f=0; f<db->nfields; f++ ) {
 				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
 				
-				printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
+				PetscPrintf(PETSC_COMM_SELF,"    [%3D]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
 				memory_usage_total += memory_usage_f;
 			}
-			printf("  Total mem. usage                                                      = %1.2e (MB) \n", memory_usage_total );
+			PetscPrintf(PETSC_COMM_SELF,"  Total mem. usage                                                      = %1.2e (MB) \n", memory_usage_total );
 		}
 			break;
       
@@ -968,10 +968,10 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
 				for( f=0; f<db->nfields; f++ ) {
 					double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
 					
-					printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) : rank0\n", f, db->field[f]->name, memory_usage_f  );
+					PetscPrintf(PETSC_COMM_SELF,"    [%3D]: field name  ==>> %30s : Mem. usage = %1.2e (MB) : rank0\n", f, db->field[f]->name, memory_usage_f  );
 				}
 				
-				printf("  Total mem. usage                                                      = %1.2e (MB) : collective\n", memory_usage_total );
+				PetscPrintf(PETSC_COMM_SELF,"  Total mem. usage                                                      = %1.2e (MB) : collective\n", memory_usage_total );
 			}
 			
 		}
