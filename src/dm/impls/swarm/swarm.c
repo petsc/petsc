@@ -9,38 +9,6 @@
 
 #if 0
 
-PetscErrorCode DMSwarmDefineFieldVector(DM dm,const char *fieldnames[])
-{
-  /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
-  /* Compute summed block size */
-  /* Set guard */
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMSwarmGetGlobalVectorFromFields(DM dm,Vec *vec)
-{
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMSwarmRestoreGlobalVectorFromFields(DM dm,Vec *vec)
-{
-  PetscFunctionReturn(0);
-}
-
-/* requires DMSwarmDefineFieldVector has been called */
-PetscErrorCode DMCreateGlobalVector_Swarm(void)
-{
-
-  PetscFunctionReturn(0);
-}
-
-/* requires DMSwarmDefineFieldVector has been called */
-PetscErrorCode DMLocalGlobalVector_Swarm(void)
-{
-  
-  PetscFunctionReturn(0);
-}
-
 /* Defines what the local space will be */
 PetscErrorCode DMSwarmSetOverlap(void)
 {
@@ -58,6 +26,142 @@ Local view could be used to define overlapping information
 
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmVectorDefineField"
+PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[])
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  PetscInt bs,n;
+  PetscScalar *array;
+  PetscDataType type;
+
+  DataBucketGetSizes(swarm->db,&n,NULL,NULL);
+  ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
+
+  /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
+  if (type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid for PETSC_REAL");
+  
+  PetscSNPrintf(swarm->vec_field_name,PETSC_MAX_PATH_LEN-1,"%s",fieldname);
+  swarm->vec_field_set = PETSC_TRUE;
+  swarm->vec_field_bs = 1;//bs;
+  swarm->vec_field_nlocal = n;
+  
+  PetscFunctionReturn(0);
+}
+
+/* requires DMSwarmDefineFieldVector has been called */
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateGlobalVector_Swarm"
+PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  Vec x;
+  char name[PETSC_MAX_PATH_LEN];
+
+  if (!swarm->vec_field_set) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
+  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
+  ierr = VecCreate(PetscObjectComm((PetscObject)dm),&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,swarm->vec_field_nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  *vec = x;
+  
+  PetscFunctionReturn(0);
+}
+
+/* requires DMSwarmDefineFieldVector has been called */
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateLocalVector_Swarm"
+PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  Vec x;
+  
+  char name[PETSC_MAX_PATH_LEN];
+  
+  if (!swarm->vec_field_set) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
+  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
+  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,swarm->vec_field_nlocal,swarm->vec_field_nlocal);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  *vec = x;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmCreateGlobalVectorFromField"
+PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  PetscInt bs,n;
+  PetscScalar *array;
+  Vec x;
+  PetscDataType type;
+  char name[PETSC_MAX_PATH_LEN];
+  
+  DataBucketGetSizes(swarm->db,&n,NULL,NULL);
+  ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
+
+  /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
+  if (type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid for PETSC_REAL");
+  
+  ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)dm),1,n,array,&x);CHKERRQ(ierr);
+  
+  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
+  ierr = PetscObjectComposeFunction((PetscObject)x,name,DMSwarmDestroyGlobalVectorFromField);CHKERRQ(ierr);
+  
+  /* Set guard */
+  
+  *vec = x;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmDestroyGlobalVectorFromField"
+PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  DataField gfield;
+  char name[PETSC_MAX_PATH_LEN];
+  void (*fptr)(void);
+  
+  /* get data field */
+  DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);
+  
+  /* check vector is an inplace array */
+  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
+  ierr = PetscObjectQueryFunction((PetscObject)(*vec),name,&fptr);CHKERRQ(ierr);
+  if (!fptr) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Vector being destroyed was not created from DMSwarm field(%s)",fieldname);
+  
+  /* restore data field */
+  DataFieldRestoreAccess(gfield);
+  
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+/*
+PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromFields(DM dm,const PetscInt nf,const char *fieldnames[],Vec *vec)
+{
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode DMSwarmRestoreGlobalVectorFromFields(DM dm,Vec *vec)
+{
+  PetscFunctionReturn(0);
+}
+*/
+ 
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmInitializeFieldRegister"
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
@@ -170,6 +274,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscIn
   DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);
   DataFieldGetAccess(gfield);
   DataFieldGetEntries(gfield,data);
+  if (blocksize) {}
+  if (type) { *type = gfield->petsc_type; }
   
   PetscFunctionReturn(0);
 }
@@ -245,6 +351,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   ierr     = PetscNewLog(dm,&swarm);CHKERRQ(ierr);
   
   DataBucketCreate(&swarm->db);
+  swarm->vec_field_set = PETSC_FALSE;
   
   dm->dim  = 0;
   dm->data = swarm;
@@ -256,8 +363,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   dm->ops->setup                           = NULL;
   dm->ops->createdefaultsection            = NULL;
   dm->ops->createdefaultconstraints        = NULL;
-  dm->ops->createglobalvector              = NULL;
-  dm->ops->createlocalvector               = NULL;
+  dm->ops->createglobalvector              = DMCreateGlobalVector_Swarm;
+  dm->ops->createlocalvector               = DMCreateLocalVector_Swarm;
   dm->ops->getlocaltoglobalmapping         = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->createcoordinatedm              = NULL;
