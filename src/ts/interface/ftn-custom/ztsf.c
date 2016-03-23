@@ -252,7 +252,7 @@ PETSC_EXTERN void tsmonitordefault_(TS *ts,PetscInt *its,PetscReal *fgnorm,Vec *
 
 /* PETSC_EXTERN void PETSC_STDCALL tsmonitordefault_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*); */
 
-PETSC_EXTERN void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL*func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL*d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL*func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void *mctx,void (PETSC_STDCALL*d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   if ((PetscVoidFunction)func == (PetscVoidFunction) tsmonitordefault_) {
