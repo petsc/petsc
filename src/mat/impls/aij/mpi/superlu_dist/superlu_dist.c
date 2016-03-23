@@ -30,24 +30,24 @@ typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
 const char *SuperLU_MatInputModes[] = {"GLOBAL","DISTRIBUTED","SuperLU_MatInputMode","PETSC_",0};
 
 typedef struct {
-  int_t                nprow,npcol,*row,*col;
-  gridinfo_t           grid;
-  superlu_options_t    options;
-  SuperMatrix          A_sup;
-  ScalePermstruct_t    ScalePermstruct;
-  LUstruct_t           LUstruct;
-  int                  StatPrint;
-  SuperLU_MatInputMode MatInputMode;
-  SOLVEstruct_t        SOLVEstruct;
-  fact_t               FactPattern;
-  MPI_Comm             comm_superlu;
+  int_t                  nprow,npcol,*row,*col;
+  gridinfo_t             grid;
+  superlu_dist_options_t options;
+  SuperMatrix            A_sup;
+  ScalePermstruct_t      ScalePermstruct;
+  LUstruct_t             LUstruct;
+  int                    StatPrint;
+  SuperLU_MatInputMode   MatInputMode;
+  SOLVEstruct_t          SOLVEstruct;
+  fact_t                 FactPattern;
+  MPI_Comm               comm_superlu;
 #if defined(PETSC_USE_COMPLEX)
-  doublecomplex        *val;
+  doublecomplex          *val;
 #else
-  double               *val;
+  double                 *val;
 #endif
-  PetscBool            matsolve_iscalled,matmatsolve_iscalled;
-  PetscBool            CleanUpSuperLU_Dist;  /* Flag to clean up (non-global) SuperLU objects during Destroy */
+  PetscBool              matsolve_iscalled,matmatsolve_iscalled;
+  PetscBool              CleanUpSuperLU_Dist;  /* Flag to clean up (non-global) SuperLU objects during Destroy */
 } Mat_SuperLU_DIST;
 
 extern PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat,PetscViewer);
@@ -495,17 +495,17 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const Mat
 #define __FUNCT__ "MatGetFactor_aij_superlu_dist"
 static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
 {
-  Mat               B;
-  Mat_SuperLU_DIST  *lu;
-  PetscErrorCode    ierr;
-  PetscInt          M=A->rmap->N,N=A->cmap->N,indx;
-  PetscMPIInt       size;
-  superlu_options_t options;
-  PetscBool         flg;
-  const char        *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
-  const char        *rowperm[]     = {"LargeDiag","NATURAL"};
-  const char        *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
-  PetscBool         set;
+  Mat                    B;
+  Mat_SuperLU_DIST       *lu;
+  PetscErrorCode         ierr;
+  PetscInt               M=A->rmap->N,N=A->cmap->N,indx;
+  PetscMPIInt            size;
+  superlu_dist_options_t options;
+  PetscBool              flg;
+  const char             *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
+  const char             *rowperm[]     = {"LargeDiag","NATURAL"};
+  const char             *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
+  PetscBool              set;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -671,9 +671,9 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 #define __FUNCT__ "MatFactorInfo_SuperLU_DIST"
 PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
-  Mat_SuperLU_DIST  *lu=(Mat_SuperLU_DIST*)A->spptr;
-  superlu_options_t options;
-  PetscErrorCode    ierr;
+  Mat_SuperLU_DIST       *lu=(Mat_SuperLU_DIST*)A->spptr;
+  superlu_dist_options_t options;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   /* check if matrix is superlu_dist type */
