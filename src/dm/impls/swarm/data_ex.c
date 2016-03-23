@@ -358,23 +358,21 @@ Makes the communication map symmetric
 #define __FUNCT__ "_DataExCompleteCommunicationMap"
 PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,PetscMPIInt proc_neighbours[],PetscMPIInt *n_new,PetscMPIInt **proc_neighbours_new)
 {
-	Mat               A,redA;
+	Mat               A;
 	PetscInt          i,j,nc;
 	PetscInt          n_, *proc_neighbours_;
-    PetscInt          rank_i_;
+  PetscInt          rank_i_;
 	PetscMPIInt       size,  rank_i;
-	PetscInt          max_nnz;
 	PetscScalar       *vals;
 	const PetscInt    *cols;
 	const PetscScalar *red_vals;
 	PetscMPIInt       _n_new, *_proc_neighbours_new;
-	PetscBool         is_seqaij;
 	PetscLogDouble    t0,t1;
 	PetscErrorCode    ierr;
 
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"************************** Starting _DataExCompleteCommunicationMap ************************** \n");
+	PetscPrintf(PETSC_COMM_WORLD,"*** Starting _DataExCompleteCommunicationMap *** \n");
 	PetscTime(&t0);
 
 	n_ = n;
@@ -391,14 +389,10 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,size,size);CHKERRQ(ierr);
 	ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&n_,&max_nnz,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
-	ierr = MatSeqAIJSetPreallocation(A,n_,NULL);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"max_nnz = %D \n", max_nnz );
-	//printf("[%d]: nnz = %d \n", rank_i,n_ );
-	{
-		ierr = MatMPIAIJSetPreallocation(A,1,NULL,n_,NULL);CHKERRQ(ierr);
-	}
+	ierr = MatSeqAIJSetPreallocation(A,1,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,n_,NULL,n_,NULL);CHKERRQ(ierr);
 		
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
 		
 	/* Build original map */
 	ierr = PetscMalloc( sizeof(PetscScalar)*n_, &vals );CHKERRQ(ierr);
@@ -422,32 +416,11 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 
 	ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
 	ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-	/* 
-	What the fuck is this? Is this necessary at all?
-	Why cannot I just use MatGetRow on the single row living on the current rank??
-	Seems like a fine thing to do provided the operation MatGetRow() is supported for MATMPIAIJ
-	~ DAM, Feb 26, 2013 (using petsc 3.2)		
-	*/
-	/* Duplicate the entire matrix on ALL cpu's */
-	/* 
-	 MatGetRedundantMatrix is not supported for SEQAIJ, thus we
-	 fake a redundant matrix by setting equal to A. This enables the
-	 code to run on one cpu (even if this seems slightly odd).
-	 */
-	is_seqaij = PETSC_FALSE;
-	ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&is_seqaij);CHKERRQ(ierr);
-//	if (is_seqaij==PETSC_FALSE) {
-//		ierr = MatGetRedundantMatrix( A, size_, PETSC_COMM_SELF, size_, MAT_INITIAL_MATRIX, &redA );CHKERRQ(ierr);
-//	} else {
-		redA = A;
-		ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-//	}
-	
 	if ((n_new != NULL) && (proc_neighbours_new != NULL)) {
 	
-		ierr = MatGetRow( redA, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
+		ierr = MatGetRow( A, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
 		
 		_n_new = (PetscMPIInt)nc;
 		_proc_neighbours_new = (PetscMPIInt*)malloc( sizeof(PetscMPIInt) * _n_new );
@@ -455,20 +428,19 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 		for (j=0; j<nc; j++) {
 			_proc_neighbours_new[j] = (PetscMPIInt)cols[j];
 		}
-		ierr = MatRestoreRow( redA, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
+		ierr = MatRestoreRow( A, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
 		
 		*n_new               = (PetscMPIInt)_n_new;
 		*proc_neighbours_new = (PetscMPIInt*)_proc_neighbours_new;
 	}
 	
-	ierr = MatDestroy(&redA);CHKERRQ(ierr);
 	ierr = MatDestroy(&A);CHKERRQ(ierr);
 	ierr = PetscFree(vals);CHKERRQ(ierr);
 	ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);	
 
 	ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap [setup time: %1.4e (sec)] ************************** \n",t1-t0);
+	PetscPrintf(PETSC_COMM_WORLD,"*** Ending _DataExCompleteCommunicationMap [setup time: %1.4e (sec)] *** \n",t1-t0);
 	
 	PetscFunctionReturn(0);
 }

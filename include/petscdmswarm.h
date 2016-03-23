@@ -22,5 +22,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints);
 PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM dm);
 PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx);
 
+PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal);
+PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n);
+PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points);
+
 #endif
 

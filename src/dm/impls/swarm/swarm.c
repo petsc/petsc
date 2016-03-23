@@ -3,6 +3,9 @@
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 #include "data_bucket.h"
 
+PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points);
+
+
 //typedef PetscErrorCode (*swarm_project)(DM,DM,Vec) DMSwarmProjectMethod; /* swarm, geometry, result */
 
 //typedef enum { PROJECT_DMDA_AQ1=0, PROJECT_DMDA_P0 } DMSwarmDMDAProjectionType;
@@ -47,6 +50,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[
   swarm->vec_field_set = PETSC_TRUE;
   swarm->vec_field_bs = 1;//bs;
   swarm->vec_field_nlocal = n;
+  ierr = DMSwarmRestoreField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -66,7 +70,7 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm),&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,swarm->vec_field_nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,swarm->db->L,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   *vec = x;
@@ -89,7 +93,7 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,swarm->vec_field_nlocal,swarm->vec_field_nlocal);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,swarm->db->L,swarm->db->L);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   *vec = x;
@@ -123,10 +127,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   } else {
     ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,n,PETSC_DETERMINE,array,&x);CHKERRQ(ierr);
   }
+  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmSharedField_%s",swarm->vec_field_name);
+  ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
+
+  /* Set guard */
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
   ierr = PetscObjectComposeFunction((PetscObject)x,name,DMSwarmDestroyGlobalVectorFromField);CHKERRQ(ierr);
-  
-  /* Set guard */
   
   *vec = x;
   PetscFunctionReturn(0);
@@ -206,6 +212,34 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt 
   
   ierr = DataBucketSetSizes(swarm->db,nlocal,buffer);CHKERRQ(ierr);
   
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmGetLocalSize"
+PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  
+  if (nlocal) {
+    ierr = DataBucketGetSizes(swarm->db,nlocal,NULL,NULL);CHKERRQ(ierr);
+  }
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmGetSize"
+PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  PetscInt nlocal,ng;
+  
+  ierr = DataBucketGetSizes(swarm->db,&nlocal,NULL,NULL);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&nlocal,&ng,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  if (n) { *n = ng; }
   PetscFunctionReturn(0);
 }
 
@@ -370,6 +404,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
 #define __FUNCT__ "DMSwarmMigrate_Basic"
 PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
 {
+  PetscErrorCode ierr;
+  ierr = DMSwarmMigrate_Push_Basic(dm,remove_sent_points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
