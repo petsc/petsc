@@ -1621,7 +1621,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
       for (i = 0; i < fpdim; ++i) {
         Vec             pointVec;
         PetscScalar    *pV;
-        IS              coarseCellSF = NULL;
+        PetscSF         coarseCellSF = NULL;
         const PetscSFNode *coarseCells;
         PetscInt        numCoarseCells, cpdim, q, c, j;
 
