@@ -489,26 +489,6 @@ void DataBucketRemovePointAtIndex( const DataBucket db, const PetscInt index )
 		ERROR();
 	}
 	
-#if 0
-	if (index == db->L-1) { /* last poPetscInt in list */
-		for( f=0; f<db->nfields; f++ ) {
-			DataField field = db->field[f];
-      
-			DataFieldZeroPoint(field,index);
-		}
-	}
-	else {
-		for( f=0; f<db->nfields; f++ ) {
-			DataField field = db->field[f];
-      
-			/* copy then remove */
-			DataFieldCopyPoint( db->L-1,field, index,field );
-			
-			DataFieldZeroPoint(field,index);
-		}
-	}
-#endif
-  
 	if (index != db->L-1) { /* not last poPetscInt in list */
 		for( f=0; f<db->nfields; f++ ) {
 			DataField field = db->field[f];
