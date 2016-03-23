@@ -375,11 +375,11 @@ PetscErrorCode DataFieldAccessPoint(const DataField gfield,const PetscInt pid,vo
 {
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* debug mode */
-	/* check poPetscInt is valid */
+	/* check point is valid */
 	if (pid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
 	if (pid >= gfield->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",gfield->L);
   
-	if (gfield->active == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is not active. You must call DataFieldGetAccess() before poPetscInt data can be retrivied",gfield->name);
+	if (gfield->active == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is not active. You must call DataFieldGetAccess() before point data can be retrivied",gfield->name);
 #endif
 	
 	//*ctx_p  = (void*)( ((char*)gfield->data) + pid * gfield->atomic_size);
@@ -394,11 +394,11 @@ PetscErrorCode DataFieldAccessPointOffset(const DataField gfield,const size_t of
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* debug mode */
 	
-	/* check poPetscInt is valid */
+	/* check point is valid */
 	/* if( offset < 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"offset must be >= 0");*//* Note compiler realizes this can never happen with an unsigned PetscInt */
 	if (offset >= gfield->atomic_size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"offset must be < %zu",gfield->atomic_size);
 	
-	/* check poPetscInt is valid */
+	/* check point is valid */
 	if (pid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
 	if (pid >= gfield->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",gfield->L);
   
@@ -520,7 +520,7 @@ PetscErrorCode DataFieldInsertPoint(const DataField field,const PetscInt index,c
 {
   
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
-	/* check poPetscInt is valid */
+	/* check point is valid */
 	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
 	if (index >= field->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",field->L);
 #endif
@@ -539,7 +539,7 @@ PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt i
 	PetscErrorCode ierr;
 	
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
-	/* check poPetscInt is valid */
+	/* check point is valid */
 	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
 	if (index >= db->allocated) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",db->L+db->buffer);
 #endif
@@ -573,7 +573,7 @@ PetscErrorCode DataFieldCopyPoint(const PetscInt pid_x,const DataField field_x,
 {
   
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
-	/* check poPetscInt is valid */
+	/* check point is valid */
 	if (pid_x < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"(IN) index must be >= 0");
 	if (pid_x >= field_x->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"(IN) index must be < %D",field_x->L);
   
@@ -602,7 +602,7 @@ PetscErrorCode DataFieldCopyPoint(const PetscInt pid_x,const DataField field_x,
 PetscErrorCode DataFieldZeroPoint(const DataField field,const PetscInt index)
 {
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
-	/* check poPetscInt is valid */
+	/* check point is valid */
 	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
 	if (index >= field->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",field->L);
 #endif
@@ -620,7 +620,7 @@ PetscErrorCode DataBucketZeroPoint(const DataBucket db,const PetscInt index)
 	PetscInt f;
 	PetscErrorCode ierr;
 	
-	/* check poPetscInt is valid */
+	/* check point is valid */
 	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
 	if (index >= db->allocated) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",db->allocated);
 	
