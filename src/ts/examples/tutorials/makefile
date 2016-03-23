@@ -343,7 +343,7 @@ runex9_2:
 	   ${DIFF} output/ex9_2.out ex9_2.tmp || printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9_2.tmp
 runex9_3:
-	-@${MPIEXEC} -n 3 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 > ex9_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 | sed "s/at 48/at 0/g" > ex9_3.tmp 2>&1; \
 	   ${DIFF} output/ex9_3.out ex9_3.tmp || printf "${PWD}\nPossible problem with ex9_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9_3.tmp
 
