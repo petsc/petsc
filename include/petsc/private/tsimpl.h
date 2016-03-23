@@ -279,11 +279,11 @@ struct _n_TSEvent {
   PetscErrorCode  (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event handler function */
   PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*); /* User post event function */
   void           *ctx;              /* User context for event handler and post even functions */
+  PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */
   PetscBool      *terminate;        /* 1 -> Terminate time stepping, 0 -> continue */
-  PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
   PetscInt        nevents;          /* Number of events to handle */
   PetscInt        nevents_zero;     /* Number of event zero detected */
-  PetscInt        *events_zero;      /* List of events that have reached zero */
+  PetscInt        *events_zero;     /* List of events that have reached zero */
   PetscReal      *vtol;             /* Vector tolerances for event zero check */
   TSEventStatus   status;           /* Event status */
   PetscReal       tstepend;         /* End time of step */

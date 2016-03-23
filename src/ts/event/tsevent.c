@@ -35,7 +35,8 @@ PetscErrorCode TSEventInitialize(TSEvent event,TS ts,PetscReal t,Vec U)
 .  tol - scalar tolerance, PETSC_DECIDE to leave current value
 -  vtol - array of tolerances or NULL, used in preference to tol if present
 
--  -ts_event_tol <tol> tolerance for event zero crossing
+   Options Database Keys:
+.  -ts_event_tol <tol> tolerance for event zero crossing
 
    Notes:
    Must call TSSetEventHandler() before setting the tolerances.
@@ -54,7 +55,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (vtol) PetscValidRealPointer(vtol,3);
-  if(!ts->event) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
+  if (!ts->event) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
 
   event = ts->event;
   if (vtol) {
@@ -83,12 +84,12 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
                event is detected (one for each event)
 .  eventhandler - event monitoring routine
 .  postevent - [optional] post-event function
--  mectx - [optional] user-defined context for private data for the
-              event monitor and post event routine (use NULL if no
-              context is desired)
+-  ctx       - [optional] user-defined context for private data for the
+               event monitor and post event routine (use NULL if no
+               context is desired)
 
    Calling sequence of eventhandler:
-   PetscErrorCode EventHandler(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void* mectx)
+   PetscErrorCode EventHandler(TS ts,PetscReal t,Vec U,PetscScalar fvalue[],void* ctx)
 
    Input Parameters:
 +  ts  - the TS context
@@ -100,7 +101,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 .  fvalue    - function value of events at time t
 
    Calling sequence of postevent:
-   PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero, PetscInt events_zero, PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
+   PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero, PetscInt events_zero[], PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 
    Input Parameters:
 +  ts - the TS context
@@ -117,7 +118,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 
 .seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
 @*/
-PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],PetscBool terminate[],PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *ctx)
+PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],PetscBool terminate[],PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar[],void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *ctx)
 {
   PetscErrorCode ierr;
   TSEvent        event;
@@ -141,13 +142,13 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
     event->terminate[i] = terminate[i];
   }
   ierr = PetscMalloc1(nevents,&event->events_zero);CHKERRQ(ierr);
+  event->nevents = nevents;
   event->eventhandler = eventhandler;
   event->postevent = postevent;
   event->ctx = ctx;
-  event->nevents = nevents;
 
   for (i=0; i < MAXEVENTRECORDERS; i++) {
-    ierr = PetscMalloc1(nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(event->nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsBegin(((PetscObject)ts)->comm,"","TS Event options","");CHKERRQ(ierr);
@@ -199,7 +200,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   if (event->postevent) {
     ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,forwardsolve,event->ctx);CHKERRQ(ierr);
   }
-  for(i = 0; i < nevents_zero;i++) {
+  for (i=0; i < nevents_zero;i++) {
     terminate = (PetscBool)(terminate || event->terminate[events_zero[i]]);
   }
   ierr = MPIU_Allreduce(&terminate,&ts_terminate,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
@@ -217,7 +218,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   event->recorder.time[ctr] = t;
   event->recorder.stepnum[ctr] = stepnum;
   event->recorder.nevents[ctr] = nevents_zero;
-  for(i=0; i < nevents_zero; i++) event->recorder.eventidx[ctr][i] = events_zero[i];
+  for (i=0; i < nevents_zero; i++) event->recorder.eventidx[ctr][i] = events_zero[i];
   event->recorder.ctr++;
 
   /* Reset the event residual functions as states might get changed by the postevent callback */
@@ -242,7 +243,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
   ierr = PetscFree((*event)->events_zero);CHKERRQ(ierr);
   ierr = PetscFree((*event)->vtol);CHKERRQ(ierr);
-  for(i=0; i < MAXEVENTRECORDERS; i++) {
+  for (i=0; i < MAXEVENTRECORDERS; i++) {
     ierr = PetscFree((*event)->recorder.eventidx[i]);CHKERRQ(ierr);
   }
   ierr = PetscViewerDestroy(&(*event)->monitor);CHKERRQ(ierr);
@@ -288,7 +289,7 @@ PetscErrorCode TSEventHandler(TS ts)
 
   ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);
 
-  for (i = 0; i < event->nevents; i++) {
+  for (i=0; i < event->nevents; i++) {
     if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i]) {
       event->status = TSEVENT_ZERO;
       continue;
@@ -302,8 +303,8 @@ PetscErrorCode TSEventHandler(TS ts)
           rollback = 1;
           /* Compute linearly interpolated new time step */
           dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
-          if(event->monitor) {
-            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+          if (event->monitor) {
+            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
           }
         }
         break;
@@ -312,8 +313,8 @@ PetscErrorCode TSEventHandler(TS ts)
           rollback = 1;
           /* Compute linearly interpolated new time step */
           dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
-          if(event->monitor) {
-            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+          if (event->monitor) {
+            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
           }
         }
         break;
@@ -321,8 +322,8 @@ PetscErrorCode TSEventHandler(TS ts)
         rollback = 1;
         /* Compute linearly interpolated new time step */
         dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
-        if(event->monitor) {
-          ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+        if (event->monitor) {
+          ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
         }
         break;
       }
@@ -330,30 +331,26 @@ PetscErrorCode TSEventHandler(TS ts)
   }
   if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
 
-  in[0] = event->status;
-  in[1] = rollback;
+  in[0] = event->status; in[1] = rollback;
   ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
 
-  event->status = (TSEventStatus)out[0];
-  rollback = out[1];
-  if (rollback) {
-    event->status = TSEVENT_LOCATED_INTERVAL;
-  }
+  event->status = (TSEventStatus)out[0]; rollback = out[1];
+  if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
 
   if (event->status == TSEVENT_ZERO) {
-    for(i=0; i < event->nevents; i++) {
+    for (i=0; i < event->nevents; i++) {
       if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i]) {
         event->events_zero[event->nevents_zero++] = i;
-        if(event->monitor) {
-          ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent : Event %D zero crossing at time %g\n",i,(double)t);CHKERRQ(ierr);
+        if (event->monitor) {
+          ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: Event %D zero crossing at time %g\n",i,(double)t);CHKERRQ(ierr);
         }
       }
     }
 
     ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve);CHKERRQ(ierr);
 
-    dt = event->tstepend-t;
-    if(PetscAbsReal(dt) < PETSC_SMALL) dt += event->initial_timestep;
+    dt = event->tstepend - t;
+    if (PetscAbsReal(dt) < PETSC_SMALL) dt += event->initial_timestep;
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -362,10 +359,10 @@ PetscErrorCode TSEventHandler(TS ts)
     ierr = TSRollBack(ts);CHKERRQ(ierr);
     ts->steps--;
     ts->total_steps--;
-    ts->reason = TS_CONVERGED_ITERATING;
+    ierr = TSSetConvergedReason(ts,TS_CONVERGED_ITERATING);CHKERRQ(ierr);
     event->status = TSEVENT_PROCESSING;
   } else {
-    for (i = 0; i < event->nevents; i++) {
+    for (i=0; i < event->nevents; i++) {
       event->fvalue_prev[i] = event->fvalue[i];
     }
     event->ptime_prev  = t;
@@ -398,9 +395,9 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
 
   ctr = event->recorder.ctr-1;
-  if(ctr >= 0 && PetscAbsReal(t - event->recorder.time[ctr]) < PETSC_SMALL) {
+  if (ctr >= 0 && PetscAbsReal(t - event->recorder.time[ctr]) < PETSC_SMALL) {
     /* Call the user postevent function */
-    if(event->postevent) {
+    if (event->postevent) {
       ierr = (*event->postevent)(ts,event->recorder.nevents[ctr],event->recorder.eventidx[ctr],t,U,forwardsolve,event->ctx);CHKERRQ(ierr);
       event->recorder.ctr--;
     }
