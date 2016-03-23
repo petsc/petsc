@@ -36,6 +36,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[
   PetscScalar *array;
   PetscDataType type;
 
+  if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
   ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
 
@@ -60,6 +61,7 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
   Vec x;
   char name[PETSC_MAX_PATH_LEN];
 
+  if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
   if (!swarm->vec_field_set) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm),&x);CHKERRQ(ierr);
@@ -80,9 +82,9 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
   Vec x;
-  
   char name[PETSC_MAX_PATH_LEN];
   
+  if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
   if (!swarm->vec_field_set) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
@@ -106,15 +108,21 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   Vec x;
   PetscDataType type;
   char name[PETSC_MAX_PATH_LEN];
+  PetscMPIInt commsize;
   
+  if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
   ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
 
   /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
   if (type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid for PETSC_REAL");
   
-  ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)dm),1,n,array,&x);CHKERRQ(ierr);
-  
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
+  if (commsize == 1) {
+    ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)dm),1,n,array,&x);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,n,PETSC_DETERMINE,array,&x);CHKERRQ(ierr);
+  }
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
   ierr = PetscObjectComposeFunction((PetscObject)x,name,DMSwarmDestroyGlobalVectorFromField);CHKERRQ(ierr);
   
@@ -167,7 +175,13 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreGlobalVectorFromFields(DM dm,Vec *vec)
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+
   swarm->field_registration_initialized = PETSC_TRUE;
+
+  ierr = DMSwarmRegisterPetscDatatypeField(dm,"DMSwarm_pid",1,PETSC_LONG);CHKERRQ(ierr); /* unique identifer */
+  ierr = DMSwarmRegisterPetscDatatypeField(dm,"DMSwarm_rank",1,PETSC_INT);CHKERRQ(ierr); /* used for communication */
+
   PetscFunctionReturn(0);
 }
 
@@ -278,6 +292,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscIn
   DataField gfield;
   PetscErrorCode ierr;
   
+  if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
+  
   ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
   ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
   ierr = DataFieldGetEntries(gfield,data);CHKERRQ(ierr);
@@ -309,6 +325,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM dm)
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
   
+  if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
   ierr = DataBucketAddPoint(swarm->db);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -346,6 +363,157 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
   PetscErrorCode ierr;
 
   ierr = DataBucketRemovePointAtIndex(swarm->db,idx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+ (i) examines DMSwarm field named DMSwarm_rank
+ (ii) all entries label with field_rank[] != rank are pushed to processor rank
+ (iii) points sent can be optionaly removd from local list
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmPush_Basic"
+PetscErrorCode DMSwarmPush_Basic(DM dm,PetscBool remove_sent_points)
+{
+#if 0
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  MPI_Comm comm;
+  PetscMPIInt *toranks,nfrom,*fromranks,rank;
+  PetscInt p,k,pk,npoints,*rankval,nto,sendcount;
+  char *todata,*fromdata;
+  void *singlebuffer;
+  size_t sizeof_dmswarm_point;
+  
+  comm = PetscObjectComm((PetscObject)dm);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&singlebuffer);CHKERRQ(ierr);
+  
+  /* two pass */
+  /* a) count total amount of points to send : count */
+
+  PetscMalloc1(50,&toranks);
+  for (k=0; k<50; k++) { toranks[k] = -1; }
+  
+  nto = 0;
+  sendcount  = 0;
+  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+  for (p=0; p<npoints; p++) {
+    if (rankval[p] != (PetscInt)rank) {
+      PetscBool found_rank;
+
+      sendcount++;
+      
+      for (k=0; k<50; k++) {
+        if (toranks[k] == (PetscMPIInt)rankval[p]) { found_rank = PETSC_TRUE; }
+      }
+      if (!found_rank) {
+        toranks[nto] = (PetscMPIInt)rankval[p];
+        nto++;
+      }
+      
+    }
+  }
+  
+  PetscMalloc1(sizeof_dmswarm_point*sendcount,&todata);
+  pk = 0;
+  for (p=0; p<npoints; p++) {
+    if (rankval[p] != (PetscInt)rank) {
+
+      ierr = DataBucketFillPackedArray(swarm->db,p,singlebuffer);CHKERRQ(ierr);
+      memcpy(todata + pk*sizeof_dmswarm_point,singlebuffer,sizeof_dmswarm_point);
+      pk++;
+    }
+  }
+  
+  ierr = DMSwarmRestoreField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+  
+  if (nto == 0) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] sending nothing\n",rank);
+  } else if (nto == 1) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] sending %D to rank %D\n",rank,sendcount,toranks[0]);
+  } else if (nto == 2) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] sending %D to ranks %D %D\n",rank,sendcount,toranks[0],toranks[1]);
+  } else if (nto == 3) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] sending %D to ranks %D %D %D\n",rank,sendcount,toranks[0],toranks[1],toranks[2]);
+  } else if (nto == 4) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] sending %D to ranks %D %D %D %D\n",rank,sendcount,toranks[0],toranks[1],toranks[2],toranks[3]);
+  } else if (nto == 5) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] sending %D to ranks %D %D %D %D %D\n",rank,sendcount,toranks[0],toranks[1],toranks[2],toranks[3],toranks[4]);
+  }
+  
+  /* this function is not going to be useful if the count has to be equal on all ranks */
+  ierr = PetscCommBuildTwoSided( comm, 1, MPI_CHAR, nto, toranks, (void*)todata,
+                                &nfrom, &fromranks, (void**)&fromdata);CHKERRQ(ierr);
+  
+  
+  if (nfrom == 0) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] recievd nothing\n",rank);
+  } else if (nfrom == 1) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] recieving %D from rank %D\n",rank,sendcount,fromranks[0]);
+  } else if (nfrom == 2) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] recieving %D from ranks %D %D\n",rank,sendcount,fromranks[0],fromranks[1]);
+  } else if (nfrom == 3) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] recieving %D from ranks %D %D %D\n",rank,sendcount,fromranks[0],fromranks[1],fromranks[2]);
+  } else if (nfrom == 4) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] recieving %D from ranks %D %D %D %D\n",rank,sendcount,fromranks[0],fromranks[1],fromranks[2],fromranks[3]);
+  } else if (nfrom == 5) {
+    PetscPrintf(PETSC_COMM_SELF,"rank[%d] recieving %D from ranks %D %D %D %D %D\n",rank,sendcount,fromranks[0],fromranks[1],fromranks[2],fromranks[3],fromranks[4]);
+  }
+  
+  
+  
+  ierr = DataBucketDestroyPackedArray(swarm->db,&singlebuffer);CHKERRQ(ierr);
+  PetscFree(toranks);
+  PetscFree(fromranks);
+  PetscFree(todata);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmPush"
+PETSC_EXTERN PetscErrorCode DMSwarmPush(DM dm,PetscBool remove_sent_points)
+{
+  PetscErrorCode ierr;
+  ierr = DMSwarmPush_Basic(dm,remove_sent_points);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetup_Swarm"
+PetscErrorCode DMSetup_Swarm(DM dm)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  PetscMPIInt rank;
+  PetscInt p,npoints,*rankval;
+  
+  if (swarm->issetup) PetscFunctionReturn(0);
+  
+  PetscPrintf(PETSC_COMM_SELF,"Swarm setup \n");
+  swarm->issetup = PETSC_TRUE;
+
+  /* check some fields were registered */
+  if (swarm->db->nfields <= 2) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"At least one field user must be registered via DMSwarmRegisterXXX()");
+
+  /* check local sizes were set */
+  if (swarm->db->L == -1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Local sizes must be set via DMSwarmSetLocalSizes()");
+
+  /* initialize values in pid and rank placeholders */
+  /* TODO: [pid - use MPI_Scan] */
+  
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+  for (p=0; p<npoints; p++) {
+    rankval[p] = (PetscInt)rank;
+  }
+  ierr = DMSwarmRestoreField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -406,6 +574,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   
   ierr = DataBucketCreate(&swarm->db);CHKERRQ(ierr);
   swarm->vec_field_set = PETSC_FALSE;
+  swarm->issetup = PETSC_FALSE;
   
   dm->dim  = 0;
   dm->data = swarm;
@@ -414,7 +583,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   dm->ops->load                            = NULL;
   dm->ops->setfromoptions                  = NULL;
   dm->ops->clone                           = NULL;
-  dm->ops->setup                           = NULL;
+  dm->ops->setup                           = DMSetup_Swarm;
   dm->ops->createdefaultsection            = NULL;
   dm->ops->createdefaultconstraints        = NULL;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Swarm;

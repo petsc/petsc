@@ -24,7 +24,7 @@ typedef struct {
   char      vec_field_name[PETSC_MAX_PATH_LEN];
   PetscBool vec_field_set;
   PetscInt  vec_field_bs,vec_field_nlocal;
-
+  PetscBool issetup;
 } DM_Swarm;
 
 #endif /* _SWARMIMPL_H */

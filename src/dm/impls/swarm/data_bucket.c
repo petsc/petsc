@@ -81,7 +81,7 @@ PetscErrorCode DataBucketCreate(DataBucket *DB)
 	db->finalised = PETSC_FALSE;
 	
 	/* create empty spaces for fields */
-	db->L         = 0;
+	db->L         = -1;
 	db->buffer    = 1;
 	db->allocated = 1;
   
