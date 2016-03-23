@@ -302,6 +302,52 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],Pet
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmAddPoint"
+PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM dm)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  
+  ierr = DataBucketAddPoint(swarm->db);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmAddNPoints"
+PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  PetscInt nlocal;
+
+  ierr = DataBucketGetSizes(swarm->db,&nlocal,NULL,NULL);CHKERRQ(ierr);
+  nlocal = nlocal + npoints;
+  ierr = DataBucketSetSizes(swarm->db,nlocal,-1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmRemovePoint"
+PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM dm)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+
+  ierr = DataBucketRemovePoint(swarm->db);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmRemovePointAtIndex"
+PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+
+  ierr = DataBucketRemovePointAtIndex(swarm->db,idx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Swarm"

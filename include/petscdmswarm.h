@@ -17,5 +17,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],Pet
 
 PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[]);
 
+PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM dm);
+PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints);
+PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM dm);
+PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx);
+
 #endif
 
