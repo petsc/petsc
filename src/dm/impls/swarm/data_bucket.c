@@ -472,7 +472,7 @@ PetscErrorCode DataBucketCopyPoint(const DataBucket xb,const PetscInt pid_x,
 		void *src;
 		
 		ierr = DataFieldGetAccess( xb->field[f] );CHKERRQ(ierr);
-		if (xb != yb) { DataFieldGetAccess( yb->field[f] ); }
+		if (xb != yb) { ierr = DataFieldGetAccess( yb->field[f] );CHKERRQ(ierr); }
 		
 		ierr = DataFieldAccessPoint( xb->field[f],pid_x, &src );CHKERRQ(ierr);
 		ierr = DataFieldAccessPoint( yb->field[f],pid_y, &dest );CHKERRQ(ierr);
@@ -480,7 +480,7 @@ PetscErrorCode DataBucketCopyPoint(const DataBucket xb,const PetscInt pid_x,
 		memcpy( dest, src, xb->field[f]->atomic_size );
 		
 		ierr = DataFieldRestoreAccess( xb->field[f] );CHKERRQ(ierr);
-		if (xb != yb) { DataFieldRestoreAccess( yb->field[f] ); }
+		if (xb != yb) { ierr = DataFieldRestoreAccess( yb->field[f] );CHKERRQ(ierr); }
 	}
   PetscFunctionReturn(0);
 }

@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[
   PetscScalar *array;
   PetscDataType type;
 
-  DataBucketGetSizes(swarm->db,&n,NULL,NULL);
+  ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
 
   /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   PetscDataType type;
   char name[PETSC_MAX_PATH_LEN];
   
-  DataBucketGetSizes(swarm->db,&n,NULL,NULL);
+  ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
 
   /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
@@ -143,7 +143,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char
   if (!fptr) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Vector being destroyed was not created from DMSwarm field(%s)",fieldname);
   
   /* restore data field */
-  DataFieldRestoreAccess(gfield);
+  ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
   
   ierr = VecDestroy(vec);CHKERRQ(ierr);
   
@@ -176,8 +176,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
 PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  
   swarm->field_registration_finalized = PETSC_TRUE;
-  DataBucketFinalize(swarm->db);
+  ierr = DataBucketFinalize(swarm->db);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -186,8 +188,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
 PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt buffer)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
-
-  DataBucketSetSizes(swarm->db,nlocal,buffer);
+  PetscErrorCode ierr;
+  
+  ierr = DataBucketSetSizes(swarm->db,nlocal,buffer);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -259,8 +262,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fiel
 PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fieldname[],size_t size)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
 
-	DataBucketRegisterField(swarm->db,"DMSwarmRegisterUserDatatypeField",fieldname,size,NULL);
+	ierr = DataBucketRegisterField(swarm->db,"DMSwarmRegisterUserDatatypeField",fieldname,size,NULL);CHKERRQ(ierr);
   swarm->db->field[swarm->db->nfields-1]->petsc_type = PETSC_DATATYPE_UNKNOWN;
   
   PetscFunctionReturn(0);
@@ -275,8 +279,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscIn
   PetscErrorCode ierr;
   
   ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
-  DataFieldGetAccess(gfield);
-  DataFieldGetEntries(gfield,data);
+  ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
+  ierr = DataFieldGetEntries(gfield,data);CHKERRQ(ierr);
   if (blocksize) {}
   if (type) { *type = gfield->petsc_type; }
   
@@ -292,7 +296,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],Pet
   PetscErrorCode ierr;
   
   ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
-  DataFieldRestoreAccess(gfield);
+  ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
   if (data) *data = NULL;
   
   PetscFunctionReturn(0);
@@ -307,7 +311,7 @@ PetscErrorCode DMDestroy_Swarm(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  DataBucketDestroy(&swarm->db);
+  ierr = DataBucketDestroy(&swarm->db);CHKERRQ(ierr);
   ierr = PetscFree(swarm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -328,7 +332,7 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
   if (iascii) {
-    DataBucketView(PetscObjectComm((PetscObject)dm),swarm->db,NULL,DATABUCKET_VIEW_STDOUT);
+    ierr = DataBucketView(PetscObjectComm((PetscObject)dm),swarm->db,NULL,DATABUCKET_VIEW_STDOUT);CHKERRQ(ierr);
   } else if (ibinary) {
     SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO VTK support");
   } else if (ishdf5) {
@@ -354,7 +358,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr     = PetscNewLog(dm,&swarm);CHKERRQ(ierr);
   
-  DataBucketCreate(&swarm->db);
+  ierr = DataBucketCreate(&swarm->db);CHKERRQ(ierr);
   swarm->vec_field_set = PETSC_FALSE;
   
   dm->dim  = 0;
