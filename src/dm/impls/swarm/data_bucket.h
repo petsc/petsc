@@ -7,9 +7,7 @@
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 
 
-#define DEFAULT -32654789
-
-#define DATAFIELD_POINT_ACCESS_GUARD 
+#define DATAFIELD_POINT_ACCESS_GUARD
 
 /* Logging flag */
 #define DATA_BUCKET_LOG
