@@ -1,5 +1,8 @@
 
+
+#include <petsc/private/matimpl.h>
 #include <petsc/private/pcimpl.h>
+#include <petsc/private/dmimpl.h>
 #include <petscksp.h>           /*I "petscksp.h" I*/
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -399,7 +402,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
     */
     ierr = DMDACreate(subcomm,&ctx->dmrepart);CHKERRQ(ierr);
     /* Set unique option prefix name */
-    ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
+    ierr = KSPGetOptionsPrefix(sred->ksp,&prefix);CHKERRQ(ierr);
     ierr = DMSetOptionsPrefix(ctx->dmrepart,prefix);CHKERRQ(ierr);
     ierr = DMAppendOptionsPrefix(ctx->dmrepart,"repart_");CHKERRQ(ierr);
     /* standard setup from DMDACreate{1,2,3}d() */
@@ -419,6 +422,9 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
 
     ierr = DMDAGetInfo(ctx->dmrepart,NULL,NULL,NULL,NULL,&ctx->Mp_re,&ctx->Np_re,&ctx->Pp_re,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = DMDAGetOwnershipRanges(ctx->dmrepart,&_range_i_re,&_range_j_re,&_range_k_re);CHKERRQ(ierr);
+
+    ctx->dmrepart->ops->creatematrix = dm->ops->creatematrix;
+    ctx->dmrepart->ops->createdomaindecomposition = dm->ops->createdomaindecomposition;
   }
 
   /* generate ranges for repartitioned dm */
@@ -461,10 +467,25 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
     sum += ctx->range_k_re[k];
   }
 
-  /* attach dm to ksp on sub communicator */
-  if (isActiveRank(sred->psubcomm)) {
-    ierr = KSPSetDM(sred->ksp,ctx->dmrepart);CHKERRQ(ierr);
-    ierr = KSPSetDMActive(sred->ksp,PETSC_FALSE);CHKERRQ(ierr);
+  /* attach repartitioned dm to child ksp */
+  {
+    PetscErrorCode (*dmksp_func)(KSP,Mat,Mat,void*);
+    void           *dmksp_ctx;
+
+    ierr = DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
+
+    /* attach dm to ksp on sub communicator */
+    if (isActiveRank(sred->psubcomm)) {
+      ierr = KSPSetDM(sred->ksp,ctx->dmrepart);CHKERRQ(ierr);
+
+      if (!dmksp_func || sred->ignore_kspcomputeoperators) {
+        ierr = KSPSetDMActive(sred->ksp,PETSC_FALSE);CHKERRQ(ierr);
+      } else {
+        /* sub ksp inherits dmksp_func and context provided by user */
+        ierr = KSPSetComputeOperators(sred->ksp,dmksp_func,dmksp_ctx);CHKERRQ(ierr);
+        ierr = KSPSetDMActive(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -500,8 +521,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
   ierr = MatCreate(comm,&Pscalar);CHKERRQ(ierr);
   ierr = MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr);CHKERRQ(ierr);
   ierr = MatSetType(Pscalar,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Pscalar,2,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pscalar,2,NULL,2,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Pscalar,1,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Pscalar,1,NULL,1,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],&lenI[2]);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dm,&startI[0],&startI[1],&startI[2],&endI[0],&endI[1],&endI[2]);CHKERRQ(ierr);
@@ -575,8 +596,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
   ierr = MatCreate(comm,&Pscalar);CHKERRQ(ierr);
   ierr = MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr);CHKERRQ(ierr);
   ierr = MatSetType(Pscalar,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Pscalar,2,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pscalar,2,NULL,2,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Pscalar,1,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Pscalar,1,NULL,1,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],NULL);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dm,&startI[0],&startI[1],NULL,&endI[0],&endI[1],NULL);CHKERRQ(ierr);
@@ -701,8 +722,8 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatCreate_dmda"
-PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
+#define __FUNCT__ "PCTelescopeMatCreate_dmda_dmactivefalse"
+PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
 {
   PetscErrorCode ierr;
   PC_Telescope_DMDACtx *ctx;
@@ -715,7 +736,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: updating the redundant preconditioned operator (DMDA)\n");CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-    subcomm = PetscSubcommChild(sred->psubcomm);
+  subcomm = PetscSubcommChild(sred->psubcomm);
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
 
   ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
@@ -744,6 +765,43 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   ierr = MatDestroy(&Bperm);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&_Blocal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeMatCreate_dmda"
+PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+  PetscErrorCode (*dmksp_func)(KSP,Mat,Mat,void*);
+  void           *dmksp_ctx;
+
+  PetscFunctionBegin;
+  ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
+  ierr = DMKSPGetComputeOperators(dm,&dmksp_func,&dmksp_ctx);CHKERRQ(ierr);
+  /* We assume that dmksp_func = NULL, is equivalent to dmActive = PETSC_FALSE */
+  if (dmksp_func && !sred->ignore_kspcomputeoperators) {
+    DM  dmrepart;
+    Mat Ak;
+
+    *A = NULL;
+    if (isActiveRank(sred->psubcomm)) {
+      ierr = KSPGetDM(sred->ksp,&dmrepart);CHKERRQ(ierr);
+      if (reuse == MAT_INITIAL_MATRIX) {
+        ierr = DMCreateMatrix(dmrepart,&Ak);CHKERRQ(ierr);
+        *A = Ak;
+      } else if (reuse == MAT_REUSE_MATRIX) {
+        Ak = *A;
+      }
+      /*
+       There is no need to explicitly assemble the operator now,
+       the sub-KSP will call the method provided to KSPSetComputeOperators() during KSPSetUp()
+      */
+    }
+  } else {
+    ierr = PCTelescopeMatCreate_dmda_dmactivefalse(pc,sred,reuse,A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -782,7 +840,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   for (k=0; k<n; k++) {
     const PetscScalar *x_array;
     PetscScalar       *LA_sub_vec;
-    PetscInt          st,ed,bs;
+    PetscInt          st,ed;
 
     /* permute vector into ordering associated with re-partitioned dmda */
     ierr = MatMultTranspose(ctx->permutation,vecs[k],ctx->xp);CHKERRQ(ierr);
@@ -792,7 +850,6 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
     ierr = VecScatterEnd(sred->scatter,ctx->xp,sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
     /* copy vector entires into xred */
-    ierr = VecGetBlockSize(sred->xtmp,&bs);CHKERRQ(ierr);
     ierr = VecGetArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
     if (sub_vecs[k]) {
       ierr = VecGetOwnershipRange(sub_vecs[k],&st,&ed);CHKERRQ(ierr);
@@ -808,6 +865,8 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   if (isActiveRank(sred->psubcomm)) {
     /* create new nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,&sub_nullspace);CHKERRQ(ierr);
+    sub_nullspace->remove = nullspace->remove;
+    sub_nullspace->rmctx = nullspace->rmctx;
 
     /* attach redundant nullspace to Bred */
     ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
@@ -824,7 +883,7 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   PetscErrorCode    ierr;
   Mat               perm;
   Vec               xtmp,xp,xred,yred;
-  PetscInt          i,st,ed,bs;
+  PetscInt          i,st,ed;
   VecScatter        scatter;
   PetscScalar       *array;
   const PetscScalar *x_array;
@@ -839,6 +898,7 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   xp    = ctx->xp;
 
   PetscFunctionBegin;
+
   /* permute vector into ordering associated with re-partitioned dmda */
   ierr = MatMultTranspose(perm,x,xp);CHKERRQ(ierr);
 
@@ -847,7 +907,6 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* copy vector entires into xred */
-  ierr = VecGetBlockSize(xtmp,&bs);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
   if (xred) {
     PetscScalar *LA_xred;
@@ -867,7 +926,6 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   }
 
   /* return vector */
-  ierr = VecGetBlockSize(xtmp,&bs);CHKERRQ(ierr);
   ierr = VecGetArray(xtmp,&array);CHKERRQ(ierr);
   if (yred) {
     const PetscScalar *LA_yred;
@@ -882,6 +940,69 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   ierr = VecScatterBegin(scatter,xtmp,xp,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,xtmp,xp,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = MatMult(perm,xp,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCApplyRichardson_Telescope_dmda"
+PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
+{
+  PC_Telescope      sred = (PC_Telescope)pc->data;
+  PetscErrorCode    ierr;
+  Mat               perm;
+  Vec               xtmp,xp,yred;
+  PetscInt          i,st,ed;
+  VecScatter        scatter;
+  const PetscScalar *x_array;
+  PetscBool         default_init_guess_value;
+  PC_Telescope_DMDACtx *ctx;
+
+  ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
+  xtmp    = sred->xtmp;
+  scatter = sred->scatter;
+  yred    = sred->yred;
+  perm  = ctx->permutation;
+  xp    = ctx->xp;
+
+  if (its > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope_dmda only supports max_it = 1");
+  *reason = (PCRichardsonConvergedReason)0;
+
+  if (!zeroguess) {
+    ierr = PetscInfo(pc,"PCTelescopeDMDA: Scattering y for non-zero-initial guess\n");CHKERRQ(ierr);
+    /* permute vector into ordering associated with re-partitioned dmda */
+    ierr = MatMultTranspose(perm,y,xp);CHKERRQ(ierr);
+
+    /* pull in vector x->xtmp */
+    ierr = VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    /* copy vector entires into xred */
+    ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
+    if (yred) {
+      PetscScalar *LA_yred;
+      ierr = VecGetOwnershipRange(yred,&st,&ed);CHKERRQ(ierr);
+      ierr = VecGetArray(yred,&LA_yred);CHKERRQ(ierr);
+      for (i=0; i<ed-st; i++) {
+        LA_yred[i] = x_array[i];
+      }
+      ierr = VecRestoreArray(yred,&LA_yred);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArrayRead(xtmp,&x_array);CHKERRQ(ierr);
+  }
+
+  if (isActiveRank(sred->psubcomm)) {
+    ierr = KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value);CHKERRQ(ierr);
+    if (!zeroguess) ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
+  ierr = PCApply_Telescope_dmda(pc,x,y);CHKERRQ(ierr);
+
+  if (isActiveRank(sred->psubcomm)) {
+    ierr = KSPSetInitialGuessNonzero(sred->ksp,default_init_guess_value);CHKERRQ(ierr);
+  }
+
+  if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
+  *outits = 1;
   PetscFunctionReturn(0);
 }
 
