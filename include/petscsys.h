@@ -238,6 +238,10 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 #include <stdint.h>
 #endif
 
+typedef short PetscShort;
+typedef char PetscChar;
+typedef float PetscFloat;
+
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
       represent size of arrays and indexing into arrays. Its size can be configured with the option
@@ -1411,7 +1415,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 12} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 12, PETSC_STRUCT, PETSC_DATATYPE_UNKNOWN} PetscDataType;
 PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
