@@ -517,9 +517,7 @@ static PetscErrorCode ReCompute(TS ts,TJScheduler *tjsch,PetscInt stepnumbegin,P
     if (!stack->solution_only && !tjsch->skip_trajectory) {
       ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
-    if (ts->event) {
-      ierr = TSEventMonitor(ts);CHKERRQ(ierr);
-    }
+    ierr = TSEventHandler(ts);CHKERRQ(ierr);
     if (!ts->steprollback) {
       ierr = TSPostStep(ts);CHKERRQ(ierr);
     }

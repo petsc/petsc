@@ -1,29 +1,25 @@
-
 #include <petsc/private/tsimpl.h> /*I  "petscts.h" I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "TSEventMonitorInitialize"
+#define __FUNCT__ "TSEventInitialize"
 /*
-  TSEventMonitorInitialize - Initializes TSEvent for TSSolve
+  TSEventInitialize - Initializes TSEvent for TSSolve
 */
-PetscErrorCode TSEventMonitorInitialize(TS ts)
+PetscErrorCode TSEventInitialize(TSEvent event,TS ts,PetscReal t,Vec U)
 {
   PetscErrorCode ierr;
-  PetscReal      t;
-  Vec            U;
-  TSEvent        event=ts->event;
 
   PetscFunctionBegin;
+  if (!event) PetscFunctionReturn(0);
+  PetscValidPointer(event,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,2);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,4);
 
-  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetTimeStep(ts,&event->initial_timestep);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
   event->ptime_prev = t;
-  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,event->monitorcontext);CHKERRQ(ierr);
-
+  ierr = (*event->eventhandler)(ts,t,U,event->fvalue_prev,event->ctx);CHKERRQ(ierr);
   /* Initialize the event recorder */
   event->recorder.ctr = 0;
-
   PetscFunctionReturn(0);
 }
 
@@ -44,24 +40,28 @@ PetscErrorCode TSEventMonitorInitialize(TS ts)
    Notes:
    Must call TSSetEventMonitor() before setting the tolerances.
 
-   The size of vtol is equal to the number of events. 
+   The size of vtol is equal to the number of events.
 
    Level: beginner
 
 .seealso: TS, TSEvent, TSSetEventMonitor()
 @*/
-PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal *vtol)
+PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 {
-  TSEvent        event=ts->event;
+  TSEvent        event;
   PetscInt       i;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (vtol) PetscValidRealPointer(vtol,3);
   if(!ts->event) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventMonitor()");
-  if(vtol) {
-    for(i=0; i < event->nevents; i++) event->vtol[i] = vtol[i];
+
+  event = ts->event;
+  if (vtol) {
+    for (i=0; i < event->nevents; i++) event->vtol[i] = vtol[i];
   } else {
-    if(tol != PETSC_DECIDE || tol != PETSC_DEFAULT) {
-      for(i=0; i < event->nevents; i++) event->vtol[i] = tol;
+    if (tol != PETSC_DECIDE || tol != PETSC_DEFAULT) {
+      for (i=0; i < event->nevents; i++) event->vtol[i] = tol;
     }
   }
   PetscFunctionReturn(0);
@@ -81,24 +81,24 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal *vtol)
                +1 => Zero crossing in positive direction, 0 => both ways (one for each event)
 .  terminate - flag to indicate whether time stepping should be terminated after
                event is detected (one for each event)
-.  eventmonitor - event monitoring routine
+.  eventhandler - event monitoring routine
 .  postevent - [optional] post-event function
 -  mectx - [optional] user-defined context for private data for the
               event monitor and post event routine (use NULL if no
               context is desired)
 
-   Calling sequence of eventmonitor:
-   PetscErrorCode EventMonitor(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void* mectx)
+   Calling sequence of eventhandler:
+   PetscErrorCode EventHandler(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void* mectx)
 
    Input Parameters:
 +  ts  - the TS context
 .  t   - current time
 .  U   - current iterate
--  ctx - [optional] context passed with eventmonitor
+-  ctx - [optional] context passed with eventhandler
 
    Output parameters:
 .  fvalue    - function value of events at time t
-               
+
    Calling sequence of postevent:
    PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero, PetscInt events_zero, PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 
@@ -109,7 +109,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal *vtol)
 .  t            - current time
 .  U            - current solution
 .  forwardsolve - Flag to indicate whether TS is doing a forward solve (1) or adjoint solve (0)
--  ctx          - the context passed with eventmonitor
+-  ctx          - the context passed with eventhandler
 
    Level: intermediate
 
@@ -117,7 +117,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal *vtol)
 
 .seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
 @*/
-PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *mectx)
+PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt direction[],PetscBool terminate[],PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *ctx)
 {
   PetscErrorCode ierr;
   TSEvent        event;
@@ -126,7 +126,11 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
   PetscReal      tol=1e-6;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&event);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(direction,2);
+  PetscValidIntPointer(terminate,3);
+
+  ierr = PetscNewLog(ts,&event);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevents,&event->fvalue);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevents,&event->fvalue_prev);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevents,&event->direction);CHKERRQ(ierr);
@@ -137,12 +141,12 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
     event->terminate[i] = terminate[i];
   }
   ierr = PetscMalloc1(nevents,&event->events_zero);CHKERRQ(ierr);
-  event->monitor = eventmonitor;
+  event->eventhandler = eventhandler;
   event->postevent = postevent;
-  event->monitorcontext = (void*)mectx;
+  event->ctx = ctx;
   event->nevents = nevents;
 
-  for(i=0; i < MAXEVENTRECORDERS; i++) {
+  for (i=0; i < MAXEVENTRECORDERS; i++) {
     ierr = PetscMalloc1(nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
   }
 
@@ -152,13 +156,10 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
     ierr = PetscOptionsName("-ts_event_monitor","Print choices made by event handler","",&flg);CHKERRQ(ierr);
   }
   PetscOptionsEnd();
+  for (i=0; i < event->nevents; i++) event->vtol[i] = tol;
+  if (flg) {ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&event->monitor);CHKERRQ(ierr);}
 
-  for(i=0; i < event->nevents; i++) event->vtol[i] = tol;
-
-
-  if(flg) {
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&event->mon);CHKERRQ(ierr);
-  }
+  ierr = TSEventDestroy(&ts->event);CHKERRQ(ierr);
   ts->event = event;
   PetscFunctionReturn(0);
 }
@@ -176,8 +177,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
 .  events_zero  - indices of local events which have reached zero
 .  t            - current time
 .  U            - current solution
-.  forwardsolve - Flag to indicate whether TS is doing a forward solve (1) or adjoint solve (0)
--  ctx          - the context passed with eventmonitor
+-  forwardsolve - Flag to indicate whether TS is doing a forward solve (1) or adjoint solve (0)
 
    Level: intermediate
 
@@ -187,7 +187,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
 */
 #undef __FUNCT__
 #define __FUNCT__ "TSPostEvent"
-PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,PetscBool forwardsolve,void *ctx)
+PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,PetscBool forwardsolve)
 {
   PetscErrorCode ierr;
   TSEvent        event=ts->event;
@@ -197,7 +197,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
 
   PetscFunctionBegin;
   if (event->postevent) {
-    ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,forwardsolve,ctx);CHKERRQ(ierr);
+    ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,forwardsolve,event->ctx);CHKERRQ(ierr);
   }
   for(i = 0; i < nevents_zero;i++) {
     terminate = (PetscBool)(terminate || event->terminate[events_zero[i]]);
@@ -221,20 +221,21 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   event->recorder.ctr++;
 
   /* Reset the event residual functions as states might get changed by the postevent callback */
-  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,event->monitorcontext);CHKERRQ(ierr);
+  ierr = (*event->eventhandler)(ts,t,U,event->fvalue_prev,event->ctx);CHKERRQ(ierr);
   event->ptime_prev  = t;
-
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSEventMonitorDestroy"
-PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
+#define __FUNCT__ "TSEventDestroy"
+PetscErrorCode TSEventDestroy(TSEvent *event)
 {
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
+  PetscValidPointer(event,1);
+  if (!*event) PetscFunctionReturn(0);
   ierr = PetscFree((*event)->fvalue);CHKERRQ(ierr);
   ierr = PetscFree((*event)->fvalue_prev);CHKERRQ(ierr);
   ierr = PetscFree((*event)->direction);CHKERRQ(ierr);
@@ -244,18 +245,17 @@ PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
   for(i=0; i < MAXEVENTRECORDERS; i++) {
     ierr = PetscFree((*event)->recorder.eventidx[i]);CHKERRQ(ierr);
   }
-  ierr = PetscViewerDestroy(&(*event)->mon);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*event)->monitor);CHKERRQ(ierr);
   ierr = PetscFree(*event);CHKERRQ(ierr);
-  *event = NULL;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSEventMonitor"
-PetscErrorCode TSEventMonitor(TS ts)
+#define __FUNCT__ "TSEventHandler"
+PetscErrorCode TSEventHandler(TS ts)
 {
   PetscErrorCode ierr;
-  TSEvent        event=ts->event;
+  TSEvent        event;
   PetscReal      t;
   Vec            U;
   PetscInt       i;
@@ -265,6 +265,9 @@ PetscErrorCode TSEventMonitor(TS ts)
   PetscInt       fvalue_sign,fvalueprev_sign;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->event) PetscFunctionReturn(0);
+  event = ts->event;
 
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
@@ -283,7 +286,7 @@ PetscErrorCode TSEventMonitor(TS ts)
 
   event->nevents_zero = 0;
 
-  ierr = (*event->monitor)(ts,t,U,event->fvalue,event->monitorcontext);CHKERRQ(ierr);
+  ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);
 
   for (i = 0; i < event->nevents; i++) {
     if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i]) {
@@ -295,42 +298,42 @@ PetscErrorCode TSEventMonitor(TS ts)
     if (fvalueprev_sign != 0 && (fvalue_sign != fvalueprev_sign) && (PetscAbsScalar(event->fvalue_prev[i]) > event->vtol[i])) {
       switch (event->direction[i]) {
       case -1:
-	if (fvalue_sign < 0) {
-	  rollback = 1;
-	  /* Compute linearly interpolated new time step */
-	  dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
-	  if(event->mon) {
-	    ierr = PetscViewerASCIIPrintf(event->mon,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
-	  }
-	}
-	break;
+        if (fvalue_sign < 0) {
+          rollback = 1;
+          /* Compute linearly interpolated new time step */
+          dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+          if(event->monitor) {
+            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+          }
+        }
+        break;
       case 1:
-	if (fvalue_sign > 0) { 
-	  rollback = 1;
-	  /* Compute linearly interpolated new time step */
-	  dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
-	  if(event->mon) {
-	    ierr = PetscViewerASCIIPrintf(event->mon,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
-	  }
-	}
-	break;
-      case 0: 
-	rollback = 1; 
-	/* Compute linearly interpolated new time step */
-	dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
-	if(event->mon) {
-	  ierr = PetscViewerASCIIPrintf(event->mon,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
-	}
-	break;
+        if (fvalue_sign > 0) {
+          rollback = 1;
+          /* Compute linearly interpolated new time step */
+          dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+          if(event->monitor) {
+            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+          }
+        }
+        break;
+      case 0:
+        rollback = 1;
+        /* Compute linearly interpolated new time step */
+        dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+        if(event->monitor) {
+          ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent : Event %D interval located [%g - %g]\n",i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+        }
+        break;
       }
     }
   }
   if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
-  
+
   in[0] = event->status;
   in[1] = rollback;
   ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  
+
   event->status = (TSEventStatus)out[0];
   rollback = out[1];
   if (rollback) {
@@ -340,14 +343,14 @@ PetscErrorCode TSEventMonitor(TS ts)
   if (event->status == TSEVENT_ZERO) {
     for(i=0; i < event->nevents; i++) {
       if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i]) {
-	event->events_zero[event->nevents_zero++] = i;
-	if(event->mon) {
-	  ierr = PetscViewerASCIIPrintf(event->mon,"TSEvent : Event %D zero crossing at time %g\n",i,(double)t);CHKERRQ(ierr);
-	}
+        event->events_zero[event->nevents_zero++] = i;
+        if(event->monitor) {
+          ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent : Event %D zero crossing at time %g\n",i,(double)t);CHKERRQ(ierr);
+        }
       }
     }
 
-    ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
+    ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve);CHKERRQ(ierr);
 
     dt = event->tstepend-t;
     if(PetscAbsReal(dt) < PETSC_SMALL) dt += event->initial_timestep;
@@ -376,17 +379,20 @@ PetscErrorCode TSEventMonitor(TS ts)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointEventMonitor"
-PetscErrorCode TSAdjointEventMonitor(TS ts)
+#define __FUNCT__ "TSAdjointEventHandler"
+PetscErrorCode TSAdjointEventHandler(TS ts)
 {
   PetscErrorCode ierr;
-  TSEvent        event=ts->event;
+  TSEvent        event;
   PetscReal      t;
   Vec            U;
   PetscInt       ctr;
   PetscBool      forwardsolve=PETSC_FALSE; /* Flag indicating that TS is doing an adjoint solve */
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->event) PetscFunctionReturn(0);
+  event = ts->event;
 
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
@@ -395,7 +401,7 @@ PetscErrorCode TSAdjointEventMonitor(TS ts)
   if(ctr >= 0 && PetscAbsReal(t - event->recorder.time[ctr]) < PETSC_SMALL) {
     /* Call the user postevent function */
     if(event->postevent) {
-      ierr = (*event->postevent)(ts,event->recorder.nevents[ctr],event->recorder.eventidx[ctr],t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
+      ierr = (*event->postevent)(ts,event->recorder.nevents[ctr],event->recorder.eventidx[ctr],t,U,forwardsolve,event->ctx);CHKERRQ(ierr);
       event->recorder.ctr--;
     }
   }
@@ -403,6 +409,3 @@ PetscErrorCode TSAdjointEventMonitor(TS ts)
   PetscBarrier((PetscObject)ts);
   PetscFunctionReturn(0);
 }
-
-
-
