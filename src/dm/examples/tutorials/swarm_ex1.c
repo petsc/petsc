@@ -3,6 +3,7 @@ static char help[] = "Tests DMSwarm\n\n";
 
 #include <petscdm.h>
 #include <petscdmda.h>
+#include <petscdmswarm.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -20,6 +21,7 @@ int main(int argc,char **argv)
   ierr = DMSwarmInitializeFieldRegister(dms);CHKERRQ(ierr);
   
   ierr = DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmRegisterPetscDatatypeField(dms,"strain",1,PETSC_REAL);CHKERRQ(ierr);
   
   ierr = DMSwarmFinalizeFieldRegister(dms);CHKERRQ(ierr);
@@ -29,10 +31,10 @@ int main(int argc,char **argv)
   
   {
     PetscReal *array;
-    ierr = DMSwarmGetField(dms,"viscosity",NULL,NULL,&array);CHKERRQ(ierr);
+    ierr = DMSwarmGetField(dms,"viscosity",NULL,NULL,(void**)&array);CHKERRQ(ierr);
     array[0] = 11.1;
     array[3] = 33.3;
-    ierr = DMSwarmRestoreField(dms,"viscosity",NULL,NULL,&array);CHKERRQ(ierr);
+    ierr = DMSwarmRestoreField(dms,"viscosity",NULL,NULL,(void**)&array);CHKERRQ(ierr);
   }
   
   ierr = DMSwarmCreateGlobalVectorFromField(dms,"viscosity",&x);CHKERRQ(ierr);

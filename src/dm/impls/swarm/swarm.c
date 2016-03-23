@@ -135,7 +135,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char
   void (*fptr)(void);
   
   /* get data field */
-  DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);
+  ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
   
   /* check vector is an inplace array */
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
@@ -196,6 +196,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt 
 #define __FUNCT__ "DMSwarmRegisterPetscDatatypeField"
 PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],PetscInt blocksize,PetscDataType type)
 {
+  PetscErrorCode ierr;
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   size_t size;
   
@@ -234,7 +235,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char f
   }
   
   /* Load a specific data type into data bucket, specifying textual name and its size in bytes */
-	DataBucketRegisterField(swarm->db,fieldname,size,NULL);
+	ierr = DataBucketRegisterField(swarm->db,"DMSwarmRegisterPetscDatatypeField",fieldname,size,NULL);CHKERRQ(ierr);
   swarm->db->field[swarm->db->nfields-1]->petsc_type = type;
   
   PetscFunctionReturn(0);
@@ -244,9 +245,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char f
 #define __FUNCT__ "DMSwarmRegisterUserStructField"
 PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fieldname[],size_t size)
 {
+  PetscErrorCode ierr;
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   
-	DataBucketRegisterField(swarm->db,fieldname,size,NULL);
+	ierr = DataBucketRegisterField(swarm->db,"DMSwarmRegisterUserStructField",fieldname,size,NULL);CHKERRQ(ierr);
   swarm->db->field[swarm->db->nfields-1]->petsc_type = PETSC_STRUCT ;
   
   PetscFunctionReturn(0);
@@ -258,7 +260,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fi
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
 
-	DataBucketRegisterField(swarm->db,fieldname,size,NULL);
+	DataBucketRegisterField(swarm->db,"DMSwarmRegisterUserDatatypeField",fieldname,size,NULL);
   swarm->db->field[swarm->db->nfields-1]->petsc_type = PETSC_DATATYPE_UNKNOWN;
   
   PetscFunctionReturn(0);
@@ -270,8 +272,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscIn
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   DataField gfield;
+  PetscErrorCode ierr;
   
-  DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);
+  ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
   DataFieldGetAccess(gfield);
   DataFieldGetEntries(gfield,data);
   if (blocksize) {}
@@ -286,8 +289,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],Pet
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   DataField gfield;
+  PetscErrorCode ierr;
   
-  DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);
+  ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
   DataFieldRestoreAccess(gfield);
   if (data) *data = NULL;
   

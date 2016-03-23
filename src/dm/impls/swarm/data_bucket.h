@@ -46,26 +46,19 @@ exit(EXIT_FAILURE);\
 
 
 
-void StringInList( const char name[], const PetscInt N, const DataField gfield[], PetscBool *val );
-void StringFindInList( const char name[], const PetscInt N, const DataField gfield[], PetscInt *index );
+PetscErrorCode StringInList( const char name[], const PetscInt N, const DataField gfield[], PetscBool *val );
+PetscErrorCode StringFindInList( const char name[], const PetscInt N, const DataField gfield[], PetscInt *index );
 
-void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const PetscInt L, DataField *DF );
-void DataFieldDestroy( DataField *DF );
-void DataBucketCreate( DataBucket *DB );
-void DataBucketDestroy( DataBucket *DB );
-void _DataBucketRegisterField(
+PetscErrorCode DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const PetscInt L, DataField *DF );
+PetscErrorCode DataFieldDestroy( DataField *DF );
+PetscErrorCode DataBucketCreate( DataBucket *DB );
+PetscErrorCode DataBucketDestroy( DataBucket *DB );
+PetscErrorCode DataBucketRegisterField(
 															DataBucket db,
 															const char registeration_function[],
 															const char field_name[],
 															size_t atomic_size, DataField *_gfield );
 
-
-#define DataBucketRegisterField(db,name,size,k) {\
-  char *location;\
-  asprintf(&location,"Registered by %s() at line %d within file %s", __FUNCTION__, __LINE__, __FILE__);\
-  _DataBucketRegisterField( (db), location, (name), (size), (k) );\
-  free(location);\
-}
 
 void DataFieldGetNumEntries(DataField df, PetscInt *sum);
 void DataFieldSetSize( DataField df, const PetscInt new_L );
@@ -85,7 +78,7 @@ void DataFieldCopyPoint( const PetscInt pid_x, const DataField field_x,
 												const PetscInt pid_y, const DataField field_y );
 void DataFieldZeroPoint( const DataField field, const PetscInt index ); 
 
-void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield);
+PetscErrorCode DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield);
 void DataBucketQueryDataFieldByName(DataBucket db,const char name[],PetscBool *found);
 void DataBucketFinalize(DataBucket db);
 void DataBucketSetInitialSizes( DataBucket db, const PetscInt L, const PetscInt buffer );

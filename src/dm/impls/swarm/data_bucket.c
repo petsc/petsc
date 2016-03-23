@@ -2,7 +2,7 @@
 #include "data_bucket.h"
 
 /* string helpers */
-void StringInList( const char name[], const PetscInt N, const DataField gfield[], PetscBool *val )
+PetscErrorCode StringInList( const char name[], const PetscInt N, const DataField gfield[], PetscBool *val )
 {
 	PetscInt i;
 	
@@ -10,12 +10,13 @@ void StringInList( const char name[], const PetscInt N, const DataField gfield[]
 	for( i=0; i<N; i++ ) {
 		if( strcmp( name, gfield[i]->name ) == 0 ) {
 			*val = PETSC_TRUE;
-			return;
+      PetscFunctionReturn(0);
 		}
 	}
+  PetscFunctionReturn(0);
 }
 
-void StringFindInList( const char name[], const PetscInt N, const DataField gfield[], PetscInt *index )
+PetscErrorCode StringFindInList( const char name[], const PetscInt N, const DataField gfield[], PetscInt *index )
 {
 	PetscInt i;
 	
@@ -23,12 +24,15 @@ void StringFindInList( const char name[], const PetscInt N, const DataField gfie
 	for( i=0; i<N; i++ ) {
 		if( strcmp( name, gfield[i]->name ) == 0 ) {
 			*index = i;
-			return;
+      PetscFunctionReturn(0);
 		}
 	}
+  PetscFunctionReturn(0);
 }
 
-void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const PetscInt L, DataField *DF )
+#undef __FUNCT__
+#define __FUNCT__ "DataFieldCreate"
+PetscErrorCode DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const PetscInt L, DataField *DF )
 {
 	DataField df;
 	
@@ -45,9 +49,12 @@ void DataFieldCreate( const char registeration_function[], const char name[], co
 	memset( df->data, 0, size * L );
 	
 	*DF = df;
+  PetscFunctionReturn(0);
 }
 
-void DataFieldDestroy( DataField *DF )
+#undef __FUNCT__
+#define __FUNCT__ "DataFieldDestroy"
+PetscErrorCode DataFieldDestroy( DataField *DF )
 {
 	DataField df = *DF;
 	
@@ -57,10 +64,13 @@ void DataFieldDestroy( DataField *DF )
 	free(df);
 	
 	*DF = NULL;
+  PetscFunctionReturn(0);
 }
 
 /* data bucket */
-void DataBucketCreate( DataBucket *DB )
+#undef __FUNCT__
+#define __FUNCT__ "DataBucketCreate"
+PetscErrorCode DataBucketCreate( DataBucket *DB )
 {
 	DataBucket db;
 	
@@ -79,9 +89,12 @@ void DataBucketCreate( DataBucket *DB )
 	db->field     = malloc(sizeof(DataField));
 	
 	*DB = db;
+  PetscFunctionReturn(0);
 }
 
-void DataBucketDestroy( DataBucket *DB )
+#undef __FUNCT__
+#define __FUNCT__ "DataBucketDestroy"
+PetscErrorCode DataBucketDestroy( DataBucket *DB )
 {
 	DataBucket db = *DB;
 	PetscInt f;
@@ -99,9 +112,12 @@ void DataBucketDestroy( DataBucket *DB )
 	free(db);
 	
 	*DB = NULL;
+  PetscFunctionReturn(0);
 }
 
-void _DataBucketRegisterField(
+#undef __FUNCT__
+#define __FUNCT__ "DataBucketRegisterField"
+PetscErrorCode DataBucketRegisterField(
                               DataBucket db,
                               const char registeration_function[],
                               const char field_name[],
@@ -120,10 +136,7 @@ void _DataBucketRegisterField(
   
 	/* check for repeated name */
 	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
-	if(val == PETSC_TRUE ) {
-		printf("ERROR: Cannot add same field twice\n");
-		ERROR();
-	}
+	if(val == PETSC_TRUE ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field %s already exists. Cannot add same field twice",field_name);
   
 	/* create new space for data */
 	field = realloc( db->field,     sizeof(DataField)*(db->nfields+1));
@@ -138,6 +151,7 @@ void _DataBucketRegisterField(
 	if(_gfield!=NULL){
 		*_gfield = fp;
 	}
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -149,19 +163,20 @@ void _DataBucketRegisterField(
  }
  */
 
-void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield)
+#undef __FUNCT__
+#define __FUNCT__ "DataBucketGetDataFieldByName"
+PetscErrorCode DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield)
 {
 	PetscInt idx;
 	PetscBool found;
 	
 	StringInList(name,db->nfields,(const DataField*)db->field,&found);
-	if(found==PETSC_FALSE) {
-		printf("ERROR: Cannot find DataField with name %s \n", name );
-		ERROR();
-	}
+	if (!found) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot find DataField with name %s",name);
+
 	StringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
   
 	*gfield = db->field[idx];
+  PetscFunctionReturn(0);
 }
 
 void DataBucketQueryDataFieldByName(DataBucket db,const char name[],PetscBool *found)
@@ -446,7 +461,7 @@ void DataBucketCreateFromSubset( DataBucket DBIn, const PetscInt N, const PetscI
 	DataBucketGetSizes(DBIn,&L,&buffer,&allocated);
 	
 	for(f=0;f<nfields;f++) {
-		DataBucketRegisterField(*DB,fields[f]->name,fields[f]->atomic_size,NULL);
+		DataBucketRegisterField(*DB,"DataBucketCreateFromSubset",fields[f]->name,fields[f]->atomic_size,NULL);
 	}
 	DataBucketFinalize(*DB);
 	
@@ -969,7 +984,7 @@ void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
 		atomic_size = field->atomic_size;
 		name        = field->name;
 		
-		DataBucketRegisterField(db2,name,atomic_size,NULL);
+		DataBucketRegisterField(db2,"DataBucketDuplicateFields",name,atomic_size,NULL);
 	}
 	DataBucketFinalize(db2);
 	DataBucketSetInitialSizes(db2,0,1000);
