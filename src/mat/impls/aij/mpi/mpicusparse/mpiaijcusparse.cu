@@ -118,7 +118,7 @@ PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMult_MPIAIJCUSPARSE"
+#define __FUNCT__ "MatMultTranspose_MPIAIJCUSPARSE"
 PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   /* This multiplication sequence is different sequence
