@@ -274,8 +274,9 @@ typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_Z
 struct _n_TSEvent {
   PetscScalar    *fvalue;          /* value of event function at the end of the step*/
   PetscScalar    *fvalue_prev;     /* value of event function at start of the step */
-  PetscReal       ptime;           /* time at step end */
   PetscReal       ptime_prev;      /* time at step start */
+  PetscReal       ptime_end;       /* end time of step */
+  PetscReal       timestep_prev;   /* previous time step */
   PetscErrorCode  (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event handler function */
   PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*); /* User post event function */
   void           *ctx;              /* User context for event handler and post even functions */
@@ -286,8 +287,6 @@ struct _n_TSEvent {
   PetscInt        *events_zero;     /* List of events that have reached zero */
   PetscReal      *vtol;             /* Vector tolerances for event zero check */
   TSEventStatus   status;           /* Event status */
-  PetscReal       tstepend;         /* End time of step */
-  PetscReal       initial_timestep; /* Initial time step */
   PetscViewer     monitor;
   /* Struct to record the events */
   struct {
