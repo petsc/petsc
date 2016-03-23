@@ -34,6 +34,7 @@ typedef const char* DMType;
 #define DMFOREST    "forest"
 #define DMP4EST     "p4est"
 #define DMP8EST     "p8est"
+#define DMSWARM     "swarm"
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
