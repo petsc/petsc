@@ -3,7 +3,7 @@ ALL: lib
 CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = swarm.c data_bucket.c
+SOURCEC  = swarm.c data_bucket.c data_ex.c
 SOURCEF  =
 SOURCEH  =
 DIRS     = 

@@ -367,18 +367,18 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSwarmPush_Basic"
-PetscErrorCode DMSwarmPush_Basic(DM dm,PetscBool remove_sent_points)
+#define __FUNCT__ "DMSwarmMigrate_Basic"
+PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
 {
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSwarmPush"
-PETSC_EXTERN PetscErrorCode DMSwarmPush(DM dm,PetscBool remove_sent_points)
+#define __FUNCT__ "DMSwarmMigrate"
+PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
 {
   PetscErrorCode ierr;
-  ierr = DMSwarmPush_Basic(dm,remove_sent_points);CHKERRQ(ierr);
+  ierr = DMSwarmMigrate_Basic(dm,remove_sent_points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
