@@ -829,7 +829,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     PetscDrawLG ctx;
 
-    ierr = SNESMonitorLGCreate(PetscObjectComm((PetscObject)snes),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = SNESMonitorLGCreate(PetscObjectComm((PetscObject)snes),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = SNESMonitorSet(snes,SNESMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))PetscDrawLGDestroy);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
@@ -837,7 +837,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     PetscViewer ctx;
 
-    ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = SNESMonitorSet(snes,SNESMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
@@ -3300,7 +3300,8 @@ PetscErrorCode  SNESMonitorLGCreate(MPI_Comm comm,const char host[],const char l
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
+PETSC_INTERN PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorLGRange"
 PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *monctx)

@@ -534,7 +534,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flg) {
     PetscDrawLG ctx;
 
-    ierr = KSPMonitorLGResidualNormCreate(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorLGResidualNormCreate(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))PetscDrawLGDestroy);CHKERRQ(ierr);
   }
   /*
@@ -544,7 +544,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flg) {
     PetscDrawLG ctx;
 
-    ierr = KSPMonitorLGTrueResidualNormCreate(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorLGTrueResidualNormCreate(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,ctx,(PetscErrorCode (*)(void**))PetscDrawLGDestroy);CHKERRQ(ierr);
   }
   /*
@@ -554,7 +554,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flg) {
     PetscViewer ctx;
 
-    ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 

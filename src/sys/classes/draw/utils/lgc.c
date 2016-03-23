@@ -158,7 +158,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
   PetscValidLogicalCollectiveInt(draw,dim,2);
   PetscValidPointer(outlg,3);
 
-  ierr = PetscHeaderCreate(lg,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawLGDestroy,NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(lg,PETSC_DRAWLG_CLASSID,"DrawLG","Line Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawLGDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)lg);CHKERRQ(ierr);
   ierr = PetscDrawLGSetOptionsPrefix(lg,((PetscObject)draw)->prefix);CHKERRQ(ierr);
 
@@ -327,6 +327,37 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawLGSetLimits"
+/*@
+   PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
+   points are added after this call, the limits will be adjusted to
+   include those additional points.
+
+   Logically Collective on PetscDrawLG
+
+   Input Parameters:
++  xlg - the line graph context
+-  x_min,x_max,y_min,y_max - the limits
+
+   Level: intermediate
+
+   Concepts: line graph^setting axis
+
+@*/
+PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+
+  (lg)->xmin = x_min;
+  (lg)->xmax = x_max;
+  (lg)->ymin = y_min;
+  (lg)->ymax = y_max;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawLGReset"
 /*@
@@ -462,34 +493,33 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
     int i,j,dim=lg->dim,nopts=lg->nopts,cl;
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
-        if (lg->colors) cl = lg->colors[i];
-        else cl = PETSC_DRAW_BLACK+i;
+        cl   = lg->colors ? lg->colors[i] : (PETSC_DRAW_BLACK + i);
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
-        if (lg->use_markers) {
-          ierr = PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
-        }
+        if (lg->use_markers) {ierr = PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);}
       }
     }
   }
   if (!rank && lg->legend) {
     int       i,dim=lg->dim,cl;
     PetscReal xl,yl,xr,yr,tw,th;
-    size_t    len,mlen = 0;
-    ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+    size_t    slen,len=0;
+    ierr = PetscDrawAxisGetLimits(lg->axis,&xl,&xr,&yl,&yr);CHKERRQ(ierr);
     ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
     for (i=0; i<dim; i++) {
-      ierr = PetscStrlen(lg->legend[i],&len);CHKERRQ(ierr);
-      mlen = PetscMax(mlen,len);
+      ierr = PetscStrlen(lg->legend[i],&slen);CHKERRQ(ierr);
+      len = PetscMax(len,slen);
     }
-    ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - 3*th,xr - 2*tw,yr - 3*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-    ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - 3*th,xr - (mlen + 8)*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    xr = xr - 1.5*tw; xl = xr - (len + 7)*tw;
+    yr = yr - 1.0*th; yl = yr - (dim + 1)*th;
+    ierr = PetscDrawLine(draw,xl,yl,xr,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xr,yl,xr,yr,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xr,yr,xl,yr,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xl,yr,xl,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
     for  (i=0; i<dim; i++) {
-      cl   = (lg->colors ? lg->colors[i] : i + 1);
-      ierr = PetscDrawLine(draw,xr - (mlen + 6.7)*tw,yr - (4 + i)*th,xr - (mlen + 3.2)*tw,yr - (4 + i)*th,cl);CHKERRQ(ierr);
-      ierr = PetscDrawString(draw,xr - (mlen + 3)*tw,yr - (4.5 + i)*th,PETSC_DRAW_BLACK,lg->legend[i]);CHKERRQ(ierr);
+      cl   = lg->colors ? lg->colors[i] : (PETSC_DRAW_BLACK + i);
+      ierr = PetscDrawLine(draw,xl + 1*tw,yr - (i + 1)*th,xl + 5*tw,yr - (i + 1)*th,cl);CHKERRQ(ierr);
+      ierr = PetscDrawString(draw,xl + 6*tw,yr - (i + 1.5)*th,PETSC_DRAW_BLACK,lg->legend[i]);CHKERRQ(ierr);
     }
-    ierr = PetscDrawLine(draw,xr - 2*tw,yr - 3*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-    ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - (4+lg->dim)*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
 
@@ -608,13 +638,21 @@ PetscErrorCode  PetscDrawLGSetOptionsPrefix(PetscDrawLG lg,const char prefix[])
 @*/
 PetscErrorCode  PetscDrawLGSetFromOptions(PetscDrawLG lg)
 {
-  PetscErrorCode ierr;
-  PetscBool      flg=PETSC_FALSE, set;
+  PetscErrorCode      ierr;
+  PetscBool           usemarkers,set;
+  PetscDrawMarkerType markertype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
-  ierr = PetscOptionsGetBool(((PetscObject)lg)->options,NULL,"-lg_use_markers",&flg,&set);CHKERRQ(ierr);
-  if (set) {ierr = PetscDrawLGSetUseMarkers(lg,flg);CHKERRQ(ierr);}
+  ierr = PetscDrawGetMarkerType(lg->win,&markertype);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(((PetscObject)lg)->options,((PetscObject)lg)->prefix,"-lg_marker_type",PetscDrawMarkerTypes,(PetscEnum*)&markertype,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PetscDrawLGSetUseMarkers(lg,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscDrawSetMarkerType(lg->win,markertype);CHKERRQ(ierr);
+  }
+  usemarkers = lg->use_markers;
+  ierr = PetscOptionsGetBool(((PetscObject)lg)->options,((PetscObject)lg)->prefix,"-lg_use_markers",&usemarkers,&set);CHKERRQ(ierr);
+  if (set) {ierr = PetscDrawLGSetUseMarkers(lg,usemarkers);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
