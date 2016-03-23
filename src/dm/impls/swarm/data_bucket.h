@@ -18,88 +18,81 @@ typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_
 
 
 struct _p_DataField {
-	char   *registeration_function;
-	PetscInt    L;
-	PetscBool active;
-	size_t atomic_size;
-	char   *name; /* what are they called */
-	void   *data; /* the data - an array of structs */
+	char          *registeration_function;
+	PetscInt      L;
+	PetscBool     active;
+	size_t        atomic_size;
+	char          *name; /* what are they called */
+	void          *data; /* the data - an array of structs */
   PetscDataType petsc_type;
 };
 
 struct _p_DataBucket {
-	PetscInt L; /* number in use */
-	PetscInt buffer; /* memory buffer used for re-allocation */
-	PetscInt allocated;  /* number allocated, this will equal datafield->L */
+	PetscInt  L; /* number in use */
+	PetscInt  buffer; /* memory buffer used for re-allocation */
+	PetscInt  allocated;  /* number allocated, this will equal datafield->L */
 	PetscBool finalised; /* DEPRECIATED */
-	PetscInt nfields; /* how many fields of this type */
+	PetscInt  nfields; /* how many fields of this type */
 	DataField *field; /* the data */
 };
-
-#define ERROR() {\
-printf("ERROR: %s() from line %d in %s !!\n", __FUNCTION__, __LINE__, __FILE__);\
-exit(EXIT_FAILURE);\
-}
 
 #define __DATATFIELD_point_access(data,index,atomic_size) (void*)((char*)(data) + (index)*(atomic_size))
 #define __DATATFIELD_point_access_offset(data,index,atomic_size,offset) (void*)((char*)(data) + (index)*(atomic_size) + (offset))
 
 
 
-PetscErrorCode StringInList( const char name[], const PetscInt N, const DataField gfield[], PetscBool *val );
-PetscErrorCode StringFindInList( const char name[], const PetscInt N, const DataField gfield[], PetscInt *index );
+PetscErrorCode StringInList(const char name[],const PetscInt N,const DataField gfield[],PetscBool *val);
+PetscErrorCode StringFindInList(const char name[],const PetscInt N,const DataField gfield[],PetscInt *index);
 
-PetscErrorCode DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const PetscInt L, DataField *DF );
-PetscErrorCode DataFieldDestroy( DataField *DF );
-PetscErrorCode DataBucketCreate( DataBucket *DB );
-PetscErrorCode DataBucketDestroy( DataBucket *DB );
+PetscErrorCode DataFieldCreate(const char registeration_function[],const char name[],const size_t size,const PetscInt L,DataField *DF);
+PetscErrorCode DataFieldDestroy(DataField *DF);
+PetscErrorCode DataBucketCreate(DataBucket *DB);
+PetscErrorCode DataBucketDestroy(DataBucket *DB);
 PetscErrorCode DataBucketRegisterField(
 															DataBucket db,
 															const char registeration_function[],
 															const char field_name[],
-															size_t atomic_size, DataField *_gfield );
+															size_t atomic_size,DataField *_gfield );
 
 
-PetscErrorCode DataFieldGetNumEntries(DataField df, PetscInt *sum);
-PetscErrorCode DataFieldSetSize( DataField df, const PetscInt new_L );
-PetscErrorCode DataFieldZeroBlock( DataField df, const PetscInt start, const PetscInt end );
-PetscErrorCode DataFieldGetAccess( const DataField gfield );
-PetscErrorCode DataFieldAccessPoint( const DataField gfield, const PetscInt pid, void **ctx_p );
-PetscErrorCode DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const PetscInt pid, void **ctx_p );
-PetscErrorCode DataFieldRestoreAccess( DataField gfield );
-PetscErrorCode DataFieldVerifyAccess( const DataField gfield, const size_t size);
+PetscErrorCode DataFieldGetNumEntries(DataField df,PetscInt *sum);
+PetscErrorCode DataFieldSetSize(DataField df,const PetscInt new_L);
+PetscErrorCode DataFieldZeroBlock(DataField df,const PetscInt start,const PetscInt end);
+PetscErrorCode DataFieldGetAccess(const DataField gfield);
+PetscErrorCode DataFieldAccessPoint(const DataField gfield,const PetscInt pid,void **ctx_p);
+PetscErrorCode DataFieldAccessPointOffset(const DataField gfield,const size_t offset,const PetscInt pid,void **ctx_p);
+PetscErrorCode DataFieldRestoreAccess(DataField gfield);
+PetscErrorCode DataFieldVerifyAccess(const DataField gfield,const size_t size);
 PetscErrorCode DataFieldGetAtomicSize(const DataField gfield,size_t *size);
 
 PetscErrorCode DataFieldGetEntries(const DataField gfield,void **data);
 PetscErrorCode DataFieldRestoreEntries(const DataField gfield,void **data);
 
-PetscErrorCode DataFieldInsertPoint( const DataField field, const PetscInt index, const void *ctx );
-PetscErrorCode DataFieldCopyPoint( const PetscInt pid_x, const DataField field_x,
-												const PetscInt pid_y, const DataField field_y );
-PetscErrorCode DataFieldZeroPoint( const DataField field, const PetscInt index );
+PetscErrorCode DataFieldInsertPoint(const DataField field,const PetscInt index,const void *ctx);
+PetscErrorCode DataFieldCopyPoint(const PetscInt pid_x,const DataField field_x,const PetscInt pid_y,const DataField field_y);
+PetscErrorCode DataFieldZeroPoint(const DataField field,const PetscInt index);
 
 PetscErrorCode DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield);
 PetscErrorCode DataBucketQueryDataFieldByName(DataBucket db,const char name[],PetscBool *found);
 PetscErrorCode DataBucketFinalize(DataBucket db);
-PetscErrorCode DataBucketSetInitialSizes( DataBucket db, const PetscInt L, const PetscInt buffer );
-PetscErrorCode DataBucketSetSizes( DataBucket db, const PetscInt L, const PetscInt buffer );
-PetscErrorCode DataBucketGetSizes( DataBucket db, PetscInt *L, PetscInt *buffer, PetscInt *allocated );
-PetscErrorCode DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, PetscInt *L, PetscInt *buffer, PetscInt *allocated );
-PetscErrorCode DataBucketGetDataFields( DataBucket db, PetscInt *L, DataField *fields[] );
+PetscErrorCode DataBucketSetInitialSizes(DataBucket db,const PetscInt L,const PetscInt buffer);
+PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt buffer);
+PetscErrorCode DataBucketGetSizes(DataBucket db,PetscInt *L,PetscInt *buffer,PetscInt *allocated);
+PetscErrorCode DataBucketGetGlobalSizes(MPI_Comm comm,DataBucket db,PetscInt *L,PetscInt *buffer,PetscInt *allocated);
+PetscErrorCode DataBucketGetDataFields(DataBucket db,PetscInt *L,DataField *fields[]);
 
-PetscErrorCode DataBucketCopyPoint( const DataBucket xb, const PetscInt pid_x,
-												 const DataBucket yb, const PetscInt pid_y );
-PetscErrorCode DataBucketCreateFromSubset( DataBucket DBIn, const PetscInt N, const PetscInt list[], DataBucket *DB );
-PetscErrorCode DataBucketZeroPoint( const DataBucket db, const PetscInt index );
+PetscErrorCode DataBucketCopyPoint(const DataBucket xb,const PetscInt pid_x,const DataBucket yb,const PetscInt pid_y);
+PetscErrorCode DataBucketCreateFromSubset(DataBucket DBIn,const PetscInt N,const PetscInt list[],DataBucket *DB);
+PetscErrorCode DataBucketZeroPoint(const DataBucket db,const PetscInt index);
 
-//PetscErrorCode DataBucketLoadFromFile(const char filename[], DataBucketViewType type, DataBucket *db);
-PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db);
+//PetscErrorCode DataBucketLoadFromFile(const char filename[],DataBucketViewType type,DataBucket *db);
+PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[],DataBucketViewType type,DataBucket *db);
 //PetscErrorCode DataBucketView(DataBucket db,const char filename[],DataBucketViewType type);
 PetscErrorCode DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type);
 
-PetscErrorCode DataBucketAddPoint( DataBucket db );
-PetscErrorCode DataBucketRemovePoint( DataBucket db );
-PetscErrorCode DataBucketRemovePointAtIndex( const DataBucket db, const PetscInt index );
+PetscErrorCode DataBucketAddPoint(DataBucket db);
+PetscErrorCode DataBucketRemovePoint(DataBucket db);
+PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt index);
 
 PetscErrorCode DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB);
 PetscErrorCode DataBucketInsertValues(DataBucket db1,DataBucket db2);
