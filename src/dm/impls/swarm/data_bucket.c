@@ -210,7 +210,7 @@ PetscErrorCode DataFieldSetSize( DataField df, const PetscInt new_L )
 {
 	void *tmp_data;
 	
-	if (new_L <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot set size of DataField to be <= 0 \n");
+	if (new_L <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot set size of DataField to be <= 0");
 
 	if (new_L == df->L) PetscFunctionReturn(0);
 	
@@ -240,7 +240,7 @@ PetscErrorCode DataFieldZeroBlock( DataField df, const PetscInt start, const Pet
 
 	if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot zero a block of entries if start(%D) < 0",start);
 
-	if (end > df->L) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"ERROR: Cannot zero a block of entries if end(%D) >= array size(%D)",end,df->L);
+	if (end > df->L) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot zero a block of entries if end(%D) >= array size(%D)",end,df->L);
 	
 	memset( ( ((char*)df->data)+start*df->atomic_size), 0, (end-start)*df->atomic_size );
   PetscFunctionReturn(0);
@@ -395,9 +395,9 @@ PetscErrorCode DataFieldAccessPointOffset( const DataField gfield, const size_t 
 	
 	/* check poPetscInt is valid */
 	if (pid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
-	if (pid >= gfield->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %d",gfield->L);
+	if (pid >= gfield->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",gfield->L);
   
-	if (gfield->active==PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is not active. You must call DataFieldGetAccess() before poPetscInt data can be retrivied",gfield->name);
+	if (gfield->active==PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is not active. You must call DataFieldGetAccess() before point data can be retrivied",gfield->name);
 #endif
 	
 	*ctx_p = __DATATFIELD_point_access_offset(gfield->data,pid,gfield->atomic_size,offset);
@@ -408,7 +408,7 @@ PetscErrorCode DataFieldAccessPointOffset( const DataField gfield, const size_t 
 #define __FUNCT__ "DataFieldAccessPointOffset"
 PetscErrorCode DataFieldRestoreAccess( DataField gfield )
 {
-	if (gfield->active==PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is not active. You must call DataFieldGetAccess()", gfield->name );
+	if (gfield->active == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is not active. You must call DataFieldGetAccess()", gfield->name );
 
 	gfield->active = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -513,8 +513,8 @@ PetscErrorCode DataFieldInsertPoint( const DataField field, const PetscInt index
   
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* check poPetscInt is valid */
-	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
-	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
+	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
+	if (index >= field->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",field->L);
 #endif
 	
   //	memcpy( (void*)((char*)field->data + index*field->atomic_size), ctx, field->atomic_size );
@@ -523,22 +523,23 @@ PetscErrorCode DataFieldInsertPoint( const DataField field, const PetscInt index
 }
 
 // remove data at index - replace with last point
+#undef __FUNCT__
+#define __FUNCT__ "DataBucketRemovePointAtIndex"
 PetscErrorCode DataBucketRemovePointAtIndex( const DataBucket db, const PetscInt index )
 {
 	PetscInt f;
 	
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* check poPetscInt is valid */
-	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
-	if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->L+db->buffer); ERROR(); }
+	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
+	if (index >= db->allocated) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",db->L+db->buffer);
 #endif
 	
-	if (index >= db->L) { /* this poPetscInt is not in the list - no need to error, but I will anyway */
-		printf("ERROR: You should not be trying to remove poPetscInt at index=%d since it's < db->L = %d \n", index, db->L );
-		ERROR();
+	if (index >= db->L) { /* this point is not in the list - no need to error, but I will anyway */
+		SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"You should not be trying to remove point at index=%D since it's < db->L = %D", index, db->L );
 	}
 	
-	if (index != db->L-1) { /* not last poPetscInt in list */
+	if (index != db->L-1) { /* not last point in list */
 		for( f=0; f<db->nfields; f++ ) {
 			DataField field = db->field[f];
 			
@@ -564,14 +565,14 @@ PetscErrorCode DataFieldCopyPoint( const PetscInt pid_x, const DataField field_x
   
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* check poPetscInt is valid */
-	if( pid_x < 0 ){ printf("ERROR: (IN) index must be >= 0\n"); ERROR(); }
-	if( pid_x >= field_x->L ){ printf("ERROR: (IN) index must be < %d\n",field_x->L); ERROR(); }
+	if (pid_x < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"(IN) index must be >= 0");
+	if (pid_x >= field_x->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"(IN) index must be < %D",field_x->L);
   
-	if( pid_y < 0 ){ printf("ERROR: (OUT) index must be >= 0\n"); ERROR(); }
-	if( pid_y >= field_y->L ){ printf("ERROR: (OUT) index must be < %d\n",field_y->L); ERROR(); }
+	if (pid_y < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"(OUT) index must be >= 0");
+	if (pid_y >= field_y->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"(OUT) index must be < %D",field_y->L);
   
 	if( field_y->atomic_size != field_x->atomic_size ) {
-		printf("ERROR: atomic size must match \n"); ERROR();
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"atomic size must match");
 	}
 #endif
 	/*
@@ -593,8 +594,8 @@ PetscErrorCode DataFieldZeroPoint( const DataField field, const PetscInt index )
 {
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* check poPetscInt is valid */
-	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
-	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
+	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
+	if (index >= field->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",field->L);
 #endif
 	
   //	memset( (void*)((char*)field->data + index*field->atomic_size), 0, field->atomic_size );
@@ -610,8 +611,8 @@ PetscErrorCode DataBucketZeroPoint( const DataBucket db, const PetscInt index )
 	PetscInt f;
 	
 	/* check poPetscInt is valid */
-	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
-	if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->allocated); ERROR(); }
+	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
+	if (index >= db->allocated) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",db->allocated);
 	
 	for(f=0;f<db->nfields;f++){
 		DataField field = db->field[f];
@@ -707,10 +708,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	
 	/* check for repeated name */
 	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
-	if(val == PETSC_TRUE ) {
-		printf("ERROR: Cannot add same field twice\n");
-		ERROR();
-	}
+	if (val == PETSC_TRUE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot add same field twice");
 	
 	/* create new space for data */
 	field = realloc( db->field,     sizeof(DataField)*(db->nfields+1));
@@ -762,8 +760,7 @@ PetscErrorCode _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
 	strL = strlen(dummy);
 	if(strL>1) { dummy[strL-1] = 0; }
 	if(strcmp(dummy,"type=DataBucket")!=0) {
-		printf("ERROR: Data file doesn't contain a DataBucket type\n");
-		ERROR();
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Data file doesn't contain a DataBucket type");
 	}
   
 	// format
@@ -773,9 +770,8 @@ PetscErrorCode _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
 	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
 	strL = strlen(dummy);
 	if(strL>1) { dummy[strL-1] = 0; }
-	if(strcmp(dummy,"version=0.0")!=0) {
-		printf("ERROR: DataBucket file must be parsed with version=0.0 : You tried %s \n", dummy);
-		ERROR();
+	if (strcmp(dummy,"version=0.0") != 0) {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"DataBucket file must be parsed with version=0.0 : You tried %s", dummy);
 	}
 	
 	// options
@@ -800,9 +796,8 @@ PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBuck
 	
 	/* open file */
 	fp = fopen(filename,"rb");
-	if(fp==NULL){
-		printf("ERROR: Cannot open file with name %s \n", filename);
-		ERROR();
+	if (fp==NULL){
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file with name %s", filename);
 	}
   
 	/* read header */
@@ -843,13 +838,12 @@ PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataB
 #ifdef DATA_BUCKET_LOG
 	printf("** DataBucketLoadFromFile **\n");
 #endif
-	if(type==DATABUCKET_VIEW_STDOUT) {
+	if (type == DATABUCKET_VIEW_STDOUT) {
 		
-	} else if(type==DATABUCKET_VIEW_ASCII) {
-		printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-		ERROR();
-	} else if(type==DATABUCKET_VIEW_BINARY) {
-		if (nproc==1) {
+	} else if (type == DATABUCKET_VIEW_ASCII) {
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying particle data structure");
+	} else if (type == DATABUCKET_VIEW_BINARY) {
+		if (nproc == 1) {
 			_DataBucketLoadFromFileBinary_SEQ(filename,db);
 		} else {
 			char *name;
@@ -859,8 +853,7 @@ PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataB
 			free(name);
 		}
 	} else {
-		printf("ERROR: Not implemented\n");
-		ERROR();
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer requested");
 	}
   PetscFunctionReturn(0);
 }
@@ -873,10 +866,7 @@ PetscErrorCode _DataBucketViewBinary(DataBucket db,const char filename[])
 	PetscInt f;
   
 	fp = fopen(filename,"wb");
-	if(fp==NULL){
-		printf("ERROR: Cannot open file with name %s \n", filename);
-		ERROR();
-	}
+	if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file with name %s", filename);
 	
 	/* db header */
 	_DataBucketViewAscii_HeaderWrite_v00(fp);
@@ -921,8 +911,7 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
       
 		case DATABUCKET_VIEW_ASCII:
 		{
-			printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-			ERROR();
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying particle data structure");
 		}
 			break;
 			
@@ -934,14 +923,12 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
 			
 		case DATABUCKET_VIEW_HDF5:
 		{
-			printf("ERROR: Has not been implemented \n");
-			ERROR();
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No HDF5 support");
 		}
 			break;
       
 		default:
-			printf("ERROR: Unknown method requested \n");
-			ERROR();
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
 			break;
 	}
   PetscFunctionReturn(0);
@@ -992,8 +979,7 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
 			
 		case DATABUCKET_VIEW_ASCII:
 		{
-			printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-			ERROR();
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying data structure");
 		}
 			break;
 			
@@ -1014,14 +1000,12 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
 			
 		case DATABUCKET_VIEW_HDF5:
 		{
-			printf("ERROR: Has not been implemented \n");
-			ERROR();
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5");
 		}
 			break;
 			
 		default:
-			printf("ERROR: Unknown method requested \n");
-			ERROR();
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
 			break;
 	}
   PetscFunctionReturn(0);
