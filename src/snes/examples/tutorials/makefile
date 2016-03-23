@@ -415,7 +415,7 @@ runex5_5_fas:
 	   ${RM} -f ex5_5_fas.tmp
 
 runex5_5_fas_monitor:
-   -@${MPIEXEC} -n 1 ./ex5 -da_refine 1 -snes_type fas -snes_fas_monitor > ex5_5_fas_monitor.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -da_refine 1 -snes_type fas -snes_fas_monitor > ex5_5_fas_monitor.tmp 2>&1; \
       if (${DIFF} output/ex5_5_fas_monitor.out ex5_5_fas_monitor.tmp) then true; \
       else  printf "${PWD}\nPossible problem with ex5_5_fas_monitor, diffs above\n=========================================\n"; fi; \
       ${RM} -f ex5_5_fas_monitor.tmp
