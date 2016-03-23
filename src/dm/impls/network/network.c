@@ -349,8 +349,8 @@ PetscErrorCode DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnu
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
   header = (DMNetworkComponentHeader)(network->componentdataarray+offsetp);
-  *compkey = header->key[compnum];
-  *offset  = offsetp+network->dataheadersize+header->offset[compnum];
+  if (compkey) *compkey = header->key[compnum];
+  if (offset) *offset  = offsetp+network->dataheadersize+header->offset[compnum];
   PetscFunctionReturn(0);
 }
 
