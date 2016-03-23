@@ -22,7 +22,7 @@ typedef struct _p_DataBucket* DataBucket;
 
 struct _p_DataField {
 	char   *registeration_function;
-	int    L;
+	PetscInt    L;
 	PetscBool active;
 	size_t atomic_size;
 	char   *name; /* what are they called */
@@ -30,11 +30,11 @@ struct _p_DataField {
 };
 
 struct _p_DataBucket {
-	int L; /* number in use */
-	int buffer; /* memory buffer used for re-allocation */
-	int allocated;  /* number allocated, this will equal datafield->L */
+	PetscInt L; /* number in use */
+	PetscInt buffer; /* memory buffer used for re-allocation */
+	PetscInt allocated;  /* number allocated, this will equal datafield->L */
 	PetscBool finalised; /* DEPRECIATED */
-	int nfields; /* how many fields of this type */
+	PetscInt nfields; /* how many fields of this type */
 	DataField *field; /* the data */
 };
 
@@ -48,10 +48,10 @@ exit(EXIT_FAILURE);\
 
 
 
-void StringInList( const char name[], const int N, const DataField gfield[], PetscBool *val );
-void StringFindInList( const char name[], const int N, const DataField gfield[], int *index );
+void StringInList( const char name[], const PetscInt N, const DataField gfield[], PetscBool *val );
+void StringFindInList( const char name[], const PetscInt N, const DataField gfield[], PetscInt *index );
 
-void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const int L, DataField *DF );
+void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const PetscInt L, DataField *DF );
 void DataFieldDestroy( DataField *DF );
 void DataBucketCreate( DataBucket *DB );
 void DataBucketDestroy( DataBucket *DB );
@@ -69,12 +69,12 @@ void _DataBucketRegisterField(
   free(location);\
 }
 
-void DataFieldGetNumEntries(DataField df, int *sum);
-void DataFieldSetSize( DataField df, const int new_L );
-void DataFieldZeroBlock( DataField df, const int start, const int end );
+void DataFieldGetNumEntries(DataField df, PetscInt *sum);
+void DataFieldSetSize( DataField df, const PetscInt new_L );
+void DataFieldZeroBlock( DataField df, const PetscInt start, const PetscInt end );
 void DataFieldGetAccess( const DataField gfield );
-void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p );
-void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const int pid, void **ctx_p );
+void DataFieldAccessPoint( const DataField gfield, const PetscInt pid, void **ctx_p );
+void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const PetscInt pid, void **ctx_p );
 void DataFieldRestoreAccess( DataField gfield );
 void DataFieldVerifyAccess( const DataField gfield, const size_t size);
 void DataFieldGetAtomicSize(const DataField gfield,size_t *size);
@@ -82,24 +82,24 @@ void DataFieldGetAtomicSize(const DataField gfield,size_t *size);
 void DataFieldGetEntries(const DataField gfield,void **data);
 void DataFieldRestoreEntries(const DataField gfield,void **data);
 
-void DataFieldInsertPoint( const DataField field, const int index, const void *ctx );
-void DataFieldCopyPoint( const int pid_x, const DataField field_x,
-												const int pid_y, const DataField field_y );
-void DataFieldZeroPoint( const DataField field, const int index ); 
+void DataFieldInsertPoint( const DataField field, const PetscInt index, const void *ctx );
+void DataFieldCopyPoint( const PetscInt pid_x, const DataField field_x,
+												const PetscInt pid_y, const DataField field_y );
+void DataFieldZeroPoint( const DataField field, const PetscInt index ); 
 
 void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield);
 void DataBucketQueryDataFieldByName(DataBucket db,const char name[],PetscBool *found);
 void DataBucketFinalize(DataBucket db);
-void DataBucketSetInitialSizes( DataBucket db, const int L, const int buffer );
-void DataBucketSetSizes( DataBucket db, const int L, const int buffer );
-void DataBucketGetSizes( DataBucket db, int *L, int *buffer, int *allocated );
-void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long int *buffer, long int *allocated );
-void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] );
+void DataBucketSetInitialSizes( DataBucket db, const PetscInt L, const PetscInt buffer );
+void DataBucketSetSizes( DataBucket db, const PetscInt L, const PetscInt buffer );
+void DataBucketGetSizes( DataBucket db, PetscInt *L, PetscInt *buffer, PetscInt *allocated );
+void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, PetscInt *L, PetscInt *buffer, PetscInt *allocated );
+void DataBucketGetDataFields( DataBucket db, PetscInt *L, DataField *fields[] );
 
-void DataBucketCopyPoint( const DataBucket xb, const int pid_x,
-												 const DataBucket yb, const int pid_y );
-void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[], DataBucket *DB );
-void DataBucketZeroPoint( const DataBucket db, const int index );
+void DataBucketCopyPoint( const DataBucket xb, const PetscInt pid_x,
+												 const DataBucket yb, const PetscInt pid_y );
+void DataBucketCreateFromSubset( DataBucket DBIn, const PetscInt N, const PetscInt list[], DataBucket *DB );
+void DataBucketZeroPoint( const DataBucket db, const PetscInt index );
 
 //void DataBucketLoadFromFile(const char filename[], DataBucketViewType type, DataBucket *db);
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db);
@@ -108,7 +108,7 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucket
 
 void DataBucketAddPoint( DataBucket db );
 void DataBucketRemovePoint( DataBucket db );
-void DataBucketRemovePointAtIndex( const DataBucket db, const int index );
+void DataBucketRemovePointAtIndex( const DataBucket db, const PetscInt index );
 
 void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB);
 void DataBucketInsertValues(DataBucket db1,DataBucket db2);
@@ -116,8 +116,8 @@ void DataBucketInsertValues(DataBucket db1,DataBucket db2);
 /* helpers for parallel send/recv */
 void DataBucketCreatePackedArray(DataBucket db,size_t *bytes,void **buf);
 void DataBucketDestroyPackedArray(DataBucket db,void **buf);
-void DataBucketFillPackedArray(DataBucket db,const int index,void *buf);
-void DataBucketInsertPackedArray(DataBucket db,const int idx,void *data);
+void DataBucketFillPackedArray(DataBucket db,const PetscInt index,void *buf);
+void DataBucketInsertPackedArray(DataBucket db,const PetscInt idx,void *data);
 
 
 #endif

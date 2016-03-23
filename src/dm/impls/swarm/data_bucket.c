@@ -2,9 +2,9 @@
 #include "data_bucket.h"
 
 /* string helpers */
-void StringInList( const char name[], const int N, const DataField gfield[], PetscBool *val )
+void StringInList( const char name[], const PetscInt N, const DataField gfield[], PetscBool *val )
 {
-	int i;
+	PetscInt i;
 	
 	*val = PETSC_FALSE;
 	for( i=0; i<N; i++ ) {
@@ -15,9 +15,9 @@ void StringInList( const char name[], const int N, const DataField gfield[], Pet
 	}
 }
 
-void StringFindInList( const char name[], const int N, const DataField gfield[], int *index )
+void StringFindInList( const char name[], const PetscInt N, const DataField gfield[], PetscInt *index )
 {
-	int i;
+	PetscInt i;
 	
 	*index = -1;
 	for( i=0; i<N; i++ ) {
@@ -28,7 +28,7 @@ void StringFindInList( const char name[], const int N, const DataField gfield[],
 	}
 }
 
-void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const int L, DataField *DF )
+void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const PetscInt L, DataField *DF )
 {
 	DataField df;
 	
@@ -84,7 +84,7 @@ void DataBucketCreate( DataBucket *DB )
 void DataBucketDestroy( DataBucket *DB )
 {
 	DataBucket db = *DB;
-	int f;
+	PetscInt f;
 	
 	/* release fields */
 	for( f=0; f<db->nfields; f++ ) {
@@ -151,7 +151,7 @@ void _DataBucketRegisterField(
 
 void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield)
 {
-	int idx;
+	PetscInt idx;
 	PetscBool found;
 	
 	StringInList(name,db->nfields,(const DataField*)db->field,&found);
@@ -175,12 +175,12 @@ void DataBucketFinalize(DataBucket db)
 	db->finalised = PETSC_TRUE;
 }
 
-void DataFieldGetNumEntries(DataField df, int *sum)
+void DataFieldGetNumEntries(DataField df, PetscInt *sum)
 {
 	*sum = df->L;
 }
 
-void DataFieldSetSize( DataField df, const int new_L )
+void DataFieldSetSize( DataField df, const PetscInt new_L )
 {
 	void *tmp_data;
 	
@@ -208,7 +208,7 @@ void DataFieldSetSize( DataField df, const int new_L )
 	df->L = new_L;
 }
 
-void DataFieldZeroBlock( DataField df, const int start, const int end )
+void DataFieldZeroBlock( DataField df, const PetscInt start, const PetscInt end )
 {
 	if( start > end ) {
 		printf("ERROR: Cannot zero a block of entries if start(%d) > end(%d) \n",start,end);
@@ -229,9 +229,9 @@ void DataFieldZeroBlock( DataField df, const int start, const int end )
 /*
  A negative buffer value will simply be ignored and the old buffer value will be used.
  */
-void DataBucketSetSizes( DataBucket db, const int L, const int buffer )
+void DataBucketSetSizes( DataBucket db, const PetscInt L, const PetscInt buffer )
 {
-	int current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
+	PetscInt current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
 	
 	
 	if( db->finalised == PETSC_FALSE ) {
@@ -285,9 +285,9 @@ void DataBucketSetSizes( DataBucket db, const int L, const int buffer )
 	}
 }
 
-void DataBucketSetInitialSizes( DataBucket db, const int L, const int buffer )
+void DataBucketSetInitialSizes( DataBucket db, const PetscInt L, const PetscInt buffer )
 {
-	int f;
+	PetscInt f;
 	DataBucketSetSizes(db,L,buffer);
 	
 	for( f=0; f<db->nfields; f++ ) {
@@ -296,28 +296,28 @@ void DataBucketSetInitialSizes( DataBucket db, const int L, const int buffer )
 	}
 }
 
-void DataBucketGetSizes( DataBucket db, int *L, int *buffer, int *allocated )
+void DataBucketGetSizes( DataBucket db, PetscInt *L, PetscInt *buffer, PetscInt *allocated )
 {
 	if (L) { *L = db->L; }
 	if (buffer) { *buffer = db->buffer; }
 	if (allocated) { *allocated = db->allocated; }
 }
 
-void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long int *buffer, long int *allocated )
+void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, PetscInt *L, PetscInt *buffer, PetscInt *allocated )
 {
-	long int _L,_buffer,_allocated;
-	int ierr;
+	PetscInt _L,_buffer,_allocated;
+	PetscInt ierr;
 	
-	_L = (long int)db->L;
-	_buffer = (long int)db->buffer;
-	_allocated = (long int)db->allocated;
+	_L = db->L;
+	_buffer = db->buffer;
+	_allocated = db->allocated;
 	
-	if (L) {         ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm); }
-	if (buffer) {    ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm); }
-	if (allocated) { ierr = MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm); }
+	if (L) {         ierr = MPI_Allreduce(&_L,L,1,MPIU_INT,MPI_SUM,comm); }
+	if (buffer) {    ierr = MPI_Allreduce(&_buffer,buffer,1,MPIU_INT,MPI_SUM,comm); }
+	if (allocated) { ierr = MPI_Allreduce(&_allocated,allocated,1,MPIU_INT,MPI_SUM,comm); }
 }
 
-void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] )
+void DataBucketGetDataFields( DataBucket db, PetscInt *L, DataField *fields[] )
 {
 	if(L){      *L      = db->nfields; }
 	if(fields){ *fields = db->field; }
@@ -332,16 +332,16 @@ void DataFieldGetAccess( const DataField gfield )
 	gfield->active = PETSC_TRUE;
 }
 
-void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
+void DataFieldAccessPoint( const DataField gfield, const PetscInt pid, void **ctx_p )
 {
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* debug mode */
-	/* check point is valid */
+	/* check poPetscInt is valid */
 	if( pid < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
 	if( pid >= gfield->L ){ printf("ERROR: index must be < %d\n",gfield->L); ERROR(); }
 
 	if(gfield->active==PETSC_FALSE) {
-		printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess() before point data can be retrivied\n",gfield->name);
+		printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess() before poPetscInt data can be retrivied\n",gfield->name);
 		ERROR();
 	}
 #endif
@@ -350,21 +350,21 @@ void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
 	*ctx_p = __DATATFIELD_point_access(gfield->data,pid,gfield->atomic_size);
 }
 
-void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const int pid, void **ctx_p )
+void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const PetscInt pid, void **ctx_p )
 {
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* debug mode */
 	
-	/* check point is valid */
-	/* if( offset < 0 ){ printf("ERROR: offset must be >= 0\n"); ERROR();  } *//* Note compiler realizes this can never happen with an unsigned int */
+	/* check poPetscInt is valid */
+	/* if( offset < 0 ){ printf("ERROR: offset must be >= 0\n"); ERROR();  } *//* Note compiler realizes this can never happen with an unsigned PetscInt */
 	if( offset >= gfield->atomic_size ){ printf("ERROR: offset must be < %zu\n",gfield->atomic_size); ERROR(); }
 	
-	/* check point is valid */
+	/* check poPetscInt is valid */
 	if( pid < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
 	if( pid >= gfield->L ){ printf("ERROR: index must be < %d\n",gfield->L); ERROR(); }
 
 	if(gfield->active==PETSC_FALSE) {
-		printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess() before point data can be retrivied\n",gfield->name);
+		printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess() before poPetscInt data can be retrivied\n",gfield->name);
 		ERROR();
 	}
 #endif
@@ -412,10 +412,10 @@ void DataFieldRestoreEntries(const DataField gfield,void **data)
 }
 
 /* y = x */
-void DataBucketCopyPoint( const DataBucket xb, const int pid_x,
-												  const DataBucket yb, const int pid_y )
+void DataBucketCopyPoint( const DataBucket xb, const PetscInt pid_x,
+												  const DataBucket yb, const PetscInt pid_y )
 {
-	int f;
+	PetscInt f;
 	for( f=0; f<xb->nfields; f++ ) {
 		void *dest;
 		void *src;
@@ -434,12 +434,12 @@ void DataBucketCopyPoint( const DataBucket xb, const int pid_x,
 	
 }
 
-void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[], DataBucket *DB )
+void DataBucketCreateFromSubset( DataBucket DBIn, const PetscInt N, const PetscInt list[], DataBucket *DB )
 {
-	int nfields;
+	PetscInt nfields;
 	DataField *fields;
 	DataBucketCreate(DB);
-	int f,L,buffer,allocated,p;
+	PetscInt f,L,buffer,allocated,p;
 	
 	/* copy contents of DBIn */
 	DataBucketGetDataFields(DBIn,&nfields,&fields);
@@ -460,11 +460,11 @@ void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[],
 }
 
 // insert into an exisitng location
-void DataFieldInsertPoint( const DataField field, const int index, const void *ctx ) 
+void DataFieldInsertPoint( const DataField field, const PetscInt index, const void *ctx ) 
 {
 
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
-	/* check point is valid */
+	/* check poPetscInt is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
 	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
 #endif
@@ -474,23 +474,23 @@ void DataFieldInsertPoint( const DataField field, const int index, const void *c
 }
 
 // remove data at index - replace with last point
-void DataBucketRemovePointAtIndex( const DataBucket db, const int index )
+void DataBucketRemovePointAtIndex( const DataBucket db, const PetscInt index )
 {
-	int f;
+	PetscInt f;
 	
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
-	/* check point is valid */
+	/* check poPetscInt is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
 	if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->L+db->buffer); ERROR(); }
 #endif	
 	
-	if (index >= db->L) { /* this point is not in the list - no need to error, but I will anyway */
-		printf("ERROR: You should not be trying to remove point at index=%d since it's < db->L = %d \n", index, db->L );
+	if (index >= db->L) { /* this poPetscInt is not in the list - no need to error, but I will anyway */
+		printf("ERROR: You should not be trying to remove poPetscInt at index=%d since it's < db->L = %d \n", index, db->L );
 		ERROR();
 	}
 	
 #if 0	
-	if (index == db->L-1) { /* last point in list */
+	if (index == db->L-1) { /* last poPetscInt in list */
 		for( f=0; f<db->nfields; f++ ) {
 			DataField field = db->field[f];
 
@@ -509,7 +509,7 @@ void DataBucketRemovePointAtIndex( const DataBucket db, const int index )
 	}
 #endif
 
-	if (index != db->L-1) { /* not last point in list */
+	if (index != db->L-1) { /* not last poPetscInt in list */
 		for( f=0; f<db->nfields; f++ ) {
 			DataField field = db->field[f];
 			
@@ -527,12 +527,12 @@ void DataBucketRemovePointAtIndex( const DataBucket db, const int index )
 }
 
 /* copy x into y */
-void DataFieldCopyPoint( const int pid_x, const DataField field_x,
-												 const int pid_y, const DataField field_y ) 
+void DataFieldCopyPoint( const PetscInt pid_x, const DataField field_x,
+												 const PetscInt pid_y, const DataField field_y ) 
 {
 
 #ifdef DATAFIELD_POINT_ACCESS_GUARD	
-	/* check point is valid */
+	/* check poPetscInt is valid */
 	if( pid_x < 0 ){ printf("ERROR: (IN) index must be >= 0\n"); ERROR(); }
 	if( pid_x >= field_x->L ){ printf("ERROR: (IN) index must be < %d\n",field_x->L); ERROR(); }
 
@@ -556,10 +556,10 @@ void DataFieldCopyPoint( const int pid_x, const DataField field_x,
 
 
 // zero only the datafield at this point
-void DataFieldZeroPoint( const DataField field, const int index ) 
+void DataFieldZeroPoint( const DataField field, const PetscInt index ) 
 {
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
-	/* check point is valid */
+	/* check poPetscInt is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
 	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
 #endif	
@@ -569,11 +569,11 @@ void DataFieldZeroPoint( const DataField field, const int index )
 }
 
 // zero ALL data for this point
-void DataBucketZeroPoint( const DataBucket db, const int index ) 
+void DataBucketZeroPoint( const DataBucket db, const PetscInt index ) 
 {
-	int f;
+	PetscInt f;
 	
-	/* check point is valid */
+	/* check poPetscInt is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
 	if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->allocated); ERROR(); }
 	
@@ -619,7 +619,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	char dummy[100];
 	char registeration_function[5000];
 	char field_name[5000];
-	int L;
+	PetscInt L;
 	size_t atomic_size,strL;
 	
 	
@@ -734,7 +734,7 @@ void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
 {
 	DataBucket db;
 	FILE *fp;
-	int L,buffer,f,nfields;
+	PetscInt L,buffer,f,nfields;
 	
 	
 #ifdef PTAT3D_LOG_DATA_BUCKET
@@ -775,7 +775,7 @@ void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
 
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db)
 {
-	int nproc,rank;
+	PetscMPIInt nproc,rank;
 	
 	MPI_Comm_size(comm,&nproc);
 	MPI_Comm_rank(comm,&rank);
@@ -808,7 +808,7 @@ void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewT
 void _DataBucketViewBinary(DataBucket db,const char filename[])
 {
 	FILE *fp = NULL;
-	int f;
+	PetscInt f;
 
 	fp = fopen(filename,"wb");
 	if(fp==NULL){
@@ -835,7 +835,7 @@ void DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType t
 	switch (type) {
 		case DATABUCKET_VIEW_STDOUT:
 		{
-			int f;
+			PetscInt f;
 			double memory_usage_total = 0.0;
 			
 			printf("DataBucketView(SEQ): (\"%s\")\n",filename);
@@ -886,11 +886,11 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 	switch (type) {
 		case DATABUCKET_VIEW_STDOUT:
 		{
-			int f;
-			long int L,buffer,allocated;
+			PetscInt f;
+			PetscInt L,buffer,allocated;
 			double memory_usage_total,memory_usage_total_local = 0.0;
-			int rank;
-			int ierr;
+			PetscMPIInt rank;
+			PetscInt ierr;
 			
 			ierr = MPI_Comm_rank(comm,&rank);
 			
@@ -904,12 +904,12 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 			MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);
 
 			if (rank==0) {
-				printf("DataBucketView(MPI): (\"%s\")\n",filename);
-				printf("  L                  = %ld \n", L );
-				printf("  buffer (max)       = %ld \n", buffer );
-				printf("  allocated          = %ld \n", allocated );
+				PetscPrintf(comm,"DataBucketView(MPI): (\"%s\")\n",filename);
+				PetscPrintf(comm,"  L                  = %D \n", L );
+				PetscPrintf(comm,"  buffer (max)       = %D \n", buffer );
+				PetscPrintf(comm,"  allocated          = %D \n", allocated );
 				
-				printf("  nfields registered = %d \n", db->nfields );
+				PetscPrintf(comm,"  nfields registered = %D \n", db->nfields );
 				for( f=0; f<db->nfields; f++ ) {
 					double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
 					
@@ -932,7 +932,7 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 		case DATABUCKET_VIEW_BINARY:
 		{
 			char *name;
-			int rank;
+			PetscMPIInt rank;
 			
 			/* create correct extension */
 			MPI_Comm_rank(comm,&rank);
@@ -961,7 +961,7 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 
 void DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
 {
-	int nproc;
+	PetscMPIInt nproc;
 	
 	MPI_Comm_size(comm,&nproc);
 	if (nproc==1) {
@@ -974,7 +974,7 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucket
 void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
 {
 	DataBucket db2;
-	int f;
+	PetscInt f;
 	
 	DataBucketCreate(&db2);
 	
@@ -1004,8 +1004,8 @@ void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
  */
 void DataBucketInsertValues(DataBucket db1,DataBucket db2)
 {
-	int n_mp_points1,n_mp_points2;
-	int n_mp_points1_new,p;
+	PetscInt n_mp_points1,n_mp_points2;
+	PetscInt n_mp_points1_new,p;
 	
 	DataBucketGetSizes(db1,&n_mp_points1,0,0);
 	DataBucketGetSizes(db2,&n_mp_points2,0,0);
@@ -1022,7 +1022,7 @@ void DataBucketInsertValues(DataBucket db1,DataBucket db2)
 /* helpers for parallel send/recv */
 void DataBucketCreatePackedArray(DataBucket db,size_t *bytes,void **buf)
 {
-    int       f;
+    PetscInt       f;
     size_t    sizeof_marker_contents;
     void      *buffer;
     
@@ -1048,9 +1048,9 @@ void DataBucketDestroyPackedArray(DataBucket db,void **buf)
     }
 }
 
-void DataBucketFillPackedArray(DataBucket db,const int index,void *buf)
+void DataBucketFillPackedArray(DataBucket db,const PetscInt index,void *buf)
 {
-    int    f;
+    PetscInt    f;
     void   *data,*data_p;
     size_t asize,offset;
     
@@ -1068,9 +1068,9 @@ void DataBucketFillPackedArray(DataBucket db,const int index,void *buf)
     }
 }
 
-void DataBucketInsertPackedArray(DataBucket db,const int idx,void *data)
+void DataBucketInsertPackedArray(DataBucket db,const PetscInt idx,void *data)
 {
-    int f;
+    PetscInt f;
     void *data_p;
     size_t offset;
     
