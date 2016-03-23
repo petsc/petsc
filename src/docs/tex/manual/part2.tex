@@ -5190,8 +5190,8 @@ For problems that involve discontinuous right hand sides, one can set an ``event
 $ g(t,u) $ for PETSc to detect and locate the times of discontinuities (zeros of $g(t,u)$). Events can be defined through the
 event monitoring routine
 \begin{tabbing}
-     TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
-     ~~PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
+     TSSetEventHandler(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
+     ~~PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
      ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
 \end{tabbing}
 Here, \trl{nevents} denotes the number of events, \trl{direction} sets the type of zero crossing to be detected for
@@ -5200,10 +5200,10 @@ the time-stepping should continue or halt when an event is located, \trl{eventmo
 defined routine that specifies the event description, \trl{postevent} is an optional user-defined routine to take
 specific actions following an event.
 
-The arguments to \trl{eventmonitor()} are the timestep context, current time, input state $u$, array of event function
+The arguments to \trl{eventhandler()} are the timestep context, current time, input state $u$, array of event function
 value, and the (optional) user-provided context \trl{eventP}.
 
-The arguments to \trl{posteventmonitor()} routine are
+The arguments to \trl{postevent()} routine are
 the timestep context, number of events occured, indices of events occured, current time, input state $u$, a boolean flag indicating forward solve (1) or adjoint solve (0), and the (optional)
 user-provided context \trl{eventP}.
 

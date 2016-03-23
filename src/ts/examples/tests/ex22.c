@@ -261,7 +261,7 @@ int main(int argc,char **argv)
     direction[i] = -1;
     terminate[i] = PETSC_FALSE;
   }
-  ierr = TSSetEventMonitor(ts,lsize,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
+  ierr = TSSetEventHandler(ts,lsize,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver

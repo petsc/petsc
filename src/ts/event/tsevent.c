@@ -38,13 +38,13 @@ PetscErrorCode TSEventInitialize(TSEvent event,TS ts,PetscReal t,Vec U)
 -  -ts_event_tol <tol> tolerance for event zero crossing
 
    Notes:
-   Must call TSSetEventMonitor() before setting the tolerances.
+   Must call TSSetEventHandler() before setting the tolerances.
 
    The size of vtol is equal to the number of events.
 
    Level: beginner
 
-.seealso: TS, TSEvent, TSSetEventMonitor()
+.seealso: TS, TSEvent, TSSetEventHandler()
 @*/
 PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 {
@@ -54,7 +54,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (vtol) PetscValidRealPointer(vtol,3);
-  if(!ts->event) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventMonitor()");
+  if(!ts->event) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
 
   event = ts->event;
   if (vtol) {
@@ -68,9 +68,9 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetEventMonitor"
+#define __FUNCT__ "TSSetEventHandler"
 /*@C
-   TSSetEventMonitor - Sets a monitoring function used for detecting events
+   TSSetEventHandler - Sets a monitoring function used for detecting events
 
    Logically Collective on TS
 
@@ -117,7 +117,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 
 .seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
 @*/
-PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt direction[],PetscBool terminate[],PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *ctx)
+PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],PetscBool terminate[],PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *ctx)
 {
   PetscErrorCode ierr;
   TSEvent        event;
@@ -183,7 +183,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt direction[],Pet
 
 .keywords: TS, event, set, monitor
 
-.seealso: TSSetEventMonitor(),TSEvent
+.seealso: TSSetEventHandler(), TSEvent
 */
 #undef __FUNCT__
 #define __FUNCT__ "TSPostEvent"
