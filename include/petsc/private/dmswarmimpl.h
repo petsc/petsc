@@ -4,16 +4,14 @@
 
 #include <petscvec.h> /*I "petscvec.h" I*/
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
-#include <petscsnes.h>       /*I      "petscmat.h"          I*/
-#include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscdmswarm.h> /*I      "petscdmswarm.h"    I*/
-#include <petscsf.h>
 #include <petsc/private/dmimpl.h>
-#include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
-#include <../src/sys/utils/hash.h>
+
+typedef struct _p_DataField* DataField;
+typedef struct _p_DataBucket* DataBucket;
 
 typedef struct {
-  //DataBucket db;
+  DataBucket db;
   
   PetscBool field_registration_finalized;
   //DM *geometry_dm;

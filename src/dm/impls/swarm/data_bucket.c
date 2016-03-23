@@ -651,7 +651,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 		field_name[strL-1] = 0;
 	}
 
-#ifdef PTAT3D_LOG_DATA_BUCKET
+#ifdef DATA_BUCKET_LOG
 	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);
 #endif
 	
@@ -672,7 +672,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 
 	/* copy contents of file */
 	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
-#ifdef PTAT3D_LOG_DATA_BUCKET
+#ifdef DATA_BUCKET_LOG
 	printf("  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
 #endif	
 	/* finish reading meta data */
@@ -737,7 +737,7 @@ void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
 	PetscInt L,buffer,f,nfields;
 	
 	
-#ifdef PTAT3D_LOG_DATA_BUCKET
+#ifdef DATA_BUCKET_LOG
 	printf("** DataBucketLoadFromFile **\n");
 #endif
 	
@@ -780,7 +780,7 @@ void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewT
 	MPI_Comm_size(comm,&nproc);
 	MPI_Comm_rank(comm,&rank);
 		
-#ifdef PTAT3D_LOG_DATA_BUCKET
+#ifdef DATA_BUCKET_LOG
 	printf("** DataBucketLoadFromFile **\n");
 #endif
 	if(type==DATABUCKET_VIEW_STDOUT) {

@@ -4,6 +4,7 @@
 
 
 #include <petsc.h>
+#include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 
 
 #define DEFAULT -32654789
@@ -11,13 +12,11 @@
 #define DATAFIELD_POINT_ACCESS_GUARD 
 
 /* Logging flag */
-#define PTAT3D_LOG_DATA_BUCKET
+#define DATA_BUCKET_LOG
 
 
 typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_HDF5 } DataBucketViewType;
 
-typedef struct _p_DataField* DataField;
-typedef struct _p_DataBucket* DataBucket;
 
 
 struct _p_DataField {
@@ -27,6 +26,7 @@ struct _p_DataField {
 	size_t atomic_size;
 	char   *name; /* what are they called */
 	void   *data; /* the data - an array of structs */
+  PetscDataType petsc_type;
 };
 
 struct _p_DataBucket {
