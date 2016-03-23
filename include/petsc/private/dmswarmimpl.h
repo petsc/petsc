@@ -13,6 +13,7 @@ typedef struct _p_DataBucket* DataBucket;
 typedef struct {
   DataBucket db;
   
+  PetscBool field_registration_initialized;
   PetscBool field_registration_finalized;
   //DM *geometry_dm;
   //DMSwarmProjectMethod *swarm_project;/* swarm, geometry, result */

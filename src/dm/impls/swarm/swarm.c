@@ -59,17 +59,50 @@ Local view could be used to define overlapping information
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSwarmInitializeFieldRegister"
+PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  swarm->field_registration_initialized = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmFinalizeFieldRegister"
+PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  swarm->field_registration_finalized = PETSC_TRUE;
+  DataBucketFinalize(swarm->db);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmSetLocalSizes"
+PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt buffer)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+
+  DataBucketSetSizes(swarm->db,nlocal,buffer);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSwarmRegisterPetscDatatypeField"
-PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],PetscInt blocksize,PetscDataType type)
+PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],PetscInt blocksize,PetscDataType type)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   size_t size;
   
-  if (type == PETSC_OBJECT) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
-  if (type == PETSC_FUNCTION) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
-  if (type == PETSC_STRING) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
-  if (type == PETSC_STRUCT) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
-  if (type == PETSC_DATATYPE_UNKNOWN) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
+  if (!swarm->field_registration_initialized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmInitializeFieldRegister() first");
+  if (swarm->field_registration_finalized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Cannot register additional fields after calling DMSwarmFinalizeFieldRegister() first");
+  
+  if (type == PETSC_OBJECT) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
+  if (type == PETSC_FUNCTION) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
+  if (type == PETSC_STRING) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
+  if (type == PETSC_STRUCT) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
+  if (type == PETSC_DATATYPE_UNKNOWN) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
   
   switch (type) {
     case PETSC_CHAR:
@@ -92,7 +125,7 @@ PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],Pe
       break;
       
     default:
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
+      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
       break;
   }
   
@@ -105,7 +138,7 @@ PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmRegisterUserStructField"
-PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fieldname[],size_t size)
+PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fieldname[],size_t size)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   
@@ -117,7 +150,7 @@ PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fieldname[],size_
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmRegisterUserDatatypeField"
-PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fieldname[],size_t size)
+PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fieldname[],size_t size)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
 
@@ -129,7 +162,7 @@ PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fieldname[],siz
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmGetField"
-PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscInt *blocksize,PetscDataType *type,void **data)
+PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscInt *blocksize,PetscDataType *type,void **data)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   DataField gfield;
@@ -143,7 +176,7 @@ PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscInt *blocksize,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmRestoreField"
-PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],PetscInt *blocksize,PetscDataType *type,void **data)
+PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],PetscInt *blocksize,PetscDataType *type,void **data)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   DataField gfield;
@@ -170,6 +203,37 @@ PetscErrorCode DMDestroy_Swarm(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMView_Swarm"
+PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscBool      iascii,ibinary,ishdf5,isvtk;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
+  if (iascii) {
+    DataBucketView(PetscObjectComm((PetscObject)dm),swarm->db,NULL,DATABUCKET_VIEW_STDOUT);
+  } else if (ibinary) {
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO VTK support");
+  } else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO HDF5 support");
+#else
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"HDF5 not supported. Please reconfigure using --download-hdf5");
+#endif
+  } else if (isvtk) {
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO VTK support");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreate_Swarm"
 PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
 {
@@ -185,7 +249,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   dm->dim  = 0;
   dm->data = swarm;
   
-  dm->ops->view                            = NULL;
+  dm->ops->view                            = DMView_Swarm;
   dm->ops->load                            = NULL;
   dm->ops->setfromoptions                  = NULL;
   dm->ops->clone                           = NULL;
