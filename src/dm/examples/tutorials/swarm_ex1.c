@@ -21,7 +21,6 @@ int main(int argc,char **argv)
   ierr = DMSwarmInitializeFieldRegister(dms);CHKERRQ(ierr);
   
   ierr = DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmRegisterPetscDatatypeField(dms,"strain",1,PETSC_REAL);CHKERRQ(ierr);
   
   ierr = DMSwarmFinalizeFieldRegister(dms);CHKERRQ(ierr);
