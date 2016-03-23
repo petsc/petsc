@@ -26,5 +26,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal);
 PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n);
 PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points);
 
+PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewCreate(DM dm,InsertMode mode);
+PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewDestroy(DM dm,InsertMode mode);
+
 #endif
 

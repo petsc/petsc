@@ -418,6 +418,35 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmGlobalToLocalViewCreate"
+PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewCreate(DM dm,InsertMode mode)
+{
+  PetscErrorCode ierr;
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscInt ng;
+  
+  if (mode != INSERT_VALUES) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only mode INSERT_VALUES is supported");
+
+  ierr = DMSwarmMigrate_GlobalToLocal_Basic(dm,&ng);CHKERRQ(ierr);
+  swarm->view_ng = ng;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmGlobalToLocalViewDestroy"
+PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewDestroy(DM dm,InsertMode mode)
+{
+  PetscErrorCode ierr;
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  
+  if (mode != INSERT_VALUES) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only mode INSERT_VALUES is supported");
+  
+  ierr = DMSwarmSetLocalSizes(dm,swarm->view_ng,-1);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetup_Swarm"

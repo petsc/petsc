@@ -25,6 +25,7 @@ typedef struct {
   PetscBool vec_field_set;
   PetscInt  vec_field_bs,vec_field_nlocal;
   PetscBool issetup;
+  PetscInt  view_ng;
 } DM_Swarm;
 
 #endif /* _SWARMIMPL_H */
