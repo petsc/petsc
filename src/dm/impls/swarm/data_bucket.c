@@ -98,10 +98,11 @@ PetscErrorCode DataBucketDestroy(DataBucket *DB)
 {
 	DataBucket db = *DB;
 	PetscInt f;
-	
+	PetscErrorCode ierr;
+  
 	/* release fields */
 	for (f=0; f<db->nfields; f++) {
-		DataFieldDestroy(&db->field[f]);
+		ierr = DataFieldDestroy(&db->field[f]);CHKERRQ(ierr);
 	}
   
 	/* this will catch the initially allocated objects in the event that no fields are registered */
@@ -125,6 +126,7 @@ PetscErrorCode DataBucketRegisterField(
 {
 	PetscBool val;
 	DataField *field,fp;
+	PetscErrorCode ierr;
 	
 	/* check we haven't finalised the registration of fields */
 	/*
@@ -143,7 +145,7 @@ PetscErrorCode DataBucketRegisterField(
 	db->field     = field;
 	
 	/* add field */
-	DataFieldCreate( registeration_function, field_name, atomic_size, db->allocated, &fp );
+	ierr = DataFieldCreate( registeration_function, field_name, atomic_size, db->allocated, &fp );CHKERRQ(ierr);
 	db->field[ db->nfields ] = fp;
 	
 	db->nfields++;
@@ -254,7 +256,8 @@ PetscErrorCode DataFieldZeroBlock(DataField df,const PetscInt start,const PetscI
 PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt buffer)
 {
 	PetscInt current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
-	
+  PetscErrorCode ierr;
+
 	if (db->finalised == PETSC_FALSE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"You must call DataBucketFinalize() before DataBucketSetSizes()");
   
 	current_allocated = db->allocated;
@@ -271,7 +274,7 @@ PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt 
 	if (new_allocated > current_allocated) {
 		/* increase size to new_used + new_buffer */
 		for (f=0; f<db->nfields; f++) {
-			DataFieldSetSize( db->field[f], new_allocated );
+			ierr = DataFieldSetSize( db->field[f], new_allocated );CHKERRQ(ierr);
 		}
 		
 		db->L         = new_used;
@@ -283,7 +286,7 @@ PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt 
 			
 			/* shrink array to new_used + new_buffer */
 			for (f=0; f<db->nfields; f++) {
-				DataFieldSetSize( db->field[f], new_allocated );
+				ierr = DataFieldSetSize( db->field[f], new_allocated );CHKERRQ(ierr);
 			}
 			
 			db->L         = new_used;
@@ -299,7 +302,7 @@ PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt 
 	/* zero all entries from db->L to db->allocated */
 	for (f=0; f<db->nfields; f++) {
 		DataField field = db->field[f];
-		DataFieldZeroBlock(field, db->L,db->allocated);
+		ierr = DataFieldZeroBlock(field, db->L,db->allocated);CHKERRQ(ierr);
 	}
   PetscFunctionReturn(0);
 }
@@ -309,11 +312,13 @@ PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt 
 PetscErrorCode DataBucketSetInitialSizes(DataBucket db,const PetscInt L,const PetscInt buffer)
 {
 	PetscInt f;
-	DataBucketSetSizes(db,L,buffer);
+  PetscErrorCode ierr;
+
+	ierr = DataBucketSetSizes(db,L,buffer);CHKERRQ(ierr);
 	
 	for (f=0; f<db->nfields; f++) {
 		DataField field = db->field[f];
-		DataFieldZeroBlock(field,0,db->allocated);
+		ierr = DataFieldZeroBlock(field,0,db->allocated);CHKERRQ(ierr);
 	}
   PetscFunctionReturn(0);
 }
@@ -460,19 +465,21 @@ PetscErrorCode DataBucketCopyPoint(const DataBucket xb,const PetscInt pid_x,
                          const DataBucket yb,const PetscInt pid_y)
 {
 	PetscInt f;
+	PetscErrorCode ierr;
+
 	for (f=0; f<xb->nfields; f++) {
 		void *dest;
 		void *src;
 		
-		DataFieldGetAccess( xb->field[f] );
+		ierr = DataFieldGetAccess( xb->field[f] );CHKERRQ(ierr);
 		if (xb != yb) { DataFieldGetAccess( yb->field[f] ); }
 		
-		DataFieldAccessPoint( xb->field[f],pid_x, &src );
-		DataFieldAccessPoint( yb->field[f],pid_y, &dest );
+		ierr = DataFieldAccessPoint( xb->field[f],pid_x, &src );CHKERRQ(ierr);
+		ierr = DataFieldAccessPoint( yb->field[f],pid_y, &dest );CHKERRQ(ierr);
 		
 		memcpy( dest, src, xb->field[f]->atomic_size );
 		
-		DataFieldRestoreAccess( xb->field[f] );
+		ierr = DataFieldRestoreAccess( xb->field[f] );CHKERRQ(ierr);
 		if (xb != yb) { DataFieldRestoreAccess( yb->field[f] ); }
 	}
   PetscFunctionReturn(0);
@@ -486,21 +493,22 @@ PetscErrorCode DataBucketCreateFromSubset(DataBucket DBIn,const PetscInt N,const
 	DataField *fields;
 	DataBucketCreate(DB);
 	PetscInt f,L,buffer,allocated,p;
+	PetscErrorCode ierr;
 	
 	/* copy contents of DBIn */
-	DataBucketGetDataFields(DBIn,&nfields,&fields);
-	DataBucketGetSizes(DBIn,&L,&buffer,&allocated);
+	ierr = DataBucketGetDataFields(DBIn,&nfields,&fields);CHKERRQ(ierr);
+	ierr = DataBucketGetSizes(DBIn,&L,&buffer,&allocated);CHKERRQ(ierr);
 	
 	for (f=0; f<nfields; f++) {
-		DataBucketRegisterField(*DB,"DataBucketCreateFromSubset",fields[f]->name,fields[f]->atomic_size,NULL);
+		ierr = DataBucketRegisterField(*DB,"DataBucketCreateFromSubset",fields[f]->name,fields[f]->atomic_size,NULL);CHKERRQ(ierr);
 	}
-	DataBucketFinalize(*DB);
+	ierr = DataBucketFinalize(*DB);CHKERRQ(ierr);
 	
-	DataBucketSetSizes(*DB,L,buffer);
+	ierr = DataBucketSetSizes(*DB,L,buffer);CHKERRQ(ierr);
 	
 	/* now copy the desired guys from DBIn => DB */
 	for (p=0; p<N; p++) {
-		DataBucketCopyPoint(DBIn,list[p], *DB,p);
+		ierr = DataBucketCopyPoint(DBIn,list[p], *DB,p);CHKERRQ(ierr);
 	}
   PetscFunctionReturn(0);
 }
@@ -528,6 +536,7 @@ PetscErrorCode DataFieldInsertPoint(const DataField field,const PetscInt index,c
 PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt index)
 {
 	PetscInt f;
+	PetscErrorCode ierr;
 	
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
 	/* check poPetscInt is valid */
@@ -544,7 +553,7 @@ PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt i
 			DataField field = db->field[f];
 			
 			/* copy then remove */
-			DataFieldCopyPoint( db->L-1,field, index,field );
+			ierr = DataFieldCopyPoint( db->L-1,field, index,field );CHKERRQ(ierr);
 			
 			//DataFieldZeroPoint(field,index);
 		}
@@ -552,7 +561,7 @@ PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt i
 	
 	/* decrement size */
 	/* this will zero out an crap at the end of the list */
-	DataBucketRemovePoint(db);
+	ierr = DataBucketRemovePoint(db);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -609,6 +618,7 @@ PetscErrorCode DataFieldZeroPoint(const DataField field,const PetscInt index)
 PetscErrorCode DataBucketZeroPoint(const DataBucket db,const PetscInt index)
 {
 	PetscInt f;
+	PetscErrorCode ierr;
 	
 	/* check poPetscInt is valid */
 	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
@@ -617,7 +627,7 @@ PetscErrorCode DataBucketZeroPoint(const DataBucket db,const PetscInt index)
 	for (f=0; f<db->nfields; f++) {
 		DataField field = db->field[f];
 		
-		DataFieldZeroPoint(field,index);
+		ierr = DataFieldZeroPoint(field,index);CHKERRQ(ierr);
 	}
   PetscFunctionReturn(0);
 }
@@ -627,7 +637,9 @@ PetscErrorCode DataBucketZeroPoint(const DataBucket db,const PetscInt index)
 #define __FUNCT__ "DataBucketAddPoint"
 PetscErrorCode DataBucketAddPoint(DataBucket db)
 {
-	DataBucketSetSizes(db,db->L+1,-1);
+	PetscErrorCode ierr;
+
+	ierr = DataBucketSetSizes(db,db->L+1,-1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -636,7 +648,9 @@ PetscErrorCode DataBucketAddPoint(DataBucket db)
 #define __FUNCT__ "DataBucketRemovePoint"
 PetscErrorCode DataBucketRemovePoint(DataBucket db)
 {
-	DataBucketSetSizes(db,db->L-1,-1);
+	PetscErrorCode ierr;
+
+	ierr = DataBucketSetSizes(db,db->L-1,-1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -671,7 +685,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
 	char field_name[5000];
 	PetscInt L;
 	size_t atomic_size,strL;
-	
+	PetscErrorCode ierr;
 	
 	/* check we haven't finalised the registration of fields */
 	/*
@@ -715,7 +729,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
 	db->field     = field;
 	
 	/* add field */
-	DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );
+	ierr = DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );CHKERRQ(ierr);
   
 	/* copy contents of file */
 	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
@@ -788,6 +802,7 @@ PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[],DataBucke
 	DataBucket db;
 	FILE *fp;
 	PetscInt L,buffer,f,nfields;
+	PetscErrorCode ierr;
 	
 	
 #ifdef DATA_BUCKET_LOG
@@ -801,20 +816,19 @@ PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[],DataBucke
 	}
   
 	/* read header */
-	_DataBucketViewAscii_HeaderRead_v00(fp);
+	ierr = _DataBucketViewAscii_HeaderRead_v00(fp);CHKERRQ(ierr);
 	
 	fscanf(fp,"%d\n%d\n%d\n",&L,&buffer,&nfields);
 	
-	DataBucketCreate(&db);
+	ierr = DataBucketCreate(&db);CHKERRQ(ierr);
 	
 	for (f=0; f<nfields; f++) {
-		_DataBucketRegisterFieldFromFile(fp,db);
+		ierr = _DataBucketRegisterFieldFromFile(fp,db);CHKERRQ(ierr);
 	}
 	fclose(fp);
 	
-	DataBucketFinalize(db);
+	ierr = DataBucketFinalize(db);CHKERRQ(ierr);
   
-	
   /*
    DataBucketSetSizes(db,L,buffer);
    */
@@ -845,12 +859,12 @@ PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[],DataBu
 		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying particle data structure");
 	} else if (type == DATABUCKET_VIEW_BINARY) {
 		if (nproc == 1) {
-			_DataBucketLoadFromFileBinary_SEQ(filename,db);
+			ierr = _DataBucketLoadFromFileBinary_SEQ(filename,db);CHKERRQ(ierr);
 		} else {
 			char *name;
 			
 			asprintf(&name,"%s_p%1.5d",filename, rank );
-			_DataBucketLoadFromFileBinary_SEQ(name,db);
+			ierr = _DataBucketLoadFromFileBinary_SEQ(name,db);CHKERRQ(ierr);
 			free(name);
 		}
 	} else {
@@ -865,19 +879,20 @@ PetscErrorCode _DataBucketViewBinary(DataBucket db,const char filename[])
 {
 	FILE *fp = NULL;
 	PetscInt f;
+	PetscErrorCode ierr;
   
 	fp = fopen(filename,"wb");
 	if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file with name %s", filename);
 	
 	/* db header */
-	_DataBucketViewAscii_HeaderWrite_v00(fp);
+	ierr =_DataBucketViewAscii_HeaderWrite_v00(fp);CHKERRQ(ierr);
 	
 	/* meta-data */
 	fprintf(fp,"%d\n%d\n%d\n", db->L,db->buffer,db->nfields);
   
 	for (f=0; f<db->nfields; f++) {
     /* load datafields */
-		_DataFieldViewBinary(db->field[f],fp);
+		ierr = _DataFieldViewBinary(db->field[f],fp);CHKERRQ(ierr);
 	}
 	
 	fclose(fp);
@@ -888,6 +903,8 @@ PetscErrorCode _DataBucketViewBinary(DataBucket db,const char filename[])
 #define __FUNCT__ "DataBucketView_SEQ"
 PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType type)
 {
+  PetscErrorCode ierr;
+  
 	switch (type) {
 		case DATABUCKET_VIEW_STDOUT:
 		{
@@ -900,7 +917,7 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
 			PetscPrintf(PETSC_COMM_SELF,"  allocated          = %D \n", db->allocated );
 			
 			PetscPrintf(PETSC_COMM_SELF,"  nfields registered = %D \n", db->nfields );
-			for( f=0; f<db->nfields; f++ ) {
+			for (f=0; f<db->nfields; f++) {
 				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
 				
 				PetscPrintf(PETSC_COMM_SELF,"    [%3D]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
@@ -918,7 +935,7 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
 			
 		case DATABUCKET_VIEW_BINARY:
 		{
-			_DataBucketViewBinary(db,filename);
+			ierr = _DataBucketViewBinary(db,filename);CHKERRQ(ierr);
 		}
 			break;
 			
@@ -951,14 +968,14 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
 			
 			ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 			
-			DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);
+			ierr = DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);CHKERRQ(ierr);
 			
 			for (f=0; f<db->nfields; f++) {
 				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
 				
 				memory_usage_total_local += memory_usage_f;
 			}
-			MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);
+			ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
       
 			if (rank == 0) {
 				PetscPrintf(comm,"DataBucketView(MPI): (\"%s\")\n",filename);
@@ -994,7 +1011,7 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
 			ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 			asprintf(&name,"%s_p%1.5d",filename, rank );
       
-			_DataBucketViewBinary(db,name);
+			ierr = _DataBucketViewBinary(db,name);CHKERRQ(ierr);
 			
 			free(name);
 		}
@@ -1022,9 +1039,9 @@ PetscErrorCode DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],
 	
 	ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
 	if (nproc == 1) {
-		DataBucketView_SEQ(db,filename,type);
+		ierr =DataBucketView_SEQ(db,filename,type);CHKERRQ(ierr);
 	} else {
-		DataBucketView_MPI(comm,db,filename,type);
+		ierr = DataBucketView_MPI(comm,db,filename,type);CHKERRQ(ierr);
 	}
   PetscFunctionReturn(0);
 }
@@ -1035,8 +1052,9 @@ PetscErrorCode DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
 {
 	DataBucket db2;
 	PetscInt f;
+	PetscErrorCode ierr;
 	
-	DataBucketCreate(&db2);
+	ierr = DataBucketCreate(&db2);CHKERRQ(ierr);
 	
 	/* copy contents from dbA into db2 */
 	for (f=0; f<dbA->nfields; f++) {
@@ -1049,10 +1067,10 @@ PetscErrorCode DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
 		atomic_size = field->atomic_size;
 		name        = field->name;
 		
-		DataBucketRegisterField(db2,"DataBucketDuplicateFields",name,atomic_size,NULL);
+		ierr = DataBucketRegisterField(db2,"DataBucketDuplicateFields",name,atomic_size,NULL);CHKERRQ(ierr);
 	}
-	DataBucketFinalize(db2);
-	DataBucketSetInitialSizes(db2,0,1000);
+	ierr = DataBucketFinalize(db2);CHKERRQ(ierr);
+	ierr = DataBucketSetInitialSizes(db2,0,1000);CHKERRQ(ierr);
 	
 	/* set pointer */
 	*dbB = db2;
@@ -1069,16 +1087,17 @@ PetscErrorCode DataBucketInsertValues(DataBucket db1,DataBucket db2)
 {
 	PetscInt n_mp_points1,n_mp_points2;
 	PetscInt n_mp_points1_new,p;
+	PetscErrorCode ierr;
 	
-	DataBucketGetSizes(db1,&n_mp_points1,0,0);
-	DataBucketGetSizes(db2,&n_mp_points2,0,0);
+	ierr = DataBucketGetSizes(db1,&n_mp_points1,0,0);CHKERRQ(ierr);
+	ierr = DataBucketGetSizes(db2,&n_mp_points2,0,0);CHKERRQ(ierr);
 	
 	n_mp_points1_new = n_mp_points1 + n_mp_points2;
-	DataBucketSetSizes(db1,n_mp_points1_new,-1);
+	ierr = DataBucketSetSizes(db1,n_mp_points1_new,-1);CHKERRQ(ierr);
 	
 	for (p=0; p<n_mp_points2; p++) {
 		// db1 <<== db2 //
-		DataBucketCopyPoint( db2,p, db1,(n_mp_points1 + p) );
+		ierr =DataBucketCopyPoint( db2,p, db1,(n_mp_points1 + p) );CHKERRQ(ierr);
 	}
   PetscFunctionReturn(0);
 }
@@ -1148,6 +1167,7 @@ PetscErrorCode DataBucketInsertPackedArray(DataBucket db,const PetscInt idx,void
   PetscInt f;
   void *data_p;
   size_t offset;
+	PetscErrorCode ierr;
   
   offset = 0;
   for (f=0; f<db->nfields; f++) {
@@ -1155,7 +1175,7 @@ PetscErrorCode DataBucketInsertPackedArray(DataBucket db,const PetscInt idx,void
     
     data_p = (void*)( (char*)data + offset );
     
-    DataFieldInsertPoint(df, idx, (void*)data_p );
+    ierr = DataFieldInsertPoint(df, idx, (void*)data_p );CHKERRQ(ierr);
     offset = offset + df->atomic_size;
   }
   PetscFunctionReturn(0);
