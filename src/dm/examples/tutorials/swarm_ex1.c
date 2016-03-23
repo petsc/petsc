@@ -15,6 +15,16 @@ int main(int argc,char **argv)
 
   ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
   ierr = DMSetType(dms,DMSWARM);CHKERRQ(ierr);
+
+  ierr = DMSwarmInitializeFieldRegister(dms);CHKERRQ(ierr);
+  
+  ierr = DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL);CHKERRQ(ierr);
+  
+  ierr = DMSwarmFinalizeFieldRegister(dms);CHKERRQ(ierr);
+  
+  ierr = DMSwarmSetLocalSizes(dms,20,4);CHKERRQ(ierr);
+  ierr = DMView(dms,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  
   ierr = DMDestroy(&dms);CHKERRQ(ierr);
   
   ierr = PetscFinalize();
