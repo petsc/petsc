@@ -26,7 +26,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerandformatcreate_(PetscViewer *vin,Pet
   *ierr = PetscViewerAndFormatCreate(v,*format,vf);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerandformatdestroy_(PetscViewerAndFormat **vf,PetscErrorCode *ierr)
+PETSC_EXTERN void petscviewerandformatdestroy_(PetscViewerAndFormat **vf,PetscErrorCode *ierr)
 {
   *ierr = PetscViewerAndFormatDestroy(vf);
 }
