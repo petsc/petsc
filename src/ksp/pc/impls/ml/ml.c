@@ -271,7 +271,6 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatDestroy_Shell(Mat);
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_ML"
 static PetscErrorCode MatDestroy_ML(Mat A)
@@ -284,8 +283,6 @@ static PetscErrorCode MatDestroy_ML(Mat A)
   ierr = VecDestroy(&shell->y);CHKERRQ(ierr);
   if (shell->work) {ierr = VecDestroy(&shell->work);CHKERRQ(ierr);}
   ierr = PetscFree(shell);CHKERRQ(ierr);
-  ierr = MatDestroy_Shell(A);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -376,6 +373,7 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
   ierr = MatCreateShell(MLcomm->USR_comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,shellctx,newmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*newmat,MATOP_MULT,(void(*)(void))MatMult_ML);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*newmat,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_ML);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*newmat,MATOP_DESTROY,(void(*)(void))MatDestroy_ML);CHKERRQ(ierr);
 
   shellctx->A         = *newmat;
   shellctx->mlmat     = mlmat;
@@ -384,8 +382,6 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
   ierr = VecCreate(MLcomm->USR_comm,&shellctx->y);CHKERRQ(ierr);
   ierr = VecSetSizes(shellctx->y,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetType(shellctx->y,VECSTANDARD);CHKERRQ(ierr);
-
-  (*newmat)->ops->destroy = MatDestroy_ML;
   PetscFunctionReturn(0);
 }
 
