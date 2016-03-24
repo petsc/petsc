@@ -581,7 +581,7 @@ runex20adj_20:
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_14, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj.tmp SA-data/*
 
-runex20opt_ic:`
+runex20opt_ic:
 	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -tao_view -mu 100000 > ex20opt_ic_1.tmp 2>&1; \
 	  ${DIFF} output/ex20opt_ic_1.out ex20opt_ic_1.tmp || printf "${PWD}\nPossible problem with ex20opt_ic_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20opt_ic_1.tmp
@@ -700,7 +700,7 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 e
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
                             ex8.PETSc runex8 ex8.rm \
-                            ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
+                            ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_5 ex15.rm \
                             ex16adj.PETSc runex16adj runex16adj_2 ex16adj.rm \
                             ex17.PETSc runex17 ex17.rm \
