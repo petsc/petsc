@@ -756,8 +756,7 @@ PETSC_EXTERN PetscErrorCode TSThetaGetTheta(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSThetaGetEndpoint(TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSThetaSetEndpoint(TS,PetscBool);
 
-PETSC_EXTERN PetscErrorCode TSAlphaSetAdapt(TS,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void*);
-PETSC_EXTERN PetscErrorCode TSAlphaAdaptDefault(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
+PETSC_EXTERN PetscErrorCode TSAlphaUseAdapt(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAlphaSetRadius(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaSetParams(TS,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaGetParams(TS,PetscReal*,PetscReal*,PetscReal*);
