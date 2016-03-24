@@ -14,8 +14,6 @@ PetscErrorCode TSEventInitialize(TSEvent event,TS ts,PetscReal t,Vec U)
   PetscValidPointer(event,1);
   PetscValidHeaderSpecific(ts,TS_CLASSID,2);
   PetscValidHeaderSpecific(U,VEC_CLASSID,4);
-  ierr = TSGetTimeStep(ts,&event->timestep_prev);CHKERRQ(ierr);
-
   event->ptime_prev = t;
   ierr = (*event->eventhandler)(ts,t,U,event->fvalue_prev,event->ctx);CHKERRQ(ierr);
   /* Initialize the event recorder */
