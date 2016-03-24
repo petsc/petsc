@@ -1,4 +1,3 @@
-  type: da
 0: 3 2
 0: 3 2
 0: 3 2
@@ -35,11 +34,23 @@
 0: 4 4 3
 0: 4 4 3
 0: 4 4 3
+[0] lx ly lz
+[1] lx ly lz
+[10] lx ly lz
+[11] lx ly lz
+[2] lx ly lz
+[3] lx ly lz
+[4] lx ly lz
+[5] lx ly lz
+[6] lx ly lz
+[7] lx ly lz
+[8] lx ly lz
+[9] lx ly lz
 DM Object: 12 MPI processes
 Processor [0] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
+Processor [1] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
 Processor [10] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
 Processor [11] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
-Processor [1] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
 Processor [2] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
 Processor [3] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
 Processor [4] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
@@ -60,15 +71,4 @@ X range of indices: 8 11, Y range of indices: 0 3, Z range of indices: 0 4
 X range of indices: 8 11, Y range of indices: 0 3, Z range of indices: 4 7
 X range of indices: 8 11, Y range of indices: 3 5, Z range of indices: 0 4
 X range of indices: 8 11, Y range of indices: 3 5, Z range of indices: 4 7
-[0] lx ly lz
-[10] lx ly lz
-[11] lx ly lz
-[1] lx ly lz
-[2] lx ly lz
-[3] lx ly lz
-[4] lx ly lz
-[5] lx ly lz
-[6] lx ly lz
-[7] lx ly lz
-[8] lx ly lz
-[9] lx ly lz
+  type: da
