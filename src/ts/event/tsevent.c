@@ -189,43 +189,28 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSPostEvent"
 /*
-   TSPostEvent - Does post event processing by calling the user-defined postevent function
-
-   Logically Collective on TS
-
-   Input Parameters:
-+  ts - the TS context
-.  nevents_zero - number of local events whose event function is zero
-.  events_zero  - indices of local events which have reached zero
-.  t            - current time
-.  U            - current solution
--  forwardsolve - Flag to indicate whether TS is doing a forward solve (1) or adjoint solve (0)
-
-   Level: intermediate
-
-.keywords: TS, event, set, monitor
-
-.seealso: TSSetEventHandler(), TSEvent
+   Helper rutine to handle user postenvents and recording
 */
 #undef __FUNCT__
 #define __FUNCT__ "TSPostEvent"
-PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,PetscBool forwardsolve)
+static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 {
   PetscErrorCode ierr;
-  TSEvent        event=ts->event;
-  PetscBool      terminate=PETSC_FALSE;
+  TSEvent        event = ts->event;
+  PetscBool      terminate = PETSC_FALSE;
   PetscInt       i,ctr,stepnum;
   PetscBool      ts_terminate;
+  PetscBool      forwardsolve = PETSC_TRUE; /* Flag indicating that TS is doing a forward solve */
 
   PetscFunctionBegin;
   if (event->postevent) {
-    ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,forwardsolve,event->ctx);CHKERRQ(ierr);
+    ierr = (*event->postevent)(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve,event->ctx);CHKERRQ(ierr);
   }
-  for (i=0; i < nevents_zero; i++) {
-    terminate = (PetscBool)(terminate || event->terminate[events_zero[i]]);
+
+  /* Handle termination events */
+  for (i=0; i < event->nevents_zero; i++) {
+    terminate = (PetscBool)(terminate || event->terminate[event->events_zero[i]]);
   }
   ierr = MPIU_Allreduce(&terminate,&ts_terminate,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
   if (ts_terminate) {
@@ -235,19 +220,21 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
     event->status = TSEVENT_RESET_NEXTSTEP;
   }
 
+  event->ptime_prev = t;
+  /* Reset event residual functions as states might get changed by the postevent callback */
+  if (event->postevent) {ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);}
+  /* Cache current event residual functions */
+  for (i=0; i < event->nevents; i++) event->fvalue_prev[i] = event->fvalue[i];
+
   /* Record the event in the event recorder */
   ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
   ctr = event->recorder.ctr;
   if (ctr == MAXEVENTRECORDERS) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Exceeded limit (=%d) for number of events recorded",MAXEVENTRECORDERS);
   event->recorder.time[ctr] = t;
   event->recorder.stepnum[ctr] = stepnum;
-  event->recorder.nevents[ctr] = nevents_zero;
-  for (i=0; i < nevents_zero; i++) event->recorder.eventidx[ctr][i] = events_zero[i];
+  event->recorder.nevents[ctr] = event->nevents_zero;
+  for (i=0; i < event->nevents_zero; i++) event->recorder.eventidx[ctr][i] = event->events_zero[i];
   event->recorder.ctr++;
-
-  /* Reset the event residual functions as states might get changed by the postevent callback */
-  event->ptime_prev = t;
-  ierr = (*event->eventhandler)(ts,t,U,event->fvalue_prev,event->ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -262,7 +249,6 @@ PetscErrorCode TSEventHandler(TS ts)
   PetscInt       i;
   PetscReal      dt,dt_min;
   PetscInt       rollback=0,in[2],out[2];
-  PetscBool      forwardsolve=PETSC_TRUE; /* Flag indicating that TS is doing a forward solve */
   PetscInt       fvalue_sign,fvalueprev_sign;
 
   PetscFunctionBegin;
@@ -348,9 +334,8 @@ PetscErrorCode TSEventHandler(TS ts)
         }
       }
     }
-    ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve);CHKERRQ(ierr);
+    ierr = TSPostEvent(ts,t,U);CHKERRQ(ierr);
 
-    event->ptime_prev = t;
     dt = event->ptime_end - event->ptime_prev;
     if (PetscAbsReal(dt) < PETSC_SMALL) dt += event->timestep_prev; /* XXX Should be done better */
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
