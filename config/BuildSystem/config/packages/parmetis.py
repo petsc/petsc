@@ -26,7 +26,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DGKLIB_PATH=../headers')
     if self.mpi.include:
       args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
-    if self.sharedLibraries.useShared:
+    if self.checkSharedLibrariesEnabled():
       args.append('-DSHARED=1')
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.compilerFlags.debugging:

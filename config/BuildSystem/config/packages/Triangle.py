@@ -59,7 +59,7 @@ class Configure(config.package.Package):
     g.write('CFLAGS         = '+cflags+'\n')
     self.setCompilers.popLanguage()
 
-    if self.sharedLibraries.useShared:
+    if self.checkSharedLibrariesEnabled():
       import config.setCompilers
 
       g.write('BUILDSHAREDLIB = yes\n')

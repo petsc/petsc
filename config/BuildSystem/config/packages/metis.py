@@ -25,7 +25,7 @@ class Configure(config.package.CMakePackage):
 
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DGKLIB_PATH=../GKlib') 
-    if self.sharedLibraries.useShared:
+    if self.checkSharedLibrariesEnabled():
       args.append('-DSHARED=1')
     if self.compilerFlags.debugging:
       args.append('-DDEBUG=1')
