@@ -30,6 +30,7 @@ struct _TSOps {
   PetscErrorCode (*step)(TS);
   PetscErrorCode (*solve)(TS);
   PetscErrorCode (*interpolate)(TS,PetscReal,Vec);
+  PetscErrorCode (*evaluatewlte)(TS,NormType,PetscInt*,PetscReal*);
   PetscErrorCode (*evaluatestep)(TS,PetscInt,Vec,PetscBool*);
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,TS);
   PetscErrorCode (*destroy)(TS);
