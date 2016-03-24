@@ -216,6 +216,15 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSwarmSetCellDM"
+PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  swarm->dmcell = dmcell;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSwarmGetLocalSize"
 PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
 {

@@ -28,6 +28,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points);
 
 PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewCreate(DM dm,InsertMode mode);
 PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewDestroy(DM dm,InsertMode mode);
+PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell);
 
 #endif
 
