@@ -32,6 +32,7 @@ typedef struct {
   PetscBool adapt;
   PetscReal time_step_prev;
   Vec       vec_sol_prev;
+  Vec       vec_work;
 
   TSStepStatus status;
 } TS_Alpha;
@@ -252,38 +253,32 @@ static PetscErrorCode TSStep_Alpha(TS ts)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSEvaluateStep_Alpha"
-static PetscErrorCode TSEvaluateStep_Alpha(TS ts,PetscInt order,Vec U,PETSC_UNUSED PetscBool *done)
+#define __FUNCT__ "TSEvaluateWLTE_Alpha"
+static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *order,PetscReal *wlte)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
+  Vec            X = th->X1;       /* X = solution */
+  Vec            Y = th->vec_work; /* Y = X + LTE  */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  /* Called by TSAdapt while TSStep_Alpha() is running */
-  if (th->status == TS_STEP_PENDING) {
-    if (order+1 != 2) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Cannot evaluate step at order %D",order);
-    if (!ts->steps || TSEvent_Status(ts) == TSEVENT_RESET_NEXTSTEP) {
-      /* th->vec_sol_prev is set to the LTE in TSAlpha_ResetStep() */
-      ierr = VecWAXPY(U,1.0,th->vec_sol_prev,th->X1);CHKERRQ(ierr);
-    } else {
-      /* Compute LTE using backward differences with non-constant time step */
-      PetscReal a = 1 + th->time_step_prev/ts->time_step;
-      PetscScalar scal[3]; Vec vecs[3];
-      scal[0] = +1/a;   scal[1] = -1/(a-1); scal[2] = +1/(a*(a-1));
-      vecs[0] = th->X1; vecs[1] = th->X0;   vecs[2] = th->vec_sol_prev;
-      ierr = VecCopy(th->X1,U);CHKERRQ(ierr);
-      /* Compute U = solution + LTE, then TSADAPTBASIC can recover LTE = U - solution */
-      ierr = VecMAXPY(U,3,scal,vecs);CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
+  if (!ts->steps || TSEvent_Status(ts) == TSEVENT_RESET_NEXTSTEP) {
+    /* th->vec_{sol|dot}_prev is set to the LTE in TSAlpha_ResetStep() */
+    ierr = VecWAXPY(Y,1.0,th->vec_sol_prev,X);CHKERRQ(ierr);
+  } else {
+    /* Compute LTE using backward differences with non-constant time step */
+    PetscReal   a = 1 + th->time_step_prev/ts->time_step;
+    PetscScalar scal[3]; Vec vecs[3];
+    scal[0] = +1/a;   scal[1] = -1/(a-1); scal[2] = +1/(a*(a-1));
+    vecs[0] = th->X1; vecs[1] = th->X0;   vecs[2] = th->vec_sol_prev;
+    ierr = VecCopy(X,Y);CHKERRQ(ierr);
+    ierr = VecMAXPY(Y,3,scal,vecs);CHKERRQ(ierr);
   }
-
-  /* Called explicitly by user or elsewhere */
-  if (order != th->order) SETERRQ2(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Cannot evaluate step at order %D, method order is %D",order,th->order);
-  ierr = VecCopy(th->X1,U);CHKERRQ(ierr);
+  ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte);CHKERRQ(ierr);
+  if (order) *order = 2;
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TSRollBack_Alpha"
@@ -331,7 +326,7 @@ static PetscErrorCode SNESTSFormFunction_Alpha(PETSC_UNUSED SNES snes,Vec X,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_Alpha"
-static PetscErrorCode SNESTSFormJacobian_Alpha(PETSC_UNUSED SNES snes, PETSC_UNUSED Vec X,Mat J,Mat P,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Alpha(PETSC_UNUSED SNES snes,PETSC_UNUSED Vec X,Mat J,Mat P,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscReal      ta = th->stage_time;
@@ -360,6 +355,7 @@ static PetscErrorCode TSReset_Alpha(TS ts)
   ierr = VecDestroy(&th->Va);CHKERRQ(ierr);
   ierr = VecDestroy(&th->V1);CHKERRQ(ierr);
   ierr = VecDestroy(&th->vec_sol_prev);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->vec_work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -401,6 +397,7 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   } else {
     ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
     ierr = VecDuplicate(ts->vec_sol,&th->vec_sol_prev);CHKERRQ(ierr);
+    ierr = VecDuplicate(ts->vec_sol,&th->vec_work);CHKERRQ(ierr);
     if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
       ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
   }
@@ -540,7 +537,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
   ts->ops->setup          = TSSetUp_Alpha;
   ts->ops->setfromoptions = TSSetFromOptions_Alpha;
   ts->ops->step           = TSStep_Alpha;
-  ts->ops->evaluatestep   = TSEvaluateStep_Alpha;
+  ts->ops->evaluatewlte   = TSEvaluateWLTE_Alpha;
   ts->ops->rollback       = TSRollBack_Alpha;
   ts->ops->interpolate    = TSInterpolate_Alpha;
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
