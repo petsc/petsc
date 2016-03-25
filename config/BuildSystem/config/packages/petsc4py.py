@@ -48,12 +48,14 @@ class Configure(config.package.Package):
 
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
+                          '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
            '+newuser+newdir+'python setup.py clean --all && \\\n\
            '+newuser+newdir+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
+             touch ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg && \\\n\
              exit 1)'])
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
