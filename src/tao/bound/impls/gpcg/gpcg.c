@@ -278,7 +278,11 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
     gpcg->total_gp_its++;
 
     gtg=-gdx;
-    alpha = PetscAbsReal(gtg/gAg);
+    if (PetscAbsReal(gAg) == 0.0) {
+      alpha = 1.0;
+    } else {
+      alpha = PetscAbsReal(gtg/gAg);
+    }
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,alpha);CHKERRQ(ierr);
     f_new=gpcg->f;
     ierr = TaoLineSearchApply(tao->linesearch,X,&f_new,G,DX,&stepsize,&lsflag);CHKERRQ(ierr);
@@ -349,10 +353,10 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   if (!tao->max_it_changed) tao->max_it=500;
   if (!tao->max_funcs_changed) tao->max_funcs = 100000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->gatol_changed) tao->grtol=1e-6;
+  if (!tao->gatol_changed) tao->gatol=1e-6;
   if (!tao->grtol_changed) tao->grtol=1e-6;
 #else
-  if (!tao->gatol_changed) tao->grtol=1e-12;
+  if (!tao->gatol_changed) tao->gatol=1e-12;
   if (!tao->grtol_changed) tao->grtol=1e-12;
 #endif
 
