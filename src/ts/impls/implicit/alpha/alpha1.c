@@ -263,7 +263,7 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
 
   PetscFunctionBegin;
   if (!ts->steps || TSEvent_Status(ts) == TSEVENT_RESET_NEXTSTEP) {
-    /* th->vec_{sol|dot}_prev is set to the LTE in TSAlpha_ResetStep() */
+    /* th->vec_sol_prev is set to the LTE in TSAlpha_ResetStep() */
     ierr = VecWAXPY(Y,1.0,th->vec_sol_prev,X);CHKERRQ(ierr);
   } else {
     /* Compute LTE using backward differences with non-constant time step */
@@ -278,7 +278,6 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
   if (order) *order = 2;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSRollBack_Alpha"
@@ -642,7 +641,6 @@ PetscErrorCode TSAlphaSetRadius(TS ts,PetscReal radius)
 
   Backward Euler method is recovered with:
     \alpha_m = \alpha_f = gamma = 1
-
 
   Input Parameter:
 +  ts - timestepping context
