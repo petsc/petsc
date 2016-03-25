@@ -32,7 +32,7 @@ const char *SuperLU_MatInputModes[] = {"GLOBAL","DISTRIBUTED","SuperLU_MatInputM
 typedef struct {
   int_t                nprow,npcol,*row,*col;
   gridinfo_t           grid;
-  superlu_options_t    options;
+  superlu_dist_options_t    options;
   SuperMatrix          A_sup;
   ScalePermstruct_t    ScalePermstruct;
   LUstruct_t           LUstruct;
@@ -500,7 +500,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   PetscErrorCode    ierr;
   PetscInt          M=A->rmap->N,N=A->cmap->N,indx;
   PetscMPIInt       size;
-  superlu_options_t options;
+  superlu_dist_options_t options;
   PetscBool         flg;
   const char        *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
   const char        *rowperm[]     = {"LargeDiag","NATURAL"};
@@ -672,7 +672,7 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU_DIST  *lu=(Mat_SuperLU_DIST*)A->spptr;
-  superlu_options_t options;
+  superlu_dist_options_t options;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
