@@ -133,11 +133,10 @@ runex2:
 	   else printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2.tmp1 ex2.tmp
 
+#  Since this test produces very different information on different machines there is no way to automate
+#  the checking of the output to see if it is correct; hence this is not in the nightly tests, though it would be nice if we could add it
 runex3:
-	-@${MPIEXEC} -n 1 ./ex3 -fp_trap > ex3.tmp1 2>&1; egrep "(PetscDefaultFPTrap|CreateError)" ex3.tmp1 | cut -f1,2,3,4 -d" " > ex3.tmp;\
-	if (${DIFF} output/ex3_1.out ex3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex3.tmp1 ex3.tmp
+	-@${MPIEXEC} -n 1 ./ex3 -fp_trap 
 
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 > ex7.tmp 2>&1;\
@@ -228,7 +227,7 @@ TESTEXAMPLES_C		       = ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex1
 
 TESTEXAMPLES_C_COMPLEX         = ex14.PETSc runex14 ex14.rm
 
-TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
+TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc ex3.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_FORTRAN_COMPLEX   = ex1f.PETSc runex1f ex1f.rm
