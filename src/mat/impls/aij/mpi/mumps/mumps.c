@@ -2356,34 +2356,34 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
   Use -pc_type cholesky or lu -pc_factor_mat_solver_package mumps to us this direct solver
 
   Options Database Keys:
-+  -mat_mumps_icntl_1 <6>: ICNTL(1): output stream for error messages (None)
-.  -mat_mumps_icntl_2 <0>: ICNTL(2): output stream for diagnostic printing, statistics, and warning (None)
-.  -mat_mumps_icntl_3 <0>: ICNTL(3): output stream for global information, collected on the host (None)
-.  -mat_mumps_icntl_4 <0>: ICNTL(4): level of printing (0 to 4) (None)
-.  -mat_mumps_icntl_6 <7>: ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7) (None)
-.  -mat_mumps_icntl_7 <7>: ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 3=Scotch, 4=PORD, 5=Metis (None)
-.  -mat_mumps_icntl_8 <77>: ICNTL(8): scaling strategy (-2 to 8 or 77) (None)
-.  -mat_mumps_icntl_10 <0>: ICNTL(10): max num of refinements (None)
-.  -mat_mumps_icntl_11 <0>: ICNTL(11): statistics related to an error analysis (via -ksp_view) (None)
-.  -mat_mumps_icntl_12 <1>: ICNTL(12): an ordering strategy for symmetric matrices (0 to 3) (None)
-.  -mat_mumps_icntl_13 <0>: ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting (None)
-.  -mat_mumps_icntl_14 <20>: ICNTL(14): percentage increase in the estimated working space (None)
-.  -mat_mumps_icntl_19 <0>: ICNTL(19): computes the Schur complement (None)
-.  -mat_mumps_icntl_22 <0>: ICNTL(22): in-core/out-of-core factorization and solve (0 or 1) (None)
-.  -mat_mumps_icntl_23 <0>: ICNTL(23): max size of the working memory (MB) that can allocate per processor (None)
-.  -mat_mumps_icntl_24 <0>: ICNTL(24): detection of null pivot rows (0 or 1) (None)
-.  -mat_mumps_icntl_25 <0>: ICNTL(25): compute a solution of a deficient matrix and a null space basis (None)
-.  -mat_mumps_icntl_26 <0>: ICNTL(26): drives the solution phase if a Schur complement matrix (None)
-.  -mat_mumps_icntl_28 <1>: ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering (None)
-.  -mat_mumps_icntl_29 <0>: ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis (None)
-.  -mat_mumps_icntl_30 <0>: ICNTL(30): compute user-specified set of entries in inv(A) (None)
-.  -mat_mumps_icntl_31 <0>: ICNTL(31): indicates which factors may be discarded during factorization (None)
-.  -mat_mumps_icntl_33 <0>: ICNTL(33): compute determinant (None)
-.  -mat_mumps_cntl_1 <0.01>: CNTL(1): relative pivoting threshold (None)
-.  -mat_mumps_cntl_2 <1.49012e-08>: CNTL(2): stopping criterion of refinement (None)
-.  -mat_mumps_cntl_3 <0>: CNTL(3): absolute pivoting threshold (None)
-.  -mat_mumps_cntl_4 <-1>: CNTL(4): value for static pivoting (None)
--  -mat_mumps_cntl_5 <0>: CNTL(5): fixation for null pivots (None)
++  -mat_mumps_icntl_1 - ICNTL(1): output stream for error messages 
+.  -mat_mumps_icntl_2 - ICNTL(2): output stream for diagnostic printing, statistics, and warning 
+.  -mat_mumps_icntl_3 -  ICNTL(3): output stream for global information, collected on the host 
+.  -mat_mumps_icntl_4 -  ICNTL(4): level of printing (0 to 4) 
+.  -mat_mumps_icntl_6 - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7) 
+.  -mat_mumps_icntl_7 - ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 3=Scotch, 4=PORD, 5=Metis 
+.  -mat_mumps_icntl_8  - ICNTL(8): scaling strategy (-2 to 8 or 77) 
+.  -mat_mumps_icntl_10  - ICNTL(10): max num of refinements 
+.  -mat_mumps_icntl_11  - ICNTL(11): statistics related to an error analysis (via -ksp_view) 
+.  -mat_mumps_icntl_12  - ICNTL(12): an ordering strategy for symmetric matrices (0 to 3) 
+.  -mat_mumps_icntl_13  - ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting 
+.  -mat_mumps_icntl_14  - ICNTL(14): percentage increase in the estimated working space 
+.  -mat_mumps_icntl_19  - ICNTL(19): computes the Schur complement 
+.  -mat_mumps_icntl_22  - ICNTL(22): in-core/out-of-core factorization and solve (0 or 1) 
+.  -mat_mumps_icntl_23  - ICNTL(23): max size of the working memory (MB) that can allocate per processor 
+.  -mat_mumps_icntl_24  - ICNTL(24): detection of null pivot rows (0 or 1) 
+.  -mat_mumps_icntl_25  - ICNTL(25): compute a solution of a deficient matrix and a null space basis 
+.  -mat_mumps_icntl_26  - ICNTL(26): drives the solution phase if a Schur complement matrix 
+.  -mat_mumps_icntl_28  - ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering 
+.  -mat_mumps_icntl_29 - ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis 
+.  -mat_mumps_icntl_30 - ICNTL(30): compute user-specified set of entries in inv(A) 
+.  -mat_mumps_icntl_31 - ICNTL(31): indicates which factors may be discarded during factorization 
+.  -mat_mumps_icntl_33 - ICNTL(33): compute determinant 
+.  -mat_mumps_cntl_1  - CNTL(1): relative pivoting threshold 
+.  -mat_mumps_cntl_2  -  CNTL(2): stopping criterion of refinement 
+.  -mat_mumps_cntl_3 - CNTL(3): absolute pivoting threshold 
+.  -mat_mumps_cntl_4 - CNTL(4): value for static pivoting 
+-  -mat_mumps_cntl_5 - CNTL(5): fixation for null pivots 
 
   Level: beginner
 
