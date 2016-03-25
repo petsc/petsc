@@ -72,8 +72,9 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->async       = PETSC_FALSE;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-splitreduction_async",&(*sr)->async,NULL);CHKERRQ(ierr);
 #endif
+  /* always check for option; so that tests that run on systems without support don't warn about unhandled options */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-splitreduction_async",&(*sr)->async,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
