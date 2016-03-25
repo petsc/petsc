@@ -396,7 +396,7 @@ PetscErrorCode FormExactSolution3(DM da, AppCtx *user, Vec U)
     for (i = xs; i < xs+xm; ++i) {
       x = PetscRealPart(coords[j][i].x);
       y = PetscRealPart(coords[j][i].y);
-      u[j][i] = PetscSinReal(2*PETSC_PI*x*(1-y))*PetscSinReal(4*PETSC_PI*y*(1-x));
+      u[j][i] = PetscSinReal(4*PETSC_PI*x*(1-y))*PetscSinReal(2*PETSC_PI*y*(1-x));
     }
   }
   ierr = DMDAVecRestoreArray(da, U, &u);CHKERRQ(ierr);
