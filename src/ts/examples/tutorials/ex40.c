@@ -191,7 +191,7 @@ int main(int argc,char **argv)
   /* Set directions and terminate flags for the two events */
   direction[0] = -1;            direction[1] = -1;
   terminate[0] = PETSC_FALSE;   terminate[1] = PETSC_TRUE;
-  ierr = TSSetEventMonitor(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
+  ierr = TSSetEventHandler(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
 
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   /* The adapative time step controller could take very large timesteps resulting in 

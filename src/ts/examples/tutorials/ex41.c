@@ -172,7 +172,7 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   
-  ierr = TSSetEventMonitor(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
+  ierr = TSSetEventHandler(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
 
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   /* The adapative time step controller could take very large timesteps resulting in 

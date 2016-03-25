@@ -502,8 +502,8 @@ PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm,const char[],const 
 PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPEig(TS,PetscInt,PetscReal,Vec,void *);
 
-PETSC_EXTERN PetscErrorCode TSSetEventMonitor(TS,PetscInt,PetscInt*,PetscBool*,PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void*);
-PETSC_EXTERN PetscErrorCode TSSetEventTolerances(TS,PetscReal,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSSetEventHandler(TS,PetscInt,PetscInt[],PetscBool[],PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar[],void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void*);
+PETSC_EXTERN PetscErrorCode TSSetEventTolerances(TS,PetscReal,PetscReal[]);
 /*J
    TSSSPType - string with the name of TSSSP scheme.
 
@@ -756,8 +756,7 @@ PETSC_EXTERN PetscErrorCode TSThetaGetTheta(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSThetaGetEndpoint(TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSThetaSetEndpoint(TS,PetscBool);
 
-PETSC_EXTERN PetscErrorCode TSAlphaSetAdapt(TS,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void*);
-PETSC_EXTERN PetscErrorCode TSAlphaAdaptDefault(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
+PETSC_EXTERN PetscErrorCode TSAlphaUseAdapt(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAlphaSetRadius(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaSetParams(TS,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaGetParams(TS,PetscReal*,PetscReal*,PetscReal*);

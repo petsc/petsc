@@ -2168,9 +2168,8 @@ PetscErrorCode  TSDestroy(TS *ts)
   ierr = TSTrajectoryDestroy(&(*ts)->trajectory);CHKERRQ(ierr);
 
   ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);
-  if ((*ts)->event) {
-    ierr = TSEventMonitorDestroy(&(*ts)->event);CHKERRQ(ierr);
-  }
+  ierr = TSEventDestroy(&(*ts)->event);CHKERRQ(ierr);
+
   ierr = SNESDestroy(&(*ts)->snes);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ts)->dm);CHKERRQ(ierr);
   ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
@@ -3563,24 +3562,22 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-    if(ts->event) {
-      ierr = TSEventMonitorInitialize(ts);CHKERRQ(ierr);
-    }
+    ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (!ts->steprollback && ts->vec_costintegral && ts->costintegralfwd) {
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
-      if (ts->event) {
-        ierr = TSEventMonitor(ts);CHKERRQ(ierr);
-      }
+      ierr = TSEventHandler(ts);CHKERRQ(ierr);
       if(!ts->steprollback) {
         ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
     ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
       ts->solvetime = ts->max_time;
@@ -3674,9 +3671,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
   while (!ts->reason) {
     ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
     ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
-    if (ts->event) {
-      ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);
-    }
+    ierr = TSAdjointEventHandler(ts);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->vec_costintegral && !ts->costintegralfwd) {
       ierr = TSAdjointCostIntegral(ts);CHKERRQ(ierr);

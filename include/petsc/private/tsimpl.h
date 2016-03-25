@@ -30,6 +30,7 @@ struct _TSOps {
   PetscErrorCode (*step)(TS);
   PetscErrorCode (*solve)(TS);
   PetscErrorCode (*interpolate)(TS,PetscReal,Vec);
+  PetscErrorCode (*evaluatewlte)(TS,NormType,PetscInt*,PetscReal*);
   PetscErrorCode (*evaluatestep)(TS,PetscInt,Vec,PetscBool*);
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,TS);
   PetscErrorCode (*destroy)(TS);
@@ -45,10 +46,10 @@ struct _TSOps {
   PetscErrorCode (*forwardintegral)(TS);
 };
 
-/* 
+/*
    TSEvent - Abstract object to handle event monitoring
 */
-typedef struct _p_TSEvent *TSEvent;
+typedef struct _n_TSEvent *TSEvent;
 
 typedef struct _TSTrajectoryOps *TSTrajectoryOps;
 
@@ -271,24 +272,23 @@ typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_Z
 /* Maximum number of event times that can be recorded */
 #define MAXEVENTRECORDERS 24
 
-struct _p_TSEvent {
+struct _n_TSEvent {
   PetscScalar    *fvalue;          /* value of event function at the end of the step*/
   PetscScalar    *fvalue_prev;     /* value of event function at start of the step */
-  PetscReal       ptime;           /* time at step end */
   PetscReal       ptime_prev;      /* time at step start */
-  PetscErrorCode  (*monitor)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event monitor function */
+  PetscReal       ptime_end;       /* end time of step */
+  PetscReal       timestep_prev;   /* previous time step */
+  PetscErrorCode  (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event handler function */
   PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*); /* User post event function */
+  void           *ctx;              /* User context for event handler and post even functions */
+  PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */
   PetscBool      *terminate;        /* 1 -> Terminate time stepping, 0 -> continue */
-  PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
   PetscInt        nevents;          /* Number of events to handle */
   PetscInt        nevents_zero;     /* Number of event zero detected */
-  PetscInt        *events_zero;      /* List of events that have reached zero */
-  void           *monitorcontext;
+  PetscInt        *events_zero;     /* List of events that have reached zero */
   PetscReal      *vtol;             /* Vector tolerances for event zero check */
   TSEventStatus   status;           /* Event status */
-  PetscReal       tstepend;         /* End time of step */
-  PetscReal       initial_timestep; /* Initial time step */
-  PetscViewer     mon;
+  PetscViewer     monitor;
   /* Struct to record the events */
   struct {
     PetscInt  ctr;                          /* recorder counter */
@@ -299,10 +299,10 @@ struct _p_TSEvent {
   } recorder;
 };
 
-PETSC_EXTERN PetscErrorCode TSEventMonitor(TS);
-PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
-PETSC_EXTERN PetscErrorCode TSAdjointEventMonitor(TS);
-PETSC_EXTERN PetscErrorCode TSEventMonitorInitialize(TS);
+PETSC_EXTERN PetscErrorCode TSEventInitialize(TSEvent,TS,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode TSEventDestroy(TSEvent*);
+PETSC_EXTERN PetscErrorCode TSEventHandler(TS);
+PETSC_EXTERN PetscErrorCode TSAdjointEventHandler(TS);
 
 PETSC_EXTERN PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
