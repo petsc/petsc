@@ -7,6 +7,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_CN(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_GL(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_RK(TS);
@@ -46,6 +47,7 @@ PetscErrorCode  TSRegisterAll(void)
   ierr = TSRegister(TSSSP,      TSCreate_SSP);CHKERRQ(ierr);
   ierr = TSRegister(TSTHETA,    TSCreate_Theta);CHKERRQ(ierr);
   ierr = TSRegister(TSALPHA,    TSCreate_Alpha);CHKERRQ(ierr);
+  ierr = TSRegister(TSALPHA2,   TSCreate_Alpha2);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSRegister(TSSUNDIALS, TSCreate_Sundials);CHKERRQ(ierr);
 #endif

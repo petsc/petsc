@@ -34,6 +34,7 @@ typedef const char* TSType;
 #define TSPYTHON          "python"
 #define TSTHETA           "theta"
 #define TSALPHA           "alpha"
+#define TSALPHA2          "alpha2"
 #define TSGL              "gl"
 #define TSSSP             "ssp"
 #define TSARKIMEX         "arkimex"
@@ -786,6 +787,11 @@ PETSC_EXTERN PetscErrorCode TSAlphaUseAdapt(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAlphaSetRadius(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaSetParams(TS,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaGetParams(TS,PetscReal*,PetscReal*,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode TSAlpha2UseAdapt(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAlpha2SetRadius(TS,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAlpha2SetParams(TS,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAlpha2GetParams(TS,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TSSetDM(TS,DM);
 PETSC_EXTERN PetscErrorCode TSGetDM(TS,DM*);
