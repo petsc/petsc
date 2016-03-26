@@ -1709,13 +1709,14 @@ PetscErrorCode  PetscOptionsGetBool(PetscOptions options,const char pre[],const 
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
-  PetscValidIntPointer(ivalue,3);
+  if (ivalue) PetscValidIntPointer(ivalue,3);
   options = options ? options : defaultoptions;
   ierr = PetscOptionsFindPair_Private(options,pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (set) *set = PETSC_TRUE;
-    if (!value) *ivalue = PETSC_TRUE;
-    else {
+    if (!value) {
+      if (ivalue) *ivalue = PETSC_TRUE;
+    } else {
       ierr = PetscOptionsStringToBool(value, ivalue);CHKERRQ(ierr);
     }
   } else {
