@@ -11,7 +11,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex16adj.c ex16opt_p.c ex16opt_ic.c  \
                 ex20adj.c ex20opt_p.c ex20opt_ic.c  \
                 ex40.c ex41.c ex42.c
-EXAMPLESF       = ex1f.F ex22f.F # ex22f_mf.F90
+EXAMPLESF       = ex1f.F ex22f.F ex22f_mf.F90
 MANSEC          = TS
 DIRS            = phasefield advection-diffusion-reaction eimex power_grid network
 
@@ -604,12 +604,12 @@ runex22_3:
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || printf "${PWD}\nPossible problem with ex22_3, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22_3.tmp
 runex22f:
-	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || printf "${PWD}\nPossible problem with ex22f_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22f_1.tmp
 
 runex22f_mf:
-	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 > ex22f_mf_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200  -ts_arkimex_type 4 > ex22f_mf_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_mf_1.out ex22f_mf_1.tmp || printf "${PWD}\nPossible problem with ex22f_mf_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22f_mf_1.tmp
 
@@ -719,7 +719,7 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm 
                             ex20opt_p.PETSc   ex20opt_p.rm \
                             ex20opt_ic.PETSc  ex20opt_ic.rm
 TESTEXAMPLES_C_X	  = ex5.PETSc runex5 ex5.rm
-TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
+TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex22f.PETSc runex22f ex22f.rm ex22f_mf.PETSc runex22f_mf ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
