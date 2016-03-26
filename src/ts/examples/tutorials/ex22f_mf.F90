@@ -625,7 +625,7 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
 
   Vec X,Xloc
   DM             da
-  PetscInt xs,xe
+  PetscInt xs,xe,two
   PetscInt gdof,i
   PetscErrorCode ierr
   PetscOffset    ixx
@@ -635,7 +635,8 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
 
   call VecGetArrayRead(X,xx,ixx,ierr)
 
-  data2=reshape(xx(ixx:ixx+gdof),(/2,xe-xs+1/))
+  two = 2
+  data2=reshape(xx(ixx:ixx+gdof),(/two,xe-xs+1/))
   data=reshape(data2,(/gdof/))
   open(1020,file='solution_out_ex22f_mf.txt')
   do i=1,gdof
