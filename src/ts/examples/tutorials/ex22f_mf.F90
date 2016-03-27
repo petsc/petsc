@@ -224,7 +224,7 @@ subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                       &
        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
-       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+       PETSC_NULL_INTEGER,ierr)
   call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,  &
        xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
   call DMDAGetGhostCorners(da,                                      &
