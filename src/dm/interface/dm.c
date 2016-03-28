@@ -1613,7 +1613,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
         for (link=dm->subdomainhook; link; link=link->next) {
           if (link->ddhook) {ierr = (*link->ddhook)(dm,(*dmlist)[i],link->ctx);CHKERRQ(ierr);}
         }
-        (*dmlist)[i]->ctx = dm->ctx;
+        if (dm->ctx) (*dmlist)[i]->ctx = dm->ctx;
       }
     }
     if (len) *len = l;
