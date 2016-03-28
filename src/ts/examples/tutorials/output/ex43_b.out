@@ -1,0 +1,11 @@
+      TSAdapt 'basic': step   0 rejected t=0          + 1.000e-02 wlte= 3.54 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   0 accepted t=0          + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   1 accepted t=0.00478647 + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   2 accepted t=0.00957294 + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   3 accepted t=0.0143594  + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   4 accepted t=0.0191459  + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   5 accepted t=0.0239324  + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   6 accepted t=0.0287189  + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   7 accepted t=0.0335053  + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   8 accepted t=0.0382918  + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
+      TSAdapt 'basic': step   9 accepted t=0.0430783  + 4.786e-03 wlte= 0.81 family='alpha2' scheme=0:'' dt=4.786e-03 
