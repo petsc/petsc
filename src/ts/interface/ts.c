@@ -3353,7 +3353,6 @@ PetscErrorCode  TSStep(TS ts)
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
-  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
 
   if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
@@ -3361,7 +3360,6 @@ PetscErrorCode  TSStep(TS ts)
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
 
   ts->time_step_prev = ts->ptime - ts->ptime_prev;
-  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -3399,14 +3397,14 @@ PetscErrorCode  TSAdjointStep(TS ts)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
-  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts, "-ts_view_solution");CHKERRQ(ierr);
+  ierr = DMSetOutputSequenceNumber(dm,ts->steps,ts->ptime);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts,"-ts_view_solution");CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
   if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
@@ -3414,7 +3412,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
   ierr = PetscLogEventEnd(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
 
   ts->time_step_prev = ts->ptime - ts->ptime_prev;
-  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
+  ierr = DMSetOutputSequenceNumber(dm,ts->steps,ts->ptime);CHKERRQ(ierr);
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -3423,7 +3421,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
       else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
+    if (ts->steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
   }
   ts->total_steps--;
   PetscFunctionReturn(0);
@@ -3547,11 +3545,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   ts->reason            = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
-  {
-    DM dm;
-    ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-    ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
-  }
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
@@ -3710,12 +3703,17 @@ PetscErrorCode TSAdjointSolve(TS ts)
 @*/
 PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 {
-  PetscErrorCode ierr;
+  DM             dm;
   PetscInt       i,n = ts->numbermonitors;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(u,VEC_CLASSID,4);
+
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMSetOutputSequenceNumber(dm,step,ptime);CHKERRQ(ierr);
+
   ierr = VecLockPush(u);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = (*ts->monitor[i])(ts,step,ptime,u,ts->monitorcontext[i]);CHKERRQ(ierr);
