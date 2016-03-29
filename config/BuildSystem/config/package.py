@@ -1271,6 +1271,9 @@ class CMakePackage(Package):
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
+    if self.setCompilers.LDFLAGS:
+      args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+self.setCompilers.LDFLAGS+'"')
+
     if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS=on')
     else:
