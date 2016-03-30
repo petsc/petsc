@@ -107,8 +107,9 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptionItems *PetscOptions
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Basic adaptive controller options");CHKERRQ(ierr);
   two  = 2;
-  ierr = PetscOptionsRealArray("-ts_adapt_basic_clip","Admissible decrease/increase in step size","",basic->clip,&two,&set);CHKERRQ(ierr);
-  if (set && (two != 2 || basic->clip[0] > basic->clip[1])) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_basic_clip");
+  ierr = PetscOptionsRealArray("-ts_adapt_basic_clip","Admissible decrease/increase factor in step size","TSAdaptBasicSetClip",basic->clip,&two,&set);CHKERRQ(ierr);
+  if (set && (two != 2)) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_basic_clip");
+  if (set) {ierr = TSAdaptBasicSetClip(adapt,basic->clip[0],basic->clip[1]);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-ts_adapt_basic_safety","Safety factor relative to target error","",basic->safety,&basic->safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_basic_reject_safety","Extra safety factor to apply if the last step was rejected","",basic->reject_safety,&basic->reject_safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_basic_always_accept","Always accept the step regardless of whether local truncation error meets goal","",basic->always_accept,&basic->always_accept,NULL);CHKERRQ(ierr);
@@ -161,5 +162,78 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
   a->safety        = 0.9;
   a->reject_safety = 0.5;
   a->always_accept = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptBasicSetClip"
+/*@
+   TSAdaptBasicSetClip - Sets the admissible decrease/increase factor in step size
+
+   Collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+.  low - admissible decrease factor
++  high - admissible increase factor
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptBasicSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
+{
+  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  PetscBool      isbasic;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (low  != PETSC_DECIDE && low  != PETSC_DEFAULT && (low < 0 || low > 1)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must positive and less than one",(double)low);
+  if (high != PETSC_DECIDE && high != PETSC_DEFAULT && high < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must geather than one",(double)high);
+  ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTBASIC,&isbasic);CHKERRQ(ierr);
+  if (isbasic) {
+    if (low  != PETSC_DECIDE && low  != PETSC_DEFAULT) basic->clip[0] = low;
+    if (high != PETSC_DECIDE && high != PETSC_DEFAULT) basic->clip[1] = high;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptBasicGetClip"
+/*@
+   TSAdaptBasicGetClip - Gets the admissible decrease/increase factor in step size
+
+   Collective on TSAdapt
+
+   Input Arguments:
+.  adapt - adaptive controller context
+
+   Ouput Arguments:
++  low - optional, admissible decrease factor
+-  high - optional, admissible increase factor
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptBasicGetClip(TSAdapt adapt,PetscReal *low,PetscReal *high)
+{
+  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  PetscBool      isbasic;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (low)  PetscValidRealPointer(low,2);
+  if (high) PetscValidRealPointer(high,3);
+  ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTBASIC,&isbasic);CHKERRQ(ierr);
+  if (isbasic) {
+    if (low)  *low  = basic->clip[0];
+    if (high) *high = basic->clip[1];
+  } else {
+    if (low)  *low  = 0;
+    if (high) *high = PETSC_MAX_REAL;
+  }
   PetscFunctionReturn(0);
 }

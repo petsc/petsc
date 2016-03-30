@@ -207,6 +207,7 @@ PETSC_EXTERN const char *const TSExactFinalTimeOptions[];
 /* Logging support */
 PETSC_EXTERN PetscClassId TS_CLASSID;
 PETSC_EXTERN PetscClassId DMTS_CLASSID;
+PETSC_EXTERN PetscClassId TSADAPT_CLASSID;
 
 PETSC_EXTERN PetscErrorCode TSInitializePackage(void);
 
@@ -566,6 +567,9 @@ PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
+
+PETSC_EXTERN PetscErrorCode TSAdaptBasicSetClip(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptBasicGetClip(TSAdapt,PetscReal*,PetscReal*);
 
 /*S
    TSGLAdapt - Abstract object that manages time-step adaptivity

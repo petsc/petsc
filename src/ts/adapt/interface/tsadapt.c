@@ -1,10 +1,11 @@
 
 #include <petsc/private/tsimpl.h> /*I  "petscts.h" I*/
 
+PetscClassId TSADAPT_CLASSID;
+
 static PetscFunctionList TSAdaptList;
 static PetscBool         TSAdaptPackageInitialized;
 static PetscBool         TSAdaptRegisterAllCalled;
-static PetscClassId      TSADAPT_CLASSID;
 
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt);
