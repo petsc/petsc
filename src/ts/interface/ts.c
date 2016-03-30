@@ -164,7 +164,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscBool              opt,flg,tflg;
   PetscErrorCode         ierr;
   char                   monfilename[PETSC_MAX_PATH_LEN];
-  SNES                   snes;
   PetscReal              time_step;
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
@@ -421,33 +420,29 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   /* TS trajectory must be set after TS, since it may use some TS options above */
-  if (ts->trajectory) tflg = PETSC_TRUE;
-  else tflg = PETSC_FALSE;
+  tflg = ts->trajectory ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscOptionsBool("-ts_save_trajectory","Save the solution at each timestep","TSSetSaveTrajectory",tflg,&tflg,NULL);CHKERRQ(ierr);
   if (tflg) {
     ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   }
-  if (ts->adjoint_solve) tflg = PETSC_TRUE;
-  else tflg = PETSC_FALSE;
+  tflg = ts->adjoint_solve ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscOptionsBool("-ts_adjoint_solve","Solve the adjoint problem immediately after solving the forward problem","",tflg,&tflg,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
     ts->adjoint_solve = tflg;
-  }
-  if (ts->trajectory) {
-    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ts);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (snes) {
-    if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
-    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  if (ts->trajectory) {
+    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
 
+  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
+  if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(ts->snes,SNESKSPONLY);CHKERRQ(ierr);}
+  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
