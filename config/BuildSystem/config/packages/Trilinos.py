@@ -4,7 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'origin/trilinos-release-12-6-branch'
+    #self.gitcommit        = 'origin/trilinos-release-12-6-branch'
+    self.gitcommit        = 'cbd7264'
     self.download         = ['git://https://github.com/trilinos/trilinos']
     self.downloaddirname  = 'trilinos'
     self.includes         = ['Trilinos_version.h']
