@@ -323,7 +323,7 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm,
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  dummy - unused monitor context
+-  dummy - viewer and format context
 
    Level: intermediate
 
@@ -331,13 +331,14 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm,
 
 .seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate(), KSPMonitorDefault()
 @*/
-PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewerAndFormat *dummy)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp));
+  PetscViewer    viewer = dummy->viewer;
   KSP_LSQR       *lsqr  = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
+  ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   if (((PetscObject)ksp)->prefix) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Residual norm and norm of normal equations for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
@@ -348,6 +349,7 @@ PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *d
     ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e Residual norm normal equations %14.12e\n",n,rnorm,lsqr->arnorm);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -357,18 +359,11 @@ PetscErrorCode KSPSetFromOptions_LSQR(PetscOptionItems *PetscOptionsObject,KSP k
 {
   PetscErrorCode ierr;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
-  char           monfilename[PETSC_MAX_PATH_LEN];
-  PetscViewer    monviewer;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options");CHKERRQ(ierr);
   ierr = PetscOptionsName("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-ksp_lsqr_monitor","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPLSQRMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  }
+  ierr = KSPMonitorSetFromOptions(ksp,"-ksp_lsqr_monitor","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet",KSPLSQRMonitorDefault);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

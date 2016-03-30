@@ -44,7 +44,7 @@ struct _n_TSMonitorDrawCtx {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),PetscErrorCode (*monitorsetup)(TS,PetscViewer))
+PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*),PetscErrorCode (*monitorsetup)(TS,PetscViewerAndFormat*))
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
@@ -54,11 +54,13 @@ PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[
   PetscFunctionBegin;
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    PetscViewerAndFormat *vf;
+    ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     if (monitorsetup) {
-      ierr = (*monitorsetup)(ts,viewer);CHKERRQ(ierr);
+      ierr = (*monitorsetup)(ts,vf);CHKERRQ(ierr);
     }
-    ierr = TSMonitorSet(ts,monitor,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -88,7 +90,7 @@ PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),PetscErrorCode (*monitorsetup)(TS,PetscViewer))
+PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,PetscViewerAndFormat*),PetscErrorCode (*monitorsetup)(TS,PetscViewerAndFormat*))
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
@@ -98,11 +100,13 @@ PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const cha
   PetscFunctionBegin;
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    PetscViewerAndFormat *vf;
+    ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     if (monitorsetup) {
-      ierr = (*monitorsetup)(ts,viewer);CHKERRQ(ierr);
+      ierr = (*monitorsetup)(ts,vf);CHKERRQ(ierr);
     }
-    ierr = TSAdjointMonitorSet(ts,monitor,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = TSAdjointMonitorSet(ts,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3088,8 +3092,8 @@ PetscErrorCode  TSMonitorCancel(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorDefault"
-/*@
-   TSMonitorDefault - Sets the Default monitor
+/*@C
+   TSMonitorDefault - The Default monitor, prints the timestep and time for each step
 
    Level: intermediate
 
@@ -3097,16 +3101,17 @@ PetscErrorCode  TSMonitorCancel(TS ts)
 
 .seealso:  TSMonitorSet()
 @*/
-PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *dummy)
+PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer =  (PetscViewer) dummy;
+  PetscViewer    viewer =  vf->viewer;
   PetscBool      iascii,ibinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
     if (step == -1){ /* this indicates it is an interpolated solution */
@@ -3124,6 +3129,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
       ierr = PetscRealView(0,&ptime,viewer);CHKERRQ(ierr);
     }
   }
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3216,8 +3222,8 @@ PetscErrorCode  TSAdjointMonitorCancel(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointMonitorDefault"
-/*@
-   TSAdjointMonitorDefault - Sets the Default monitor
+/*@C
+   TSAdjointMonitorDefault - the default monitor of adjoint computations
 
    Level: intermediate
 
@@ -3225,16 +3231,18 @@ PetscErrorCode  TSAdjointMonitorCancel(TS ts)
 
 .seealso: TSAdjointMonitorSet()
 @*/
-PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,void *dummy)
+PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer =  (PetscViewer) dummy;
+  PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5158,7 +5166,7 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
 .  step - current time-step
 .  ptime - current time
 .  u - current state
--  viewer - binary viewer
+-  vf - viewer and its format
 
    Level: intermediate
 
@@ -5166,13 +5174,14 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
-PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *viewer)
+PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
-  PetscViewer    v = (PetscViewer)viewer;
 
   PetscFunctionBegin;
-  ierr = VecView(u,v);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(vf->viewer,vf->format);CHKERRQ(ierr);
+  ierr = VecView(u,vf->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(vf->viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

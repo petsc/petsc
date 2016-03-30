@@ -23,16 +23,18 @@
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
   Vec            x;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -56,16 +58,18 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,void
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
   Vec            x;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = SNESGetFunction(snes,&x,0,0);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -89,16 +93,18 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
   Vec            x;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = SNESGetSolutionUpdate(snes,&x);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -279,7 +285,7 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
 +  snes - the SNES context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
--  dummy - unused context
+-  vf - viewer and format structure
 
    Notes:
    This routine prints the residual norm at each iteration.
@@ -290,22 +296,24 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution()
 @*/
-PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr) ;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorJacUpdateSpectrum"
-PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,void *ctx)
+PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,PetscViewerAndFormat *vf)
 {
 #if defined(PETSC_MISSING_LAPACK_GEEV)
   SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
@@ -415,11 +423,11 @@ PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 
 .seealso: SNESMonitorSet(), SNESMonitorDefault(), SNESMonitorLGCreate()
 @*/
-PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
+PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
   PetscReal      perc,rel;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = vf->viewer;
   /* should be in a MonitorRangeContext */
   static PetscReal prev;
 
@@ -430,9 +438,11 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dum
 
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)(100.0*perc),(double)rel,(double)(rel/perc));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -457,15 +467,16 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dum
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorRatio()
 @*/
-PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
   PetscErrorCode          ierr;
   PetscInt                len;
   PetscReal               *history;
-  PetscViewer             viewer = (PetscViewer) dummy;
+  PetscViewer             viewer = vf->viewer;
   
   PetscFunctionBegin;
   ierr = SNESGetConvergenceHistory(snes,&history,NULL,&len);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   if (!its || !history || its > len) {
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
@@ -473,7 +484,8 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *d
     PetscReal ratio = fgnorm/history[its-1];
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e %14.12e \n",its,(double)fgnorm,(double)ratio);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr); 
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -494,7 +506,7 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *d
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorRatio()
 @*/
-PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewer viewer)
+PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewerAndFormat *vf)
 {
   PetscErrorCode          ierr;
   PetscReal               *history;
@@ -517,13 +529,14 @@ PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewer viewer)
   different on different machines; by using this routine different
   machines will usually generate the same output.
 */
-PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = vf->viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   if (fgnorm > 1.e-9) {
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %g \n",its,(double)fgnorm);CHKERRQ(ierr);
@@ -533,6 +546,7 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -557,9 +571,9 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
 .keywords: SNES, nonlinear, field, monitor, norm
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorDefaultShort()
 @*/
-PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, void *ctx)
+PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
 {
-  PetscViewer    viewer = (PetscViewer) ctx;
+  PetscViewer    viewer = vf->viewer;
   Vec            r;
   DM             dm;
   PetscReal      res[256];
@@ -570,18 +584,19 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = SNESGetFunction(snes, &r, NULL, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(r, &dm);CHKERRQ(ierr);
-  if (!dm) {ierr = SNESMonitorDefault(snes, its, fgnorm, ctx);CHKERRQ(ierr);}
+  if (!dm) {ierr = SNESMonitorDefault(snes, its, fgnorm, vf);CHKERRQ(ierr);}
   else {
     PetscSection s, gs;
     PetscInt     Nf, f;
 
     ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
     ierr = DMGetDefaultGlobalSection(dm, &gs);CHKERRQ(ierr);
-    if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, ctx);CHKERRQ(ierr);}
+    if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, vf);CHKERRQ(ierr);}
     ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
     if (Nf > 256) SETERRQ1(PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
     ierr = PetscSectionVecNorm(s, gs, r, NORM_2, res);CHKERRQ(ierr);
     ierr = PetscObjectGetTabLevel((PetscObject) snes, &tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer, tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm);CHKERRQ(ierr);
     for (f = 0; f < Nf; ++f) {
@@ -590,6 +605,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
     }
     ierr = PetscViewerASCIIPrintf(viewer, "] \n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(viewer, tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

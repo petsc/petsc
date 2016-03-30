@@ -440,6 +440,11 @@ runex2f:
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2f_1.tmp
+runex2f_2:
+	-@${MPIEXEC} -n 2 ./ex2f -pc_type jacobi -my_ksp_monitor -ksp_gmres_cgs_refinement_type refine_always > ex2f_2.tmp 2>&1; \
+	   if (${DIFF} output/ex2f_2.out ex2f_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex2f_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex2f_2.tmp
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -1527,7 +1532,7 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm \
                                  ex50.PETSc runex50_3 ex50.rm \
                                  ex60.PETSc runex60_4 runex60_5 runex60_6 runex60_7 runex60_8 runex60_9 ex60.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
-TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
+TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f runex2f_2 ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex15f.PETSc runex15f ex15f.rm \
                                   ex45f.PETSc runex45f ex45f.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE  = ex14f.PETSc runex14f  ex14f.rm  ex22f.PETSc runex22f ex22f.rm ex21f.PETSc runex21f ex21f.rm

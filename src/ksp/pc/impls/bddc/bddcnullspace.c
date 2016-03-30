@@ -380,9 +380,6 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
   ierr = KSPSetErrorIfNotConverged(inv_change,pc->erroriffailure);CHKERRQ(ierr);
   ierr = KSPSetOperators(inv_change,pcbddc->ChangeOfBasisMatrix,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = KSPSetTolerances(inv_change,1.e-8,1.e-8,PETSC_DEFAULT,2*i);CHKERRQ(ierr);
-  if (pcbddc->dbg_flag) {
-    ierr = KSPMonitorSet(inv_change,KSPMonitorDefault,pcbddc->dbg_viewer,NULL);CHKERRQ(ierr);
-  }
   ierr = KSPSetUp(inv_change);CHKERRQ(ierr);
 
   /* get nullspace and transform it */
