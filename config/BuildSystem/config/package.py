@@ -506,6 +506,13 @@ class Package(config.base.Configure):
   def updateGitDir(self):
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
+      # verify that packageDir is actually a git clone
+      if not os.path.isdir(os.path.join(self.packageDir,'.git')):
+        raise RuntimeError(self.packageDir +': is not a git repository! '+os.path.join(self.packageDir,'.git')+' not found!')
+      gitdir,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse','--git-dir'], cwd=self.packageDir, log = self.log)
+      if gitdir != '.git':
+        raise RuntimeError(self.packageDir +': is not a git repository! "git rev-parse --gitdir" gives: '+gitdir)
+
       prefetch = 0
       if self.gitcommit.startswith('origin/'):
         prefetch = 1
@@ -525,6 +532,7 @@ class Package(config.base.Configure):
         if self.gitcommit != 'HEAD':
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
       except:
         raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
                            '.\nPerhaps its a remote branch, if so - use: origin/'+self.gitcommit)
@@ -1262,6 +1270,9 @@ class CMakePackage(Package):
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
+
+    if self.setCompilers.LDFLAGS:
+      args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+self.setCompilers.LDFLAGS+'"')
 
     if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS=on')
