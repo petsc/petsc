@@ -576,6 +576,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   swarm->swarm_type = DMSWARM_BASIC;
   swarm->migrate_type = DMSWARM_MIGRATE_BASIC;
   swarm->collect_type = DMSWARM_COLLECT_BASIC;
+  swarm->migrate_error_on_missing_point = PETSC_FALSE;
   
   dm->dim  = 0;
   dm->data = swarm;

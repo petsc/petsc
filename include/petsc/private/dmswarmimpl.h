@@ -32,7 +32,7 @@ typedef struct {
   
   DM        dmcell;
 
-  PetscBool migrate_error_on_missing_data;
+  PetscBool migrate_error_on_missing_point;
   
   PetscBool collect_view_active;
   PetscInt  collect_view_reset_nlocal;
