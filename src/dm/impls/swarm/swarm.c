@@ -225,6 +225,15 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSwarmGetCellDM"
+PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  *dmcell = swarm->dmcell;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSwarmGetLocalSize"
 PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
 {
@@ -428,29 +437,27 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSwarmGlobalToLocalViewCreate"
-PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewCreate(DM dm,InsertMode mode)
+#define __FUNCT__ "DMSwarmCollectViewCreate"
+PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm)
 {
   PetscErrorCode ierr;
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscInt ng;
   
-  if (mode != INSERT_VALUES) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only mode INSERT_VALUES is supported");
-
   ierr = DMSwarmMigrate_GlobalToLocal_Basic(dm,&ng);CHKERRQ(ierr);
+  //ierr = DMSwarmCollect_DMDABoundingBox(dm,&ng);CHKERRQ(ierr);
+  //ierr = DMSwarmCollect_General(dm,..,,..,&ng);CHKERRQ(ierr);
   swarm->view_ng = ng;
   
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSwarmGlobalToLocalViewDestroy"
-PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewDestroy(DM dm,InsertMode mode)
+#define __FUNCT__ "DMSwarmCollectViewDestroy"
+PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
 {
   PetscErrorCode ierr;
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
-  
-  if (mode != INSERT_VALUES) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only mode INSERT_VALUES is supported");
   
   ierr = DMSwarmSetLocalSizes(dm,swarm->view_ng,-1);CHKERRQ(ierr);
   
@@ -468,7 +475,6 @@ PetscErrorCode DMSetup_Swarm(DM dm)
   
   if (swarm->issetup) PetscFunctionReturn(0);
   
-  PetscPrintf(PETSC_COMM_SELF,"Swarm setup \n");
   swarm->issetup = PETSC_TRUE;
 
   /* check some fields were registered */

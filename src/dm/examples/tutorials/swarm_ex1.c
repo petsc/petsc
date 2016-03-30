@@ -163,7 +163,7 @@ int ex2(void)
     }
     ierr = DMSwarmRestoreField(dms,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
     
-    ierr = DMSwarmGlobalToLocalViewCreate(dms,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = DMSwarmCollectViewCreate(dms);CHKERRQ(ierr);
     ierr = DMSwarmGetLocalSize(dms,&npoints[0]);CHKERRQ(ierr);
     ierr = DMSwarmGetSize(dms,&npoints[1]);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_SELF,"rank[%d] after(%D,%D)\n",rank,npoints[0],npoints[1]);
@@ -172,7 +172,7 @@ int ex2(void)
     ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMSwarmDestroyGlobalVectorFromField(dms,"viscosity",&x);CHKERRQ(ierr);
 
-    ierr = DMSwarmGlobalToLocalViewDestroy(dms,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = DMSwarmCollectViewDestroy(dms);CHKERRQ(ierr);
     ierr = DMSwarmGetLocalSize(dms,&npoints[0]);CHKERRQ(ierr);
     ierr = DMSwarmGetSize(dms,&npoints[1]);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_SELF,"rank[%d] after_v(%D,%D)\n",rank,npoints[0],npoints[1]);
@@ -277,7 +277,7 @@ int ex3(void)
     ierr = DMSwarmGetSize(dms,&npoints_orig[1]);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_SELF,"rank[%d] before(%D,%D)\n",rank,npoints_orig[0],npoints_orig[1]);
     
-    ierr = DMSwarmMigrate_GlobalToLocal_BoundingBox(dms,&ng);CHKERRQ(ierr);
+    ierr = DMSwarmCollect_DMDABoundingBox(dms,&ng);CHKERRQ(ierr);
     
     ierr = DMSwarmGetLocalSize(dms,&npoints[0]);CHKERRQ(ierr);
     ierr = DMSwarmGetSize(dms,&npoints[1]);CHKERRQ(ierr);

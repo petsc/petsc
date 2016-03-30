@@ -172,8 +172,8 @@ typedef struct {
 } CollectBBox;
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_GlobalToLocal_BoundingBox"
-PETSC_EXTERN PetscErrorCode DMSwarmMigrate_GlobalToLocal_BoundingBox(DM dm,PetscInt *globalsize)
+#define __FUNCT__ "DMSwarmCollect_DMDABoundingBox"
+PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globalsize)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
@@ -189,17 +189,21 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate_GlobalToLocal_BoundingBox(DM dm,Petsc
   
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 
-  //ierr = DMSwarmGetDMCell(swarm,&dmcell);CHKERRQ(ierr);
-  dmcell = swarm->dmcell;
-  
-  dim = 2;
-  if (dim == 2) {
-    neighbour_cells = 9;
-  }
+  ierr = DMSwarmGetCellDM(dm,&dmcell);CHKERRQ(ierr);
+  if (!dmcell) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid if cell DM provided");
   
   isdmda = PETSC_FALSE;
   PetscObjectTypeCompare((PetscObject)dmcell,DMDA,&isdmda);
   if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only DMDA support for CollectBoundingBox");
+
+  ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  if (dim == 1) {
+    neighbour_cells = 3;
+  } else if (dim == 2) {
+    neighbour_cells = 9;
+  } else {
+    neighbour_cells = 27;
+  }
   
   sizeof_bbox_ctx = sizeof(CollectBBox);
   PetscMalloc1(1,&bbox);
@@ -212,11 +216,21 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate_GlobalToLocal_BoundingBox(DM dm,Petsc
 
     ierr = DMGetCoordinatesLocal(dmcell,&lcoor);CHKERRQ(ierr);
     
-    ierr = VecStrideMin(lcoor,0,NULL,&bbox->min[0]);CHKERRQ(ierr);
-    ierr = VecStrideMin(lcoor,1,NULL,&bbox->min[1]);CHKERRQ(ierr);
-    ierr = VecStrideMax(lcoor,0,NULL,&bbox->max[0]);CHKERRQ(ierr);
-    ierr = VecStrideMax(lcoor,1,NULL,&bbox->max[1]);CHKERRQ(ierr);
-  }
+    if (dim >= 1) {
+      ierr = VecStrideMin(lcoor,0,NULL,&bbox->min[0]);CHKERRQ(ierr);
+      ierr = VecStrideMax(lcoor,0,NULL,&bbox->max[0]);CHKERRQ(ierr);
+    }
+
+    if (dim >= 2) {
+      ierr = VecStrideMin(lcoor,1,NULL,&bbox->min[1]);CHKERRQ(ierr);
+      ierr = VecStrideMax(lcoor,1,NULL,&bbox->max[1]);CHKERRQ(ierr);
+    }
+
+    if (dim == 3) {
+      ierr = VecStrideMin(lcoor,2,NULL,&bbox->min[2]);CHKERRQ(ierr);
+      ierr = VecStrideMax(lcoor,2,NULL,&bbox->max[2]);CHKERRQ(ierr);
+    }
+}
   
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   *globalsize = npoints;
