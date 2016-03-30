@@ -13,50 +13,61 @@ typedef struct {
 static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  PetscInt       order;
+  PetscReal      safety = basic->safety;
+  PetscReal      enorm=-1,hfac_lte,h_lte;
   PetscErrorCode ierr;
-  PetscReal      enorm,hfac_lte,h_lte,safety;
-  PetscInt       order = adapt->candidates.order[0];
 
   PetscFunctionBegin;
+  *next_sc = 0; /* Reuse the same order scheme */
+
   if (ts->ops->evaluatewlte) {
-    ierr = (*ts->ops->evaluatewlte)(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
-  } else {
-    Vec X;
-    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-    if (!basic->Y) {ierr = VecDuplicate(X,&basic->Y);CHKERRQ(ierr);}
+    order = PETSC_DECIDE;
+    ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
+    if (enorm >= 0 && order < 1) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
+  } else if (ts->ops->evaluatestep) {
+    if (adapt->candidates.n < 1) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
+    if (!adapt->candidates.inuse_set) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
+    if (!basic->Y) {ierr = VecDuplicate(ts->vec_sol,&basic->Y);CHKERRQ(ierr);}
+    order = adapt->candidates.order[0];
     ierr = TSEvaluateStep(ts,order-1,basic->Y,NULL);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,X,basic->Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,basic->Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
   }
 
-  safety = basic->safety;
-  if (enorm > 1.) {
+  if (enorm < 0) {
+    *accept  = PETSC_TRUE;
+    *next_h  = h;            /* Reuse the old step */
+    *wlte    = -1;           /* Weighted local truncation error was not evaluated */
+    PetscFunctionReturn(0);
+  }
+
+  /* Determine whether the step is accepted of rejected */
+  if (enorm > 1) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else if (basic->always_accept) {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_FALSE;
     }
   } else {
-    ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+    ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
     *accept = PETSC_TRUE;
   }
 
   /* The optimal new step based purely on local truncation error for this step. */
-  if (enorm == 0.0) {
+  if (enorm > 0)
+    hfac_lte = safety * PetscPowReal(enorm,((PetscReal)-1)/order);
+  else
     hfac_lte = safety * PETSC_INFINITY;
-  } else {
-    hfac_lte = safety * PetscPowReal(enorm,-1./order);
-  }
-  h_lte    = h * PetscClipInterval(hfac_lte,basic->clip[0],basic->clip[1]);
+  h_lte = h * PetscClipInterval(hfac_lte,basic->clip[0],basic->clip[1]);
 
-  *next_sc = 0;
-  *next_h  = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
-  *wlte    = enorm;
+  *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
+  *wlte   = enorm;
   PetscFunctionReturn(0);
 }
 

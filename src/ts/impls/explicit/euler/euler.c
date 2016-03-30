@@ -12,21 +12,27 @@ typedef struct {
 static PetscErrorCode TSStep_Euler(TS ts)
 {
   TS_Euler       *euler = (TS_Euler*)ts->data;
-  Vec            sol    = ts->vec_sol,update = euler->update;
+  Vec            solution = ts->vec_sol,update = euler->update;
+  PetscBool      stageok,accept = PETSC_TRUE;
+  PetscReal      next_time_step = ts->time_step;
   PetscErrorCode ierr;
-  PetscBool      accept;
 
   PetscFunctionBegin;
   ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
-  ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
-  ierr = VecAXPY(sol,ts->time_step,update);CHKERRQ(ierr);
-  ierr = TSFunctionDomainError(ts,ts->ptime,sol,&accept);CHKERRQ(ierr);
-  if(!accept) {
-    ts->reason = TS_DIVERGED_STEP_REJECTED;
-    PetscFunctionReturn(0);
-  }
-  ierr = TSPostStage(ts,ts->ptime,0,&sol);CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,solution,update);CHKERRQ(ierr);
+  ierr = VecAYPX(update,ts->time_step,solution);CHKERRQ(ierr);
+  ierr = TSPostStage(ts,ts->ptime,0,&solution);CHKERRQ(ierr);
+  ierr = TSAdaptCheckStage(ts->adapt,ts,ts->ptime,solution,&stageok);CHKERRQ(ierr);
+  if(!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
+  ierr = TSFunctionDomainError(ts,ts->ptime+ts->time_step,update,&stageok);CHKERRQ(ierr);
+  if(!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
+
+  ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
+  if (!accept) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
+  ierr = VecCopy(update,solution);CHKERRQ(ierr);
+
   ts->ptime += ts->time_step;
+  ts->time_step = next_time_step;
   ts->steps++;
   PetscFunctionReturn(0);
 }
@@ -46,6 +52,9 @@ static PetscErrorCode TSSetUp_Euler(TS ts)
   ierr =  TSGetRHSFunction(ts,NULL,&rhsfunction,NULL);CHKERRQ(ierr);
   if (!rhsfunction || ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must define RHSFunction() and leave IFunction() undefined in order to use -ts_type euler");
   ierr = VecDuplicate(ts->vec_sol,&euler->update);CHKERRQ(ierr);
+
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -132,6 +141,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscNewLog(ts,&euler);CHKERRQ(ierr);
+  ts->data = (void*)euler;
+
   ts->ops->setup           = TSSetUp_Euler;
   ts->ops->step            = TSStep_Euler;
   ts->ops->reset           = TSReset_Euler;
@@ -140,11 +152,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
   ts->ops->view            = TSView_Euler;
   ts->ops->interpolate     = TSInterpolate_Euler;
   ts->ops->linearstability = TSComputeLinearStability_Euler;
-
-  /* does not have adaptivity so delete adaptivity object */
-  ierr = TSAdaptDestroy(&ts->adapt);CHKERRQ(ierr);
-
-  ierr = PetscNewLog(ts,&euler);CHKERRQ(ierr);
-  ts->data = (void*)euler;
   PetscFunctionReturn(0);
 }

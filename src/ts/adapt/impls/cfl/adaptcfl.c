@@ -1,8 +1,8 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
 typedef struct {
+  PetscReal safety;         /* safety factor relative to target CFL constraint */
   PetscBool always_accept;
-  PetscReal safety;             /* safety factor relative to target error */
 } TSAdapt_CFL;
 
 #undef __FUNCT__
@@ -11,36 +11,35 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
 {
   TSAdapt_CFL     *cfl = (TSAdapt_CFL*)adapt->data;
   PetscErrorCode  ierr;
-  PetscReal       hcfl,cfltime;
-  PetscInt        stepno,ncandidates;
-  const PetscInt  *order;
-  const PetscReal *ccfl;
+  PetscReal       hcfl,cfltimestep,ccfl;
+  PetscInt        ncandidates;
+  const PetscReal *ccflarray;
 
   PetscFunctionBegin;
-  ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
-  ierr = TSGetCFLTime(ts,&cfltime);CHKERRQ(ierr);
-  ierr = TSAdaptCandidatesGet(adapt,&ncandidates,&order,NULL,&ccfl,NULL);CHKERRQ(ierr);
+  ierr = TSGetCFLTime(ts,&cfltimestep);CHKERRQ(ierr);
+  ierr = TSAdaptCandidatesGet(adapt,&ncandidates,NULL,NULL,&ccflarray,NULL);CHKERRQ(ierr);
+  ccfl = (ncandidates > 0) ? ccflarray[0] : 1.0;
 
-  hcfl = cfl->safety * cfltime * ccfl[0];
-  if (hcfl < adapt->dt_min) {
-    ierr = PetscInfo4(adapt,"Cannot satisfy CFL constraint %g (with %g safety) at minimum time step %g with method coefficient %g, proceding anyway\n",(double)cfltime,(double)cfl->safety,(double)adapt->dt_min,(double)ccfl[0]);CHKERRQ(ierr);
-  }
-
-  if (h > cfltime * ccfl[0]) {
+  /* Determine whether the step is accepted of rejected */
+  *accept = PETSC_TRUE;
+  if (h > cfltimestep * ccfl) {
     if (cfl->always_accept) {
-      ierr = PetscInfo3(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, proceeding anyway\n",(double)h,(double)ccfl[0],(double)cfltime);CHKERRQ(ierr);
+      ierr = PetscInfo3(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, proceeding anyway\n",(double)h,(double)ccfl,(double)cfltimestep);CHKERRQ(ierr);
     } else {
-      ierr     = PetscInfo3(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, step REJECTED\n",(double)h,(double)ccfl[0],(double)cfltime);CHKERRQ(ierr);
-      *next_sc = 0;
-      *next_h  = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
+      ierr = PetscInfo3(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, step REJECTED\n",(double)h,(double)ccfl,(double)cfltimestep);CHKERRQ(ierr);
       *accept  = PETSC_FALSE;
     }
   }
 
+  /* The optimal new step based purely on CFL constraint for this step. */
+  hcfl = cfl->safety * cfltimestep * ccfl;
+  if (hcfl < adapt->dt_min) {
+    ierr = PetscInfo4(adapt,"Cannot satisfy CFL constraint %g (with %g safety) at minimum time step %g with method coefficient %g, proceding anyway\n",(double)cfltimestep,(double)cfl->safety,(double)adapt->dt_min,(double)ccfl);CHKERRQ(ierr);
+  }
+
   *next_sc = 0;
   *next_h  = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
-  *accept  = PETSC_TRUE;
-  *wlte    = -1;                /* Weighted local truncation error was not evaluated */
+  *wlte    = -1;  /* Weighted local truncation error was not evaluated */
   PetscFunctionReturn(0);
 }
 
@@ -64,9 +63,8 @@ static PetscErrorCode TSAdaptSetFromOptions_CFL(PetscOptionItems *PetscOptionsOb
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"CFL adaptive controller options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target error","",cfl->safety,&cfl->safety,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether local truncation error meets goal","",cfl->always_accept,&cfl->always_accept,NULL);CHKERRQ(ierr);
-  if (!cfl->always_accept) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"step rejection not implemented yet");
+  ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target CFL constraint","",cfl->safety,&cfl->safety,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether CFL constraint meets goal","",cfl->always_accept,&cfl->always_accept,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -86,8 +84,9 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
   TSAdapt_CFL    *a;
 
   PetscFunctionBegin;
-  ierr                       = PetscNewLog(adapt,&a);CHKERRQ(ierr);
-  adapt->data                = (void*)a;
+  ierr = PetscNewLog(adapt,&a);CHKERRQ(ierr);
+  adapt->data = (void*)a;
+
   adapt->ops->choose         = TSAdaptChoose_CFL;
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_CFL;
   adapt->ops->destroy        = TSAdaptDestroy_CFL;
