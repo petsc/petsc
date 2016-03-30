@@ -3338,7 +3338,7 @@ PetscErrorCode  TSStep(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
-    
+
   ierr = PetscCitationsRegister("@techreport{tspaper,\n"
                                 "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
                                 "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
@@ -3559,12 +3559,15 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      if (!ts->steprollback) {
+        ierr = TSPreStep(ts);CHKERRQ(ierr);
+      }
       ierr = TSStep(ts);CHKERRQ(ierr);
-      if (!ts->steprollback && ts->vec_costintegral && ts->costintegralfwd) {
+      if (ts->vec_costintegral && ts->costintegralfwd) {
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
       ierr = TSEventHandler(ts);CHKERRQ(ierr);
-      if(!ts->steprollback) {
+      if (!ts->steprollback) {
         ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }

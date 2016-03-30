@@ -203,8 +203,6 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
-
   th->status = TS_STEP_INCOMPLETE;
   if (!ts->steprollback) {
     if (th->adapt) { th->time_step_prev = ts->time_step_prev; }

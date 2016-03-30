@@ -481,7 +481,6 @@ static PetscErrorCode TSStep_RK(TS ts)
 
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
     PetscReal h = ts->time_step;
-    ierr = TSPreStep(ts);CHKERRQ(ierr);
     for (i=0; i<s; i++) {
       rk->stage_time = t + h*c[i];
       ierr = TSPreStage(ts,rk->stage_time); CHKERRQ(ierr);
@@ -567,7 +566,6 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   t          = ts->ptime;
   rk->status = TS_STEP_INCOMPLETE;
   h = ts->time_step;
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
   for (i=s-1; i>=0; i--) {
     rk->stage_time = t + h*(1.0-c[i]);
     for (nadj=0; nadj<ts->numcost; nadj++) {

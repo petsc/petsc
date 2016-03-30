@@ -213,7 +213,6 @@ static PetscErrorCode TSStep_SSP(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
   ierr = (*ssp->onestep)(ts,ts->ptime,ts->time_step,sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
   ts->steps++;

@@ -178,7 +178,6 @@ static PetscErrorCode TSStep_Mimex_Split(TS ts)
   ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
   ierr = TSPreStage(ts, ts->ptime);CHKERRQ(ierr);
   /* Compute implicit update */
   mimex->stage_time = ts->ptime + ts->time_step;
@@ -244,7 +243,6 @@ static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
   ierr = TSPreStage(ts, ts->ptime);CHKERRQ(ierr);
   /* Compute implicit update */
   mimex->stage_time = ts->ptime + ts->time_step;
