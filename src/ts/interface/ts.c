@@ -122,7 +122,7 @@ PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const cha
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
++  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGL, TSSSP
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_steps <maxsteps> - maximum number of time-steps to take
 .  -ts_final_time <time> - maximum time to compute to
@@ -167,21 +167,26 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscReal              time_step;
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
+  TSIFunction            ifun;
   const char             *defaultType;
   char                   typeName[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
-  else defaultType = TSEULER;
 
   ierr = TSRegisterAll();CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
+  ierr = TSGetIFunction(ts,NULL,&ifun,NULL);CHKERRQ(ierr);
+
+  ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
+  if (((PetscObject)ts)->type_name)
+    defaultType = ((PetscObject)ts)->type_name;
+  else
+    defaultType = ifun ? TSBEULER : TSEULER;
+  ierr = PetscOptionsFList("-ts_type","TS method","TSSetType",TSList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
+    ierr = TSSetType(ts,typeName);CHKERRQ(ierr);
   } else {
-    ierr = TSSetType(ts, defaultType);CHKERRQ(ierr);
+    ierr = TSSetType(ts,defaultType);CHKERRQ(ierr);
   }
 
   /* Handle generic TS options */
@@ -189,9 +194,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
-  }
+  if (flg) {ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);
   if (flg) {ierr = TSSetExactFinalTime(ts,eftopt);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","TSSetMaxSNESFailures",ts->max_snes_failures,&ts->max_snes_failures,NULL);CHKERRQ(ierr);
@@ -212,7 +215,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 #endif
 
   /* Monitor options */
-  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor","Monitor timestep size","TSMonitorDefault",TSMonitorDefault,NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor","Monitor time and timestep size","TSMonitorDefault",TSMonitorDefault,NULL);CHKERRQ(ierr);
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_solution","View the solution at each timestep","TSMonitorSolution",TSMonitorSolution,NULL);CHKERRQ(ierr);
   ierr = TSAdjointMonitorSetFromOptions(ts,"-ts_adjoint_monitor","Monitor adjoint timestep size","TSAdjointMonitorDefault",TSAdjointMonitorDefault,NULL);CHKERRQ(ierr);
 
@@ -1980,6 +1983,7 @@ PetscErrorCode  TSSetUp(TS ts)
   DM             dm;
   PetscErrorCode (*func)(SNES,Vec,Vec,void*);
   PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*);
+  TSIFunction    ifun;
   TSIJacobian    ijac;
   TSRHSJacobian  rhsjac;
 
@@ -1989,7 +1993,8 @@ PetscErrorCode  TSSetUp(TS ts)
 
   ts->total_steps = 0;
   if (!((PetscObject)ts)->type_name) {
-    ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
+    ierr = TSGetIFunction(ts,NULL,&ifun,NULL);CHKERRQ(ierr);
+    ierr = TSSetType(ts,ifun ? TSBEULER : TSEULER);CHKERRQ(ierr);
   }
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
