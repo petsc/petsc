@@ -759,8 +759,8 @@ static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
       if (A != B) {
         ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&ts->Brhs);CHKERRQ(ierr);
       } else {
-        ts->Brhs = ts->Arhs;
         ierr = PetscObjectReference((PetscObject)ts->Arhs);CHKERRQ(ierr);
+        ts->Brhs = ts->Arhs;
       }
     }
     *Brhs = ts->Brhs;
@@ -1011,7 +1011,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!r && !ts->dm && ts->vec_sol) {
     ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
-    r    = ralloc;
+    r = ralloc;
   }
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
@@ -1173,13 +1173,11 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat Amat,Mat Pmat,TSRHSJacobian f,void *c
   if (Amat) {
     ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
-
     ts->Arhs = Amat;
   }
   if (Pmat) {
     ierr = PetscObjectReference((PetscObject)Pmat);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
-
     ts->Brhs = Pmat;
   }
   PetscFunctionReturn(0);
@@ -1217,27 +1215,27 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 
 .seealso: TSSetRHSJacobian(), TSSetRHSFunction(), TSSetIJacobian()
 @*/
-PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
+PetscErrorCode  TSSetIFunction(TS ts,Vec r,TSIFunction f,void *ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
-  Vec            resalloc = NULL;
+  Vec            ralloc = NULL;
   DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (res) PetscValidHeaderSpecific(res,VEC_CLASSID,2);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSSetIFunction(dm,f,ctx);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (!res && !ts->dm && ts->vec_sol) {
-    ierr = VecDuplicate(ts->vec_sol,&resalloc);CHKERRQ(ierr);
-    res  = resalloc;
+  if (!r && !ts->dm && ts->vec_sol) {
+    ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
+    r  = ralloc;
   }
-  ierr = SNESSetFunction(snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&resalloc);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2407,7 +2405,6 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
   PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)u);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
-
   ts->vec_sol = u;
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -5326,14 +5323,12 @@ PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec
   if (vatol) {
     ierr = PetscObjectReference((PetscObject)vatol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
-
     ts->vatol = vatol;
   }
   if (rtol != PETSC_DECIDE && rtol != PETSC_DEFAULT) ts->rtol = rtol;
   if (vrtol) {
     ierr = PetscObjectReference((PetscObject)vrtol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
-
     ts->vrtol = vrtol;
   }
   PetscFunctionReturn(0);
@@ -6862,14 +6857,14 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->rhsjacobian.scale = 1.;
   t->ijacobian.shift   = 1.;
 
-  ierr = TSGetSNES(tsin,&snes_start);                   CHKERRQ(ierr);
-  ierr = TSSetSNES(t,snes_start);                       CHKERRQ(ierr);
+  ierr = TSGetSNES(tsin,&snes_start);CHKERRQ(ierr);
+  ierr = TSSetSNES(t,snes_start);CHKERRQ(ierr);
 
-  ierr = TSGetDM(tsin,&dm);                             CHKERRQ(ierr);
-  ierr = TSSetDM(t,dm);                                 CHKERRQ(ierr);
+  ierr = TSGetDM(tsin,&dm);CHKERRQ(ierr);
+  ierr = TSSetDM(t,dm);CHKERRQ(ierr);
 
-  t->adapt=tsin->adapt;
-  PetscObjectReference((PetscObject)t->adapt);
+  t->adapt = tsin->adapt;
+  ierr = PetscObjectReference((PetscObject)t->adapt);CHKERRQ(ierr);
 
   t->problem_type      = tsin->problem_type;
   t->ptime             = tsin->ptime;
@@ -6885,8 +6880,8 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->max_reject        = tsin->max_reject;
   t->errorifstepfailed = tsin->errorifstepfailed;
 
-  ierr = TSGetType(tsin,&type); CHKERRQ(ierr);
-  ierr = TSSetType(t,type);     CHKERRQ(ierr);
+  ierr = TSGetType(tsin,&type);CHKERRQ(ierr);
+  ierr = TSSetType(t,type);CHKERRQ(ierr);
 
   t->vec_sol           = NULL;
 
