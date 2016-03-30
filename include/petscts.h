@@ -314,6 +314,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTK(TS,PetscInt,PetscReal,Vec,void*
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTKDestroy(void*);
 
 PETSC_EXTERN PetscErrorCode TSStep(TS);
+PETSC_EXTERN PetscErrorCode TSEvaluateWLTE(TS,NormType,PetscInt*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetEquationType(TS,TSEquationType*);

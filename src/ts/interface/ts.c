@@ -3428,6 +3428,49 @@ PetscErrorCode  TSAdjointStep(TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSEvaluateWLTE"
+/*@
+   TSEvaluateWLTE - Evaluate the weighted local truncation error norm
+   at the end of a time step with a given order of accuracy.
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  wnormtype - norm type, either NORM_2 or NORM_INFINITY
+-  order - optional, desired order for the error evaluation or PETSC_DECIDE
+
+   Output Arguments:
++  order - optional, the actual order of the error evaluation
+-  wlte - the weighted local truncation error norm
+
+   Level: advanced
+
+   Notes:
+   If the timestepper cannot evaluate the error in a particular step
+   (eg. in the first step or restart steps after event handling),
+   this routine returns wlte=-1.0 .
+
+.seealso: TSStep(), TSAdapt, TSErrorWeightedNorm()
+@*/
+PetscErrorCode TSEvaluateWLTE(TS ts,NormType wnormtype,PetscInt *order,PetscReal *wlte)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidType(ts,1);
+  PetscValidLogicalCollectiveEnum(ts,wnormtype,4);
+  if (order) PetscValidIntPointer(order,3);
+  if (order) PetscValidLogicalCollectiveInt(ts,*order,3);
+  PetscValidRealPointer(wlte,4);
+  if (wnormtype != NORM_2 && wnormtype != NORM_INFINITY) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
+  if (!ts->ops->evaluatewlte) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSEvaluateWLTE not implemented for type '%s'",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->evaluatewlte)(ts,wnormtype,order,wlte);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSEvaluateStep"
 /*@
    TSEvaluateStep - Evaluate the solution at the end of a time step with a given order of accuracy.
