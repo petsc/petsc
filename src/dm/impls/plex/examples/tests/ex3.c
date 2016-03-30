@@ -614,7 +614,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: PASS\n");CHKERRQ(ierr);
   }
   else {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL at tolerance %g with max difference %g\n",10. * PETSC_MACHINE_EPSILON,allVecMaxDiff);CHKERRQ(ierr);
   }
   ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
