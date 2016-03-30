@@ -1994,7 +1994,6 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
-
   if (ts->rhsjacobian.reuse) {
     Mat Amat,Pmat;
     SNES snes;
@@ -2017,15 +2016,15 @@ PetscErrorCode  TSSetUp(TS ts)
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
 
-  /* in the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
-   to be set right but can't do it elsewhere due to the overreliance on ctx=ts.
+  /* In the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
+     to be set right but can't do it elsewhere due to the overreliance on ctx=ts.
    */
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMSNESGetFunction(dm,&func,NULL);CHKERRQ(ierr);
   if (!func) {
-    ierr =DMSNESSetFunction(dm,SNESTSFormFunction,ts);CHKERRQ(ierr);
+    ierr = DMSNESSetFunction(dm,SNESTSFormFunction,ts);CHKERRQ(ierr);
   }
-  /* if the SNES doesn't have a jacobian set and the TS has an ijacobian or rhsjacobian set, set the SNES to use it.
+  /* If the SNES doesn't have a jacobian set and the TS has an ijacobian or rhsjacobian set, set the SNES to use it.
      Otherwise, the SNES will use coloring internally to form the Jacobian.
    */
   ierr = DMSNESGetJacobian(dm,&jac,NULL);CHKERRQ(ierr);
@@ -3337,8 +3336,6 @@ PetscErrorCode  TSStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
-
   ierr = PetscCitationsRegister("@techreport{tspaper,\n"
                                 "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
                                 "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
@@ -3347,9 +3344,11 @@ PetscErrorCode  TSStep(TS ts)
                                 "  institution = {Argonne National Laboratory},\n"
                                 "  year        = {2014}\n}\n",&cite);CHKERRQ(ierr);
 
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
+
+  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
@@ -3563,8 +3562,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
-  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     PetscValidHeaderSpecific(u,VEC_CLASSID,2);
@@ -3579,6 +3576,10 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   }
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
+
+  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
+
   /* reset time step and iteration counters */
   ts->steps             = 0;
   ts->ksp_its           = 0;
@@ -3591,8 +3592,9 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
-    ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
+    if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
     ts->solvetime = ts->ptime;
+    solution = ts->vec_sol;
   } else {
     /* steps the requested number of timesteps. */
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
