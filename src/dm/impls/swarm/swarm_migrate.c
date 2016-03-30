@@ -240,14 +240,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   PetscObjectTypeCompare((PetscObject)dmcell,DMDA,&isdmda);
   if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only DMDA support for CollectBoundingBox");
 
-  ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  if (dim == 1) {
-    neighbour_cells = 3;
-  } else if (dim == 2) {
-    neighbour_cells = 9;
-  } else {
-    neighbour_cells = 27;
-  }
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   
   sizeof_bbox_ctx = sizeof(CollectBBox);
   PetscMalloc1(1,&bbox);
@@ -284,6 +277,13 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
 
   /* use DMDA neighbours */
 	ierr = DMDAGetNeighbors(dmcell,&dmneighborranks);CHKERRQ(ierr);
+  if (dim == 1) {
+    neighbour_cells = 3;
+  } else if (dim == 2) {
+    neighbour_cells = 9;
+  } else {
+    neighbour_cells = 27;
+  }
 
   ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
   for (p=0; p<neighbour_cells; p++) {
