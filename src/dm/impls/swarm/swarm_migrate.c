@@ -338,3 +338,123 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate_GlobalToLocal_BoundingBox(DM dm,Petsc
   
   PetscFunctionReturn(0);
 }
+
+
+/* General collection when no order, or neighbour information is provided */
+/*
+ User provides context and collect() method
+ Broadcast user context
+ 
+ for each context / rank {
+   collect(swarm,context,n,list)
+ }
+ 
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmCollect_General"
+PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collect)(DM,void*,PetscInt*,PetscInt**),size_t ctx_size,void *ctx,PetscInt *globalsize)
+{
+  DM_Swarm       *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  DataEx         de;
+  PetscInt       p,r,npoints,n_points_recv;
+  PetscMPIInt    commsize,rank;
+  void           *point_buffer,*recv_points;
+  void           *ctxlist;
+  PetscInt       *n2collect,**collectlist;
+  size_t         sizeof_dmswarm_point;
+  
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  
+  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  *globalsize = npoints;
+
+  /* Broadcast user context */
+  PetscMalloc(ctx_size*commsize,&ctxlist);
+  ierr = MPI_Allgather(ctx,ctx_size,MPI_CHAR,ctxlist,ctx_size,MPI_CHAR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  
+  PetscMalloc1(commsize,&n2collect);
+  PetscMalloc1(commsize,&collectlist);
+  
+  for (r=0; r<commsize; r++) {
+    PetscInt _n2collect;
+    PetscInt *_collectlist;
+    void     *_ctx_r;
+    
+    _n2collect   = 0;
+    _collectlist = NULL;
+    
+    if (r != rank) { /* don't collect data from yourself */
+      _ctx_r = (void*)( (char*)ctxlist + r * ctx_size );
+      ierr = collect(dm,_ctx_r,&_n2collect,&_collectlist);CHKERRQ(ierr);
+    }
+    
+    n2collect[r]   = _n2collect;
+    collectlist[r] = _collectlist;
+  }
+  
+  de = DataExCreate(PetscObjectComm((PetscObject)dm),0);CHKERRQ(ierr);
+  
+  /* Define topology */
+  ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
+  for (r=0; r<commsize; r++) {
+    if (n2collect[r] > 0) {
+      ierr = DataExTopologyAddNeighbour(de,(PetscMPIInt)r);CHKERRQ(ierr);
+    }
+  }
+  ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
+
+  /* Define send counts */
+  ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
+  for (r=0; r<commsize; r++) {
+    if (n2collect[r] > 0) {
+      ierr = DataExAddToSendCount(de,r,n2collect[r]);CHKERRQ(ierr);
+    }
+  }
+  ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
+  
+  /* Pack data */
+  ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
+
+  ierr = DataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
+  for (r=0; r<commsize; r++) {
+    
+    for (p=0; p<n2collect[r]; p++) {
+      ierr = DataBucketFillPackedArray(swarm->db,collectlist[r][p],point_buffer);CHKERRQ(ierr);
+      /* insert point buffer into the data exchanger */
+      ierr = DataExPackData(de,r,1,point_buffer);CHKERRQ(ierr);
+    }
+  }
+  
+  ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  
+  /* Scatter */
+  ierr = DataExBegin(de);CHKERRQ(ierr);
+  ierr = DataExEnd(de);CHKERRQ(ierr);
+  
+  /* Collect data in DMSwarm container */
+  ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
+  
+	ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+	ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,-1);CHKERRQ(ierr);
+	for (p=0; p<n_points_recv; p++) {
+    void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
+    
+    ierr = DataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
+  }
+
+  /* Release memory */
+  for (r=0; r<commsize; r++) {
+    if (collectlist[r]) PetscFree(collectlist[r]);
+  }
+  PetscFree(collectlist);
+  PetscFree(n2collect);
+  PetscFree(ctxlist);
+  ierr = DataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
+  ierr = DataExView(de);CHKERRQ(ierr);
+  ierr = DataExDestroy(de);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
