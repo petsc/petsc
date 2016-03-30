@@ -4,6 +4,9 @@
 #include "data_ex.h"
 
 
+/*
+ User loads desired location (MPI rank) into field DMSwarm_rank
+*/
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmMigrate_Push_Basic"
 PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
@@ -89,6 +92,47 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
   PetscFunctionReturn(0);
 }
 
+//DMLocatePoints
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmMigrate_CellDM"
+PetscErrorCode DMSwarmMigrate_CellDM(DM dm,PetscBool remove_sent_points)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  PetscInt p,npoints,*rankval;
+  const PetscInt *LA_iscell;
+  DM dmcell;
+  IS iscell;
+  Vec pos;
+  
+  ierr = DMSwarmGetCellDM(dm,&dmcell);CHKERRQ(ierr);
+  if (!dmcell) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid if cell DM provided");
+  
+  ierr = DMSwarmCreateGlobalVectorFromField(dm,"coor",&pos);CHKERRQ(ierr);
+  ierr = DMLocatePoints(dmcell,pos,&iscell);CHKERRQ(ierr);
+  ierr = DMSwarmDestroyGlobalVectorFromField(dm,"coor",&pos);CHKERRQ(ierr);
+
+  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscell,&LA_iscell);CHKERRQ(ierr);
+  for (p=0; p<npoints; p++) {
+    if (LA_iscell[p] == -1) {
+      rankval[p] = -1;
+    }
+  }
+  ierr = ISRestoreIndices(iscell,&LA_iscell);CHKERRQ(ierr);
+  ierr = DMSwarmRestoreField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscell);CHKERRQ(ierr);
+  
+  ierr = DMSwarmMigrate_Push_Basic(dm,remove_sent_points);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+/*
+ Redundant as this assumes points can only be sent to a single rank
+*/
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmMigrate_GlobalToLocal_Basic"
 PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize)

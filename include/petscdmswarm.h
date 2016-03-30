@@ -3,6 +3,22 @@
 
 #include <petscdm.h>
 
+typedef enum {
+  DMSWARM_BASIC=0,
+  DMSWARM_PIC
+} DMSwarmType;
+
+typedef enum {
+  DMSWARM_MIGRATE_BASIC=0,
+  DMSWARM_MIGRATE_DM
+} DMSwarmMigrateType;
+
+typedef enum {
+  DMSWARM_COLLECT_BASIC=0,
+  DMSWARM_COLLECT_DMDABOUNDINGBOX,
+  DMSWARM_COLLECT_GENERAL
+} DMSwarmCollectType;
+
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec);
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec);
 

@@ -24,9 +24,18 @@ typedef struct {
   char      vec_field_name[PETSC_MAX_PATH_LEN];
   PetscBool vec_field_set;
   PetscInt  vec_field_bs,vec_field_nlocal;
-  PetscBool issetup;
-  PetscInt  view_ng;
+
+  PetscBool          issetup;
+  DMSwarmType        swarm_type;
+  DMSwarmMigrateType migrate_type;
+  DMSwarmCollectType collect_type;
+  
   DM        dmcell;
+
+  PetscBool migrate_error_on_missing_data;
+  
+  PetscBool collect_view_active;
+  PetscInt  collect_view_reset_nlocal;
 } DM_Swarm;
 
 #endif /* _SWARMIMPL_H */

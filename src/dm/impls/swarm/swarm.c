@@ -443,11 +443,27 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm)
   PetscErrorCode ierr;
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscInt ng;
+
+  if (swarm->collect_view_active) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"CollectView currently active");
   
-  ierr = DMSwarmMigrate_GlobalToLocal_Basic(dm,&ng);CHKERRQ(ierr);
-  //ierr = DMSwarmCollect_DMDABoundingBox(dm,&ng);CHKERRQ(ierr);
-  //ierr = DMSwarmCollect_General(dm,..,,..,&ng);CHKERRQ(ierr);
-  swarm->view_ng = ng;
+  ierr = DMSwarmGetLocalSize(dm,&ng);CHKERRQ(ierr);
+  switch (swarm->collect_type) {
+    case DMSWARM_COLLECT_BASIC:
+      ierr = DMSwarmMigrate_GlobalToLocal_Basic(dm,&ng);CHKERRQ(ierr);
+      break;
+    case DMSWARM_COLLECT_DMDABOUNDINGBOX:
+      //ierr = DMSwarmCollect_DMDABoundingBox(dm,&ng);CHKERRQ(ierr);
+      break;
+    case DMSWARM_COLLECT_GENERAL:
+      //ierr = DMSwarmCollect_General(dm,..,,..,&ng);CHKERRQ(ierr);
+      break;
+      
+    default:
+      break;
+  }
+
+  swarm->collect_view_active = PETSC_TRUE;
+  swarm->collect_view_reset_nlocal = ng;
   
   PetscFunctionReturn(0);
 }
@@ -459,7 +475,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
   PetscErrorCode ierr;
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   
-  ierr = DMSwarmSetLocalSizes(dm,swarm->view_ng,-1);CHKERRQ(ierr);
+  if (!swarm->collect_view_active) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"CollectView is currently not active");
+  ierr = DMSwarmSetLocalSizes(dm,swarm->collect_view_reset_nlocal,-1);CHKERRQ(ierr);
+  swarm->collect_view_active = PETSC_FALSE;
   
   PetscFunctionReturn(0);
 }
@@ -555,6 +573,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   ierr = DataBucketCreate(&swarm->db);CHKERRQ(ierr);
   swarm->vec_field_set = PETSC_FALSE;
   swarm->issetup = PETSC_FALSE;
+  swarm->swarm_type = DMSWARM_BASIC;
+  swarm->migrate_type = DMSWARM_MIGRATE_BASIC;
+  swarm->collect_type = DMSWARM_COLLECT_BASIC;
   
   dm->dim  = 0;
   dm->data = swarm;
