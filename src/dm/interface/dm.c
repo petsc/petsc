@@ -6219,7 +6219,7 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
  
  Level: beginner
  
- .seealso: DMDAGetNeighbors()
+ .seealso: DMDAGetNeighbors(), PetscSFGetRanks()
 @*/
 PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
 {
