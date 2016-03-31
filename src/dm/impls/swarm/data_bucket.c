@@ -2,6 +2,8 @@
 #include "data_bucket.h"
 
 /* string helpers */
+#undef __FUNCT__
+#define __FUNCT__ "StringInList"
 PetscErrorCode StringInList(const char name[],const PetscInt N,const DataField gfield[],PetscBool *val)
 {
 	PetscInt i;
@@ -16,6 +18,8 @@ PetscErrorCode StringInList(const char name[],const PetscInt N,const DataField g
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "StringFindInList"
 PetscErrorCode StringFindInList(const char name[],const PetscInt N,const DataField gfield[],PetscInt *index)
 {
 	PetscInt i;
@@ -137,7 +141,7 @@ PetscErrorCode DataBucketRegisterField(
    */
   
 	/* check for repeated name */
-	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
+	ierr = StringInList( field_name, db->nfields, (const DataField*)db->field, &val );CHKERRQ(ierr);
 	if (val == PETSC_TRUE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field %s already exists. Cannot add same field twice",field_name);
   
 	/* create new space for data */
@@ -169,13 +173,14 @@ PetscErrorCode DataBucketRegisterField(
 #define __FUNCT__ "DataBucketGetDataFieldByName"
 PetscErrorCode DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield)
 {
+  PetscErrorCode ierr;
 	PetscInt idx;
 	PetscBool found;
 	
-	StringInList(name,db->nfields,(const DataField*)db->field,&found);
+	ierr = StringInList(name,db->nfields,(const DataField*)db->field,&found);CHKERRQ(ierr);
 	if (!found) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot find DataField with name %s",name);
 
-	StringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
+	ierr = StringFindInList(name,db->nfields,(const DataField*)db->field,&idx);CHKERRQ(ierr);
   
 	*gfield = db->field[idx];
   PetscFunctionReturn(0);
@@ -185,8 +190,9 @@ PetscErrorCode DataBucketGetDataFieldByName(DataBucket db,const char name[],Data
 #define __FUNCT__ "DataBucketQueryDataFieldByName"
 PetscErrorCode DataBucketQueryDataFieldByName(DataBucket db,const char name[],PetscBool *found)
 {
+  PetscErrorCode ierr;
 	*found = PETSC_FALSE;
-	StringInList(name,db->nfields,(const DataField*)db->field,found);
+	ierr = StringInList(name,db->nfields,(const DataField*)db->field,found);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -721,7 +727,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
 	
 	
 	/* check for repeated name */
-	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
+	ierr = StringInList( field_name, db->nfields, (const DataField*)db->field, &val );CHKERRQ(ierr);
 	if (val == PETSC_TRUE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot add same field twice");
 	
 	/* create new space for data */
