@@ -351,7 +351,7 @@ PetscErrorCode DataBucketGetGlobalSizes(MPI_Comm comm,DataBucket db,PetscInt *L,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DataBucketGetGlobalSizes"
+#define __FUNCT__ "DataBucketGetDataFields"
 PetscErrorCode DataBucketGetDataFields(DataBucket db,PetscInt *L,DataField *fields[])
 {
 	if (L) {      *L      = db->nfields; }
@@ -410,7 +410,7 @@ PetscErrorCode DataFieldAccessPointOffset(const DataField gfield,const size_t of
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DataFieldAccessPointOffset"
+#define __FUNCT__ "DataFieldRestoreAccess"
 PetscErrorCode DataFieldRestoreAccess(DataField gfield)
 {
 	if (gfield->active == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is not active. You must call DataFieldGetAccess()", gfield->name );
