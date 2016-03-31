@@ -48,7 +48,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[
   
   PetscSNPrintf(swarm->vec_field_name,PETSC_MAX_PATH_LEN-1,"%s",fieldname);
   swarm->vec_field_set = PETSC_TRUE;
-  swarm->vec_field_bs = 1;//bs;
+  swarm->vec_field_bs = bs;
   swarm->vec_field_nlocal = n;
   ierr = DMSwarmRestoreField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
   
@@ -70,7 +70,7 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm),&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,swarm->db->L,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,swarm->db->L*swarm->vec_field_bs,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   *vec = x;
@@ -93,7 +93,7 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,swarm->db->L,swarm->db->L);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,swarm->db->L*swarm->vec_field_bs,swarm->db->L);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   *vec = x;
@@ -123,9 +123,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
   if (commsize == 1) {
-    ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)dm),1,n,array,&x);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)dm),bs,n*bs,array,&x);CHKERRQ(ierr);
   } else {
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),1,n,PETSC_DETERMINE,array,&x);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),bs,n*bs,PETSC_DETERMINE,array,&x);CHKERRQ(ierr);
   }
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmSharedField_%s",swarm->vec_field_name);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
@@ -343,7 +343,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscIn
   ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
   ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
   ierr = DataFieldGetEntries(gfield,data);CHKERRQ(ierr);
-  if (blocksize) {}
+  if (blocksize) {*blocksize = gfield->bs; }
   if (type) { *type = gfield->petsc_type; }
   
   PetscFunctionReturn(0);
