@@ -127,7 +127,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   } else {
     ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),bs,n*bs,PETSC_DETERMINE,array,&x);CHKERRQ(ierr);
   }
-  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmSharedField_%s",swarm->vec_field_name);
+  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmSharedField_%s",fieldname);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
 
   /* Set guard */
