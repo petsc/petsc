@@ -864,7 +864,7 @@ PetscErrorCode DMNetworkVertexSetMatrix(DM dm,PetscInt p,Mat J[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetPreallocationDenseblock_private"
-PetscErrorCode MatSetPreallocationDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
+PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
   PetscInt       j;
@@ -885,7 +885,7 @@ PetscErrorCode MatSetPreallocationDenseblock_private(PetscInt nrows,PetscInt *ro
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetPreallocationUserblock_private"
-PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
+PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
   PetscInt       j,ncols_u;
@@ -912,7 +912,7 @@ PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju,PetscInt nrows,PetscI
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetPreallocationblock_private"
-PetscErrorCode MatSetPreallocationblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
+PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
 
@@ -927,7 +927,7 @@ PetscErrorCode MatSetPreallocationblock_private(Mat Ju,PetscInt nrows,PetscInt *
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetDenseblock_private"
-PetscErrorCode MatSetDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+PETSC_STATIC_INLINE PetscErrorCode MatSetDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       j,*cols;
@@ -943,7 +943,7 @@ PetscErrorCode MatSetDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt n
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUserblock_private"
-PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+PETSC_STATIC_INLINE PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       j,M,N,row,col,ncols_u;
@@ -967,7 +967,7 @@ PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetblock_private"
-PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+PETSC_STATIC_INLINE PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
 
