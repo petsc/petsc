@@ -344,9 +344,9 @@ PetscErrorCode DataBucketGetGlobalSizes(MPI_Comm comm,DataBucket db,PetscInt *L,
 	_buffer = db->buffer;
 	_allocated = db->allocated;
 	
-	if (L) {         ierr = MPI_Allreduce(&_L,L,1,MPIU_INT,MPI_SUM,comm); }
-	if (buffer) {    ierr = MPI_Allreduce(&_buffer,buffer,1,MPIU_INT,MPI_SUM,comm); }
-	if (allocated) { ierr = MPI_Allreduce(&_allocated,allocated,1,MPIU_INT,MPI_SUM,comm); }
+	if (L) {         ierr = MPI_Allreduce(&_L,L,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr); }
+	if (buffer) {    ierr = MPI_Allreduce(&_buffer,buffer,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr); }
+	if (allocated) { ierr = MPI_Allreduce(&_allocated,allocated,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
