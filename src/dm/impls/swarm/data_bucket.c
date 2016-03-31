@@ -48,6 +48,7 @@ PetscErrorCode DataFieldCreate(const char registeration_function[],const char na
 	asprintf( &df->name, "%s", name );
 	df->atomic_size = size;
 	df->L = L;
+  df->bs = 1;
 	
 	df->data = malloc( size * L ); /* allocate something so we don't have to reallocate */
 	memset( df->data, 0, size * L );
@@ -209,6 +210,14 @@ PetscErrorCode DataBucketFinalize(DataBucket db)
 PetscErrorCode DataFieldGetNumEntries(DataField df,PetscInt *sum)
 {
 	*sum = df->L;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DataFieldSetBlockSize"
+PetscErrorCode DataFieldSetBlockSize(DataField df,PetscInt blocksize)
+{
+	df->bs = blocksize;
   PetscFunctionReturn(0);
 }
 
@@ -927,6 +936,13 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
 				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
 				
 				PetscPrintf(PETSC_COMM_SELF,"    [%3D]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
+        PetscPrintf(PETSC_COMM_SELF,"           blocksize          = %D \n", db->field[f]->bs );
+        if (db->field[f]->bs != 1) {
+          PetscPrintf(PETSC_COMM_SELF,"           atomic size        = %zu [full block]\n", db->field[f]->atomic_size );
+          PetscPrintf(PETSC_COMM_SELF,"           atomic size/item   = %zu \n", db->field[f]->atomic_size/db->field[f]->bs );
+        } else {
+          PetscPrintf(PETSC_COMM_SELF,"           atomic size        = %zu \n", db->field[f]->atomic_size );
+        }
 				memory_usage_total += memory_usage_f;
 			}
 			PetscPrintf(PETSC_COMM_SELF,"  Total mem. usage                                                      = %1.2e (MB) \n", memory_usage_total );

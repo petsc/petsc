@@ -286,7 +286,13 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char f
   }
   
   /* Load a specific data type into data bucket, specifying textual name and its size in bytes */
-	ierr = DataBucketRegisterField(swarm->db,"DMSwarmRegisterPetscDatatypeField",fieldname,size,NULL);CHKERRQ(ierr);
+	ierr = DataBucketRegisterField(swarm->db,"DMSwarmRegisterPetscDatatypeField",fieldname,blocksize*size,NULL);CHKERRQ(ierr);
+  {
+    DataField gfield;
+    
+    ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
+    ierr = DataFieldSetBlockSize(gfield,blocksize);CHKERRQ(ierr);
+  }
   swarm->db->field[swarm->db->nfields-1]->petsc_type = type;
   
   PetscFunctionReturn(0);

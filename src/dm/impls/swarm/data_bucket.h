@@ -19,7 +19,7 @@ typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_
 
 struct _p_DataField {
 	char          *registeration_function;
-	PetscInt      L;
+	PetscInt      L,bs;
 	PetscBool     active;
 	size_t        atomic_size;
 	char          *name; /* what are they called */
@@ -56,6 +56,7 @@ PetscErrorCode DataBucketRegisterField(
 
 
 PetscErrorCode DataFieldGetNumEntries(DataField df,PetscInt *sum);
+PetscErrorCode DataFieldSetBlockSize(DataField df,PetscInt blocksize);
 PetscErrorCode DataFieldSetSize(DataField df,const PetscInt new_L);
 PetscErrorCode DataFieldZeroBlock(DataField df,const PetscInt start,const PetscInt end);
 PetscErrorCode DataFieldGetAccess(const DataField gfield);
