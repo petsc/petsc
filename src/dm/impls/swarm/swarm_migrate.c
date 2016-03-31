@@ -93,8 +93,8 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_DMBasic"
-PetscErrorCode DMSwarmMigrate_DMBasic(DM dm,DM dmcell,PetscBool remove_sent_points,PetscInt *npoints_prior_migration)
+#define __FUNCT__ "DMSwarmMigrate_DMNeighborScatter"
+PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove_sent_points,PetscInt *npoints_prior_migration)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
@@ -223,7 +223,7 @@ PetscErrorCode DMSwarmMigrate_CellDM(DM dm,PetscBool remove_sent_points)
   ierr = DMSwarmRestoreField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   ierr = ISDestroy(&iscell);CHKERRQ(ierr);
   
-  ierr = DMSwarmMigrate_DMBasic(dm,dmcell,remove_sent_points,&npoints_prior_migration);CHKERRQ(ierr);
+  ierr = DMSwarmMigrate_DMNeighborScatter(dm,dmcell,remove_sent_points,&npoints_prior_migration);CHKERRQ(ierr);
   
   /* locate points newly recevied */
   ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
