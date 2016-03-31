@@ -1235,7 +1235,7 @@ class CMakePackage(Package):
     config.package.Package.setupHelp(self,help)
     import nargs
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
-
+    help.addArgument(self.PACKAGE, '-download-'+self.package+'-cmake-arguments=string', nargs.ArgString(None, 0, 'Additional CMake arguments for the build'+self.name))
   def setupDependencies(self, framework):
     Package.setupDependencies(self, framework)
     self.cmake = framework.require('config.packages.cmake',self)
@@ -1278,7 +1278,8 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS=on')
     else:
       args.append('-DBUILD_SHARED_LIBS=off')
-
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     return args
 
   def Install(self):
