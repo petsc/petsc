@@ -83,7 +83,6 @@ int main(int argc,char **argv)
   
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = ex2_1();CHKERRQ(ierr);
-  //ierr = ex2_2();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
