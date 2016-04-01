@@ -3,6 +3,22 @@
 
 #include <petscdm.h>
 
+typedef enum {
+  DMSWARM_BASIC=0,
+  DMSWARM_PIC
+} DMSwarmType;
+
+typedef enum {
+  DMSWARM_MIGRATE_BASIC=0,
+  DMSWARM_MIGRATE_DM
+} DMSwarmMigrateType;
+
+typedef enum {
+  DMSWARM_COLLECT_BASIC=0,
+  DMSWARM_COLLECT_DMDABOUNDINGBOX,
+  DMSWARM_COLLECT_GENERAL
+} DMSwarmCollectType;
+
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec);
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec);
 
@@ -26,8 +42,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal);
 PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n);
 PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points);
 
-PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewCreate(DM dm,InsertMode mode);
-PETSC_EXTERN PetscErrorCode DMSwarmGlobalToLocalViewDestroy(DM dm,InsertMode mode);
+PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm);
+PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM dm);
+PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell);
+PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell);
 
 #endif
 

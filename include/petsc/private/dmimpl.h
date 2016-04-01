@@ -54,6 +54,9 @@ struct _DMOps {
 
   PetscErrorCode (*getdimpoints)(DM,PetscInt,PetscInt*,PetscInt*);
   PetscErrorCode (*locatepoints)(DM,Vec,IS*);
+  PetscErrorCode (*getneighbors)(DM,PetscInt*,const PetscMPIInt**);
+  PetscErrorCode (*getboundingbox)(DM,PetscReal*,PetscReal*);
+  PetscErrorCode (*getlocalboundingbox)(DM,PetscReal*,PetscReal*);
 
   PetscErrorCode (*projectfunctionlocal)(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
   PetscErrorCode (*projectfunctionlabellocal)(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);

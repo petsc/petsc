@@ -6200,3 +6200,35 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMGetNeighbors"
+/*@C
+ DMGetNeighbors - Gets an array containing the MPI rank of all the processes neighbors
+ 
+ Not Collective
+ 
+ Input Parameter:
+ . dm    - The DM
+ 
+ Output Parameter:
+ . nranks - the number of neighbours
+ . ranks - the neighbors ranks
+ 
+ Notes:
+ Do not free the array, it is freed when the DM is destroyed.
+ 
+ Level: beginner
+ 
+ .seealso: DMDAGetNeighbors(), PetscSFGetRanks()
+@*/
+PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (!dm->ops->getneighbors) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMGetNeighbors",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->getneighbors)(dm,nranks,ranks);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
