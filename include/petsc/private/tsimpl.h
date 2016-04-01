@@ -288,6 +288,7 @@ struct _n_TSEvent {
   PetscInt        *events_zero;     /* List of events that have reached zero */
   PetscReal      *vtol;             /* Vector tolerances for event zero check */
   TSEventStatus   status;           /* Event status */
+  PetscInt       iterctr;           /* Iteration counter */
   PetscViewer     monitor;
   /* Struct to record the events */
   struct {
