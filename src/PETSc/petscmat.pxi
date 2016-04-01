@@ -153,6 +153,7 @@ cdef extern from * nogil:
     int MatCreateTranspose(PetscMat,PetscMat*)
     int MatCreateLRC(PetscMat,PetscMat,PetscMat,PetscMat*)
     int MatCreateSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
+    int MatCreateRedundantMatrix(PetscMat,PetscInt,MPI_Comm,PetscMatReuse,PetscMat*)
     int MatCreateNest(MPI_Comm,PetscInt,PetscIS[],PetscInt,PetscIS[],PetscMat[],PetscMat*)
     int MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void*,PetscMat*)
 

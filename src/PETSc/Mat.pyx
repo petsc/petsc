@@ -1007,6 +1007,16 @@ cdef class Mat(Object):
             CHKERR( MatCreateVecs(self.mat, NULL, &result.vec) )
         CHKERR( MatGetColumnVector(self.mat, result.vec, ival) )
         return result
+    
+    def getRedundantMatrix(self, nsubcomm, subcomm=None, Mat out=None):
+        cdef PetscInt _nsubcomm   = asInt(nsubcomm)
+        cdef MPI_Comm _subcomm    = MPI_COMM_NULL
+        if subcomm:   _subcomm    = def_Comm(subcomm, PETSC_COMM_DEFAULT)
+        cdef PetscMatReuse reuse  = MAT_INITIAL_MATRIX
+        if out is None: out       = Mat()
+        if out.mat != NULL: reuse = MAT_REUSE_MATRIX
+        CHKERR( MatCreateRedundantMatrix(self.mat, _nsubcomm, _subcomm, reuse, &out.mat))
+        return out
 
     def getDiagonal(self, Vec result=None):
         if result is None:
