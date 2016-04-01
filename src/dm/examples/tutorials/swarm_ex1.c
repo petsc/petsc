@@ -6,8 +6,8 @@ static char help[] = "Tests DMSwarm\n\n";
 #include <petscdmswarm.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "ex1"
-PetscErrorCode ex1(void)
+#define __FUNCT__ "ex1_1"
+PetscErrorCode ex1_1(void)
 {
   DM dms;
   PetscErrorCode ierr;
@@ -98,8 +98,8 @@ PetscErrorCode ex1(void)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ex2"
-int ex2(void)
+#define __FUNCT__ "ex1_2"
+PetscErrorCode ex1_2(void)
 {
   DM dms;
   PetscErrorCode ierr;
@@ -192,8 +192,8 @@ int ex2(void)
  splot "c-rank0.gp","c-rank1.gp","c-rank2.gp","c-rank3.gp"
 */
 #undef __FUNCT__
-#define __FUNCT__ "ex3"
-int ex3(void)
+#define __FUNCT__ "ex1_3"
+PetscErrorCode ex1_3(void)
 {
   DM dms;
   PetscErrorCode ierr;
@@ -369,8 +369,8 @@ PetscErrorCode collect_zone(DM dm,void *ctx,PetscInt *nfound,PetscInt **foundlis
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ex4"
-int ex4(void)
+#define __FUNCT__ "ex1_4"
+PetscErrorCode ex1_4(void)
 {
   DM dms;
   PetscErrorCode ierr;
@@ -532,10 +532,10 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  //ierr = ex1();CHKERRQ(ierr);
-  //ierr = ex2();CHKERRQ(ierr);
-  //ierr = ex3();CHKERRQ(ierr);
-  ierr = ex4();CHKERRQ(ierr);
+  //ierr = ex1_1();CHKERRQ(ierr);
+  //ierr = ex1_2();CHKERRQ(ierr);
+  //ierr = ex1_3();CHKERRQ(ierr);
+  ierr = ex1_4();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
