@@ -367,13 +367,13 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	const PetscInt    *cols;
 	const PetscScalar *red_vals;
 	PetscMPIInt       _n_new, *_proc_neighbours_new;
-	PetscLogDouble    t0,t1;
+	//PetscLogDouble    t0,t1;
 	PetscErrorCode    ierr;
 
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"*** Starting _DataExCompleteCommunicationMap *** \n");
-	PetscTime(&t0);
+	//PetscPrintf(PETSC_COMM_WORLD,"*** Starting _DataExCompleteCommunicationMap *** \n");
+	//PetscTime(&t0);
 
 	n_ = n;
 	ierr = PetscMalloc( sizeof(PetscInt) * n_, &proc_neighbours_ );CHKERRQ(ierr);
@@ -413,11 +413,11 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+/*
 	ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
 	ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+*/
 	if ((n_new != NULL) && (proc_neighbours_new != NULL)) {
 	
 		ierr = MatGetRow( A, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
@@ -439,8 +439,8 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);	
 
 	ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"*** Ending _DataExCompleteCommunicationMap [setup time: %1.4e (sec)] *** \n",t1-t0);
+	//PetscTime(&t1);
+	//PetscPrintf(PETSC_COMM_WORLD,"*** Ending _DataExCompleteCommunicationMap [setup time: %1.4e (sec)] *** \n",t1-t0);
 	
 	PetscFunctionReturn(0);
 }
