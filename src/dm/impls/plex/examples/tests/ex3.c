@@ -125,7 +125,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   options->debug           = 0;
   options->dim             = 2;
   options->simplex         = PETSC_TRUE;
@@ -175,7 +175,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      isPlex;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (user->simplex) {
     DM refinedMesh     = NULL;
 
@@ -295,7 +295,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscBool      isPlex;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!user->simplex && user->constraints) {
     /* test local constraints */
     DM            coordDM;
@@ -473,7 +473,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
   PetscBool      isPlex;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (isPlex) {
     Vec          local;
@@ -517,7 +517,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscReal allVecMaxDiff = 0.;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   comm = PetscObjectComm((PetscObject)dm);
   /* duplicate DM, give dup. a FV discretization */
   ierr = DMPlexSetAdjacencyUseCone(dm,PETSC_TRUE);CHKERRQ(ierr);
@@ -634,7 +634,7 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   PetscReal      n[3] = {1.0, 1.0, 1.0};
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Project function into FE function space */
   ierr = DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
@@ -656,7 +656,7 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   PetscReal        error, errorDer, tol = 1.0e-10;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
@@ -711,7 +711,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscBool       isPlex, isDA;
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
@@ -789,7 +789,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   double           p;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!user->convergence) PetscFunctionReturn(0);
   exactCtxs[0] = user;
   exactCtxs[1] = user;
