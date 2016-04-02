@@ -16,6 +16,7 @@ typedef struct {
   PetscBool useDA;             /* Flag DMDA tensor product mesh */
   PetscBool interpolate;       /* Generate intermediate mesh elements */
   PetscReal refinementLimit;   /* The largest allowable cell volume */
+  PetscBool shearCoords;       /* Flag for shear transform */
   /* Element definition */
   PetscInt  qorder;            /* Order of the quadrature */
   PetscInt  numComponents;     /* Number of field components */
@@ -132,6 +133,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->useDA           = PETSC_TRUE;
   options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
+  options->shearCoords     = PETSC_FALSE;
   options->qorder          = 0;
   options->numComponents   = 1;
   options->porder          = 0;
@@ -150,6 +152,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-shear_coords", "Transform coordinates with a shear", "ex3.c", options->shearCoords, &options->shearCoords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
@@ -162,6 +165,46 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TransformCoordinates"
+static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  PetscInt       vStart, vEnd, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  if (user->shearCoords) {
+    /* x' = x + m y + m z, y' = y + m z,  z' = z */
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    for (v = vStart; v < vEnd; ++v) {
+      PetscInt  dof, off;
+      PetscReal m = 1.0;
+
+      ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+      switch (dof) {
+      case 2:
+        coords[off+0] = coords[off+0] + m*coords[off+1];
+        coords[off+1] = coords[off+1];
+        break;
+      case 3:
+        coords[off+0] = coords[off+0] + m*coords[off+1] + m*coords[off+2];
+        coords[off+1] = coords[off+1] + m*coords[off+2];
+        coords[off+2] = coords[off+2];
+        break;
+      }
+    }
+    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -242,6 +285,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = TransformCoordinates(*dm, user);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -807,7 +851,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   if (user->convRefine) {
     for (r = 0; r < Nr; ++r) {
       ierr = DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
-      if (!user->simplex) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
+      if (!user->simplex && user->useDA) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
       ierr = SetupSection(rdm, user);CHKERRQ(ierr);
       ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
       p    = PetscLog2Real(errorOld/error);
@@ -825,7 +869,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
     lenOld = cEnd - cStart;
     for (c = 0; c < Nr; ++c) {
       ierr = DMCoarsen(odm, PetscObjectComm((PetscObject) dm), &cdm);CHKERRQ(ierr);
-      if (!user->simplex) {ierr = DMDASetVertexCoordinates(cdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
+      if (!user->simplex && user->useDA) {ierr = DMDASetVertexCoordinates(cdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
       ierr = SetupSection(cdm, user);CHKERRQ(ierr);
       ierr = ComputeError(cdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
       /* ierr = ComputeLongestEdge(cdm, &len);CHKERRQ(ierr); */

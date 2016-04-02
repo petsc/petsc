@@ -91,6 +91,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'num': 'q1_2d_plex_0', 'numProcs': 1, 'args': '-use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -convergence'},
                                                                  {'num': 'q1_2d_plex_1', 'numProcs': 1, 'args': '-use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1'},
                                                                  {'num': 'q1_2d_plex_2', 'numProcs': 1, 'args': '-use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2'},
+                                                                 {'num': 'q1_2d_plex_3', 'numProcs': 1, 'args': '-use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1 -shear_coords'},
+                                                                 {'num': 'q1_2d_plex_4', 'numProcs': 1, 'args': '-use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2 -shear_coords'},
                                                                  # 2D Q_2 on a quadrilaterial
                                                                  {'num': 'q2_2d_0', 'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -convergence'},
                                                                  {'num': 'q2_2d_1', 'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1'},
