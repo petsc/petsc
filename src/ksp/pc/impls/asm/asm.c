@@ -208,6 +208,10 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         char      **domain_names;
         IS        *inner_domain_is, *outer_domain_is;
         ierr = DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &inner_domain_is, &outer_domain_is, &domain_dm);CHKERRQ(ierr);
+        osm->overlap = -1; /* We do not want to increase the overlap of the IS. 
+                              A future improvement of this code might allow one to use 
+                              DM-defined subdomains and also increase the overlap, 
+                              but that is not currently supported */
         if (num_domains) {
           ierr = PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is);CHKERRQ(ierr);
         }
