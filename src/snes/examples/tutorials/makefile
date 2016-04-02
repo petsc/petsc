@@ -949,9 +949,10 @@ runex21:
 	   else  printf "${PWD}\nPossible problem with ex21_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex21_1.tmp
 runex22:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_converged_reason -ksp_converged_reason -snes_view > ex22_1.tmp 2>&1; \
-	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
-	   else  printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
+	-@x="bad"; ${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_converged_reason -ksp_converged_reason -snes_view > ex22_1.tmp 2>&1; \
+	   if (${DIFF} output/ex22_1.out ex22_1.tmp > /dev/null 2>&1) then x='good'; fi ;\
+	   if (${DIFF} output/ex22_1_alt.out ex22_1.tmp > /dev/null 2>&1) then x='good'; fi; \
+	   if [ "$x" = "bad" ]; then printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex22_1.tmp
 
 runex25:
