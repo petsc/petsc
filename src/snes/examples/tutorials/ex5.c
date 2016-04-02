@@ -645,8 +645,6 @@ PetscErrorCode FormFunctionLocalMMS3(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
-        /* If there is any sort of problem it is probably here.
-        Most likely a typo in subtracting off -laplacian u* - lambda exp(u*) */
         f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u)-(exp(PetscSinReal(4*PETSC_PI*x*(1 - y))*PetscSinReal(2*PETSC_PI*(1 - x)*y))*lambda) + 4*PetscSqr(PETSC_PI)*(4*(x - PetscSqr(x) + y - PetscSqr(y))*PetscCosReal(4*PETSC_PI*x*(-1 + y))*PetscCosReal(2*PETSC_PI*(-1 + x)*y) + (5 + x*(-2 + 5*x) + y*(-8 + 5*y))*PetscSinReal(4*PETSC_PI*x*(-1 + y))*PetscSinReal(2*PETSC_PI*(-1 + x)*y)));
       }
     }
