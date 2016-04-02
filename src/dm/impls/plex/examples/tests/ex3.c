@@ -17,6 +17,7 @@ typedef struct {
   PetscBool interpolate;       /* Generate intermediate mesh elements */
   PetscReal refinementLimit;   /* The largest allowable cell volume */
   PetscBool shearCoords;       /* Flag for shear transform */
+  PetscBool nonaffineCoords;   /* Flag for non-affine transform */
   /* Element definition */
   PetscInt  qorder;            /* Order of the quadrature */
   PetscInt  numComponents;     /* Number of field components */
@@ -134,6 +135,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
   options->shearCoords     = PETSC_FALSE;
+  options->nonaffineCoords = PETSC_FALSE;
   options->qorder          = 0;
   options->numComponents   = 1;
   options->porder          = 0;
@@ -153,6 +155,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-shear_coords", "Transform coordinates with a shear", "ex3.c", options->shearCoords, &options->shearCoords, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-non_affine_coords", "Transform coordinates with a non-affine transform", "ex3.c", options->nonaffineCoords, &options->nonaffineCoords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
@@ -179,6 +182,34 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  if (user->nonaffineCoords) {
+    /* x' = r^(1/p) (x/r), y' = r^(1/p) (y/r), z' = z */
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    for (v = vStart; v < vEnd; ++v) {
+      PetscInt  dof, off;
+      PetscReal p = 4.0, r;
+
+      ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+      switch (dof) {
+      case 2:
+        r             = PetscSqr(coords[off+0]) + PetscSqr(coords[off+1]);
+        coords[off+0] = r == 0.0 ? 0.0 : PetscPowReal(r, (1 - p)/(2*p))*coords[off+0];
+        coords[off+1] = r == 0.0 ? 0.0 : PetscPowReal(r, (1 - p)/(2*p))*coords[off+1];
+        break;
+      case 3:
+        r             = PetscSqr(coords[off+0]) + PetscSqr(coords[off+1]);
+        coords[off+0] = r == 0.0 ? 0.0 : PetscPowReal(r, (1 - p)/(2*p))*coords[off+0];
+        coords[off+1] = r == 0.0 ? 0.0 : PetscPowReal(r, (1 - p)/(2*p))*coords[off+1];
+        coords[off+2] = coords[off+2];
+        break;
+      }
+    }
+    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  }
   if (user->shearCoords) {
     /* x' = x + m y + m z, y' = y + m z,  z' = z */
     ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
