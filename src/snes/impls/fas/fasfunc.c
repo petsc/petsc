@@ -378,6 +378,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 
    Input Parameters:
 +  snes   - the FAS context
+.  vf     - viewer and format structure (may be NULL if flg is FALSE)
 -  flg    - monitor or not
 
    Level: advanced
@@ -386,7 +387,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 
 .seealso: SNESFASSetCyclesOnLevel()
 @*/
-PetscErrorCode SNESFASSetMonitor(SNES snes, PetscBool flg)
+PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool flg)
 {
   SNES_FAS       *fas = (SNES_FAS*)snes->data;
   PetscErrorCode ierr;
@@ -401,10 +402,10 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscBool flg)
       ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);CHKERRQ(ierr);
       fas  = (SNES_FAS*)levelsnes->data;
       if (flg) {
-        fas->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)levelsnes));CHKERRQ(ierr);
         /* set the monitors for the upsmoother and downsmoother */
         ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);
-        ierr = SNESMonitorSet(levelsnes,SNESMonitorDefault,NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+        /* Only register destroy on finest level */
+        ierr = SNESMonitorSet(levelsnes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorDefault,vf,(!i ? (PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy : NULL));CHKERRQ(ierr);
       } else if (i != fas->levels - 1) {
         /* unset the monitors on the coarse levels */
         ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);

@@ -11,7 +11,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex16adj.c ex16opt_p.c ex16opt_ic.c  \
                 ex20adj.c ex20opt_p.c ex20opt_ic.c  \
                 ex40.c ex41.c ex42.c
-EXAMPLESF       = ex1f.F ex22f.F # ex22f_mf.F90
+EXAMPLESF       = ex1f.F ex22f.F ex22f_mf.F90
 MANSEC          = TS
 DIRS            = phasefield advection-diffusion-reaction eimex power_grid network
 
@@ -581,7 +581,7 @@ runex20adj_20:
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_14, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj.tmp SA-data/*
 
-runex20opt_ic:`
+runex20opt_ic:
 	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -tao_view -mu 100000 > ex20opt_ic_1.tmp 2>&1; \
 	  ${DIFF} output/ex20opt_ic_1.out ex20opt_ic_1.tmp || printf "${PWD}\nPossible problem with ex20opt_ic_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20opt_ic_1.tmp
@@ -604,12 +604,12 @@ runex22_3:
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || printf "${PWD}\nPossible problem with ex22_3, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22_3.tmp
 runex22f:
-	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || printf "${PWD}\nPossible problem with ex22f_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22f_1.tmp
 
 runex22f_mf:
-	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 > ex22f_mf_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200  -ts_arkimex_type 4 > ex22f_mf_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_mf_1.out ex22f_mf_1.tmp || printf "${PWD}\nPossible problem with ex22f_mf_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22f_mf_1.tmp
 
@@ -711,7 +711,7 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 e
                             ex40.PETSc runex40 ex40.rm \
                             ex41.PETSc runex41 ex41.rm
 TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
-                            ex15.PETSc runex15_3 runex15_4 ex15.rm \
+                            ex12.PETSc runex12 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm \
                             ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
@@ -719,7 +719,8 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm 
                             ex20opt_p.PETSc   ex20opt_p.rm \
                             ex20opt_ic.PETSc  ex20opt_ic.rm
 TESTEXAMPLES_C_X	  = ex5.PETSc runex5 ex5.rm
-TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
+TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_FORTRAN_NOTSINGLE =  ex22f.PETSc runex22f ex22f.rm ex22f_mf.PETSc runex22f_mf ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm

@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '294e2d07c59d0d4ec7aad78809dc0a5e3fc3e2c9'
+    self.gitcommit        = '892d677'
 #    self.download         = ['git://https://github.com/petsc/superlu_dist']
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist']
     self.functions        = ['set_default_options_dist']

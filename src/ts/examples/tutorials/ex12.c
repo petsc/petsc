@@ -30,19 +30,20 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec);
 extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
-extern PetscErrorCode MySNESMonitor(SNES,PetscInt,PetscReal,void*);
+extern PetscErrorCode MySNESMonitor(SNES,PetscInt,PetscReal,PetscViewerAndFormat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS             ts;                         /* nonlinear solver */
-  Vec            x,r;                        /* solution, residual vectors */
-  PetscInt       steps,maxsteps = 100;       /* iterations for convergence */
-  PetscErrorCode ierr;
-  DM             da;
-  PetscReal      ftime;
-  SNES           ts_snes;
+  TS                   ts;                         /* nonlinear solver */
+  Vec                  x,r;                        /* solution, residual vectors */
+  PetscInt             steps,maxsteps = 100;       /* iterations for convergence */
+  PetscErrorCode       ierr;
+  DM                   da;
+  PetscReal            ftime;
+  SNES                 ts_snes;
+  PetscViewerAndFormat *vf;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -80,7 +81,8 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&ts_snes);
-  ierr = SNESMonitorSet(ts_snes,MySNESMonitor,NULL,NULL);
+  ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
+  ierr = SNESMonitorSet(ts_snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void *))MySNESMonitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -276,11 +278,11 @@ PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
      ctx - optional user-defined context for private data for the
          monitor routine, as set by SNESMonitorSet()
  */
-PetscErrorCode MySNESMonitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
+PetscErrorCode MySNESMonitor(SNES snes,PetscInt its,PetscReal fnorm,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = SNESMonitorDefaultShort(snes,its,fnorm,ctx);CHKERRQ(ierr);
+  ierr = SNESMonitorDefaultShort(snes,its,fnorm,vf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

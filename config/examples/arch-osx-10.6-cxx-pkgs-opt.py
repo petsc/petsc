@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # moab breaks with --with-cxx-dialect=C++11 - so disable elemental?
+# moab appears to break with -with-visibility=1 - so disable it
 
 configure_options = [
   '--with-cc=gcc',
@@ -9,6 +10,7 @@ configure_options = [
 
   '--with-clanguage=cxx',
   '--with-debugging=0',
+  '--with-visibility=0',
 
   #'-download-fblaslapack=1',
   '--download-mpich=1',

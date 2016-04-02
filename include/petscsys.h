@@ -2308,7 +2308,7 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 {
   Petsc64bitInt r;
 
-  r  =  (Petsc64bitInt) (a*b);
+  r  =  (Petsc64bitInt) (a*(PetscReal)b);
   if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
   return (PetscInt) r;
 }

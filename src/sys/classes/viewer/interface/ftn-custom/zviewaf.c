@@ -2,18 +2,34 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscviewersetformat_      PETSCVIEWERSETFORMAT
-#define petscviewersettype_        PETSCVIEWERSETTYPE
-#define petscviewerpushformat_     PETSCVIEWERPUSHFORMAT
-#define petscviewerpopformat_      PETSCVIEWERPOPFORMAT
+#define petscviewersetformat_        PETSCVIEWERSETFORMAT
+#define petscviewersettype_          PETSCVIEWERSETTYPE
+#define petscviewerpushformat_       PETSCVIEWERPUSHFORMAT
+#define petscviewerpopformat_        PETSCVIEWERPOPFORMAT
+#define petscviewerandformatcreate_  PETSCVIEWERANDFORMATCREATE
+#define petscviewerandformatdestroy_ PETSCVIEWERANDFORMATDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscviewersetformat_      petscviewersetformat
-#define petscviewersettype_        petscviewersettype
-#define petscviewerpushformat_     petscviewerpushformat
-#define petscviewerpopformat_      petscviewerpopformat
+#define petscviewersetformat_        petscviewersetformat
+#define petscviewersettype_          petscviewersettype
+#define petscviewerpushformat_       petscviewerpushformat
+#define petscviewerpopformat_        petscviewerpopformat
+#define petscviewerandformatcreate_  petscviewerandformatcreate
+#define petscviewerandformatdestroy_ petscviewerandformatdestroy
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscViewerSetFormatDeprecated(PetscViewer,PetscViewerFormat);
+
+PETSC_EXTERN void PETSC_STDCALL petscviewerandformatcreate_(PetscViewer *vin,PetscViewerFormat *format,PetscViewerAndFormat **vf,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *ierr = PetscViewerAndFormatCreate(v,*format,vf);
+}
+
+PETSC_EXTERN void petscviewerandformatdestroy_(PetscViewerAndFormat **vf,PetscErrorCode *ierr)
+{
+  *ierr = PetscViewerAndFormatDestroy(vf);
+}
 
 PETSC_EXTERN void PETSC_STDCALL petscviewersetformat_(PetscViewer *vin,PetscViewerFormat *format,PetscErrorCode *ierr)
 {

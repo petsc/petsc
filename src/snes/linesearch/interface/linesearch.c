@@ -129,7 +129,7 @@ PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(S
 
    Input Parameters:
 +  ls - the SNES linesearch object
--  dummy - the context for the monitor, in this case it is an ASCII PetscViewer
+-  vf - the context for the monitor, in this case it is an ASCII PetscViewer and format
 
    Level: intermediate
 
@@ -137,20 +137,22 @@ PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(S
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution()
 @*/
-PetscErrorCode  SNESLineSearchMonitorSolutionUpdate(SNESLineSearch ls,void *dummy)
+PetscErrorCode  SNESLineSearchMonitorSolutionUpdate(SNESLineSearch ls,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = vf->viewer;
   Vec            Y,W,G;
 
   PetscFunctionBegin;
   ierr = SNESLineSearchGetVecs(ls,NULL,NULL,&Y,&W,&G);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LineSearch attempted update to solution \n");CHKERRQ(ierr);
   ierr = VecView(Y,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LineSearch attempted new solution \n");CHKERRQ(ierr);
   ierr = VecView(W,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LineSearch attempted updated function value\n");CHKERRQ(ierr);
   ierr = VecView(G,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -764,9 +766,10 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
    Level: intermediate
 
    Developer Note: This monitor is implemented differently than the other SNESLineSearchMonitors that are set with 
-     SNESLineSearchMonitorSet() since it is called in many locations of the line search routines.
+     SNESLineSearchMonitorSet() since it is called in many locations of the line search routines to display aspects of the 
+     line search that are not visible to the other monitors.
 
-.seealso: SNESLineSearchGetDefaultMonitor(), PetscViewer
+.seealso: SNESLineSearchGetDefaultMonitor(), PetscViewer, SNESLineSearchSetMonitor()
 @*/
 PetscErrorCode  SNESLineSearchSetDefaultMonitor(SNESLineSearch linesearch, PetscViewer viewer)
 {
@@ -835,7 +838,7 @@ PetscErrorCode  SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, Petsc
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(SNESLineSearch,void*),PetscErrorCode (*monitorsetup)(SNESLineSearch,PetscViewer))
+PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(SNESLineSearch,PetscViewerAndFormat*),PetscErrorCode (*monitorsetup)(SNESLineSearch,PetscViewerAndFormat*))
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
@@ -845,11 +848,13 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
   PetscFunctionBegin;
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ls),((PetscObject)ls)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    PetscViewerAndFormat *vf;
+    ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     if (monitorsetup) {
-      ierr = (*monitorsetup)(ls,viewer);CHKERRQ(ierr);
+      ierr = (*monitorsetup)(ls,vf);CHKERRQ(ierr);
     }
-    ierr = SNESLineSearchMonitorSet(ls,monitor,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = SNESLineSearchMonitorSet(ls,(PetscErrorCode (*)(SNESLineSearch,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

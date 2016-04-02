@@ -338,19 +338,19 @@ PETSC_EXTERN void snesmonitorlgresidualnorm_(SNES *snes,PetscInt *its,PetscReal 
   *ierr = SNESMonitorLGResidualNorm(*snes,*its,*fgnorm,dummy);
 }
 
-PETSC_EXTERN void snesmonitordefault_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void snesmonitordefault_(SNES *snes,PetscInt *its,PetscReal *fgnorm,PetscViewerAndFormat **dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESMonitorDefault(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorDefault(*snes,*its,*fgnorm,*dummy);
 }
 
-PETSC_EXTERN void snesmonitorsolution_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void snesmonitorsolution_(SNES *snes,PetscInt *its,PetscReal *fgnorm,PetscViewerAndFormat **dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESMonitorSolution(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorSolution(*snes,*its,*fgnorm,*dummy);
 }
 
-PETSC_EXTERN void snesmonitorsolutionupdate_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void snesmonitorsolutionupdate_(SNES *snes,PetscInt *its,PetscReal *fgnorm,PetscViewerAndFormat **dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESMonitorSolutionUpdate(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorSolutionUpdate(*snes,*its,*fgnorm,*dummy);
 }
 
 
@@ -358,11 +358,11 @@ PETSC_EXTERN void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *
 {
   CHKFORTRANNULLOBJECT(mctx);
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitordefault_) {
-    *ierr = SNESMonitorSet(*snes,SNESMonitorDefault,0,0);
+    *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorDefault,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorsolution_) {
-    *ierr = SNESMonitorSet(*snes,SNESMonitorSolution,0,0);
+    *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorSolution,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorsolutionupdate_) {
-    *ierr = SNESMonitorSet(*snes,SNESMonitorSolutionUpdate,0,0);
+    *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorSolutionUpdate,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorlgresidualnorm_) {
     *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorLGResidualNorm,0,0);
   } else {

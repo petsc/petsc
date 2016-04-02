@@ -218,12 +218,13 @@ PETSC_EXTERN PetscErrorCode TSSetProblemType(TS,TSProblemType);
 PETSC_EXTERN PetscErrorCode TSGetProblemType(TS,TSProblemType*);
 PETSC_EXTERN PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void**));
+PETSC_EXTERN PetscErrorCode TSMonitorSetFromOptions(TS,const char[],const char[],const char[],PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*),PetscErrorCode (*)(TS,PetscViewerAndFormat*));
 PETSC_EXTERN PetscErrorCode TSMonitorCancel(TS);
 
 PETSC_EXTERN PetscErrorCode TSAdjointMonitor(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorCancel(TS);
-
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorSetFromOptions(TS,const char[],const char[],const char[],PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,PetscViewerAndFormat*),PetscErrorCode (*)(TS,PetscViewerAndFormat*));
 
 PETSC_EXTERN PetscErrorCode TSSetOptionsPrefix(TS,const char[]);
 PETSC_EXTERN PetscErrorCode TSAppendOptionsPrefix(TS,const char[]);
@@ -296,7 +297,7 @@ PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
 
-PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
 
 typedef struct _n_TSMonitorDrawCtx*  TSMonitorDrawCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorDrawCtx *);
@@ -305,10 +306,10 @@ PETSC_EXTERN PetscErrorCode TSMonitorDrawSolution(TS,PetscInt,PetscReal,Vec,void
 PETSC_EXTERN PetscErrorCode TSMonitorDrawSolutionPhase(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorDrawError(TS,PetscInt,PetscReal,Vec,void*);
 
-PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void *);
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
 
-PETSC_EXTERN PetscErrorCode TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorSolution(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTK(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTKDestroy(void*);
 

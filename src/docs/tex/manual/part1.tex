@@ -32,7 +32,7 @@ experiences with scientific computation. Some of the PETSc modules deal with
 \item over fifteen Krylov subspace methods (KSP);
 \item dozens of preconditioners, including multigrid, block solvers, and sparse direct solvers (PC);
 \item nonlinear solvers (SNES); and
-\item timesteppers for solving time-dependent (nonlinear) PDEs, including support for differential algebraic equations (TS).
+\item timesteppers for solving time-dependent (nonlinear) PDEs, including support for differential algebraic equations, and the computation of adjoints (sensitivities/gradients of the solutions) (TS)
 \end{itemize}
 Each consists of an abstract interface
 (simply a set of calling sequences) and one or more implementations
@@ -156,13 +156,6 @@ routines that support direct use of Fortran90 pointers.
 Lisandro Dalcin. This can be done by configuring PETSc with the option \trl{--download-petsc4py}. See the PETSc installation guide
 for more details \href{http://www.mcs.anl.gov/petsc/documentation/installation.html}{http://www.mcs.anl.gov/petsc/documentation/installation.html}.
 
-\noindent{\bf Note to MATLAB Programmers}: The code that allows PETSc to be called from MATLAB is not currently supported due to the lack of interest and use.
-If you are very interested in using and and taking over its
-maintenance please contact us. To program with PETSc in MATLAB read the information in
-share/petsc/matlab/classes/PetscInitialize.m. Numerous examples are
-given in share/petsc/matlab/classes/examples/tutorials. Run the
-program demo in that directory.
-
 %-----------------------------------------------------------------------------
 \section{Running PETSc Programs}
 \label{sec_running}
@@ -174,12 +167,14 @@ directory.  For example, under the UNIX bash shell a command of the form
    export PETSC\_DIR=\$HOME/petsc
 \end{tabbing}
  can be placed in the user's \trl{
-.bashrc} or other startup file.  In addition, the user must set the environmental
-variable {\trl{PETSC_ARCH}} to specify the architecture. Note that
+.bashrc} or other startup file.  In addition, the user may need to set the environmental
+variable {\trl{PETSC_ARCH}} to specify a particular configuration of the PETSc libraries. Note that
 {\trl{PETSC_ARCH}} is just a name selected by the installer to refer to
 the libraries compiled for a particular set of compiler options and
-machine type. Using different {\trl{PETSC_ARCH}} allows one to manage
-several different sets of libraries easily.
+machine type. Using different {\trl{PETSC_ARCH}} allows one to switch between
+several different sets (say debug and optimized) of libraries easily. To determine if you need to set {\trl{PETSC_ARCH}}
+look in the directory indicated by \trl{PETSC_DIR}, if there are subdirectories beginning with {\tt arch} then those subdirectories give the
+possible values for {\trl{PETSC_ARCH}}.
 
 All PETSc programs use the MPI (Message Passing Interface) standard
 for message-passing communication \cite{MPI-final}.  Thus, to execute
@@ -208,11 +203,11 @@ Certain options are supported by all PETSc programs.  We list a few
 particularly useful ones below; a complete list can be obtained by
 running any PETSc program with the option \trl{-help}.
 \begin{itemize}
-\item \trl{-log_summary} - summarize the program's performance
+\item \trl{-log_view} - summarize the program's performance
 \item \trl{-fp_trap} - stop on floating-point exceptions; \findex{-fp_trap}
       for example divide by zero
 \item \trl{-malloc_dump} - enable memory tracing; dump list of unfreed memory
-      at conclusion \findex{-trdump} of the run
+      at conclusion \findex{-malloc_dump} of the run
 \item \trl{-malloc_debug} - enable memory tracing (by default this is
       activated for debugging versions)
 \item \trl{-start_in_debugger} \trl{[noxterm,gdb,dbx,xxgdb]} \trl{[-display name]}
@@ -320,7 +315,7 @@ parts of this example.
 The C/C++ include files for PETSc should be used via statements such as
 \begin{tabbing}
 {\footnotesize
-   \#include <petscksp.h>
+   \#include $<$petscksp.h$>$
 }
 \end{tabbing}
 where \trl{petscksp.h} is the include file for the linear solver library.
@@ -338,7 +333,7 @@ for a discussion of PETSc include files in Fortran programs.
 
 As shown in Figure~\ref{fig_example1}, the user can input control data
 at run time using the options database. In this example the command
-PetscOptionsGetInt(NULL,PETSC\_NULL,"-n",\&n,\&flg); checks whether the user has
+PetscOptionsGetInt(NULL,NULL,"-n",\&n,\&flg); checks whether the user has
 provided a command line option to set the value of \trl{n}, the
 problem dimension.  If so, the variable \trl{n} is set accordingly;
 otherwise, \trl{n} remains unchanged. A complete description of the
@@ -475,8 +470,6 @@ details regarding error checking when using the PETSc Fortran interface.
    PETSC ERROR: MatSetType() line 99 in src/mat/utils/gcreate.c  \\
    PETSC ERROR: main() line 71 in src/ksp/ksp/examples/tutorials/ex3.c\\
    MPI Abort by user Aborting program !\\
-   Aborting program! \\
-   p0\_28969:  p4\_error: : 1
 \end{tabbing}
 \nobreak
 \caption{Example of Error Traceback}
@@ -582,7 +575,7 @@ given in the file \href{faq.html}{\${PETSC\_DIR}/docs/faq.html}.
 \end{figure}
 
 As shown in Figure \ref{fig_exprof}, the option \trl{
--log_summary} activates printing of a performance summary, including
+-log_view} activates printing of a performance summary, including
 times, floating point operation (flop) rates, and message-passing
 activity.  Chapter~\ref{ch_profiling}
 provides details about profiling, including interpretation of the
@@ -595,7 +588,7 @@ demonstrate the ease of extracting performance information.
 \begin{figure}[H]
 {\footnotesize
 \begin{verbatim}
-eagle> mpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_summary
+eagle> mpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_view
 -------------------------------- PETSc Performance Summary: -------------------------------
 
 ex1 on a sun4 named merlin.mcs.anl.gov with 1 processor, by curfman Wed Aug 7 17:24 1996
@@ -662,7 +655,7 @@ users examine programs in the directories
 \end{tabbing}
 where \trl{<library>}
 denotes any of the PETSc libraries (listed in the following
-section), such as \trl{snes} or \trl{ksp}.
+section), such as \trl{SNES} or \trl{KSP}.
 The manual pages located at
 \begin{tabbing}
    \${PETSC\_DIR}/docs/index.html or \\
@@ -690,19 +683,19 @@ When citing PETSc in a publication please cite the following:
 \begin{tabbing}
 
 @Mi\=sc\{petsc-web-page,\\
-   \>Author = \= "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune \\
-\> \> and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William~D. Gropp \\
-\> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
+   \>Author = \= "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown\\
+\> \>  and Peter Brune and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout\\
+\> \>  and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
 \> \> and Karl Rupp and Barry~F. Smith and Stefano Zampini and Hong Zhang",\\
    \>Title  = "{PETS}c {W}eb page",\\
    \>Note   = "http://www.mcs.anl.gov/petsc",\\
    \>Year   = "2015"\}\\
 
 @TechReport\{petsc-user-ref,\\
-   \>Author = \= "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune \\
-\> \> and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William~D. Gropp \\
+   \>Author = \= "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown\\
+\> \>  and Peter Brune and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout\\
 \> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
-\> \> and Karl Rupp and Barry~F. Smith and Stefano Zampini and Hong Zhang",\\
+\> \>  and William~D. Gropp and Karl Rupp and Barry~F. Smith and Stefano Zampini and Hong Zhang",\\
    \>Title       = "PETSc Users Manual",\\
    \>Number      = "ANL-95/11 - Revision 3.6",\\
    \>Institution = "Argonne National Laboratory",\\
@@ -738,12 +731,12 @@ The root directory of PETSc contains the following directories:
  \item \trl{petscmpiexec} (utility for setting running MPI jobs),
  \end{itemize}
 
-\item \trl{conf} - Base PETSc makefile that defines the standard make variables and rules used by PETSc
+\item \trl{conf} - Base PETSc configuration files that define the standard make variables and rules used by PETSc
 \item \trl{include} - All include files for PETSc that are visible to the user.
 \item \trl{include/petsc/finclude}    - PETSc include files for Fortran programmers using
                                   the .F suffix (recommended).
-\item \trl{include/private}    - Private PETSc include files that should {\em not}
-                                  be used by application programmers.
+\item \trl{include/petsc/private}    - Private PETSc include files that should {\em not}
+                                 need to be used by application programmers.
 \item \trl{share} - Some small test matrices in data files
 \item \trl{src} - The source code for all PETSc libraries, which
                   currently includes
@@ -763,9 +756,15 @@ The root directory of PETSc contains the following directories:
  \item \trl{ts} - ODE solvers and timestepping,
  \item \trl{sys} - general system-related routines,
  \begin{itemize}
-   \item \trl{plog} - PETSc logging and profiling routines,
-   \item \trl{draw} - simple graphics,
- \end{itemize}
+   \item \trl{logging} - PETSc logging and profiling routines,
+   \item \trl{classes} - low-level classes
+   \begin{itemize}
+     \item \trl{draw} - simple graphics,
+     \item \trl{viewer}
+     \item \trl{bag}
+     \item \trl{random} - random number generators.
+   \end{itemize}
+\end{itemize}
  \item \trl{contrib} - contributed modules that use PETSc but are not
     part of the official PETSc package.  We encourage users who have
     developed such code that they wish to share with others to let us

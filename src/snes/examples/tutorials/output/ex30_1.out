@@ -1,21 +1,21 @@
 ---------------------BEGIN ex30 PARAM REPORT-------------------
 Domain: 
-  Width = 320 km,         Depth = 304 km
-  Slab dip = 45 degrees,  Slab velocity = 5 cm/yr
+  Width = 320. km,         Depth = 304. km
+  Slab dip = 45. degrees,  Slab velocity = 5. cm/yr
   Lid depth = 32.00 km,   Fault depth = 32.00 km
 
 Grid: 
-  [ni,nj] = 82, 78       [dx,dz] = 4, 4 km
+  [ni,nj] = 82, 78       [dx,dz] = 4., 4. km
   jlid =   8              jfault =   8 
   Pe = 662.347
 
 Rheology:                 Full Rheology 
-                          Viscosity range: 1e+24--0 Pa-sec 
+                          Viscosity range: 1e+24--0. Pa-sec 
 Boundary condition:       Stress-Free (normal & shear stress)
 Output Destination:       PETSc binary file "ex30_output"
 ---------------------END ex30 PARAM REPORT---------------------
 Computing Variable Viscosity Solution
- Continuation parameter = 0
+ Continuation parameter = 0.
   0 SNES Function norm 28086.8 
   1 SNES Function norm 1.94828 
   2 SNES Function norm 0.0173303 

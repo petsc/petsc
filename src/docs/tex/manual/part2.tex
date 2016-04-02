@@ -481,7 +481,7 @@ represented locally in the mapping are not included in \trl{idxout}, so that
 potentially \trl{nout} is smaller than \trl{nin}.  One must
 pass in an array long enough to hold all the indices. One can call
 ISGlobalToLocalMappingApplyBlock() with \trl{idxout} equal to
-PETSC\_NULL to determine the required length (returned in
+NULL to determine the required length (returned in
 \trl{nout}) and then allocate the required space and call
 ISGlobalToLocalMappingApplyBlock() a second time to set the values.
 
@@ -564,7 +564,7 @@ indicates the number of degrees of freedom at each array point,
 and \trl{s} is the stencil width (i.e., the width of the ghost point region).
 The optional arrays \trl{lx} and \trl{ly} may contain the number of nodes
 along the x and y axis for each cell, i.e. the dimension of \trl{lx} is
-\trl{m} and the dimension of \trl{ly} is \trl{n}; or PETSC\_NULL
+\trl{m} and the dimension of \trl{ly} is \trl{n}; or NULL
 may be passed in.
 
 Two types of distributed array communication data structures
@@ -1062,7 +1062,7 @@ or
 \end{tabbing}
 Here  \trl{n} is the
 number of local vector entries, \trl{N} is the number of \sindex{vectors, with ghost values}
-global entries (or PETSC\_NULL) and \trl{nghost} is the number of
+global entries (or NULL) and \trl{nghost} is the number of
 ghost entries. The array \trl{ghosts} is of size \trl{nghost} and contains the
 global vector location for each local ghost location. Using VecDuplicate()
 or VecDuplicateVecs() on a ghosted vector will generate additional ghosted vectors.
@@ -1281,7 +1281,7 @@ one uses the command
 \end{tabbing}
 where \trl{nz} or \trl{nnz} can be used to preallocate matrix memory,
 as discussed below. The user can set \trl{nz=0} and \trl{
-nnz=}PETSC\_NULL for PETSc to control all matrix memory allocation.
+nnz=}NULL for PETSc to control all matrix memory allocation.
 
 The sequential and parallel AIJ matrix storage formats by default
 employ {\em i-nodes} (identical nodes) when possible.  We search for
@@ -1422,8 +1422,8 @@ must match the local size used in the vector creation routine VecCreateMPI() for
 Likewise, the \trl{n} used must match that used as the local size in
 VecCreateMPI() for \trl{x}.
 
-The user must set \trl{d_nz=0}, \trl{o_nz=0}, \trl{d_nnz=}PETSC\_NULL, and
-\trl{o_nnz=}PETSC\_NULL for PETSc to control dynamic allocation of matrix
+The user must set \trl{d_nz=0}, \trl{o_nz=0}, \trl{d_nnz=}NULL, and
+\trl{o_nnz=}NULL for PETSc to control dynamic allocation of matrix
 memory space.  Analogous to \trl{nz} and \trl{nnz} for the routine
 MatCreateSeqAIJ(), these arguments optionally specify
 nonzero information for the diagonal (\trl{d_nz} and \trl{d_nnz}) and
@@ -1559,7 +1559,7 @@ call
 The variable \trl{data} enables the user to optionally provide the
 location of the data for matrix storage (intended for Fortran users who
 wish to allocate their own storage space).  Most users should merely
-set \trl{data} to PETSC\_NULL for PETSc to control matrix memory allocation.
+set \trl{data} to NULL for PETSc to control matrix memory allocation.
 To create a parallel, dense matrix, \trl{A}, the user should call
 \begin{tabbing}
   MatCreateDense(MPI\_Comm comm,int m,int n,int M,int N,PetscScalar *data,Mat *A)
@@ -1829,7 +1829,7 @@ or equivalently,
   MatZeroRowsIS(Mat A,IS rows,PetscScalar diag\_value,Vec x,Vec b);
 \end{tabbing}
 For sparse matrices this removes the data structures for certain rows
-of the matrix. If the pointer \trl{diag_value} is PETSC\_NULL, it
+of the matrix. If the pointer \trl{diag_value} is NULL, it
 even removes the diagonal entry. If the pointer is not null, it uses that
 given value at the pointer location
 in the diagonal entry of the eliminated rows.
@@ -1891,8 +1891,8 @@ The argument \trl{ncols} returns the number of nonzeros in that row,
 while \trl{cols} and \trl{vals} returns the column indices (with indices
 starting at zero) and values in the row. If only the column
 indices are needed (and not the corresponding matrix elements), one
-can use PETSC\_NULL for the \trl{vals} argument. Similarly,
-one can use PETSC\_NULL for the \trl{cols} argument.
+can use NULL for the \trl{vals} argument. Similarly,
+one can use NULL for the \trl{cols} argument.
 The user can only examine the values extracted with MatGetRow();
 the values {\em cannot} be altered.
 To change the matrix entries, one must use MatSetValues().
@@ -1987,7 +1987,7 @@ Now that a new numbering of the nodes has been determined, one must
 renumber all the nodes and migrate the grid information to the correct process.
 The command
 \begin{tabbing}
- AOCreateBasicIS(isg,PETSC\_NULL,\&ao);
+ AOCreateBasicIS(isg,NULL,\&ao);
 \end{tabbing}
 generates, see Section \ref{sec_ao}, an AO object that can be used in conjunction with the
 \trl{is} and \trl{isg} to move the relevant grid information to the correct process
@@ -2503,7 +2503,7 @@ iterative process, one uses the command
 \end{tabbing}
 where the solution is returned in \trl{v}. The user can optionally provide
 a vector in \trl{w} as the location to store the vector; however, if
-\trl{w} is PETSC\_NULL, space allocated by PETSc in the KSP context is
+\trl{w} is NULL, space allocated by PETSc in the KSP context is
 used. One should not destroy this vector. For certain KSP methods,
 (e.g., GMRES), the construction of the solution is expensive, while for many
 others it requires not even a vector copy.
@@ -3854,7 +3854,7 @@ the command
 \end{tabbing}
 The argument \trl{ctx} is an optional user-defined context, which can
 store any private, application-specific data required by the
-function evaluation routine; PETSC\_NULL should be used if such information
+function evaluation routine; NULL should be used if such information
 is not needed.  In C and C++, a user-defined context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
@@ -5577,7 +5577,7 @@ where one lists the functions. In Fortran use
 Next one uses the call
 \begin{tabbing}
   DMDASetSNESLocal(DM dm,\\
-   PetscErrorCode (*localfunction)(DMDALocalInfo *info,void *x,void *f,void* appctx),PETSC\_NULL,\\
+   PetscErrorCode (*localfunction)(DMDALocalInfo *info,void *x,void *f,void* appctx),NULL,\\
   ad\_localfunction,ad\_mf\_localfunction);
 \end{tabbing}
 where the names of the last two functions are obtained
@@ -5653,7 +5653,7 @@ One creates a viewer to MATLAB via
 \begin{tabbing}
 PetscViewerSocketOpen(MPI\_Comm,char *machine,int port,PetscViewer *v);
 \end{tabbing}
-(port is usually set to \trl{PETSC_DEFAULT}, use PETSC\_NULL for the machine if the
+(port is usually set to \trl{PETSC_DEFAULT}, use NULL for the machine if the
 MATLAB interactive session is running on the same machine as the PETSc program)
 and then sends matrices or vectors via
 \begin{tabbing}
@@ -5662,7 +5662,7 @@ and then sends matrices or vectors via
 \end{tabbing}
 One can also send arrays or integer arrays via PetscIntView(), PetscRealView() and PetscScalarView().
 One may start the MATLAB program manually or use the PETSc command
-PetscStartMATLAB\trl{(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be PETSC\_NULL.
+PetscStartMATLAB\trl{(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be NULL.
 
 To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
 is in your MATLAB path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
@@ -5677,7 +5677,7 @@ One creates access to the MATLAB engine via
 \begin{tabbing}
   PetscMatlabEngineCreate(MPI\_Comm comm,char *machine,PetscMatlabEngine *e);
 \end{tabbing}
-where \trl{machine} is the name of the machine hosting MATLAB (PETSC\_NULL may be used for localhost).
+where \trl{machine} is the name of the machine hosting MATLAB (NULL may be used for localhost).
 One can send objects to MATLAB via
 \begin{tabbing}
   PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
@@ -5923,13 +5923,13 @@ The macros are used, for example, as follows:
 
 In several PETSc C functions, one has the option of passing a 0 (null)
 argument (for example, the fifth argument of MatCreateSeqAIJ()).
-From Fortran, users {\em must} pass \trl{NULL_XXX} to indicate a
+From Fortran, users {\em must} pass \trl{PETSC_NULL_XXX} to indicate a
 null argument (where XXX is \trl{INTEGER}, \trl{DOUBLE}, \trl{CHARACTER},
 or \trl{SCALAR} depending on the type of argument required);
-\findex{NULL_INTEGER} passing \findex{NULL_SCALAR} 0 from
-\findex{NULL_DOUBLE} Fortran \findex{NULL_CHARACTER}  will crash
+\findex{PETSC_NULL_INTEGER} passing \findex{PETSC_NULL_SCALAR} 0 from
+\findex{PETSC_NULL_DOUBLE} Fortran \findex{PETSC_NULL_CHARACTER}  will crash
 the code.   Note
-that the C convention of passing PETSC\_NULL (or 0) {\em cannot}
+that the C convention of passing NULL (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
 routine PetscOptionsGetInt(), one must use the following command in
 Fortran:
@@ -5938,7 +5938,7 @@ Fortran:
 \end{tabbing}
 
 This Fortran requirement is inconsistent with C, where the
-user can employ PETSC\_NULL for all null arguments.
+user can employ NULL for all null arguments.
 
 \subsection{Duplicating Multiple Vectors}
 \label{sec_fortvecd}
@@ -7107,7 +7107,7 @@ routines set \trl{flg=PETSC_TRUE} if the corresponding option was found, \trl{fl
 was not found.  The optional argument
 \trl{pre} indicates that the true name of the option is the given name
 (with the dash ``-'' removed) prepended by the prefix \trl{pre}.
-Usually \trl{pre} should be set to PETSC\_NULL (or \trl{NULL_CHARACTER}
+Usually \trl{pre} should be set to NULL (or \trl{PETSC_NULL_CHARACTER}
 for Fortran); its purpose is to
 allow someone to rename all the options in a package without knowing
 the names of the individual options.  For example, when using block
@@ -8687,7 +8687,7 @@ as the transitive closure of the element point in the mesh DAG, where each point
 retrieve the data using PetscSection methods,
 \begin{tabbing}
   PetscScalar *a;\\
-  PetscInt     numPoints, *points = PETSC\_NULL, p;\\
+  PetscInt     numPoints, *points = NULL, p;\\
 \\
   VecGetArray(u, \&a);\\
   DMPlexGetTransitiveClosure(dm, cell, PETSC\_TRUE, \&numPoints, \&points);\\

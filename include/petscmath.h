@@ -148,6 +148,20 @@ typedef __float128 PetscReal;
 
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef complexlib::complex<float> PetscComplex;
+#if defined(PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND)
+static inline PetscComplex operator+(const PetscComplex& lhs, const double& rhs) { return lhs + float(rhs); }
+static inline PetscComplex operator+(const double& lhs, const PetscComplex& rhs) { return float(lhs) + rhs; }
+static inline PetscComplex operator-(const PetscComplex& lhs, const double& rhs) { return lhs - float(rhs); }
+static inline PetscComplex operator-(const double& lhs, const PetscComplex& rhs) { return float(lhs) - rhs; }
+static inline PetscComplex operator*(const PetscComplex& lhs, const double& rhs) { return lhs * float(rhs); }
+static inline PetscComplex operator*(const double& lhs, const PetscComplex& rhs) { return float(lhs) * rhs; }
+static inline PetscComplex operator/(const PetscComplex& lhs, const double& rhs) { return lhs / float(rhs); }
+static inline PetscComplex operator/(const double& lhs, const PetscComplex& rhs) { return float(lhs) / rhs; }
+static inline bool operator==(const PetscComplex& lhs, const double& rhs) { return lhs.imag() == float(0) && lhs.real() == float(rhs); }
+static inline bool operator==(const double& lhs, const PetscComplex& rhs) { return rhs.imag() == float(0) && rhs.real() == float(lhs); }
+static inline bool operator!=(const PetscComplex& lhs, const double& rhs) { return lhs.imag() != float(0) || lhs.real() != float(rhs); }
+static inline bool operator!=(const double& lhs, const PetscComplex& rhs) { return rhs.imag() != float(0) || rhs.real() != float(lhs); }
+#endif  /* PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND */
 #elif defined(PETSC_USE_REAL_DOUBLE)
 typedef complexlib::complex<double> PetscComplex;
 #elif defined(PETSC_USE_REAL___FLOAT128)
@@ -545,7 +559,7 @@ PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
   PetscReal result = 1;
   if (power < 0) {
     power = -power;
-    if (base != (PetscReal)0.0) base  = ((PetscReal)1.)/base;
+    base  = ((PetscReal)1)/base;
   }
   while (power) {
     if (power & 1) result *= base;
@@ -560,7 +574,7 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt powe
   PetscScalar result = 1;
   if (power < 0) {
     power = -power;
-    if (base != (PetscScalar)0.0) base  = ((PetscScalar)1.)/base;
+    base  = ((PetscReal)1)/base;
   }
   while (power) {
     if (power & 1) result *= base;
