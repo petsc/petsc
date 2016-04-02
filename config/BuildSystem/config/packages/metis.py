@@ -6,7 +6,7 @@ class Configure(config.package.CMakePackage):
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/metis-5.1.0-p3.tar.gz']
     self.functions         = ['METIS_PartGraphKway']
     self.includes          = ['metis.h']
-    self.liblist           = [['libmetis.a']]
+    self.liblist           = [['libmetis.a'],['libmetis.a','libexecinfo.a']]
     self.needsMath         = 1
     self.hastests          = 1
     return
