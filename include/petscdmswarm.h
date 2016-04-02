@@ -10,14 +10,26 @@ typedef enum {
 
 typedef enum {
   DMSWARM_MIGRATE_BASIC=0,
-  DMSWARM_MIGRATE_DM
+  DMSWARM_MIGRATE_DMCELLNSCATTER,
+  DMSWARM_MIGRATE_DMCELLEXACT,
+  DMSWARM_MIGRATE_USER
 } DMSwarmMigrateType;
 
 typedef enum {
   DMSWARM_COLLECT_BASIC=0,
   DMSWARM_COLLECT_DMDABOUNDINGBOX,
-  DMSWARM_COLLECT_GENERAL
+  DMSWARM_COLLECT_GENERAL,
+  DMSWARM_COLLECT_USER
 } DMSwarmCollectType;
+
+PETSC_EXTERN const char* DMSwarmTypeNames[];
+PETSC_EXTERN const char* DMSwarmMigrateTypeNames[];
+PETSC_EXTERN const char* DMSwarmCollectTypeNames[];
+
+PETSC_EXTERN const char DMSwarmField_pid[];
+PETSC_EXTERN const char DMSwarmField_rank[];
+PETSC_EXTERN const char DMSwarmPICField_coor[];
+
 
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec);
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec);
@@ -46,6 +58,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm);
 PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM dm);
 PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell);
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell);
+
+PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM dm,DMSwarmType stype);
 
 #endif
 
