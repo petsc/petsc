@@ -197,7 +197,7 @@ runex15:
 	   ${RM} -f ex15.tmp
 
 runex16:
-	-@PETSC_OPTIONS= ${MPIEXEC} -n 2  ./ex16 -options_view -get_total_flops |grep -v malloc | grep -v display | grep -v nox > ex16.tmp 5>&1; \
+	-@PETSC_OPTIONS= ${MPIEXEC} -n 2  ./ex16 -options_view -get_total_flops |grep -v malloc | grep -v display | grep -v nox | grep -v "Total flops" > ex16.tmp 5>&1; \
 	   if (${DIFF} output/ex16_1.out ex16.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex16, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex16.tmp
