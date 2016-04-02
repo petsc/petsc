@@ -938,7 +938,7 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
 				PetscPrintf(PETSC_COMM_SELF,"    [%3D]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
         PetscPrintf(PETSC_COMM_SELF,"           blocksize          = %D \n", db->field[f]->bs );
         if (db->field[f]->bs != 1) {
-          PetscPrintf(PETSC_COMM_SELF,"           atomic size        = %zu [full block]\n", db->field[f]->atomic_size );
+          PetscPrintf(PETSC_COMM_SELF,"           atomic size        = %zu [full block, bs=%D]\n", db->field[f]->atomic_size,db->field[f]->bs );
           PetscPrintf(PETSC_COMM_SELF,"           atomic size/item   = %zu \n", db->field[f]->atomic_size/db->field[f]->bs );
         } else {
           PetscPrintf(PETSC_COMM_SELF,"           atomic size        = %zu \n", db->field[f]->atomic_size );
