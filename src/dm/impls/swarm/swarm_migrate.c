@@ -128,7 +128,7 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
 
   ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
-    if (rankval[p] == -1) {
+    if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
       for (r=0; r<mynneigh; r++) {
         _rank = myneigh[r];
         ierr = DataExAddToSendCount(de,_rank,1);CHKERRQ(ierr);
@@ -140,7 +140,7 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
   ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
   ierr = DataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
-    if (rankval[p] == -1) {
+    if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
       for (r=0; r<mynneigh; r++) {
         _rank = myneigh[r];
         /* copy point into buffer */
@@ -162,7 +162,7 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
     /* remove points which left processor */
     ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
     for (p=0; p<npoints; p++) {
-      if (rankval[p] == -1) {
+      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
         ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
         ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
@@ -251,9 +251,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
     ierr = ISGetIndices(iscell,&LA_iscell);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
     for (p=0; p<len; p++) {
-      if (LA_iscell[p] == -1) {
-        rankval[npoints_prior_migration+p] = -1;
-      }
+      rankval[npoints_prior_migration+p] = LA_iscell[p];
     }
     ierr = ISRestoreIndices(iscell,&LA_iscell);CHKERRQ(ierr);
     ierr = ISDestroy(&iscell);CHKERRQ(ierr);
@@ -265,7 +263,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 
     ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
     for (p=npoints_prior_migration; p<npoints2; p++) {
-      if (rankval[p] == -1) {
+      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
         ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
         ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
@@ -304,7 +302,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 
     ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
     for (p=0; p<npoints2; p++) {
-      if (rankval[p] == -1) {
+      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
         ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
         ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
