@@ -13,6 +13,8 @@ PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
 PETSC_EXTERN PetscClassId DM_CLASSID;
 
+#define DMLOCATEPOINT_POINT_NOT_FOUND -367
+
 /*J
     DMType - String with the name of a PETSc DM
 
