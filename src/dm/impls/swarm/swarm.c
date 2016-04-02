@@ -3,6 +3,15 @@
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 #include "data_bucket.h"
 
+const char* DMSwarmTypeNames[] = { "basic", "pic", 0 };
+const char* DMSwarmMigrateTypeNames[] = { "basic", "dmcellnscatter", "dmcellexact", "user", 0 };
+const char* DMSwarmCollectTypeNames[] = { "basic", "boundingbox", "general", "user", 0 };
+
+const char DMSwarmField_pid[] = "DMSwarm_pid";
+const char DMSwarmField_rank[] = "DMSwarm_rank";
+const char DMSwarmPICField_coor[] = "DMSwarmPIC_coor";
+
+
 PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points);
 
 
@@ -185,8 +194,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
 
   swarm->field_registration_initialized = PETSC_TRUE;
 
-  ierr = DMSwarmRegisterPetscDatatypeField(dm,"DMSwarm_pid",1,PETSC_LONG);CHKERRQ(ierr); /* unique identifer */
-  ierr = DMSwarmRegisterPetscDatatypeField(dm,"DMSwarm_rank",1,PETSC_INT);CHKERRQ(ierr); /* used for communication */
+  ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_pid,1,PETSC_LONG);CHKERRQ(ierr); /* unique identifer */
+  ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_rank,1,PETSC_INT);CHKERRQ(ierr); /* used for communication */
 
   PetscFunctionReturn(0);
 }
@@ -197,9 +206,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  
+
+  if (!swarm->field_registration_finalized) {
+    ierr = DataBucketFinalize(swarm->db);CHKERRQ(ierr);
+  }
   swarm->field_registration_finalized = PETSC_TRUE;
-  ierr = DataBucketFinalize(swarm->db);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -439,14 +450,44 @@ PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points);
+PetscErrorCode DMSwarmMigrate_CellDMExact(DM dm,PetscBool remove_sent_points);
+
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmMigrate"
 PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
 {
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  ierr = DMSwarmMigrate_Basic(dm,remove_sent_points);CHKERRQ(ierr);
+
+  switch (swarm->migrate_type) {
+
+    case DMSWARM_MIGRATE_BASIC:
+      ierr = DMSwarmMigrate_Basic(dm,remove_sent_points);CHKERRQ(ierr);
+      break;
+    
+    case DMSWARM_MIGRATE_DMCELLNSCATTER:
+      ierr = DMSwarmMigrate_CellDMScatter(dm,remove_sent_points);CHKERRQ(ierr);
+      break;
+    
+    case DMSWARM_MIGRATE_DMCELLEXACT:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE_DMCELLEXACT not implemented");
+      //ierr = DMSwarmMigrate_CellDMExact(dm,remove_sent_points);CHKERRQ(ierr);
+      break;
+    
+    case DMSWARM_MIGRATE_USER:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE_USER not implemented");
+      //ierr = swarm->migrate(dm,remove_sent_points);CHKERRQ(ierr);
+      break;
+    
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE type unknown");
+      break;
+  }
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmCollectViewCreate"
@@ -460,17 +501,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm)
   
   ierr = DMSwarmGetLocalSize(dm,&ng);CHKERRQ(ierr);
   switch (swarm->collect_type) {
+
     case DMSWARM_COLLECT_BASIC:
       ierr = DMSwarmMigrate_GlobalToLocal_Basic(dm,&ng);CHKERRQ(ierr);
       break;
+    
     case DMSWARM_COLLECT_DMDABOUNDINGBOX:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT_DMDABOUNDINGBOX not implemented");
       //ierr = DMSwarmCollect_DMDABoundingBox(dm,&ng);CHKERRQ(ierr);
       break;
+    
     case DMSWARM_COLLECT_GENERAL:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT_GENERAL not implemented");
       //ierr = DMSwarmCollect_General(dm,..,,..,&ng);CHKERRQ(ierr);
       break;
       
     default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_COLLECT type unknown");
       break;
   }
 
@@ -495,6 +542,34 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSwarmSetUpPIC"
+PetscErrorCode DMSwarmSetUpPIC(DM dm)
+{
+  PetscInt dim;
+  PetscErrorCode ierr;
+  
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  if (dim < 1) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);
+  if (dim > 3) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);
+  ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmPICField_coor,dim,PETSC_DOUBLE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmSetType"
+PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM dm,DMSwarmType stype)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  
+  swarm->swarm_type = stype;
+  if (swarm->swarm_type == DMSWARM_PIC) {
+    ierr = DMSwarmSetUpPIC(dm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSetup_Swarm"
 PetscErrorCode DMSetup_Swarm(DM dm)
 {
@@ -507,6 +582,30 @@ PetscErrorCode DMSetup_Swarm(DM dm)
   
   swarm->issetup = PETSC_TRUE;
 
+  if (swarm->swarm_type == DMSWARM_PIC) {
+    /* check dmcell exists */
+    if (!swarm->dmcell) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires you call DMSwarmSetCellDM");
+
+    if (swarm->dmcell->ops->locatepointssubdomain) {
+      /* check methods exists for exact ownership identificiation */
+      PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->ops->LocatePointsSubdomain\n");
+      swarm->migrate_type = DMSWARM_MIGRATE_DMCELLEXACT;
+    } else {
+      /* check methods exist for point location AND rank neighbor identification */
+      if (swarm->dmcell->ops->locatepoints) {
+        PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->LocatePoints\n");
+      } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires the method CellDM->ops->locatepoints be defined");
+
+      if (swarm->dmcell->ops->getneighbors) {
+        PetscPrintf(PetscObjectComm((PetscObject)dm),"  DMSWARM_PIC: Using method CellDM->GetNeigbors\n");
+      } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires the method CellDM->ops->getneighbors be defined");
+
+      swarm->migrate_type = DMSWARM_MIGRATE_DMCELLNSCATTER;
+    }
+  }
+  
+  ierr = DMSwarmFinalizeFieldRegister(dm);CHKERRQ(ierr);
+
   /* check some fields were registered */
   if (swarm->db->nfields <= 2) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"At least one field user must be registered via DMSwarmRegisterXXX()");
 
@@ -518,11 +617,11 @@ PetscErrorCode DMSetup_Swarm(DM dm)
   
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     rankval[p] = (PetscInt)rank;
   }
-  ierr = DMSwarmRestoreField(dm,"DMSwarm_rank",NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+  ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -581,8 +680,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr     = PetscNewLog(dm,&swarm);CHKERRQ(ierr);
+  dm->data = swarm;
   
   ierr = DataBucketCreate(&swarm->db);CHKERRQ(ierr);
+  ierr = DMSwarmInitializeFieldRegister(dm);CHKERRQ(ierr);
+
   swarm->vec_field_set = PETSC_FALSE;
   swarm->issetup = PETSC_FALSE;
   swarm->swarm_type = DMSWARM_BASIC;
@@ -590,9 +692,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   swarm->collect_type = DMSWARM_COLLECT_BASIC;
   swarm->migrate_error_on_missing_point = PETSC_FALSE;
   
-  dm->dim  = 0;
-  dm->data = swarm;
+  swarm->dmcell = NULL;
+  swarm->collect_view_active = PETSC_FALSE;
+  swarm->collect_view_reset_nlocal = -1;
   
+  dm->dim  = 0;
   dm->ops->view                            = DMView_Swarm;
   dm->ops->load                            = NULL;
   dm->ops->setfromoptions                  = NULL;
