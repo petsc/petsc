@@ -15,7 +15,6 @@ typedef struct {
   
   PetscBool field_registration_initialized;
   PetscBool field_registration_finalized;
-  //DM *geometry_dm;
   //DMSwarmProjectMethod *swarm_project;/* swarm, geometry, result */
 
   //PetscInt overlap;
@@ -36,6 +35,7 @@ typedef struct {
   
   PetscBool collect_view_active;
   PetscInt  collect_view_reset_nlocal;
+
 } DM_Swarm;
 
 #endif /* _SWARMIMPL_H */
