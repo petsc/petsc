@@ -15,10 +15,6 @@ if __name__ == '__main__':
     '--with-cxx=CC',
     '--with-fc=ftn',
 
-    '--with-clib-autodetect=0',
-    '--with-cxxlib-autodetect=0',
-    '--with-fortranlib-autodetect=0',
-
     '--with-debugging=0',
     '--COPTFLAGS=-fast -mp',
     '--CXXOPTFLAGS=-fast -mp',
