@@ -1202,7 +1202,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 
    Options Database Keys:
 +  -pc_mg_levels <nlevels> - number of levels including finest
-.  -pc_mg_cycles <v,w> -
+.  -pc_mg_cycle_type <v,w> - 
 .  -pc_mg_smoothup <n> - number of smoothing steps after interpolation
 .  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
 .  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
