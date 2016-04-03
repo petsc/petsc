@@ -715,8 +715,7 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 #define __FUNCT__ "DMLabelHasStratum"
 PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exists)
 {
-  PetscInt       v;
-  PetscErrorCode ierr;
+  PetscInt v;
 
   PetscFunctionBegin;
   PetscValidPointer(exists, 3);
