@@ -514,7 +514,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscMPIInt size;
   Vec cellgeom, grad, locGrad;
   const PetscScalar *cgeom;
-  PetscReal allVecMaxDiff = 0.;
+  PetscReal allVecMaxDiff = 0., fvTol = 100. * PETSC_MACHINE_EPSILON;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -610,11 +610,11 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     ierr = VecRestoreArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);
   }
-  if (allVecMaxDiff < 10. * PETSC_MACHINE_EPSILON) {
+  if (allVecMaxDiff < fvTol) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: PASS\n");CHKERRQ(ierr);
   }
   else {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL at tolerance %g with max difference %g\n",10. * PETSC_MACHINE_EPSILON,allVecMaxDiff);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL at tolerance %g with max difference %g\n",fvTol,allVecMaxDiff);CHKERRQ(ierr);
   }
   ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
