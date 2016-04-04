@@ -41,9 +41,16 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
   ierr = PetscFree((*event)->events_zero);CHKERRQ(ierr);
   ierr = PetscFree((*event)->vtol);CHKERRQ(ierr);
-  for (i=0; i < MAXEVENTRECORDERS; i++) {
+
+  
+  for (i=0; i < (*event)->recsize; i++) {
     ierr = PetscFree((*event)->recorder.eventidx[i]);CHKERRQ(ierr);
   }
+  ierr = PetscFree((*event)->recorder.eventidx);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->recorder.nevents);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->recorder.stepnum);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->recorder.time);CHKERRQ(ierr);
+
   ierr = PetscViewerDestroy(&(*event)->monitor);CHKERRQ(ierr);
   ierr = PetscFree(*event);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -178,21 +185,83 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   event->postevent = postevent;
   event->ctx = ctx;
 
-  for (i=0; i < MAXEVENTRECORDERS; i++) {
-    ierr = PetscMalloc1(event->nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
-  }
-
+  event->recsize = 12;  /* Initial size of the recorder */
   ierr = PetscOptionsBegin(((PetscObject)ts)->comm,"","TS Event options","");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-ts_event_tol","Scalar event tolerance for zero crossing check","",tol,&tol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-ts_event_monitor","Print choices made by event handler","",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_event_recorder_initial_size","Initial size of event recorder","",event->recsize,&event->recsize,NULL);CHKERRQ(ierr);
   }
   PetscOptionsEnd();
+
+  ierr = PetscMalloc1(event->recsize,&event->recorder.time);CHKERRQ(ierr);
+  ierr = PetscMalloc1(event->recsize,&event->recorder.stepnum);CHKERRQ(ierr);
+  ierr = PetscMalloc1(event->recsize,&event->recorder.nevents);CHKERRQ(ierr);
+  ierr = PetscMalloc1(event->recsize,&event->recorder.eventidx);CHKERRQ(ierr);
+  for (i=0; i < event->recsize; i++) {
+    ierr = PetscMalloc1(event->nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
+  }
+
   for (i=0; i < event->nevents; i++) event->vtol[i] = tol;
   if (flg) {ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&event->monitor);CHKERRQ(ierr);}
 
   ierr = TSEventDestroy(&ts->event);CHKERRQ(ierr);
   ts->event = event;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSEventRecorderResize"
+/*
+  TSEventRecorderResize - Resizes (2X) the event recorder arrays whenever the recording limit (event->recsize)
+                          is reached.
+*/
+PetscErrorCode TSEventRecorderResize(TSEvent event)
+{
+  PetscErrorCode ierr;
+  PetscReal      *time;
+  PetscInt       *stepnum;
+  PetscInt       *nevents;
+  PetscInt       **eventidx;
+  PetscInt       i,fact=2;
+
+  PetscFunctionBegin;
+
+  /* Create large arrays */
+  ierr = PetscMalloc1(fact*event->recsize,&time);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fact*event->recsize,&stepnum);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fact*event->recsize,&nevents);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fact*event->recsize,&eventidx);CHKERRQ(ierr);
+  for (i=0; i < fact*event->recsize; i++) {
+    ierr = PetscMalloc1(event->nevents,&eventidx[i]);CHKERRQ(ierr);
+  }
+
+  /* Copy over data */
+  ierr = PetscMemcpy(time,event->recorder.time,event->recsize*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemcpy(stepnum,event->recorder.stepnum,event->recsize*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(nevents,event->recorder.nevents,event->recsize*sizeof(PetscInt));CHKERRQ(ierr);
+  for(i=0; i < event->recsize; i++) {
+    ierr = PetscMemcpy(eventidx[i],event->recorder.eventidx[i],event->recorder.nevents[i]*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+
+  /* Destroy old arrays */
+  for (i=0; i < event->recsize; i++) {
+    ierr = PetscFree(event->recorder.eventidx[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(event->recorder.eventidx);CHKERRQ(ierr);
+  ierr = PetscFree(event->recorder.nevents);CHKERRQ(ierr);
+  ierr = PetscFree(event->recorder.stepnum);CHKERRQ(ierr);
+  ierr = PetscFree(event->recorder.time);CHKERRQ(ierr);
+
+  /* Set pointers */
+  event->recorder.time = time;
+  event->recorder.stepnum = stepnum;
+  event->recorder.nevents = nevents;
+  event->recorder.eventidx = eventidx;
+
+  /* Double size */
+  event->recsize *= fact;
+
   PetscFunctionReturn(0);
 }
 
@@ -236,7 +305,9 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   /* Record the event in the event recorder */
   ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
   ctr = event->recorder.ctr;
-  if (ctr == MAXEVENTRECORDERS) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Exceeded limit (=%d) for number of events recorded",MAXEVENTRECORDERS);
+  if (ctr == event->recsize) {
+    ierr = TSEventRecorderResize(event);CHKERRQ(ierr);
+  }
   event->recorder.time[ctr] = t;
   event->recorder.stepnum[ctr] = stepnum;
   event->recorder.nevents[ctr] = event->nevents_zero;
