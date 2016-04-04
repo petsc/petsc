@@ -317,7 +317,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 }
 
 /* Uses Anderson-Bjorck variant of regular falsi method */
-PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t, PetscReal tright, PetscReal fleft, PetscScalar f, PetscScalar fright, PetscInt side,PetscReal dt)
+PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t, PetscReal tright, PetscScalar fleft, PetscScalar f, PetscScalar fright, PetscInt side,PetscReal dt)
 {
   PetscReal scal=1.0;
   if(PetscRealPart(fleft)*PetscRealPart(f) < 0) {
@@ -325,13 +325,13 @@ PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t
       scal = 1.0 - PetscRealPart(f)/PetscRealPart(fright);
       if(scal < 0) scal = 0.5;
     }
-    dt = PetscMin(dt,(scal*fleft*t - f*tleft)/(scal*fleft - f) - tleft);
+    dt = PetscMin(dt,(scal*PetscRealPart(fleft)*t - PetscRealPart(f)*tleft)/(scal*PetscRealPart(fleft) - PetscRealPart(f)) - tleft);
   } else {
     if(side == -1) {
       scal = 1.0 - PetscRealPart(f)/PetscRealPart(fleft);
       if(scal < 0) scal = 0.5;
     }
-    dt = PetscMin(dt,(f*tright - scal*fright*t)/(f - scal*fright) - t);
+    dt = PetscMin(dt,(PetscRealPart(f)*tright - scal*PetscRealPart(fright)*t)/(PetscRealPart(f) - scal*PetscRealPart(fright)) - t);
   }
   return dt;
 }
