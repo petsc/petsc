@@ -274,10 +274,14 @@ typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_Z
 
 struct _n_TSEvent {
   PetscScalar    *fvalue;          /* value of event function at the end of the step*/
-  PetscScalar    *fvalue_prev;     /* value of event function at start of the step */
-  PetscReal       ptime_prev;      /* time at step start */
-  PetscReal       ptime_end;       /* end time of step */
+  PetscScalar    *fvalue_prev;     /* value of event function at start of the step (left end-point of event interval) */
+  PetscReal       ptime_prev;      /* time at step start (left end-point of event interval) */
+  PetscReal       ptime_end;       /* end time of step (when an event interval is detected, ptime_end is fixed to the time at step end during event processing) */
+  PetscReal       ptime_right;     /* time on the right end-point of the event interval */
+  PetscScalar    *fvalue_right;    /* value of event function at the right end-point of the event interval */
+  PetscInt       *side;            /* Used for detecting repetition of end-point, -1 => left, +1 => right */
   PetscReal       timestep_prev;   /* previous time step */
+  PetscBool      *zerocrossing;    /* Flag to signal zero crossing detection */
   PetscErrorCode  (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event handler function */
   PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*); /* User post event function */
   void           *ctx;              /* User context for event handler and post even functions */
