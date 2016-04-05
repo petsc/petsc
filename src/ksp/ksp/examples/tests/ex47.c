@@ -1,7 +1,7 @@
 /*
     Tests attaching null space to IS for fieldsplit preconditioner
 */
-#include <petsc.h>
+#include <petscksp.h>
 
 int main(int argc, char **argv)
 {
