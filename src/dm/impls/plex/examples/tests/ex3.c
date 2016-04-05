@@ -523,7 +523,7 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
     ierr = PetscObjectSetName((PetscObject)inj,"Reference Tree Injector");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatView(inj,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = MatView(inj,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&inj);CHKERRQ(ierr);
   }
@@ -535,7 +535,7 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
   MPI_Comm comm;
-  DM dmRedist, dmfv, dmgrad, dmCell;
+  DM dmRedist, dmfv, dmgrad, dmCell, refTree;
   PetscFV fv;
   PetscInt nvecs, v, cStart, cEnd, cEndInterior;
   PetscMPIInt size;
@@ -568,6 +568,12 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMDestroy(&dmRedist);CHKERRQ(ierr);
   ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
   ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
+  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+  if (refTree) {
+    PetscDS ds;
+    ierr = DMGetDS(dmfv,&ds);CHKERRQ(ierr);
+    ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
+  }
   ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
   nvecs = user->dim * (user->dim+1) / 2;
