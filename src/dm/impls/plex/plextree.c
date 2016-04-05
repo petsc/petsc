@@ -3111,6 +3111,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
       PetscDualSpace dsp;
       PetscClassId   classId;
       PetscScalar    *pointMat;
+      PetscInt       *matRows, *matCols;
       PetscInt       pO = PETSC_MIN_INT;
       const PetscInt *depthNumDof;
 
@@ -3130,10 +3131,10 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         ierr = PetscSectionGetOffset(section,p,&selfOff);CHKERRQ(ierr);
         fComp = 1;
       }
-      numSelfShapes  = numSelfDof / fComp;
+      numSelfShapes  = numSelfDof  / fComp;
       numChildShapes = numChildDof / fComp;
 
-      /* find a cell whose star contains p */
+      /* find a cell whose closure contains p */
       if (p >= cStart && p < cEnd) {
         parentCell = p;
       }
@@ -3174,12 +3175,38 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
       ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(disc,&classId);CHKERRQ(ierr);
       ierr = DMGetWorkArray(refTree, numSelfShapes * numChildShapes, PETSC_SCALAR,&pointMat);CHKERRQ(ierr);
+      ierr = DMGetWorkArray(refTree, numSelfShapes + numChildShapes, PETSC_INT,&matRows);CHKERRQ(ierr);
+      matCols = matRows + numSelfShapes;
+      for (i = 0; i < numSelfShapes; i++) {
+        matRows[i] = selfOff + i * fComp;
+      }
+      {
+        PetscInt colOff = 0;
+
+        for (i = 0; i < numChildren; i++) {
+          PetscInt child = children[i];
+          PetscInt dof, off, j;
+
+          if (numSecFields) {
+            ierr = PetscSectionGetFieldDof(section,child,f,&dof);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldOffset(section,child,f,&off);CHKERRQ(ierr);
+          }
+          else {
+            ierr = PetscSectionGetDof(section,child,&dof);CHKERRQ(ierr);
+            ierr = PetscSectionGetOffset(section,child,&off);CHKERRQ(ierr);
+          }
+
+          for (j = 0; j < dof / fComp; j++) {
+            matCols[colOff++] = off + j * fComp;
+          }
+        }
+      }
       if (classId == PETSCFE_CLASSID) {
         PetscFE        fe = (PetscFE) disc;
         PetscInt       fSize;
 
         ierr = PetscFEGetDualSpace(fe,&dsp);CHKERRQ(ierr);
-        ierr = PetscDualSpaceGetDimension(dsp,&fSize);
+        ierr = PetscDualSpaceGetDimension(dsp,&fSize);CHKERRQ(ierr);
         for (i = 0; i < numSelfShapes; i++) { /* for every shape function */
           PetscQuadrature q;
           PetscInt        dim, numPoints, j, k;
@@ -3187,17 +3214,18 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           const PetscReal *weights;
           PetscInt        *closure = NULL;
           PetscInt        numClosure;
-          PetscInt        iOff = selfOff + fComp * i;
+          PetscInt        parentCellShapeDof = cellShapeOff + (pO < 0 ? (numSelfShapes - 1 - i) : i);
           PetscReal       *Bparent;
 
-          PetscDualSpaceGetFunctional(dsp,cellShapeOff + (p0 < 0 ? (numSelfShapes - 1 - i) : i),&q);CHKERRQ(ierr);
-          PetscQuadratureGetData(q,&dim,&numPoints,&points,&weights);CHKERRQ(ierr);
-          ierr = PetscFEGetTabulation(fe,numPoints,points,&Bparent,NULL,NULL);CHKERRQ(ierr);
+          ierr = PetscDualSpaceGetFunctional(dsp,parentCellShapeDof,&q);CHKERRQ(ierr);
+          ierr = PetscQuadratureGetData(q,&dim,&numPoints,&points,&weights);CHKERRQ(ierr);
+          ierr = PetscFEGetTabulation(fe,numPoints,points,&Bparent,NULL,NULL);CHKERRQ(ierr); /* I'm expecting a nodal basis: weights[:]' * Bparent[:,cellShapeDof] = 1. */
           for (k = 0; k < numChildShapes; k++) {
             pointMat[numChildShapes * i + k] = 0.;
           }
-          for (j = 0; j < numPoints; j++) { /* locate the point in a cell*/
+          for (j = 0; j < numPoints; j++) {
             PetscInt          childCell = -1;
+            PetscReal         parentValAtPoint;
             const PetscReal   *pointReal = &points[dim * j];
             const PetscScalar *point;
             PetscReal         *Bchild;
@@ -3213,7 +3241,9 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             point = pointReal;
 #endif
 
-            for (k = 0; k < numChildren; k++) {
+            parentValAtPoint = Bparent[(fSize * j + parentCellShapeDof) * fComp];
+
+            for (k = 0; k < numChildren; k++) { /* locate the point in a child's star cell*/
               PetscInt child = children[k];
               PetscInt *star = NULL;
               PetscInt numStar, s;
@@ -3237,7 +3267,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
 
             ierr = PetscFEGetTabulation(fe,1,pointRef,&Bchild,NULL,NULL);CHKERRQ(ierr);
             ierr = DMPlexGetTransitiveClosure(refTree,childCell,PETSC_TRUE,&numClosure,&closure);CHKERRQ(ierr);
-            for (k = 0, pointMatOff = 0; k < numChildren; k++) {
+            for (k = 0, pointMatOff = 0; k < numChildren; k++) { /* point is located in cell => child dofs support at point are in closure of cell */
               PetscInt child = children[k], childDepth, childDof, childOff, childO = PETSC_MIN_INT;
               PetscInt l;
 
@@ -3263,13 +3293,10 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
                 ierr = PetscSectionGetOffset(cSection,child,&childOff);CHKERRQ(ierr);
               }
               for (l = 0; l < childDof; l++) {
-                PetscInt    lOff       = childOff + fComp * l;
-                PetscInt    cellDof    = childCellShapeOff + (childO ? (childDof - 1 - l) : l);
-                PetscReal   valAtPoint = Bchild[cellDof];
-                PetscScalar interpItoL;
+                PetscInt    childCellDof    = childCellShapeOff + (childO ? (childDof - 1 - l) : l);
+                PetscReal   childValAtPoint = Bchild[childCellDof * fComp];
 
-                ierr = MatGetValue(cMat,lOff,iOff,&interpItoL);CHKERRQ(ierr);
-                pointMat[i * numChildShapes + pointMatOff + l] += weight[j] * Bparent[
+                pointMat[i * numChildShapes + pointMatOff + l] += weights[j] * parentValAtPoint * childValAtPoint;
               }
               pointMatOff += childDof;
             }
@@ -3279,17 +3306,44 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           ierr = PetscFERestoreTabulation(fe,numPoints,points,&Bparent,NULL,NULL);CHKERRQ(ierr);
         }
       }
-      else if (classId == PETSCFV_CLASSID) {
-        PetscFV fv = (PetscFV) disc;
+      else if (classId == PETSCFV_CLASSID) { /* just the volume-weighted averages of the children */
+        PetscInt  childShapeOff;
+        PetscReal parentVol;
+
+        ierr = DMPlexComputeCellGeometryFVM(refTree, p, &parentVol, NULL, NULL);CHKERRQ(ierr);
+        for (i = 0, childShapeOff = 0; i < numChildren; i++) {
+          PetscInt  child = children[i];
+          PetscReal childVol;
+
+          if (child < cStart || child >= cEnd) continue;
+          ierr = DMPlexComputeCellGeometryFVM(refTree, child, &childVol, NULL, NULL);CHKERRQ(ierr);
+          pointMat[childShapeOff] = childVol / parentVol;
+          childShapeOff++;
+        }
       }
       else {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported discretization object");CHKERRQ(ierr);
       }
+      /* Insert pointMat into mat */
+      for (i = 0; i < fComp; i++) {
+        PetscInt j;
+        ierr = MatSetValues(mat,numSelfShapes,matRows,numChildShapes,matCols,pointMat,INSERT_VALUES);CHKERRQ(ierr);
+
+        for (j = 0; j < numSelfShapes; j++) {
+          matRows[j]++;
+        }
+        for (j = 0; j < numChildShapes; j++) {
+          matCols[j]++;
+        }
+      }
+      ierr = DMRestoreWorkArray(refTree, numSelfShapes + numChildShapes, PETSC_INT,&matRows);CHKERRQ(ierr);
       ierr = DMRestoreWorkArray(refTree, numSelfShapes * numChildShapes, PETSC_SCALAR,&pointMat);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree6(v0,v0parent,vtmp,J,Jparent,invJparent);CHKERRQ(ierr);
+  ierr = PetscFree6(v0,v0parent,vtmp,J,Jparent,invJ);CHKERRQ(ierr);
   ierr = PetscFree2(pointScalar,pointRef);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *inj = mat;
   PetscFunctionReturn(0);
 }
