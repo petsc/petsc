@@ -975,6 +975,7 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
  . seealso: DMSwarmSetMigrateType(), DMSwarmSetCollectType()
  
 @*/
+#undef __FUNCT__
 #define __FUNCT__ "DMSwarmSetType"
 PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM dm,DMSwarmType stype)
 {
