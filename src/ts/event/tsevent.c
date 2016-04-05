@@ -157,7 +157,11 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   TSEvent        event;
   PetscInt       i;
   PetscBool      flg;
-  PetscReal      tol=1e-6;
+#if defined PETSC_USE_REAL_SINGLE
+  PetscReal      tol=1e-4;
+#else
+  PetscReal      to=1e-6;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -322,14 +326,14 @@ PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t
   PetscReal scal=1.0;
   if(PetscRealPart(fleft)*PetscRealPart(f) < 0) {
     if(side == 1) {
-      scal = 1.0 - PetscRealPart(f)/PetscRealPart(fright);
-      if(scal < 0) scal = 0.5;
+      scal = (PetscRealPart(fright) - PetscRealPart(f))/PetscRealPart(fright);
+      if(scal < PETSC_SMALL) scal = 0.5;
     }
     dt = PetscMin(dt,(scal*PetscRealPart(fleft)*t - PetscRealPart(f)*tleft)/(scal*PetscRealPart(fleft) - PetscRealPart(f)) - tleft);
   } else {
     if(side == -1) {
-      scal = 1.0 - PetscRealPart(f)/PetscRealPart(fleft);
-      if(scal < 0) scal = 0.5;
+      scal = (PetscRealPart(fleft) - PetscRealPart(f))/PetscRealPart(fleft);
+      if(scal < PETSC_SMALL) scal = 0.5;
     }
     dt = PetscMin(dt,(PetscRealPart(f)*tright - scal*PetscRealPart(fright)*t)/(PetscRealPart(f) - scal*PetscRealPart(fright)) - t);
   }
