@@ -16,6 +16,8 @@ swarm_ex1: swarm_ex1.o   chkopts
 	-${CLINKER} -o swarm_ex1 swarm_ex1.o  ${PETSC_DM_LIB}
 swarm_ex2: swarm_ex2.o   chkopts
 	-${CLINKER} -o swarm_ex2 swarm_ex2.o  ${PETSC_DM_LIB}
+swarm_ex3: swarm_ex3.o   chkopts
+	-${CLINKER} -o swarm_ex3 swarm_ex3.o  ${PETSC_DM_LIB}
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
