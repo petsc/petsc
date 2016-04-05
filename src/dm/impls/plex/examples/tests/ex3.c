@@ -28,6 +28,7 @@ typedef struct {
   PetscBool tree;              /* Test tree routines */
   PetscBool testFEjacobian;    /* Test finite element Jacobian assembly */
   PetscBool testFVgrad;        /* Test finite difference gradient routine */
+  PetscBool testInjector;      /* Test finite element injection routines */
   PetscInt  treeCell;          /* Cell to refine in tree test */
   PetscReal constants[3];      /* Constant values for each dimension */
 } AppCtx;
@@ -142,6 +143,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->treeCell        = 0;
   options->testFEjacobian  = PETSC_FALSE;
   options->testFVgrad      = PETSC_FALSE;
+  options->testInjector    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -160,6 +162,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -499,6 +502,30 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     ierr = MatNullSpaceDestroy(&sp);CHKERRQ(ierr);
     ierr = MatDestroy(&E);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TestInjector"
+static PetscErrorCode TestInjector(DM dm, AppCtx *user)
+{
+  DM             refTree;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+  if (refTree) {
+    Mat inj;
+
+    ierr = DMPlexComputeInjectorReferenceTree(refTree,&inj);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)inj,"Reference Tree Injector");CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = MatView(inj,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(&inj);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -866,6 +893,9 @@ int main(int argc, char **argv)
   }
   if (user.testFVgrad) {
     ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);
+  }
+  if (user.testInjector) {
+    ierr = TestInjector(dm, &user);CHKERRQ(ierr);
   }
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
   if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {
