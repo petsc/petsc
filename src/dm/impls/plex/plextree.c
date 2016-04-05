@@ -3155,6 +3155,17 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         ierr = DMPlexRestoreTransitiveClosure(refTree,p,PETSC_FALSE,&numStar,&star);CHKERRQ(ierr);
       }
       /* determine the offset of p's shape functions withing parentCell's shape functions */
+      ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(disc,&classId);CHKERRQ(ierr);
+      if (classId == PETSCFE_CLASSID) {
+        ierr = PetscFEGetDualSpace((PetscFE)disc,&dsp);CHKERRQ(ierr);
+      }
+      else if (classId == PETSCFV_CLASSID) {
+        ierr = PetscFVGetDualSpace((PetscFV)disc,&dsp);CHKERRQ(ierr);
+      }
+      else {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported discretization object");CHKERRQ(ierr);
+      }
       ierr = PetscDualSpaceGetNumDof(dsp,&depthNumDof);CHKERRQ(ierr);
       {
         PetscInt *closure = NULL;
@@ -3172,8 +3183,6 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         ierr = DMPlexRestoreTransitiveClosure(refTree,parentCell,PETSC_TRUE,&numClosure,&closure);CHKERRQ(ierr);
       }
 
-      ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
-      ierr = PetscObjectGetClassId(disc,&classId);CHKERRQ(ierr);
       ierr = DMGetWorkArray(refTree, numSelfShapes * numChildShapes, PETSC_SCALAR,&pointMat);CHKERRQ(ierr);
       ierr = DMGetWorkArray(refTree, numSelfShapes + numChildShapes, PETSC_INT,&matRows);CHKERRQ(ierr);
       matCols = matRows + numSelfShapes;
@@ -3188,12 +3197,12 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           PetscInt dof, off, j;
 
           if (numSecFields) {
-            ierr = PetscSectionGetFieldDof(section,child,f,&dof);CHKERRQ(ierr);
-            ierr = PetscSectionGetFieldOffset(section,child,f,&off);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldDof(cSection,child,f,&dof);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldOffset(cSection,child,f,&off);CHKERRQ(ierr);
           }
           else {
-            ierr = PetscSectionGetDof(section,child,&dof);CHKERRQ(ierr);
-            ierr = PetscSectionGetOffset(section,child,&off);CHKERRQ(ierr);
+            ierr = PetscSectionGetDof(cSection,child,&dof);CHKERRQ(ierr);
+            ierr = PetscSectionGetOffset(cSection,child,&off);CHKERRQ(ierr);
           }
 
           for (j = 0; j < dof / fComp; j++) {
@@ -3268,7 +3277,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             ierr = PetscFEGetTabulation(fe,1,pointRef,&Bchild,NULL,NULL);CHKERRQ(ierr);
             ierr = DMPlexGetTransitiveClosure(refTree,childCell,PETSC_TRUE,&numClosure,&closure);CHKERRQ(ierr);
             for (k = 0, pointMatOff = 0; k < numChildren; k++) { /* point is located in cell => child dofs support at point are in closure of cell */
-              PetscInt child = children[k], childDepth, childDof, childOff, childO = PETSC_MIN_INT;
+              PetscInt child = children[k], childDepth, childDof, childO = PETSC_MIN_INT;
               PetscInt l;
 
               ierr = DMLabelGetValue(depth,child,&childDepth);CHKERRQ(ierr);
@@ -3286,12 +3295,6 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
                 pointMatOff += childDof;
                 continue; /* child is not in the closure of the cell: has nothing to contribute to this point */
               }
-              if (numSecFields) {
-                ierr = PetscSectionGetFieldOffset(cSection,child,f,&childOff);CHKERRQ(ierr);
-              }
-              else {
-                ierr = PetscSectionGetOffset(cSection,child,&childOff);CHKERRQ(ierr);
-              }
               for (l = 0; l < childDof; l++) {
                 PetscInt    childCellDof    = childCellShapeOff + (childO ? (childDof - 1 - l) : l);
                 PetscReal   childValAtPoint = Bchild[childCellDof * fComp];
@@ -3306,7 +3309,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           ierr = PetscFERestoreTabulation(fe,numPoints,points,&Bparent,NULL,NULL);CHKERRQ(ierr);
         }
       }
-      else if (classId == PETSCFV_CLASSID) { /* just the volume-weighted averages of the children */
+      else { /* just the volume-weighted averages of the children */
         PetscInt  childShapeOff;
         PetscReal parentVol;
 
@@ -3320,9 +3323,6 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           pointMat[childShapeOff] = childVol / parentVol;
           childShapeOff++;
         }
-      }
-      else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported discretization object");CHKERRQ(ierr);
       }
       /* Insert pointMat into mat */
       for (i = 0; i < fComp; i++) {
