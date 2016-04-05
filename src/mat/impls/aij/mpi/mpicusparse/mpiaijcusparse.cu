@@ -70,14 +70,14 @@ PetscErrorCode  MatCreateVecs_MPIAIJCUSPARSE(Mat mat,Vec *right,Vec *left)
     ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
     ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
-    ierr = VecSetType(*right,VECCUSP);CHKERRQ(ierr);
+    ierr = VecSetType(*right,VECCUDA);CHKERRQ(ierr);
     ierr = VecSetLayout(*right,mat->cmap);CHKERRQ(ierr);
   }
   if (left) {
     ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
     ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
-    ierr = VecSetType(*left,VECCUSP);CHKERRQ(ierr);
+    ierr = VecSetType(*left,VECCUDA);CHKERRQ(ierr);
     ierr = VecSetLayout(*left,mat->rmap);CHKERRQ(ierr);
 
 
@@ -118,7 +118,7 @@ PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMult_MPIAIJCUSPARSE"
+#define __FUNCT__ "MatMultTranspose_MPIAIJCUSPARSE"
 PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   /* This multiplication sequence is different sequence
@@ -221,8 +221,8 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   try {
     ierr = MatCUSPARSEClearHandle(a->A);CHKERRQ(ierr);
     ierr = MatCUSPARSEClearHandle(a->B);CHKERRQ(ierr);
-    stat = cusparseDestroy(cusparseStruct->handle);CHKERRCUSP(stat);
-    err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUSP(err);
+    stat = cusparseDestroy(cusparseStruct->handle);CHKERRCUDA(stat);
+    err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUDA(err);
     delete cusparseStruct;
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSPARSE error: %s", ex);
@@ -252,8 +252,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   cusparseStruct                      = (Mat_MPIAIJCUSPARSE*)a->spptr;
   cusparseStruct->diagGPUMatFormat    = MAT_CUSPARSE_CSR;
   cusparseStruct->offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
-  stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUSP(stat);
-  err = cudaStreamCreate(&(cusparseStruct->stream));CHKERRCUSP(err);
+  stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUDA(stat);
+  err = cudaStreamCreate(&(cusparseStruct->stream));CHKERRCUDA(err);
 
   A->ops->getvecs        = MatCreateVecs_MPIAIJCUSPARSE;
   A->ops->mult           = MatMult_MPIAIJCUSPARSE;

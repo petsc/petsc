@@ -391,9 +391,10 @@ struct _p_Mat {
   PetscBool              subsetoffprocentries;
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
+#elif defined(PETSC_HAVE_VIENNACL)
   PetscViennaCLFlag      valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+#elif defined(PETSC_HAVE_VECCUDA)
+  PetscCUDAFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   MatSolverPackage       solvertype;

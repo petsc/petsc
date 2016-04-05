@@ -12,6 +12,7 @@
 #include <petsc/private/vecimpl.h>
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
+#include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 const char *const MatCUSPStorageFormats[] = {"CSR","DIA","ELL","MatCUSPStorageFormat","MAT_CUSP_",0};
 

@@ -14,7 +14,7 @@
 #include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_CUDA)
-#include <cublas.h>
+#include <cublas_v2.h>
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -251,20 +251,21 @@ extern PetscErrorCode  PetscInitializeSAWs(const char[]);
 PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined (PETSC_USE_NARGS)
-  short       flg,i;
+  short          flg,i;
 #else
-  int         i;
+  int            i;
 #if !defined(PETSC_HAVE_PXFGETARG_NEW) && !defined (PETSC_HAVE_PXFGETARG_NEW) && !defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
-  int         j;
+  int            j;
 #endif
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool   flg2;
+  PetscBool      flg2;
+  cublasStatus_t cberr;
 #endif
-  int         flag;
-  PetscMPIInt size;
-  char        *t1,name[256],hostname[64];
-  PetscMPIInt f_petsc_comm_world;
+  int            flag;
+  PetscMPIInt    size;
+  char           *t1,name[256],hostname[64];
+  PetscMPIInt    f_petsc_comm_world;
 
   *ierr = PetscMemzero(name,256); if (*ierr) return;
   if (PetscInitializeCalled) {*ierr = 0; return;}
@@ -475,7 +476,10 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
 #if defined(PETSC_HAVE_CUDA)
   flg2  = PETSC_TRUE;
   *ierr = PetscOptionsGetBool(NULL,NULL,"-cublas",&flg2,NULL);
-  if (flg2) cublasInit();
+  if (flg2) {
+    cberr = cublasCreate(&cublasv2handle);
+    if (((int)cberr) != (int)CUBLAS_STATUS_SUCCESS) {(*PetscErrorPrintf)("PetscInitialize:CUBLAS error %d\n",cberr);return;}
+  }
 #endif
 }
 
