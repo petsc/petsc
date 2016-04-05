@@ -260,7 +260,9 @@ static PetscErrorCode DMFTopologyDestroy_pforest(DMFTopology_pforest **topo)
     *topo = NULL;
     PetscFunctionReturn(0);
   }
-  PetscStackCallP4est(p4est_geometry_destroy,((*topo)->geom));
+  if ((*topo)->geom) {
+    PetscStackCallP4est(p4est_geometry_destroy,((*topo)->geom));
+  }
   PetscStackCallP4est(p4est_connectivity_destroy,((*topo)->conn));
   ierr = PetscFree((*topo)->tree_face_to_uniq);CHKERRQ(ierr);
   ierr = PetscFree(*topo);CHKERRQ(ierr);
@@ -296,7 +298,7 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscIn
 
     vertices[i] = B[2 * j] + (vertices[i]/N[j]) * (B[2 * j + 1] - B[2 * j]);
   }
-  PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
+  (*topo)->geom = NULL;
   ierr = PforestConnectivityEnumerateFacets((*topo)->conn,&(*topo)->tree_face_to_uniq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -347,9 +349,8 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
 
     (*topo)->refct = 1;
     PetscStackCallP4estReturn((*topo)->conn,p4est_connectivity_new_byname,(name));
-#if !defined(P4_TO_P8)
-    PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
-#else
+    (*topo)->geom = NULL;
+#if defined(P4_TO_P8)
     if (isShell) {
       PetscReal R2 = 1., R1 = .55;
 
@@ -368,9 +369,6 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
         ierr = PetscOptionsGetReal(((PetscObject)dm)->options,prefix,"-dm_p4est_sphere_core_radius",&R0,NULL);CHKERRQ(ierr);
       }
       PetscStackCallP4estReturn((*topo)->geom,p8est_geometry_new_sphere,((*topo)->conn,R2,R1,R0));
-    }
-    else {
-      PetscStackCallP4estReturn((*topo)->geom,p4est_geometry_new_connectivity,((*topo)->conn));
     }
 #endif
     ierr = PforestConnectivityEnumerateFacets((*topo)->conn,&(*topo)->tree_face_to_uniq);CHKERRQ(ierr);
@@ -555,6 +553,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = PetscNewLog(dm,&topo);CHKERRQ(ierr);
       topo->refct             = 1;
       topo->conn              = conn;
+      topo->geom              = NULL;
       {
         PetscErrorCode (*map) (PetscInt,const PetscReal[],PetscReal[],void *);
         void *mapCtx;
@@ -575,9 +574,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           geom->X = GeometryMapping_pforest;
           geom->destroy = GeometryDestroy_pforest;
           topo->geom = geom;
-        }
-        else {
-          PetscStackCallP4estReturn(topo->geom,p4est_geometry_new_connectivity,(conn));
         }
       }
       topo->tree_face_to_uniq = tree_face_to_uniq;
@@ -849,6 +845,7 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   char              *filenameStrip = NULL;
   PetscBool         hasExt;
   size_t            len;
+  p4est_geometry_t  *geom = pforest->topo->geom;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -868,7 +865,10 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
       filenameStrip[len-4]='\0';
       name = filenameStrip;
     }
-    PetscStackCallP4est(p4est_vtk_write_all,(pforest->forest,pforest->topo->geom,(double)vtkScale,
+    if (!pforest->topo->geom) {
+      PetscStackCallP4estReturn(geom,p4est_geometry_new_connectivity,(pforest->topo->conn));
+    }
+    PetscStackCallP4est(p4est_vtk_write_all,(pforest->forest,geom,(double)vtkScale,
                                              1, /* write tree */
                                              1, /* write level */
                                              1, /* write rank */
@@ -876,6 +876,9 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
                                              0, /* no scalar fields */
                                              0, /* no vector fields */
                                              name));
+    if (!pforest->topo->geom) {
+      PetscStackCallP4est(p4est_geometry_destroy,(geom));
+    }
     ierr = PetscFree(filenameStrip);CHKERRQ(ierr);
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
@@ -3072,7 +3075,7 @@ static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, PetscErrorCode (*map
                 for (l = 0; l < P4EST_DIM; l++) {
                   prod *= (k & (1 << l)) ? eta[l] : (1. - eta[l]);
                 }
-                for (l = 0; l < 3; k++) {
+                for (l = 0; l < 3; l++) {
                   coordGuess[l] += prod * treeCoords[k][l];
                 }
               }
@@ -3292,9 +3295,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (leaves);
     sc_array_destroy (remotes);
 
-    if (pforest->topo->geom) { /* map coordinates */
-      ierr = DMPforestMapCoordinates(dm,newPlex);CHKERRQ(ierr);
-    }
+    ierr = DMPforestMapCoordinates(dm,newPlex);CHKERRQ(ierr);
 
     pforest->plex = newPlex;
 
