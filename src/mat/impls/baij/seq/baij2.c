@@ -173,7 +173,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   IS             is1,is2;
   PetscErrorCode ierr;
-  PetscInt       *vary,*iary,nrows,ncols,i,bs=A->rmap->bs,count,maxmnbs;
+  PetscInt       *vary,*iary,nrows,ncols,i,bs=A->rmap->bs,count,maxmnbs,j;
   const PetscInt *irow,*icol;
 
   PetscFunctionBegin;
@@ -193,7 +193,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   }
   count = 0;
   for (i=0; i<nrows; i++) {
-    PetscInt j = irow[i] / bs;
+    j = irow[i] / bs;
     if ((vary[j]--)==bs) iary[count++] = j;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
@@ -205,7 +205,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   }
   count = 0;
   for (i=0; i<ncols; i++) {
-    PetscInt j = icol[i] / bs;
+    j = icol[i] / bs;
     if ((vary[j]--)==bs) iary[count++] = j;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);

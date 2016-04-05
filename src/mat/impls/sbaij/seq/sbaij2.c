@@ -218,14 +218,28 @@ PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat A,PetscInt n,const IS irow[],const
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1(n+1,B);CHKERRQ(ierr);
-  }
-
+  ierr = MatGetSubMatrices_SeqBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = MatGetSubMatrix_SeqSBAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
+    if (!flg) { 
+      Mat Bseq = *B[i];
+      /* Bseq is non-symmetric SBAIJ matrix, only used internally by PETSc.
+         Zero some ops' to avoid invalid usse */
+      ierr = MatSetOption(Bseq,MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatSetOption(Bseq,MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
+      Bseq->ops->mult                   = 0;
+      Bseq->ops->multadd                = 0;
+      Bseq->ops->multtranspose          = 0;
+      Bseq->ops->multtransposeadd       = 0;
+      Bseq->ops->lufactor               = 0;
+      Bseq->ops->choleskyfactor         = 0;
+      Bseq->ops->lufactorsymbolic       = 0;
+      Bseq->ops->choleskyfactorsymbolic = 0;
+      Bseq->ops->getinertia             = 0;
+    }
   }
   PetscFunctionReturn(0);
 }
