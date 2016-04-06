@@ -10,7 +10,7 @@ class Configure(config.package.Package):
                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
-    self.complex          = 0   # Currently CUDA with complex numbers is not supported
+    self.complex          = 1
     self.cudaArch         = ''
     self.CUDAVersion      = '4200' # Minimal cuda version is 4.2
     self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)

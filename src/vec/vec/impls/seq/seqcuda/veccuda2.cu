@@ -2,7 +2,6 @@
    Implements the sequential cuda vectors.
 */
 
-#define PETSC_SKIP_COMPLEX
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
@@ -372,6 +371,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
 #define MDOT_WORKGROUP_SIZE 128
 #define MDOT_WORKGROUP_NUM  128
 
+#if !defined(PETSC_USE_COMPLEX)
 // M = 2:
 __global__ void VecMDot_SeqCUDA_kernel2(const PetscScalar *x,const PetscScalar *y0,const PetscScalar *y1,
                                         PetscInt size, PetscScalar *group_results)
@@ -565,6 +565,7 @@ __global__ void VecMDot_SeqCUDA_kernel8(const PetscScalar *x,const PetscScalar *
     group_results[blockIdx.x + 7 * gridDim.x] = tmp_buffer[7 * MDOT_WORKGROUP_SIZE];
   }
 }
+#endif /* !defined(PETSC_USE_COMPLEX) */
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMDot_SeqCUDA"
@@ -761,7 +762,7 @@ PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
   PetscFunctionBegin;
   ierr = VecCUDAGetArrayWrite(xin,&xarray);CHKERRQ(ierr);
   if (alpha == (PetscScalar)0.0) {
-    err = cudaMemset(xarray,alpha,n*sizeof(PetscScalar));CHKERRCUDA(err);
+    err = cudaMemset(xarray,0,n*sizeof(PetscScalar));CHKERRCUDA(err);
   } else {
     try {
       xptr = thrust::device_pointer_cast(xarray);
