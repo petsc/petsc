@@ -160,7 +160,7 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
 #if defined PETSC_USE_REAL_SINGLE
   PetscReal      tol=1e-4;
 #else
-  PetscReal      to=1e-6;
+  PetscReal      tol=1e-6;
 #endif
 
   PetscFunctionBegin;
