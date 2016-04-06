@@ -24,7 +24,7 @@ static PetscErrorCode DMForestPackageFinalize(void)
   PetscFunctionBegin;
   while (link) {
     oldLink = link;
-    ierr = PetscFree(oldLink->name);
+    ierr = PetscFree(oldLink->name);CHKERRQ(ierr);
     link = oldLink->next;
     ierr = PetscFree(oldLink);CHKERRQ(ierr);
   }

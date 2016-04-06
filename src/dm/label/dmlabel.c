@@ -712,6 +712,24 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelHasStratum"
+PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exists)
+{
+  PetscInt v;
+
+  PetscFunctionBegin;
+  PetscValidPointer(exists, 3);
+  *exists = PETSC_FALSE;
+  for (v = 0; v < label->numStrata; ++v) {
+    if (label->stratumValues[v] == value) {
+      *exists = PETSC_TRUE;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelGetStratumSize"
 PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *size)
 {
@@ -970,9 +988,9 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   /* Turn leafStrata into indices rather than stratum values */
   offset = 0;
   ierr = PetscHashIGetKeys(stratumHash, &offset, (*labelNew)->stratumValues);CHKERRQ(ierr);
-  for (s = 0; s < (*labelNew)->numStrata; ++s) {
-    for (p = 0; p < size; ++p) {
-      if (leafStrata[p] == (*labelNew)->stratumValues[s]) leafStrata[p] = s;
+  for (p = 0; p < size; ++p) {
+    for (s = 0; s < (*labelNew)->numStrata; ++s) {
+      if (leafStrata[p] == (*labelNew)->stratumValues[s]) {leafStrata[p] = s; break;}
     }
   }
   /* Rebuild the point strata on the receiver */

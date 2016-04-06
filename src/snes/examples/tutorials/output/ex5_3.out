@@ -6,7 +6,6 @@ SNES Object: 2 MPI processes
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=0.01, absolute=-1., solution=1e-08
   total number of linear solver iterations=12
-  total number of function evaluations=105
   norm schedule ALWAYS
   total number of grid sequence refinements=2
   SNESLineSearch Object:   2 MPI processes

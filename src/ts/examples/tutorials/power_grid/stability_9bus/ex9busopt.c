@@ -1,4 +1,4 @@
-static char help[] = "Power grid stability analysis of WECC 9 bus system.\n\
+static char help[] = "Application of adjoint sensitivity analysis for power grid stability analysis of WECC 9 bus system.\n\
 This example is based on the 9-bus (node) example given in the book Power\n\
 Systems Dynamics and Stability (Chapter 7) by P. Sauer and M. A. Pai.\n\
 The power grid in this example consists of 9 buses (nodes), 3 generators,\n\
@@ -6,37 +6,12 @@ The power grid in this example consists of 9 buses (nodes), 3 generators,\n\
 in current balance form using rectangular coordiantes.\n\n";
 
 /*
-   The equations for the stability analysis are described by the DAE
-
-   \dot{x} = f(x,y,t)
-     0     = g(x,y,t)
-
-   where the generators are described by differential equations, while the algebraic
-   constraints define the network equations.
-
-   The generators are modeled with a 4th order differential equation describing the electrical
-   and mechanical dynamics. Each generator also has an exciter system modeled by 3rd order
-   diff. eqns. describing the exciter, voltage regulator, and the feedback stabilizer
-   mechanism.
-
-   The network equations are described by nodal current balance equations.
-    I(x,y) - Y*V = 0
-
-   where:
-    I(x,y) is the current injected from generators and loads.
-      Y    is the admittance matrix, and
-      V    is the voltage vector
+  This code demonstrates how to solve a DAE-constrained optimization problem with TAO, TSAdjoint and TS.
+  The objectivie is to find optimal parameter PG for each generator to minizie the frequency violations due to faults.
+  The problem features discontinuities and a cost function in integral form.
+  The gradient is computed with the discrete adjoint of an implicit theta method, see ex9busadj.c for details.
 */
 
-/*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
 #include <petsctao.h>
 #include <petscts.h>
 #include <petscdm.h>
@@ -365,8 +340,8 @@ PetscErrorCode DICDPFiniteDifference(Vec X,Vec *DICDP, Userctx *user)
   for (i=0;i<ngen;i++) {
     for (j=0;j<3;j++) PGv[j] = PG[j];
     PGv[i] = PG[i]+eps;
-    ierr = InitialGuess(Y,user,PGv);CHKERRQ(ierr); 
-    ierr = InitialGuess(X,user,PG);CHKERRQ(ierr); 
+    ierr = InitialGuess(Y,user,PGv);CHKERRQ(ierr);
+    ierr = InitialGuess(X,user,PG);CHKERRQ(ierr);
 
     ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
     ierr = VecScale(Y,1./eps);CHKERRQ(ierr);
@@ -392,7 +367,7 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
   PetscScalar    Id,Iq;  /* Generator dq axis currents */
   PetscScalar    Vd,Vq,SE;
   PetscScalar    IGr,IGi,IDr,IDi;
-  PetscScalar    Zdq_inv[4],det; 
+  PetscScalar    Zdq_inv[4],det;
   PetscScalar    PD,QD,Vm0,*v0;
   PetscInt       k;
 
@@ -907,7 +882,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat 
 static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A, void *ctx0)
 {
   PetscErrorCode ierr;
-  PetscScalar    a; 
+  PetscScalar    a;
   PetscInt       row,col;
   Userctx        *ctx=(Userctx*)ctx0;
 
@@ -917,15 +892,15 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A, void *ctx0)
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
 
     for (col=0;col<3;col++) {
-      a    = 1.0/M[col];    
+      a    = 1.0/M[col];
       row  = 9*col+3;
       ierr = MatSetValues(A,1,&row,1,&col,&a,INSERT_VALUES);CHKERRQ(ierr);
     }
 
     ctx->jacp_flg = PETSC_FALSE;
- 
+
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -983,7 +958,7 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
   for (i=0;i<ngen;i++) {
     dgen[idx+3] = 0.;
     if (xgen[idx+3]/(2.*PETSC_PI) > user->freq_u) dgen[idx+3] = user->pow*PetscPowScalarInt(xgen[idx+3]/(2.*PETSC_PI)-user->freq_u,user->pow-1)/(2.*PETSC_PI);
-    if (xgen[idx+3]/(2.*PETSC_PI) < user->freq_l) dgen[idx+3] = user->pow*PetscPowScalarInt(user->freq_l-xgen[idx+3]/(2.*PETSC_PI),user->pow-1)/(-2.*PETSC_PI); 
+    if (xgen[idx+3]/(2.*PETSC_PI) < user->freq_l) dgen[idx+3] = user->pow*PetscPowScalarInt(user->freq_l-xgen[idx+3]/(2.*PETSC_PI),user->pow-1)/(-2.*PETSC_PI);
     idx += 9;
   }
 
@@ -1140,7 +1115,7 @@ int main(int argc,char **argv)
   ierr = TaoSetInitialVector(tao,p);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user);CHKERRQ(ierr);
-  
+
   /* Set bounds for the optimization */
   ierr = VecDuplicate(p,&lowerb);CHKERRQ(ierr);
   ierr = VecDuplicate(p,&upperb);CHKERRQ(ierr);
@@ -1177,7 +1152,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&user.dmpgrid);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_diff);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_alg);CHKERRQ(ierr);
- 
+
   ierr = MatDestroy(&user.J);CHKERRQ(ierr);
   ierr = MatDestroy(&user.Jacp);CHKERRQ(ierr);
   ierr = MatDestroy(&user.Ybus);CHKERRQ(ierr);
@@ -1371,7 +1346,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobian(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 
+  ierr = TSAdjointSetRHSJacobian(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
   ierr = TSSetCostIntegrand(ts,1,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,

@@ -158,7 +158,7 @@ static PetscErrorCode  PetscStrdup(const char s[],char *t[])
   PetscFunctionBegin;
   if (s) {
     ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
-    tmp = (char*) malloc((len+1)*sizeof(char*));
+    tmp = (char*) malloc((len+1)*sizeof(char));
     if (!tmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"No memory to duplicate string");
     ierr = PetscStrcpy(tmp,s);CHKERRQ(ierr);
   }

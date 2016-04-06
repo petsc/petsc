@@ -79,14 +79,14 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 
       // Create temporary vector for v += A*x:
       if (viennaclstruct->tempvec) {
-        if (viennaclstruct->tempvec->size() != static_cast<std::size_t>(a->nz)) {
+        if (viennaclstruct->tempvec->size() != static_cast<std::size_t>(A->rmap->n)) {
           delete (ViennaCLVector*)viennaclstruct->tempvec;
-          viennaclstruct->tempvec = new ViennaCLVector(a->nz);
+          viennaclstruct->tempvec = new ViennaCLVector(A->rmap->n);
         } else {
           viennaclstruct->tempvec->clear();
         }
       } else {
-        viennaclstruct->tempvec = new ViennaCLVector(a->nz);
+        viennaclstruct->tempvec = new ViennaCLVector(A->rmap->n);
       }
 
       A->valid_GPU_matrix = PETSC_VIENNACL_BOTH;
@@ -217,7 +217,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
     }
     ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayWrite(yy,&ygpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2.0*a->nz - viennaclstruct->mat->nnz());CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

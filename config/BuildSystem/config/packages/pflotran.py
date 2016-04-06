@@ -15,10 +15,9 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
-    self.mpi   = framework.require('config.packages.MPI', self)
-    self.hdf5  = framework.require('config.packages.hdf5', self)
-    self.deps  = [self.mpi, self.hdf5]
+    self.mpi      = framework.require('config.packages.MPI', self)
+    self.hdf5     = framework.require('config.packages.hdf5', self)
+    self.deps     = [self.mpi, self.hdf5]
     return
 
   def Install(self):
@@ -45,31 +44,6 @@ class Configure(config.package.GNUPackage):
     if not hasattr(self.framework, 'packages'):
       self.framework.packages = []
     self.framework.packages.append(self)
-
-  def compilePETSc(self):
-    try:
-      self.logPrintBox('Compiling PETSc; this may take several minutes')
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=1000, log = self.log)
-      self.log.write(output+err)
-    except RuntimeError, e:
-      raise RuntimeError('Error running make all on PETSc: '+str(e))
-    if self.framework.argDB['prefix']:
-      try:
-        self.logPrintBox('Installing PETSc; this may take several minutes')
-        output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.petscdir.dir+' && '+self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
-        self.log.write(output+err)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make install on PETSc: '+str(e))
-    elif not self.argDB['with-batch']:
-      try:
-        self.logPrintBox('Testing PETSc; this may take several minutes')
-        output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
-        output = output+err
-        self.log.write(output)
-        if output.find('error') > -1 or output.find('Error') > -1:
-          raise RuntimeError('Error running make test on PETSc: '+output)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make test on PETSc: '+str(e))
 
   def postProcess(self):
     self.compilePETSc()

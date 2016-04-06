@@ -1,7 +1,7 @@
 #if !defined(__CUSPARSEMATIMPL)
 #define __CUSPARSEMATIMPL
 
-#include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
+#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
 #if CUDA_VERSION>=4020
 #include <cusparse_v2.h>
@@ -11,6 +11,11 @@
 
 #include <algorithm>
 #include <vector>
+
+#include <thrust/device_vector.h>
+#include <thrust/device_ptr.h>
+#include <thrust/transform.h>
+#include <thrust/functional.h>
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)  

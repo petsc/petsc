@@ -1,5 +1,5 @@
 
-static char help[] = "Basic equation for generator stability analysis.\n";
+static char help[] = "Sensitivity analysis of the basic equation for generator stability analysis.\n";
 
 /*F
 
@@ -11,14 +11,13 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 F*/
 
 /*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
+  This code demonstrate the TSAdjoint interface to a system of ordinary differential equations with discontinuities.
+  It computes the sensitivities of an integral cost function
+  \int c*max(0,\theta(t)-u_s)^beta dt
+  w.r.t. initial conditions and the parameter P_m.
+  Backward Euler method is used for time integration.
+  The discontinuities are dealt with TSEvent, which is compatible with TSAdjoint.
+ */
 #include <petscts.h>
 
 typedef struct {
@@ -367,7 +366,7 @@ int main(int argc,char **argv)
   direction[0] = direction[1] = 1;
   terminate[0] = terminate[1] = PETSC_FALSE;
 
-  ierr = TSSetEventMonitor(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&ctx);CHKERRQ(ierr);
+  ierr = TSSetEventHandler(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system

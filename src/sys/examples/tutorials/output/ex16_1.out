@@ -1,5 +1,4 @@
 Number of processors = 2, rank = 0
-Total flops over all processors 0.
 #PETSc Option Table entries:
 -get_total_flops
 -no_signal_handler true

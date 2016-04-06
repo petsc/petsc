@@ -2,41 +2,20 @@
 #define c12 0
 #define c21 2.0
 #define c22 1.0
-static char help[] = "Solves the van der Pol equation.\n\
-Input parameters include:\n";
+static char help[] = "Solves a DAE-constrained optimization problem -- finding the optimal initial conditions for the van der Pol equation.\n";
 
 /*
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation DAE equivalent
-   Concepts: Optimization using adjoint sensitivity analysis
+   Concepts: Optimization using adjoint sensitivities
    Processors: 1
 */
 /* ------------------------------------------------------------------------
-
-   This program solves the van der Pol DAE ODE equivalent
-       y' = z                 (1)
-       z' = mu[(1-y^2)z-y]
-   on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = 2, y'(0) = -6.666665432100101e-01,
-   and
-       mu = 10^6.
-   This is a nonlinear equation.
-
    Notes:
-   This code demonstrates the TS solver interface to a variant of
-   linear problems, u_t = f(u,t), namely turning (1) into a system of
-   first order differential equations,
-
-   [ y' ] = [          z          ]
-   [ z' ]   [     mu[(1-y^2)z-y]  ]
-
-   which then we can write as a vector equation
-
-   [ u_1' ] = [      u_2              ]  (2)
-   [ u_2' ]   [ mu[(1-u_1^2)u_2-u_1]  ]
-
-   which is now in the desired form of u_t = f(u,t). 
-
+   This code demonstrates how to solve a DAE-constrained optimization problem with TAO, TSAdjoint and TS.
+   The nonlinear problem is written in a DAE equivalent form.
+   The objective is to minimize the difference between observation and model prediction by finding optimal values for initial conditions.
+   The gradient is computed with the discrete adjoint of an implicit theta method, see ex20adj.c for details.
   ------------------------------------------------------------------------- */
 #include <petsctao.h>
 #include <petscts.h>
@@ -45,8 +24,8 @@ typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
   PetscReal next_output;
- 
-  /* Sensitivity analysis support */ 
+
+  /* Sensitivity analysis support */
   PetscReal ftime,x_ob[2];
   Mat       A;            /* Jacobian matrix */
   Vec       x,lambda[2];  /* adjoint variables */
@@ -93,7 +72,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   J[0][0] = a;     J[0][1] =  -1.0;
   J[1][0] = c21*a + user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = -c21 + a - user->mu*(1.0-x[0]*x[0]);
- 
+
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
@@ -140,7 +119,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 int main(int argc,char **argv)
 {
   TS                 ts;            /* nonlinear solver */
-  Vec                ic;           
+  Vec                ic;
   PetscBool          monitor = PETSC_FALSE;
   PetscScalar        *x_ptr;
   PetscMPIInt        size;
@@ -155,7 +134,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,NULL,help);
-  
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -190,7 +169,7 @@ int main(int argc,char **argv)
   ierr = TSSetIJacobian(ts,user.A,user.A,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,user.ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
- 
+
  if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
@@ -320,7 +299,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
     Save trajectory of solution so that TSAdjointSolve() may be used
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

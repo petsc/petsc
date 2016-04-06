@@ -1737,7 +1737,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
    Notes:
    The default is to do nothing.  To print the residual, or preconditioned
    residual if KSPSetNormType(ksp,KSP_NORM_PRECONDITIONED) was called, use
-   KSPMonitorDefault() as the monitoring routine, with a null monitoring
+   KSPMonitorDefault() as the monitoring routine, with a ASCII viewer as the
    context.
 
    Several different monitoring routines may be set by calling

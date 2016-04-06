@@ -35,7 +35,7 @@ struct Mat_SeqAIJCUSP {
   cudaStream_t         stream;   /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
 };
 
-PETSC_INTERN PetscErrorCode MatCUSPCopyToGPU(Mat);
+PETSC_EXTERN PetscErrorCode MatCUSPCopyToGPU(Mat);
 PETSC_INTERN PetscErrorCode MatCUSPCopyFromGPU(Mat, CUSPMATRIX*);
 PETSC_INTERN PetscErrorCode MatCUSPSetStream(Mat, const cudaStream_t stream);
 #endif

@@ -17,12 +17,12 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.compilerFlags   = framework.require('config.compilerFlags', self)
-    self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
-    self.mpi   = framework.require('config.packages.MPI', self)
-    self.hdf5  = framework.require('config.packages.hdf5', self)
-    self.pflotran  = framework.require('config.packages.pflotran', self)
-    self.deps  = [self.mpi, self.hdf5, self.pflotran]
+    self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.petscdir      = framework.require('PETSc.options.petscdir', self.setCompilers)
+    self.mpi           = framework.require('config.packages.MPI', self)
+    self.hdf5          = framework.require('config.packages.hdf5', self)
+    self.pflotran      = framework.require('config.packages.pflotran', self)
+    self.deps          = [self.mpi, self.hdf5, self.pflotran]
     return
 
   # the install is delayed until postProcess() since Alquimia requires PETSc 

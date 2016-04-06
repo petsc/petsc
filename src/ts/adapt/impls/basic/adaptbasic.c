@@ -14,20 +14,21 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscErrorCode ierr;
-  Vec            X,Y;
   PetscReal      enorm,hfac_lte,h_lte,safety;
-  PetscInt       order,stepno;
+  PetscInt       order = adapt->candidates.order[0];
 
   PetscFunctionBegin;
-  ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-  if (!basic->Y) {ierr = VecDuplicate(X,&basic->Y);CHKERRQ(ierr);}
-  Y     = basic->Y;
-  order = adapt->candidates.order[0];
-  ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
+  if (ts->ops->evaluatewlte) {
+    ierr = (*ts->ops->evaluatewlte)(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
+  } else {
+    Vec X;
+    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
+    if (!basic->Y) {ierr = VecDuplicate(X,&basic->Y);CHKERRQ(ierr);}
+    ierr = TSEvaluateStep(ts,order-1,basic->Y,NULL);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,X,basic->Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
+  }
 
   safety = basic->safety;
-  ierr   = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
   if (enorm > 1.) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {

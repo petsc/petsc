@@ -86,14 +86,16 @@ class Package(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.setCompilers  = framework.require('config.setCompilers', self)
-    self.compilers     = framework.require('config.compilers', self)
-    self.compilerFlags = framework.require('config.compilerFlags', self)
-    self.types         = framework.require('config.types', self)
-    self.headers       = framework.require('config.headers', self)
-    self.libraries     = framework.require('config.libraries', self)
-    self.programs      = framework.require('config.programs', self)
-    self.sourceControl = framework.require('config.sourceControl',self)
+    self.setCompilers    = framework.require('config.setCompilers', self)
+    self.compilers       = framework.require('config.compilers', self)
+    self.compilerFlags   = framework.require('config.compilerFlags', self)
+    self.types           = framework.require('config.types', self)
+    self.headers         = framework.require('config.headers', self)
+    self.libraries       = framework.require('config.libraries', self)
+    self.programs        = framework.require('config.programs', self)
+    self.sourceControl   = framework.require('config.sourceControl',self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+    self.petscdir        = framework.require('PETSc.options.petscdir', self.setCompilers)
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
     if not self.isMPI and not self.package == 'make':
@@ -505,6 +507,13 @@ class Package(config.base.Configure):
   def updateGitDir(self):
     '''Checkout the correct gitcommit for the gitdir - and update pkg.gitcommit'''
     if hasattr(self.sourceControl, 'git') and (self.packageDir == os.path.join(self.externalPackagesDir,'git.'+self.package)):
+      # verify that packageDir is actually a git clone
+      if not os.path.isdir(os.path.join(self.packageDir,'.git')):
+        raise RuntimeError(self.packageDir +': is not a git repository! '+os.path.join(self.packageDir,'.git')+' not found!')
+      gitdir,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse','--git-dir'], cwd=self.packageDir, log = self.log)
+      if gitdir != '.git':
+        raise RuntimeError(self.packageDir +': is not a git repository! "git rev-parse --gitdir" gives: '+gitdir)
+
       prefetch = 0
       if self.gitcommit.startswith('origin/'):
         prefetch = 1
@@ -524,6 +533,7 @@ class Package(config.base.Configure):
         if self.gitcommit != 'HEAD':
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
           config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
       except:
         raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
                            '.\nPerhaps its a remote branch, if so - use: origin/'+self.gitcommit)
@@ -808,6 +818,40 @@ class Package(config.base.Configure):
     for i in rejectstarts:
       rejects.extend([arg for arg in args if arg.startswith(i)])
     return self.rmArgs(args,rejects)
+
+  def checkSharedLibrariesEnabled(self):
+    if self.framework.clArgDB.has_key('download-'+self.package+'-shared') and self.argDB['download-'+self.package+'-shared']:
+      raise RuntimeError(self.package+' cannot use download-'+self.package+'-shared=1. This flag can only be used to disable '+self.package+' shared libraries')
+    if not self.sharedLibraries.useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
+      return False
+    else:
+      return True
+
+  def compilePETSc(self):
+    try:
+      self.logPrintBox('Compiling PETSc; this may take several minutes')
+      output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=1000, log = self.log)
+      self.log.write(output+err)
+    except RuntimeError, e:
+      raise RuntimeError('Error running make all on PETSc: '+str(e))
+    if self.framework.argDB['prefix']:
+      try:
+        self.logPrintBox('Installing PETSc; this may take several minutes')
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        self.log.write(output+err)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make install on PETSc: '+str(e))
+    elif not self.argDB['with-batch']:
+      try:
+        self.logPrintBox('Testing PETSc; this may take several minutes')
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        output = output+err
+        self.log.write(output)
+        if output.find('error') > -1 or output.find('Error') > -1:
+          raise RuntimeError('Error running make test on PETSc: '+output)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make test on PETSc: '+str(e))
+
 
 '''
 config.package.GNUPackage is a helper class whose intent is to simplify writing configure modules
@@ -1147,7 +1191,7 @@ class GNUPackage(Package):
       args.append('--disable-fc')
       args.append('--disable-f77')
       args.append('--disable-f90')
-    if (self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']:
+    if self.checkSharedLibrariesEnabled():
       args.append('--enable-shared')
     else:
       args.append('--disable-shared')
@@ -1218,7 +1262,7 @@ class CMakePackage(Package):
     config.package.Package.setupHelp(self,help)
     import nargs
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
-
+    help.addArgument(self.PACKAGE, '-download-'+self.package+'-cmake-arguments=string', nargs.ArgString(None, 0, 'Additional CMake arguments for the build'+self.name))
   def setupDependencies(self, framework):
     Package.setupDependencies(self, framework)
     self.cmake = framework.require('config.packages.cmake',self)
@@ -1254,11 +1298,15 @@ class CMakePackage(Package):
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
-    if (self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']:
+    if self.setCompilers.LDFLAGS:
+      args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+self.setCompilers.LDFLAGS+'"')
+
+    if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS=on')
     else:
       args.append('-DBUILD_SHARED_LIBS=off')
-
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     return args
 
   def Install(self):

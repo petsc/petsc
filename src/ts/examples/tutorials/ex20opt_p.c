@@ -15,29 +15,11 @@ Input parameters include:\n";
 */
 /* ------------------------------------------------------------------------
 
-   This program solves the van der Pol DAE ODE equivalent
-       y' = z                 (1)
-       z' = mu[(1-y^2)z-y]
-   on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = 2, y'(0) = -6.666665432100101e-01,
-   and
-       mu = 10^6.
-   This is a nonlinear equation.
-
-   Notes:
-   This code demonstrates the TS solver interface to a variant of
-   linear problems, u_t = f(u,t), namely turning (1) into a system of
-   first order differential equations,
-
-   [ y' ] = [          z          ]
-   [ z' ]   [     mu[(1-y^2)z-y]  ]
-
-   which then we can write as a vector equation
-
-   [ u_1' ] = [      u_2              ]  (2)
-   [ u_2' ]   [ mu[(1-u_1^2)u_2-u_1]  ]
-
-   which is now in the desired form of u_t = f(u,t). 
+  Notes:
+  This code demonstrates how to solve a DAE-constrained optimization problem with TAO, TSAdjoint and TS.
+  The nonlinear problem is written in a DAE equivalent form.
+  The objective is to minimize the difference between observation and model prediction by finding an optimal value for parameter \mu.
+  The gradient is computed with the discrete adjoint of an implicit theta method, see ex20adj.c for details.
   ------------------------------------------------------------------------- */
 #include <petsctao.h>
 #include <petscts.h>
@@ -46,8 +28,8 @@ typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
   PetscReal next_output;
- 
-  /* Sensitivity analysis support */ 
+
+  /* Sensitivity analysis support */
   PetscReal ftime,x_ob[2];
   Mat       A;                       /* Jacobian matrix */
   Mat       Jacp;                    /* JacobianP matrix */
@@ -94,7 +76,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   J[0][0] = a;     J[0][1] =  -1.0;
   J[1][0] = c21*a + user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = -c21 + a - user->mu*(1.0-x[0]*x[0]);
- 
+
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
@@ -162,7 +144,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 int main(int argc,char **argv)
 {
   TS                 ts;            /* nonlinear solver */
-  Vec                p;           
+  Vec                p;
   PetscBool          monitor = PETSC_FALSE;
   PetscScalar        *x_ptr;
   const PetscScalar  *y_ptr;
@@ -178,7 +160,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,NULL,help);
-  
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -352,7 +334,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecGetArray(user_ptr->x,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 2.0;   x_ptr[1] = -0.66666654321;
   ierr = VecRestoreArray(user_ptr->x,&x_ptr);CHKERRQ(ierr);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

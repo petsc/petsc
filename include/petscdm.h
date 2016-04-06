@@ -68,6 +68,7 @@ PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,ISColoring*);
 PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateOnly(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM,DM,Mat*,Vec*);
+PETSC_EXTERN PetscErrorCode DMCreateRestriction(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMCreateInjection(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMGetWorkArray(DM,PetscInt,PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode DMRestoreWorkArray(DM,PetscInt,PetscDataType,void*);
@@ -141,6 +142,7 @@ PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM,void*);
 PETSC_EXTERN PetscErrorCode DMSetVariableBounds(DM,PetscErrorCode (*)(DM,Vec,Vec));
 PETSC_EXTERN PetscErrorCode DMHasVariableBounds(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasColoring(DM,PetscBool *);
+PETSC_EXTERN PetscErrorCode DMHasCreateRestriction(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMComputeVariableBounds(DM,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode DMCreateSubDM(DM, PetscInt, PetscInt[], IS *, DM *);
@@ -149,6 +151,7 @@ PETSC_EXTERN PetscErrorCode DMCreateDomainDecomposition(DM,PetscInt*,char***,IS*
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionScatters(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
 PETSC_EXTERN PetscErrorCode DMGetRefineLevel(DM,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSetRefineLevel(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetCoarsenLevel(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMFinalizePackage(void);
 
@@ -228,7 +231,6 @@ PETSC_EXTERN PetscErrorCode DMGetStratumIS(DM, const char [], PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMClearLabelStratum(DM, const char[], PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetLabelOutput(DM, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, PetscSF, PetscBool, DMLabel, PetscInt, PetscSection *);
 
 PETSC_EXTERN PetscErrorCode DMGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetLabelName(DM, PetscInt, const char **);

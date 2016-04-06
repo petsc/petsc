@@ -171,34 +171,3 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
   lg->nopts += n;
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSetLimits"
-/*@
-   PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
-   points are added after this call, the limits will be adjusted to
-   include those additional points.
-
-   Logically Collective on PetscDrawLG
-
-   Input Parameters:
-+  xlg - the line graph context
--  x_min,x_max,y_min,y_max - the limits
-
-   Level: intermediate
-
-   Concepts: line graph^setting axis
-
-@*/
-PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
-
-  (lg)->xmin = x_min;
-  (lg)->xmax = x_max;
-  (lg)->ymin = y_min;
-  (lg)->ymax = y_max;
-  PetscFunctionReturn(0);
-}
-

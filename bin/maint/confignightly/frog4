@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=frog
-set USR=balay
-set LOC=/home/balay/${RNAME}-4
-set CONF=arch-viennacl

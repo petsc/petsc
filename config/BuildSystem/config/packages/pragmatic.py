@@ -31,7 +31,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DMETIS_DIR='+self.metis.getInstallDir())
     args.append('-DENABLE_VTK=OFF')
     args.append('-DENABLE_OPENMP=OFF')
-    if self.sharedLibraries.useShared:
+    if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.indexTypes.integerSize == 64:
       raise RuntimeError('Pragmatic cannot be built with 64-bit integers')

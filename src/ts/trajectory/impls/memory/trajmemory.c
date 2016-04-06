@@ -308,7 +308,7 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *stack,PetscInt id)
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   for (i=0;i<stack->stacksize;i++) {
-    ierr = PetscCalloc1(1,&e);
+    ierr = PetscCalloc1(1,&e);CHKERRQ(ierr);
     ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
     ierr = VecDuplicate(Y[0],&e->X);CHKERRQ(ierr);
     if (!stack->solution_only && stack->numY>0) {
@@ -517,9 +517,7 @@ static PetscErrorCode ReCompute(TS ts,TJScheduler *tjsch,PetscInt stepnumbegin,P
     if (!stack->solution_only && !tjsch->skip_trajectory) {
       ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
-    if (ts->event) {
-      ierr = TSEventMonitor(ts);CHKERRQ(ierr);
-    }
+    ierr = TSEventHandler(ts);CHKERRQ(ierr);
     if (!ts->steprollback) {
       ierr = TSPostStep(ts);CHKERRQ(ierr);
     }
@@ -1637,14 +1635,14 @@ PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscOptionsO
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Memory based TS trajectory options");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsInt("-tstrajectory_max_cps_ram","Maximum number of checkpoints in RAM","TSTrajectorySetMaxCpsRAM_Memory",tjsch->max_cps_ram,&tjsch->max_cps_ram,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-tstrajectory_max_cps_disk","Maximum number of checkpoints on disk","TSTrajectorySetMaxCpsDisk_Memory",tjsch->max_cps_disk,&tjsch->max_cps_disk,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-tstrajectory_stride","Stride to save checkpoints to file","TSTrajectorySetStride_Memory",tjsch->stride,&tjsch->stride,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_trajectory_max_cps_ram","Maximum number of checkpoints in RAM","TSTrajectorySetMaxCpsRAM_Memory",tjsch->max_cps_ram,&tjsch->max_cps_ram,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_trajectory_max_cps_disk","Maximum number of checkpoints on disk","TSTrajectorySetMaxCpsDisk_Memory",tjsch->max_cps_disk,&tjsch->max_cps_disk,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_trajectory_stride","Stride to save checkpoints to file","TSTrajectorySetStride_Memory",tjsch->stride,&tjsch->stride,NULL);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_REVOLVE
-    ierr = PetscOptionsBool("-tstrajectory_revolve_online","Trick TS trajectory into using online mode of revolve","TSTrajectorySetRevolveOnline",tjsch->use_online,&tjsch->use_online,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_trajectory_revolve_online","Trick TS trajectory into using online mode of revolve","TSTrajectorySetRevolveOnline",tjsch->use_online,&tjsch->use_online,NULL);CHKERRQ(ierr);
 #endif
-    ierr = PetscOptionsBool("-tstrajectory_save_stack","Save all stack to disk","TSTrajectorySetSaveStack",tjsch->save_stack,&tjsch->save_stack,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-tstrajectory_solution_only","Checkpoint solution only","TSTrajectorySetSolutionOnly",tjsch->stack.solution_only,&tjsch->stack.solution_only,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_trajectory_save_stack","Save all stack to disk","TSTrajectorySetSaveStack",tjsch->save_stack,&tjsch->save_stack,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_trajectory_solution_only","Checkpoint solution only","TSTrajectorySetSolutionOnly",tjsch->stack.solution_only,&tjsch->stack.solution_only,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

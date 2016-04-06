@@ -103,6 +103,9 @@ typedef const char* VecType;
 #define VECSEQVIENNACL "seqviennacl"
 #define VECMPIVIENNACL "mpiviennacl"
 #define VECVIENNACL    "viennacl"   /* seqviennacl on one process and mpiviennacl on several */
+#define VECSEQCUDA     "seqcuda"
+#define VECMPICUDA     "mpicuda"
+#define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 #define VECNEST        "nest"
 
 
@@ -540,9 +543,7 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMod
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
-#endif
-
-#if defined(PETSC_HAVE_VIENNACL)
+#elif defined(PETSC_HAVE_VIENNACL)
 typedef struct _p_PetscViennaCLIndices* PetscViennaCLIndices;
 PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesCreate(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscViennaCLIndices*);
 PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesDestroy(PetscViennaCLIndices*);
@@ -550,6 +551,16 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyToGPUSome_Public(Vec,PetscViennaCLInd
 PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPUSome_Public(Vec,PetscViennaCLIndices);
 PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCL(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCL(MPI_Comm,PetscInt,PetscInt,Vec*);
+#elif defined(PETSC_HAVE_VECCUDA)
+typedef struct _p_PetscCUDAIndices* PetscCUDAIndices;
+typedef struct _p_VecScatterCUDAIndices_StoS* VecScatterCUDAIndices_StoS;
+typedef struct _p_VecScatterCUDAIndices_PtoP* VecScatterCUDAIndices_PtoP;
+PETSC_EXTERN PetscErrorCode VecCUDACopyToGPUSome_Public(Vec,PetscCUDAIndices);
+PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUDAIndices);
+PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
+PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
+PETSC_EXTERN PetscErrorCode VecCreateSeqCUDA(MPI_Comm,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPICUDA(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec,PetscInt*,Vec**);

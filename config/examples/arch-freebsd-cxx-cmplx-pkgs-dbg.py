@@ -3,7 +3,6 @@
 configure_options = [
 
   '--useThreads=0', # for some reason cmake hangs when invoked from configure on bsd?
-  'LIBS=-lexecinfo', # for some reason gcc46+ requires this library
 
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',

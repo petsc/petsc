@@ -1,40 +1,11 @@
-
-static char help[] = "Demonstrates Pattern Formation with Reaction-Diffusion Equations.\n";
-
-/*
-     Page 21, Pattern Formation with Reaction-Diffusion Equations
-
-        u_t = D1 (u_xx + u_yy)  - u*v^2 + gama(1 -u)
-        v_t = D2 (v_xx + v_yy)  + u*v^2 - (gamma + kappa)v
-
-    Unlike in the book this uses periodic boundary conditions instead of Neumann
-    (since they are easier for finite differences).
-*/
+static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Diffusion Equations.\n";
 
 /*
-      Helpful runtime monitor options:
-           -ts_monitor_draw_solution
-           -draw_save -draw_save_movie
-
-      Helpful runtime linear solver options:
-           -pc_type mg -pc_mg_galerkin -da_refine 1 -snes_monitor -ksp_monitor -ts_view  (note that these Jacobians are so well-conditioned multigrid may not be the best solver)
-
-      Point your browser to localhost:8080 to monitor the simulation
-           ./ex5  -ts_view_pre saws  -stack_view saws -draw_save -draw_save_single_file -x_virtual -ts_monitor_draw_solution -saws_root .
-
-*/
-
-/*
-
-   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
-   Include "petscts.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
+  See ex5.c for details on the equation.
+  This code demonestrates the TSAdjoint interface to a system of time-dependent partial differential equations.
+  It computes the sensitivity of a component in the final solution, which locates in the center of the 2D domain, w.r.t. the initial conditions.
+  The user does not need to provide any additional functions. The required functions in the original simultion are resued in the adjoint run.
+ */
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>

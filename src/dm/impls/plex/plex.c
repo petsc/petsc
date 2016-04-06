@@ -1,12 +1,12 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc/private/isimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscsf.h>
 #include <petscds.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
 
-PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
@@ -157,7 +157,7 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
     PetscInt    n, nroots;
 
     if (dm->sfNatural) {
-      ierr = VecGetLocalSize(originalv, &n);
+      ierr = VecGetLocalSize(originalv, &n);CHKERRQ(ierr);
       ierr = PetscSFGetGraph(dm->sfNatural, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
       if (n == nroots) {
         ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
@@ -5138,23 +5138,50 @@ static PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCellNumbering"
-PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
+#define __FUNCT__ "DMPlexCreateCellNumbering_Internal"
+PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalCellNumbers)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscInt       cellHeight, cStart, cEnd, cMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (cMax >= 0 && !includeHybrid) cEnd = PetscMin(cEnd, cMax);
+  ierr = DMPlexCreateNumbering_Private(dm, cStart, cEnd, 0, NULL, dm->sf, globalCellNumbers);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetCellNumbering"
+PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!mesh->globalCellNumbers) {
-    ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-    if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-    ierr = DMPlexCreateNumbering_Private(dm, cStart, cEnd, 0, NULL, dm->sf, &mesh->globalCellNumbers);CHKERRQ(ierr);
-  }
+  if (!mesh->globalCellNumbers) {ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_FALSE, &mesh->globalCellNumbers);CHKERRQ(ierr);}
   *globalCellNumbers = mesh->globalCellNumbers;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateVertexNumbering_Internal"
+PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalVertexNumbers)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       vStart, vEnd, vMax;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, NULL, NULL, NULL, &vMax);CHKERRQ(ierr);
+  if (vMax >= 0 && !includeHybrid) vEnd = PetscMin(vEnd, vMax);
+  ierr = DMPlexCreateNumbering_Private(dm, vStart, vEnd, 0, NULL, dm->sf, globalVertexNumbers);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5163,17 +5190,11 @@ PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
 PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscInt       vStart, vEnd, vMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!mesh->globalVertexNumbers) {
-    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(dm, NULL, NULL, NULL, &vMax);CHKERRQ(ierr);
-    if (vMax >= 0) vEnd = PetscMin(vEnd, vMax);
-    ierr = DMPlexCreateNumbering_Private(dm, vStart, vEnd, 0, NULL, dm->sf, &mesh->globalVertexNumbers);CHKERRQ(ierr);
-  }
+  if (!mesh->globalVertexNumbers) {ierr = DMPlexCreateVertexNumbering_Internal(dm, PETSC_FALSE, &mesh->globalVertexNumbers);CHKERRQ(ierr);}
   *globalVertexNumbers = mesh->globalVertexNumbers;
   PetscFunctionReturn(0);
 }

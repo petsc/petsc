@@ -38,8 +38,6 @@ PETSC_EXTERN PetscErrorCode PCSetErrorIfFailure(PC,PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);
 PETSC_EXTERN PetscErrorCode PCApplyRichardsonExists(PC,PetscBool *);
-PETSC_EXTERN PetscErrorCode PCSetInitialGuessNonzero(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGetInitialGuessNonzero(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
@@ -328,6 +326,8 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetReductionFactor(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetReductionFactor(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreDM(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreDM(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
 
 #endif /* __PETSCPC_H */

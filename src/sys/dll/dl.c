@@ -273,7 +273,7 @@ PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const ch
     ierr = PetscDLLibraryOpen(comm,path,&nlist);CHKERRQ(ierr);
     ierr = PetscInfo1(0,"Appending %s to dynamic library search path\n",path);CHKERRQ(ierr);
     if (prev) prev->next = nlist;
-    else      *outlist   = nlist;
+    else {if (outlist) *outlist   = nlist;}
 
 done:;
     ierr = PetscDLSym(nlist->handle,symbol,value);CHKERRQ(ierr);

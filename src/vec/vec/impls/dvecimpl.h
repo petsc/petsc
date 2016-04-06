@@ -40,7 +40,6 @@ PETSC_INTERN PetscErrorCode VecSetOption_Seq(Vec,VecOption,PetscBool);
 PETSC_INTERN PetscErrorCode VecGetValues_Seq(Vec,PetscInt,const PetscInt*,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecSetValues_Seq(Vec,PetscInt,const PetscInt*,const PetscScalar*,InsertMode);
 PETSC_INTERN PetscErrorCode VecSetValuesBlocked_Seq(Vec,PetscInt,const PetscInt*,const PetscScalar*,InsertMode);
-PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecGetSize_Seq(Vec,PetscInt*);
 PETSC_INTERN PetscErrorCode VecCopy_Seq(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecSwap_Seq(Vec,Vec);

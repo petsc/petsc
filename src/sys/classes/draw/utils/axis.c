@@ -2,69 +2,6 @@
 #include <../src/sys/classes/draw/utils/axisimpl.h>  /*I   "petscdraw.h"  I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisSetLimits"
-/*@
-    PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
-
-    Logically Collective on PetscDrawAxis
-
-    Input Parameters:
-+   axis - the axis
-.   xmin,xmax - limits in x
--   ymin,ymax - limits in y
-
-    Options Database:
-.   -drawaxis_hold - hold the initial set of axis limits for future plotting
-
-    Level: advanced
-
-.seealso:  PetscDrawAxisSetHoldLimits()
-
-@*/
-PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
-  if (axis->hold) PetscFunctionReturn(0);
-  axis->xlow = xmin;
-  axis->xhigh= xmax;
-  axis->ylow = ymin;
-  axis->yhigh= ymax;
-  ierr = PetscOptionsHasName(((PetscObject)axis)->options,((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisGetLimits"
-/*@
-    PetscDrawAxisGetLimits -  Gets the limits (in user coords) of the axis
-
-    Not Collective
-
-    Input Parameters:
-+   axis - the axis
-.   xmin,xmax - limits in x
--   ymin,ymax - limits in y
-
-    Level: advanced
-
-.seealso:  PetscDrawAxisSetLimits()
-
-@*/
-PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscReal *xmax,PetscReal *ymin,PetscReal *ymax)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(axis,PETSC_DRAWAXIS_CLASSID,1);
-  *xmin = axis->xlow;
-  *xmax = axis->xhigh;
-  *ymin = axis->ylow;
-  *ymax = axis->yhigh;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscADefLabel"
 /*
    val is the label value.  sep is the separation to the next (or previous)
@@ -88,7 +25,7 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
     ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
     ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
   }
-  *p =buf;
+  *p = buf;
   PetscFunctionReturn(0);
 }
 

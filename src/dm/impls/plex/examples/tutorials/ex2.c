@@ -69,14 +69,12 @@ static PetscErrorCode CheckMeshGeometry(DM dm)
 {
   PetscInt       dim, coneSize, cStart, cEnd, c;
   PetscReal     *v0, *J, *invJ, detJ;
-  PetscBool      isSimplex;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
-  isSimplex = coneSize == dim+1 ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscMalloc3(dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);

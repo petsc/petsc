@@ -161,6 +161,7 @@ PetscOptionsGetAll(PetscOptions,char*[]);
       <h4>Mat:</h4>
       <h4>PC:</h4>
       <ul>
+        <li>If the DM has a CreateRestriction() function the PCMG automatically uses that to create the restriction operator instead of defaulting to using the transpose of the interpolation</li>
         <li>Added -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())</li>
         <li>Added -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())</li>
         <li>see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG</li>
@@ -188,10 +189,13 @@ PetscOptionsGetAll(PetscOptions,char*[]);
         <li>TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
         <li>-ts_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
         <li>-ts_monitor_binary_solution filename should now be written as -ts_monitor_solution binary:filename</li>
+        <li>Renamed TSSetEventMonitor() to TSSetEventHandler()</li>
+        <li>Updated TSALPHA implementation. Removed TSAlphaSetAdapt() and TSAlphaAdaptDefault(), use TSAlphaUseAdapt() instead.</li>
       </ul>
       <h4>DM/DA:</h4>
       <ul>
-        <li>Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()</li>
+        <li>Added DMShellSetCreateRestriction</li>
+        <li>Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()</li>        
         <li>DMLabel labels are now available to all DM objects, not just DMPlex object</li>
         <li>DMClone() now handles copying the coordinates, so that DMCopyCoordinates() is no longer necessary</li>
       </ul>

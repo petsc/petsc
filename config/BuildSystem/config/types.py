@@ -16,7 +16,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('Types', '-known-endian=<big or little>', nargs.Arg(None, None, 'Are bytes stored in big or little endian?'))
-    help.addArgument('Visibility', '-with-visibility=<bool>', nargs.Arg(None, 1, 'Use compiler visibility flags to limit symbol visibility'))
+    help.addArgument('Visibility', '-with-visibility=<bool>', nargs.ArgBool(None, 1, 'Use compiler visibility flags to limit symbol visibility'))
     return
 
   def setupDependencies(self, framework):

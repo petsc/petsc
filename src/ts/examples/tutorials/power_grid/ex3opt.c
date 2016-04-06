@@ -1,5 +1,5 @@
 
-static char help[] = "Basic equation for generator stability analysis.\n";
+static char help[] = "Finds optimal parameter P_m for the generator system while maintaining generator stability.\n";
 
 /*F
 
@@ -11,13 +11,9 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 F*/
 
 /*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+  This code demonstrates how to solve a ODE-constrained optimization problem with TAO, TSEvent, TSAdjoint and TS.
+  The problem features discontinuities and a cost function in integral form.
+  The gradient is computed with the discrete adjoint of an implicit theta method, see ex3adj.c for details.
 */
 #include <petsctao.h>
 #include <petscts.h>
@@ -405,7 +401,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   direction[0] = direction[1] = 1;
   terminate[0] = terminate[1] = PETSC_FALSE;
 
-  ierr = TSSetEventMonitor(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)ctx);CHKERRQ(ierr);
+  ierr = TSSetEventHandler(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system

@@ -202,6 +202,7 @@ def chksynonyms():
     argsAddDownload('hypre')
 
     argsAddDownload('trilinos',['boost'],['--with-cxx-dialect=C++11'])
+    argsAddDownload('xsdktrilinos')
 
 
 def chkwinf90():

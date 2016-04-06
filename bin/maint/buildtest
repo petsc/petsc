@@ -85,7 +85,7 @@ else
 endif
 echo '****************************************************' >>& build.log
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
-#if ( $err ) exit
+if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
 #
 # Run examples
 #

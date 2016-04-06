@@ -790,7 +790,7 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 + snes   - the SNES context
 . its    - iteration number
 . fgnorm - 2-norm of residual
-- dummy  - PetscViewer of type ASCII
+- vf  - PetscViewerAndFormat of type ASCII
 
   Notes:
   This routine prints the residual norm at each iteration.
@@ -800,9 +800,9 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 .keywords: SNES, nonlinear, default, monitor, norm
 .seealso: SNESMonitorSet(), SNESMonitorDefault()
 @*/
-PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
+PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
 {
-  PetscViewer        viewer = (PetscViewer) dummy;
+  PetscViewer        viewer = vf->viewer;
   Vec                res;
   DM                 dm;
   PetscSection       s;
@@ -831,6 +831,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, void
   }
   ierr = VecRestoreArrayRead(res, &r);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(lnorms, norms, numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject) snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
@@ -839,6 +840,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, void
   }
   ierr = PetscViewerASCIIPrintf(viewer, "]\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject) snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscFree2(lnorms, norms);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
