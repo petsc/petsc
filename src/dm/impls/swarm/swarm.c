@@ -60,6 +60,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[
   PetscFunctionReturn(0);
 }
 
+/* requires DMSwarmDefineFieldVector has been called */
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_Swarm"
 PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
@@ -71,6 +72,8 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
 
   if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
   if (!swarm->vec_field_set) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
+  if (swarm->vec_field_nlocal != swarm->db->L) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSwarm sizes have changed since last call to VectorDefineField first"); /* Stale data */
+  
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm),&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
@@ -94,6 +97,8 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
   
   if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
   if (!swarm->vec_field_set) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
+  if (swarm->vec_field_nlocal != swarm->db->L) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSwarm sizes have changed since last call to VectorDefineField first"); /* Stale data */
+
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
@@ -120,9 +125,6 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
  
  Level: beginner
  
- Notes:
- Requires that DMSwarmDefineFieldVector() has been called
- 
  . seealso: DMSwarmRegisterPetscDatatypeField()
  
 @*/
@@ -140,6 +142,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   PetscMPIInt commsize;
   
   if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
+
   ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
 
@@ -179,9 +182,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
  
  Level: beginner
  
- Notes:
- Requires that DMSwarmDefineFieldVector() has been called
- 
  . seealso: DMSwarmRegisterPetscDatatypeField()
  
 @*/
@@ -194,7 +194,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char
   DataField gfield;
   char name[PETSC_MAX_PATH_LEN];
   void (*fptr)(void);
+  PetscInt bs,nlocal;
   
+  ierr = VecGetLocalSize(*vec,&nlocal);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(*vec,&bs);CHKERRQ(ierr);
+  if (nlocal/bs != swarm->db->L) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSwarm sizes have changed since vector was created - cannot ensure pointers are valid"); /* Stale data */
+
   /* get data field */
   ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
   
@@ -249,11 +254,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
 
-  swarm->field_registration_initialized = PETSC_TRUE;
-
-  ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_pid,1,PETSC_LONG);CHKERRQ(ierr); /* unique identifer */
-  ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_rank,1,PETSC_INT);CHKERRQ(ierr); /* used for communication */
-
+  if (!swarm->field_registration_initialized) {
+    swarm->field_registration_initialized = PETSC_TRUE;
+    ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_pid,1,PETSC_LONG);CHKERRQ(ierr); /* unique identifer */
+    ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmField_rank,1,PETSC_INT);CHKERRQ(ierr); /* used for communication */
+  }
+  
   PetscFunctionReturn(0);
 }
 
@@ -1131,7 +1137,8 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
  Here the data defining the field in the DMSwarm is shared with a Vec. 
  This is inherently unsafe if you alter the size of the field at any time between
  calls to DMSwarmCreateGlobalVectorFromField() and DMSwarmDestroyGlobalVectorFromField().
- 
+ If the local size of the DMSwarm does not match the localsize of the global vector
+ when DMSwarmDestroyGlobalVectorFromField() is called, an error is thrown.
  
  Level: beginner
  
