@@ -48,6 +48,7 @@ PetscErrorCode DataFieldCreate(const char registeration_function[],const char na
 PetscErrorCode DataFieldDestroy(DataField *DF);
 PetscErrorCode DataBucketCreate(DataBucket *DB);
 PetscErrorCode DataBucketDestroy(DataBucket *DB);
+PetscErrorCode DataBucketQueryForActiveFields(DataBucket db,PetscBool *any_active_fields);
 PetscErrorCode DataBucketRegisterField(
 															DataBucket db,
 															const char registeration_function[],

@@ -122,6 +122,21 @@ PetscErrorCode DataBucketDestroy(DataBucket *DB)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DataBucketQueryForActiveFields"
+PetscErrorCode DataBucketQueryForActiveFields(DataBucket db,PetscBool *any_active_fields)
+{
+  PetscInt f;
+  *any_active_fields = PETSC_FALSE;
+  for (f=0; f<db->nfields; f++) {
+    if (db->field[f]->active) {
+      *any_active_fields = PETSC_TRUE;
+      PetscFunctionReturn(0);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DataBucketRegisterField"
 PetscErrorCode DataBucketRegisterField(
                               DataBucket db,
@@ -271,10 +286,14 @@ PetscErrorCode DataFieldZeroBlock(DataField df,const PetscInt start,const PetscI
 PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt buffer)
 {
 	PetscInt current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
+  PetscBool any_active_fields;
   PetscErrorCode ierr;
 
 	if (db->finalised == PETSC_FALSE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"You must call DataBucketFinalize() before DataBucketSetSizes()");
-  
+
+  ierr = DataBucketQueryForActiveFields(db,&any_active_fields);CHKERRQ(ierr);
+  if (any_active_fields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot safely re-size as at least one DataField is currently being accessed");
+
 	current_allocated = db->allocated;
 	
 	new_used   = L;
@@ -551,6 +570,7 @@ PetscErrorCode DataFieldInsertPoint(const DataField field,const PetscInt index,c
 PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt index)
 {
 	PetscInt f;
+  PetscBool any_active_fields;
 	PetscErrorCode ierr;
 	
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
@@ -558,6 +578,9 @@ PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt i
 	if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
 	if (index >= db->allocated) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",db->L+db->buffer);
 #endif
+
+  ierr = DataBucketQueryForActiveFields(db,&any_active_fields);CHKERRQ(ierr);
+  if (any_active_fields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot safely remove point as at least one DataField is currently being accessed");
 	
 	if (index >= db->L) { /* this point is not in the list - no need to error, but I will anyway */
 		SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"You should not be trying to remove point at index=%D since it's < db->L = %D", index, db->L );
