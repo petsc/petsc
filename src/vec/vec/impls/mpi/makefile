@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = pvecimpl.h
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-DIRS     = mpicusp mpiviennacl
+DIRS     = mpicusp mpiviennacl mpicuda
 LOCDIR   = src/vec/vec/impls/mpi/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -308,7 +308,7 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *stack,PetscInt id)
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   for (i=0;i<stack->stacksize;i++) {
-    ierr = PetscCalloc1(1,&e);
+    ierr = PetscCalloc1(1,&e);CHKERRQ(ierr);
     ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
     ierr = VecDuplicate(Y[0],&e->X);CHKERRQ(ierr);
     if (!stack->solution_only && stack->numY>0) {

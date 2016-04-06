@@ -343,7 +343,7 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
   if (pentry>=nParents || dftEventsSorted[pentry] != dftParentActive) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Active parent is %d, but we seem to be closing %d",dftParentActive,dftEventsSorted[pentry]);
 
   /* Stop the default timer and update the dftParentActive */
-  ierr = PetscLogEventEndDefault(dftParentActive,t,o1,o2,o3,o4);
+  ierr = PetscLogEventEndDefault(dftParentActive,t,o1,o2,o3,o4);CHKERRQ(ierr);
   dftParentActive = nestedEvents[entry].dftParents[pentry]; 
   PetscFunctionReturn(0);
 }
@@ -1089,7 +1089,7 @@ static PetscErrorCode  PetscLogNestedPrint(PetscViewer viewer, PetscNestedEventT
         }
       } else {
         /* Print the child with a recursive call to this function */
-        ierr = PetscLogNestedPrint(viewer, tree, nTimers, children[i].id, totalTime);
+        ierr = PetscLogNestedPrint(viewer, tree, nTimers, children[i].id, totalTime);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerXMLEndSection(viewer,"events");CHKERRQ(ierr);
@@ -1170,7 +1170,7 @@ static PetscErrorCode  PetscLogNestedPrintTop(PetscViewer viewer, PetscNestedEve
         /* ignored: no output */
       } else {
         /* Print the child with a recursive call to this function */
-        ierr = PetscLogNestedPrint(viewer, tree, nTimers, children[i].id, totalTime);
+        ierr = PetscLogNestedPrint(viewer, tree, nTimers, children[i].id, totalTime);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerXMLEndSection(viewer, "timertree");CHKERRQ(ierr);
@@ -1405,7 +1405,7 @@ PetscErrorCode  PetscLogView_Nested(PetscViewer viewer)
 
   ierr = PetscViewerXMLEndSection(viewer, "petscroot");CHKERRQ(ierr);
   ierr = PetscViewerFinalASCII_XML(viewer);CHKERRQ(ierr);
-  ierr = PetscLogNestedEnd();
+  ierr = PetscLogNestedEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

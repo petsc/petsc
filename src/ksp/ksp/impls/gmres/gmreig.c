@@ -293,7 +293,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
       if (!wi[perm[nb]]) nb += 1;
       else nb += 2;
     }
-    ierr = PetscMalloc(nb*n*sizeof(PetscReal),&SR);
+    ierr = PetscMalloc(nb*n*sizeof(PetscReal),&SR);CHKERRQ(ierr);
     for (i=0; i<nb; i++) {
       tetar[i] = wr[perm[i]];
       tetai[i] = wi[perm[i]];
@@ -304,7 +304,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
       if (wi[perm[n-nb-1]] == 0) nb += 1;
       else nb += 2;
     }
-    ierr = PetscMalloc(nb*n*sizeof(PetscReal),&SR);
+    ierr = PetscMalloc(nb*n*sizeof(PetscReal),&SR);CHKERRQ(ierr);
     for (i=0; i<nb; i++) {
       tetar[i] = wr[perm[n-nb+i]];
       tetai[i] = wi[perm[n-nb+i]];

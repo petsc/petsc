@@ -141,7 +141,7 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     }
 
     /* If needbe, allocate a new chunk of vectors */
-    ierr = KSPAllocateVectors_PIPEGCR(ksp,i+1,pipegcr->vecb);
+    ierr = KSPAllocateVectors_PIPEGCR(ksp,i+1,pipegcr->vecb);CHKERRQ(ierr);
 
     /* Note that we wrap around and start clobbering old vectors */
     idx = i % (pipegcr->mmax+1);
@@ -740,7 +740,7 @@ PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsObject,KS
   ierr = PetscOptionsInt("-ksp_pipegcr_nprealloc","Number of directions to preallocate","KSPPIPEGCRSetNprealloc",pipegcr->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPPIPEGCRSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
   ierr = PetscOptionsEnum("-ksp_pipegcr_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)pipegcr->truncstrat,(PetscEnum*)&pipegcr->truncstrat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_pipegcr_unroll_w","Use unrolling of w","KSPPIPEGCRSetUnrollW",pipegcr->unroll_w,&pipegcr->unroll_w,NULL);
+  ierr = PetscOptionsBool("-ksp_pipegcr_unroll_w","Use unrolling of w","KSPPIPEGCRSetUnrollW",pipegcr->unroll_w,&pipegcr->unroll_w,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

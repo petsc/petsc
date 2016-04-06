@@ -395,7 +395,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       for (j=cum_recv_counts[i];j<cum_recv_counts[i+1];j++){
         /* adapt if more than one cc is present */
          if (graph->subset_ncc[i] > 1 || recv_buffer[j] > 1) {
-          ierr = PetscBTSet(subset_cc_adapt,i);
+          ierr = PetscBTSet(subset_cc_adapt,i);CHKERRQ(ierr);
           break;
         }
       }

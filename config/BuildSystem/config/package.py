@@ -86,15 +86,16 @@ class Package(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.setCompilers  = framework.require('config.setCompilers', self)
-    self.compilers     = framework.require('config.compilers', self)
-    self.compilerFlags = framework.require('config.compilerFlags', self)
-    self.types         = framework.require('config.types', self)
-    self.headers       = framework.require('config.headers', self)
-    self.libraries     = framework.require('config.libraries', self)
-    self.programs      = framework.require('config.programs', self)
-    self.sourceControl = framework.require('config.sourceControl',self)
+    self.setCompilers    = framework.require('config.setCompilers', self)
+    self.compilers       = framework.require('config.compilers', self)
+    self.compilerFlags   = framework.require('config.compilerFlags', self)
+    self.types           = framework.require('config.types', self)
+    self.headers         = framework.require('config.headers', self)
+    self.libraries       = framework.require('config.libraries', self)
+    self.programs        = framework.require('config.programs', self)
+    self.sourceControl   = framework.require('config.sourceControl',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+    self.petscdir        = framework.require('PETSc.options.petscdir', self.setCompilers)
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
     if not self.isMPI and not self.package == 'make':
@@ -825,6 +826,32 @@ class Package(config.base.Configure):
       return False
     else:
       return True
+
+  def compilePETSc(self):
+    try:
+      self.logPrintBox('Compiling PETSc; this may take several minutes')
+      output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=1000, log = self.log)
+      self.log.write(output+err)
+    except RuntimeError, e:
+      raise RuntimeError('Error running make all on PETSc: '+str(e))
+    if self.framework.argDB['prefix']:
+      try:
+        self.logPrintBox('Installing PETSc; this may take several minutes')
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        self.log.write(output+err)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make install on PETSc: '+str(e))
+    elif not self.argDB['with-batch']:
+      try:
+        self.logPrintBox('Testing PETSc; this may take several minutes')
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        output = output+err
+        self.log.write(output)
+        if output.find('error') > -1 or output.find('Error') > -1:
+          raise RuntimeError('Error running make test on PETSc: '+output)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make test on PETSc: '+str(e))
+
 
 '''
 config.package.GNUPackage is a helper class whose intent is to simplify writing configure modules

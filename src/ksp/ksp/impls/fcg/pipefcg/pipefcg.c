@@ -191,7 +191,7 @@ PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     ++i;
 
     /* If needbe, allocate a new chunk of vectors in P and C */
-    ierr = KSPAllocateVectors_PIPEFCG(ksp,i+1,pipefcg->vecb);
+    ierr = KSPAllocateVectors_PIPEFCG(ksp,i+1,pipefcg->vecb);CHKERRQ(ierr);
 
     /* Note that we wrap around and start clobbering old vectors */
     idx = i % (pipefcg->mmax+1);

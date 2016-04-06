@@ -523,7 +523,7 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw,unsigned char palet
   if (!rank) {
     ierr = PetscMemcpy(palette,img->palette,sizeof(img->palette));CHKERRQ(ierr);
     ierr = PetscMalloc1((size_t)(img->w*img->h),&buffer);CHKERRQ(ierr);
-    *pixels = buffer;
+    if (pixels) *pixels = buffer;
   }
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
   if (size == 1) {

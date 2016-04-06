@@ -16,6 +16,9 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
+#if defined(PETSC_HAVE_CUDA)
+#include <cuda_runtime.h>
+#endif
 
 /* ------------------------Nasty global variables -------------------------------*/
 /*
@@ -83,6 +86,7 @@ PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDe
 */
 PetscBool PetscCUSPSynchronize = PETSC_FALSE;
 PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
+PetscBool PetscCUDASynchronize = PETSC_FALSE;
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -244,10 +248,6 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
   PetscExternalVersionFunction = version;
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_CUDA)
-#include <cublas.h>
-#endif
 
 #if defined(PETSC_USE_LOG)
 extern PetscBool   PetscObjectsLog;
@@ -675,7 +675,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
   }
 
-#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (!flg3) {
   ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
@@ -687,7 +687,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #elif defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsGetBool(NULL,NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscViennaCLSynchronize = flg3;
+#elif defined(PETSC_HAVE_VECCUDA)
+  ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_synchronize",&flg3,NULL);CHKERRQ(ierr);
+  PetscCUDASynchronize = flg3;
 #endif
+
   PetscFunctionReturn(0);
 }
 

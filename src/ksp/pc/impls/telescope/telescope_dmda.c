@@ -665,7 +665,7 @@ PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc,PC_Telescope sred,PC_Telesco
     ierr = VecDuplicate(xred,&yred);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(xred,&st,&ed);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,ed-st,st,1,&isin);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(xred,&m);
+    ierr = VecGetLocalSize(xred,&m);CHKERRQ(ierr);
   } else {
     ierr = VecGetOwnershipRange(x,&st,&ed);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,0,st,1,&isin);CHKERRQ(ierr);

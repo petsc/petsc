@@ -3,14 +3,16 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECU = mpiaijcusparse.cu
-SOURCEF	 =
-SOURCEH	 = mpicusparsematimpl.h
-LIBBASE	 = libpetscmat
-DIRS	 =
-MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/aij/mpi/mpicusparse/
+SOURCEC  = veccuda.c
+SOURCECU = veccuda2.cu vecscattercuda.cu
+SOURCEF  =
+SOURCEH  = cudavecimpl.h
+LIBBASE  = libpetscvec
+MANSEC   = Vec
+LOCDIR   = src/vec/vec/impls/seq/seqcuda/
+DIRS     =
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
+
