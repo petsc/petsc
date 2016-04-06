@@ -54,7 +54,6 @@ class Configure(config.package.CMakePackage):
     args.append('-DUSE_XSDK_DEFAULTS=YES')
     args.append('-DTRILINOS_INSTALL_DIR='+os.path.dirname(self.trilinos.include[0]))
     args.append('-DTrilinos_INSTALL_DIR='+os.path.dirname(self.trilinos.include[0]))
-    args.append('-DTRILINOS_SOURCE_DIR='+self.trilinos.packageDir)
     if self.hypre.found:
       args.append('-DTPL_ENABLE_HYPRE=ON')
       args.append('-DTPL_HYPRE_LIBRARIES="'+self.libraries.toStringNoDupes(self.hypre.lib)+'"')
@@ -62,6 +61,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DTPL_ENABLE_PETSC=ON')
     args.append('-DPETSC_LIBRARY_DIRS='+os.path.join(self.petscdir.dir,'lib'))
     args.append('-DPETSC_INCLUDE_DIRS='+os.path.join(self.petscdir.dir,'include'))
+
+    args.append('-DxSDKTrilinos_ENABLE_TESTS=ON')
     return args
 
   def postProcess(self):
