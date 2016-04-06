@@ -20,12 +20,10 @@ PETSC_EXTERN void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),
 
 PETSC_EXTERN void PETSC_STDCALL petsctestfile_(CHAR name PETSC_MIXED_LEN(len),CHAR mode PETSC_MIXED_LEN(len1),PetscBool *flg,PetscErrorCode *ierr PETSC_END_LEN(len) PETSC_END_LEN(len1))
 {
-  char *c1,*m1;
+  char *c1;
 
   FIXCHAR(name,len,c1);
-  FIXCHAR(mode,len1,m1);
-  *ierr = PetscTestFile(c1,*m1,flg);
+  *ierr = PetscTestFile(c1,*mode,flg);
   FREECHAR(name,c1);
-  FREECHAR(mode,m1);
 }
 

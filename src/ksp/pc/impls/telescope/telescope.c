@@ -81,7 +81,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
     ierr = VecSetSizes(xred,PETSC_DECIDE,M);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xred,bs);CHKERRQ(ierr);
     ierr = VecSetFromOptions(xred);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(xred,&m);
+    ierr = VecGetLocalSize(xred,&m);CHKERRQ(ierr);
   }
 
   yred = NULL;

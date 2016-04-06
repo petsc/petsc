@@ -157,7 +157,7 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
     PetscInt    n, nroots;
 
     if (dm->sfNatural) {
-      ierr = VecGetLocalSize(originalv, &n);
+      ierr = VecGetLocalSize(originalv, &n);CHKERRQ(ierr);
       ierr = PetscSFGetGraph(dm->sfNatural, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
       if (n == nroots) {
         ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
