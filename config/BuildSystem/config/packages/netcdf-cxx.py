@@ -21,3 +21,9 @@ class Configure(config.package.GNUPackage):
     self.deps   = [self.mpi]
     return
 
+  def formGNUConfigureArgs(self):
+    ''' Specify netcdf '''
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    args.append('CPPFLAGS="'+self.headers.toString(self.netcdf.include)+'"')
+    args.append('LIBS="'+self.libraries.toString(self.netcdf.lib)+'"')
+    return args
