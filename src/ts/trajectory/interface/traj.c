@@ -292,7 +292,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
   if (!TSRegisterAllCalled) {ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsFList("-ts_trajectory_type","TSTrajectory method"," TSTrajectorySetType",TSTrajectoryList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrcmp(typeName,TSTRAJECTORYMEMORY,&flg);
+    ierr = PetscStrcmp(typeName,TSTRAJECTORYMEMORY,&flg);CHKERRQ(ierr);
     ierr = TSTrajectorySetType(tj,ts,typeName);CHKERRQ(ierr);
   } else {
     ierr = TSTrajectorySetType(tj,ts,defaultType);CHKERRQ(ierr);

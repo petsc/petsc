@@ -4798,7 +4798,7 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
       nrows  = rbs*(rstarts[i+1]-rstarts[i]); /* num of rows to be received */
       for (j=0; j<nrows; j++) {
         b_othi[k+1] = b_othi[k] + rowlen[j];
-        ierr = PetscIntSumError(rowlen[j],len,&len);
+        ierr = PetscIntSumError(rowlen[j],len,&len);CHKERRQ(ierr);
         k++;
       }
       rstartsj[i+1] = len; /* starting point of (i+1)-th incoming msg in bufj and bufa */

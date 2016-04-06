@@ -346,7 +346,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size,mesgsize,tag = ((PetscObject)viewer)->tag, mesglen;
-  PetscInt          len,n = xin->map->n,j,tr[2];
+  PetscInt          len,n,j,tr[2];
   int               fdes;
   MPI_Status        status;
   PetscScalar       *values;
