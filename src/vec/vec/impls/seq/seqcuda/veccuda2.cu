@@ -192,7 +192,7 @@ PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     err = cudaMemcpy(yarray,xarray,bn*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(err);
   } else if (alpha == (PetscScalar)1.0) {
     cberr = cublasXaxpy(cublasv2handle,bn,&alpha,xarray,one,yarray,one);CHKERRCUBLAS(cberr);
@@ -218,7 +218,7 @@ PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
   cublasStatus_t cberr;
 
   PetscFunctionBegin;
-  if (alpha != 0.0) {
+  if (alpha != (PetscScalar)0.0) {
     ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(win->map->n,&bn);CHKERRQ(ierr);
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     ierr = VecCopy_SeqCUDA(yin,win);CHKERRQ(ierr);
   } else {
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -786,9 +786,9 @@ PetscErrorCode VecScale_SeqCUDA(Vec xin,PetscScalar alpha)
   cublasStatus_t cberr;
 
   PetscFunctionBegin;
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     ierr = VecSet_SeqCUDA(xin,alpha);CHKERRQ(ierr);
-  } else if (alpha != 1.0) {
+  } else if (alpha != (PetscScalar)1.0) {
     ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
     cberr = cublasXscal(cublasv2handle,bn,&alpha,xarray,one);CHKERRCUBLAS(cberr);
@@ -907,13 +907,13 @@ PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
-  if (a == 0.0) {
+  if (a == (PetscScalar)0.0) {
     ierr = VecScale_SeqCUDA(yin,beta);CHKERRQ(ierr);
-  } else if (b == 1.0) {
+  } else if (b == (PetscScalar)1.0) {
     ierr = VecAXPY_SeqCUDA(yin,alpha,xin);CHKERRQ(ierr);
-  } else if (a == 1.0) {
+  } else if (a == (PetscScalar)1.0) {
     ierr = VecAYPX_SeqCUDA(yin,beta,xin);CHKERRQ(ierr);
-  } else if (b == 0.0) {
+  } else if (b == (PetscScalar)0.0) {
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
     err = cudaMemcpy(yarray,xarray,yin->map->n*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(err);
@@ -943,7 +943,7 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
   PetscInt       n = zin->map->n;
 
   PetscFunctionBegin;
-  if (gamma == 1.0) {
+  if (gamma == (PetscScalar)1.0) {
     /* z = ax + b*y + z */
     ierr = VecAXPY_SeqCUDA(zin,alpha,xin);CHKERRQ(ierr);
     ierr = VecAXPY_SeqCUDA(zin,beta,yin);CHKERRQ(ierr);

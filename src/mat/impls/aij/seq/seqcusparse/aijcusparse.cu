@@ -403,7 +403,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(Mat A)
 
         /* first, set the diagonal elements */
         AjUp[offset] = (PetscInt) i;
-        AAUp[offset] = 1./v[nz];
+        AAUp[offset] = (MatScalar)1./v[nz];
         AiUp[i]      = AiUp[i+1] - (nz+1);
 
         ierr = PetscMemcpy(&(AjUp[offset+1]), vi, nz*sizeof(PetscInt));CHKERRQ(ierr);
@@ -540,9 +540,9 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildICCTriMatrices(Mat A)
 
         /* first, set the diagonal elements */
         AjUp[offset] = (PetscInt) i;
-        AAUp[offset] = 1.0/v[nz];
+        AAUp[offset] = (MatScalar)1.0/v[nz];
         AiUp[i]      = offset;
-        AALo[offset] = 1.0/v[nz];
+        AALo[offset] = (MatScalar)1.0/v[nz];
 
         offset+=1;
         if (nz>0) {
