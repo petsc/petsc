@@ -18,7 +18,7 @@ T*/
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nroots,nleaves;
+  PetscInt       i,nroots,nrootsalloc,nleaves,nleavesalloc,*mine,stride;
   PetscSFNode    *remote;
   PetscMPIInt    rank,size;
   PetscSF        sf;
@@ -91,26 +91,39 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,NULL);CHKERRQ(ierr);
   test_invert     = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,NULL);CHKERRQ(ierr);
+  stride          = 1;
+  ierr            = PetscOptionsInt("-stride","Stride for leaf and root data","",stride,&stride,NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsEnd();CHKERRQ(ierr);
 
-  nroots  = 2 + (PetscInt)(rank == 0);
-  nleaves = 2 + (PetscInt)(rank > 0);
-  ierr    = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+  nroots       = 2 + (PetscInt)(rank == 0);
+  nrootsalloc  = nroots * stride;
+  nleaves      = 2 + (PetscInt)(rank > 0);
+  nleavesalloc = nleaves * stride;
+  mine         = NULL;
+  if (stride > 1) {
+    PetscInt i;
+
+    ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
+    for (i = 0; i < nleaves; i++) {
+      mine[i] = stride * i;
+    }
+  }
+  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   /* Left periodic neighbor */
   remote[0].rank  = (rank+size-1)%size;
-  remote[0].index = 1;
+  remote[0].index = 1 * stride;
   /* Right periodic neighbor */
   remote[1].rank  = (rank+1)%size;
-  remote[1].index = 0;
+  remote[1].index = 0 * stride;
   if (rank > 0) {               /* All processes reference rank 0, index 1 */
     remote[2].rank  = 0;
-    remote[2].index = 2;
+    remote[2].index = 2 * stride;
   }
 
   /* Create a star forest for communication. In this example, the leaf space is dense, so we pass NULL. */
   ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf,nroots,nleaves,NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,nrootsalloc,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
 
   /* View graph, mostly useful for debugging purposes. */
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
@@ -122,38 +135,41 @@ int main(int argc,char **argv)
     PetscInt *rootdata,*leafdata;
     /* Allocate space for send and recieve buffers. This example communicates PetscInt, but other types, including
      * user-defined structures, could also be used. */
-    ierr = PetscMalloc2(nroots,&rootdata,nleaves,&leafdata);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
     /* Set rootdata buffer to be broadcast */
-    for (i=0; i<nroots; i++) rootdata[i] = 100*(rank+1) + i;
+    for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
+    for (i=0; i<nroots; i++) rootdata[i*stride] = 100*(rank+1) + i;
     /* Initialize local buffer, these values are never used. */
-    for (i=0; i<nleaves; i++) leafdata[i] = -1;
+    for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
     /* Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls. */
     ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nroots,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleaves,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   }
 
   if (test_reduce) {            /* Reduce leafdata into rootdata */
     PetscInt *rootdata,*leafdata;
-    ierr = PetscMalloc2(nroots,&rootdata,nleaves,&leafdata);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
     /* Initialize rootdata buffer in which the result of the reduction will appear. */
-    for (i=0; i<nroots; i++) rootdata[i] = 100*(rank+1) + i;
+    for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
+    for (i=0; i<nroots; i++) rootdata[i*stride] = 100*(rank+1) + i;
     /* Set leaf values to reduce. */
-    for (i=0; i<nleaves; i++) leafdata[i] = 1000*(rank+1) + 10*i;
+    for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
+    for (i=0; i<nleaves; i++) leafdata[i*stride] = 1000*(rank+1) + 10*i;
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nroots,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* Perform reduction. Computation or other communication can be performed between the begin and end calls.
      * This example sums the values, but other MPI_Ops can be used (e.g MPI_MAX, MPI_PROD). */
     ierr = PetscSFReduceBegin(sf,MPIU_INT,leafdata,rootdata,mop);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(sf,MPIU_INT,leafdata,rootdata,mop);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleaves,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nroots,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   }
 
@@ -162,21 +178,23 @@ int main(int argc,char **argv)
     ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Root degrees\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nroots,degree,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nrootsalloc,degree,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   if (test_fetchandop) {
     /* Cannot use text compare here because token ordering is not deterministic */
     PetscInt *leafdata,*leafupdate,*rootdata;
-    ierr = PetscMalloc3(nleaves,&leafdata,nleaves,&leafupdate,nroots,&rootdata);CHKERRQ(ierr);
-    for (i=0; i<nleaves; i++) leafdata[i] = 1;
-    for (i=0; i<nroots; i++) rootdata[i] = 0;
+    ierr = PetscMalloc3(nleavesalloc,&leafdata,nleavesalloc,&leafupdate,nrootsalloc,&rootdata);CHKERRQ(ierr);
+    for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
+    for (i=0; i<nleaves; i++) leafdata[i*stride] = 1;
+    for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
+    for (i=0; i<nroots; i++) rootdata[i*stride] = 0;
     ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop);CHKERRQ(ierr);
     ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Rootdata (sum of 1 from each leaf)\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nroots,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Leafupdate (value at roots prior to my atomic update)\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleaves,leafupdate,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nleavesalloc,leafupdate,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscFree3(leafdata,leafupdate,rootdata);CHKERRQ(ierr);
   }
 
@@ -185,9 +203,10 @@ int main(int argc,char **argv)
     PetscInt       inedges,*indata,*outdata;
     ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
-    for (i=0,inedges=0; i<nroots; i++) inedges += degree[i];
-    ierr = PetscMalloc2(inedges,&indata,nleaves,&outdata);CHKERRQ(ierr);
-    for (i=0; i<nleaves; i++) outdata[i] = 1000*(rank+1) + i;
+    for (i=0,inedges=0; i<nrootsalloc; i++) inedges += degree[i];
+    ierr = PetscMalloc2(inedges,&indata,nleavesalloc,&outdata);CHKERRQ(ierr);
+    for (i=0; i<nleavesalloc; i++) outdata[i] = -1;
+    for (i=0; i<nleaves; i++) outdata[i*stride] = 1000*(rank+1) + i;
     ierr = PetscSFGatherBegin(sf,MPIU_INT,outdata,indata);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(sf,MPIU_INT,outdata,indata);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Gathered data at multi-roots from leaves\n");CHKERRQ(ierr);
@@ -200,9 +219,10 @@ int main(int argc,char **argv)
     PetscInt       j,count,inedges,*indata,*outdata;
     ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
-    for (i=0,inedges=0; i<nroots; i++) inedges += degree[i];
-    ierr = PetscMalloc2(inedges,&indata,nleaves,&outdata);CHKERRQ(ierr);
-    for (i=0,count=0; i<nroots; i++) {
+    for (i=0,inedges=0; i<nrootsalloc; i++) inedges += degree[i];
+    ierr = PetscMalloc2(inedges,&indata,nleavesalloc,&outdata);CHKERRQ(ierr);
+    for (i=0; i<nleavesalloc; i++) outdata[i] = -1;
+    for (i=0,count=0; i<nrootsalloc; i++) {
       for (j=0; j<degree[i]; j++) indata[count++] = 1000*(rank+1) + 100*i + j;
     }
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Data at multi-roots, to scatter to leaves\n");CHKERRQ(ierr);
@@ -211,12 +231,12 @@ int main(int argc,char **argv)
     ierr = PetscSFScatterBegin(sf,MPIU_INT,indata,outdata);CHKERRQ(ierr);
     ierr = PetscSFScatterEnd(sf,MPIU_INT,indata,outdata);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Scattered data at leaves\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleaves,outdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(nleavesalloc,outdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscFree2(indata,outdata);CHKERRQ(ierr);
   }
 
   if (test_embed) {
-    const PetscInt nroots = 1 + (PetscInt) !rank,selected[] = {1,2};
+    const PetscInt nroots = 1 + (PetscInt) !rank,selected[] = {1*stride,2*stride};
     PetscSF        esf;
     ierr = PetscSFCreateEmbeddedSF(sf,nroots,selected,&esf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n");CHKERRQ(ierr);
