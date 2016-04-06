@@ -712,6 +712,24 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelHasStratum"
+PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exists)
+{
+  PetscInt v;
+
+  PetscFunctionBegin;
+  PetscValidPointer(exists, 3);
+  *exists = PETSC_FALSE;
+  for (v = 0; v < label->numStrata; ++v) {
+    if (label->stratumValues[v] == value) {
+      *exists = PETSC_TRUE;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelGetStratumSize"
 PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *size)
 {

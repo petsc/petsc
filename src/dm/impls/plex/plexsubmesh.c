@@ -1586,7 +1586,7 @@ static PetscErrorCode GetSurfaceSide_Static(DM dm, DM subdm, PetscInt numSubpoin
 PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscBool flip, DM subdm)
 {
   DMLabel         depthLabel;
-  IS              dimIS, subpointIS, facePosIS, faceNegIS, crossEdgeIS = NULL;
+  IS              dimIS, subpointIS = NULL, facePosIS, faceNegIS, crossEdgeIS = NULL;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
   PetscInt       *pMax;
@@ -1612,6 +1612,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   ierr = DMLabelGetStratumIS(label, dim-1, &dimIS);CHKERRQ(ierr);
   if (!dimIS) {
     ierr = PetscFree(pMax);CHKERRQ(ierr);
+    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
@@ -1662,10 +1663,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   }
   ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
-  if (subdm) {
-    if (subpointIS) {ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);}
-    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
-  }
+  if (subpointIS) {ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);}
+  ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
   /* Mark boundary points as unsplit */
   if (blabel) {
     ierr = DMLabelGetStratumIS(blabel, 1, &dimIS);CHKERRQ(ierr);
