@@ -6,7 +6,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = 'master'
     # using fork of Sherry's branch to work around bug in handling of BLAS, pull request made 
-    self.download         = ['git://https://github.com/petsc/superlu']
+    self.download         = ['git://https://github.com/xiaoyeli/superlu']
 #    self.download         = ['git://https://github.com/xiaoyeli/superlu']
 #    self.download         = ['git://https://bitbucket.org/petsc/pkg-superlu.git',
 #                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_5.1.tar.gz']
