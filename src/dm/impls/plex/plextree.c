@@ -3681,7 +3681,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
       ierr = PetscSectionGetDof(globalCoarse,p,&dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(globalCoarse,p,&cdof);CHKERRQ(ierr);
       if ((dof - cdof) > 0) {
-        pointsWithDofs[offset++] = p - pStartF;
+        pointsWithDofs[offset++] = p - pStartC;
       }
     }
     ierr = PetscSFCreateEmbeddedSF(coarseToFineEmbedded, numPointsWithDofs, pointsWithDofs, &sfDofsOnly);CHKERRQ(ierr);
