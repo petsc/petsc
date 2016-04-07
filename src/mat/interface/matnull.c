@@ -413,7 +413,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec)
 PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
 {
   PetscScalar    sum;
-  PetscReal      nrm;
+  PetscReal      nrm,tol = 10. * PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       j,n,N;
   PetscErrorCode ierr;
   Vec            l,r;
@@ -441,7 +441,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
     ierr = VecSet(l,sum);CHKERRQ(ierr);
     ierr = MatMult(mat,l,r);CHKERRQ(ierr);
     ierr = VecNorm(r,NORM_2,&nrm);CHKERRQ(ierr);
-    if (nrm >= 1.e-7) consistent = PETSC_FALSE;
+    if (nrm >= tol) consistent = PETSC_FALSE;
     if (flg1) {
       if (consistent) {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are likely null vector");CHKERRQ(ierr);
@@ -458,7 +458,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   for (j=0; j<n; j++) {
     ierr = (*mat->ops->mult)(mat,sp->vecs[j],l);CHKERRQ(ierr);
     ierr = VecNorm(l,NORM_2,&nrm);CHKERRQ(ierr);
-    if (nrm >= 1.e-7) consistent = PETSC_FALSE;
+    if (nrm >= tol) consistent = PETSC_FALSE;
     if (flg1) {
       if (consistent) {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %D is likely null vector",j);CHKERRQ(ierr);
