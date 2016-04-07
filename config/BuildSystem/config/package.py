@@ -34,6 +34,7 @@ class Package(config.base.Configure):
     self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
     self.download         = []   # list of URLs where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
+    self.odeps            = []   # dependent packages that are optional
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
     self.extraLib         = []   # additional libraries needed to link
@@ -650,6 +651,7 @@ class Package(config.base.Configure):
           str = ''
           if package.download: str = ' or --download-'+package.package
           raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+str)
+    for package in self.deps + self.odeps:
       if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
       if hasattr(package, 'include') and not incls is None: incls += package.include
     return
@@ -1115,10 +1117,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
         self.downloadversion
     - override setupHelp to declare command-line arguments that can be used anywhere below
       (GNUPackage takes care of some of the basic args, including the download version)
-    - override setupDependencies to "require" dependent objects and to set up the following instance veriables
-        self.deps
-        self.odeps
-      as appropriate
+    - override setupDependencies to process self.odeps and enable this optional package feature in the current externalpackage.
     - override setupDownload to control the precise download URL and/or
     - override setupDownloadVersion to control the self.downloadversion string inserted into self.download between self.downloadpath and self.downloadext
 '''
@@ -1132,11 +1131,6 @@ class GNUPackage(Package):
     config.package.Package.setupHelp(self,help)
     import nargs
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
-
-  def setupDependencies(self,framework):
-    config.package.Package.setupDependencies(self, framework)
-    # optional dependencies, that will be turned off in GNU configure, if they are absent
-    self.odeps = []
 
   def formGNUConfigureArgs(self):
     '''This sets up the prefix, compiler flags, shared flags, and other generic arguments
@@ -1247,11 +1241,7 @@ class GNUPackage(Package):
       if not package.found:
         if self.argDB['with-'+package.package] == 1:
           raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
-      if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
-      if hasattr(package, 'include') and not incls is None: incls += package.include
     return
-
-
 
 class CMakePackage(Package):
   def __init__(self, framework):

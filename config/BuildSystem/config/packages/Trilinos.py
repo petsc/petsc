@@ -32,8 +32,10 @@ class Configure(config.package.CMakePackage):
     self.exodusii        = framework.require('config.packages.exodusii',self)
     self.scalapack       = framework.require('config.packages.scalapack',self)
     self.mumps           = framework.require('config.packages.MUMPS',self)
+    # multiple libraries in Trilinos seem to depend on Boost, I cannot easily determine which
     self.boost           = framework.require('config.packages.boost',self)
-    self.deps            = [self.mpi,self.blasLapack]
+    self.deps            = [self.mpi,self.blasLapack,self.boost]
+    self.odeps           = [self.hwloc,self.superlu,self.superlu_dist,self.parmetis,self.ptscotch,self.hypre,self.hdf5,self.netcdf,self.exodusii]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -42,9 +44,6 @@ class Configure(config.package.CMakePackage):
     # Check for 64bit pointers
     if self.types.sizes['known-sizeof-void-p'] != 8:
       raise RuntimeError('Trilinos requires 64bit compilers!')
-    # multiple libraries in Trilinos seem to depend on Boost, I cannot easily determine which
-    if not self.boost.found:
-      raise RuntimeError('Trilinos requires boost so add --with-boost-dir=/pathtoboost or --download-boost and run configure again')
 
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
