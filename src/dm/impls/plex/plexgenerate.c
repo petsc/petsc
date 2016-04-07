@@ -838,11 +838,26 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
-    const double   *meshCoords = out->pointlist;
+    double         *meshCoords;
     int            *cells      = out->tetrahedronlist;
+
+    if (sizeof (PetscReal) == sizeof (double)) {
+      meshCoords = (double *) out->pointlist;
+    }
+    else {
+      PetscInt i;
+
+      ierr = PetscMalloc1(3 * numVertices,&meshCoords);CHKERRQ(ierr);
+      for (i = 0; i < 3 * numVertices; i++) {
+        meshCoords[i] = (PetscReal) out->pointlist[i];
+      }
+    }
 
     ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
+    if (sizeof (PetscReal) != sizeof (double)) {
+      ierr = PetscFree(meshCoords);CHKERRQ(ierr);
+    }
     if (label) {ierr = DMCreateLabel(*dm, labelName); ierr = DMGetLabel(*dm, labelName, &glabel);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -977,12 +992,27 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
-    const double   *meshCoords = out->pointlist;
+    double         *meshCoords;
     int            *cells      = out->tetrahedronlist;
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
+    if (sizeof (PetscReal) == sizeof (double)) {
+      meshCoords = (double *) out->pointlist;
+    }
+    else {
+      PetscInt i;
+
+      ierr = PetscMalloc1(3 * numVertices,&meshCoords);CHKERRQ(ierr);
+      for (i = 0; i < 3 * numVertices; i++) {
+        meshCoords[i] = (PetscReal) out->pointlist[i];
+      }
+    }
+
     ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
+    if (sizeof (PetscReal) != sizeof (double)) {
+      ierr = PetscFree(meshCoords);CHKERRQ(ierr);
+    }
     if (label) {ierr = DMCreateLabel(*dmRefined, labelName); ierr = DMGetLabel(*dmRefined, labelName, &rlabel);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -1143,9 +1173,11 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       if (refinementFunc) {
         for (c = cStart; c < cEnd; ++c) {
           PetscReal vol, centroid[3];
+          PetscReal maxVol;
 
           ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
-          ierr = (*refinementFunc)(centroid, &maxVolumes[c-cStart]);CHKERRQ(ierr);
+          ierr = (*refinementFunc)(centroid, &maxVol);CHKERRQ(ierr);
+          maxVolumes[c - cStart] = (double) maxVol;
         }
       } else {
         for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
