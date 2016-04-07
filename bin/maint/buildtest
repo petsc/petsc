@@ -74,13 +74,22 @@ if ( $? ) then
 else
   set BUILDER="yes"
 endif
+#
+# check if PETSC_ARCH has name analyzer - if so enable build with clang static analyzer
+#
+echo $PETSC_ARCH | grep analyzer > /dev/null
+if ( $? ) then
+  set ANALYZER=""
+else
+  set ANALYZER="scan-build"
+endif
 set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 
 if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all-legacy test >>& build.log
   set err=$?
 else
-  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
+  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
   set err=$?
 endif
 echo '****************************************************' >>& build.log
@@ -116,7 +125,7 @@ endif
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py regression >>& examples.log
 else
-  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$wnPETSC_DIR  alltests TESTMODE=$TESTMODE "${VALGRIND}" |& grep -v 'up to date' >>& examples.log
+  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$wnPETSC_DIR  alltests TESTMODE=$TESTMODE "${VALGRIND}" |& grep -v 'up to date' >>& examples.log
 endif
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
