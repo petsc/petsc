@@ -3373,7 +3373,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices_Injection(DM refTre
 
     ierr = DMPlexGetTreeParent(refTree,p,&parent,NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(refConSec,p,&pDof);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(refConSec,parent,&parentDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(refSection,parent,&parentDof);CHKERRQ(ierr);
     if (!pDof || !parentDof || parent == p) continue;
 
     ierr = PetscMalloc1(numFields,&refPointFieldMats[p-pRefStart]);CHKERRQ(ierr);
@@ -3444,13 +3444,14 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices_Injection(DM re
   PetscDS        ds;
   PetscScalar    ***refPointFieldMats;
   PetscInt       numFields, pRefStart, pRefEnd, p, f;
-  PetscSection   refConSec;
+  PetscSection   refConSec, refSection;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   refPointFieldMats = *childrenMats;
   *childrenMats = NULL;
   ierr = DMGetDS(refTree,&ds);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(refTree,&refSection);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
   ierr = DMGetDefaultConstraints(refTree,&refConSec,NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
@@ -3459,7 +3460,7 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices_Injection(DM re
 
     ierr = DMPlexGetTreeParent(refTree,p,&parent,NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(refConSec,p,&pDof);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(refConSec,parent,&parentDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(refSection,parent,&parentDof);CHKERRQ(ierr);
     if (!pDof || !parentDof || parent == p) continue;
 
     for (f = 0; f < numFields; f++) {
@@ -3724,6 +3725,8 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
 
   /* count indices */
   ierr = MatGetLayouts(mat,&rowMap,&colMap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(rowMap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(colMap);CHKERRQ(ierr);
   ierr = PetscLayoutGetRange(rowMap,&rowStart,&rowEnd);CHKERRQ(ierr);
   ierr = PetscLayoutGetRange(colMap,&colStart,&colEnd);CHKERRQ(ierr);
   ierr = PetscCalloc2(rowEnd-rowStart,&nnzD,rowEnd-rowStart,&nnzO);CHKERRQ(ierr);
