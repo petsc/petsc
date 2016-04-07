@@ -2508,6 +2508,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               indicesPoint_private(localCoarse, c, globalOff < 0 ? -(globalOff+1) : globalOff, newOffsets, PETSC_FALSE, o, pInd);
             }
           }
+          ierr = DMRestoreWorkArray(coarse,numPoints,PETSC_SCALAR,&points);CHKERRQ(ierr);
         }
       }
       else if (matSize) {
