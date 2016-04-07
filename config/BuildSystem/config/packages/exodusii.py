@@ -74,8 +74,8 @@ class Configure(config.package.Package):
           output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib')+' && '+self.installSudo+'cp -rf '+os.path.join(builddir,'libexodus.a')+' '+os.path.join(self.installDir,'lib'), timeout=6000, log = self.log)
           output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include')+' && '+self.installSudo+'cp -rf '+os.path.join(builddir,'cbind','include','*.h')+' '+os.path.join(self.installDir,'include'), timeout=6000, log = self.log)
         else:
-          output,err,ret  = config.base.Configure.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib')), timeout=6, log = self.log)
-          output,err,ret  = config.base.Configure.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include') timeout=6, log = self.log)
+          output,err,ret  = config.base.Configure.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=6, log = self.log)
+          output,err,ret  = config.base.Configure.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=6, log = self.log)
           shutil.copy(os.path.join(builddir,'libexodus.a'),os.path.join(self.installDir,'lib'))
           for i in cincludes:
             shutil.copy(os.path.join(builddir,'cbind','include',i),os.path.join(self.installDir,'include'))
