@@ -353,7 +353,8 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(yin,&yarray);CHKERRQ(ierr);
-  cberr = cublasXdot(cublasv2handle,bn,xarray,one,yarray,one,z);CHKERRCUBLAS(cberr);
+  /* arguments y, x are reversed because BLAS complex conjugates the first argument, PETSc the second */
+  cberr = cublasXdot(cublasv2handle,bn,yarray,one,xarray,one,z);CHKERRCUBLAS(cberr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
   if (xin->map->n >0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
@@ -610,10 +611,10 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         ierr = VecCUDAGetArrayRead(yin[current_y_index+3],&y3ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y1ptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y2ptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y3ptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y2ptr,one,xptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y3ptr,one,xptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
 #else
         // run kernel:
         VecMDot_SeqCUDA_kernel4<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,y3ptr,n,group_results_gpu);
@@ -640,9 +641,9 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         ierr = VecCUDAGetArrayRead(yin[current_y_index+2],&y2ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y1ptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y2ptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y2ptr,one,xptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
 #else
         // run kernel:
         VecMDot_SeqCUDA_kernel3<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,n,group_results_gpu);
@@ -668,8 +669,8 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         ierr = VecCUDAGetArrayRead(yin[current_y_index+1],&y1ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y1ptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
 #else
         // run kernel:
         VecMDot_SeqCUDA_kernel2<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,n,group_results_gpu);
@@ -690,7 +691,7 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
 
       case 1:
         ierr = VecCUDAGetArrayRead(yin[current_y_index],&y0ptr);CHKERRQ(ierr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
         ierr = VecCUDARestoreArrayRead(yin[current_y_index],&y0ptr);CHKERRQ(ierr);
         current_y_index += 1;
         break;
@@ -706,14 +707,14 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         ierr = VecCUDAGetArrayRead(yin[current_y_index+7],&y7ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y1ptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y2ptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y3ptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y4ptr,one,&z[current_y_index+4]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y5ptr,one,&z[current_y_index+5]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y6ptr,one,&z[current_y_index+6]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y7ptr,one,&z[current_y_index+7]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y2ptr,one,xptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y3ptr,one,xptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y4ptr,one,xptr,one,&z[current_y_index+4]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y5ptr,one,xptr,one,&z[current_y_index+5]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y6ptr,one,xptr,one,&z[current_y_index+6]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y7ptr,one,xptr,one,&z[current_y_index+7]);CHKERRCUBLAS(cberr);
 #else
         // run kernel:
         VecMDot_SeqCUDA_kernel8<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,y3ptr,y4ptr,y5ptr,y6ptr,y7ptr,n,group_results_gpu);
