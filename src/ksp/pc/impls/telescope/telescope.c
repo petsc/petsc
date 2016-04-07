@@ -161,7 +161,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat
   PetscBool        has_const;
   PetscInt         i,k,n;
   const Vec        *vecs;
-  Vec              *sub_vecs;
+  Vec              *sub_vecs = NULL;
   MPI_Comm         subcomm;
 
   PetscFunctionBegin;
