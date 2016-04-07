@@ -33,8 +33,11 @@
 
  100  continue
 
-      Allocate(list1(Len),stat=ierr);
+      Allocate(list1(Len),stat=ierr)
+      if (ierr .ne. 0) return
       Allocate(CArray(Len+1),stat=ierr)
+      if (ierr .ne. 0) return
+      
       do i=1,Len
          list1(i) = trim(FArray(i))//C_NULL_CHAR
       enddo
