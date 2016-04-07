@@ -3776,7 +3776,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
           PetscInt rowIndex = parentIndices[i];
           if (rowIndex < 0) continue;
           if (colIndex < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unconstrained fine and constrained coarse");
-          if (colIndex >= rowStart && colIndex < rowEnd) {
+          if (colIndex >= colStart && colIndex < colEnd) {
             nnzD[rowIndex - rowStart] = 1;
           }
           else {
