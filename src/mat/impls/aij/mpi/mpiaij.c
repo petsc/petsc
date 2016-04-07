@@ -3771,9 +3771,13 @@ PetscErrorCode  MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pets
 #define __FUNCT__ "MatMPIAIJGetSeqAIJ"
 PetscErrorCode  MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[])
 {
-  Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
-
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PetscBool      flg;
+  PetscErrorCode ierr;
+  
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MPIAIJ matrix as input");
   if (Ad)     *Ad     = a->A;
   if (Ao)     *Ao     = a->B;
   if (colmap) *colmap = a->garray;
