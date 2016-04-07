@@ -5141,7 +5141,6 @@ static PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, Pets
 #define __FUNCT__ "DMPlexCreateCellNumbering_Internal"
 PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalCellNumbers)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscInt       cellHeight, cStart, cEnd, cMax;
   PetscErrorCode ierr;
 
@@ -5172,7 +5171,6 @@ PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
 #define __FUNCT__ "DMPlexCreateVertexNumbering_Internal"
 PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalVertexNumbers)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscInt       vStart, vEnd, vMax;
   PetscErrorCode ierr;
 
