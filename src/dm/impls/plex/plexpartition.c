@@ -1323,7 +1323,7 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   ubvec[0] = 1.05;
 
   if (nparts == 1) {
-    ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));
+    ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));CHKERRQ(ierr);
   } else {
     if (vtxdist[1] == vtxdist[nparts]) {
       if (!rank) {

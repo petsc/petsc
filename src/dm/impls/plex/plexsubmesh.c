@@ -2108,7 +2108,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
 {
   DMLabel         label = NULL;
   const PetscInt *cone;
-  PetscInt        dim, cMax, cEnd, c, subc = 0, p, coneSize;
+  PetscInt        dim, cMax, cEnd, c, subc = 0, p, coneSize = -1;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -2134,8 +2134,9 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
     *numFaces = cEnd - cMax;
     ierr = DMPlexGetConeSize(dm, cMax, &coneSize);CHKERRQ(ierr);
   }
-  *nFV = hasLagrange ? coneSize/3 : coneSize/2;
   ierr = PetscMalloc1(*numFaces *2, subCells);CHKERRQ(ierr);
+  if (!(*numFaces)) PetscFunctionReturn(0);
+  *nFV = hasLagrange ? coneSize/3 : coneSize/2;
   for (c = cMax; c < cEnd; ++c) {
     const PetscInt *cells;
     PetscInt        numCells;
