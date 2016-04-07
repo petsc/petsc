@@ -252,7 +252,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
         if re.search(r'[Ww]arning[: ]', line):
           has_serious_warning = True
           for warning in exclude_warnings:
-            if line.find(warning):
+            if line.find(warning)>=0 :
               has_serious_warning = False
               break
           if has_serious_warning == True:
