@@ -239,10 +239,10 @@
      if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
 
      th->status = TS_STEP_PENDING;
-     ierr = VecAXPBYPCZ(th->Xdot,-shift,shift,0,th->X0,th->X);CHKERRQ(ierr);
      if (th->endpoint) {
        ierr = VecCopy(th->X,ts->vec_sol);CHKERRQ(ierr);
      } else {
+       ierr = VecAXPBYPCZ(th->Xdot,-shift,shift,0,th->X0,th->X);CHKERRQ(ierr);
        ierr = VecAXPY(ts->vec_sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
      }
      ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
