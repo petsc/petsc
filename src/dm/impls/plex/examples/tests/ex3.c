@@ -653,7 +653,7 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
   void            *exactCtxs[3];
   MPI_Comm         comm;
-  PetscReal        error, errorDer, tol = 1.0e-10;
+  PetscReal        error, errorDer, tol = PETSC_SMALL;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
