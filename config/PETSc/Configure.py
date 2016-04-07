@@ -17,20 +17,26 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
+    self.installed = 0 # 1 indicates that Configure itself has already compiled and installed PETSc
     return
 
   def __str2__(self):
     desc = []
-    desc.append('xxx=========================================================================xxx')
-    if self.make.getMakeMacro('MAKE_IS_GNUMAKE'):
-      build_type = 'gnumake build'
-    elif self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
-      build_type = 'cmake build'
+    if not self.installed:
+      desc.append('xxx=========================================================================xxx')
+      if self.make.getMakeMacro('MAKE_IS_GNUMAKE'):
+        build_type = 'gnumake build'
+      elif self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
+        build_type = 'cmake build'
+      else:
+        build_type = 'legacy build'
+      desc.append(' Configure stage complete. Now build PETSc libraries with (%s):' % build_type)
+      desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
+      desc.append('xxx=========================================================================xxx')
     else:
-      build_type = 'legacy build'
-    desc.append(' Configure stage complete. Now build PETSc libraries with (%s):' % build_type)
-    desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
-    desc.append('xxx=========================================================================xxx')
+      desc.append('xxx=========================================================================xxx')
+      desc.append(' Installation complete. You do not need to run make to compile or install the software')
+      desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):
@@ -1035,6 +1041,10 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
           i.postProcess()
           postPackages.remove(i)
       for i in postPackages: i.postProcess()
+      for i in postPackages:
+        if i.installedpetsc:
+          self.installed = 1
+          break
     return
 
   def configure(self):

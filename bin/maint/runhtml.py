@@ -216,7 +216,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       # Checking for successful completion
       configure_success = False
       for line in open(logfile_configure_full):
-        if re.search(r'Configure stage complete', line):
+        if re.search(r'Configure stage complete', line) or  re.search(r'Installation complete', line):
           outfile.write("<td class=\"green\">Success</td>")
           outfile.write(format_time(execution_time(logfile_configure_full)))
           configure_success = True
