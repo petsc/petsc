@@ -2257,6 +2257,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       }
     }
     ierr = PetscSFCreateEmbeddedLeafSF(coarseToFine, numPointsWithDofs, pointsWithDofs, &coarseToFineEmbedded);CHKERRQ(ierr);
+    ierr = PetscFree(pointsWithDofs);CHKERRQ(ierr);
   }
   /* communicate back to the coarse mesh which coarse points have children (that may require interpolation) */
   ierr = PetscMalloc1(pEndC-pStartC,&maxChildIds);CHKERRQ(ierr);
@@ -3516,6 +3517,8 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
   if (!injRef) {
     ierr = DMPlexComputeInjectorReferenceTree(refTree,&injRef);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)cMatRef,"DMPlexComputeInjectorTree_refTree",(PetscObject)injRef);CHKERRQ(ierr);
+    /* there is now a reference in cMatRef, which should be the only one for symmetry with the above case */
+    ierr = PetscObjectDereference((PetscObject)injRef);CHKERRQ(ierr);
   }
 
   ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
@@ -3719,6 +3722,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
     ierr = PetscSFBcastEnd(indicesSF,MPIU_INT,leafIndices,rootIndices);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&indicesSF);CHKERRQ(ierr);
   }
+  ierr = PetscSectionDestroy(&leafIndicesSec);CHKERRQ(ierr);
   ierr = PetscFree(leafIndices);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coarseToFineEmbedded);CHKERRQ(ierr);
 
@@ -3918,6 +3922,9 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
       }
     }
   }
+  ierr = PetscSectionDestroy(&multiRootSec);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootIndicesSec);CHKERRQ(ierr);
+  ierr = PetscFree(parentIndices);CHKERRQ(ierr);
   ierr = DMPlexReferenceTreeRestoreChildrenMatrices_Injection(refTree,injRef,&childrenMats);CHKERRQ(ierr);
   ierr = PetscFree(rootIndices);CHKERRQ(ierr);
   ierr = PetscFree3(offsets,offsetsCopy,rowOffsets);CHKERRQ(ierr);
