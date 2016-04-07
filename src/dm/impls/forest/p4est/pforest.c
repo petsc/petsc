@@ -3762,44 +3762,6 @@ static PetscErrorCode DMPforestGetPlex(DM dm,DM *plex)
   PetscFunctionReturn(0);
 }
 
-#define DMCoarsen_pforest _append_pforest(DMCoarsen)
-#undef __FUNCT__
-#define __FUNCT__ _pforest_string(DMCoarsen_pforest)
-static PetscErrorCode DMCoarsen_pforest(DM dm, MPI_Comm comm, DM *dmc)
-{
-  DM             coarseDM;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  {
-    PetscMPIInt mpiComparison;
-    MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
-
-    ierr = MPI_Comm_compare(comm, dmcomm, &mpiComparison);CHKERRQ(ierr);
-    if (mpiComparison != MPI_IDENT && mpiComparison != MPI_CONGRUENT) {
-      SETERRQ(dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
-    }
-  }
-  ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);
-  if (!coarseDM) {
-    DM coarseDM;
-
-    ierr = DMCreate(PetscObjectComm((PetscObject)dm),&coarseDM);CHKERRQ(ierr);
-  }
-  if (coarseDM) {
-    void *ctx;
-    PetscDS ds;
-
-    ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
-    ierr = DMSetApplicationContext(coarseDM,ctx);CHKERRQ(ierr);
-    ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-    ierr = DMSetDS(coarseDM,ds);CHKERRQ(ierr);
-    ierr = DMCopyBoundary(dm,coarseDM);CHKERRQ(ierr);
-  }
-  *dmc = coarseDM;
-  PetscFunctionReturn(0);
-}
-
 #define DMCreateInterpolation_pforest _append_pforest(DMCreateInterpolation)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateInterpolation_pforest)
@@ -4270,7 +4232,6 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->setup                     = DMSetUp_pforest;
   dm->ops->view                      = DMView_pforest;
   dm->ops->clone                     = DMClone_pforest;
-  dm->ops->coarsen                   = DMCoarsen_pforest;
   dm->ops->createinterpolation       = DMCreateInterpolation_pforest;
   dm->ops->getinjection              = DMCreateInjection_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;

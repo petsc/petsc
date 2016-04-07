@@ -1583,6 +1583,15 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  {
+    PetscMPIInt mpiComparison;
+    MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
+
+    ierr = MPI_Comm_compare(comm, dmcomm, &mpiComparison);CHKERRQ(ierr);
+    if (mpiComparison != MPI_IDENT && mpiComparison != MPI_CONGRUENT) {
+      SETERRQ(dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
+    }
+  }
   ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);
   if (coarseDM) {
     ierr = PetscObjectReference((PetscObject)coarseDM);CHKERRQ(ierr);
@@ -1590,6 +1599,7 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
     PetscFunctionReturn(0);
   }
   ierr = DMForestTemplate(dm,comm,dmCoarsened);CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_FOREST_COARSEN);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
   if (!coarsen) {
     ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);
