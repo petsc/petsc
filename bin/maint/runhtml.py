@@ -233,11 +233,12 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       outfile.write("<td></td>")
       # Warnings:
       warning_list = []
-      exclude_warnings = ["unrecognized .pragma",
+      exclude_warnings_re = ["unrecognized .pragma",
                           "warning: .SSL",
                           "warning: .BIO_",
                           "warning: treating 'c' input as 'c..' when in C.. mode",
-                          "warning: statement not reached",
+                          "warning[s]* generated"]
+      exclude_warnings = ["warning: statement not reached",
                           "warning: loop not entered at top",
                           "is deprecated",
                           "is superseded",
@@ -247,14 +248,22 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "(aka 'const long *') doesn't match specified 'MPI' type tag that requires 'long long *'",
                           "(aka 'long *') doesn't match specified 'MPI' type tag that requires 'long long *'",
                           "cusp/complex.h", "cusp/detail/device/generalized_spmv/coo_flat.h",
+                          "Warning: Cannot tell what pointer points to, assuming global memory space",
+                          "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_'",
+                          "warning: linker scope was specified more than once",
                           "thrust/detail/vector_base.inl", "thrust/detail/tuple_transform.h", "detail/tuple.inl", "detail/launch_closure.inl"]
       for line in open(logfile_make_full):
         if re.search(r'[Ww]arning[: ]', line):
           has_serious_warning = True
-          for warning in exclude_warnings:
-            if line.find(warning)>=0 :
+          for warning in exclude_warnings_re:
+            if re.search(warning, line):
               has_serious_warning = False
               break
+          if has_serious_warning:
+            for warning in exclude_warnings:
+              if re.search(warning, line) or line.find(warning)>=0 :
+                has_serious_warning = False
+                break
           if has_serious_warning == True:
             warning_list.append(line)
       num_warnings = len(warning_list)
