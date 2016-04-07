@@ -3,7 +3,6 @@
 #include <pragmatic/cpragmatic.h>
 #endif
 
-#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCoarsen_Plex"
