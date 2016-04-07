@@ -68,6 +68,17 @@ class Configure(config.package.CMakePackage):
   def postProcess(self):
     self.compilePETSc()
     config.package.CMakePackage.Install(self)
+    if not self.argDB['with-batch']:
+      try:
+        self.logPrintBox('Testing xSDKTrilinos; this may take several minutes')
+        output,err,ret  = config.package.CMakePackage.executeShellCommand('cd '+os.path.join(self.packageDir,'build')+' && '+self.cmake.ctest,timeout=50, log = self.log)
+        output = output+err
+        self.log.write(output)
+        if output.find('Failure') > -1:
+          raise RuntimeError('Error running ctest on xSDKTrilinos: '+output)
+      except RuntimeError, e:
+        raise RuntimeError('Error running ctest on xSDKTrilinos: '+str(e))
+
 
 
 

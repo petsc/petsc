@@ -17,6 +17,7 @@ class Configure(config.package.GNUPackage):
     help.addArgument('CMAKE', '-download-cmake-cc=<prog>',                   nargs.Arg(None, None, 'C compiler for Cmake configure'))
     help.addArgument('CMAKE', '-download-cmake-configure-options=<options>', nargs.Arg(None, None, 'Additional options for Cmake configure'))
     help.addArgument('CMAKE', '-with-cmake-exec=<executable>',                nargs.Arg(None, None, 'CMake executable to look for'))
+    help.addArgument('CMAKE', '-with-ctest-exec=<executable>',                nargs.Arg(None, None, 'Ctest executable to look for'))
     return
 
   def formGNUConfigureArgs(self):
@@ -36,6 +37,12 @@ class Configure(config.package.GNUPackage):
     else:
       self.log.write('Looking for default CMake executable\n')
       self.getExecutable('cmake', getFullPath=1, resultName='cmake')
+    if 'with-ctest-exec' in self.argDB:
+      self.log.write('Looking for specified Ctest executable '+self.argDB['with-ctest-exec']+'\n')
+      self.getExecutable(self.argDB['with-ctest-exec'], getFullPath=1, resultName='ctest')
+    else:
+      self.log.write('Looking for default CTest executable\n')
+      self.getExecutable('ctest', getFullPath=1, resultName='ctest')
     return
 
   def alternateConfigureLibrary(self):
