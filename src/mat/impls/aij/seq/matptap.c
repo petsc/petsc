@@ -361,7 +361,6 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
     ierr = PetscTime(&t0);CHKERRQ(ierr);
 #endif
     anz  = ai[i+1] - ai[i];
-    apnz = 0;
     for (j=0; j<anz; j++) {
       prow = aj[j];
       pnz  = pi[prow+1] - pi[prow];

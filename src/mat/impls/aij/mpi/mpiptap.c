@@ -265,7 +265,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* (2-1) compute symbolic Co = Ro*AP_loc  */
   /* ------------------------------------ */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Ro,ptap->AP_loc,fill,&ptap->C_oth);CHKERRQ(ierr);
-  c_oth = (Mat_SeqAIJ*)ptap->C_oth->data;
 #if defined(PTAP_PROFILE)
   ierr = PetscTime(&t1);CHKERRQ(ierr);
 #endif
@@ -1060,7 +1059,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,Mat C)
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
   p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
-  pi_loc=p_loc->i; pj_loc=p_loc->j; pJ=pj_loc; pa_loc=p_loc->a;
+  pi_loc=p_loc->i; pj_loc=p_loc->j; pa_loc=p_loc->a;
   pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
 
   coi  = merge->coi; coj = merge->coj;

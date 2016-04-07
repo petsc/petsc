@@ -429,7 +429,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
   PetscErrorCode  ierr;
   MC_JP          *jp = (MC_JP*)mc->data;
   PetscInt        i,nadded,nadded_total,nadded_total_old,ntotal,n,round;
-  PetscInt        maxcolor_local=0,maxcolor_global,*lperm;
+  PetscInt        maxcolor_local=0,maxcolor_global = 0,*lperm;
   PetscMPIInt     rank;
   PetscReal       *weights,*maxweights;
   ISColoringValue  *color,*mincolor;
@@ -462,7 +462,6 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
       }
     }
     ierr = MPIU_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-    maxcolor_global=0;
     ierr = MPIU_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
   round = 0;
@@ -483,9 +482,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
         nadded++;
       }
     }
-    maxcolor_global = 0;
     ierr = MPIU_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-    nadded_total=0;
     ierr = MPIU_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
     if (nadded_total == nadded_total_old) SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");
     nadded_total_old = nadded_total;

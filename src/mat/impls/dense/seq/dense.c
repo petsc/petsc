@@ -503,7 +503,7 @@ static PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   PetscErrorCode    ierr;
   const PetscScalar *x;
   PetscScalar       *y,sone = 1.0;
-  Vec               tmp;
+  Vec               tmp = NULL;
   PetscBLASInt      one = 1,info,m;
 
   PetscFunctionBegin;

@@ -283,8 +283,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValuesBlocked_SeqBAIJ_Inlined(Mat A,Pet
   ap   = aa + bs2*ai[row];
   rmax = imax[row];
   nrow = ailen[row];
-  low  = 0;
-  high = nrow;
   value = v;
   low = 0;
   high = nrow;
@@ -1977,7 +1975,7 @@ PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[]
         col = bs*baij->j[j] + k;
         if (PetscAbsScalar(mask[col])) {
           aa = ((MatScalar*)(baij->a)) + j*bs2 + (i%bs) + bs*k;
-          if (b) bb[i] -= aa[0]*xx[col];
+          if (x) bb[i] -= aa[0]*xx[col];
           aa[0] = 0.0;
         }
       }

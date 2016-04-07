@@ -80,7 +80,6 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_inplace(Mat A,Vec bb,Vec xx)
     x0 = tp[0]; x1=tp[1]; x2=tp[2]; x3=tp[3]; /* xk */
     nz = ai[k+1] - ai[k];
 
-    tp = t + (*vj)*4;
     while (nz--) {
       /* xk += U(k,* */
       v0 -= 4; v1 -= 4; v2 -= 4; v3 -= 4;
@@ -180,7 +179,6 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_4_NaturalOrdering(PetscInt *ai,PetscIn
     x0=xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; /* xk */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k+1];
-    xp = x + (*vj)*4;
     while (nz--) {
       /* xk += U(k,* */
       v0 -= 4; v1 -= 4; v2 -= 4; v3 -=4;
@@ -354,7 +352,6 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_inplace(Mat A,Vec bb,Vec xx)
     x0 =tp[0]; x1=tp[1]; x2=tp[2]; x3=tp[3]; x4=tp[4]; /* xk */
     nz = ai[k+1] - ai[k];
 
-    tp = t + (*vj)*5;
     while (nz--) {
       /* xk += U(k,* */
       v0 -= 5; v1 -= 5; v2 -= 5; v3 -=5; v4 -= 5;
@@ -460,7 +457,6 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_5_NaturalOrdering(PetscInt *ai,PetscIn
     nz = ai[k+1] - ai[k];
 
     vj = aj + ai[k+1];
-    xp = x + (*vj)*5;
 
     while (nz--) {
       /* xk += U(k,* */

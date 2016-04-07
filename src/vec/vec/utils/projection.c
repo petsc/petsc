@@ -209,7 +209,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 
   PetscErrorCode ierr;
   PetscInt       n,low,high,low2,high2,low3,high3,n_vm=0;
-  PetscInt       *vm,i;
+  PetscInt       *vm = NULL,i;
   PetscScalar    *v1,*v2,*vmiddle;
   MPI_Comm       comm;
 

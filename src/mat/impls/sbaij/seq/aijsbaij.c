@@ -20,7 +20,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
   ierr = PetscMalloc2(m,&rowlengths,m+1,&rowstart);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) rowlengths[i*bs] = 0;
-  aj = a->j;
   k  = 0;
   for (i=0; i<mbs; i++) {
     nz = ai[i+1] - ai[i];
@@ -186,7 +185,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
   /* compute browlengths of newmat */
   ierr = PetscMalloc2(mbs,&browlengths,mbs,&browstart);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) browlengths[i] = 0;
-  aj = a->j;
   for (i=0; i<mbs; i++) {
     nz = ai[i+1] - ai[i];
     aj++; /* skip diagonal */

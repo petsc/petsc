@@ -1100,7 +1100,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
   name++; /* skip starting hyphen */
   if (options->prefixind > 0) {
     strncpy(fullname,options->prefix,sizeof(fullname));
-    strncat(fullname,name,sizeof(fullname)-1);
+    strncat(fullname,name,sizeof(fullname)-strlen(fullname)-1);
     name = fullname;
   }
 
