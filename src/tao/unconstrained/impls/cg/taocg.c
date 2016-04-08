@@ -110,7 +110,6 @@
          /*  Linesearch failed again */
          /*  switch to unscaled gradient */
          f = f_old;
-         gnorm2 = gnorm2_old;
          ierr = VecCopy(cgP->X_old, tao->solution);CHKERRQ(ierr);
          ierr = VecCopy(cgP->G_old, tao->gradient);CHKERRQ(ierr);
          delta = 1.0;
@@ -124,7 +123,6 @@
 
            /*  Line search failed for last time -- give up */
            f = f_old;
-           gnorm2 = gnorm2_old;
            ierr = VecCopy(cgP->X_old, tao->solution);CHKERRQ(ierr);
            ierr = VecCopy(cgP->G_old, tao->gradient);CHKERRQ(ierr);
            step = 0.0;

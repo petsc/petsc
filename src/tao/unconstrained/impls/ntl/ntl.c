@@ -325,7 +325,6 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     /* Compute the Hessian */
     if (needH) {
       ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
-      needH = 0;
     }
 
     if (NTL_PC_BFGS == tl->pc_type) {

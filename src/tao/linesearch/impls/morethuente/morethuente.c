@@ -504,8 +504,6 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,P
       q = ((gamma1 - *dp) + gamma1) + *dy;
       r = p/q;
       stpc = *stp + r*(*sty - *stp);
-      stpq = *stp + (*dp/(*dp-*dx)) * (*stx - *stp);
-
       stpf = stpc;
     } else if (*stp > *stx) {
       stpf = ls->stepmax;

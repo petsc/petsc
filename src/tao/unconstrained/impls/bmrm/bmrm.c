@@ -563,8 +563,6 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
   if(fabs(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
   if(ru == 0){
-    lambda = lambdau;
-    r = phi(x, n, lambda, a, b, c, l, u);
     return innerIter;
   }
 
@@ -694,8 +692,6 @@ PetscErrorCode solve(TAO_DF *df)
   }
 
   if (max < tol*1e-3){
-    lscount = 0;
-    innerIter    = 0;
     return 0;
   }
 
