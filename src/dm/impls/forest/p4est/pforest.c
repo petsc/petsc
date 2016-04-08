@@ -703,6 +703,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
         ierr = DMDestroy(&dmRedundant);CHKERRQ(ierr);
       }
+      ierr = DMViewFromOptions(base,NULL,"-dm_p4est_base_view");CHKERRQ(ierr);
       ierr = DMPlexCreateConnectivity_pforest(base,&conn,&tree_face_to_uniq);CHKERRQ(ierr);
       ierr = PetscNewLog(dm,&topo);CHKERRQ(ierr);
       topo->refct             = 1;
@@ -3661,6 +3662,8 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
       pforest->plex = newPlex;
     }
+
+    ierr = DMViewFromOptions(newPlex,NULL,"-dm_p4est_plex_view");CHKERRQ(ierr);
 
     if (forest->setfromoptionscalled) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
