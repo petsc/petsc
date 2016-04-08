@@ -252,16 +252,11 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
       ierr = KSPGetPC(mglevels[0]->smoothd,&ipc);CHKERRQ(ierr);
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
-        KSP innerksp;
-        PC  innerpc;
         ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
-        ierr = PCRedundantGetKSP(ipc,&innerksp);CHKERRQ(ierr);
-        ierr = KSPGetPC(innerksp,&innerpc);CHKERRQ(ierr);
-        ierr = PCFactorSetShiftType(innerpc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
       } else {
         ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
-        ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
       }
+      ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
     } else {
       char tprefix[128];
       sprintf(tprefix,"mg_levels_%d_",(int)i);
