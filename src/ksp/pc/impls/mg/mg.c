@@ -367,7 +367,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscInt       m,levels = 1,cycles;
   PetscBool      flg,set;
   PC_MG          *mg        = (PC_MG*)pc->data;
-  PC_MG_Levels   **mglevels = mg->levels;
+  PC_MG_Levels   **mglevels;
   PCMGType       mgtype;
   PCMGCycleType  mgctype;
 

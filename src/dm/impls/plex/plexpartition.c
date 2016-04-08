@@ -859,7 +859,7 @@ PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM dm, Pe
     PetscMPIInt rank;
     PetscInt nvGlobal, *offsets, myFirst, myLast;
 
-    ierr = PetscMalloc1(size+1,&offsets);
+    ierr = PetscMalloc1(size+1,&offsets);CHKERRQ(ierr);
     offsets[0] = 0;
     ierr = MPI_Allgather(&numVertices,1,MPIU_INT,&offsets[1],1,MPIU_INT,comm);CHKERRQ(ierr);
     for (np = 2; np <= size; np++) {

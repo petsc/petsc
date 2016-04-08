@@ -557,15 +557,13 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   PetscScalar     *w    = rk->work;
   Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecDeltaMu = rk->VecDeltaMu,*VecSensiTemp = rk->VecSensiTemp;
   PetscInt         i,j,nadj;
-  PetscReal        t;
+  PetscReal        t = ts->ptime;
   PetscErrorCode   ierr;
   PetscReal        h = ts->time_step;
   Mat              J,Jp;
 
   PetscFunctionBegin;
-  t          = ts->ptime;
   rk->status = TS_STEP_INCOMPLETE;
-  h = ts->time_step;
   for (i=s-1; i>=0; i--) {
     rk->stage_time = t + h*(1.0-c[i]);
     for (nadj=0; nadj<ts->numcost; nadj++) {

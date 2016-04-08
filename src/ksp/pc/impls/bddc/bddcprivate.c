@@ -137,7 +137,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       pcbddc->adaptive_constraints_idxs_ptr[cum+1] = pcbddc->adaptive_constraints_idxs_ptr[cum]+1;
       pcbddc->adaptive_constraints_data_ptr[cum+1] = pcbddc->adaptive_constraints_data_ptr[cum]+1;
     }
-    cum2 = cum;
     ierr = ISRestoreIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
   }
 
@@ -297,7 +296,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         ierr = PetscBLASIntCast(subset_size,&Blas_N);CHKERRQ(ierr);
         PetscStackCallBLAS("BLASdot",norm = BLASdot_(&Blas_N,pcbddc->adaptive_constraints_data+pcbddc->adaptive_constraints_data_ptr[cum]+j*subset_size,
                                                    &Blas_one,pcbddc->adaptive_constraints_data+pcbddc->adaptive_constraints_data_ptr[cum]+j*subset_size,&Blas_one));
-        if (pcbddc->adaptive_constraints_data[cum2] > 0.0) {
+        if (pcbddc->adaptive_constraints_data[cum] > 0.0) {
           norm = 1.0/PetscSqrtReal(PetscRealPart(norm));
         } else {
           norm = -1.0/PetscSqrtReal(PetscRealPart(norm));
@@ -1063,7 +1062,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
     /* check constraints */
     ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->local_primal_size,0,1,&is_dummy);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&C_B);
+    ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&C_B);CHKERRQ(ierr);
     ierr = MatMatMult(C_B,coarse_phi_B,MAT_INITIAL_MATRIX,1.0,&CPHI);CHKERRQ(ierr);
     ierr = MatCreateVecs(CPHI,&mones,NULL);CHKERRQ(ierr);
     ierr = VecSet(mones,-1.0);CHKERRQ(ierr);
@@ -3812,7 +3811,6 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   if (!newisdense) {
     PetscInt *new_local_nnz=0;
 
-    ptr_vals = recv_buffer_vals;
     ptr_idxs = recv_buffer_idxs_local;
     if (n_recvs) {
       ierr = PetscCalloc1(new_local_rows,&new_local_nnz);CHKERRQ(ierr);

@@ -958,7 +958,6 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
     for (i=A->rmap->rstart; i<A->rmap->rend; i++) {
       lens[i] = ad->i[i-A->rmap->rstart+1] - ad->i[i-A->rmap->rstart] + bd->i[i-A->rmap->rstart+1] - bd->i[i-A->rmap->rstart];
     }
-    sendcount = A->rmap->rend - A->rmap->rstart;
     ierr      = PetscMalloc2(size,&recvcounts,size,&displs);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       recvcounts[i] = A->rmap->range[i+1] - A->rmap->range[i];
@@ -967,6 +966,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
 #if defined(PETSC_HAVE_MPI_IN_PLACE)
     ierr = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
 #else
+    sendcount = A->rmap->rend - A->rmap->rstart;
     ierr = MPI_Allgatherv(lens+A->rmap->rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
 #endif
     /* ---------------------------------------------------------------
@@ -1622,7 +1622,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscMalloc1(1+ismax,&rmap);CHKERRQ(ierr);
   for (i=0; i<ismax; i++) {
     ierr   = PetscTableCreate(nrow[i]+1,C->rmap->N+1,&rmap[i]);CHKERRQ(ierr);
-    rmap_i = rmap[i];
     irow_i = irow[i];
     jmax   = nrow[i];
     for (j=0; j<jmax; j++) {

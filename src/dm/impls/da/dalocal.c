@@ -1216,7 +1216,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 #define __FUNCT__ "DMProjectFunctionLocal_DA"
 PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
-  PetscDS    prob;
+  PetscDS         prob;
   PetscFE         fe;
   PetscDualSpace  sp;
   PetscQuadrature q;

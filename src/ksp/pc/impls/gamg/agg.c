@@ -773,7 +773,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
         }
         /* copy in B_i matrix - column oriented */
         data = &data_in[flid*bs];
-        for (kk = ii = 0; ii < bs; ii++) {
+        for (ii = 0; ii < bs; ii++) {
           for (jj = 0; jj < N; jj++) {
             PetscReal d = data[jj*data_stride + ii];
             qqc[jj*Mdata + aggID*bs + ii] = d;

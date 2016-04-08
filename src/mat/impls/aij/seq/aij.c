@@ -1295,8 +1295,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  aj   = a->j;
-  aa   = a->a;
   ii   = a->i;
   if (usecprow) { /* use compressed row format */
     ierr = PetscMemzero(y,m*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1314,6 +1312,8 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
     }
   } else { /* do not use compressed row format */
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+    aj   = a->j;
+    aa   = a->a;
     fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
     for (i=0; i<m; i++) {
@@ -1354,9 +1354,6 @@ PetscErrorCode MatMultMax_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  aj   = a->j;
-  aa   = a->a;
-  ii   = a->i;
   if (usecprow) { /* use compressed row format */
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
@@ -1372,6 +1369,7 @@ PetscErrorCode MatMultMax_SeqAIJ(Mat A,Vec xx,Vec yy)
       y[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
+    ii = a->i;
     for (i=0; i<m; i++) {
       n           = ii[i+1] - ii[i];
       aj          = a->j + ii[i];
@@ -1405,10 +1403,6 @@ PetscErrorCode MatMultAddMax_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
-
-  aj = a->j;
-  aa = a->a;
-  ii = a->i;
   if (usecprow) { /* use compressed row format */
     if (zz != yy) {
       ierr = PetscMemcpy(z,y,m*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1425,6 +1419,7 @@ PetscErrorCode MatMultAddMax_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       z[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
+    ii = a->i;
     for (i=0; i<m; i++) {
       n   = ii[i+1] - ii[i];
       aj  = a->j + ii[i];
@@ -1458,10 +1453,6 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
-
-  aj = a->j;
-  aa = a->a;
-  ii = a->i;
   if (usecprow) { /* use compressed row format */
     if (zz != yy) {
       ierr = PetscMemcpy(z,y,m*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1478,7 +1469,10 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       z[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
+    ii = a->i;
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
+    aj = a->j;
+    aa = a->a;
     fortranmultaddaij_(&m,x,ii,aj,aa,y,z);
 #else
     for (i=0; i<m; i++) {
@@ -1619,10 +1613,10 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscScalar       *x,d,sum,*t,scale;
-  const MatScalar   *v = a->a,*idiag=0,*mdiag;
+  const MatScalar   *v,*idiag=0,*mdiag;
   const PetscScalar *b, *bs,*xb, *ts;
   PetscErrorCode    ierr;
-  PetscInt          n = A->cmap->n,m = A->rmap->n,i;
+  PetscInt          n,m = A->rmap->n,i;
   const PetscInt    *idx,*diag;
 
   PetscFunctionBegin;
@@ -2086,15 +2080,13 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
 #define __FUNCT__ "MatIsTranspose_SeqAIJ"
 PetscErrorCode  MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 {
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) A->data,*bij = (Mat_SeqAIJ*) A->data;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) A->data,*bij = (Mat_SeqAIJ*) B->data;
   PetscInt       *adx,*bdx,*aii,*bii,*aptr,*bptr;
   MatScalar      *va,*vb;
   PetscErrorCode ierr;
   PetscInt       ma,na,mb,nb, i;
 
   PetscFunctionBegin;
-  bij = (Mat_SeqAIJ*) B->data;
-
   ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
   ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
   if (ma!=nb || na!=mb) {
@@ -2138,15 +2130,13 @@ done:
 #define __FUNCT__ "MatIsHermitianTranspose_SeqAIJ"
 PetscErrorCode  MatIsHermitianTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 {
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) A->data,*bij = (Mat_SeqAIJ*) A->data;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) A->data,*bij = (Mat_SeqAIJ*) B->data;
   PetscInt       *adx,*bdx,*aii,*bii,*aptr,*bptr;
   MatScalar      *va,*vb;
   PetscErrorCode ierr;
   PetscInt       ma,na,mb,nb, i;
 
   PetscFunctionBegin;
-  bij = (Mat_SeqAIJ*) B->data;
-
   ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
   ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
   if (ma!=nb || na!=mb) {

@@ -2399,7 +2399,6 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
   for (i=A->rmap->rstart/bs; i<A->rmap->rend/bs; i++) {
     lens[i] = ad->i[i-A->rmap->rstart/bs+1] - ad->i[i-A->rmap->rstart/bs] + bd->i[i-A->rmap->rstart/bs+1] - bd->i[i-A->rmap->rstart/bs];
   }
-  sendcount = A->rmap->rend/bs - A->rmap->rstart/bs;
   ierr      = PetscMalloc1(2*size,&recvcounts);CHKERRQ(ierr);
   displs    = recvcounts + size;
   for (i=0; i<size; i++) {
@@ -2409,6 +2408,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
 #if defined(PETSC_HAVE_MPI_IN_PLACE)
   ierr = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
 #else
+  sendcount = A->rmap->rend/bs - A->rmap->rstart/bs;
   ierr = MPI_Allgatherv(lens+A->rmap->rstart/bs,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
 #endif
   /* ---------------------------------------------------------------
