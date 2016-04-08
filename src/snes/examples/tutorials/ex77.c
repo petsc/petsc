@@ -6,6 +6,10 @@ We solve a nonlinear elasticity problem, modelled as an incompressible Neo-Hooke
 Nonlinear elasticity problem, which we discretize using the finite
 element method on an unstructured mesh. This uses both Dirichlet boundary conditions (fixed faces) 
 and nonlinear Neumann boundary conditions (pressure loading).
+The Lagrangian density (modulo boundary conditions) for this problem is given by 
+\begin{equation}
+  \frac{\mu}{2} (\mathrm{Tr}{C}-3) + J p + \frac{\kappa}{2} (J-1).
+\end{equation}
 
 Discretization:
 
@@ -142,16 +146,17 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal mu = a[0], p = u[Ncomp];
-  PetscReal       cofu_x[Ncomp*dim];
+  const PetscReal mu = a[0], p = u[Ncomp], kappa = 3.0;
+  PetscReal       cofu_x[Ncomp*dim], detu_x;
 
   Cof3D(cofu_x, u_x);
+  Det3D(&detu_x, u_x);
 
   /* f1 is the first Piola-Kirchhoff tensor */
   PetscInt        comp, d;
   for (comp = 0; comp < Ncomp; ++comp) {
     for (d = 0; d < dim; ++d) {
-      f1[comp*dim+d] = mu * u_x[comp*dim+d] + p * cofu_x[comp*dim+d];
+      f1[comp*dim+d] = mu * u_x[comp*dim+d] + cofu_x[comp*dim+d] * (p + kappa * (detu_x - 1.0));
     }
   }
 }
@@ -162,7 +167,11 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal mu = a[0], p = u[Ncomp];
+  const PetscReal mu = a[0], p = u[Ncomp], kappa = 3.0;
+  PetscReal       cofu_x[Ncomp*dim], detu_x;
+
+  Cof3D(cofu_x, u_x);
+  Det3D(&detu_x, u_x);
 
   /* g3 is the first elasticity tensor, i.e. A_i^I_j^J = S^{IJ} g_{ij} + C^{KILJ} F^k_K F^l_L g_{kj} g_{li} */
   PetscInt compI, compJ, compK, d1, d2, d3;
@@ -172,10 +181,10 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
         for (d2 = 0; d2 < dim; ++d2) {
           for (compK = 0; compK < Ncomp; ++compK) {
             for (d3 = 0; d3 < dim; ++d3) {
-              g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += epsilon3D[(compI*Ncomp+compJ)*Ncomp+compK] * epsilon3D[(d1*dim+d2)*dim+d3] * u_x[compK*dim+d3];
+              g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += (p + kappa * (detu_x - 1.0)) * epsilon3D[(compI*Ncomp+compJ)*Ncomp+compK] * epsilon3D[(d1*dim+d2)*dim+d3] * u_x[compK*dim+d3];
             }
           }
-          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] = p * g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] + delta3D[compI*Ncomp+compJ] * delta3D[d1*dim+d2] * mu;
+          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += kappa * cofu_x[compI*dim+d1] * cofu_x[compJ*dim+d2] + delta3D[compI*Ncomp+compJ] * delta3D[d1*dim+d2] * mu;
         }
       }
     }
@@ -188,7 +197,7 @@ void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal p = 0.2; /* Should this be specified as an auxiliary field? */
+  const PetscReal p = 0.4; /* Should this be specified as an auxiliary field? */
   PetscReal       cofu_x[Ncomp*dim];
 
   Cof3D(cofu_x, u_x);
@@ -221,7 +230,7 @@ void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal p = 0.2; /* Should this be specified as an auxiliary field? */
+  const PetscReal p = 0.4; /* Should this be specified as an auxiliary field? */
 
   PetscInt compI, compJ, compK, d1, d2, d3;
   for (compI = 0; compI < Ncomp; ++compI) {
