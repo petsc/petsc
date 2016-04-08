@@ -1271,6 +1271,8 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  if (sp->setupcalled) PetscFunctionReturn(0);
+  sp->setupcalled = PETSC_TRUE;
   if (sp->ops->setup) {ierr = (*sp->ops->setup)(sp);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -1344,6 +1346,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   ierr = PetscHeaderCreate(s, PETSCDUALSPACE_CLASSID, "PetscDualSpace", "Dual Space", "PetscDualSpace", comm, PetscDualSpaceDestroy, PetscDualSpaceView);CHKERRQ(ierr);
 
   s->order = 0;
+  s->setupcalled = PETSC_FALSE;
 
   *sp = s;
   PetscFunctionReturn(0);
@@ -1714,6 +1717,10 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   pointwise values are not defined on the element boundaries), or if the implementation of PetscDualSpace does not
   support extracting subspaces, then NULL is returned.
 
+  This does not increment the reference count on the returned dual space, and the user should not destroy it.
+
+  Not collective
+
   Input Parameters:
 + sp - the PetscDualSpace object
 - height - the height of the mesh point for which the subspace is desired
@@ -1759,6 +1766,43 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
   } else {
     *dim = 1;
     for (i = 0; i < n; ++i) *dim *= (order+1);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceCreateHeightSubspace_Lagrange"
+static PetscErrorCode PetscDualSpaceCreateHeightSubspace_Lagrange(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  PetscBool          continuous;
+  PetscInt           order;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(bdsp,2);
+  ierr = PetscDualSpaceLagrangeGetContinuity(sp,&continuous);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
+  if (height == 0) {
+    ierr = PetscObjectReference((PetscObject)sp);CHKERRQ(ierr);
+    *bdsp = sp;
+  }
+  else if (continuous == PETSC_FALSE || !order) {
+    *bdsp = NULL;
+  }
+  else {
+    DM dm, K;
+    PetscInt dim;
+
+    ierr = PetscDualSpaceGetDM(sp,&dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+    if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Asked for dual space at height %d for dimension %d reference element\n",height,dim);}
+    ierr = PetscDualSpaceDuplicate(sp,bdsp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-height, lag->simplex, &K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetDM(*bdsp, K);CHKERRQ(ierr);
+    ierr = DMDestroy(&K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetUp(*bdsp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1941,6 +1985,20 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   if (pEnd[dim] == 1 && f != pdimMax) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d not equal to dimension %d", f, pdimMax);
   ierr = PetscFree2(pStart,pEnd);CHKERRQ(ierr);
   if (f > pdimMax) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d is greater than dimension %d", f, pdimMax);
+  lag->height    = 0;
+  lag->subspaces = NULL;
+  if (lag->continuous && sp->order > 0 && dim > 0) {
+    PetscInt i;
+
+    lag->height = dim;
+    ierr = PetscMalloc1(dim,&lag->subspaces);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreateHeightSubspace_Lagrange(sp,1,&lag->subspaces[0]);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetUp(lag->subspaces[0]);CHKERRQ(ierr);
+    for (i = 1; i < dim; i++) {
+      ierr = PetscDualSpaceGetHeightSubspace(lag->subspaces[i-1],1,&lag->subspaces[i]);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)(lag->subspaces[i]));CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1949,9 +2007,14 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  PetscInt            i;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  for (i = 0; i < lag->height; i++) {
+    ierr = PetscDualSpaceDestroy(&lag->subspaces[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(lag->subspaces);CHKERRQ(ierr);
   ierr = PetscFree(lag->numDof);CHKERRQ(ierr);
   ierr = PetscFree(lag);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetContinuity_C", NULL);CHKERRQ(ierr);
@@ -2118,34 +2181,27 @@ PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool 
 PetscErrorCode PetscDualSpaceGetHeightSubspace_Lagrange(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
-  PetscBool          continuous;
-  PetscInt           order;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(bdsp,2);
-  ierr = PetscDualSpaceLagrangeGetContinuity(sp,&continuous);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
   if (height == 0) {
-    ierr = PetscObjectReference((PetscObject)sp);CHKERRQ(ierr);
     *bdsp = sp;
   }
-  else if (continuous == PETSC_FALSE || !order) {
-    *bdsp = NULL;
-  }
   else {
-    DM dm, K;
+    DM dm;
     PetscInt dim;
 
     ierr = PetscDualSpaceGetDM(sp,&dm);CHKERRQ(ierr);
     ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
     if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Asked for dual space at height %d for dimension %d reference element\n",height,dim);}
-    ierr = PetscDualSpaceDuplicate(sp,bdsp);CHKERRQ(ierr);
-    ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-height, lag->simplex, &K);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSetDM(*bdsp, K);CHKERRQ(ierr);
-    ierr = DMDestroy(&K);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSetUp(*bdsp);CHKERRQ(ierr);
+    if (height <= lag->height) {
+      *bdsp = lag->subspaces[height-1];
+    }
+    else {
+      *bdsp = NULL;
+    }
   }
   PetscFunctionReturn(0);
 }
