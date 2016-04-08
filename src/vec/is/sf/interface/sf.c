@@ -362,36 +362,6 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     rcount[irank]++;
   }
   ierr = PetscFree2(rcount,ranks);CHKERRQ(ierr);
-#if !defined(PETSC_USE_64BIT_INDICES)
-  if (nroots == PETSC_DETERMINE) {
-    /* Jed, if you have a better way to do this, put it in */
-    PetscInt *numRankLeaves, *leafOff, *leafIndices, *numRankRoots, *rootOff, *rootIndices, maxRoots = 0;
-
-    /* All to all to determine number of leaf indices from each (you can do this using Scan and asynch messages) */
-    ierr = PetscMalloc4(size,&numRankLeaves,size+1,&leafOff,size,&numRankRoots,size+1,&rootOff);CHKERRQ(ierr);
-    ierr = PetscMemzero(numRankLeaves, size * sizeof(PetscInt));CHKERRQ(ierr);
-    for (i = 0; i < nleaves; ++i) ++numRankLeaves[iremote[i].rank];
-    ierr = MPI_Alltoall(numRankLeaves, 1, MPIU_INT, numRankRoots, 1, MPIU_INT, PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
-    /* Could set nroots to this maximum */
-    for (i = 0; i < size; ++i) maxRoots += numRankRoots[i];
-
-    /* Gather all indices */
-    ierr = PetscMalloc2(nleaves,&leafIndices,maxRoots,&rootIndices);CHKERRQ(ierr);
-    leafOff[0] = 0;
-    for (i = 0; i < size; ++i) leafOff[i+1] = leafOff[i] + numRankLeaves[i];
-    for (i = 0; i < nleaves; ++i) leafIndices[leafOff[iremote[i].rank]++] = iremote[i].index;
-    leafOff[0] = 0;
-    for (i = 0; i < size; ++i) leafOff[i+1] = leafOff[i] + numRankLeaves[i];
-    rootOff[0] = 0;
-    for (i = 0; i < size; ++i) rootOff[i+1] = rootOff[i] + numRankRoots[i];
-    ierr = MPI_Alltoallv(leafIndices, numRankLeaves, leafOff, MPIU_INT, rootIndices, numRankRoots, rootOff, MPIU_INT, PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
-    /* Sort and reduce */
-    ierr       = PetscSortRemoveDupsInt(&maxRoots, rootIndices);CHKERRQ(ierr);
-    ierr       = PetscFree2(leafIndices,rootIndices);CHKERRQ(ierr);
-    ierr       = PetscFree4(numRankLeaves,leafOff,numRankRoots,rootOff);CHKERRQ(ierr);
-    sf->nroots = maxRoots;
-  }
-#endif
 
   sf->graphset = PETSC_TRUE;
   ierr = PetscLogEventEnd(PETSCSF_SetGraph,sf,0,0,0);CHKERRQ(ierr);
