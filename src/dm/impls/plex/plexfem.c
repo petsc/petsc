@@ -274,7 +274,6 @@ PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM dm, PetscReal time, DMLabel l
         if (!h) {
           ierr = PetscFEGetDualSpace(fe, &cellsp[f]);CHKERRQ(ierr);
           sp[f] = cellsp[f];
-          ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
         } else {
           ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], h, &sp[f]);CHKERRQ(ierr);
           if (!sp[f]) continue;
@@ -342,7 +341,6 @@ PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM dm, PetscReal time, DMLabel l
     ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
     ierr = DMRestoreWorkArray(dm, numFields, PETSC_BOOL, &fieldActive);CHKERRQ(ierr);
   }
-  for (f = 0; f < numFields; ++f) {ierr = PetscDualSpaceDestroy(&sp[f]);CHKERRQ(ierr);}
   ierr = PetscFree2(sp, numComp);CHKERRQ(ierr);
   if (maxHeight > 0) {
     ierr = PetscFree(cellsp);CHKERRQ(ierr);
