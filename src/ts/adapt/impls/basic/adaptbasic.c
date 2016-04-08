@@ -13,50 +13,61 @@ typedef struct {
 static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  PetscInt       order;
+  PetscReal      safety = basic->safety;
+  PetscReal      enorm=-1,hfac_lte,h_lte;
   PetscErrorCode ierr;
-  PetscReal      enorm,hfac_lte,h_lte,safety;
-  PetscInt       order = adapt->candidates.order[0];
 
   PetscFunctionBegin;
+  *next_sc = 0; /* Reuse the same order scheme */
+
   if (ts->ops->evaluatewlte) {
-    ierr = (*ts->ops->evaluatewlte)(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
-  } else {
-    Vec X;
-    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-    if (!basic->Y) {ierr = VecDuplicate(X,&basic->Y);CHKERRQ(ierr);}
+    order = PETSC_DECIDE;
+    ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
+    if (enorm >= 0 && order < 1) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
+  } else if (ts->ops->evaluatestep) {
+    if (adapt->candidates.n < 1) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
+    if (!adapt->candidates.inuse_set) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
+    if (!basic->Y) {ierr = VecDuplicate(ts->vec_sol,&basic->Y);CHKERRQ(ierr);}
+    order = adapt->candidates.order[0];
     ierr = TSEvaluateStep(ts,order-1,basic->Y,NULL);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,X,basic->Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,basic->Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
   }
 
-  safety = basic->safety;
-  if (enorm > 1.) {
+  if (enorm < 0) {
+    *accept  = PETSC_TRUE;
+    *next_h  = h;            /* Reuse the old step */
+    *wlte    = -1;           /* Weighted local truncation error was not evaluated */
+    PetscFunctionReturn(0);
+  }
+
+  /* Determine whether the step is accepted of rejected */
+  if (enorm > 1) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else if (basic->always_accept) {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_FALSE;
     }
   } else {
-    ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+    ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
     *accept = PETSC_TRUE;
   }
 
   /* The optimal new step based purely on local truncation error for this step. */
-  if (enorm == 0.0) {
+  if (enorm > 0)
+    hfac_lte = safety * PetscPowReal(enorm,((PetscReal)-1)/order);
+  else
     hfac_lte = safety * PETSC_INFINITY;
-  } else {
-    hfac_lte = safety * PetscPowReal(enorm,-1./order);
-  }
-  h_lte    = h * PetscClipInterval(hfac_lte,basic->clip[0],basic->clip[1]);
+  h_lte = h * PetscClipInterval(hfac_lte,basic->clip[0],basic->clip[1]);
 
-  *next_sc = 0;
-  *next_h  = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
-  *wlte    = enorm;
+  *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
+  *wlte   = enorm;
   PetscFunctionReturn(0);
 }
 
@@ -96,8 +107,9 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptionItems *PetscOptions
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Basic adaptive controller options");CHKERRQ(ierr);
   two  = 2;
-  ierr = PetscOptionsRealArray("-ts_adapt_basic_clip","Admissible decrease/increase in step size","",basic->clip,&two,&set);CHKERRQ(ierr);
-  if (set && (two != 2 || basic->clip[0] > basic->clip[1])) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_basic_clip");
+  ierr = PetscOptionsRealArray("-ts_adapt_basic_clip","Admissible decrease/increase factor in step size","TSAdaptBasicSetClip",basic->clip,&two,&set);CHKERRQ(ierr);
+  if (set && (two != 2)) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_basic_clip");
+  if (set) {ierr = TSAdaptBasicSetClip(adapt,basic->clip[0],basic->clip[1]);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-ts_adapt_basic_safety","Safety factor relative to target error","",basic->safety,&basic->safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_basic_reject_safety","Extra safety factor to apply if the last step was rejected","",basic->reject_safety,&basic->reject_safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_basic_always_accept","Always accept the step regardless of whether local truncation error meets goal","",basic->always_accept,&basic->always_accept,NULL);CHKERRQ(ierr);
@@ -150,5 +162,78 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
   a->safety        = 0.9;
   a->reject_safety = 0.5;
   a->always_accept = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptBasicSetClip"
+/*@
+   TSAdaptBasicSetClip - Sets the admissible decrease/increase factor in step size
+
+   Collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+.  low - admissible decrease factor
++  high - admissible increase factor
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptBasicSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
+{
+  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  PetscBool      isbasic;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (low  != PETSC_DECIDE && low  != PETSC_DEFAULT && (low < 0 || low > 1)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must positive and less than one",(double)low);
+  if (high != PETSC_DECIDE && high != PETSC_DEFAULT && high < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must geather than one",(double)high);
+  ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTBASIC,&isbasic);CHKERRQ(ierr);
+  if (isbasic) {
+    if (low  != PETSC_DECIDE && low  != PETSC_DEFAULT) basic->clip[0] = low;
+    if (high != PETSC_DECIDE && high != PETSC_DEFAULT) basic->clip[1] = high;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptBasicGetClip"
+/*@
+   TSAdaptBasicGetClip - Gets the admissible decrease/increase factor in step size
+
+   Collective on TSAdapt
+
+   Input Arguments:
+.  adapt - adaptive controller context
+
+   Ouput Arguments:
++  low - optional, admissible decrease factor
+-  high - optional, admissible increase factor
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptBasicGetClip(TSAdapt adapt,PetscReal *low,PetscReal *high)
+{
+  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  PetscBool      isbasic;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (low)  PetscValidRealPointer(low,2);
+  if (high) PetscValidRealPointer(high,3);
+  ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTBASIC,&isbasic);CHKERRQ(ierr);
+  if (isbasic) {
+    if (low)  *low  = basic->clip[0];
+    if (high) *high = basic->clip[1];
+  } else {
+    if (low)  *low  = 0;
+    if (high) *high = PETSC_MAX_REAL;
+  }
   PetscFunctionReturn(0);
 }

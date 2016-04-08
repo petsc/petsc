@@ -38,10 +38,10 @@ typedef struct {
   RKTableau   tableau;
   Vec          *Y;               /* States computed during the step */
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
-  Vec          *VecDeltaLam;     /* Increment of the adjoint sensitivity w.r.t IC at stage*/ 
-  Vec          *VecDeltaMu;      /* Increment of the adjoint sensitivity w.r.t P at stage*/ 
-  Vec          *VecSensiTemp;    /* Vector to be timed with Jacobian transpose*/
-  Vec          VecCostIntegral0;          /* backup for roll-backs due to events */
+  Vec          *VecDeltaLam;     /* Increment of the adjoint sensitivity w.r.t IC at stage */
+  Vec          *VecDeltaMu;      /* Increment of the adjoint sensitivity w.r.t P at stage */
+  Vec          *VecSensiTemp;    /* Vector to be timed with Jacobian transpose */
+  Vec          VecCostIntegral0; /* backup for roll-backs due to events */
   PetscScalar  *work;            /* Scalar work */
   PetscReal    stage_time;
   TSStepStatus status;
@@ -421,7 +421,7 @@ static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
   Vec             *Y = rk->Y;
   PetscInt        i;
   PetscErrorCode  ierr;
-    
+
   PetscFunctionBegin;
   /* backup cost integral */
   ierr = VecCopy(ts->vec_costintegral,rk->VecCostIntegral0);CHKERRQ(ierr);
@@ -481,7 +481,6 @@ static PetscErrorCode TSStep_RK(TS ts)
 
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
     PetscReal h = ts->time_step;
-    ierr = TSPreStep(ts);CHKERRQ(ierr);
     for (i=0; i<s; i++) {
       rk->stage_time = t + h*c[i];
       ierr = TSPreStage(ts,rk->stage_time); CHKERRQ(ierr);
@@ -567,7 +566,6 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   t          = ts->ptime;
   rk->status = TS_STEP_INCOMPLETE;
   h = ts->time_step;
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
   for (i=s-1; i>=0; i--) {
     rk->stage_time = t + h*(1.0-c[i]);
     for (nadj=0; nadj<ts->numcost; nadj++) {
@@ -984,7 +982,7 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
 /*MC
       TSRK - ODE and DAE solver using Runge-Kutta schemes
 
-  The user should provide the right hand side of the equation 
+  The user should provide the right hand side of the equation
   using TSSetRHSFunction().
 
   Notes:
@@ -1000,32 +998,30 @@ M*/
 #define __FUNCT__ "TSCreate_RK"
 PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 {
-  TS_RK     *th;
+  TS_RK          *rk;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSRKInitializePackage();CHKERRQ(ierr);
-#endif
 
   ts->ops->reset          = TSReset_RK;
   ts->ops->destroy        = TSDestroy_RK;
   ts->ops->view           = TSView_RK;
   ts->ops->load           = TSLoad_RK;
   ts->ops->setup          = TSSetUp_RK;
-  ts->ops->adjointsetup   = TSAdjointSetUp_RK;  
+  ts->ops->adjointsetup   = TSAdjointSetUp_RK;
   ts->ops->step           = TSStep_RK;
   ts->ops->interpolate    = TSInterpolate_RK;
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
   ts->ops->setfromoptions = TSSetFromOptions_RK;
   ts->ops->getstages      = TSGetStages_RK;
   ts->ops->adjointstep    = TSAdjointStep_RK;
-    
+
   ts->ops->adjointintegral = TSAdjointCostIntegral_RK;
   ts->ops->forwardintegral = TSForwardCostIntegral_RK;
 
-  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
-  ts->data = (void*)th;
+  ierr = PetscNewLog(ts,&rk);CHKERRQ(ierr);
+  ts->data = (void*)rk;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",TSRKSetType_RK);CHKERRQ(ierr);

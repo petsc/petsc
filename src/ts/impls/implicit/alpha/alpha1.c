@@ -32,7 +32,7 @@ typedef struct {
   PetscBool adapt;
   PetscReal time_step_prev;
   Vec       vec_sol_prev;
-  Vec       vec_work;
+  Vec       vec_lte_work;
 
   TSStepStatus status;
 } TS_Alpha;
@@ -126,7 +126,7 @@ static PetscErrorCode TSAlpha_ResetStep(TS ts,PetscBool *initok)
   th->stage_time = ts->ptime;
   ierr = VecZeroEntries(th->V0);CHKERRQ(ierr);
 
-  /* First BE step, (t0,X0) -> (t1,X1)*/
+  /* First BE step, (t0,X0) -> (t1,X1) */
   th->stage_time += ts->time_step;
   ierr = VecCopy(X0,th->X0);CHKERRQ(ierr);
   ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ static PetscErrorCode TSAlpha_ResetStep(TS ts,PetscBool *initok)
   ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,X1,&stageok);CHKERRQ(ierr);
   if (!stageok) goto finally;
 
-  /* Second BE step, (t1,X1) -> (t2,X2)*/
+  /* Second BE step, (t1,X1) -> (t2,X2) */
   th->stage_time += ts->time_step;
   ierr = VecCopy(X1,th->X0);CHKERRQ(ierr);
   ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
@@ -171,23 +171,6 @@ static PetscErrorCode TSAlpha_ResetStep(TS ts,PetscBool *initok)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha_AdaptStep"
-static PetscErrorCode TSAlpha_AdaptStep(TS ts,PetscReal *next_h,PetscBool *accept)
-{
-  TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscInt       scheme;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  th->status = TS_STEP_PENDING;
-  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
-  ierr = TSAdaptCandidateAdd(ts->adapt,"",/*order=*/2,1,1.0,1.0,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,&scheme,next_h,accept);CHKERRQ(ierr);
-  th->status = *accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
-  PetscFunctionReturn(0);
-}
-
 #define TSEvent_Status(ts) (ts->event ? ts->event->status : TSEVENT_NONE)
 
 #undef __FUNCT__
@@ -203,9 +186,6 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
-
-  th->status = TS_STEP_INCOMPLETE;
   if (!ts->steprollback) {
     if (th->adapt) { th->time_step_prev = ts->time_step_prev; }
     if (th->adapt) { ierr = VecCopy(th->X0,th->vec_sol_prev);CHKERRQ(ierr); }
@@ -213,6 +193,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
   }
 
+  th->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && th->status != TS_STEP_COMPLETE) {
 
     if (!ts->steps || TSEvent_Status(ts) == TSEVENT_RESET_NEXTSTEP) {
@@ -228,13 +209,13 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->X1,&stageok);CHKERRQ(ierr);
     if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
 
+    th->status = TS_STEP_PENDING;
     ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
-    if (TSEvent_Status(ts) == TSEVENT_NONE) {
-      ierr = TSAlpha_AdaptStep(ts,&next_time_step,&accept);CHKERRQ(ierr);
-      if (!accept) {
-        ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
-        ts->time_step = next_time_step; goto reject_step;
-      }
+    ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
+    th->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
+    if (!accept) {
+      ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
+      ts->time_step = next_time_step; goto reject_step;
     }
 
     ts->ptime += ts->time_step;
@@ -248,6 +229,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
       ts->reason = TS_DIVERGED_STEP_REJECTED;
       ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
     }
+
   }
   PetscFunctionReturn(0);
 }
@@ -257,8 +239,8 @@ static PetscErrorCode TSStep_Alpha(TS ts)
 static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *order,PetscReal *wlte)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  Vec            X = th->X1;       /* X = solution */
-  Vec            Y = th->vec_work; /* Y = X + LTE  */
+  Vec            X = th->X1;           /* X = solution */
+  Vec            Y = th->vec_lte_work; /* Y = X + LTE  */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -354,7 +336,7 @@ static PetscErrorCode TSReset_Alpha(TS ts)
   ierr = VecDestroy(&th->Va);CHKERRQ(ierr);
   ierr = VecDestroy(&th->V1);CHKERRQ(ierr);
   ierr = VecDestroy(&th->vec_sol_prev);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->vec_work);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->vec_lte_work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -389,17 +371,18 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&th->V0);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Va);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->V1);CHKERRQ(ierr);
+
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
   if (!th->adapt) {
-    ierr = TSAdaptDestroy(&ts->adapt);CHKERRQ(ierr);
-    ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
     ierr = TSAdaptSetType(ts->adapt,TSADAPTNONE);CHKERRQ(ierr);
   } else {
-    ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
     ierr = VecDuplicate(ts->vec_sol,&th->vec_sol_prev);CHKERRQ(ierr);
-    ierr = VecDuplicate(ts->vec_sol,&th->vec_work);CHKERRQ(ierr);
+    ierr = VecDuplicate(ts->vec_sol,&th->vec_lte_work);CHKERRQ(ierr);
     if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
       ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
   }
+
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

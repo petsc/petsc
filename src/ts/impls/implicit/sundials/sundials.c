@@ -133,10 +133,8 @@ PetscErrorCode TSStep_Sundials(TS ts)
   N_VSetArrayPointer((realtype*)y_data,cvode->y);
   ierr = VecRestoreArray(ts->vec_sol,NULL);CHKERRQ(ierr);
 
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
-
-  /* We would like to call TSPreStep() when starting each step (including rejections), TSPreStage(),
-   * and TSPostStage() before each stage solve, but CVode does not appear to support this. */
+  /* We would like to TSPreStage() and TSPostStage()
+   * before each stage solve but CVode does not appear to support this. */
   if (cvode->monitorstep) flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
   else flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
 

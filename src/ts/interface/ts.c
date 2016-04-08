@@ -122,7 +122,7 @@ PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const cha
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
++  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGL, TSSSP
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_steps <maxsteps> - maximum number of time-steps to take
 .  -ts_final_time <time> - maximum time to compute to
@@ -164,25 +164,29 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscBool              opt,flg,tflg;
   PetscErrorCode         ierr;
   char                   monfilename[PETSC_MAX_PATH_LEN];
-  SNES                   snes;
   PetscReal              time_step;
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
+  TSIFunction            ifun;
   const char             *defaultType;
   char                   typeName[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
-  else defaultType = TSEULER;
 
   ierr = TSRegisterAll();CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
+  ierr = TSGetIFunction(ts,NULL,&ifun,NULL);CHKERRQ(ierr);
+
+  ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
+  if (((PetscObject)ts)->type_name)
+    defaultType = ((PetscObject)ts)->type_name;
+  else
+    defaultType = ifun ? TSBEULER : TSEULER;
+  ierr = PetscOptionsFList("-ts_type","TS method","TSSetType",TSList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
+    ierr = TSSetType(ts,typeName);CHKERRQ(ierr);
   } else {
-    ierr = TSSetType(ts, defaultType);CHKERRQ(ierr);
+    ierr = TSSetType(ts,defaultType);CHKERRQ(ierr);
   }
 
   /* Handle generic TS options */
@@ -190,9 +194,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
-  }
+  if (flg) {ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);
   if (flg) {ierr = TSSetExactFinalTime(ts,eftopt);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","TSSetMaxSNESFailures",ts->max_snes_failures,&ts->max_snes_failures,NULL);CHKERRQ(ierr);
@@ -213,7 +215,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 #endif
 
   /* Monitor options */
-  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor","Monitor timestep size","TSMonitorDefault",TSMonitorDefault,NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor","Monitor time and timestep size","TSMonitorDefault",TSMonitorDefault,NULL);CHKERRQ(ierr);
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_solution","View the solution at each timestep","TSMonitorSolution",TSMonitorSolution,NULL);CHKERRQ(ierr);
   ierr = TSAdjointMonitorSetFromOptions(ts,"-ts_adjoint_monitor","Monitor adjoint timestep size","TSAdjointMonitorDefault",TSAdjointMonitorDefault,NULL);CHKERRQ(ierr);
 
@@ -421,33 +423,29 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   /* TS trajectory must be set after TS, since it may use some TS options above */
-  if (ts->trajectory) tflg = PETSC_TRUE;
-  else tflg = PETSC_FALSE;
+  tflg = ts->trajectory ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscOptionsBool("-ts_save_trajectory","Save the solution at each timestep","TSSetSaveTrajectory",tflg,&tflg,NULL);CHKERRQ(ierr);
   if (tflg) {
     ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   }
-  if (ts->adjoint_solve) tflg = PETSC_TRUE;
-  else tflg = PETSC_FALSE;
+  tflg = ts->adjoint_solve ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscOptionsBool("-ts_adjoint_solve","Solve the adjoint problem immediately after solving the forward problem","",tflg,&tflg,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
     ts->adjoint_solve = tflg;
-  }
-  if (ts->trajectory) {
-    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ts);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (snes) {
-    if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
-    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  if (ts->trajectory) {
+    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
 
+  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
+  if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(ts->snes,SNESKSPONLY);CHKERRQ(ierr);}
+  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -759,8 +757,8 @@ static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
       if (A != B) {
         ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&ts->Brhs);CHKERRQ(ierr);
       } else {
-        ts->Brhs = ts->Arhs;
         ierr = PetscObjectReference((PetscObject)ts->Arhs);CHKERRQ(ierr);
+        ts->Brhs = ts->Arhs;
       }
     }
     *Brhs = ts->Brhs;
@@ -1011,7 +1009,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!r && !ts->dm && ts->vec_sol) {
     ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
-    r    = ralloc;
+    r = ralloc;
   }
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
@@ -1173,13 +1171,11 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat Amat,Mat Pmat,TSRHSJacobian f,void *c
   if (Amat) {
     ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
-
     ts->Arhs = Amat;
   }
   if (Pmat) {
     ierr = PetscObjectReference((PetscObject)Pmat);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
-
     ts->Brhs = Pmat;
   }
   PetscFunctionReturn(0);
@@ -1217,27 +1213,27 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 
 .seealso: TSSetRHSJacobian(), TSSetRHSFunction(), TSSetIJacobian()
 @*/
-PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
+PetscErrorCode  TSSetIFunction(TS ts,Vec r,TSIFunction f,void *ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
-  Vec            resalloc = NULL;
+  Vec            ralloc = NULL;
   DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (res) PetscValidHeaderSpecific(res,VEC_CLASSID,2);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSSetIFunction(dm,f,ctx);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (!res && !ts->dm && ts->vec_sol) {
-    ierr = VecDuplicate(ts->vec_sol,&resalloc);CHKERRQ(ierr);
-    res  = resalloc;
+  if (!r && !ts->dm && ts->vec_sol) {
+    ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
+    r  = ralloc;
   }
-  ierr = SNESSetFunction(snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&resalloc);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1987,6 +1983,7 @@ PetscErrorCode  TSSetUp(TS ts)
   DM             dm;
   PetscErrorCode (*func)(SNES,Vec,Vec,void*);
   PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*);
+  TSIFunction    ifun;
   TSIJacobian    ijac;
   TSRHSJacobian  rhsjac;
 
@@ -1996,11 +1993,11 @@ PetscErrorCode  TSSetUp(TS ts)
 
   ts->total_steps = 0;
   if (!((PetscObject)ts)->type_name) {
-    ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
+    ierr = TSGetIFunction(ts,NULL,&ifun,NULL);CHKERRQ(ierr);
+    ierr = TSSetType(ts,ifun ? TSBEULER : TSEULER);CHKERRQ(ierr);
   }
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
-
 
   if (ts->rhsjacobian.reuse) {
     Mat Amat,Pmat;
@@ -2024,15 +2021,15 @@ PetscErrorCode  TSSetUp(TS ts)
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
 
-  /* in the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
-   to be set right but can't do it elsewhere due to the overreliance on ctx=ts.
+  /* In the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
+     to be set right but can't do it elsewhere due to the overreliance on ctx=ts.
    */
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMSNESGetFunction(dm,&func,NULL);CHKERRQ(ierr);
   if (!func) {
-    ierr =DMSNESSetFunction(dm,SNESTSFormFunction,ts);CHKERRQ(ierr);
+    ierr = DMSNESSetFunction(dm,SNESTSFormFunction,ts);CHKERRQ(ierr);
   }
-  /* if the SNES doesn't have a jacobian set and the TS has an ijacobian or rhsjacobian set, set the SNES to use it.
+  /* If the SNES doesn't have a jacobian set and the TS has an ijacobian or rhsjacobian set, set the SNES to use it.
      Otherwise, the SNES will use coloring internally to form the Jacobian.
    */
   ierr = DMSNESGetJacobian(dm,&jac,NULL);CHKERRQ(ierr);
@@ -2407,7 +2404,6 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
   PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)u);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
-
   ts->vec_sol = u;
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -3345,8 +3341,6 @@ PetscErrorCode  TSStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
-    
   ierr = PetscCitationsRegister("@techreport{tspaper,\n"
                                 "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
                                 "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
@@ -3355,9 +3349,11 @@ PetscErrorCode  TSStep(TS ts)
                                 "  institution = {Argonne National Laboratory},\n"
                                 "  year        = {2014}\n}\n",&cite);CHKERRQ(ierr);
 
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
+
+  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
@@ -3432,6 +3428,49 @@ PetscErrorCode  TSAdjointStep(TS ts)
     if (ts->steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
   }
   ts->total_steps--;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSEvaluateWLTE"
+/*@
+   TSEvaluateWLTE - Evaluate the weighted local truncation error norm
+   at the end of a time step with a given order of accuracy.
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  wnormtype - norm type, either NORM_2 or NORM_INFINITY
+-  order - optional, desired order for the error evaluation or PETSC_DECIDE
+
+   Output Arguments:
++  order - optional, the actual order of the error evaluation
+-  wlte - the weighted local truncation error norm
+
+   Level: advanced
+
+   Notes:
+   If the timestepper cannot evaluate the error in a particular step
+   (eg. in the first step or restart steps after event handling),
+   this routine returns wlte=-1.0 .
+
+.seealso: TSStep(), TSAdapt, TSErrorWeightedNorm()
+@*/
+PetscErrorCode TSEvaluateWLTE(TS ts,NormType wnormtype,PetscInt *order,PetscReal *wlte)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidType(ts,1);
+  PetscValidLogicalCollectiveEnum(ts,wnormtype,4);
+  if (order) PetscValidIntPointer(order,3);
+  if (order) PetscValidLogicalCollectiveInt(ts,*order,3);
+  PetscValidRealPointer(wlte,4);
+  if (wnormtype != NORM_2 && wnormtype != NORM_INFINITY) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
+  if (!ts->ops->evaluatewlte) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSEvaluateWLTE not implemented for type '%s'",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->evaluatewlte)(ts,wnormtype,order,wlte);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3528,8 +3567,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
-  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     PetscValidHeaderSpecific(u,VEC_CLASSID,2);
@@ -3544,6 +3581,10 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   }
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
+
+  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
+
   /* reset time step and iteration counters */
   ts->steps             = 0;
   ts->ksp_its           = 0;
@@ -3556,8 +3597,9 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
-    ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
+    if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
     ts->solvetime = ts->ptime;
+    solution = ts->vec_sol;
   } else {
     /* steps the requested number of timesteps. */
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
@@ -3567,12 +3609,15 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      if (!ts->steprollback) {
+        ierr = TSPreStep(ts);CHKERRQ(ierr);
+      }
       ierr = TSStep(ts);CHKERRQ(ierr);
-      if (!ts->steprollback && ts->vec_costintegral && ts->costintegralfwd) {
+      if (ts->vec_costintegral && ts->costintegralfwd) {
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
       ierr = TSEventHandler(ts);CHKERRQ(ierr);
-      if(!ts->steprollback) {
+      if (!ts->steprollback) {
         ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
@@ -5277,13 +5322,13 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (adapt) PetscValidPointer(adapt,2);
+  PetscValidPointer(adapt,2);
   if (!ts->adapt) {
     ierr = TSAdaptCreate(PetscObjectComm((PetscObject)ts),&ts->adapt);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)ts->adapt);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
   }
-  if (adapt) *adapt = ts->adapt;
+  *adapt = ts->adapt;
   PetscFunctionReturn(0);
 }
 
@@ -5326,14 +5371,12 @@ PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec
   if (vatol) {
     ierr = PetscObjectReference((PetscObject)vatol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
-
     ts->vatol = vatol;
   }
   if (rtol != PETSC_DECIDE && rtol != PETSC_DEFAULT) ts->rtol = rtol;
   if (vrtol) {
     ierr = PetscObjectReference((PetscObject)vrtol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
-
     ts->vrtol = vrtol;
   }
   PetscFunctionReturn(0);
@@ -6862,14 +6905,14 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->rhsjacobian.scale = 1.;
   t->ijacobian.shift   = 1.;
 
-  ierr = TSGetSNES(tsin,&snes_start);                   CHKERRQ(ierr);
-  ierr = TSSetSNES(t,snes_start);                       CHKERRQ(ierr);
+  ierr = TSGetSNES(tsin,&snes_start);CHKERRQ(ierr);
+  ierr = TSSetSNES(t,snes_start);CHKERRQ(ierr);
 
-  ierr = TSGetDM(tsin,&dm);                             CHKERRQ(ierr);
-  ierr = TSSetDM(t,dm);                                 CHKERRQ(ierr);
+  ierr = TSGetDM(tsin,&dm);CHKERRQ(ierr);
+  ierr = TSSetDM(t,dm);CHKERRQ(ierr);
 
-  t->adapt=tsin->adapt;
-  PetscObjectReference((PetscObject)t->adapt);
+  t->adapt = tsin->adapt;
+  ierr = PetscObjectReference((PetscObject)t->adapt);CHKERRQ(ierr);
 
   t->problem_type      = tsin->problem_type;
   t->ptime             = tsin->ptime;
@@ -6885,8 +6928,8 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->max_reject        = tsin->max_reject;
   t->errorifstepfailed = tsin->errorifstepfailed;
 
-  ierr = TSGetType(tsin,&type); CHKERRQ(ierr);
-  ierr = TSSetType(t,type);     CHKERRQ(ierr);
+  ierr = TSGetType(tsin,&type);CHKERRQ(ierr);
+  ierr = TSSetType(t,type);CHKERRQ(ierr);
 
   t->vec_sol           = NULL;
 

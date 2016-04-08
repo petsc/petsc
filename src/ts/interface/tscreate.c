@@ -80,8 +80,10 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->vec_costintegral = NULL;
   t->trajectory       = NULL;
 
-  /* all methods that do not do adaptivity should delete this object in their constructor */
-  ierr = TSGetAdapt(t,NULL);CHKERRQ(ierr);
+  /* All methods that do not do adaptivity at all
+   * should delete this object in their constructor */
+  ierr = TSGetAdapt(t,&t->adapt);CHKERRQ(ierr);
+
   *ts = t;
   PetscFunctionReturn(0);
 }

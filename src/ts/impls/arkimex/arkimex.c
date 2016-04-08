@@ -752,7 +752,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
     PetscReal h = ts->time_step;
-    ierr = TSPreStep(ts);CHKERRQ(ierr);
     for (i=0; i<s; i++) {
       ark->stage_time = t + h*ct[i];
       if (At[i*s+i] == 0) {           /* This stage is explicit */

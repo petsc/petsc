@@ -1010,7 +1010,6 @@ static PetscErrorCode TSStep_RosW(TS ts)
 
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
     const PetscReal h = ts->time_step;
-    ierr = TSPreStep(ts);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,ros->VecSolPrev);CHKERRQ(ierr); /*move this at the end*/
     for (i=0; i<s; i++) {
       ros->stage_time = ts->ptime + h*ASum[i];
