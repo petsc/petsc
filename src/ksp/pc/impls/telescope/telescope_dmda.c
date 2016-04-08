@@ -817,7 +817,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   MatNullSpace     nullspace,sub_nullspace;
   Mat              A,B;
   PetscBool        has_const;
-  PetscInt         i,k,n;
+  PetscInt         i,k,n = 0;
   const Vec        *vecs;
   Vec              *sub_vecs = NULL;
   MPI_Comm         subcomm;
@@ -826,7 +826,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,&A,&B);CHKERRQ(ierr);
   ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
-  if (!nullspace) return(0);
+  if (!nullspace) PetscFunctionReturn(0);
 
   ierr = PetscInfo(pc,"PCTelescope: generating nullspace (DMDA)\n");CHKERRQ(ierr);
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
