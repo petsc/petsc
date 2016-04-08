@@ -455,8 +455,8 @@ PetscErrorCode FormExactSolution4(DM da, AppCtx *user, Vec U)
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, U, &u);CHKERRQ(ierr);
 
-  Lx = coords[ys][xs+xm-1].x - coords[ys][xs].x;
-  Ly = coords[ys+ym-1][xs].y - coords[ys][xs].y;
+  Lx = PetscRealPart(coords[ys][xs+xm-1].x - coords[ys][xs].x);
+  Ly = PetscRealPart(coords[ys+ym-1][xs].y - coords[ys][xs].y);
 
   for (j = ys; j < ys+ym; ++j) {
     for (i = xs; i < xs+xm; ++i) {
@@ -761,8 +761,8 @@ PetscErrorCode FormFunctionLocalMMS4(DMDALocalInfo *info,PetscScalar **vx,PetscS
   ierr = DMGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
 
-  Lx = coords[info->ys][info->xs+info->xm-1].x - coords[info->ys][info->xs].x;
-  Ly = coords[info->ys+info->ym-1][info->xs].y - coords[info->ys][info->xs].y;
+  Lx = PetscRealPart(coords[info->ys][info->xs+info->xm-1].x - coords[info->ys][info->xs].x);
+  Ly = PetscRealPart(coords[info->ys+info->ym-1][info->xs].y - coords[info->ys][info->xs].y);
 
   /* Compute function over the locally owned part of the grid */
   for (j=info->ys; j<info->ys+info->ym; j++) {
