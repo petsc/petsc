@@ -123,7 +123,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   ierr = PetscMemzero(pcbddc->adaptive_constraints_n,(nv+sub_schurs->n_subs)*sizeof(PetscInt));CHKERRQ(ierr);
 
   maxneigs = 0;
-  cum = cum2 = cumarray = 0;
+  cum = cumarray = 0;
   pcbddc->adaptive_constraints_idxs_ptr[0] = 0;
   pcbddc->adaptive_constraints_data_ptr[0] = 0;
   if (sub_schurs->is_vertices && pcbddc->use_vertices) {
@@ -137,7 +137,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       pcbddc->adaptive_constraints_idxs_ptr[cum+1] = pcbddc->adaptive_constraints_idxs_ptr[cum]+1;
       pcbddc->adaptive_constraints_data_ptr[cum+1] = pcbddc->adaptive_constraints_data_ptr[cum]+1;
     }
-    cum2 = cum;
     ierr = ISRestoreIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
   }
 
@@ -1063,7 +1062,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
     /* check constraints */
     ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->local_primal_size,0,1,&is_dummy);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&C_B);
+    ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&C_B);CHKERRQ(ierr);
     ierr = MatMatMult(C_B,coarse_phi_B,MAT_INITIAL_MATRIX,1.0,&CPHI);CHKERRQ(ierr);
     ierr = MatCreateVecs(CPHI,&mones,NULL);CHKERRQ(ierr);
     ierr = VecSet(mones,-1.0);CHKERRQ(ierr);
@@ -1111,7 +1110,7 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
   Mat            *work_mat;
   IS             isrow_s,iscol_s;
   PetscBool      rsorted,csorted;
-  PetscInt       rsize,*idxs_perm_r,csize,*idxs_perm_c;
+  PetscInt       rsize,*idxs_perm_r=NULL,csize,*idxs_perm_c=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3812,7 +3811,6 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   if (!newisdense) {
     PetscInt *new_local_nnz=0;
 
-    ptr_vals = recv_buffer_vals;
     ptr_idxs = recv_buffer_idxs_local;
     if (n_recvs) {
       ierr = PetscCalloc1(new_local_rows,&new_local_nnz);CHKERRQ(ierr);
