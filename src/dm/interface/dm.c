@@ -125,11 +125,12 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   if (dm->coordinateDM) {
     DM           ncdm;
     PetscSection cs;
-    PetscInt     pEnd = -1;
+    PetscInt     pEnd = -1, pEndMax = -1;
 
     ierr = DMGetDefaultSection(dm->coordinateDM, &cs);CHKERRQ(ierr);
     if (cs) {ierr = PetscSectionGetChart(cs, NULL, &pEnd);CHKERRQ(ierr);}
-    if (pEnd >= 0) {
+    ierr = MPI_Allreduce(&pEnd,&pEndMax,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    if (pEndMax >= 0) {
       ierr = DMClone(dm->coordinateDM, &ncdm);CHKERRQ(ierr);
       ierr = DMSetDefaultSection(ncdm, cs);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(*newdm, ncdm);CHKERRQ(ierr);
