@@ -728,9 +728,10 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, 
 
    Output Parameters:
 +  n   - number of values in the merged array (== an + bn)
-.  L   - merged sorted array
+.  L   - merged sorted array 
 -  J   - merged additional array
 
+   Notes: if L or J point to non-null arrays then this routine will assume they are of the approproate size and use them, otherwise this routine will allocate space for them 
    Level: intermediate
 
    Concepts: merging^arrays
@@ -740,19 +741,21 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, 
 PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const PetscInt *aJ, PetscInt bn, const PetscInt *bI, const PetscInt *bJ, PetscInt *n, PetscInt **L, PetscInt **J)
 {
   PetscErrorCode ierr;
-  PetscInt       n_, *L_ = *L, *J_= *J, ak, bk, k;
+  PetscInt       n_, *L_, *J_, ak, bk, k;
 
   PetscFunctionBegin;
+  PetscValidIntPointer(L,8);
+  PetscValidIntPointer(J,9);
   n_ = an + bn;
   *n = n_;
-  if (!L_) {
+  if (!*L) {
     ierr = PetscMalloc1(n_, L);CHKERRQ(ierr);
-    L_   = *L;
   }
-  if (!J_) {
-    ierr = PetscMalloc1(n_, &J_);CHKERRQ(ierr);
-    J_   = *J;
+  L_ = *L;
+  if (!*J) {
+    ierr = PetscMalloc1(n_, J);CHKERRQ(ierr);
   }
+  J_   = *J;
   k = ak = bk = 0;
   while (ak < an && bk < bn) {
     if (aI[ak] <= bI[bk]) {

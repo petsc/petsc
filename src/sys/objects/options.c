@@ -1155,7 +1155,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
     options->used[i]   = options->used[i-1];
   }
   /* insert new name and value */
-  len = name ? strlen(name) : 0;
+  len = strlen(name);
   options->names[n] = (char*)malloc((len+1)*sizeof(char));
   if (!options->names[n]) return PETSC_ERR_MEM;
   strcpy(options->names[n],name);
@@ -1164,7 +1164,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
     options->values[n] = (char*)malloc((len+1)*sizeof(char));
     if (!options->values[n]) return PETSC_ERR_MEM;
     strcpy(options->values[n],value);
-  } else options->values[n] = 0;
+  } else options->values[n] = NULL;
   options->used[n] = PETSC_FALSE;
   options->N++;
   return 0;

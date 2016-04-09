@@ -329,8 +329,6 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,binLeft,bins[0],binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      if (color == PETSC_DRAW_ROTATE && bins[0] != 0.0) bcolor++;
-      if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = PETSC_DRAW_BLACK+1;
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   } else {
