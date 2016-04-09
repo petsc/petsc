@@ -161,7 +161,10 @@ PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
   if ((PetscVoidFunction)func == (PetscVoidFunction)snescomputejacobiandefault_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESComputeJacobianDefault,ctx);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snescomputejacobiandefaultcolor_) {
-    if (!ctx) *ierr = PETSC_ERR_ARG_NULL; return;
+    if (!ctx) {
+      *ierr = PETSC_ERR_ARG_NULL;
+      return;
+    }
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESComputeJacobianDefaultColor,*(MatFDColoring*)ctx);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)matmffdcomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,MatMFFDComputeJacobian,ctx);
