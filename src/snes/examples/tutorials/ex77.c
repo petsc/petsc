@@ -426,6 +426,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
       ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
     }
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "Faces", &label);CHKERRQ(ierr);
     ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
   }
