@@ -147,10 +147,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
     oAvert     = (parentOrientA >= 0) ? parentOrientA : -((-parentOrientA % coneSize) + 1);
     oBvert     = (parentOrientB >= 0) ? parentOrientB : -((-parentOrientB % coneSize) + 1);
     ABswapVert = DihedralSwap(coneSize, oAvert, oBvert);
-  }
-  else {
-    oAvert     = parentOrientA;
-    oBvert     = parentOrientB;
+  } else {
     ABswapVert = ABswap;
   }
   if (childB) {
