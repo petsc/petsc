@@ -145,6 +145,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,
     Ml = ni;
     Nl = nj;
   } else {
+    si = sj = 0;
+    ni = nj = 0;
     Ml = Nl = 0;
   }
 
@@ -244,6 +246,8 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,
     Nl = nj;
     Pl = nk;
   } else {
+    si = sj = sk = 0;
+    ni = nj = nk = 0;
     Ml = Nl = Pl = 0;
   }
 
@@ -813,16 +817,16 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   MatNullSpace     nullspace,sub_nullspace;
   Mat              A,B;
   PetscBool        has_const;
-  PetscInt         i,k,n;
+  PetscInt         i,k,n = 0;
   const Vec        *vecs;
-  Vec              *sub_vecs;
+  Vec              *sub_vecs = NULL;
   MPI_Comm         subcomm;
   PC_Telescope_DMDACtx *ctx;
 
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,&A,&B);CHKERRQ(ierr);
   ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
-  if (!nullspace) return(0);
+  if (!nullspace) PetscFunctionReturn(0);
 
   ierr = PetscInfo(pc,"PCTelescope: generating nullspace (DMDA)\n");CHKERRQ(ierr);
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
@@ -954,7 +958,7 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscRea
   PetscInt          i,st,ed;
   VecScatter        scatter;
   const PetscScalar *x_array;
-  PetscBool         default_init_guess_value;
+  PetscBool         default_init_guess_value = PETSC_FALSE;
   PC_Telescope_DMDACtx *ctx;
 
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;

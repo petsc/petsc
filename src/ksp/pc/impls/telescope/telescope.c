@@ -159,15 +159,15 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat
   MatNullSpace     nullspace,sub_nullspace;
   Mat              A,B;
   PetscBool        has_const;
-  PetscInt         i,k,n;
+  PetscInt         i,k,n = 0;
   const Vec        *vecs;
-  Vec              *sub_vecs;
+  Vec              *sub_vecs = NULL;
   MPI_Comm         subcomm;
 
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,&A,&B);CHKERRQ(ierr);
   ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
-  if (!nullspace) return(0);
+  if (!nullspace) PetscFunctionReturn(0);
 
   ierr = PetscInfo(pc,"PCTelescope: generating nullspace (default)\n");CHKERRQ(ierr);
   subcomm = PetscSubcommChild(sred->psubcomm);
