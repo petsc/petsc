@@ -486,7 +486,7 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLCreate_IRKS"
-PETSC_EXTERN PetscErrorCode TSGLCreate_IRKS(TS ts)
+static PetscErrorCode TSGLCreate_IRKS(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
@@ -731,7 +731,7 @@ PetscErrorCode  TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAccept_Always"
-PetscErrorCode  TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
+static PetscErrorCode TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
 {
   PetscFunctionBegin;
   *accept = PETSC_TRUE;
@@ -782,7 +782,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLSetType_GL"
-PetscErrorCode  TSGLSetType_GL(TS ts,TSGLType type)
+static PetscErrorCode TSGLSetType_GL(TS ts,TSGLType type)
 {
   PetscErrorCode ierr,(*r)(TS);
   PetscBool      same;
@@ -804,7 +804,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,TSGLType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLSetAcceptType_GL"
-PetscErrorCode  TSGLSetAcceptType_GL(TS ts,TSGLAcceptType type)
+static PetscErrorCode TSGLSetAcceptType_GL(TS ts,TSGLAcceptType type)
 {
   PetscErrorCode     ierr;
   TSGLAcceptFunction r;
@@ -820,7 +820,7 @@ PetscErrorCode  TSGLSetAcceptType_GL(TS ts,TSGLAcceptType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLGetAdapt_GL"
-PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
+static PetscErrorCode TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
 {
   PetscErrorCode ierr;
   TS_GL          *gl = (TS_GL*)ts->data;

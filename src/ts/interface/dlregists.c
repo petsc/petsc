@@ -101,6 +101,7 @@ PetscErrorCode  TSInitializePackage(void)
   This one registers all the TS methods that are in the basic PETSc libpetscts library.
 
  */
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void); /*prototype*/
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
 {
   PetscErrorCode ierr;

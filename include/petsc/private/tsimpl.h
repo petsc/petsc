@@ -20,6 +20,13 @@
 
 PETSC_EXTERN PetscBool TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
+
+PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSGLRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(void);
 
 typedef struct _TSOps *TSOps;
 
@@ -266,6 +273,7 @@ PETSC_EXTERN PetscErrorCode DMGetDMTSWrite(DM,DMTS*);
 PETSC_EXTERN PetscErrorCode DMCopyDMTS(DM,DM);
 PETSC_EXTERN PetscErrorCode DMTSView(DMTS,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMTSCopy(DMTS,DMTS);
 
 typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_ZERO,TSEVENT_RESET_NEXTSTEP} TSEventStatus;
 

@@ -362,7 +362,7 @@ static PetscErrorCode TSInterpolate_Mimex(TS ts,PetscReal t,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeLinearStability_Mimex"
-PetscErrorCode TSComputeLinearStability_Mimex(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
+static PetscErrorCode TSComputeLinearStability_Mimex(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
 {
   PetscFunctionBegin;
   *yr = 1.0 + xr;

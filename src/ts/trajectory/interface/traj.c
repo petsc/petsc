@@ -26,7 +26,7 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get;
 
 .seealso: TSTrajectoryRegisterAll(), TSTrajectoryRegisterDestroy()
 @*/
-PetscErrorCode  TSTrajectoryRegister(const char sname[],PetscErrorCode (*function)(TSTrajectory,TS))
+PetscErrorCode TSTrajectoryRegister(const char sname[],PetscErrorCode (*function)(TSTrajectory,TS))
 {
   PetscErrorCode ierr;
 
@@ -223,6 +223,7 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSTrajectoryRegisterAllCalled) PetscFunctionReturn(0);
   TSTrajectoryRegisterAllCalled = PETSC_TRUE;
 
   ierr = TSTrajectoryRegister(TSTRAJECTORYBASIC,TSTrajectoryCreate_Basic);CHKERRQ(ierr);
@@ -289,7 +290,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
   if (((PetscObject)tj)->type_name) defaultType = ((PetscObject)tj)->type_name;
   else defaultType = TSTRAJECTORYBASIC;
 
-  if (!TSRegisterAllCalled) {ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);}
+  ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);
   ierr = PetscOptionsFList("-ts_trajectory_type","TSTrajectory method"," TSTrajectorySetType",TSTrajectoryList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrcmp(typeName,TSTRAJECTORYMEMORY,&flg);CHKERRQ(ierr);

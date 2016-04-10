@@ -1475,7 +1475,7 @@ static PetscErrorCode GetTrajRMS(TS ts,TJScheduler *tjsch,PetscInt stepnum)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySet_Memory"
-PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
+static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
   PetscErrorCode ierr;
@@ -1518,7 +1518,7 @@ PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryGet_Memory"
-PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *t)
+static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *t)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
   PetscErrorCode ierr;
@@ -1558,7 +1558,7 @@ PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetStride_Memory"
-PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,TS ts,PetscInt stride)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,TS ts,PetscInt stride)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
@@ -1569,7 +1569,7 @@ PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,TS ts,PetscInt strid
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetMaxCpsRAM_Memory"
-PetscErrorCode TSTrajectorySetMaxCpsRAM_Memory(TSTrajectory tj,TS ts,PetscInt max_cps_ram)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsRAM_Memory(TSTrajectory tj,TS ts,PetscInt max_cps_ram)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
@@ -1580,7 +1580,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM_Memory(TSTrajectory tj,TS ts,PetscInt ma
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetMaxCpsDisk_Memory"
-PetscErrorCode TSTrajectorySetMaxCpsDisk_Memory(TSTrajectory tj,TS ts,PetscInt max_cps_disk)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsDisk_Memory(TSTrajectory tj,TS ts,PetscInt max_cps_disk)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
@@ -1592,7 +1592,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk_Memory(TSTrajectory tj,TS ts,PetscInt m
 #ifdef PETSC_HAVE_REVOLVE
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetRevolveOnline"
-PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj,PetscBool use_online)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj,PetscBool use_online)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
@@ -1604,7 +1604,7 @@ PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj,PetscBool use_online
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetSaveStack"
-PetscErrorCode TSTrajectorySetSaveStack(TSTrajectory tj,PetscBool save_stack)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetSaveStack(TSTrajectory tj,PetscBool save_stack)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
@@ -1615,7 +1615,7 @@ PetscErrorCode TSTrajectorySetSaveStack(TSTrajectory tj,PetscBool save_stack)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetSolutionOnly"
-PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_only)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_only)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
   Stack       *stack = &tjsch->stack;
@@ -1627,7 +1627,7 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_on
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetFromOptions_Memory"
-PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscOptionsObject,TSTrajectory tj)
+static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscOptionsObject,TSTrajectory tj)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
   PetscErrorCode ierr;
@@ -1650,7 +1650,7 @@ PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscOptionsO
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetUp_Memory"
-PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
+static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
   Stack          *stack = &tjsch->stack;

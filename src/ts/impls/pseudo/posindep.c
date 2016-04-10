@@ -333,7 +333,7 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoMonitorDefault"
-PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *dummy)
+static PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *dummy)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -362,7 +362,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptionItems *PetscOptionsObje
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Pseudo-timestepping options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),"stdout",&viewer);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
@@ -589,7 +589,7 @@ PetscErrorCode  TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,voi
 typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscBool*);  /* force argument to next function to not be extern C*/
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"
-PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void *ctx)
+static PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void *ctx)
 {
   TS_Pseudo *pseudo;
 
@@ -602,7 +602,7 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement_Pseudo"
-PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
+static PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
@@ -613,7 +613,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetMaxTimeStep_Pseudo"
-PetscErrorCode  TSPseudoSetMaxTimeStep_Pseudo(TS ts,PetscReal maxdt)
+static PetscErrorCode  TSPseudoSetMaxTimeStep_Pseudo(TS ts,PetscReal maxdt)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
@@ -624,7 +624,7 @@ PetscErrorCode  TSPseudoSetMaxTimeStep_Pseudo(TS ts,PetscReal maxdt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoIncrementDtFromInitialDt_Pseudo"
-PetscErrorCode  TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
+static PetscErrorCode  TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
@@ -636,7 +636,7 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 typedef PetscErrorCode (*FCN2)(TS,PetscReal*,void*); /* force argument to next function to not be extern C*/
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStep_Pseudo"
-PetscErrorCode  TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void *ctx)
+static PetscErrorCode  TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 

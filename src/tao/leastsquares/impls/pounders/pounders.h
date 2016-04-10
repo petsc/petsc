@@ -1,7 +1,6 @@
 #ifndef __TAO_MFQNLS_H
 #define __TAO_MFQNLS_H
 #include <petsc/private/taoimpl.h>
-#include <petsc.h>
 #include <petscblaslapack.h>
 
 typedef struct {
