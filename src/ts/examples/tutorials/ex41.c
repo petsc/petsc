@@ -42,7 +42,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (nevents) {
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %g seconds\n",rank,(double)t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %4.2f seconds\n",rank,(double)t);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
     u[0] = 1.0*rank;
     u[1] = -0.9*u[1];
