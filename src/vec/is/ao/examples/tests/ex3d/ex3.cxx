@@ -11,7 +11,7 @@ static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.e
 #include <fstream>
 #include <vector>
 #include <assert.h>
-#include <petsc.h>
+#include <petscvec.h>
 
 using namespace std;
 
