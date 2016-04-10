@@ -48,8 +48,8 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
   if (!s) n = 0;
   else    n = strlen(s);
   *argc = 0;
+  *args = NULL;
   if (!n) {
-    *args = 0;
     return(0);
   }
   for (i=0; i<n; i++) {
@@ -58,6 +58,9 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
   for (;i<n+1; i++) {
     if ((s[i] == sp || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
     else if (s[i] != sp) {flg = PETSC_FALSE;}
+  }
+  if (!*argc) { /* string only has separator characters */
+    return(0);
   }
   (*args) = (char**) malloc(((*argc)+1)*sizeof(char*)); if (!*args) return PETSC_ERR_MEM;
   lens    = (int*) malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
