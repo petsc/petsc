@@ -4066,7 +4066,7 @@ PetscErrorCode MatSolverPackageRegister(const MatSolverPackage package,const Mat
   MatSolverPackageForSpecifcType inext,iprev = NULL;
 
   PetscFunctionBegin;
-  if (!MatSolverPackageHolders) {
+  if (!next) {
     ierr = PetscNew(&MatSolverPackageHolders);CHKERRQ(ierr);
     ierr = PetscStrallocpy(package,&MatSolverPackageHolders->name);CHKERRQ(ierr);
     ierr = PetscNew(&MatSolverPackageHolders->handlers);CHKERRQ(ierr);

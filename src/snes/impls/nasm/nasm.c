@@ -156,8 +156,8 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
     if (!nasm->xl[i]) {
       ierr = SNESGetDM(nasm->subsnes[i],&subdm);CHKERRQ(ierr);
       ierr = DMCreateLocalVector(subdm,&nasm->xl[i]);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,NULL,nasm->xl[i]);CHKERRQ(ierr);
     }
-    ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,NULL,nasm->xl[i]);CHKERRQ(ierr);
   }
   if (nasm->finaljacobian) {
     ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);

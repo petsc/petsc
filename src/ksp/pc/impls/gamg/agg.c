@@ -1152,7 +1152,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET8],0,0,0,0);CHKERRQ(ierr);
 #endif
-  if (size > 1) ierr = PetscFree(data_w_ghost);CHKERRQ(ierr);
+  if (size > 1) {ierr = PetscFree(data_w_ghost);CHKERRQ(ierr);}
   ierr = PetscFree(flid_fgid);CHKERRQ(ierr);
 
   *a_P_out = Prol;  /* out */

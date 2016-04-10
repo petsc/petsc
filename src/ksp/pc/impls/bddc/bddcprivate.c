@@ -1146,7 +1146,7 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
       iscol_s = isrow_s;
     } else {
       const PetscInt *idxs;
-      PetscInt *idxs_sorted,i;
+      PetscInt       *idxs_sorted,i;
 
       ierr = PetscMalloc1(csize,&idxs_perm_c);CHKERRQ(ierr);
       ierr = PetscMalloc1(csize,&idxs_sorted);CHKERRQ(ierr);

@@ -180,7 +180,12 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   /* solution selection data */
   PetscBool            selectRestart;
-  PetscReal            dnorm,dminnorm = 0.0;
+  /*
+      These two variables are initialized to prevent compilers/analyzers from producing false warnings about these variables being passed
+      to SNESNGMRESSelect_Private() without being set when SNES_NGMRES_RESTART_DIFFERENCE, the values are not used in the subroutines in that case
+      so the code is correct as written.
+  */
+  PetscReal            dnorm = 0.0,dminnorm = 0.0;
   PetscReal            fminnorm;
 
   SNESConvergedReason  reason;
