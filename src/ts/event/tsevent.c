@@ -15,7 +15,7 @@ PetscErrorCode TSEventInitialize(TSEvent event,TS ts,PetscReal t,Vec U)
   PetscValidHeaderSpecific(ts,TS_CLASSID,2);
   PetscValidHeaderSpecific(U,VEC_CLASSID,4);
   event->ptime_prev = t;
-  event->iterctr=0;
+  event->iterctr = 0;
   ierr = (*event->eventhandler)(ts,t,U,event->fvalue_prev,event->ctx);CHKERRQ(ierr);
   /* Initialize the event recorder */
   event->recorder.ctr = 0;
@@ -42,7 +42,6 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   ierr = PetscFree((*event)->events_zero);CHKERRQ(ierr);
   ierr = PetscFree((*event)->vtol);CHKERRQ(ierr);
 
-  
   for (i=0; i < (*event)->recsize; i++) {
     ierr = PetscFree((*event)->recorder.eventidx[i]);CHKERRQ(ierr);
   }
@@ -134,7 +133,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 .  fvalue    - function value of events at time t
 
    Calling sequence of postevent:
-   PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero, PetscInt events_zero[], PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
+   PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 
    Input Parameters:
 +  ts - the TS context
@@ -147,7 +146,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
 
    Level: intermediate
 
-.keywords: TS, event, set, monitor
+.keywords: TS, event, set
 
 .seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
 @*/
@@ -189,10 +188,10 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   event->postevent = postevent;
   event->ctx = ctx;
 
-  event->recsize = 12;  /* Initial size of the recorder */
+  event->recsize = 8;  /* Initial size of the recorder */
   ierr = PetscOptionsBegin(((PetscObject)ts)->comm,"","TS Event options","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-ts_event_tol","Scalar event tolerance for zero crossing check","",tol,&tol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_event_tol","Scalar event tolerance for zero crossing check","TSSetEventTolerances",tol,&tol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-ts_event_monitor","Print choices made by event handler","",&flg);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_event_recorder_initial_size","Initial size of event recorder","",event->recsize,&event->recsize,NULL);CHKERRQ(ierr);
   }
@@ -220,7 +219,7 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   TSEventRecorderResize - Resizes (2X) the event recorder arrays whenever the recording limit (event->recsize)
                           is reached.
 */
-PetscErrorCode TSEventRecorderResize(TSEvent event)
+static PetscErrorCode TSEventRecorderResize(TSEvent event)
 {
   PetscErrorCode ierr;
   PetscReal      *time;
@@ -244,7 +243,7 @@ PetscErrorCode TSEventRecorderResize(TSEvent event)
   ierr = PetscMemcpy(time,event->recorder.time,event->recsize*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(stepnum,event->recorder.stepnum,event->recsize*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(nevents,event->recorder.nevents,event->recsize*sizeof(PetscInt));CHKERRQ(ierr);
-  for(i=0; i < event->recsize; i++) {
+  for (i=0; i < event->recsize; i++) {
     ierr = PetscMemcpy(eventidx[i],event->recorder.eventidx[i],event->recorder.nevents[i]*sizeof(PetscInt));CHKERRQ(ierr);
   }
 
@@ -320,24 +319,24 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   PetscFunctionReturn(0);
 }
 
-/* Uses Anderson-Bjorck variant of regular falsi method */
-PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t, PetscReal tright, PetscScalar fleft, PetscScalar f, PetscScalar fright, PetscInt side,PetscReal dt)
+/* Uses Anderson-Bjorck variant of regula falsi method */
+PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t,PetscReal tright,PetscScalar fleft,PetscScalar f,PetscScalar fright,PetscInt side,PetscReal dt)
 {
-  PetscReal scal=1.0;
-  if(PetscRealPart(fleft)*PetscRealPart(f) < 0) {
-    if(side == 1) {
+  PetscReal new_dt, scal = 1.0;
+  if (PetscRealPart(fleft)*PetscRealPart(f) < 0) {
+    if (side == 1) {
       scal = (PetscRealPart(fright) - PetscRealPart(f))/PetscRealPart(fright);
-      if(scal < PETSC_SMALL) scal = 0.5;
+      if (scal < PETSC_SMALL) scal = 0.5;
     }
-    dt = PetscMin(dt,(scal*PetscRealPart(fleft)*t - PetscRealPart(f)*tleft)/(scal*PetscRealPart(fleft) - PetscRealPart(f)) - tleft);
+    new_dt = (scal*PetscRealPart(fleft)*t - PetscRealPart(f)*tleft)/(scal*PetscRealPart(fleft) - PetscRealPart(f)) - tleft;
   } else {
-    if(side == -1) {
+    if (side == -1) {
       scal = (PetscRealPart(fleft) - PetscRealPart(f))/PetscRealPart(fleft);
-      if(scal < PETSC_SMALL) scal = 0.5;
+      if (scal < PETSC_SMALL) scal = 0.5;
     }
-    dt = PetscMin(dt,(PetscRealPart(f)*tright - scal*PetscRealPart(fright)*t)/(PetscRealPart(f) - scal*PetscRealPart(fright)) - t);
+    new_dt = (PetscRealPart(f)*tright - scal*PetscRealPart(fright)*t)/(PetscRealPart(f) - scal*PetscRealPart(fright)) - t;
   }
-  return dt;
+  return PetscMin(dt,new_dt);
 }
 
 
@@ -392,55 +391,55 @@ PetscErrorCode TSEventHandler(TS ts)
       switch (event->direction[i]) {
       case -1:
         if (fvalue_sign < 0) {
-	  rollback = 1;
+          rollback = 1;
 
-	  /* Compute new time step */
-	  dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],dt);
+          /* Compute new time step */
+          dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],dt);
 
-	  if (event->monitor) {
-	    ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
-	  }
-	  event->fvalue_right[i] = event->fvalue[i];
-	  event->side[i] = 1;
+          if (event->monitor) {
+            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+          }
+          event->fvalue_right[i] = event->fvalue[i];
+          event->side[i] = 1;
 
-	  if(!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
-	  event->status = TSEVENT_LOCATED_INTERVAL;
+          if (!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
+          event->status = TSEVENT_LOCATED_INTERVAL;
         }
         break;
       case 1:
         if (fvalue_sign > 0) {
-	  rollback = 1;
+          rollback = 1;
 
- 	  /* Compute new time step */
-	  dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],dt);
+          /* Compute new time step */
+          dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],dt);
 
-	  if (event->monitor) {
-	    ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
-	  }
-	  event->fvalue_right[i] = event->fvalue[i];
-	  event->side[i] = 1;
+          if (event->monitor) {
+            ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+          }
+          event->fvalue_right[i] = event->fvalue[i];
+          event->side[i] = 1;
 
-     	  if(!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
-	  event->status = TSEVENT_LOCATED_INTERVAL;
+          if (!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
+          event->status = TSEVENT_LOCATED_INTERVAL;
         }
         break;
       case 0:
-	rollback = 1;
+        rollback = 1;
 
-	/* Compute new time step */
-	dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],dt);
+        /* Compute new time step */
+        dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],dt);
 
-	if (event->monitor) {
-	  ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
-	}
-	event->fvalue_right[i] = event->fvalue[i];
-	event->side[i] = 1;
-	
-	if(!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
-	event->status = TSEVENT_LOCATED_INTERVAL;
-	
+        if (event->monitor) {
+          ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Event %D interval detected [%g - %g]\n",event->iterctr,i,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
+        }
+        event->fvalue_right[i] = event->fvalue[i];
+        event->side[i] = 1;
+
+        if (!event->iterctr) event->zerocrossing[i] = PETSC_TRUE;
+        event->status = TSEVENT_LOCATED_INTERVAL;
+
         break;
-      } 
+      }
     }
   }
 
@@ -457,7 +456,7 @@ PetscErrorCode TSEventHandler(TS ts)
         if (event->monitor) {
           ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: Event %D zero crossing at time %g located in %D iterations\n",i,(double)t,event->iterctr);CHKERRQ(ierr);
         }
-	event->zerocrossing[i] = PETSC_FALSE;
+        event->zerocrossing[i] = PETSC_FALSE;
       }
       event->side[i] = 0;
     }
@@ -476,26 +475,23 @@ PetscErrorCode TSEventHandler(TS ts)
     ts->total_steps--;
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_ITERATING);CHKERRQ(ierr);
     event->status = TSEVENT_PROCESSING;
-
     event->ptime_right = t;
   } else {
-    for(i=0; i < event->nevents; i++) {
+    for (i=0; i < event->nevents; i++) {
       if (event->status == TSEVENT_PROCESSING && event->zerocrossing[i]) {
-	/* Compute new time step */
-	dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],dt);
-
-	event->side[i] = -1;
+        /* Compute new time step */
+        dt = TSEventComputeStepSize(event->ptime_prev,t,event->ptime_right,event->fvalue_prev[i],event->fvalue[i],event->fvalue_right[i],event->side[i],dt);
+        event->side[i] = -1;
       }
       event->fvalue_prev[i] = event->fvalue[i];
     }
-
     if (event->monitor && event->status == TSEVENT_PROCESSING) {
       ierr = PetscViewerASCIIPrintf(event->monitor,"TSEvent: iter %D - Stepping forward as no event detected in interval [%g - %g]\n",event->iterctr,(double)event->ptime_prev,(double)t);CHKERRQ(ierr);
     }
     event->ptime_prev = t;
   }
 
-  if(event->status == TSEVENT_PROCESSING) event->iterctr++;
+  if (event->status == TSEVENT_PROCESSING) event->iterctr++;
 
   ierr = MPIU_Allreduce(&dt,&dt_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,dt_min);CHKERRQ(ierr);

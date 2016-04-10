@@ -286,10 +286,10 @@ struct _n_TSEvent {
   PetscBool      *terminate;        /* 1 -> Terminate time stepping, 0 -> continue */
   PetscInt        nevents;          /* Number of events to handle */
   PetscInt        nevents_zero;     /* Number of event zero detected */
-  PetscInt        *events_zero;     /* List of events that have reached zero */
+  PetscInt       *events_zero;      /* List of events that have reached zero */
   PetscReal      *vtol;             /* Vector tolerances for event zero check */
   TSEventStatus   status;           /* Event status */
-  PetscInt       iterctr;           /* Iteration counter */
+  PetscInt        iterctr;          /* Iteration counter */
   PetscViewer     monitor;
   /* Struct to record the events */
   struct {
