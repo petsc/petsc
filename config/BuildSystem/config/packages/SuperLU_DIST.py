@@ -4,9 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '892d677'
-#    self.download         = ['git://https://github.com/petsc/superlu_dist']
-    self.download         = ['git://https://github.com/xiaoyeli/superlu_dist']
+    self.gitcommit         = 'v5.0.0'
+    self.download         = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_5.0.0.tar.gz','git://https://github.com/xiaoyeli/superlu_dist']
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
     self.liblist          = [['libsuperlu_dist.a']]
