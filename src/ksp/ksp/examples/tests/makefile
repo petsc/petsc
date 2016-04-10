@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c ex46.cxx ex47.c
+                ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -179,6 +179,9 @@ ex47: ex47.o chkopts
 ex47f: ex47f.o chkopts
 	-${FLINKER} -o ex47f ex47f.o ${PETSC_KSP_LIB}
 	${RM} ex47f.o
+ex48: ex48.o chkopts
+	-${CLINKER} -o ex48 ex48.o ${PETSC_KSP_LIB}
+	${RM} ex48.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -976,6 +979,12 @@ runex47:
 	   else printf "${PWD}\nPossible problem with ex47, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex47.tmp
 
+runex48:
+	-@${MPIEXEC} -n 1 ./ex48 -ksp_monitor_short -ksp_converged_reason -ksp_type minres -pc_type jacobi -ksp_error_if_not_converged > ex48.tmp 2>&1;\
+	if (${DIFF} output/ex48_1.out ex48.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex48, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex48.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
                                  ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 runex21_2 runex21_3 ex21.rm \
@@ -989,7 +998,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_noche
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
-                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm
+                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
