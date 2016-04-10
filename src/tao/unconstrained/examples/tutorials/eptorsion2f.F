@@ -51,8 +51,6 @@
       Tao        tao            ! Tao solver context
       TaoConvergedReason reason
       PetscBool        flg
-      PetscInt         iter           ! iteration information
-      PetscReal      ff,gnorm,cnorm,xdiff
       PetscInt         i1
       PetscInt         dummy
 

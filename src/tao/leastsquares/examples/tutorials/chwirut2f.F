@@ -35,10 +35,6 @@
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
       Tao        tao     ! Tao context
-      PetscInt         i
-
-
-
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.

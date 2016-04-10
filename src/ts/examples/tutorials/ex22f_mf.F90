@@ -66,7 +66,7 @@ program main
   TS             ts
   Vec            X
   Mat            J
-  PetscInt       steps,maxsteps,mx
+  PetscInt       maxsteps,mx
   PetscBool      OptionSaveToDisk
   PetscErrorCode ierr
   DM             da
@@ -271,7 +271,6 @@ subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
 
   DM             da
   PetscInt       mx,xs,xe,gxs,gxe
-  Vec            Xloc
   PetscOffset    ixx,ixxdot,iff
   PetscScalar    xx(0:1),xxdot(0:1),ff(0:1)
 
@@ -483,7 +482,6 @@ subroutine FormInitialSolution(ts,X,user,ierr)
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscdmda.h>
   TS ts
-  PetscReal t
   Vec X
   PetscReal user(6)
   PetscErrorCode ierr
@@ -563,7 +561,7 @@ subroutine  MyMult(A,X,F,ierr)
   PetscErrorCode ierr
   PetscScalar shift
 
-  Mat J,Jpre
+!  Mat J,Jpre
 
   PetscReal user(6)
 
@@ -623,7 +621,7 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscdmda.h>
 
-  Vec X,Xloc
+  Vec X
   DM             da
   PetscInt xs,xe,two
   PetscInt gdof,i
