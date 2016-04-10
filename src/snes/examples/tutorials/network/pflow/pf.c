@@ -10,7 +10,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 */
 
 #include "pf.h"
-#include <petscdmnetwork.h>
 
 PetscMPIInt rank;
 

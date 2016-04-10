@@ -1,7 +1,8 @@
 #ifndef PF_H
 #define PF_H
 
-# include "petsc.h"
+#include <petscsnes.h>
+#include <petscdmnetwork.h>
 
 # define MAXLINE 1000
 #define REF_BUS 3

@@ -5,7 +5,6 @@
 */
 
 #include "wash.h"
-#include <petscdmnetwork.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "WASHIFunction"
