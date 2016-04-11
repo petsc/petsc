@@ -9798,9 +9798,7 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
    actually needed.
 
    If you have many matrices with the same non-zero structure to multiply, you
-   should either
-$   1) use MAT_REUSE_MATRIX in all calls but the first or
-$   2) call MatMatMatMultSymbolic() once and then MatMatMatMultNumeric() for each product needed
+   should use MAT_REUSE_MATRIX in all calls but the first or
 
    Level: intermediate
 
