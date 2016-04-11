@@ -42,7 +42,7 @@
 @*/
 PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
 {
-  int       i,n,*lens,cnt = 0;
+  int       i,j,n,*lens,cnt = 0;
   PetscBool flg = PETSC_FALSE;
 
   if (!s) n = 0;
@@ -76,7 +76,13 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
   }
 
   for (i=0; i<*argc; i++) {
-    (*args)[i] = (char*) malloc((lens[i]+1)*sizeof(char)); if (!(*args)[i]) return PETSC_ERR_MEM;
+    (*args)[i] = (char*) malloc((lens[i]+1)*sizeof(char));
+    if (!(*args)[i]) {
+      free(lens);
+      for (j=0; j<i; j++) free((*args)[j]);
+      free(*args);
+      return PETSC_ERR_MEM;
+    }
   }
   free(lens);
   (*args)[*argc] = 0;
