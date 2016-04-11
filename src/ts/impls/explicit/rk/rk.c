@@ -925,7 +925,7 @@ PetscErrorCode TSRKGetType(TS ts,TSRKType *rktype)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSRKGetType_RK"
-PetscErrorCode  TSRKGetType_RK(TS ts,TSRKType *rktype)
+static PetscErrorCode TSRKGetType_RK(TS ts,TSRKType *rktype)
 {
   TS_RK     *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
@@ -939,7 +939,7 @@ PetscErrorCode  TSRKGetType_RK(TS ts,TSRKType *rktype)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSRKSetType_RK"
-PetscErrorCode  TSRKSetType_RK(TS ts,TSRKType rktype)
+static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
 {
   TS_RK     *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;

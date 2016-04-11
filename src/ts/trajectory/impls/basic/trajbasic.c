@@ -17,7 +17,7 @@ static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySet_Basic"
-PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
+static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   PetscViewer    viewer;
   PetscInt       ns,i;
@@ -61,7 +61,7 @@ PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryGet_Basic"
-PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *t)
+static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *t)
 {
   Vec            Sol,*Y;
   PetscInt       Nr,i;

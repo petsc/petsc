@@ -116,7 +116,7 @@ static PetscErrorCode TSInterpolate_Euler(TS ts,PetscReal t,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeLinearStability_Euler"
-PetscErrorCode TSComputeLinearStability_Euler(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
+static PetscErrorCode TSComputeLinearStability_Euler(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
 {
   PetscFunctionBegin;
   *yr = 1.0 + xr;

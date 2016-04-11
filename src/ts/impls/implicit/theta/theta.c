@@ -665,7 +665,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaGetTheta_Theta"
-PetscErrorCode  TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
+static PetscErrorCode TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
 {
   TS_Theta *th = (TS_Theta*)ts->data;
 
@@ -676,7 +676,7 @@ PetscErrorCode  TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaSetTheta_Theta"
-PetscErrorCode  TSThetaSetTheta_Theta(TS ts,PetscReal theta)
+static PetscErrorCode TSThetaSetTheta_Theta(TS ts,PetscReal theta)
 {
   TS_Theta *th = (TS_Theta*)ts->data;
 
@@ -689,7 +689,7 @@ PetscErrorCode  TSThetaSetTheta_Theta(TS ts,PetscReal theta)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaGetEndpoint_Theta"
-PetscErrorCode  TSThetaGetEndpoint_Theta(TS ts,PetscBool *endpoint)
+static PetscErrorCode TSThetaGetEndpoint_Theta(TS ts,PetscBool *endpoint)
 {
   TS_Theta *th = (TS_Theta*)ts->data;
 
@@ -700,7 +700,7 @@ PetscErrorCode  TSThetaGetEndpoint_Theta(TS ts,PetscBool *endpoint)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaSetEndpoint_Theta"
-PetscErrorCode  TSThetaSetEndpoint_Theta(TS ts,PetscBool flg)
+static PetscErrorCode TSThetaSetEndpoint_Theta(TS ts,PetscBool flg)
 {
   TS_Theta *th = (TS_Theta*)ts->data;
 
@@ -728,7 +728,7 @@ static PetscErrorCode TSComputeLinearStability_Theta(TS ts,PetscReal xr,PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGetStages_Theta"
-static PetscErrorCode  TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
+static PetscErrorCode TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
 {
   TS_Theta     *th = (TS_Theta*)ts->data;
 

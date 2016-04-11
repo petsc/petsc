@@ -79,7 +79,7 @@ PetscErrorCode  TSAdaptRegisterAll(void)
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptFinalizePackage"
 /*@C
-  TSFinalizePackage - This function destroys everything in the TS package. It is
+  TSAdaptFinalizePackage - This function destroys everything in the TS package. It is
   called from PetscFinalize().
 
   Level: developer

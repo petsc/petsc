@@ -17,7 +17,7 @@ static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySet_Visualization"
-PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
+static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];

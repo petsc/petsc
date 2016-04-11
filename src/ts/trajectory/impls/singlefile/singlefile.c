@@ -7,7 +7,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySet_Singlefile"
-PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
+static PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   TSTrajectory_Singlefile *sf = (TSTrajectory_Singlefile*)tj->data;
   PetscErrorCode          ierr;
@@ -28,7 +28,7 @@ PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt stepnum
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryDestroy_Singlefile"
-PetscErrorCode TSTrajectoryDestroy_Singlefile(TSTrajectory tj)
+static PetscErrorCode TSTrajectoryDestroy_Singlefile(TSTrajectory tj)
 {
   PetscErrorCode          ierr;
   TSTrajectory_Singlefile *sf = (TSTrajectory_Singlefile*)tj->data;
