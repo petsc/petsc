@@ -69,7 +69,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*     z  <- B*r       */
 
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
-  if (0 && PetscRealPart(dp) < minres->haptol) {
+  if (PetscRealPart(dp) < minres->haptol) {
     if (ksp->errorifnotconverged) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
     ierr = PetscInfo2(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
