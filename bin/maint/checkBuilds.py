@@ -390,7 +390,7 @@ Thanks,
       dev = 'petsc-dev <petsc-dev@mcs.anl.gov>'
       today = self.argDB['blameMailDate']
       FROM = checkbuilds
-      TO = [checkbuilds]
+      TO = [author,checkbuilds]
       REPLY_TO = [dev,checkbuilds]
 
       msg = MIMEText(buf)

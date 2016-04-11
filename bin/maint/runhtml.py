@@ -237,7 +237,6 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "warning: .SSL",
                           "warning: .BIO_",
                           "warning: treating 'c' input as 'c..' when in C.. mode",
-                          "Call to '.*alloc' has an allocation size of 0 bytes",
                           "warning[s]* generated"]
       exclude_warnings = ["warning: statement not reached",
                           "warning: loop not entered at top",
@@ -252,9 +251,6 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "Warning: Cannot tell what pointer points to, assuming global memory space",
                           "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_'",
                           "warning: linker scope was specified more than once",
-                          "results in a null pointer dereference",
-                          "results in a dereference of a null pointer",
-                          "warning: Dereference of null pointer",
                           "thrust/detail/vector_base.inl", "thrust/detail/tuple_transform.h", "detail/tuple.inl", "detail/launch_closure.inl"]
       for line in open(logfile_make_full):
         if re.search(r'[Ww]arning[: ]', line):
