@@ -72,7 +72,7 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
 #define __FUNCT__ "PCBDDCScalingExtension"
 PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec global_vector)
 {
-  PC_BDDC *pcbddc=(PC_BDDC*)pc->data;
+  PC_BDDC        *pcbddc=(PC_BDDC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -80,7 +80,7 @@ PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec glo
   PetscValidHeaderSpecific(local_interface_vector,VEC_CLASSID,2);
   PetscValidHeaderSpecific(global_vector,VEC_CLASSID,3);
   if (local_interface_vector == pcbddc->work_scaling) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
-  ierr = PetscTryMethod(pc,"PCBDDCScalingExtension_C",(PC,Vec,Vec),(pc,local_interface_vector,global_vector));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCBDDCScalingExtension_C",(PC,Vec,Vec),(pc,local_interface_vector,global_vector));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -89,7 +89,7 @@ PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec glo
 static PetscErrorCode PCBDDCScalingRestriction_Basic(PC pc, Vec global_vector, Vec local_interface_vector)
 {
   PetscErrorCode ierr;
-  PC_IS* pcis = (PC_IS*)pc->data;
+  PC_IS          *pcis = (PC_IS*)pc->data;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(pcis->global_to_B,global_vector,local_interface_vector,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_inte
   PetscValidHeaderSpecific(global_vector,VEC_CLASSID,2);
   PetscValidHeaderSpecific(local_interface_vector,VEC_CLASSID,3);
   if (local_interface_vector == pcbddc->work_scaling) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local vector cannot be pcbddc->work_scaling!\n");
-  ierr = PetscTryMethod(pc,"PCBDDCScalingRestriction_C",(PC,Vec,Vec),(pc,global_vector,local_interface_vector));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCBDDCScalingRestriction_C",(PC,Vec,Vec),(pc,global_vector,local_interface_vector));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

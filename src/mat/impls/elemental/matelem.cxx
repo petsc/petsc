@@ -1293,7 +1293,7 @@ PetscErrorCode MatElementalHermitianGenDefEig(El::Pencil type,El::UpperOrLower u
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefEig_C",(El::Pencil,El::UpperOrLower,Mat,Mat,Mat*,Mat*,El::SortType,El::HermitianEigSubset<PetscElemScalar>,const El::HermitianEigCtrl<PetscElemScalar>),(type,uplo,A,B,evals,evec,sort,subset,ctrl));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,"MatElementalHermitianGenDefEig_C",(El::Pencil,El::UpperOrLower,Mat,Mat,Mat*,Mat*,El::SortType,El::HermitianEigSubset<PetscElemScalar>,const El::HermitianEigCtrl<PetscElemScalar>),(type,uplo,A,B,evals,evec,sort,subset,ctrl));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

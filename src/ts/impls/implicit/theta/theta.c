@@ -912,7 +912,7 @@ PetscErrorCode TSThetaGetEndpoint(TS ts,PetscBool *endpoint)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(endpoint,2);
-  ierr = PetscTryMethod(ts,"TSThetaGetEndpoint_C",(TS,PetscBool*),(ts,endpoint));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ts,"TSThetaGetEndpoint_C",(TS,PetscBool*),(ts,endpoint));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

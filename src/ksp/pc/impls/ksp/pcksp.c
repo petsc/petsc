@@ -162,6 +162,8 @@ static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
    Notes:
    You must call KSPSetUp() before calling PCKSPGetKSP().
 
+   If the PC is not a PCKSP object then a NULL is returned
+
    Level: advanced
 
 .keywords:  PC, KSP, get, context

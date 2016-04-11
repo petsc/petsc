@@ -318,7 +318,7 @@ PetscErrorCode TSSSPGetType(TS ts,TSSSPType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSSSPGetType_C",(TS,TSSSPType*),(ts,type));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ts,"TSSSPGetType_C",(TS,TSSSPType*),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -374,7 +374,7 @@ PetscErrorCode TSSSPGetNumStages(TS ts,PetscInt *nstages)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSSSPGetNumStages_C",(TS,PetscInt*),(ts,nstages));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ts,"TSSSPGetNumStages_C",(TS,PetscInt*),(ts,nstages));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

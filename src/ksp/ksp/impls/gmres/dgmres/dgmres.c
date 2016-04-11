@@ -60,7 +60,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm(KSP ksp,PetscInt *neig)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -70,7 +70,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP),(ksp));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP),(ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -80,7 +80,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation(KSP ksp, Vec x, Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),"KSPDGMRESApplyDeflation_C",(KSP, Vec, Vec),(ksp, x, y));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp),"KSPDGMRESApplyDeflation_C",(KSP, Vec, Vec),(ksp, x, y));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -91,7 +91,7 @@ PetscErrorCode  KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp), "KSPDGMRESImproveEig_C",(KSP, PetscInt),(ksp, neig));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp), "KSPDGMRESImproveEig_C",(KSP, PetscInt),(ksp, neig));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

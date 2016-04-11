@@ -1410,7 +1410,7 @@ PetscErrorCode  PCFieldSplitRestrictIS(PC pc,IS isy)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(isy,IS_CLASSID,2);
-  ierr = PetscTryMethod(pc,"PCFieldSplitRestrictIS_C",(PC,IS),(pc,isy));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCFieldSplitRestrictIS_C",(PC,IS),(pc,isy));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1581,7 +1581,7 @@ PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,co
   PetscValidCharPointer(splitname,2);
   if (n < 1) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Provided number of fields %D in split \"%s\" not positive",n,splitname);
   PetscValidIntPointer(fields,3);
-  ierr = PetscTryMethod(pc,"PCFieldSplitSetFields_C",(PC,const char[],PetscInt,const PetscInt*,const PetscInt*),(pc,splitname,n,fields,fields_col));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCFieldSplitSetFields_C",(PC,const char[],PetscInt,const PetscInt*,const PetscInt*),(pc,splitname,n,fields,fields_col));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1753,7 +1753,7 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (splitname) PetscValidCharPointer(splitname,2);
   PetscValidHeaderSpecific(is,IS_CLASSID,3);
-  ierr = PetscTryMethod(pc,"PCFieldSplitSetIS_C",(PC,const char[],IS),(pc,splitname,is));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCFieldSplitSetIS_C",(PC,const char[],IS),(pc,splitname,is));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

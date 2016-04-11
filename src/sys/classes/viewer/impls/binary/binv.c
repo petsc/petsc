@@ -209,7 +209,7 @@ static PetscErrorCode PetscViewerBinaryGetUseMPIIO_Binary(PetscViewer viewer,Pet
 PetscErrorCode PetscViewerBinaryGetUseMPIIO(PetscViewer viewer,PetscBool *flg)
 {
   PetscErrorCode ierr;
-    
+
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   ierr = PetscTryMethod(viewer,"PetscViewerBinaryGetUseMPIIO_C",(PetscViewer,PetscBool*),(viewer,flg));CHKERRQ(ierr);
@@ -250,7 +250,7 @@ PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(viewer,"PetscViewerBinaryGetFlowControl_C",(PetscViewer,PetscInt*),(viewer,fc));CHKERRQ(ierr);
+  ierr = PetscUseMethod(viewer,"PetscViewerBinaryGetFlowControl_C",(PetscViewer,PetscInt*),(viewer,fc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -622,7 +622,7 @@ PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer viewer,PetscBool  *ski
 
   PetscFunctionBegin;
   *skip = PETSC_FALSE;
-  ierr  = PetscTryMethod(viewer,"PetscViewerBinaryGetSkipHeader_C",(PetscViewer,PetscBool*),(viewer,skip));CHKERRQ(ierr);
+  ierr  = PetscUseMethod(viewer,"PetscViewerBinaryGetSkipHeader_C",(PetscViewer,PetscBool*),(viewer,skip));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

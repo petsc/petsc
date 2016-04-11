@@ -509,7 +509,7 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat)  PetscValidPointer(mat,2);
   if (pmat) PetscValidPointer(pmat,3);
-  ierr = PetscTryMethod(pc,"PCRedundantGetOperators_C",(PC,Mat*,Mat*),(pc,mat,pmat));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCRedundantGetOperators_C",(PC,Mat*,Mat*),(pc,mat,pmat));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

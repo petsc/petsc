@@ -844,7 +844,7 @@ PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ksp,"KSPGMRESGetRestart_C",(KSP,PetscInt*),(ksp,restart));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ksp,"KSPGMRESGetRestart_C",(KSP,PetscInt*),(ksp,restart));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
