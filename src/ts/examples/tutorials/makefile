@@ -325,12 +325,12 @@ runex8:
 	   ${RM} -f ex8_1.tmp
 
 runex8_2:
-	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 0 > ex8_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_extrapolate 0 > ex8_2.tmp 2>&1; \
 	   ${DIFF} output/ex8_2.out ex8_2.tmp || printf "${PWD}\nPossible problem with ex8_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex8_2.tmp
 
 runex8_3:
-	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 1 > ex8_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_extrapolate 1 > ex8_3.tmp 2>&1; \
 	   ${DIFF} output/ex8_3.out ex8_3.tmp || printf "${PWD}\nPossible problem with ex8_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex8_3.tmp
 
