@@ -3305,12 +3305,11 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
-  DM               dm;
   PetscErrorCode   ierr;
   static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscCitationsRegister("@techreport{tspaper,\n"
                                 "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
                                 "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
@@ -3319,7 +3318,6 @@ PetscErrorCode  TSStep(TS ts)
                                 "  institution = {Argonne National Laboratory},\n"
                                 "  year        = {2014}\n}\n",&cite);CHKERRQ(ierr);
 
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
@@ -6648,19 +6646,19 @@ PetscErrorCode  TSRollBack(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-
+  if (ts->steprollback) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"TSRollBack already called");
   if (!ts->ops->rollback) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRollBack not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->rollback)(ts);CHKERRQ(ierr);
   ts->time_step = ts->ptime - ts->ptime_prev;
   ts->ptime = ts->ptime_prev;
-  ts->steprollback = PETSC_TRUE; /* Flag to indicate that the step is rollbacked */
+  ts->steprollback = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGetStages"
 /*@
-   TSGetStages - Get the number of stages and stage values 
+   TSGetStages - Get the number of stages and stage values
 
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
@@ -6671,7 +6669,7 @@ PetscErrorCode  TSRollBack(TS ts)
 
 .seealso: TSCreate()
 @*/
-PetscErrorCode  TSGetStages(TS ts,PetscInt *ns, Vec **Y)
+PetscErrorCode  TSGetStages(TS ts,PetscInt *ns,Vec **Y)
 {
   PetscErrorCode ierr;
 
