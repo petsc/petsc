@@ -290,6 +290,7 @@ class BuildChecker(script.Script):
 
   def getBuildFileNames(self):
     buildRE = re.compile(r'^.*(build|examples)_'+self.argDB['buildBranch']+'.*$')
+    buildExcludeRE = re.compile(r'^.*(build|examples)_'+self.argDB['buildBranch']+'_arch-linux-analyzer'+'.*$')
 
     if self.isLocal:
       files = os.listdir(self.argDB['logDirectory'])
@@ -297,8 +298,8 @@ class BuildChecker(script.Script):
       (output, error, status) = self.executeShellCommand('ssh '+self.argDB['remoteMachine']+' ls -1 '+self.argDB['logDirectory'])
       files = output.split('\n')
     print files
-    print filter(lambda fname: buildRE.match(fname), files)
-    return filter(lambda fname: buildRE.match(fname), files)
+    print filter(lambda fname: buildRE.match(fname) and not buildExcludeRE.match(fname), files)
+    return filter(lambda fname: buildRE.match(fname) and not buildExcludeRE.match(fname), files)
 
   def blameMail(self):
     for key in sorted(self.commitfileDict.keys()):
