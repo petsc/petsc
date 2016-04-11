@@ -24,6 +24,7 @@ class Configure(config.package.CMakePackage):
     self.superlu         = framework.require('config.packages.SuperLU',self)
     self.superlu_dist    = framework.require('config.packages.SuperLU_DIST',self)
     self.mkl_pardiso     = framework.require('config.packages.mkl_pardiso',self)
+    self.metis           = framework.require('config.packages.metis',self)
     self.parmetis        = framework.require('config.packages.parmetis',self)
     self.ptscotch        = framework.require('config.packages.PTScotch',self)
     self.hypre           = framework.require('config.packages.hypre',self)
@@ -39,6 +40,12 @@ class Configure(config.package.CMakePackage):
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
+
+  def Install(self):
+    config.package.CMakePackage.Install(self)
+    self.addDefine('HAVE_ML',1)
+    self.addDefine('HAVE_ML_ZOLTAN',1)
+    return self.installDir
 
   def formCMakeConfigureArgs(self):
     # Check for 64bit pointers
@@ -131,6 +138,11 @@ class Configure(config.package.CMakePackage):
       args.append('-DTPL_PARDISO_MKL_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.mkl_pardiso.include)[2:])
       args.append('-DTPL_PARDISO_MKL_LIBRARIES="'+self.libraries.toStringNoDupes(self.mkl_pardiso.lib)+'"')
 
+    if self.metis.found:
+      args.append('-DTPL_ENABLE_METIS:BOOL=ON')
+      args.append('-DTPL_METIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.metis.include)[2:])
+      args.append('-DTPL_METIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.metis.lib)+'"')
+
     if self.parmetis.found:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=ON')
       args.append('-DTPL_ParMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:])
@@ -201,6 +213,10 @@ class Configure(config.package.CMakePackage):
     ll = [os.path.join(dir,'lib'+l[0][2:]+'.a')]
     for i in l[1:]:
       ll.append('lib'+i[2:]+'.a')
+    if self.parmetis.found:
+      ll.append(self.parmetis.lib[0])
+    if self.metis.found:
+      ll.append(self.metis.lib[0])
     llp = ll
     llp.append('libpthread.a')
     return [ll,llp]

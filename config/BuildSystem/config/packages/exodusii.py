@@ -41,7 +41,9 @@ class Configure(config.package.Package):
     configOpts     = []
     configOpts.append('RANLIB="'+self.setCompilers.RANLIB+'"')
     configOpts.append('AR="'+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'"')
-    configOpts.append('NETCDF="'+self.installDir+'"')
+    
+    configOpts.append('NETCDF_LIB="'+self.libraries.toString(self.netcdf.lib)+'"')
+    configOpts.append('NETCDF_INC="'+self.headers.toStringNoDupes(self.netcdf.include)+'"')
 
     self.setCompilers.pushLanguage('C')
     configOpts.append('CC="'+self.setCompilers.getCompiler()+'"')
