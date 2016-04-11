@@ -16,7 +16,7 @@ minimize the extended Rosenbrock function: \n\
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoGetConvergedReason(); TaoDestroy();
+   Routines: TaoDestroy();
    Processors: 1
 T*/
 
@@ -46,7 +46,6 @@ int main(int argc,char **argv)
   Tao                tao;                   /* Tao solver context */
   PetscBool          flg;
   PetscMPIInt        size,rank;                  /* number of processes running */
-  TaoConvergedReason reason;
   AppCtx             user;                  /* user-defined application context */
 
   /* Initialize TAO and PETSc */
@@ -84,12 +83,6 @@ int main(int argc,char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-
-  /* Get termination information */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0) {
-    ierr = PetscPrintf(MPI_COMM_WORLD,"Try a different TAO type, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
-  }
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);

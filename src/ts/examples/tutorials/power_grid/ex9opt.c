@@ -197,7 +197,6 @@ int main(int argc,char **argv)
   AppCtx             ctx;
   Vec                lowerb,upperb;
   Tao                tao;
-  TaoConvergedReason reason;
   KSP                ksp;
   PC                 pc;
 
@@ -298,12 +297,6 @@ int main(int argc,char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
-
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0){
-    ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
-  }
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */

@@ -15,7 +15,7 @@
 !  Routines: TaoSetInitialVector();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
-!  Routines: TaoGetConvergedReason(); TaoDestroy();
+!  Routines: TaoDestroy();
 !  Processors: 1
 !T*/
 !
@@ -40,9 +40,6 @@
       PetscInt         i2,i1
       integer          size,rank    ! number of processes running
       PetscReal      zero
-      TaoConvergedReason reason
-
-
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
@@ -116,12 +113,6 @@
 
 !  SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)
-
-      call TaoGetConvergedReason(tao, reason, ierr)
-      if (reason .le. 0) then
-         print *,'Try a different TAO method, adjust some parameters,'
-         print *,'or check the function evaluation routines.'
-      endif
 
 !  TaoView() prints ierr about the TAO solver; the option
 !      -tao_view

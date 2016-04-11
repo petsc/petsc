@@ -7,4 +7,3 @@ KSP Iterations = 1345
 KSP iterations within initialization: 370
 Total KSP iterations over 1 trial(s): 1715
 KSP iterations per trial: 1345
-Optimization terminated with status 3.

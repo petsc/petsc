@@ -27,7 +27,7 @@ The command line options are:\n\
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoSetMonitor();
    Routines: TaoSolve(); TaoView();
-   Routines: TaoGetConvergedReason(); TaoDestroy();
+   Routines: TaoDestroy();
    Processors: n
 T*/
 
@@ -63,7 +63,6 @@ int main( int argc, char **argv )
   Vec                x;                   /* solution, gradient vectors */
   PetscBool          flg, viewmat;        /* flags */
   PetscBool          fddefault, fdcoloring;   /* flags */
-  TaoConvergedReason reason;
   Tao                tao;                 /* TAO solver context */
   AppCtx             user;                /* user-defined work context */
   ISColoring         iscoloring;
@@ -165,13 +164,6 @@ int main( int argc, char **argv )
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD);
-
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0 ){
-      ierr = PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method \n");CHKERRQ(ierr);
-  }
-
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);

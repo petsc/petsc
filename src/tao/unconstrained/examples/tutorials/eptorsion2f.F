@@ -16,7 +16,7 @@
 !   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
 !   Routines: TaoSetMonitor(); TaoSetConvergenceTest()
 !   Routines: TaoSolve(); TaoGetSolutionStatus()
-!   Routines: TaoGetConvergedReason(); TaoDestroy();
+!   Routines: TaoDestroy();
 
 !   Processors: n
 !T*/
@@ -49,7 +49,6 @@
       Mat              H              ! hessian matrix
       PetscInt         Nx, Ny         ! number of processes in x- and y- directions
       Tao        tao            ! Tao solver context
-      TaoConvergedReason reason
       PetscBool        flg
       PetscInt         iter           ! iteration information
       PetscReal      ff,gnorm,cnorm,xdiff
@@ -135,14 +134,6 @@
 
 !     SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)
-
-!     Get information on termination
-      call TaoGetConvergedReason(tao,reason,ierr)
-      if (reason .lt. 0) then
-          call PetscPrintF(PETSC_COMM_WORLD,                              &
-     &        'TAO did not terminate successfully\n',ierr)
-      endif
-
 
 !     Free TAO data structures
       call TaoDestroy(tao,ierr)

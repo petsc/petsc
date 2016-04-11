@@ -152,7 +152,6 @@ int main(int argc,char **argv)
   struct _n_User     user;
   PetscErrorCode     ierr;
   Tao                tao;
-  TaoConvergedReason reason;
   KSP                ksp;
   PC                 pc;
 
@@ -255,11 +254,7 @@ int main(int argc,char **argv)
   ierr = TaoSetTolerances(tao,1e-7,1e-7,1e-7);CHKERRQ(ierr);
 
   ierr = TaoSolve(tao); CHKERRQ(ierr);
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0){
-      ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
-  }
+
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);

@@ -110,6 +110,7 @@
       CHKERRQ(ierr)
       call TaoGetConvergedReason(tao, reason, ierr)
       if (reason .le. 0) then
+         print *,'Tao failed.'
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'
       endif

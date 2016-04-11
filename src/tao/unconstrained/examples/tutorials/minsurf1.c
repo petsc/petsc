@@ -21,7 +21,7 @@ The command line options are:\n\
    Routines: TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
-   Routines: TaoGetConvergedReason(); TaoDestroy();
+   Routines: TaoDestroy();
    Processors: 1
 T*/
 
@@ -54,7 +54,6 @@ int main( int argc, char **argv )
   Vec                x;                 /* solution, gradient vectors */
   KSP                ksp;               /*  PETSc Krylov subspace method */
   PetscBool          flg;               /* A return value when checking for user options */
-  TaoConvergedReason reason;
   Tao                tao;               /* Tao solver context */
   AppCtx             user;              /* user-defined work context */
 
@@ -111,12 +110,6 @@ int main( int argc, char **argv )
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0) {
-    ierr = PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
-  }
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);

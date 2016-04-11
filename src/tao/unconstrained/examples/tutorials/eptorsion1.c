@@ -46,7 +46,7 @@ The command line options are:\n\
    Routines: TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
-   Routines: TaoGetConvergedReason(); TaoDestroy();
+   Routines: TaoDestroy();
    Processors: 1
 T*/
 
@@ -86,8 +86,6 @@ PetscErrorCode main(int argc,char **argv)
   PetscBool          flg;                 /* A return value when checking for use options */
   Tao                tao;                 /* Tao solver context */
   Mat                H;                   /* Hessian matrix */
-  TaoConvergedReason reason;
-  KSP                ksp;                 /* PETSc Krylov subspace solver */
   AppCtx             user;                /* application context */
   PetscMPIInt        size;                /* number of processes */
   PetscReal          one=1.0;
@@ -149,21 +147,6 @@ PetscErrorCode main(int argc,char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
-  ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
-  if (ksp) {
-    ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  }
-
-  /*
-     To View TAO solver information use
-      ierr = TaoView(tao);CHKERRQ(ierr);
-  */
-
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
-  }
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&user.s);CHKERRQ(ierr);

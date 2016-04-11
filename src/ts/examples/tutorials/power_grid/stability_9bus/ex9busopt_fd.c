@@ -803,7 +803,6 @@ int main(int argc,char **argv)
   PC                 pc;
   PetscInt           *idx2;
   Tao                tao;
-  TaoConvergedReason reason;
   Vec                lowerb,upperb;
 
   PetscFunctionBeginUser;
@@ -900,11 +899,6 @@ int main(int argc,char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0){
-    ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
-  }
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */

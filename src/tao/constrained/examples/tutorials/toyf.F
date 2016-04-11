@@ -106,19 +106,6 @@
       call TaoSolve(tao,ierr)
       CHKERRQ(ierr)
 
-
-      ! Analyze solution
-      call TaoGetConvergedReason(tao,reason,ierr)
-      CHKERRQ(ierr)
-
-!      if (reason .lt. 0) then
-!         call PetscPrintf(MPI_COMM_WORLD, 'TAO failed to converge.\n'!,  &
-!     &         ierr)
-!      else
-!         call PetscPrintf(MPI_COMM_WORLD,                            !   &
-!     &         'Optimization terminated with status %D.\n', reason,ierr)
-!      end if
-
       ! Finalize Memory
       call DestroyProblem(ierr)
       CHKERRQ(ierr)

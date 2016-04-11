@@ -26,7 +26,7 @@ The command line options are:\n\
    Routines: TaoSetVariableBounds();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve(); TaoView();
-   Routines: TaoGetConvergedReason(); TaoDestroy();
+   Routines: TaoDestroy();
    Processors: n
 T*/
 
@@ -72,7 +72,6 @@ int main( int argc, char **argv )
   PetscBool              flg;                /* A return variable when checking for user options */
   Tao                    tao;                  /* Tao solver context */
   ISLocalToGlobalMapping isltog;   /* local-to-global mapping object */
-  TaoConvergedReason     reason;
   Mat                    H_shell;                  /* to test matrix-free submatrices */
   AppCtx                 user;                 /* user-defined work context */
 
@@ -168,12 +167,8 @@ int main( int argc, char **argv )
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  /* Get ierrrmation on converged */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (reason <= 0){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
-  }
+
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
