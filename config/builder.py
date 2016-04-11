@@ -53,7 +53,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/square.cas -interpolate 1 -dm_view'},
                                                                  {'numProcs': 3, 'args': '-filename %(meshes)s/square.cas -interpolate 1 -dm_view'},
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/cube_5tets_ascii.cas -interpolate 1 -dm_view'},
-                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/cube_5tets.cas -interpolate 1 -dm_view'},
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/cube_5tets.cas -interpolate 1 -dm_view', 'requires': 'Broken'},
                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex3': [# 2D P_1 on a triangle
                                                                  {'num': 'p1_2d_0', 'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -convergence'},
