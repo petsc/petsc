@@ -2571,7 +2571,11 @@ PetscErrorCode  PetscOptionsSetFromOptions(PetscOptions options)
   PetscViewer    monviewer;
 
   PetscFunctionBegin;
-  options = options ? options : defaultoptions;
+  /*
+     The options argument is currently ignored since we currently maintain only a single options database
+
+     options = options ? options : defaultoptions;
+  */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for handling options","PetscOptions");CHKERRQ(ierr);
   ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",flgc,&flgc,NULL);CHKERRQ(ierr);
