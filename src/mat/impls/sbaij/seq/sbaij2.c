@@ -92,83 +92,25 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   PetscFunctionReturn(0);
 }
 
+/* Bseq is non-symmetric SBAIJ matrix, only used internally by PETSc.
+        Zero some ops' to avoid invalid usse */
 #undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrix_SeqSBAIJ_Private"
-PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,MatReuse scall,Mat *B)
+#define __FUNCT__ "MatSeqSBAIJZeroOps_Private"
+PetscErrorCode MatSeqSBAIJZeroOps_Private(Mat Bseq)
 {
-  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data,*c;
-  PetscErrorCode  ierr;
-  PetscInt        *smap,i,k,kstart,kend,oldcols = a->mbs,*lens;
-  PetscInt        row,mat_i,*mat_j,tcol,*mat_ilen;
-  PetscInt        nrows,*ssmap,bs=A->rmap->bs,bs2=a->bs2;
-  const PetscInt  *irow,*aj = a->j,*ai = a->i;
-  MatScalar       *mat_a;
-  Mat             C;
-  PetscBool       flag,sorted;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISSorted(isrow,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
-
-  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
-
-  ierr  = PetscMalloc1(oldcols,&smap);CHKERRQ(ierr);
-  ierr  = PetscMemzero(smap,oldcols*sizeof(PetscInt));CHKERRQ(ierr);
-  ssmap = smap;
-  ierr  = PetscMalloc1(1+nrows,&lens);CHKERRQ(ierr);
-  for (i=0; i<nrows; i++) smap[irow[i]] = i+1; /* nrows = ncols */
-  /* determine lens of each row */
-  for (i=0; i<nrows; i++) {
-    kstart  = ai[irow[i]];
-    kend    = kstart + a->ilen[irow[i]];
-    lens[i] = 0;
-    for (k=kstart; k<kend; k++) {
-      if (ssmap[aj[k]]) lens[i]++;
-    }
-  }
-  /* Create and fill new matrix */
-  if (scall == MAT_REUSE_MATRIX) {
-    c = (Mat_SeqSBAIJ*)((*B)->data);
-
-    if (c->mbs!=nrows || (*B)->rmap->bs!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
-    ierr = PetscMemcmp(c->ilen,lens,c->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
-    if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
-    ierr = PetscMemzero(c->ilen,c->mbs*sizeof(PetscInt));CHKERRQ(ierr);
-    C    = *B;
-  } else {
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
-    ierr = MatSetSizes(C,nrows*bs,nrows*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(C,bs,0,lens);CHKERRQ(ierr);
-  }
-  c = (Mat_SeqSBAIJ*)(C->data);
-  for (i=0; i<nrows; i++) {
-    row      = irow[i];
-    kstart   = ai[row];
-    kend     = kstart + a->ilen[row];
-    mat_i    = c->i[i];
-    mat_j    = c->j + mat_i;
-    mat_a    = c->a + mat_i*bs2;
-    mat_ilen = c->ilen + i;
-    for (k=kstart; k<kend; k++) {
-      if ((tcol=ssmap[a->j[k]])) {
-        *mat_j++ = tcol - 1;
-        ierr     = PetscMemcpy(mat_a,a->a+k*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
-        mat_a   += bs2;
-        (*mat_ilen)++;
-      }
-    }
-  }
-
-  /* Free work space */
-  ierr = PetscFree(smap);CHKERRQ(ierr);
-  ierr = PetscFree(lens);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
-  *B   = C;
+  ierr = MatSetOption(Bseq,MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
+  Bseq->ops->mult                   = 0;
+  Bseq->ops->multadd                = 0;
+  Bseq->ops->multtranspose          = 0;
+  Bseq->ops->multtransposeadd       = 0;
+  Bseq->ops->lufactor               = 0;
+  Bseq->ops->choleskyfactor         = 0;
+  Bseq->ops->lufactorsymbolic       = 0;
+  Bseq->ops->choleskyfactorsymbolic = 0;
+  Bseq->ops->getinertia             = 0;
   PetscFunctionReturn(0);
 }
 
@@ -176,39 +118,18 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,MatReuse scall,Ma
 #define __FUNCT__ "MatGetSubMatrix_SeqSBAIJ"
 PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  IS             is1;
   PetscErrorCode ierr;
-  PetscInt       *vary,*iary,nrows,i,bs=A->rmap->bs,count;
-  const PetscInt *irow;
 
   PetscFunctionBegin;
+  ierr = MatGetSubMatrix_SeqBAIJ(A,isrow,iscol,scall,B);CHKERRQ(ierr);
+
   if (isrow != iscol) {
     PetscBool isequal;
     ierr = ISEqual(isrow,iscol,&isequal);CHKERRQ(ierr);
-    if (!isequal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
+    if (!isequal) {
+      ierr = MatSeqSBAIJZeroOps_Private(*B);CHKERRQ(ierr);
+    }
   }
-
-  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
-
-  /* Verify if the indices corespond to each element in a block
-   and form the IS with compressed IS */
-  ierr = PetscMalloc2(a->mbs,&vary,a->mbs,&iary);CHKERRQ(ierr);
-  ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
-
-  count = 0;
-  for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index set does not match blocks");
-    if (vary[i]==bs) iary[count++] = i;
-  }
-  ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-  ierr = PetscFree2(vary,iary);CHKERRQ(ierr);
-
-  ierr = MatGetSubMatrix_SeqSBAIJ_Private(A,is1,scall,B);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -218,14 +139,15 @@ PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat A,PetscInt n,const IS irow[],const
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1(n+1,B);CHKERRQ(ierr);
-  }
-
+  ierr = MatGetSubMatrices_SeqBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = MatGetSubMatrix_SeqSBAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
+    if (!flg) { 
+      ierr = MatSeqSBAIJZeroOps_Private(*B[i]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

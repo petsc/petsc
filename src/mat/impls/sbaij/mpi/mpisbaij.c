@@ -1710,20 +1710,14 @@ PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscBool      flg,sorted;
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  for (i = 0; i < n; i++) {
-    ierr = ISSorted(irow[i],&sorted);CHKERRQ(ierr);
-    if (!sorted) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Row index set %d not sorted",i);
-    ierr = ISSorted(icol[i],&sorted);CHKERRQ(ierr);
-    if (!sorted) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Column index set %d not sorted",i);
-  }
-  ierr = MatGetSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr); /* B[] are sbaij matrices */
   for (i=0; i<n; i++) {
     ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
-    if (!flg) { /* *B[i] is non-symmetric, set flag */
-      ierr = MatSetOption(*B[i],MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
+    if (!flg) { 
+      ierr = MatSeqSBAIJZeroOps_Private(*B[i]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
