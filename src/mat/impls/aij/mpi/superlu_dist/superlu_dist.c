@@ -524,6 +524,10 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
 
   B->factortype = MAT_FACTOR_LU;
 
+  /* set solvertype */
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERSUPERLU_DIST,&B->solvertype);CHKERRQ(ierr);
+
   ierr     = PetscNewLog(B,&lu);CHKERRQ(ierr);
   B->spptr = lu;
 

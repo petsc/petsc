@@ -1841,7 +1841,10 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftyp
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
+
   (*B)->factortype = ftype;
+  ierr = PetscFree((*B)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&(*B)->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

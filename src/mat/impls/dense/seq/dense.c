@@ -669,6 +669,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftyp
     (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense;
   }
   (*fact)->factortype = ftype;
+
+  ierr = PetscFree((*fact)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&(*fact)->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

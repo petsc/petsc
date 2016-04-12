@@ -96,6 +96,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
 {
   PetscErrorCode ierr;
   PC_LU          *dir = (PC_LU*)pc->data;
+  const MatSolverPackage stype;
 
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
@@ -166,6 +167,11 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       pc->failedreason = (PCFailedReason)F->errortype;
     }
 
+  }
+
+  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  if (!stype) {
+    ierr = PCFactorSetMatSolverPackage(pc,((PC_Factor*)dir)->fact->solvertype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

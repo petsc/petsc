@@ -444,6 +444,10 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   B->preallocated                = PETSC_TRUE;
 
   ierr = CholmodStart(B);CHKERRQ(ierr);
+
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERCHOLMOD,&B->solvertype);CHKERRQ(ierr);
+
   *F   = B;
   PetscFunctionReturn(0);
 }

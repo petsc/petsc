@@ -805,6 +805,9 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
   ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   B->factortype = ftype;
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERELEMENTAL,&B->solvertype);CHKERRQ(ierr);
+
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_elemental_elemental);CHKERRQ(ierr);
   *F            = B;
   PetscFunctionReturn(0);

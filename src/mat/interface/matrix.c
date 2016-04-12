@@ -1088,6 +1088,8 @@ PetscErrorCode MatDestroy(Mat *A)
   if ((*A)->ops->destroy) {
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
+
+  ierr = PetscFree((*A)->solvertype);CHKERRQ(ierr);
   ierr = MatDestroy_Redundant(&(*A)->redundant);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->transnullsp);CHKERRQ(ierr);

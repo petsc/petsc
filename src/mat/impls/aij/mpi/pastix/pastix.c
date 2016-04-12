@@ -640,6 +640,10 @@ static PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
+  
+  /* set solvertype */
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPASTIX,&B->solvertype);CHKERRQ(ierr);
 
   ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
@@ -680,6 +684,10 @@ static PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *
 
   B->factortype = MAT_FACTOR_LU;
 
+  /* set solvertype */
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPASTIX,&B->solvertype);CHKERRQ(ierr);
+
   ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
@@ -718,6 +726,10 @@ static PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
+
+  /* set solvertype */
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPASTIX,&B->solvertype);CHKERRQ(ierr);
 
   ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
@@ -758,6 +770,10 @@ static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
+
+  /* set solvertype */
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPASTIX,&B->solvertype);CHKERRQ(ierr);
 
   ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 

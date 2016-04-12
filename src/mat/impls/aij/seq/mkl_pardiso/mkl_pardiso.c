@@ -1336,6 +1336,10 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
   B->ops->getinfo          = MatGetInfo_MKL_PARDISO;
   B->assembled             = PETSC_TRUE;
 
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERMKL_PARDISO,&B->solvertype);CHKERRQ(ierr);
+
+
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mkl_pardiso);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MKL_PARDISO);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorCreateSchurComplement_C",MatFactorCreateSchurComplement_MKL_PARDISO);CHKERRQ(ierr);

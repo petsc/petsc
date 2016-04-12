@@ -708,6 +708,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType fty
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqsbaij_sbstrm);CHKERRQ(ierr);
 
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERSBSTRM,&B->solvertype);CHKERRQ(ierr);
+
   B->spptr = sbstrm;
   *F       = B;
   PetscFunctionReturn(0);
