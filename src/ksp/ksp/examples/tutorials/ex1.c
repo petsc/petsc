@@ -114,7 +114,7 @@ int main(int argc,char **args)
        KSPSetFromOptions();
   */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*
@@ -139,11 +139,6 @@ int main(int argc,char **args)
      Solve linear system
   */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-
-  const MatSolverPackage stype;
-  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
-  printf("stype %s\n",stype);
-  //ierr = PCFactorSetMatSolverPackage(pc,stype);CHKERRQ(ierr);
 
   /*
      View solver info; we could instead use the option -ksp_view to
