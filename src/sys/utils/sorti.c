@@ -152,6 +152,43 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], Petsc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscFindMPIInt"
+/*@
+  PetscFindMPIInt - Finds MPI integer in a sorted array of integers
+
+   Not Collective
+
+   Input Parameters:
++  key - the integer to locate
+.  n   - number of values in the array
+-  ii  - array of integers
+
+   Output Parameter:
+.  loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
+
+   Level: intermediate
+
+   Concepts: sorting^ints
+
+.seealso: PetscSortInt(), PetscSortIntWithArray(), PetscSortRemoveDupsInt()
+@*/
+PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt ii[], PetscInt *loc)
+{
+  PetscInt lo = 0,hi = n;
+
+  PetscFunctionBegin;
+  PetscValidPointer(loc,4);
+  if (!n) {*loc = -1; PetscFunctionReturn(0);}
+  PetscValidPointer(ii,3);
+  while (hi - lo > 1) {
+    PetscInt mid = lo + (hi - lo)/2;
+    if (key < ii[mid]) hi = mid;
+    else               lo = mid;
+  }
+  *loc = key == ii[lo] ? lo : -(lo + (key > ii[lo]) + 1);
+  PetscFunctionReturn(0);
+}
 
 /* -----------------------------------------------------------------------*/
 #define SWAP2(a,b,c,d,t) {t=a;a=b;b=t;t=c;c=d;d=t;}
