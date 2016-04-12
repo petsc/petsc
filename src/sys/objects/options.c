@@ -706,8 +706,14 @@ PetscErrorCode  PetscOptionsInsert(PetscOptions options,int *argc,char ***args,c
   char           pfile[PETSC_MAX_PATH_LEN];
   PetscBool      flag = PETSC_FALSE;
 
+  
   PetscFunctionBegin;
-  options = options ? options : defaultoptions;
+  if (!options) {
+    if (!defaultoptions) {
+      ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
+    }
+    options = defaultoptions;
+  }
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   options->argc = (argc) ? *argc : 0;
@@ -943,7 +949,10 @@ PetscErrorCode  PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
   ierr = PetscOptionsValidKey(buf,&key);CHKERRQ(ierr);
   if (!key) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter, do not include leading '-')",prefix);
 
-  if (!options) {ierr = PetscOptionsInsert(NULL,0,0,0);CHKERRQ(ierr);}
+  if (!options) {
+    ierr = PetscOptionsInsert(NULL,0,0,0);CHKERRQ(ierr);
+    options = defaultoptions;
+  }
   if (options->prefixind >= MAXPREFIXES) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES",MAXPREFIXES);
   start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
   ierr = PetscStrlen(prefix,&n);CHKERRQ(ierr);
