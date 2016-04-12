@@ -65,7 +65,7 @@ class Configure(config.package.CMakePackage):
       shutil.move(os.path.join(self.packageDir,'CMakeLists.txt'),
                   os.path.join(self.packageDir,'CMakeLists.txt.orig'))
       output,err,ret  = config.package.CMakePackage.executeShellCommand("sed -e 's/-DAdd_ //' %s > %s" % (os.path.join(self.packageDir,'CMakeLists.txt.orig'),
-                          os.path.join(self.packageDir,'CMakeLists.txt'))
+                          os.path.join(self.packageDir,'CMakeLists.txt')))
       output = output+err
       self.log.write(output)
     except RuntimeError, e:
