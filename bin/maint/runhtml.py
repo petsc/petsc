@@ -178,8 +178,13 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       print "Processing " + match.group(1)
 
       ### Start table row
-      outfile.write("<tr><td>" + match.group(1) + "</td>")
-
+      if match.group(1).find('linux-analyzer') >= 0:
+        outfile.write("<tr><td>" + match.group(1) +
+                      " <a href=\"analyzer-build_" + sys.argv[1] + ".log/index.html\"><FONT style=\"BACKGROUND-COLOR: orange\">[B]</FONT></a>" +
+                      " <a href=\"analyzer-ex_" + sys.argv[1] + ".log/index.html\"><FONT style=\"BACKGROUND-COLOR: orange\">[E]</FONT></a>" +
+                      "</td>")
+      else:
+        outfile.write("<tr><td>" + match.group(1) + "</td>")
       #
       # Check if some logs are missing. If so, don't process further and write 'incomplete' to table:
       #

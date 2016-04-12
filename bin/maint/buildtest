@@ -82,7 +82,7 @@ if ( $? ) then
   set ANALYZER=""
   set ANALYZER_PCC=""
 else
-  set ANALYZER="scan-build"
+  set ANALYZER="scan-build -o analyzer-results-dir"
   #set ANALYZER_PCC="PCC=/nfs2/petsc/soft/linux-Ubuntu_12.04-x86_64/clang-3.8.0/libexec/ccc-analyzer"
   set ANALYZER_PCC=P`scan-build env |grep ^CC=`
 endif
@@ -98,6 +98,11 @@ endif
 echo '****************************************************' >>& build.log
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
 if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
+#
+if ( "${ANALYZER}" != "" ) then
+  mv analyzer-results-dir/* analyzer-build-results
+endif
+
 #
 # Run examples
 #
@@ -131,6 +136,10 @@ else
   $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$wnPETSC_DIR  "${ANALYZER_PCC}" alltests TESTMODE=$TESTMODE "${VALGRIND}" |& grep -v 'up to date' >>& examples.log
 endif
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
+
+if ( "${ANALYZER}" != "" ) then
+  mv analyzer-results-dir/* analyzer-ex-results
+endif
 
 if ( "${GCOV}" != "" ) then
   rm -f gcov.log
