@@ -508,6 +508,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sf),&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sf,1,viewer,2);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
@@ -561,11 +562,10 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
 @*/
 PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  if (sf->nranks < 0) {ierr = PetscSFSetUpRanks(sf);CHKERRQ(ierr);}
+  if (!sf->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp before obtaining ranks");
   if (nranks)  *nranks  = sf->nranks;
   if (ranks)   *ranks   = sf->ranks;
   if (roffset) *roffset = sf->roffset;
