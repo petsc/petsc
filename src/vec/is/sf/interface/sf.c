@@ -574,24 +574,33 @@ PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **r
   PetscFunctionReturn(0);
 }
 
+static PetscBool InList(PetscMPIInt needle,PetscMPIInt n,const PetscMPIInt *list) {
+  PetscInt i;
+  for (i=0; i<n; i++) {
+    if (needle == list[i]) return PETSC_TRUE;
+  }
+  return PETSC_FALSE;
+}
+
 /*@C
    PetscSFSetUpRanks - Set up data structures associated with ranks; this is for internal use by PetscSF implementations.
 
    Collective
 
    Input Arguments:
-.  sf - PetscSF to set up; PetscSFSetGraph() must have been called
++  sf - PetscSF to set up; PetscSFSetGraph() must have been called
+-  dgroup - MPI_Group of ranks to be distinguished (e.g., for self or shared memory exchange)
 
    Level: developer
 
 .seealso: PetscSFGetRanks()
 @*/
-PetscErrorCode PetscSFSetUpRanks(PetscSF sf)
+PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
 {
   PetscErrorCode     ierr;
   PetscTable         table;
   PetscTablePosition pos;
-  PetscMPIInt        size;
+  PetscMPIInt        size,groupsize,*groupranks;
   PetscInt           i,*rcount,*ranks;
 
   PetscFunctionBegin;
@@ -612,7 +621,43 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf)
     ranks[i]--;             /* Convert back to 0-based */
   }
   ierr = PetscTableDestroy(&table);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray(sf->nranks,ranks,rcount);CHKERRQ(ierr);
+
+  /* We expect that dgroup is reliably "small" while nranks could be large */
+  {
+    MPI_Group group;
+    PetscMPIInt *dgroupranks;
+    ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRQ(ierr);
+    ierr = MPI_Group_size(dgroup,&groupsize);CHKERRQ(ierr);
+    ierr = PetscMalloc1(groupsize,&dgroupranks);CHKERRQ(ierr);
+    ierr = PetscMalloc1(groupsize,&groupranks);CHKERRQ(ierr);
+    for (i=0; i<groupsize; i++) dgroupranks[i] = i;
+    ierr = MPI_Group_translate_ranks(dgroup,groupsize,dgroupranks,group,groupranks);CHKERRQ(ierr);
+    ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+    ierr = PetscFree(dgroupranks);CHKERRQ(ierr);
+  }
+
+  /* Partition ranks[] into distinguished (first sf->ndranks) followed by non-distinguished */
+  for (sf->ndranks=0,i=sf->nranks; sf->ndranks<i; ) {
+    for (i--; sf->ndranks<i; i--) { /* Scan i backward looking for distinguished rank */
+      if (InList(ranks[i],groupsize,groupranks)) break;
+    }
+    for ( ; sf->ndranks<=i; sf->ndranks++) { /* Scan sf->ndranks forward looking for non-distinguished rank */
+      if (!InList(ranks[sf->ndranks],groupsize,groupranks)) break;
+    }
+    if (sf->ndranks < i) {                         /* Swap ranks[sf->ndranks] with ranks[i] */
+      PetscInt    tmprank,tmpcount;
+      tmprank = ranks[i];
+      tmpcount = rcount[i];
+      ranks[i] = ranks[sf->ndranks];
+      rcount[i] = rcount[sf->ndranks];
+      ranks[sf->ndranks] = tmprank;
+      rcount[sf->ndranks] = tmpcount;
+      sf->ndranks++;
+    }
+  }
+  ierr = PetscFree(groupranks);CHKERRQ(ierr);
+  ierr = PetscSortIntWithArray(sf->ndranks,ranks,rcount);CHKERRQ(ierr);
+  ierr = PetscSortIntWithArray(sf->nranks-sf->ndranks,ranks+sf->ndranks,rcount+sf->ndranks);CHKERRQ(ierr);
   sf->roffset[0] = 0;
   for (i=0; i<sf->nranks; i++) {
     ierr = PetscMPIIntCast(ranks[i],sf->ranks+i);CHKERRQ(ierr);
@@ -620,16 +665,14 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf)
     rcount[i]        = 0;
   }
   for (i=0; i<sf->nleaves; i++) {
-    PetscInt lo,hi,irank;
+    PetscInt irank;
     /* Search for index of iremote[i].rank in sf->ranks */
-    lo = 0; hi = sf->nranks;
-    while (hi - lo > 1) {
-      PetscInt mid = lo + (hi - lo)/2;
-      if (sf->remote[i].rank < sf->ranks[mid]) hi = mid;
-      else                                  lo = mid;
+    ierr = PetscFindMPIInt(sf->remote[i].rank,sf->ndranks,sf->ranks,&irank);CHKERRQ(ierr);
+    if (irank < 0) {
+      ierr = PetscFindMPIInt(sf->remote[i].rank,sf->nranks-sf->ndranks,sf->ranks+sf->ndranks,&irank);CHKERRQ(ierr);
+      if (irank >= 0) irank += sf->ndranks;
     }
-    if (hi - lo == 1 && sf->remote[i].rank == sf->ranks[lo]) irank = lo;
-    else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %D in array",sf->remote[i].rank);
+    if (irank < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %D in array",sf->remote[i].rank);
     sf->rmine[sf->roffset[irank] + rcount[irank]]   = sf->mine ? sf->mine[i] : i;
     sf->rremote[sf->roffset[irank] + rcount[irank]] = sf->remote[i].index;
     rcount[irank]++;

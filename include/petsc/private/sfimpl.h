@@ -32,6 +32,7 @@ struct _p_PetscSF {
   PetscSFNode     *remote;      /* Remote references to roots for each local leaf */
   PetscSFNode     *remote_alloc;
   PetscInt        nranks;       /* Number of ranks owning roots connected to my leaves */
+  PetscInt        ndranks;      /* Number of ranks in distinguished group holding roots connected to my leaves */
   PetscMPIInt     *ranks;       /* List of ranks referenced by "remote" */
   PetscInt        *roffset;     /* Array of length nranks+1, offset in rmine/rremote for each rank */
   PetscInt        *rmine;       /* Concatenated array holding local indices referencing each remote rank */

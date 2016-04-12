@@ -534,10 +534,13 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   PetscErrorCode ierr;
   PetscInt *rlengths,*ilengths,i;
   MPI_Comm comm;
+  MPI_Group group;
   MPI_Request *rootreqs,*leafreqs;
 
   PetscFunctionBegin;
-  ierr = PetscSFSetUpRanks(sf);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(PETSC_COMM_SELF,&group);CHKERRQ(ierr);
+  ierr = PetscSFSetUpRanks(sf,group);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&group);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)sf,&bas->tag);CHKERRQ(ierr);
   /*
