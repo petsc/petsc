@@ -1645,7 +1645,7 @@ PetscErrorCode DMPlexReconstructGradientsFVM(DM dm, Vec locX, Vec grad)
 {
   PetscDS          prob;
   PetscInt         Nf, f, fStart, fEnd;
-  PetscBool        useFVM;
+  PetscBool        useFVM = PETSC_FALSE;
   PetscFV          fvm = NULL;
   Vec              faceGeometryFVM, cellGeometryFVM;
   PetscFVCellGeom  *cgeomFVM   = NULL;

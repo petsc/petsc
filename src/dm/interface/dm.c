@@ -6047,7 +6047,7 @@ PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const c
     b = b->next;
     ++n;
   }
-  if (n != bd) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  if (!b) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
   if (isEssential) {
     PetscValidPointer(isEssential, 3);
     *isEssential = b->essential;

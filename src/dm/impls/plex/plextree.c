@@ -1753,7 +1753,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
       if (!pointDof) continue;
       ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       for (f = 0; f < numFields; f++) {
-        PetscInt cDof, cOff, numCols, numFillCols, i, r, fComp, matOffset, offset;
+        PetscInt cDof, cOff, numCols, numFillCols, i, r, fComp = -1, matOffset, offset;
         PetscScalar *pointMat;
         PetscObject disc;
         PetscClassId id;
@@ -1769,6 +1769,9 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
         else if (id == PETSCFV_CLASSID) {
           fv = (PetscFV) disc;
           ierr = PetscFVGetNumComponents(fv,&fComp);CHKERRQ(ierr);
+        }
+        else {
+          SETERRQ(PetscObjectComm((PetscObject)disc),PETSC_ERR_SUP,"Unsupported discretization");
         }
 
         if (numFields > 1) {

@@ -4447,7 +4447,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
           }
           else {
             /* copy this row as is */
-            for (r = 0; r < dof; c++) {
+            for (r = 0; r < dof; r++) {
               for (c = 0; c < newNumIndices; c++) {
                 newValues[(rStart + r) * newNumIndices + c] = tmpValues[(oldOff + r) * newNumIndices + c];
               }
