@@ -352,6 +352,7 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
   MPI_Group      ingroup,outgroup;
 
   PetscFunctionBegin;
+  ierr = PetscSFSetUpRanks(sf);CHKERRQ(ierr);
   switch (w->sync) {
   case PETSCSF_WINDOW_SYNC_ACTIVE:
     ierr = PetscSFGetGroups(sf,&ingroup,&outgroup);CHKERRQ(ierr);

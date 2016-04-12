@@ -122,6 +122,7 @@ int main(int argc,char **argv)
   ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,nrootsalloc,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
 
   /* View graph, mostly useful for debugging purposes. */
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
@@ -237,6 +238,7 @@ int main(int argc,char **argv)
     const PetscInt nroots = 1 + (PetscInt) !rank,selected[] = {1*stride,2*stride};
     PetscSF        esf;
     ierr = PetscSFCreateEmbeddedSF(sf,nroots,selected,&esf);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(esf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n");CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
     ierr = PetscSFView(esf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -248,6 +250,8 @@ int main(int argc,char **argv)
     PetscSF msf,imsf;
     ierr = PetscSFGetMultiSF(sf,&msf);CHKERRQ(ierr);
     ierr = PetscSFCreateInverseSF(msf,&imsf);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(msf);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(imsf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF\n");CHKERRQ(ierr);
     ierr = PetscSFView(msf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF\n");CHKERRQ(ierr);

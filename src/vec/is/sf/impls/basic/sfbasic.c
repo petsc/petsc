@@ -537,6 +537,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   MPI_Request *rootreqs,*leafreqs;
 
   PetscFunctionBegin;
+  ierr = PetscSFSetUpRanks(sf);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)sf,&bas->tag);CHKERRQ(ierr);
   /*
