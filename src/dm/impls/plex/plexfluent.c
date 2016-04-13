@@ -238,7 +238,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscMPIInt    rank;
   PetscInt       c, f, v, dim = PETSC_DETERMINE, numCells = 0, numVertices = 0, numCellVertices = PETSC_DETERMINE;
   PetscInt       numFaces = PETSC_DETERMINE, numFaceEntries = PETSC_DETERMINE, numFaceVertices = PETSC_DETERMINE;
-  PetscInt      *faces = NULL, *cellVertices, *faceZoneIDs = NULL;
+  PetscInt      *faces = NULL, *cellVertices = NULL, *faceZoneIDs = NULL;
   PetscInt       d, coordSize;
   PetscScalar   *coords, *coordsIn = NULL;
   PetscSection   coordSection;
@@ -313,7 +313,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   }
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (!rank && faces) {
     /* Derive cell-vertex list from face-vertex and face-cell maps */
     ierr = PetscMalloc1(numCells*numCellVertices, &cellVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells*numCellVertices; c++) cellVertices[c] = -1;
@@ -360,7 +360,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     *dm  = idm;
   }
 
-  if (!rank) {
+  if (!rank && faces) {
     PetscInt fi, joinSize, meetSize, *fverts, cells[2];
     const PetscInt *join, *meet;
     ierr = PetscMalloc1(numFaceVertices, &fverts);CHKERRQ(ierr);
@@ -402,7 +402,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  if (!rank) {
+  if (!rank && coordsIn) {
     for (v = 0; v < numVertices; ++v) {
       for (d = 0; d < dim; ++d) {
         coords[v*dim+d] = coordsIn[v*dim+d];
@@ -413,7 +413,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscFree(cellVertices);CHKERRQ(ierr);
+    if (cellVertices) {ierr = PetscFree(cellVertices);CHKERRQ(ierr);}
     ierr = PetscFree(faces);CHKERRQ(ierr);
     ierr = PetscFree(faceZoneIDs);CHKERRQ(ierr);
     ierr = PetscFree(coordsIn);CHKERRQ(ierr);
