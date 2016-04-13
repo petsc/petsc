@@ -34,8 +34,8 @@ class Configure(config.package.CMakePackage):
     self.mumps           = framework.require('config.packages.MUMPS',self)
     # multiple libraries in Trilinos seem to depend on Boost, I cannot easily determine which
     self.boost           = framework.require('config.packages.boost',self)
-    self.deps            = [self.mpi,self.blasLapack,self.boost]
-    self.odeps           = [self.hwloc,self.superlu,self.superlu_dist,self.parmetis,self.ptscotch,self.hypre,self.hdf5,self.netcdf,self.exodusii]
+    self.deps            = [self.mpi,self.blasLapack]
+    self.odeps           = [self.hwloc,self.superlu,self.superlu_dist,self.parmetis,self.ptscotch,self.hypre,self.hdf5,self.netcdf,self.exodusii,self.boost]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -57,6 +57,9 @@ class Configure(config.package.CMakePackage):
     # Roscoe says I should to this
     args.append('-DTrilinos_ENABLE_EXPLICIT_INSTANTIATION=ON')
 
+    # Roscoe says I should set this so that any Trilinos parts that depend on missing external packages such as netcdf will be automatically turned off
+    args.append('')
+
     # Turn off single precision and complex
     args.append('-DTeuchos_ENABLE_FLOAT=OFF')
     args.append('-DTeuchos_ENABLE_COMPLEX=OFF')
@@ -67,9 +70,13 @@ class Configure(config.package.CMakePackage):
     # Trilinos cmake does not set this variable (as it should) so cmake install does not properly reset the -id and rpath of --prefix installed Trilinos libraries
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
-    args.append('-DTPL_ENABLE_Boost=ON')
-    args.append('-DTPL_Boost_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.boost.include)[2:])
-    args.append('-DTPL_Boost_LIBRARIES='+self.headers.toStringNoDupes(self.boost.lib))
+    if self.boost.found:
+      args.append('-DTPL_ENABLE_Boost=ON')
+      args.append('-DTPL_Boost_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.boost.include)[2:])
+      args.append('-DTPL_Boost_LIBRARIES='+self.headers.toStringNoDupes(self.boost.lib))
+    else:
+      args.append('-DTPL_ENABLE_TPL_Boost:BOOL=OFF')
+      args.append('-DTPL_ENABLE_TPL_BoostLib:BOOL=OFF')
 
     args.append('-DTPL_ENABLE_MPI=ON')
     #  Below is the set of packages recommended by Mike H.
@@ -113,11 +120,15 @@ class Configure(config.package.CMakePackage):
       args.append('-DTPL_ENABLE_SuperLU:BOOL=ON')
       args.append('-DTPL_SuperLU_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.superlu.include)[2:])
       args.append('-DTPL_SuperLU_LIBRARIES="'+self.libraries.toStringNoDupes(self.superlu.lib)+'"')
+    else:
+      args.append('-DTPL_ENABLE_TPL_SuperLU:BOOL=OFF')
 
     if self.superlu_dist.found:
       args.append('-DTPL_ENABLE_SuperLUDist:BOOL=ON')
       args.append('-DTPL_SuperLUDist_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.superlu_dist.include)[2:])
       args.append('-DTPL_SuperLUDist_LIBRARIES="'+self.libraries.toStringNoDupes(self.superlu_dist.lib)+'"')
+    else:
+      args.append('-DTPL_ENABLE_TPL_SuperLUDist:BOOL=OFF')
 
     #  Trilinos master as of commit 0eb6657d89cbe8bed1f7992956fa9b5bcfad9c44 supports only outdated versions of MUMPS
     #  with Ameso and no versions of MUMPS with Ameso2
@@ -130,21 +141,29 @@ class Configure(config.package.CMakePackage):
       args.append('-DTPL_ENABLE_PARDISO_MKL:BOOL=ON')
       args.append('-DTPL_PARDISO_MKL_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.mkl_pardiso.include)[2:])
       args.append('-DTPL_PARDISO_MKL_LIBRARIES="'+self.libraries.toStringNoDupes(self.mkl_pardiso.lib)+'"')
+    else:
+      args.append('-DTPL_ENABLE_TPL_PARDISO_MKL:BOOL=OFF')
 
     if self.parmetis.found:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=ON')
       args.append('-DTPL_ParMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:])
       args.append('-DTPL_ParMETIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.parmetis.lib)+'"')
+    else:
+      args.append('-DTPL_ENABLE_ParMETIS:BOOL=OFF')
 
     if self.ptscotch.found:
       args.append('-DTPL_ENABLE_Scotch:BOOL=ON')
       args.append('-DTPL_Scotch_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.ptscotch.include)[2:])
       args.append('-DTPL_Scotch_LIBRARIES="'+self.libraries.toStringNoDupes(self.ptscotch.lib)+'"')
+    else:
+      args.append('-DTPL_ENABLE_Scotch:BOOL=OFF')
 
     if self.hypre.found:
       args.append('-DTPL_ENABLE_HYPRE:BOOL=ON')
       args.append('-DTPL_HYPRE_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.hypre.include)[2:])
       args.append('-DTPL_HYPRE_LIBRARIES="'+self.libraries.toStringNoDupes(self.hypre.lib)+'"')
+    else:
+      args.append('-DTPL_ENABLE_HYPRE:BOOL=OFF')
 
     if self.hdf5.found:
       args.append('-DTPL_ENABLE_HDF5:BOOL=ON')
