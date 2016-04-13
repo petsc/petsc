@@ -50,8 +50,6 @@
       PetscInt         Nx, Ny         ! number of processes in x- and y- directions
       Tao        tao            ! Tao solver context
       PetscBool        flg
-      PetscInt         iter           ! iteration information
-      PetscReal      ff,gnorm,cnorm,xdiff
       PetscInt         i1
       PetscInt         dummy
 

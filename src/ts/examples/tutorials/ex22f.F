@@ -41,7 +41,7 @@
       SNESLineSearch linesearch
       Vec            X
       Mat            J
-      PetscInt       steps,maxsteps,mx
+      PetscInt       maxsteps,mx
       PetscErrorCode ierr
       DM             da
       PetscReal      ftime,dt

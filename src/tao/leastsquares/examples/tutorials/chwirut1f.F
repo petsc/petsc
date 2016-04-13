@@ -35,8 +35,7 @@
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
       Tao        tao     ! Tao context
-      PetscBool       flg
-      PetscInt         i,nhist
+      PetscInt         nhist
       integer          size,rank    ! number of processes running
       PetscReal      zero
       PetscReal      hist(100) ! objective value history

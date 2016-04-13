@@ -30,70 +30,57 @@
       parameter(MAT_DO_NOT_GET_VALUES=0,MAT_GET_VALUES=1)
 
 !
-!  Matrix options; must match those in include/petscmat.h
+!  MatOption; must match those in include/petscmat.h
 !
       PetscEnum MAT_OPTION_MIN
+      PetscEnum MAT_UNUSED_NONZERO_LOCATION_ERR
       PetscEnum MAT_ROW_ORIENTED
-      PetscEnum MAT_NEW_NONZERO_LOCATIONS
       PetscEnum MAT_SYMMETRIC
       PetscEnum MAT_STRUCTURALLY_SYMMETRIC
       PetscEnum MAT_NEW_DIAGONALS
       PetscEnum MAT_IGNORE_OFF_PROC_ENTRIES
-      PetscEnum MAT_NEW_NONZERO_LOCATION_ERR
-      PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR
       PetscEnum MAT_USE_HASH_TABLE
       PetscEnum MAT_KEEP_NONZERO_PATTERN
       PetscEnum MAT_IGNORE_ZERO_ENTRIES
       PetscEnum MAT_USE_INODES
       PetscEnum MAT_HERMITIAN
       PetscEnum MAT_SYMMETRY_ETERNAL
-      PetscEnum MAT_DUMMY
+      PetscEnum MAT_NEW_NONZERO_LOCATION_ERR
       PetscEnum MAT_IGNORE_LOWER_TRIANGULAR
       PetscEnum MAT_ERROR_LOWER_TRIANGULAR
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
-      PetscEnum MAT_UNUSED_NONZERO_LOCATION_ERR
       PetscEnum MAT_SPD
-      PetscEnum MAT_NO_OFF_PROC_ENTRIES
-      PetscEnum MAT_SUBSET_OFF_PROC_ENTRIES
       PetscEnum MAT_NO_OFF_PROC_ZERO_ROWS
-      PetscEnum MAT_DIAGBLOCK_CSR
-      PetscEnum MAT_OFFDIAGBLOCK_CSR
-      PetscEnum MAT_CSR
-      PetscEnum MAT_DIAGBLOCK_DIA
-      PetscEnum MAT_OFFDIAGBLOCK_DIA
-      PetscEnum MAT_DIA
-      PetscEnum MAT_DIAGBLOCK_ELL
-      PetscEnum MAT_OFFDIAGBLOCK_ELL
-      PetscEnum MAT_ELL
-      PetscEnum MAT_DIAGBLOCK_HYB
-      PetscEnum MAT_OFFDIAGBLOCK_HYB
-      PetscEnum MAT_HYB
+      PetscEnum MAT_NO_OFF_PROC_ENTRIES
+      PetscEnum MAT_NEW_NONZERO_LOCATIONS
+      PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR
+      PetscEnum MAT_SUBSET_OFF_PROC_ENTRIES
       PetscEnum MAT_OPTION_MAX
 
-      parameter (MAT_OPTION_MIN=-3)
-      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=-2)
-      parameter (MAT_ROW_ORIENTED=-1)
-      parameter (MAT_SYMMETRIC=1)
-      parameter (MAT_STRUCTURALLY_SYMMETRIC=2)
-      parameter (MAT_NEW_DIAGONALS=3)
-      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=4)
-      parameter (MAT_USE_HASH_TABLE=5)
-      parameter (MAT_KEEP_NONZERO_PATTERN=6)
-      parameter (MAT_IGNORE_ZERO_ENTRIES=7)
-      parameter (MAT_USE_INODES=8)
-      parameter (MAT_HERMITIAN=9)
-      parameter (MAT_SYMMETRY_ETERNAL=10)
-      parameter (MAT_NEW_NONZERO_LOCATION_ERR=11)
-      parameter (MAT_IGNORE_LOWER_TRIANGULAR=12)
-      parameter (MAT_ERROR_LOWER_TRIANGULAR=13)
-      parameter (MAT_GETROW_UPPERTRIANGULAR=14)
-      parameter (MAT_SPD=15)
-      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=16)
-      parameter (MAT_NO_OFF_PROC_ENTRIES=17)
-      parameter (MAT_NEW_NONZERO_LOCATIONS=18)
-      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=19)
-      parameter (MAT_SUBSET_OFF_PROC_ENTRIES=20)
-      parameter (MAT_OPTION_MAX=21)
+      parameter(MAT_OPTION_MIN = -3)
+      parameter(MAT_UNUSED_NONZERO_LOCATION_ERR = -2)
+      parameter(MAT_ROW_ORIENTED = -1)
+      parameter(MAT_SYMMETRIC = 1)
+      parameter(MAT_STRUCTURALLY_SYMMETRIC = 2)
+      parameter(MAT_NEW_DIAGONALS = 3)
+      parameter(MAT_IGNORE_OFF_PROC_ENTRIES = 4)
+      parameter(MAT_USE_HASH_TABLE = 5)
+      parameter(MAT_KEEP_NONZERO_PATTERN = 6)
+      parameter(MAT_IGNORE_ZERO_ENTRIES = 7)
+      parameter(MAT_USE_INODES = 8)
+      parameter(MAT_HERMITIAN = 9)
+      parameter(MAT_SYMMETRY_ETERNAL = 10)
+      parameter(MAT_NEW_NONZERO_LOCATION_ERR = 11)
+      parameter(MAT_IGNORE_LOWER_TRIANGULAR = 12)
+      parameter(MAT_ERROR_LOWER_TRIANGULAR = 13)
+      parameter(MAT_GETROW_UPPERTRIANGULAR = 14)
+      parameter(MAT_SPD = 15)
+      parameter(MAT_NO_OFF_PROC_ZERO_ROWS = 16)
+      parameter(MAT_NO_OFF_PROC_ENTRIES = 17)
+      parameter(MAT_NEW_NONZERO_LOCATIONS = 18)
+      parameter(MAT_NEW_NONZERO_ALLOCATION_ERR = 19)
+      parameter(MAT_SUBSET_OFF_PROC_ENTRIES = 20)
+      parameter(MAT_OPTION_MAX = 21)
 !
 !  MatFactorShiftType
 !

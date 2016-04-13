@@ -12,7 +12,6 @@
 
       PetscErrorCode ierr
       MatNullSpace nsp
-      PetscScalar value
       Vec     v(1)
       PetscInt nloc
       PetscScalar one

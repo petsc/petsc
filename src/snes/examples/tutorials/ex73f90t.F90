@@ -103,8 +103,9 @@
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !
       SNES::       mysnes
-      Vec::        x,r,x2,x1,x1loc,x2loc,vecArray(2)
-      Mat::       Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4),tmat
+      Vec::        x,r,x2,x1,x1loc,x2loc
+      Mat::       Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
+!      Mat::       tmat
       DM::       daphi,dalam
       IS::        isglobal(2)
       PetscErrorCode   ierr
@@ -412,7 +413,6 @@
       type(petsc_kkt_solver_type), pointer:: solver
       Vec::      Xsub(2)
       PetscInt::  izero,ione,itwo
-      DM::  daphi,dmarray(2)
 
       izero = 0
       ione = 1
