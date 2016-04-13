@@ -3503,7 +3503,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
   PetscLayout    rowMap, colMap;
   PetscInt       rowStart, rowEnd, colStart, colEnd, *nnzD, *nnzO;
   PetscObject    injRefObj;
-  PetscScalar    ***childrenMats;
+  PetscScalar    ***childrenMats=NULL ; /* gcc -O gives 'may be used uninitialized' warning'. Initializing to suppress this warning */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
