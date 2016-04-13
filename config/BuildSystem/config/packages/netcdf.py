@@ -23,7 +23,7 @@ class Configure(config.package.GNUPackage):
     ''' disable DAP and HDF4, enable NetCDF4'''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('CPPFLAGS="'+self.headers.toString(self.hdf5.include)+'"')
-    args.append('LIBS="'+self.libraries.toString(self.hdf5.lib)+'"')
+    args.append('LIBS="'+self.libraries.toString(self.hdf5.dlib)+' '+self.compilers.LIBS+'"')
     args.append('--enable-netcdf-4')
     args.append('--disable-dap')
     args.append('--disable-hdf4')
