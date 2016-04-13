@@ -58,7 +58,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DTrilinos_ENABLE_EXPLICIT_INSTANTIATION=ON')
 
     # Roscoe says I should set this so that any Trilinos parts that depend on missing external packages such as netcdf will be automatically turned off
-    args.append('')
+    args.append('-DTrilinos_DISABLE_ENABLED_FORWARD_DEP_PACKAGES=ON')
 
     # Turn off single precision and complex
     args.append('-DTeuchos_ENABLE_FLOAT=OFF')
