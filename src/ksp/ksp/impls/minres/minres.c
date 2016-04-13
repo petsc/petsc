@@ -55,9 +55,9 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   ksp->its = 0;
 
   ierr = VecSet(UOLD,0.0);CHKERRQ(ierr);          /*     u_old  <-   0   */
-  ierr = VecCopy(UOLD,VOLD);CHKERRQ(ierr);         /*     v_old  <-   0   */
-  ierr = VecCopy(UOLD,W);CHKERRQ(ierr);            /*     w      <-   0   */
-  ierr = VecCopy(UOLD,WOLD);CHKERRQ(ierr);         /*     w_old  <-   0   */
+  ierr = VecSet(VOLD,0.0);CHKERRQ(ierr);         /*     v_old  <-   0   */
+  ierr = VecSet(W,0.0);CHKERRQ(ierr);            /*     w      <-   0   */
+  ierr = VecSet(WOLD,0.0);CHKERRQ(ierr);         /*     w_old  <-   0   */
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x    */
@@ -65,16 +65,22 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   } else {
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
-
-  ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*     z  <- B*r       */
-
+  ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);       /*     z  <- B*r       */
+  ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
-  if (PetscRealPart(dp) < minres->haptol) {
+
+  if (PetscRealPart(dp) < minres->haptol && np > minres->haptol) {
     if (ksp->errorifnotconverged) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
     ierr = PetscInfo2(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(0);
   }
+
+  ierr       = KSPLogResidualHistory(ksp,np);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
+  ksp->rnorm = np;
+  ierr       = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+  if (ksp->reason) PetscFunctionReturn(0);
 
   dp   = PetscAbsScalar(dp);
   dp   = PetscSqrtScalar(dp);
@@ -86,14 +92,6 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   ibeta = 1.0 / beta;
   ierr  = VecScale(V,ibeta);CHKERRQ(ierr);        /*    v <- r / beta     */
   ierr  = VecScale(U,ibeta);CHKERRQ(ierr);        /*    u <- z / beta     */
-
-  ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
-
-  ierr       = KSPLogResidualHistory(ksp,np);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
-  ksp->rnorm = np;
-  ierr       = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
   do {
