@@ -581,38 +581,21 @@ PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize, PetscS
   sqrtz = PetscSqrtReal(1.0 - n[2]*n[2]);
   /* Check for n = z */
   if (sqrtz < 1.0e-10) {
-    if (n[2] < 0.0) {
-      if (coordSize > 9) {
-        coords[2] = PetscRealPart(coords[3*dim+0] - coords[0*dim+0]);
-        coords[3] = PetscRealPart(coords[3*dim+1] - coords[0*dim+1]);
-        coords[4] = x2[0];
-        coords[5] = x2[1];
-        coords[6] = x1[0];
-        coords[7] = x1[1];
-      } else {
-        coords[2] = x2[0];
-        coords[3] = x2[1];
-        coords[4] = x1[0];
-        coords[5] = x1[1];
-      }
-      R[0] = 1.0; R[1] = 0.0; R[2] = 0.0;
-      R[3] = 0.0; R[4] = 1.0; R[5] = 0.0;
-      R[6] = 0.0; R[7] = 0.0; R[8] = -1.0;
-    } else {
-      for (p = 3; p < coordSize/3; ++p) {
-        coords[p*2+0] = PetscRealPart(coords[p*dim+0] - coords[0*dim+0]);
-        coords[p*2+1] = PetscRealPart(coords[p*dim+1] - coords[0*dim+1]);
-      }
-      coords[2] = x1[0];
-      coords[3] = x1[1];
-      coords[4] = x2[0];
-      coords[5] = x2[1];
-      R[0] = 1.0; R[1] = 0.0; R[2] = 0.0;
-      R[3] = 0.0; R[4] = 1.0; R[5] = 0.0;
-      R[6] = 0.0; R[7] = 0.0; R[8] = 1.0;
+    const PetscInt s = PetscSign(n[2]);
+    /* If nz < 0, rotate 180 degrees around x-axis */
+    for (p = 3; p < coordSize/3; ++p) {
+      coords[p*2+0] = PetscRealPart(coords[p*dim+0] - coords[0*dim+0]);
+      coords[p*2+1] = (PetscRealPart(coords[p*dim+1] - coords[0*dim+1])) * s;
     }
     coords[0] = 0.0;
     coords[1] = 0.0;
+    coords[2] = x1[0];
+    coords[3] = x1[1] * s;
+    coords[4] = x2[0];
+    coords[5] = x2[1] * s;
+    R[0] = 1.0;     R[1] = 0.0;     R[2] = 0.0;
+    R[3] = 0.0;     R[4] = 1.0 * s; R[5] = 0.0;
+    R[6] = 0.0;     R[7] = 0.0;     R[8] = 1.0 * s;
     PetscFunctionReturn(0);
   }
   alpha = 1.0/sqrtz;

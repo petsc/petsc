@@ -86,9 +86,10 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
   ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
   if (numFields > nF) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, nF);
   if (is) {
+    PetscInt bs = -1, bsLocal, bsMax, bsMin;
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
-      PetscInt gdof;
+      PetscInt gdof, pSubSize  = 0;
 
       ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
       if (gdof > 0) {
@@ -97,9 +98,28 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
 
           ierr     = PetscSectionGetFieldDof(section, p, fields[f], &fdof);CHKERRQ(ierr);
           ierr     = PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof);CHKERRQ(ierr);
-          subSize += fdof-fcdof;
+          pSubSize += fdof-fcdof;
+        }
+        subSize += pSubSize;
+        if (pSubSize) {
+          if (bs < 0) {
+            bs = pSubSize;
+          } else if (bs != pSubSize) {
+            /* Layout does not admit a pointwise block size */
+            bs = 1;
+          }
         }
       }
+    }
+    /* Must have same blocksize on all procs (some might have no points) */
+    bsLocal = bs;
+    ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    bsLocal = bs < 0 ? bsMax : bs;
+    ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    if (bsMin != bsMax) {
+      bs = 1;
+    } else {
+      bs = bsMax;
     }
     ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
@@ -126,6 +146,7 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
       }
     }
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+    ierr = ISSetBlockSize(*is, bs);CHKERRQ(ierr);
   }
   if (subdm) {
     PetscSection subsection;
