@@ -18,7 +18,7 @@ PC Object: 1 MPI processes
   Coarse grid solver -- level -------------------------------
     KSP Object:    (mg_coarse_)     1 MPI processes
       type: preonly
-      maximum iterations=1, initial guess is zero
+      maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
