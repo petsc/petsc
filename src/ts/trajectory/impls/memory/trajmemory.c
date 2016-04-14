@@ -69,7 +69,7 @@ typedef struct _TJScheduler {
 static PetscErrorCode TurnForwardWithStepsize(TS ts,PetscReal nextstepsize)
 {
     PetscReal      stepsize;
-	PetscErrorCode ierr;
+    PetscErrorCode ierr;
 
     PetscFunctionBegin;
     /* reverse the direction */
@@ -275,11 +275,17 @@ static PetscErrorCode StackDumpAll(TS ts,Stack *stack,PetscInt id)
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
   for (i=0;i<stack->stacksize;i++) {
     e = stack->container[i];
+    ierr = PetscLogEventBegin(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
     ierr = WriteToDisk(e->stepnum,e->time,e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+    ts->trajectory->diskwrites++;
   }
   /* save the last step for restart, the last step is in memory when using single level schemes, but not necessarily the case for multi level schemes */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
   ierr = WriteToDisk(ts->total_steps,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+  ts->trajectory->diskwrites++;
   for (i=0;i<stack->stacksize;i++) {
     ierr = StackPop(stack,&e);CHKERRQ(ierr);
     ierr = VecDestroy(&e->X);CHKERRQ(ierr);
@@ -314,15 +320,22 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *stack,PetscInt id)
     if (!stack->solution_only && stack->numY>0) {
       ierr = VecDuplicateVecs(Y[0],stack->numY,&e->Y);CHKERRQ(ierr);
     }
+    printf("i=%d\n",i);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
   for (i=0;i<stack->stacksize;i++) {
     e = stack->container[i];
+    ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
     ierr = ReadFromDisk(&e->stepnum,&e->time,&e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+    ts->trajectory->diskreads++;
   }
   /* load the last step into TS */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->total_steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ts->trajectory->diskreads++;
   ierr = TurnBackward(ts);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -345,7 +358,7 @@ static PetscErrorCode StackLoadLast(TS ts,Stack *stack,PetscInt id)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mLoad stack from file\033[0m\n");
+  PetscPrintf(PETSC_COMM_WORLD,"\x1B[33mLoad last stack element from file\033[0m\n");
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = VecGetSize(Y[0],&size);CHKERRQ(ierr);
   /* VecView writes to file two extra int's for class id and number of rows */
@@ -366,7 +379,10 @@ static PetscErrorCode StackLoadLast(TS ts,Stack *stack,PetscInt id)
   }
 #endif
   /* load the last step into TS */
+  ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->total_steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ts->trajectory->diskreads++;
   ierr = TurnBackward(ts);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -396,10 +412,11 @@ static PetscErrorCode DumpSingle(TS ts,Stack *stack,PetscInt id)
   ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-CPS%06d.bin",id);CHKERRQ(ierr);
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
   ierr = WriteToDisk(stepnum,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+  ts->trajectory->diskwrites++;
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -419,10 +436,11 @@ static PetscErrorCode LoadSingle(TS ts,Stack *stack,PetscInt id)
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-CPS%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->total_steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ts->trajectory->diskreads++;
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -523,6 +541,7 @@ static PetscErrorCode ReCompute(TS ts,TJScheduler *tjsch,PetscInt stepnumbegin,P
     }
   }
   ierr = TurnBackward(ts);CHKERRQ(ierr);
+  ts->trajectory->recomps += stepnumend-stepnumbegin; /* recomputation counter */
   ts->steps = adjsteps;
   ts->total_steps = stepnumend;
   PetscFunctionReturn(0);
@@ -1321,6 +1340,7 @@ static PetscErrorCode GetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum)
       }
     } else {
       if (tjsch->save_stack) {
+        printf("rs=%d,s=%d\n",restoredstridenum,stridenum);
         if (restoredstridenum < stridenum) {
           ierr = StackLoadLast(ts,stack,restoredstridenum);CHKERRQ(ierr);
           /* reset revolve */
@@ -1658,7 +1678,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 #ifdef PETSC_HAVE_REVOLVE
   RevolveCTX     *rctx,*rctx2;
 #endif
-  PetscInt       numY;
+  PetscInt       numY,diskblocks;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -1670,12 +1690,14 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_cps_ram;
 
   if (tjsch->stride > 1) { /* two level mode */
-    if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram < tjsch->stride-1) { /* use revolve_offline for each stride */
+    if (tjsch->save_stack && tjsch->max_cps_disk <= tjsch->max_cps_ram) SETERRQ(tjsch->comm,PETSC_ERR_ARG_INCOMP,"The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
+    if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) { /* use revolve_offline for each stride */
       tjsch->stype = TWO_LEVEL_REVOLVE;
     }
     if (tjsch->max_cps_disk > 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) { /* use revolve_offline for each stride */
       tjsch->stype = TWO_LEVEL_TWO_REVOLVE;
-      diskstack->stacksize = tjsch->max_cps_disk;
+      diskblocks = tjsch->save_stack ? tjsch->max_cps_disk/(tjsch->max_cps_ram+1) : tjsch->max_cps_disk; /* The block size depends on whether the stack is saved. */
+      diskstack->stacksize = diskblocks;
     }
     if (tjsch->max_cps_disk <= 1 && (tjsch->max_cps_ram >= tjsch->stride || tjsch->max_cps_ram == -1)) { /* checkpoint all for each stride */
       tjsch->stype = TWO_LEVEL_NOREVOLVE; /* can also be handled by TWO_LEVEL_REVOLVE */
@@ -1713,9 +1735,9 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     if (tjsch->stype == TWO_LEVEL_REVOLVE) revolve_create_offline(tjsch->stride,tjsch->max_cps_ram);
     else if (tjsch->stype == TWO_LEVEL_TWO_REVOLVE) {
       revolve_create_offline(tjsch->stride,tjsch->max_cps_ram);
-      revolve2_create_offline((tjsch->total_steps+tjsch->stride-1)/tjsch->stride,tjsch->max_cps_disk);
+      revolve2_create_offline((tjsch->total_steps+tjsch->stride-1)/tjsch->stride,diskblocks);
       ierr = PetscCalloc1(1,&rctx2);CHKERRQ(ierr);
-      rctx2->snaps_in       = tjsch->max_cps_disk;
+      rctx2->snaps_in       = diskblocks;
       rctx2->reverseonestep = PETSC_FALSE;
       rctx2->check          = 0;
       rctx2->oldcapo        = 0;
