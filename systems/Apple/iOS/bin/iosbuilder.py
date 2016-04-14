@@ -4,7 +4,7 @@
 #
 #   export PETSC_ARCH=arch-ios-simulator
 #
-#   ./systems/Apple/iOS/bin/arch-ios.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
+#   ./systems/Apple/iOS/bin/arch-ios-simulator.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
 #      this sets up the appropriate configuration file
 #
 #   ./systems/Apple/iOS/bin/iosbuilder.py
