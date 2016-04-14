@@ -55,6 +55,7 @@ class Configure(config.package.GNUPackage):
       config.package.GNUPackage.configure(self)
       self.log.write('Looking for Cmake in '+os.path.join(self.installDir,'bin')+'\n')
       self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
+      self.getExecutable('ctest',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
     elif (not self.argDB['with-cmake']  == 0 and not self.argDB['with-cmake']  == 'no') or 'with-cmake-exec' in self.argDB:
       self.executeTest(self.locateCMake)
     else:
