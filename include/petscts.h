@@ -382,7 +382,6 @@ PETSC_EXTERN PetscErrorCode TSPreStep(TS);
 PETSC_EXTERN PetscErrorCode TSPreStage(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSPostStage(TS,PetscReal,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode TSPostStep(TS);
-PETSC_EXTERN PetscErrorCode TSSetRetainStages(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
@@ -398,7 +397,6 @@ PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscRea
 PETSC_EXTERN PetscErrorCode TSPseudoTimeStepDefault(TS,PetscReal*,void*);
 PETSC_EXTERN PetscErrorCode TSPseudoComputeTimeStep(TS,PetscReal *);
 PETSC_EXTERN PetscErrorCode TSPseudoSetMaxTimeStep(TS,PetscReal);
-
 PETSC_EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS,PetscErrorCode(*)(TS,Vec,void*,PetscReal*,PetscBool *),void*);
 PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStepDefault(TS,Vec,void*,PetscReal*,PetscBool *);
 PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,PetscBool *);

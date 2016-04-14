@@ -3243,33 +3243,6 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetRetainStages"
-/*@
-   TSSetRetainStages - Request that all stages in the upcoming step be stored so that interpolation will be available.
-
-   Logically Collective on TS
-
-   Input Argument:
-.  ts - time stepping context
-
-   Output Argument:
-.  flg - PETSC_TRUE or PETSC_FALSE
-
-   Level: intermediate
-
-.keywords: TS, set
-
-.seealso: TSInterpolate(), TSSetPostStep()
-@*/
-PetscErrorCode TSSetRetainStages(TS ts,PetscBool flg)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ts->retain_stages = flg;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "TSInterpolate"
 /*@
    TSInterpolate - Interpolate the solution computed during the previous step to an arbitrary location in the interval
@@ -3283,9 +3256,6 @@ PetscErrorCode TSSetRetainStages(TS ts,PetscBool flg)
    Output Argument:
 .  U - state at given time
 
-   Notes:
-   The user should call TSSetRetainStages() before taking a step in which interpolation will be requested.
-
    Level: intermediate
 
    Developer Notes:
@@ -3293,7 +3263,7 @@ PetscErrorCode TSSetRetainStages(TS ts,PetscBool flg)
 
 .keywords: TS, set
 
-.seealso: TSSetRetainStages(), TSSetPostStep()
+.seealso: TSSetExactFinalTime(), TSSolve()
 @*/
 PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 {

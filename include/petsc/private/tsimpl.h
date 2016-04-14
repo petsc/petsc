@@ -184,7 +184,6 @@ struct _p_TS {
   TSEquationType equation_type;
   PetscBool errorifstepfailed;
   TSExactFinalTimeOption  exact_final_time;
-  PetscBool retain_stages;
   PetscInt reject,max_reject;
 
   PetscReal atol,rtol;          /* Relative and absolute tolerance for local truncation error */
