@@ -580,6 +580,9 @@ static PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,const MatFactorIn
   A->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
   A->factortype             = MAT_FACTOR_LU;
 
+  ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&A->solvertype);CHKERRQ(ierr);
+
   ierr = PetscLogFlops((2.0*A->cmap->n*A->cmap->n*A->cmap->n)/3);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -609,6 +612,9 @@ static PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorIn
   A->ops->solveadd          = MatSolveAdd_SeqDense;
   A->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
   A->factortype             = MAT_FACTOR_CHOLESKY;
+
+  ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&A->solvertype);CHKERRQ(ierr);
 
   ierr = PetscLogFlops((1.0*A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr);
 #endif

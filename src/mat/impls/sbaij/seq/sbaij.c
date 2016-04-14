@@ -1019,6 +1019,8 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
 
   outA            = inA;
   inA->factortype = MAT_FACTOR_ICC;
+  ierr = PetscFree(inA->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&inA->solvertype);CHKERRQ(ierr);
 
   ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetNumericFactorization_inplace(inA,row_identity);CHKERRQ(ierr);

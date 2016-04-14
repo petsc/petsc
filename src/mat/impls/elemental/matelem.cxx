@@ -723,6 +723,9 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
   }
   A->factortype = MAT_FACTOR_LU;
   A->assembled  = PETSC_TRUE;
+
+  ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERELEMENTAL,&A->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -758,6 +761,9 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
   El::Cholesky(El::UPPER,*a->emat);
   A->factortype = MAT_FACTOR_CHOLESKY;
   A->assembled  = PETSC_TRUE;
+
+  ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERELEMENTAL,&A->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

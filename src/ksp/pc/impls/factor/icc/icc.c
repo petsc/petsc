@@ -43,7 +43,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
     pc->failedreason = (PCFailedReason)F->errortype;
   }
 
-    ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
     ierr = PCFactorSetMatSolverPackage(pc,((PC_Factor*)icc)->fact->solvertype);CHKERRQ(ierr);
   }

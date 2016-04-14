@@ -2252,6 +2252,8 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *i
 
   outA            = inA;
   inA->factortype = MAT_FACTOR_LU;
+  ierr = PetscFree(inA->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&inA->solvertype);CHKERRQ(ierr);
 
   ierr = MatMarkDiagonal_SeqBAIJ(inA);CHKERRQ(ierr);
 
