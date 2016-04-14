@@ -12,7 +12,10 @@ configure_options = [
   '--with-clanguage=C++',
   '--with-cxx-dialect=C++11',
   '--download-sowing=1',
-  '--download-boost=1',
+  '--download-hdf5=1',
+  '--download-netcdf=1',
+  #'--download-xsdktrilinos=1',
+  '--with-shared-libraries=0',
   '--download-cmake=1'
   ]
 
