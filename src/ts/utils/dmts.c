@@ -508,7 +508,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 
 .seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
 @*/
-PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
+PetscErrorCode DMTSSetForcingFunction(DM dm,TSForcingFunction f,void *ctx)
 {
   PetscErrorCode ierr;
   DMTS           tsdm;
@@ -516,7 +516,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*f)(TS,PetscReal,Vec
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
-  if (f) tsdm->ops->forcing = f;
+  if (f)    tsdm->ops->forcing = f;
   if (ctx)  tsdm->forcingctx   = ctx;
   PetscFunctionReturn(0);
 }
@@ -545,7 +545,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*f)(TS,PetscReal,Vec
 
 .seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
 @*/
-PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**f)(TS,PetscReal,Vec,void*),void **ctx)
+PetscErrorCode DMTSGetForcingFunction(DM dm,TSForcingFunction *f,void **ctx)
 {
   PetscErrorCode ierr;
   DMTS           tsdm;
@@ -553,7 +553,7 @@ PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**f)(TS,PetscReal,Ve
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
-  if (f) *f = tsdm->ops->forcing;
+  if (f)   *f   = tsdm->ops->forcing;
   if (ctx) *ctx = tsdm->forcingctx;
   PetscFunctionReturn(0);
 }

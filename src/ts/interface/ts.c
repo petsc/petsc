@@ -1093,7 +1093,7 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 
 .seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetSolutionFunction()
 @*/
-PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
+PetscErrorCode  TSSetForcingFunction(TS ts,TSForcingFunction f,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
