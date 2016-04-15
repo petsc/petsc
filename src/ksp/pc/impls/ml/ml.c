@@ -1040,7 +1040,6 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
   const char     *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
   const char     *part[]   = {"Zoltan","ParMETIS"};
 #if defined(HAVE_ML_ZOLTAN)
-  PetscInt   zidx;
   const char *zscheme[] = {"RCB","hypergraph","fast_hypergraph"};
 #endif
   PC_MG       *mg    = (PC_MG*)pc->data;

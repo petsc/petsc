@@ -59,6 +59,30 @@ class Configure(config.package.CMakePackage):
     args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
     args.append('-DMPI_C_LIBRARIES:STRING=""')
 
+    # Remove -DAdd_ from superlu cflags
+    try:
+      import shutil
+      shutil.move(os.path.join(self.packageDir,'CMakeLists.txt'),
+                  os.path.join(self.packageDir,'CMakeLists.txt.orig'))
+      output,err,ret  = config.package.CMakePackage.executeShellCommand("sed -e 's/-DAdd_ //' %s > %s" % (os.path.join(self.packageDir,'CMakeLists.txt.orig'),
+                          os.path.join(self.packageDir,'CMakeLists.txt')))
+      output = output+err
+      self.log.write(output)
+    except RuntimeError, e:
+       raise RuntimeError('Error running sed on SuperLU_DIST CMakeLists.txt: '+str(e))
+
+    # Add in the correct flag
+    if self.blasLapack.mangling == 'underscore':
+      mangledef = '-DAdd_'
+    elif self.blasLapack.mangling == 'caps':
+      mangledef = '-DUpCase'
+    else:
+      mangledef = '-DNoChange'
+    for place,item in enumerate(args):
+      if item.find('CMAKE_C_FLAGS') >= 0 or item.find('CMAKE_CXX_FLAGS') >= 0:
+        args[place]=item[:-1]+' '+mangledef+'"'
+
+
     return args
 
 
