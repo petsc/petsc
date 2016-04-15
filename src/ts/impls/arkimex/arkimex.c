@@ -1215,7 +1215,7 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObj
     flg  = (PetscBool) !ark->imex;
     ierr = PetscOptionsBool("-ts_arkimex_fully_implicit","Solve the problem fully implicitly","TSARKIMEXSetFullyImplicit",flg,&flg,NULL);CHKERRQ(ierr);
     ark->imex = (PetscBool) !flg;
-    ierr = PetscOptionsBool("-ts_arkimex_extrapolate","Extrapolate the initial guess for the stage solution from stage values of the previous time step","",ark->extrapolate,&ark->extrapolate,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_arkimex_initial_guess_extrapolate","Extrapolate the initial guess for the stage solution from stage values of the previous time step","",ark->extrapolate,&ark->extrapolate,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

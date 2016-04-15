@@ -631,9 +631,9 @@ static PetscErrorCode TSSetFromOptions_Theta(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject,"Theta ODE solver options");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_adapt","Use time-step adaptivity with the Theta method","",th->adapt,&th->adapt,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_theta_initial_guess_extrapolate","Extrapolate stage initial guess from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -741,9 +741,9 @@ static PetscErrorCode TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
 
    Options Database:
 +  -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
-.  -ts_theta_extrapolate <flg> - Extrapolate stage solution from previous solution (sometimes unstable)
 .  -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
--  -ts_theta_adapt <flg> - Use time-step adaptivity with the Theta method
+.  -ts_theta_adapt <flg> - Use time-step adaptivity with the Theta method
+-  -ts_theta_initial_guess_extrapolate <flg> - Extrapolate stage initial guess from previous solution (sometimes unstable)
 
    Notes:
 $  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
