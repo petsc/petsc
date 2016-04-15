@@ -21,6 +21,9 @@ class Configure(config.package.CMakePackage):
     self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
     self.trilinos        = framework.require('config.packages.Trilinos',self)
     self.hypre           = framework.require('config.packages.hypre',self)
+    self.x               = framework.require('config.packages.X',self)
+    self.ssl             = framework.require('config.packages.ssl',self)
+    self.exodusii        = framework.require('config.packages.exodusii',self)
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -62,6 +65,18 @@ class Configure(config.package.CMakePackage):
     args.append('-DPETSC_LIBRARY_DIRS='+os.path.join(self.petscdir.dir,'lib'))
     args.append('-DPETSC_INCLUDE_DIRS='+os.path.join(self.petscdir.dir,'include'))
 
+    if self.compilerFlags.debugging:
+      args.append('-DCMAKE_BUILD_TYPE=DEBUG')
+      args.append('-DxSDKTrilinos_ENABLE_DEBUG=YES')
+    else:
+      args.append('-DCMAKE_BUILD_TYPE=RELEASE')
+      args.append('-DxSDKTrilinos_ENABLE_DEBUG=NO')
+
+    # These are packages that PETSc may be using that Trilinos is not be using 
+    # These belong in TPL_PETSC_LIBRARIES which we need to ask Ross to add to Trilinos
+    plibs = self.exodusii.dlib+self.ssl.lib+self.x.lib
+
+    args.append('-DxSDKTrilinos_EXTRA_LINK_FLAGS="'+self.libraries.toStringNoDupes(plibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'"')
     args.append('-DxSDKTrilinos_ENABLE_TESTS=ON')
     return args
 

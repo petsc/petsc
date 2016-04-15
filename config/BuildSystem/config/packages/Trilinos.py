@@ -24,18 +24,17 @@ class Configure(config.package.CMakePackage):
     self.superlu         = framework.require('config.packages.SuperLU',self)
     self.superlu_dist    = framework.require('config.packages.SuperLU_DIST',self)
     self.mkl_pardiso     = framework.require('config.packages.mkl_pardiso',self)
+    self.metis           = framework.require('config.packages.metis',self)
     self.parmetis        = framework.require('config.packages.parmetis',self)
     self.ptscotch        = framework.require('config.packages.PTScotch',self)
     self.hypre           = framework.require('config.packages.hypre',self)
     self.hdf5            = framework.require('config.packages.hdf5',self)
     self.netcdf          = framework.require('config.packages.netcdf',self)
-    self.exodusii        = framework.require('config.packages.exodusii',self)
     self.scalapack       = framework.require('config.packages.scalapack',self)
     self.mumps           = framework.require('config.packages.MUMPS',self)
-    # multiple libraries in Trilinos seem to depend on Boost, I cannot easily determine which
     self.boost           = framework.require('config.packages.boost',self)
     self.deps            = [self.mpi,self.blasLapack]
-    self.odeps           = [self.hwloc,self.superlu,self.superlu_dist,self.parmetis,self.ptscotch,self.hypre,self.hdf5,self.netcdf,self.exodusii,self.boost]
+    self.odeps           = [self.hwloc,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.hypre,self.netcdf,self.hdf5,self.boost]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -49,7 +48,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DUSE_XSDK_DEFAULTS=YES')
     if self.compilerFlags.debugging:
       args.append('-DCMAKE_BUILD_TYPE=DEBUG')
-      args.append('-DXSDK_ENABLE_DEBUG=YES')
+      args.append('-DTrilinos_ENABLE_DEBUG=YES')
     else:
       args.append('-DCMAKE_BUILD_TYPE=RELEASE')
       args.append('-DXSDK_ENABLE_DEBUG=NO')
@@ -59,6 +58,8 @@ class Configure(config.package.CMakePackage):
 
     # Roscoe says I should set this so that any Trilinos parts that depend on missing external packages such as netcdf will be automatically turned off
     args.append('-DTrilinos_DISABLE_ENABLED_FORWARD_DEP_PACKAGES=ON')
+
+    args.append('-DTrilinos_EXTRA_LINK_FLAGS="'+self.libraries.toStringNoDupes(self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'"')
 
     # Turn off single precision and complex
     args.append('-DTeuchos_ENABLE_FLOAT=OFF')
@@ -91,8 +92,6 @@ class Configure(config.package.CMakePackage):
     args.append('-DTrilinos_ENABLE_FEI=OFF')
 
     # FEI include files cause crashes on Apple with clang compilers
-    args.append('-DTrilinos_ENABLE_stk=OFF')
-    args.append('-DTrilinos_ENABLE_Stk=OFF')
     args.append('-DTrilinos_ENABLE_STK=OFF')
 
 
@@ -144,10 +143,17 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DTPL_ENABLE_TPL_PARDISO_MKL:BOOL=OFF')
 
+    if self.metis.found:
+      args.append('-DTPL_ENABLE_METIS:BOOL=ON')
+      args.append('-DTPL_METIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.metis.include)[2:])
+      args.append('-DTPL_METIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.metis.lib)+'"')
+    else:
+      args.append('-DTPL_ENABLE_METIS:BOOL=OFF')
+
     if self.parmetis.found:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=ON')
-      args.append('-DTPL_ParMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:]+';'+self.headers.toStringNoDupes(self.metis.include)[2:])
-      args.append('-DTPL_ParMETIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.parmetis.lib)+' '+self.libraries.toStringNoDupes(self.metis.lib)+"')
+      args.append('-DTPL_ParMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:])
+      args.append('-DTPL_ParMETIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.parmetis.dlib)+'"')
     else:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=OFF')
 
@@ -179,26 +185,9 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=OFF')
 
-    if self.exodusii.found:
-      args.append('-DTPL_ENABLE_ExodusII:BOOL=ON')
-      args.append('-DTPL_ExodusII_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.exodusii.include)[2:])
-      args.append('-DTPL_ExodusII_LIBRARIES="'+self.libraries.toStringNoDupes(self.exodusii.lib)+'"')
-    else:
-      args.append('-DTPL_ENABLE_ExodusII:BOOL=OFF')
+    args.append('-DTPL_ENABLE_ExodusII:BOOL=OFF')
 
-    self.framework.pushLanguage('C')
-    args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
-
-    self.framework.pushLanguage('Cxx')
-    args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-    self.framework.popLanguage()
-
-    if hasattr(self.setCompilers, 'FC'):
-      self.framework.pushLanguage('FC')
-      args.append('-DMPI_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      self.framework.popLanguage()
-    else:
+    if not hasattr(self.setCompilers, 'FC'):
       args.append('-DTrilinos_ENABLE_Fortran=OFF')
 
     return args
