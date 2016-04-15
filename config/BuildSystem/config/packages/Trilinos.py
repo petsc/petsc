@@ -156,11 +156,6 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DTPL_ENABLE_METIS:BOOL=OFF')
 
-    if self.metis.found:
-      args.append('-DTPL_ENABLE_METIS:BOOL=ON')
-      args.append('-DTPL_METIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.metis.include)[2:])
-      args.append('-DTPL_METIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.metis.lib)+'"')
-
     if self.parmetis.found:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=ON')
       args.append('-DTPL_ParMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:])
@@ -220,10 +215,6 @@ class Configure(config.package.CMakePackage):
     ll = [os.path.join(dir,'lib'+l[0][2:]+'.a')]
     for i in l[1:]:
       ll.append('lib'+i[2:]+'.a')
-    if self.parmetis.found:
-      ll.append(self.parmetis.lib[0])
-    if self.metis.found:
-      ll.append(self.metis.lib[0])
     llp = ll
     llp.append('libpthread.a')
     return [ll,llp]
