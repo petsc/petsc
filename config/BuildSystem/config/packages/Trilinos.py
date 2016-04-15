@@ -26,6 +26,7 @@ class Configure(config.package.CMakePackage):
     self.mkl_pardiso     = framework.require('config.packages.mkl_pardiso',self)
     self.metis           = framework.require('config.packages.metis',self)
     self.parmetis        = framework.require('config.packages.parmetis',self)
+    self.hypre           = framework.require('config.packages.hypre',self)
     self.ptscotch        = framework.require('config.packages.PTScotch',self)
     self.hdf5            = framework.require('config.packages.hdf5',self)
     self.netcdf          = framework.require('config.packages.netcdf',self)
@@ -33,7 +34,7 @@ class Configure(config.package.CMakePackage):
     self.mumps           = framework.require('config.packages.MUMPS',self)
     self.boost           = framework.require('config.packages.boost',self)
     self.deps            = [self.mpi,self.blasLapack]
-    self.odeps           = [self.hwloc,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.netcdf,self.hdf5,self.boost]
+    self.odeps           = [self.hwloc,self.hypre,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.netcdf,self.hdf5,self.boost]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -133,6 +134,13 @@ class Configure(config.package.CMakePackage):
       args.append('-DTPL_SuperLUDist_LIBRARIES="'+self.libraries.toStringNoDupes(self.superlu_dist.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_TPL_SuperLUDist:BOOL=OFF')
+
+    if self.hypre.found:
+      args.append('-DTPL_ENABLE_HYPRE:BOOL=ON')
+      args.append('-DTPL_HYPRE_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.hypre.include)[2:])
+      args.append('-DTPL_HYPRE_LIBRARIES="'+self.libraries.toStringNoDupes(self.hypre.lib)+'"')
+    else:
+      args.append('-DTPL_ENABLE_HYPRE:BOOL=OFF')
 
     #  Trilinos master as of commit 0eb6657d89cbe8bed1f7992956fa9b5bcfad9c44 supports only outdated versions of MUMPS
     #  with Ameso and no versions of MUMPS with Ameso2
