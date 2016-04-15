@@ -146,8 +146,8 @@ class Configure(config.package.CMakePackage):
 
     if self.parmetis.found:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=ON')
-      args.append('-DTPL_ParMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:])
-      args.append('-DTPL_ParMETIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.parmetis.lib)+'"')
+      args.append('-DTPL_ParMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:]+';'+self.headers.toStringNoDupes(self.metis.include)[2:])
+      args.append('-DTPL_ParMETIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.parmetis.lib)+' '+self.libraries.toStringNoDupes(self.metis.lib)+"')
     else:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=OFF')
 
