@@ -9036,7 +9036,8 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
 +  A - the matrix
 .  P - the projection matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P))
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P)), use PETSC_DEFAULT if you do not have a good estimate
+          if the result is a dense matrix this is irrelevent
 
    Output Parameters:
 .  C - the product matrix
@@ -9075,6 +9076,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (P->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   if (P->rmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap->N,A->cmap->N);
+  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
 
   if (scall == MAT_REUSE_MATRIX) {
@@ -9263,7 +9265,8 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
 +  A - the matrix
 .  R - the projection matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nnz(C)/nnz(A)
+-  fill - expected fill as ratio of nnz(C)/nnz(A), use PETSC_DEFAULT if you do not have a good estimate
+          if the result is a dense matrix this is irrelevent
 
    Output Parameters:
 .  C - the product matrix
@@ -9294,6 +9297,8 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   if (R->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidPointer(C,3);
   if (R->cmap->N!=A->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)R),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",R->cmap->N,A->rmap->N);
+
+  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
   MatCheckPreallocated(A,1);
 

@@ -19,6 +19,7 @@ class Package(config.base.Configure):
     self.found            = 0
     self.setNames()
     self.include          = []
+    self.dinclude         = []   # all includes in this package and all those it depends on
     self.lib              = []
     self.dlib             = []   # all libraries in this package and all those it depends on
     self.directory        = None # path of the package installation point; for example /usr/local or /home/bsmith/mpich-2.0.1
@@ -705,6 +706,7 @@ class Package(config.base.Configure):
             self.include = testedincl
           self.found     = 1
           self.dlib      = self.lib+libs
+          self.dinclude  = list(set(incl+incls))
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory

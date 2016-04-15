@@ -27,14 +27,13 @@ class Configure(config.package.CMakePackage):
     self.metis           = framework.require('config.packages.metis',self)
     self.parmetis        = framework.require('config.packages.parmetis',self)
     self.ptscotch        = framework.require('config.packages.PTScotch',self)
-    self.hypre           = framework.require('config.packages.hypre',self)
     self.hdf5            = framework.require('config.packages.hdf5',self)
     self.netcdf          = framework.require('config.packages.netcdf',self)
     self.scalapack       = framework.require('config.packages.scalapack',self)
     self.mumps           = framework.require('config.packages.MUMPS',self)
     self.boost           = framework.require('config.packages.boost',self)
     self.deps            = [self.mpi,self.blasLapack]
-    self.odeps           = [self.hwloc,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.hypre,self.netcdf,self.hdf5,self.boost]
+    self.odeps           = [self.hwloc,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.netcdf,self.hdf5,self.boost]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -159,7 +158,7 @@ class Configure(config.package.CMakePackage):
     if self.parmetis.found:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=ON')
       args.append('-DTPL_ParMETIS_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.parmetis.include)[2:])
-      args.append('-DTPL_ParMETIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.parmetis.dlib)+'"')
+      args.append('-DTPL_ParMETIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.parmetis.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=OFF')
 
@@ -169,13 +168,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DTPL_Scotch_LIBRARIES="'+self.libraries.toStringNoDupes(self.ptscotch.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_Scotch:BOOL=OFF')
-
-    if self.hypre.found:
-      args.append('-DTPL_ENABLE_HYPRE:BOOL=ON')
-      args.append('-DTPL_HYPRE_INCLUDE_DIRS='+self.headers.toStringNoDupes(self.hypre.include)[2:])
-      args.append('-DTPL_HYPRE_LIBRARIES="'+self.libraries.toStringNoDupes(self.hypre.lib)+'"')
-    else:
-      args.append('-DTPL_ENABLE_HYPRE:BOOL=OFF')
 
     if self.hdf5.found:
       args.append('-DTPL_ENABLE_HDF5:BOOL=ON')
