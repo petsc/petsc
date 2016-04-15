@@ -1222,7 +1222,6 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
 static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
-  ARKTableau     tab  = ark->tableau;
   PetscBool      iascii;
   PetscErrorCode ierr;
   TSAdapt        adapt;
@@ -1230,6 +1229,7 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    ARKTableau    tab = ark->tableau;
     TSARKIMEXType arktype;
     char          buf[512];
     ierr = TSARKIMEXGetType(ts,&arktype);CHKERRQ(ierr);
@@ -1254,11 +1254,11 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   SNES           snes;
-  TSAdapt        tsadapt;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
-  ierr = TSGetAdapt(ts,&tsadapt);CHKERRQ(ierr);
-  ierr = TSAdaptLoad(tsadapt,viewer);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptLoad(adapt,viewer);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
   /* function and Jacobian context for SNES when used with TS is always ts object */

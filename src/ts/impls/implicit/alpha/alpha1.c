@@ -418,13 +418,16 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObjec
 static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscBool      ascii;
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&ascii);CHKERRQ(ierr);
-  if (ascii)    {ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n",(double)th->Alpha_m,(double)th->Alpha_f,(double)th->Gamma);CHKERRQ(ierr);}
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n",(double)th->Alpha_m,(double)th->Alpha_f,(double)th->Gamma);CHKERRQ(ierr);
+  }
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

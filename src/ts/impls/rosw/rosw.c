@@ -1463,18 +1463,17 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
 static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
-  RosWTableau    tab  = ros->tableau;
   PetscBool      iascii;
   PetscErrorCode ierr;
-  TSAdapt        adapt;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    TSRosWType rostype;
-    PetscInt   i;
-    PetscReal  abscissa[512];
-    char       buf[512];
+    RosWTableau tab  = ros->tableau;
+    TSRosWType  rostype;
+    char        buf[512];
+    PetscInt    i;
+    PetscReal   abscissa[512];
     ierr = TSRosWGetType(ts,&rostype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Rosenbrock-W %s\n",rostype);CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->ASum);CHKERRQ(ierr);
@@ -1483,9 +1482,8 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A+Gamma = %s\n",buf);CHKERRQ(ierr);
   }
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
-  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1495,11 +1493,11 @@ static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   SNES           snes;
-  TSAdapt        tsadapt;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
-  ierr = TSGetAdapt(ts,&tsadapt);CHKERRQ(ierr);
-  ierr = TSAdaptLoad(tsadapt,viewer);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptLoad(adapt,viewer);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
   /* function and Jacobian context for SNES when used with TS is always ts object */

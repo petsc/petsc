@@ -836,25 +836,23 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
 #define __FUNCT__ "TSView_RK"
 static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 {
-  TS_RK         *rk   = (TS_RK*)ts->data;
-  RKTableau      tab  = rk->tableau;
+  TS_RK          *rk = (TS_RK*)ts->data;
   PetscBool      iascii;
   PetscErrorCode ierr;
-  TSAdapt        adapt;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    TSRKType rktype;
-    char     buf[512];
+    RKTableau tab  = rk->tableau;
+    TSRKType  rktype;
+    char      buf[512];
     ierr = TSRKGetType(ts,&rktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  RK %s\n",rktype);CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa     c = %s\n",buf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"FSAL: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
   }
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -863,11 +861,11 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  TSAdapt        tsadapt;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
-  ierr = TSGetAdapt(ts,&tsadapt);CHKERRQ(ierr);
-  ierr = TSAdaptLoad(tsadapt,viewer);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptLoad(adapt,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

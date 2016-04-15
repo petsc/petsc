@@ -659,7 +659,8 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%g\n",(double)th->Theta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate ? "yes" : "no");CHKERRQ(ierr);
   }
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -970,7 +971,8 @@ static PetscErrorCode TSView_BEuler(TS ts,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1023,7 +1025,8 @@ static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
