@@ -714,6 +714,7 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (info->dtcol){
@@ -756,6 +757,7 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   El::DistMatrix<PetscElemScalar,El::MC,El::STAR> d;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   El::Cholesky(El::UPPER,*a->emat);
