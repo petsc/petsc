@@ -33,7 +33,6 @@ static PetscErrorCode TSStep_Euler(TS ts)
 
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
-  ts->steps++;
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

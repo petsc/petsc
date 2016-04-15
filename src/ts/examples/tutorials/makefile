@@ -681,20 +681,54 @@ runex35_2:
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 
+runex40: runex40_a runex40_b runex40_c runex40_d
+
+runex40_a:
+	-@${MPIEXEC} -n 1 ./ex40 > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_a, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex40_b:
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type arkimex > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_b, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex40_c:
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_c, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex40_d:
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_d, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex41: runex41_a runex41_b runex41_c runex41_d
+
+runex41_a:
+	-@${MPIEXEC} -n 2 ./ex41 > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_a, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
+runex41_b:
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type arkimex > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_b, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
+runex41_c:
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_c, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
+runex41_d:
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_d, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
 runex42:
 	-@${MPIEXEC} -n 1 ./ex42 -ts_max_steps 8  > ex42.tmp 2>&1;	  \
 	   ${DIFF} output/ex42.out ex42.tmp || printf "${PWD}\nPossible problem with ex42, diffs above\n=========================================\n"; \
 	   ${RM} -f ex42.tmp
-
-runex40:
-	-@${MPIEXEC} -n 1 ./ex40 > ex40.tmp 2>&1;	  \
-	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40, diffs above\n=========================================\n"; \
-	   ${RM} -f ex40.tmp
-
-runex41:
-	-@${MPIEXEC} -n 2 ./ex41 > ex41.tmp 2>&1;	  \
-	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41, diffs above\n=========================================\n"; \
-	   ${RM} -f ex41.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\

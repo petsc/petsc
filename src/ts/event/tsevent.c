@@ -471,8 +471,6 @@ PetscErrorCode TSEventHandler(TS ts)
 
   if (event->status == TSEVENT_LOCATED_INTERVAL) {
     ierr = TSRollBack(ts);CHKERRQ(ierr);
-    ts->steps--;
-    ts->total_steps--;
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_ITERATING);CHKERRQ(ierr);
     event->status = TSEVENT_PROCESSING;
     event->ptime_right = t;

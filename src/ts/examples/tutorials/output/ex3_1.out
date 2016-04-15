@@ -1,5 +1,5 @@
 Solving a linear TS problem on 1 processor
-Timestep   0: step size = 0.0005     , time = 0.         , 2-norm error = 1.05424e-15, max norm error = 3.10862e-15
+Timestep   0: step size = 0.0005     , time = 0.         , 2-norm error = 0.         , max norm error = 0.
 Timestep   1: step size = 0.0005     , time = 0.0005     , 2-norm error = 0.00103714 , max norm error = 0.00149349 
 Timestep   2: step size = 0.0005     , time = 0.001      , 2-norm error = 0.00173865 , max norm error = 0.00251106 
 Timestep   3: step size = 0.0005     , time = 0.0015     , 2-norm error = 0.00218619 , max norm error = 0.00316814 

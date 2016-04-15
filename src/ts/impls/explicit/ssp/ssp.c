@@ -228,7 +228,6 @@ static PetscErrorCode TSStep_SSP(TS ts)
 
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
-  ts->steps++;
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

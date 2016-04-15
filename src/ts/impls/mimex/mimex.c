@@ -227,7 +227,6 @@ static PetscErrorCode TSStep_Mimex_Split(TS ts)
   ierr = VecRestoreArray(sol, &asol);CHKERRQ(ierr);
   ierr = TSPostStage(ts, ts->ptime, 0, &sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
-  ts->steps++;
   PetscFunctionReturn(0);
 }
 
@@ -251,7 +250,6 @@ static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
   ierr = SNESSolve(ts->snes, NULL, update);CHKERRQ(ierr);
   ierr = VecCopy(update, sol);CHKERRQ(ierr);
   ierr = TSPostStage(ts, ts->ptime, 0, &sol);CHKERRQ(ierr);
-  ts->steps++;
   PetscFunctionReturn(0);
 }
 

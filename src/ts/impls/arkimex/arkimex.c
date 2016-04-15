@@ -619,7 +619,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts,PetscInt order,Vec X,PetscBoo
   case TS_STEP_PENDING:
     h = ts->time_step; break;
   case TS_STEP_COMPLETE:
-    h = ts->time_step_prev; break;
+    h = ts->ptime - ts->ptime_prev; break;
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
   if (order == tab->order) {
@@ -646,7 +646,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts,PetscInt order,Vec X,PetscBoo
       ierr = VecMAXPY(X,s,w,ark->YdotI);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*tab->bembed[j];
       ierr = VecMAXPY(X,s,w,ark->YdotRHS);CHKERRQ(ierr);
-    } else {                    /* Rollback and re-complete using (bet-be,be-b) */
+    } else { /* Rollback and re-complete using (bet-be,be-b) */
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*(tab->bembedt[j] - tab->bt[j]);
       ierr = VecMAXPY(X,tab->s,w,ark->YdotI);CHKERRQ(ierr);
@@ -673,10 +673,18 @@ static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
   PetscScalar     *w   = ark->work;
   Vec             *YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS;
   PetscInt        j;
-  PetscReal       h=ts->time_step;
+  PetscReal       h;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  switch (ark->status) {
+  case TS_STEP_INCOMPLETE:
+  case TS_STEP_PENDING:
+    h = ts->time_step; break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev; break;
+  default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
+  }
   for (j=0; j<s; j++) w[j] = -h*bt[j];
   ierr = VecMAXPY(ts->vec_sol,s,w,YdotI);CHKERRQ(ierr);
   for (j=0; j<s; j++) w[j] = -h*b[j];
@@ -700,7 +708,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   TSAdapt         adapt;
   SNES            snes;
   PetscInt        i,j,its,lits,next_scheme;
-  PetscInt        reject = 0;
+  PetscInt        rejections = 0;
   PetscBool       stageok,accept = PETSC_TRUE;
   PetscReal       next_time_step = ts->time_step;
   PetscErrorCode  ierr;
@@ -750,6 +758,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
       ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
       ts->steps++;
+      ts->total_steps++;
 
       /* Set the correct TS in SNES */
       /* We'll try to bypass this by changing the method on the fly */
@@ -829,6 +838,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ierr = TSPostStage(ts,ark->stage_time,i,Y); CHKERRQ(ierr);
     }
 
+    ark->status = TS_STEP_INCOMPLETE;
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     ark->status = TS_STEP_PENDING;
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
@@ -839,13 +849,13 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ark->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
       ierr = TSRollBack_ARKIMEX(ts);CHKERRQ(ierr);
-      ts->time_step = next_time_step; goto reject_step;
+      ts->time_step = next_time_step;
+      goto reject_step;
     }
 
     /* Ignore next_scheme for now */
     ts->ptime += ts->time_step;
     ts->time_step = next_time_step;
-    ts->steps++;
 
     if (tab->explicit_first_stage) {
       ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
@@ -854,9 +864,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
   reject_step:
     ts->reject++;
-    if (!ts->reason && ++reject > ts->max_reject && ts->max_reject >= 0) {
+    if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
+      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -883,7 +893,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
     t = (itime - ts->ptime)/h;
     break;
   case TS_STEP_COMPLETE:
-    h = ts->time_step_prev;
+    h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime)/h + 1; /* In the interval [0,1] */
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
@@ -908,19 +918,18 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
 static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts,PetscReal c,Vec X)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
-  PetscInt        s    = ark->tableau->s,pinterp = ark->tableau->pinterp,i,j;
-  PetscReal       h;
-  PetscReal       tt,t;
+  PetscInt        s = ark->tableau->s,pinterp = ark->tableau->pinterp,i,j;
+  PetscReal       h,h_prev,t,tt;
   PetscScalar     *bt,*b;
   const PetscReal *Bt = ark->tableau->binterpt,*B = ark->tableau->binterp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (!Bt || !B) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
-  t = 1.0 + (ts->time_step/ts->time_step_prev)*c;
+  ierr = PetscCalloc2(s,&bt,s,&b);CHKERRQ(ierr);
   h = ts->time_step;
-  ierr = PetscMalloc2(s,&bt,s,&b);CHKERRQ(ierr);
-  for (i=0; i<s; i++) bt[i] = b[i] = 0;
+  h_prev = ts->ptime - ts->ptime_prev;
+  t = 1 + h/h_prev*c;
   for (j=0,tt=t; j<pinterp; j++,tt*=t) {
     for (i=0; i<s; i++) {
       bt[i] += h * Bt[i*pinterp+j] * tt;
@@ -1240,7 +1249,6 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscBool      iascii;
   PetscErrorCode ierr;
-  TSAdapt        adapt;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -1258,9 +1266,8 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"FSAL property: %s\n",tab->FSAL_implicit ? "yes" : "no");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Nonstiff abscissa     c = %s\n",buf);CHKERRQ(ierr);
   }
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

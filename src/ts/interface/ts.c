@@ -1751,8 +1751,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,time_step,2);
-  ts->time_step      = time_step;
-  ts->time_step_orig = time_step;
+  ts->time_step = time_step;
   PetscFunctionReturn(0);
 }
 
@@ -3272,7 +3271,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
-  if (t < ts->ptime - ts->time_step_prev || t > ts->ptime) SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %g not in last time steps [%g,%g]",t,(double)(ts->ptime-ts->time_step_prev),(double)ts->ptime);
+  if (t < ts->ptime_prev || t > ts->ptime) SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %g not in last time steps [%g,%g]",t,(double)ts->ptime_prev,(double)ts->ptime);
   if (!ts->ops->interpolate) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->interpolate)(ts,t,U);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3307,6 +3306,7 @@ PetscErrorCode  TSStep(TS ts)
 {
   PetscErrorCode   ierr;
   static PetscBool cite = PETSC_FALSE;
+  PetscReal        ptime;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -3322,16 +3322,18 @@ PetscErrorCode  TSStep(TS ts)
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
+  if (!ts->steps) ts->ptime_prev = ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
-  ts->ptime_prev = ts->ptime;
-
+  ptime = ts->ptime; ts->ptime_prev_rollback = ts->ptime_prev;
   if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
-
-  ts->time_step_prev = ts->ptime - ts->ptime_prev;
+  ts->ptime_prev = ptime;
+  ts->steps++; ts->total_steps++;
+  ts->steprollback = PETSC_FALSE;
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -3342,8 +3344,6 @@ PetscErrorCode  TSStep(TS ts)
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
-  ts->total_steps++;
-  ts->steprollback = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -3373,18 +3373,15 @@ PetscErrorCode  TSAdjointStep(TS ts)
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
 
-  ts->reason = TS_CONVERGED_ITERATING;
-  ts->ptime_prev = ts->ptime;
-  ierr = DMSetOutputSequenceNumber(dm,ts->steps,ts->ptime);CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts,"-ts_view_solution");CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
+  ts->reason = TS_CONVERGED_ITERATING;
+  ts->ptime_prev = ts->ptime;
   if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
+  ierr = PetscLogEventBegin(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->adjointstep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
-
-  ts->time_step_prev = ts->ptime - ts->ptime_prev;
-  ierr = DMSetOutputSequenceNumber(dm,ts->steps,ts->ptime);CHKERRQ(ierr);
+  ts->steps++; ts->total_steps--;
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -3395,7 +3392,6 @@ PetscErrorCode  TSAdjointStep(TS ts)
   } else if (!ts->reason) {
     if (ts->steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
   }
-  ts->total_steps--;
   PetscFunctionReturn(0);
 }
 
@@ -3563,13 +3559,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 
-  if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
+  if (ts->ops->solve) { /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
     if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
     ts->solvetime = ts->ptime;
     solution = ts->vec_sol;
-  } else {
-    /* steps the requested number of timesteps. */
+  } else { /* Step the requested number of timesteps. */
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
@@ -6651,6 +6646,8 @@ PetscErrorCode  TSRollBack(TS ts)
   ierr = (*ts->ops->rollback)(ts);CHKERRQ(ierr);
   ts->time_step = ts->ptime - ts->ptime_prev;
   ts->ptime = ts->ptime_prev;
+  ts->ptime_prev = ts->ptime_prev_rollback;
+  ts->steps--; ts->total_steps--;
   ts->steprollback = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -6885,7 +6882,6 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->problem_type      = tsin->problem_type;
   t->ptime             = tsin->ptime;
   t->time_step         = tsin->time_step;
-  t->time_step_orig    = tsin->time_step_orig;
   t->max_time          = tsin->max_time;
   t->steps             = tsin->steps;
   t->max_steps         = tsin->max_steps;

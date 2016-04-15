@@ -54,7 +54,7 @@ typedef struct {
   Vec          Ystage;           /* Work vector for the state value at each stage */
   Vec          Zdot;             /* Ydot = Zdot + shift*Y */
   Vec          Zstage;           /* Y = Zstage + Y */
-  Vec          VecSolPrev;       /* Work vector holding the solution from the previous step (used for interpolation)*/
+  Vec          vec_sol_prev;     /* Solution from the previous step (used for interpolation and rollback)*/
   PetscScalar  *work;            /* Scalar work space of length number of stages, used to prepare VecMAXPY() */
   PetscReal    scoeff;           /* shift = scoeff/dt */
   PetscReal    stage_time;
@@ -293,7 +293,7 @@ M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWRegisterAll"
 /*@C
-  TSRosWRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in TSRosW
+  TSRosWRegisterAll - Registers all of the Rosenbrock-W methods in TSRosW
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
@@ -969,16 +969,10 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *
 static PetscErrorCode TSRollBack_RosW(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
-  RosWTableau    tab  = ros->tableau;
-  const PetscInt s    = tab->s;
-  PetscScalar    *w = ros->work;
-  PetscInt       i;
-  Vec            *Y = ros->Y;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (i=0; i<s; i++) w[i] = -tab->bt[i];
-  ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
+  ierr = VecCopy(ros->vec_sol_prev,ts->vec_sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -997,14 +991,14 @@ static PetscErrorCode TSStep_RosW(TS ts)
   SNES            snes;
   TSAdapt         adapt;
   PetscInt        i,j,its,lits,next_scheme;
-  PetscInt        reject = 0;
+  PetscInt        rejections = 0;
   PetscBool       stageok,accept = PETSC_TRUE;
   PetscReal       next_time_step = ts->time_step;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (!ts->steprollback) {
-    ierr = VecCopy(ts->vec_sol,ros->VecSolPrev);CHKERRQ(ierr);
+    ierr = VecCopy(ts->vec_sol,ros->vec_sol_prev);CHKERRQ(ierr);
   }
 
   ros->status = TS_STEP_INCOMPLETE;
@@ -1043,7 +1037,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ts->snes_its += its; ts->ksp_its += lits;
         ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
         ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,Y[i],&stageok);CHKERRQ(ierr);
-        if (!stageok) goto reject_step;
+        if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
       } else {
         Mat J,Jp;
         ierr = VecZeroEntries(Ydot);CHKERRQ(ierr); /* Evaluate Y[i]=G(t,Ydot=0,Zstage) */
@@ -1077,20 +1071,20 @@ static PetscErrorCode TSStep_RosW(TS ts)
     ros->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
       ierr = TSRollBack_RosW(ts);CHKERRQ(ierr);
-      ts->time_step = next_time_step; goto reject_step;
+      ts->time_step = next_time_step;
+      goto reject_step;
     }
 
     /* Ignore next_scheme for now */
     ts->ptime += ts->time_step;
     ts->time_step = next_time_step;
-    ts->steps++;
     break;
 
   reject_step:
     ts->reject++;
-    if (!ts->reason && ++reject > ts->max_reject && ts->max_reject >= 0) {
+    if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
+      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1121,7 +1115,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
     t = (itime - ts->ptime)/h;
     break;
   case TS_STEP_COMPLETE:
-    h = ts->time_step_prev;
+    h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime)/h + 1; /* In the interval [0,1] */
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
@@ -1135,20 +1129,18 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
   }
 
   /* y(t+tt*h) = y(t) + Sum bt(tt) * GammaInv * Ydot */
-  /*U<-0*/
+  /* U <- 0*/
   ierr = VecZeroEntries(U);CHKERRQ(ierr);
-
-  /*U<- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
-  for (j=0; j<s; j++) w[j]=0;
+  /* U <- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
+  for (j=0; j<s; j++) w[j] = 0;
   for (j=0; j<s; j++) {
     for (i=j; i<s; i++) {
       w[j] +=  bt[i]*GammaInv[i*s+j];
     }
   }
   ierr = VecMAXPY(U,i,w,Y);CHKERRQ(ierr);
-
-  /*X<-y(t) + X*/
-  ierr = VecAXPY(U,1.0,ros->VecSolPrev);CHKERRQ(ierr);
+  /* U <- y(t) + U */
+  ierr = VecAXPY(U,1,ros->vec_sol_prev);CHKERRQ(ierr);
 
   ierr = PetscFree(bt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1184,7 +1176,7 @@ static PetscErrorCode TSReset_RosW(TS ts)
   ierr = VecDestroy(&ros->Ystage);CHKERRQ(ierr);
   ierr = VecDestroy(&ros->Zdot);CHKERRQ(ierr);
   ierr = VecDestroy(&ros->Zstage);CHKERRQ(ierr);
-  ierr = VecDestroy(&ros->VecSolPrev);CHKERRQ(ierr);
+  ierr = VecDestroy(&ros->vec_sol_prev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1416,7 +1408,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&ros->Ystage);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ros->Zdot);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ros->Zstage);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&ros->VecSolPrev);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&ros->vec_sol_prev);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRosW,DMRestrictHook_TSRosW,ts);CHKERRQ(ierr);
