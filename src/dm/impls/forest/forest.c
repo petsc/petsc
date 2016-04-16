@@ -118,7 +118,7 @@ PETSC_EXTERN PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   ierr = DMForestGetGradeFactor(dm,&factor);CHKERRQ(ierr);
   ierr = DMForestSetGradeFactor(*tdm,factor);CHKERRQ(ierr);
   ierr = DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx);CHKERRQ(ierr);
-  ierr = DMForestSetBaseCoordinateMapping(dm,map,mapCtx);CHKERRQ(ierr);
+  ierr = DMForestSetBaseCoordinateMapping(*tdm,map,mapCtx);CHKERRQ(ierr);
   if (forest->ftemplate) {
     ierr = (forest->ftemplate) (dm, *tdm);CHKERRQ(ierr);
   }
