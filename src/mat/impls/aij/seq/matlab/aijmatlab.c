@@ -222,6 +222,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   ierr = PetscObjectComposeFunction((PetscObject)(*F),"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
 
   (*F)->factortype = ftype;
+  ierr = PetscFree((*F)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERMATLAB,&(*F)->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -456,6 +456,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_lusol);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERLUSOL,&B->solvertype);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

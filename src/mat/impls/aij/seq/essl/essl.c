@@ -172,6 +172,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,M
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_essl);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERESSL,&B->solvertype);CHKERRQ(ierr);
+
   *F            = B;
   PetscFunctionReturn(0);
 }

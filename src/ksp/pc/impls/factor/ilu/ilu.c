@@ -155,6 +155,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   MatInfo        info;
   PetscBool      flg;
+  const MatSolverPackage stype;
 
   PetscFunctionBegin;
   /* ugly hack to change default, since it is not support by some matrix types */
@@ -246,6 +247,11 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     if (F->errortype) { /* FactorNumeric() fails */
       pc->failedreason = (PCFailedReason)F->errortype;
     }
+  }
+
+  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  if (!stype) {
+    ierr = PCFactorSetMatSolverPackage(pc,((PC_Factor*)ilu)->fact->solvertype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

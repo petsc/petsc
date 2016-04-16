@@ -714,6 +714,7 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (info->dtcol){
@@ -723,6 +724,9 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
   }
   A->factortype = MAT_FACTOR_LU;
   A->assembled  = PETSC_TRUE;
+
+  ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERELEMENTAL,&A->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -753,11 +757,15 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   El::DistMatrix<PetscElemScalar,El::MC,El::STAR> d;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   El::Cholesky(El::UPPER,*a->emat);
   A->factortype = MAT_FACTOR_CHOLESKY;
   A->assembled  = PETSC_TRUE;
+
+  ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERELEMENTAL,&A->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -805,6 +813,9 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
   ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   B->factortype = ftype;
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERELEMENTAL,&B->solvertype);CHKERRQ(ierr);
+
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_elemental_elemental);CHKERRQ(ierr);
   *F            = B;
   PetscFunctionReturn(0);

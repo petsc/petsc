@@ -896,6 +896,10 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype
 
   B->spptr = mat_mkl_cpardiso;
 
+  /* set solvertype */
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERMKL_CPARDISO,&B->solvertype);CHKERRQ(ierr);
+
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mkl_cpardiso);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMkl_CPardisoSetCntl_C",MatMkl_CPardisoSetCntl_MKL_CPARDISO);CHKERRQ(ierr);
   ierr = PetscInitialize_MKL_CPARDISO(A, mat_mkl_cpardiso);CHKERRQ(ierr);

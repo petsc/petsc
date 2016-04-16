@@ -318,6 +318,10 @@ static PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   B->factortype   = ftype;
   B->assembled    = PETSC_FALSE;
 
+  /* set solvertype */
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERCLIQUE,&B->solvertype);CHKERRQ(ierr);
+
   /* Set Clique options */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"Clique Options","Mat");CHKERRQ(ierr);
   cliq->cutoff      = 128;  /* maximum size of leaf node */

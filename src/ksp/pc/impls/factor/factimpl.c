@@ -190,16 +190,16 @@ PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage 
   PC_Factor      *lu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (lu->fact) {
+  if (lu->fact) { 
     const MatSolverPackage ltype;
     PetscBool              flg;
     ierr = MatFactorGetSolverPackage(lu->fact,&ltype);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
-  } else {
-    ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
-  }
+  } 
+ 
+  ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

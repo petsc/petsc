@@ -2443,6 +2443,8 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
 
   outA             = inA;
   outA->factortype = MAT_FACTOR_LU;
+  ierr = PetscFree(inA->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&inA->solvertype);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
   ierr = ISDestroy(&a->row);CHKERRQ(ierr);
