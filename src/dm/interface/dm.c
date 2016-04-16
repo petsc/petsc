@@ -125,11 +125,12 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   if (dm->coordinateDM) {
     DM           ncdm;
     PetscSection cs;
-    PetscInt     pEnd = -1;
+    PetscInt     pEnd = -1, pEndMax = -1;
 
     ierr = DMGetDefaultSection(dm->coordinateDM, &cs);CHKERRQ(ierr);
     if (cs) {ierr = PetscSectionGetChart(cs, NULL, &pEnd);CHKERRQ(ierr);}
-    if (pEnd >= 0) {
+    ierr = MPI_Allreduce(&pEnd,&pEndMax,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    if (pEndMax >= 0) {
       ierr = DMClone(dm->coordinateDM, &ncdm);CHKERRQ(ierr);
       ierr = DMSetDefaultSection(ncdm, cs);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(*newdm, ncdm);CHKERRQ(ierr);
@@ -4805,33 +4806,66 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 #undef __FUNCT__
 #define __FUNCT__ "DMLocatePoints"
 /*@
-  DMLocatePoints - Locate the points in v in the mesh and return an IS of the containing cells
+  DMLocatePoints - Locate the points in v in the mesh and return a PetscSF of the containing cells
 
-  Not collective
+  Collective on Vec v (see explanation below)
 
   Input Parameters:
 + dm - The DM
-- v - The Vec of points
+. v - The Vec of points
+- cells - Points to either NULL, or a PetscSF with guesses for which cells contain each point.
 
   Output Parameter:
-. cells - The local cell numbers for cells which contain the points
+. cells - The PetscSF containing the ranks and local indices of the containing points.
+
 
   Level: developer
+
+  To do a search of the local cells of the mesh, v should have PETSC_COMM_SELF as its communicator.
+
+  To do a search of all the cells in the distributed mesh, v should have the same communicator as
+  dm.
+
+  If *cellSF is NULL on input, a PetscSF will be created.
+
+  If *cellSF is not NULL on input, it should point to an existing PetscSF, whose graph will be used as initial
+  guesses.
+
+  An array that maps each point to its containing cell can be obtained with
+
+    const PetscSFNode *cells;
+    PetscInt           nFound;
+    const PetscSFNode *found;
+
+    PetscSFGetGraph(cells,NULL,&nFound,&found,&cells);
+
+  Where cells[i].rank is the rank of the cell containing point found[i] (or i if found == NULL), and cells[i].index is
+  the index of the cell in its rank's local numbering.
 
 .keywords: point location, mesh
 .seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
 @*/
-PetscErrorCode DMLocatePoints(DM dm, Vec v, IS *cells)
+PetscErrorCode DMLocatePoints(DM dm, Vec v, PetscSF *cellSF)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
-  PetscValidPointer(cells,3);
+  PetscValidPointer(cellSF,3);
+  if (*cellSF) {
+    PetscMPIInt result;
+
+    PetscValidHeaderSpecific(cellSF,PETSCSF_CLASSID,3);
+    ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)v),PetscObjectComm((PetscObject)cellSF),&result);CHKERRQ(ierr);
+    if (result != MPI_IDENT && result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"cellSF must have a communicator congruent to v's");
+  }
+  else {
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)v),cellSF);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventBegin(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
   if (dm->ops->locatepoints) {
-    ierr = (*dm->ops->locatepoints)(dm,v,cells);CHKERRQ(ierr);
+    ierr = (*dm->ops->locatepoints)(dm,v,*cellSF);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Point location not available for this DM");
   ierr = PetscLogEventEnd(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

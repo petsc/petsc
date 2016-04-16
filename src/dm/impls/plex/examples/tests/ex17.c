@@ -53,8 +53,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
   if (user->testPartition) {
     PetscPartitioner part;
-    const PetscInt  *sizes  = NULL;
-    const PetscInt  *points = NULL;
+    PetscInt         *sizes  = NULL;
+    PetscInt         *points = NULL;
     PetscMPIInt      rank, numProcs;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -122,11 +122,12 @@ static PetscErrorCode TestLocation(DM dm, AppCtx *user)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   /* Locate all centroids */
   for (c = cStart; c < cEnd; ++c) {
-    Vec          v;
-    IS           is;
-    PetscScalar *a;
-    PetscReal    centroid[3];
-    PetscInt    *cells, n, d;
+    Vec                v;
+    PetscSF            cellSF = NULL;
+    const PetscSFNode *cells;
+    PetscScalar       *a;
+    PetscReal          centroid[3];
+    PetscInt           n, d;
 
     ierr = DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF, dim, &v);CHKERRQ(ierr);
@@ -134,14 +135,12 @@ static PetscErrorCode TestLocation(DM dm, AppCtx *user)
     ierr = VecGetArray(v, &a);CHKERRQ(ierr);
     for (d = 0; d < dim; ++d) a[d] = centroid[d];
     ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
-    ierr = DMLocatePoints(dm, v, &is);CHKERRQ(ierr);
+    ierr = DMLocatePoints(dm, v, &cellSF);CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-    ierr = ISGetIndices(is, &cells);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(cellSF,NULL,&n,NULL,&cells);CHKERRQ(ierr);
     if (n        != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Found %d cells instead %d", n, 1);
-    if (cells[0] != c) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %d, instead found %d", c, cells[0]);
-    ierr = ISRestoreIndices(is, &cells);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    if (cells[0].index != c) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %d, instead found %d", c, cells[0].index);
+    ierr = PetscSFDestroy(&cellSF);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

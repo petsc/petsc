@@ -425,20 +425,23 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLocatePoints_Plex"
-PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
+PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, PetscSF cellSF)
 {
   DM_Plex        *mesh = (DM_Plex *) dm->data;
   PetscBool       hash = mesh->useHashLocation;
-  PetscInt        bs, numPoints, p;
+  PetscInt        bs, numPoints, p, numFound, *found = NULL;
   PetscInt        dim, cStart, cEnd, cMax, numCells, c;
   const PetscInt *boxCells;
-  PetscInt       *cells;
+  PetscSFNode    *cells;
   PetscScalar    *a;
+  PetscMPIInt     result;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF),PETSC_COMM_SELF,&result);CHKERRQ(ierr);
+  if (result != MPI_IDENT && result != MPI_CONGRUENT) SETERRQ(PetscObjectComm((PetscObject)cellSF),PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
   if (bs != dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %D must be the mesh coordinate dimension %D", bs, dim);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -455,10 +458,12 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
     /*   Should we bin points before doing search? */
     ierr = ISGetIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);
   }
-  for (p = 0; p < numPoints; ++p) {
+  for (p = 0, numFound = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
     PetscInt           dbin[3], bin, cell = -1, cellOffset;
 
+    cells[p].rank  = -1;
+    cells[p].index = -1;
     if (hash) {
       ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
       /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
@@ -466,21 +471,40 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
       ierr = PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset);CHKERRQ(ierr);
       for (c = cellOffset; c < cellOffset + numCells; ++c) {
         ierr = DMPlexLocatePoint_Internal(dm, dim, point, boxCells[c], &cell);CHKERRQ(ierr);
-        if (cell >= 0) break;
+        if (cell >= 0) {
+          cells[p].rank = 0;
+          cells[p].index = cell;
+          numFound++;
+          break;
+        }
       }
-      if (cell < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in mesh", p);
     } else {
       for (c = cStart; c < cEnd; ++c) {
         ierr = DMPlexLocatePoint_Internal(dm, dim, point, c, &cell);CHKERRQ(ierr);
-        if (cell >= 0) break;
+        if (cell >= 0) {
+          cells[p].rank = 0;
+          cells[p].index = cell;
+          numFound++;
+          break;
+        }
       }
     }
-    cells[p] = cell;
   }
   if (hash) {ierr = ISRestoreIndices(mesh->lbox->cells, &boxCells);CHKERRQ(ierr);}
   /* Check for highest numbered proc that claims a point (do we care?) */
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, numPoints, cells, PETSC_OWN_POINTER, cellIS);CHKERRQ(ierr);
+  if (numFound < numPoints) {
+    ierr = PetscMalloc1(numFound,&found);CHKERRQ(ierr);
+    for (p = 0, numFound = 0; p < numPoints; p++) {
+      if (cells[p].rank >= 0 && cells[p].index >= 0) {
+        if (numFound < p) {
+          cells[numFound] = cells[p];
+        }
+        found[numFound++] = p;
+      }
+    }
+  }
+  ierr = PetscSFSetGraph(cellSF, cEnd - cStart, numFound, found, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

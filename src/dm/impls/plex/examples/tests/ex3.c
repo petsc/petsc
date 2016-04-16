@@ -28,6 +28,7 @@ typedef struct {
   PetscBool tree;              /* Test tree routines */
   PetscBool testFEjacobian;    /* Test finite element Jacobian assembly */
   PetscBool testFVgrad;        /* Test finite difference gradient routine */
+  PetscBool testInjector;      /* Test finite element injection routines */
   PetscInt  treeCell;          /* Cell to refine in tree test */
   PetscReal constants[3];      /* Constant values for each dimension */
 } AppCtx;
@@ -142,6 +143,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->treeCell        = 0;
   options->testFEjacobian  = PETSC_FALSE;
   options->testFVgrad      = PETSC_FALSE;
+  options->testInjector    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -160,6 +162,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -504,17 +507,41 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TestInjector"
+static PetscErrorCode TestInjector(DM dm, AppCtx *user)
+{
+  DM             refTree;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+  if (refTree) {
+    Mat inj;
+
+    ierr = DMPlexComputeInjectorReferenceTree(refTree,&inj);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)inj,"Reference Tree Injector");CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = MatView(inj,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(&inj);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TestFVGrad"
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
   MPI_Comm comm;
-  DM dmRedist, dmfv, dmgrad, dmCell;
+  DM dmRedist, dmfv, dmgrad, dmCell, refTree;
   PetscFV fv;
   PetscInt nvecs, v, cStart, cEnd, cEndInterior;
   PetscMPIInt size;
   Vec cellgeom, grad, locGrad;
   const PetscScalar *cgeom;
-  PetscReal allVecMaxDiff = 0.;
+  PetscReal allVecMaxDiff = 0., fvTol = 100. * PETSC_MACHINE_EPSILON;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -541,6 +568,12 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMDestroy(&dmRedist);CHKERRQ(ierr);
   ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
   ierr = DMSetField(dmfv, 0, (PetscObject) fv);CHKERRQ(ierr);
+  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+  if (refTree) {
+    PetscDS ds;
+    ierr = DMGetDS(dmfv,&ds);CHKERRQ(ierr);
+    ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
+  }
   ierr = DMPlexSNESGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
   nvecs = user->dim * (user->dim+1) / 2;
@@ -610,11 +643,11 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     ierr = VecRestoreArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);
   }
-  if (allVecMaxDiff < 10. * PETSC_MACHINE_EPSILON) {
+  if (allVecMaxDiff < fvTol) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: PASS\n");CHKERRQ(ierr);
   }
   else {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL at tolerance %g with max difference %g\n",fvTol,allVecMaxDiff);CHKERRQ(ierr);
   }
   ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
@@ -653,7 +686,7 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   PetscErrorCode (*exactFuncDers[1]) (PetscInt dim, PetscReal time, const PetscReal x[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx);
   void            *exactCtxs[3];
   MPI_Comm         comm;
-  PetscReal        error, errorDer, tol = 1.0e-10;
+  PetscReal        error, errorDer, tol = PETSC_SMALL;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -866,6 +899,9 @@ int main(int argc, char **argv)
   }
   if (user.testFVgrad) {
     ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);
+  }
+  if (user.testInjector) {
+    ierr = TestInjector(dm, &user);CHKERRQ(ierr);
   }
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
   if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {

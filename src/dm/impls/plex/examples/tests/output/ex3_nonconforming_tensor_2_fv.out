@@ -1,3 +1,15 @@
 Finite volume gradient reconstruction: PASS
+Mat Object:Reference Tree Injector 1 MPI processes
+  type: seqaij
+row 0: (0, 0.25)  (2, 0.25)  (4, 0.25)  (6, 0.25) 
+row 1: (1, 0.25)  (3, 0.25)  (5, 0.25)  (7, 0.25) 
+row 2:
+row 3:
+row 4:
+row 5:
+row 6:
+row 7:
+row 8:
+row 9:
 Function tests pass for order 0 at tolerance 1e-10
 Function tests pass for order 0 derivatives at tolerance 1e-10
