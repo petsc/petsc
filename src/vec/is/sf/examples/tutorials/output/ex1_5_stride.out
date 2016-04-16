@@ -1,0 +1,52 @@
+PetscSF Object: 4 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=6, leaves=2, remote ranks=2
+  [0] 0 <- (3,2)
+  [0] 2 <- (1,0)
+  [1] Number of roots=4, leaves=3, remote ranks=2
+  [1] 0 <- (0,2)
+  [1] 2 <- (2,0)
+  [1] 4 <- (0,4)
+  [2] Number of roots=4, leaves=3, remote ranks=3
+  [2] 0 <- (1,2)
+  [2] 2 <- (3,0)
+  [2] 4 <- (0,4)
+  [3] Number of roots=4, leaves=3, remote ranks=2
+  [3] 0 <- (2,2)
+  [3] 2 <- (0,0)
+  [3] 4 <- (0,4)
+  [0] Roots referenced by my leaves, by rank
+  [0] 1: 1 edges
+  [0]    2 <- 0
+  [0] 3: 1 edges
+  [0]    0 <- 2
+  [1] Roots referenced by my leaves, by rank
+  [1] 0: 2 edges
+  [1]    0 <- 2
+  [1]    4 <- 4
+  [1] 2: 1 edges
+  [1]    2 <- 0
+  [2] Roots referenced by my leaves, by rank
+  [2] 0: 1 edges
+  [2]    4 <- 4
+  [2] 1: 1 edges
+  [2]    0 <- 2
+  [2] 3: 1 edges
+  [2]    2 <- 0
+  [3] Roots referenced by my leaves, by rank
+  [3] 0: 2 edges
+  [3]    2 <- 0
+  [3]    4 <- 4
+  [3] 2: 1 edges
+  [3]    0 <- 2
+## Data at multi-roots, to scatter to leaves
+0: 1000 1200 1400 1401 1402
+0: 2000 2200
+0: 3000 3200
+0: 4000 4200
+## Scattered data at leaves
+0: 4200 -1 2000 -1
+0: 1200 -1 3000 -1 1400 -1
+0: 2200 -1 4000 -1 1401 -1
+0: 3200 -1 1000 -1 1402 -1
