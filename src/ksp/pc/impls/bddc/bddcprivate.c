@@ -123,7 +123,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   ierr = PetscMemzero(pcbddc->adaptive_constraints_n,(nv+sub_schurs->n_subs)*sizeof(PetscInt));CHKERRQ(ierr);
 
   maxneigs = 0;
-  cum = cum2 = cumarray = 0;
+  cum = cumarray = 0;
   pcbddc->adaptive_constraints_idxs_ptr[0] = 0;
   pcbddc->adaptive_constraints_data_ptr[0] = 0;
   if (sub_schurs->is_vertices && pcbddc->use_vertices) {
@@ -1110,7 +1110,7 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
   Mat            *work_mat;
   IS             isrow_s,iscol_s;
   PetscBool      rsorted,csorted;
-  PetscInt       rsize,*idxs_perm_r,csize,*idxs_perm_c;
+  PetscInt       rsize,*idxs_perm_r=NULL,csize,*idxs_perm_c=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
