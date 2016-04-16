@@ -459,8 +459,8 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
     p4est_tree_t *treeTo   = &(((p4est_tree_t *) p4estTo->trees->array)[t]);
     p4est_quadrant_t *firstFrom = &treeFrom->first_desc;
     p4est_quadrant_t *firstTo   = &treeTo->first_desc;
-    PetscInt numFrom = (PetscInt) &treeFrom->quadrants.elem_count;
-    PetscInt numTo   = (PetscInt) &treeTo->quadrants.elem_count;
+    PetscInt numFrom = (PetscInt) treeFrom->quadrants.elem_count;
+    PetscInt numTo   = (PetscInt) treeTo->quadrants.elem_count;
     p4est_quadrant_t *quadsFrom = (p4est_quadrant_t *) treeFrom->quadrants.array;
     p4est_quadrant_t *quadsTo   = (p4est_quadrant_t *) treeTo->quadrants.array;
     PetscInt currentFrom, currentTo;
@@ -535,7 +535,6 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
 /* assumes a matching partition */
 static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t *p4estFrom, PetscInt FromOffset, p4est_t *p4estTo, PetscInt ToOffset, PetscSF *fromCoarseToFine, PetscSF *toCoarseFromFine)
 {
-  p4est_connectivity_t * conn;
   p4est_topidx_t flt, llt;
   PetscSF fromCoarse, toCoarse;
   PetscInt numRootsFrom, numRootsTo, numLeavesFrom, numLeavesTo;
@@ -544,7 +543,6 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  conn = p4estFrom->connectivity;
   flt  = p4estFrom->first_local_tree;
   llt  = p4estFrom->last_local_tree;
   ierr = PetscSFCreate(comm,&fromCoarse);CHKERRQ(ierr);
@@ -705,6 +703,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
         ierr = DMDestroy(&dmRedundant);CHKERRQ(ierr);
       }
+      ierr = DMViewFromOptions(base,NULL,"-dm_p4est_base_view");CHKERRQ(ierr);
       ierr = DMPlexCreateConnectivity_pforest(base,&conn,&tree_face_to_uniq);CHKERRQ(ierr);
       ierr = PetscNewLog(dm,&topo);CHKERRQ(ierr);
       topo->refct             = 1;
@@ -1030,7 +1029,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
 
       if (overlap > 0) {
-        PetscInt i, cLocalStart, cLocalEnd;
+        PetscInt i, cLocalStart;
         PetscInt cEnd;
         PetscSF  preCellSF, cellSF;
 
@@ -1042,7 +1041,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         }
 
         cLocalStart = pforest->cLocalStart = pforest->ghost->proc_offsets[rank];
-        cLocalEnd = pforest->cLocalEnd = cLocalStart + pforest->forest->local_num_quadrants;
         cEnd = pforest->forest->local_num_quadrants + pforest->ghost->proc_offsets[size];
 
         /* shift sfs by cLocalStart, expand by cell SFs */
@@ -2095,7 +2093,6 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
   }
   ierr = DMPforestComputeOverlappingRanks(p4estC->mpisize,p4estC->mpirank,p4estC,p4estF,&startF,&endF);CHKERRQ(ierr);
   ierr = PetscMalloc2(2*(endF-startF),&send,endF-startF,&sendReqs);CHKERRQ(ierr);
-  ierr = PetscSFCreate(p4estC->mpicomm,&sf);CHKERRQ(ierr);
   /* count the quadrants rank will send to each of [startF,endF) */
   for (p = startF; p < endF; p++) {
     p4est_quadrant_t *myFineStart = &p4estF->global_first_position[p];
@@ -2664,7 +2661,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             }
             q = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
             if (l > rootType[p-pStartF]) {
-              roots[p-pStartF] = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
+              roots[p-pStartF] = q;
               if (l >= P4EST_INSUL - P4EST_CHILDREN) { /* vertex on vertex: unconditional acceptance */
                 rootType[p-pStartF] = PETSC_MAX_INT;
                 if (formCids) {
@@ -2799,7 +2796,6 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   MPI_Comm          comm;
   PetscMPIInt       rank, size;
   DM_Forest_pforest *pforestC, *pforestF;
-  p4est_t           *p4estC, *p4estF;
   PetscInt          numClosureIndices;
   DM                plexC, plexF;
   PetscInt          pStartC, pEndC, pStartF, pEndF;
@@ -2810,8 +2806,6 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   PetscFunctionBegin;
   pforestC = (DM_Forest_pforest *) ((DM_Forest *) coarse->data)->data;
   pforestF = (DM_Forest_pforest *) ((DM_Forest *) fine->data)->data;
-  p4estC   = pforestC->forest;
-  p4estF   = pforestF->forest;
   if (pforestC->topo != pforestF->topo) SETERRQ(PetscObjectComm((PetscObject)coarse),PETSC_ERR_ARG_INCOMP,"DM's must have the same base DM");
   comm = PetscObjectComm((PetscObject)coarse);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -3667,13 +3661,14 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
       pforest->plex = newPlex;
     }
-
+    ierr = DMPlexSetMaxProjectionHeight(newPlex,P4EST_DIM - 1);CHKERRQ(ierr);
     if (forest->setfromoptionscalled) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex);CHKERRQ(ierr);
       ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) newPlex);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
     }
+    ierr = DMViewFromOptions(newPlex,NULL,"-dm_p4est_plex_view");CHKERRQ(ierr);
     {
       Vec coords;
 
@@ -3768,44 +3763,6 @@ static PetscErrorCode DMPforestGetPlex(DM dm,DM *plex)
   PetscFunctionReturn(0);
 }
 
-#define DMCoarsen_pforest _append_pforest(DMCoarsen)
-#undef __FUNCT__
-#define __FUNCT__ _pforest_string(DMCoarsen_pforest)
-static PetscErrorCode DMCoarsen_pforest(DM dm, MPI_Comm comm, DM *dmc)
-{
-  DM             coarseDM;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  {
-    PetscMPIInt mpiComparison;
-    MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
-
-    ierr = MPI_Comm_compare(comm, dmcomm, &mpiComparison);CHKERRQ(ierr);
-    if (mpiComparison != MPI_IDENT && mpiComparison != MPI_CONGRUENT) {
-      SETERRQ(dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
-    }
-  }
-  ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);
-  if (!coarseDM) {
-    DM coarseDM;
-
-    ierr = DMCreate(PetscObjectComm((PetscObject)dm),&coarseDM);CHKERRQ(ierr);
-  }
-  if (coarseDM) {
-    void *ctx;
-    PetscDS ds;
-
-    ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
-    ierr = DMSetApplicationContext(coarseDM,ctx);CHKERRQ(ierr);
-    ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-    ierr = DMSetDS(coarseDM,ds);CHKERRQ(ierr);
-    ierr = DMCopyBoundary(dm,coarseDM);CHKERRQ(ierr);
-  }
-  *dmc = coarseDM;
-  PetscFunctionReturn(0);
-}
-
 #define DMCreateInterpolation_pforest _append_pforest(DMCreateInterpolation)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateInterpolation_pforest)
@@ -3828,7 +3785,7 @@ static PetscErrorCode DMCreateInterpolation_pforest (DM dmCoarse, DM dmFine, Mat
 
   ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
   if (cdm != dmCoarse) {
-    SETERRQ(PetscObjectComm((PetscObject)dmFine),PETSC_ERR_SUP,"Only interpolation to coarse DM for now");
+    SETERRQ(PetscObjectComm((PetscObject)dmFine),PETSC_ERR_SUP,"Only interpolation from coarse DM for now");
   }
   {
     DM           plexF, plexC;
@@ -3847,6 +3804,49 @@ static PetscErrorCode DMCreateInterpolation_pforest (DM dmCoarse, DM dmFine, Mat
   ierr = MatViewFromOptions(*interpolation, NULL, "-interp_mat_view");CHKERRQ(ierr);
   /* Use naive scaling */
   ierr = DMCreateInterpolationScale(dmCoarse, dmFine, *interpolation, scaling);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#define DMCreateInjection_pforest _append_pforest(DMCreateInjection)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMCreateInjection_pforest)
+static PetscErrorCode DMCreateInjection_pforest (DM dmCoarse, DM dmFine, Mat *injection)
+{
+  PetscSection   gsc, gsf;
+  PetscInt       m, n;
+  DM             cdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gsf, &n);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gsc, &m);CHKERRQ(ierr);
+
+  ierr = MatCreate(PetscObjectComm((PetscObject) dmFine), injection);CHKERRQ(ierr);
+  ierr = MatSetSizes(*injection, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*injection, dmCoarse->mattype);CHKERRQ(ierr);
+
+  ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
+  if (cdm != dmCoarse) {
+    SETERRQ(PetscObjectComm((PetscObject)dmFine),PETSC_ERR_SUP,"Only injection to coarse DM for now");
+  }
+  {
+    DM           plexF, plexC;
+    PetscSF      sf;
+    PetscInt     *cids;
+    PetscInt     dofPerDim[4] = {1,1,1,1};
+
+    ierr = DMPforestGetPlex(dmCoarse,&plexC);CHKERRQ(ierr);
+    ierr = DMPforestGetPlex(dmFine,&plexF);CHKERRQ(ierr);
+    ierr = DMPforestGetTransferSF_Internal(dmCoarse, dmFine, dofPerDim, &sf, PETSC_TRUE, &cids);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+    ierr = DMPlexComputeInjectorTree(plexC, plexF, sf, cids, *injection);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    ierr = PetscFree(cids);
+  }
+  ierr = MatViewFromOptions(*injection, NULL, "-inject_mat_view");CHKERRQ(ierr);
+  /* Use naive scaling */
   PetscFunctionReturn(0);
 }
 
@@ -4233,8 +4233,8 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->setup                     = DMSetUp_pforest;
   dm->ops->view                      = DMView_pforest;
   dm->ops->clone                     = DMClone_pforest;
-  dm->ops->coarsen                   = DMCoarsen_pforest;
   dm->ops->createinterpolation       = DMCreateInterpolation_pforest;
+  dm->ops->getinjection              = DMCreateInjection_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;

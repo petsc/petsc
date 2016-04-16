@@ -62,12 +62,15 @@ struct _p_PetscDualSpace {
   DM               dm;         /* The integration region K */
   PetscInt         order;      /* The approximation order of the space */
   PetscQuadrature *functional; /* The basis of functionals for this space */
+  PetscBool        setupcalled;
 };
 
 typedef struct {
-  PetscInt *numDof;
-  PetscBool simplex;
-  PetscBool continuous;
+  PetscInt       *numDof;
+  PetscBool       simplex;
+  PetscBool       continuous;
+  PetscInt        height;
+  PetscDualSpace *subspaces;
 } PetscDualSpace_Lag;
 
 typedef struct {
