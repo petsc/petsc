@@ -341,6 +341,6 @@ struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
 
-PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, Disk_Write, Disk_Read;
+PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 
 #endif

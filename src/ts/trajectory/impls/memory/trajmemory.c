@@ -4,7 +4,7 @@
 #include <revolve_c.h>
 #endif
 
-PetscLogEvent Disk_Write, Disk_Read;
+PetscLogEvent TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 
 typedef enum {NONE,TWO_LEVEL_NOREVOLVE,TWO_LEVEL_REVOLVE,TWO_LEVEL_TWO_REVOLVE,REVOLVE_OFFLINE,REVOLVE_ONLINE,REVOLVE_MULTISTAGE} SchedulerType;
 
@@ -275,16 +275,16 @@ static PetscErrorCode StackDumpAll(TS ts,Stack *stack,PetscInt id)
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
   for (i=0;i<stack->stacksize;i++) {
     e = stack->container[i];
-    ierr = PetscLogEventBegin(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
     ierr = WriteToDisk(e->stepnum,e->time,e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
     ts->trajectory->diskwrites++;
   }
   /* save the last step for restart, the last step is in memory when using single level schemes, but not necessarily the case for multi level schemes */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
   ierr = WriteToDisk(ts->total_steps,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
   ts->trajectory->diskwrites++;
   for (i=0;i<stack->stacksize;i++) {
     ierr = StackPop(stack,&e);CHKERRQ(ierr);
@@ -324,16 +324,16 @@ static PetscErrorCode StackLoadAll(TS ts,Stack *stack,PetscInt id)
   }
   for (i=0;i<stack->stacksize;i++) {
     e = stack->container[i];
-    ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
     ierr = ReadFromDisk(&e->stepnum,&e->time,&e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
     ts->trajectory->diskreads++;
   }
   /* load the last step into TS */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->total_steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
   ierr = TurnBackward(ts);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -378,9 +378,9 @@ static PetscErrorCode StackLoadLast(TS ts,Stack *stack,PetscInt id)
   }
 #endif
   /* load the last step into TS */
-  ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->total_steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
   ierr = TurnBackward(ts);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -412,9 +412,9 @@ static PetscErrorCode DumpSingle(TS ts,Stack *stack,PetscInt id)
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
   ierr = WriteToDisk(stepnum,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Disk_Write,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
   ts->trajectory->diskwrites++;
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -436,9 +436,9 @@ static PetscErrorCode LoadSingle(TS ts,Stack *stack,PetscInt id)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->total_steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Disk_Read,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -1689,7 +1689,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_cps_ram;
 
   if (tjsch->stride > 1) { /* two level mode */
-    if (tjsch->save_stack && tjsch->max_cps_disk <= tjsch->max_cps_ram) SETERRQ(tjsch->comm,PETSC_ERR_ARG_INCOMP,"The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
+    if (tjsch->save_stack && tjsch->max_cps_disk > 1 && tjsch->max_cps_disk <= tjsch->max_cps_ram) SETERRQ(tjsch->comm,PETSC_ERR_ARG_INCOMP,"The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
     if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) { /* use revolve_offline for each stride */
       tjsch->stype = TWO_LEVEL_REVOLVE;
     }
