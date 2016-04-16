@@ -1576,8 +1576,8 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
       for (i = 0; i < fpdim; ++i) {
         Vec             pointVec;
         PetscScalar    *pV;
-        IS              coarseCellIS;
-        const PetscInt *coarseCells;
+        PetscSF         coarseCellSF = NULL;
+        const PetscSFNode *coarseCells;
         PetscInt        numCoarseCells, q, r, c;
 
         /* Get points from the dual basis functional quadrature */
@@ -1593,11 +1593,11 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         }
         ierr = VecRestoreArray(pointVec, &pV);CHKERRQ(ierr);
         /* Get set of coarse cells that overlap points (would like to group points by coarse cell) */
-        ierr = DMLocatePoints(dmc, pointVec, &coarseCellIS);CHKERRQ(ierr);
-        ierr = ISViewFromOptions(coarseCellIS, NULL, "-interp_is_view");CHKERRQ(ierr);
+        ierr = DMLocatePoints(dmc, pointVec, &coarseCellSF);CHKERRQ(ierr);
+        ierr = PetscSFViewFromOptions(coarseCellSF, NULL, "-interp_sf_view");CHKERRQ(ierr);
         /* Update preallocation info */
-        ierr = ISGetLocalSize(coarseCellIS, &numCoarseCells);CHKERRQ(ierr);
-        ierr = ISGetIndices(coarseCellIS, &coarseCells);CHKERRQ(ierr);
+        ierr = PetscSFGetGraph(coarseCellSF, NULL, &numCoarseCells, NULL, &coarseCells);CHKERRQ(ierr);
+        if (numCoarseCells != Np) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not all closure points located");
         for (r = 0; r < Nc; ++r) {
           PetscHashJKKey  key;
           PetscHashJKIter missing, iter;
@@ -1606,7 +1606,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           if (key.j < 0) continue;
           /* Get indices for coarse elements */
           for (ccell = 0; ccell < numCoarseCells; ++ccell) {
-            ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices, NULL);CHKERRQ(ierr);
+            ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
             for (c = 0; c < numCIndices; ++c) {
               key.k = cindices[c];
               if (key.k < 0) continue;
@@ -1617,11 +1617,10 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
                 else                                     ++onz[key.j-rStart];
               }
             }
-            ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices, NULL);CHKERRQ(ierr);
+            ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
           }
         }
-        ierr = ISRestoreIndices(coarseCellIS, &coarseCells);CHKERRQ(ierr);
-        ierr = ISDestroy(&coarseCellIS);CHKERRQ(ierr);
+        ierr = PetscSFDestroy(&coarseCellSF);CHKERRQ(ierr);
         ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
@@ -1664,8 +1663,8 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
       for (i = 0; i < fpdim; ++i) {
         Vec             pointVec;
         PetscScalar    *pV;
-        IS              coarseCellIS;
-        const PetscInt *coarseCells;
+        PetscSF         coarseCellSF = NULL;
+        const PetscSFNode *coarseCells;
         PetscInt        numCoarseCells, cpdim, q, c, j;
 
         /* Get points from the dual basis functional quadrature */
@@ -1681,17 +1680,17 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         }
         ierr = VecRestoreArray(pointVec, &pV);CHKERRQ(ierr);
         /* Get set of coarse cells that overlap points (would like to group points by coarse cell) */
-        ierr = DMLocatePoints(dmc, pointVec, &coarseCellIS);CHKERRQ(ierr);
+        ierr = DMLocatePoints(dmc, pointVec, &coarseCellSF);CHKERRQ(ierr);
         /* Update preallocation info */
-        ierr = ISGetLocalSize(coarseCellIS, &numCoarseCells);CHKERRQ(ierr);
-        ierr = ISGetIndices(coarseCellIS, &coarseCells);CHKERRQ(ierr);
+        ierr = PetscSFGetGraph(coarseCellSF, NULL, &numCoarseCells, NULL, &coarseCells);CHKERRQ(ierr);
+        if (numCoarseCells != Np) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not all closure points located");
         ierr = VecGetArray(pointVec, &pV);CHKERRQ(ierr);
         for (ccell = 0; ccell < numCoarseCells; ++ccell) {
           PetscReal pVReal[3];
 
-          ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices, NULL);CHKERRQ(ierr);
+          ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
           /* Transform points from real space to coarse reference space */
-          ierr = DMPlexComputeCellGeometryFEM(dmc, coarseCells[ccell], NULL, v0c, Jc, invJc, &detJc);CHKERRQ(ierr);
+          ierr = DMPlexComputeCellGeometryFEM(dmc, coarseCells[ccell].index, NULL, v0c, Jc, invJc, &detJc);CHKERRQ(ierr);
           for (d = 0; d < dim; ++d) pVReal[d] = PetscRealPart(pV[ccell*dim+d]);
           CoordinatesRealToRef(dim, dim, v0c, invJc, pVReal, x);
 
@@ -1716,11 +1715,10 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           /* Update interpolator */
           if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(cell, name, Nc, numCIndices, elemMat);CHKERRQ(ierr);}
           ierr = MatSetValues(In, Nc, &findices[i*Nc], numCIndices, cindices, elemMat, INSERT_VALUES);CHKERRQ(ierr);
-          ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell], &numCIndices, &cindices, NULL);CHKERRQ(ierr);
+          ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
         }
         ierr = VecRestoreArray(pointVec, &pV);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(coarseCellIS, &coarseCells);CHKERRQ(ierr);
-        ierr = ISDestroy(&coarseCellIS);CHKERRQ(ierr);
+        ierr = PetscSFDestroy(&coarseCellSF);CHKERRQ(ierr);
         ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
