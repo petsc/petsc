@@ -14,7 +14,7 @@ configure_options = [
   '--download-sowing=1',
   '--download-hdf5=1',
   '--download-netcdf=1',
-  #'--download-xsdktrilinos=1',
+  '--download-xsdktrilinos=1',
   '--with-shared-libraries=0',
   '--download-cmake=1'
   ]

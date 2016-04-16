@@ -7,6 +7,7 @@ configure_options = [
   '--download-parmetis=1',
   '--download-superlu_dist=1',
   '--download-trilinos=1',
+  '--download-xsdktrilinos=1',
   '--download-mpich=1',
   '--with-clanguage=C++',
   '--with-cxx-dialect=C++11',
