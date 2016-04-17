@@ -353,21 +353,21 @@ clean_files:
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
-	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 1 -ts_dt 2e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 1 -ts_dt 2e-1 -ts_theta_initial_guess_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_1.tmp 2>&1; \
 	   ${DIFF} output/ex10_1.out ex10_1.tmp || printf "${PWD}\nPossible problem with ex10_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex10_1.tmp
 
 runex10_2:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 \
-	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 1 -ts_dt 2e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 1 -ts_dt 2e-1 -ts_theta_initial_guess_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_2.tmp 2>&1; \
 	   ${DIFF} output/ex10_2.out ex10_2.tmp || printf "${PWD}\nPossible problem with ex10_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex10_2.tmp
 
 runex10_3:
 	-@${MPIEXEC} -n 2 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
-	   -rd_jacobian analytic -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian analytic -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_initial_guess_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_3.tmp 2>&1; \
 	   ${DIFF} output/ex10_3.out ex10_3.tmp || printf "${PWD}\nPossible problem with ex10_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex10_3.tmp
@@ -375,7 +375,7 @@ runex10_3:
 #  This currently crashes after a few time steps with nonsolvable nonlinear system
 runex10_4:
 	-@${MPIEXEC} -n 2 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 \
-	   -rd_jacobian analytic -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian analytic -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_initial_guess_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_4.tmp 2>&1; \
 	   ${DIFF} output/ex10_4.out ex10_4.tmp || printf "${PWD}\nPossible problem with ex10_4, diffs above\n=========================================\n"; \
 	   ${RM} -f ex10_4.tmp
@@ -395,7 +395,7 @@ runex11_euler:
 #[-dm_plex_convert_type p4est]
 
 runex12:
-	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_theta_initial_guess_extrapolate 0 \
 	   -ts_monitor -ksp_monitor_short > ex12_1.tmp 2>&1; \
 	   ${DIFF} output/ex12_1.out ex12_1.tmp || printf "${PWD}\nPossible problem with ex12_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex12_1.tmp
@@ -681,20 +681,54 @@ runex35_2:
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 
+runex40: runex40_a runex40_b runex40_c runex40_d
+
+runex40_a:
+	-@${MPIEXEC} -n 1 ./ex40 > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_a, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex40_b:
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type arkimex > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_b, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex40_c:
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_c, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex40_d:
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_d, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex41: runex41_a runex41_b runex41_c runex41_d
+
+runex41_a:
+	-@${MPIEXEC} -n 2 ./ex41 > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_a, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
+runex41_b:
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type arkimex > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_b, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
+runex41_c:
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_c, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
+runex41_d:
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_d, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
 runex42:
 	-@${MPIEXEC} -n 1 ./ex42 -ts_max_steps 8  > ex42.tmp 2>&1;	  \
 	   ${DIFF} output/ex42.out ex42.tmp || printf "${PWD}\nPossible problem with ex42, diffs above\n=========================================\n"; \
 	   ${RM} -f ex42.tmp
-
-runex40:
-	-@${MPIEXEC} -n 1 ./ex40 > ex40.tmp 2>&1;	  \
-	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40, diffs above\n=========================================\n"; \
-	   ${RM} -f ex40.tmp
-
-runex41:
-	-@${MPIEXEC} -n 2 ./ex41 > ex41.tmp 2>&1;	  \
-	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41, diffs above\n=========================================\n"; \
-	   ${RM} -f ex41.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\

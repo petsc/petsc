@@ -35,7 +35,7 @@ struct _RKTableauLink {
 static RKTableauLink RKTableauList;
 
 typedef struct {
-  RKTableau   tableau;
+  RKTableau    tableau;
   Vec          *Y;               /* States computed during the step */
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
   Vec          *VecDeltaLam;     /* Increment of the adjoint sensitivity w.r.t IC at stage */
@@ -377,7 +377,7 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
   case TS_STEP_PENDING:
     h = ts->time_step; break;
   case TS_STEP_COMPLETE:
-    h = ts->time_step_prev; break;
+    h = ts->ptime - ts->ptime_prev; break;
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
   if (order == tab->order) {
@@ -393,7 +393,7 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*tab->bembed[j];
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
-    } else {                    /* Rollback and re-complete using (be-b) */
+    } else { /* Rollback and re-complete using (be-b) */
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*(tab->bembed[j] - tab->b[j]);
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
@@ -460,26 +460,22 @@ static PetscErrorCode TSStep_RK(TS ts)
 {
   TS_RK           *rk   = (TS_RK*)ts->data;
   RKTableau        tab  = rk->tableau;
-  const PetscInt   s    = tab->s;
+  const PetscInt   s = tab->s;
   const PetscReal *A = tab->A,*b = tab->b,*c = tab->c;
-  PetscScalar     *w    = rk->work;
-  Vec             *Y    = rk->Y,*YdotRHS = rk->YdotRHS;
+  PetscScalar     *w = rk->work;
+  Vec             *Y = rk->Y,*YdotRHS = rk->YdotRHS;
   TSAdapt          adapt;
-  PetscInt         i,j,reject,next_scheme;
-  PetscReal        next_time_step;
-  PetscReal        t;
-  PetscBool        accept;
+  PetscInt         i,j,next_scheme;
+  PetscInt         rejections = 0;
+  PetscBool        stageok,accept = PETSC_TRUE;
+  PetscReal        next_time_step = ts->time_step;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
 
-  next_time_step = ts->time_step;
-  t              = ts->ptime;
-  accept         = PETSC_TRUE;
-  rk->status     = TS_STEP_INCOMPLETE;
-
-
-  for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
+  rk->status = TS_STEP_INCOMPLETE;
+  while (!ts->reason && rk->status != TS_STEP_COMPLETE) {
+    PetscReal t = ts->ptime;
     PetscReal h = ts->time_step;
     for (i=0; i<s; i++) {
       rk->stage_time = t + h*c[i];
@@ -489,39 +485,45 @@ static PetscErrorCode TSStep_RK(TS ts)
       ierr = VecMAXPY(Y[i],i,w,YdotRHS);CHKERRQ(ierr);
       ierr = TSPostStage(ts,rk->stage_time,i,Y); CHKERRQ(ierr);
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-      ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&accept);CHKERRQ(ierr);
-      if (!accept) break;
+      ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&stageok);CHKERRQ(ierr);
+      if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
       ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
     }
-    if(!accept) continue;
+
+    rk->status = TS_STEP_INCOMPLETE;
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     rk->status = TS_STEP_PENDING;
-
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
-    if (accept) {
-      if (ts->costintegralfwd) { /* Save the info for the later use in cost integral evaluation*/
-        rk->ptime     = ts->ptime;
-        rk->time_step = ts->time_step;
-      }
-      /* ignore next_scheme for now */
-      ts->ptime    += ts->time_step;
-      ts->time_step = next_time_step;
-      ts->steps++;
-      rk->status = TS_STEP_COMPLETE;
-      ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
-      break;
-    } else {                    /* Roll back the current step */
+    rk->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
+    if (!accept) { /* Roll back the current step */
       for (j=0; j<s; j++) w[j] = -h*b[j];
       ierr = VecMAXPY(ts->vec_sol,s,w,rk->YdotRHS);CHKERRQ(ierr);
       ts->time_step = next_time_step;
-      rk->status   = TS_STEP_INCOMPLETE;
+      goto reject_step;
+    }
+
+    if (ts->costintegralfwd) { /* Save the info for the later use in cost integral evaluation*/
+      rk->ptime     = ts->ptime;
+      rk->time_step = ts->time_step;
+    }
+
+    /* Ignore next_scheme for now */
+    ts->ptime += ts->time_step;
+    ts->time_step = next_time_step;
+    ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
+    break;
+
+  reject_step:
+    ts->reject++;
+    if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
+      ts->reason = TS_DIVERGED_STEP_REJECTED;
+      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
     }
   }
-  if (rk->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
 }
 
@@ -529,15 +531,13 @@ static PetscErrorCode TSStep_RK(TS ts)
 #define __FUNCT__ "TSAdjointSetUp_RK"
 static PetscErrorCode TSAdjointSetUp_RK(TS ts)
 {
-  TS_RK         *rk = (TS_RK*)ts->data;
-  RKTableau      tab;
-  PetscInt       s;
+  TS_RK         *rk  = (TS_RK*)ts->data;
+  RKTableau      tab = rk->tableau;
+  PetscInt       s   = tab->s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ts->adjointsetupcalled++) PetscFunctionReturn(0);
-  tab  = rk->tableau;
-  s    = tab->s;
   ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
   if(ts->vecs_sensip) {
     ierr = VecDuplicateVecs(ts->vecs_sensip[0],s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
@@ -609,7 +609,6 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
       ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
     }
   }
-  ts->steps++;
   rk->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
 }
@@ -628,6 +627,7 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
 
   PetscFunctionBegin;
   if (!B) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRK %s does not have an interpolation formula",rk->tableau->name);
+
   switch (rk->status) {
   case TS_STEP_INCOMPLETE:
   case TS_STEP_PENDING:
@@ -635,7 +635,7 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
     t = (itime - ts->ptime)/h;
     break;
   case TS_STEP_COMPLETE:
-    h = ts->time_step_prev;
+    h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime)/h + 1; /* In the interval [0,1] */
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
@@ -647,33 +647,45 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
       b[i]  += h * B[i*pinterp+j] * tt;
     }
   }
+
   ierr = VecCopy(rk->Y[0],X);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,b,rk->YdotRHS);CHKERRQ(ierr);
+
   ierr = PetscFree(b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRKTableauReset"
+static PetscErrorCode TSRKTableauReset(TS ts)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+  RKTableau      tab = rk->tableau;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!tab) PetscFunctionReturn(0);
+  ierr = PetscFree(rk->work);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(tab->s,&rk->Y);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(tab->s,&rk->YdotRHS);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(tab->s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(tab->s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TSReset_RK"
 static PetscErrorCode TSReset_RK(TS ts)
 {
   TS_RK         *rk = (TS_RK*)ts->data;
-  PetscInt       s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!rk->tableau) PetscFunctionReturn(0);
-  s    = rk->tableau->s;
-  ierr = VecDestroyVecs(s,&rk->Y);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(s,&rk->YdotRHS);CHKERRQ(ierr);
-  if (rk->VecCostIntegral0) {
-    ierr = VecDestroy(&rk->VecCostIntegral0);CHKERRQ(ierr);
-  }
-  ierr = VecDestroyVecs(s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
+  ierr = TSRKTableauReset(ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&rk->VecCostIntegral0);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->numcost,&rk->VecSensiTemp);CHKERRQ(ierr);
-  ierr = PetscFree(rk->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -752,28 +764,36 @@ static PetscErrorCode RKSetAdjCoe(RKTableau tab)
   PetscFunctionReturn(0);
 }
 */
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRKTableauSetUp"
+static PetscErrorCode TSRKTableauSetUp(TS ts)
+{
+  TS_RK         *rk  = (TS_RK*)ts->data;
+  RKTableau      tab = rk->tableau;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(tab->s,&rk->work);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&rk->Y);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&rk->YdotRHS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "TSSetUp_RK"
 static PetscErrorCode TSSetUp_RK(TS ts)
 {
   TS_RK         *rk = (TS_RK*)ts->data;
-  RKTableau      tab;
-  PetscInt       s;
   PetscErrorCode ierr;
   DM             dm;
 
   PetscFunctionBegin;
+  ierr = TSRKTableauSetUp(ts);CHKERRQ(ierr);
   if (!rk->VecCostIntegral0 && ts->vec_costintegral && ts->costintegralfwd) { /* back up cost integral */
     ierr = VecDuplicate(ts->vec_costintegral,&rk->VecCostIntegral0);CHKERRQ(ierr);
   }
-  if (!rk->tableau) {
-    ierr = TSRKSetType(ts,TSRKDefault);CHKERRQ(ierr);
-  }
-  tab  = rk->tableau;
-  s    = tab->s;
-  ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->Y);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->YdotRHS);CHKERRQ(ierr);
-  ierr = PetscMalloc1(s,&rk->work);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
@@ -789,8 +809,8 @@ static PetscErrorCode TSSetUp_RK(TS ts)
 #define __FUNCT__ "TSSetFromOptions_RK"
 static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,TS ts)
 {
+  TS_RK         *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
-  char           rktype[256];
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"RK ODE solver options");CHKERRQ(ierr);
@@ -799,13 +819,12 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
     PetscInt       count,choice;
     PetscBool      flg;
     const char   **namelist;
-    ierr = PetscStrncpy(rktype,TSRKDefault,sizeof(rktype));CHKERRQ(ierr);
     for (link=RKTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
     for (link=RKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    ierr      = PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rktype,&choice,&flg);CHKERRQ(ierr);
-    ierr      = TSRKSetType(ts,flg ? namelist[choice] : rktype);CHKERRQ(ierr);
-    ierr      = PetscFree(namelist);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rk->tableau->name,&choice,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = TSRKSetType(ts,namelist[choice]);CHKERRQ(ierr);}
+    ierr = PetscFree(namelist);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -836,25 +855,23 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
 #define __FUNCT__ "TSView_RK"
 static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 {
-  TS_RK         *rk   = (TS_RK*)ts->data;
-  RKTableau      tab  = rk->tableau;
+  TS_RK          *rk = (TS_RK*)ts->data;
   PetscBool      iascii;
   PetscErrorCode ierr;
-  TSAdapt        adapt;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    TSRKType rktype;
-    char     buf[512];
+    RKTableau tab  = rk->tableau;
+    TSRKType  rktype;
+    char      buf[512];
     ierr = TSRKGetType(ts,&rktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  RK %s\n",rktype);CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa     c = %s\n",buf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"FSAL: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
   }
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -863,11 +880,11 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  TSAdapt        tsadapt;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
-  ierr = TSGetAdapt(ts,&tsadapt);CHKERRQ(ierr);
-  ierr = TSAdaptLoad(tsadapt,viewer);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptLoad(adapt,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -927,13 +944,9 @@ PetscErrorCode TSRKGetType(TS ts,TSRKType *rktype)
 #define __FUNCT__ "TSRKGetType_RK"
 static PetscErrorCode TSRKGetType_RK(TS ts,TSRKType *rktype)
 {
-  TS_RK     *rk = (TS_RK*)ts->data;
-  PetscErrorCode ierr;
+  TS_RK *rk = (TS_RK*)ts->data;
 
   PetscFunctionBegin;
-  if (!rk->tableau) {
-    ierr = TSRKSetType(ts,TSRKDefault);CHKERRQ(ierr);
-  }
   *rktype = rk->tableau->name;
   PetscFunctionReturn(0);
 }
@@ -941,10 +954,10 @@ static PetscErrorCode TSRKGetType_RK(TS ts,TSRKType *rktype)
 #define __FUNCT__ "TSRKSetType_RK"
 static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
 {
-  TS_RK     *rk = (TS_RK*)ts->data;
+  TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
   PetscBool      match;
-  RKTableauLink link;
+  RKTableauLink  link;
 
   PetscFunctionBegin;
   if (rk->tableau) {
@@ -954,8 +967,9 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
   for (link = RKTableauList; link; link=link->next) {
     ierr = PetscStrcmp(link->tab.name,rktype,&match);CHKERRQ(ierr);
     if (match) {
-      ierr = TSReset_RK(ts);CHKERRQ(ierr);
+      if (ts->setupcalled) {ierr = TSRKTableauReset(ts);CHKERRQ(ierr);}
       rk->tableau = &link->tab;
+      if (ts->setupcalled) {ierr = TSRKTableauSetUp(ts);CHKERRQ(ierr);}
       PetscFunctionReturn(0);
     }
   }
@@ -1023,5 +1037,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",TSRKSetType_RK);CHKERRQ(ierr);
+
+  ierr = TSRKSetType(ts,TSRKDefault);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

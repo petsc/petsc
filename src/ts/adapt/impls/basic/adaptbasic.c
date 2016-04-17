@@ -13,16 +13,16 @@ typedef struct {
 static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
-  PetscInt       order;
+  PetscInt       order  = PETSC_DECIDE;
+  PetscReal      enorm  = -1;
   PetscReal      safety = basic->safety;
-  PetscReal      enorm=-1,hfac_lte,h_lte;
+  PetscReal      hfac_lte,h_lte;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *next_sc = 0; /* Reuse the same order scheme */
 
   if (ts->ops->evaluatewlte) {
-    order = PETSC_DECIDE;
     ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
     if (enorm >= 0 && order < 1) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
   } else if (ts->ops->evaluatestep) {
@@ -189,12 +189,13 @@ PetscErrorCode TSAdaptBasicSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
-  if (low  != PETSC_DECIDE && low  != PETSC_DEFAULT && (low < 0 || low > 1)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must positive and less than one",(double)low);
-  if (high != PETSC_DECIDE && high != PETSC_DEFAULT && high < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must geather than one",(double)high);
+  if (low  != PETSC_DEFAULT && low  < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be non negative",(double)low);
+  if (low  != PETSC_DEFAULT && low  > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be less than one",(double)low);
+  if (high != PETSC_DEFAULT && high < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must be geather than one",(double)high);
   ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTBASIC,&isbasic);CHKERRQ(ierr);
   if (isbasic) {
-    if (low  != PETSC_DECIDE && low  != PETSC_DEFAULT) basic->clip[0] = low;
-    if (high != PETSC_DECIDE && high != PETSC_DEFAULT) basic->clip[1] = high;
+    if (low  != PETSC_DEFAULT) basic->clip[0] = low;
+    if (high != PETSC_DEFAULT) basic->clip[1] = high;
   }
   PetscFunctionReturn(0);
 }

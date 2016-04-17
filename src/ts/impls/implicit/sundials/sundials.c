@@ -121,7 +121,7 @@ PetscErrorCode TSStep_Sundials(TS ts)
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
   PetscInt       flag;
-  long int       its,nsteps;
+  long int       nits,lits,nsteps;
   realtype       t,tout;
   PetscScalar    *y_data;
   void           *mem;
@@ -135,8 +135,10 @@ PetscErrorCode TSStep_Sundials(TS ts)
 
   /* We would like to TSPreStage() and TSPostStage()
    * before each stage solve but CVode does not appear to support this. */
-  if (cvode->monitorstep) flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
-  else flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
+  if (cvode->monitorstep)
+    flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
+  else
+    flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
 
   if (flag) { /* display error message */
     switch (flag) {
@@ -147,10 +149,10 @@ PetscErrorCode TSStep_Sundials(TS ts)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_CLOSE");
         break;
       case CV_TOO_MUCH_WORK: {
-        PetscReal      tcur;
+        PetscReal tcur;
         ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
         ierr = CVodeGetCurrentTime(mem,&tcur);CHKERRQ(ierr);
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%g, nsteps %D exceeds mxstep %D. Increase '-ts_max_steps <>' or modify TSSetDuration()",(double)tcur,nsteps,ts->max_steps);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%g, nsteps %D exceeds maxstep %D. Increase '-ts_max_steps <>' or modify TSSetDuration()",(double)tcur,nsteps,ts->max_steps);
       } break;
       case CV_TOO_MUCH_ACC:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_ACC");
@@ -190,21 +192,22 @@ PetscErrorCode TSStep_Sundials(TS ts)
     }
   }
 
+  /* log inner nonlinear and linear iterations */
+  ierr = CVodeGetNumNonlinSolvIters(mem,&nits);CHKERRQ(ierr);
+  ierr = CVSpilsGetNumLinIters(mem,&lits);CHKERRQ(ierr);
+  ts->snes_its += nits; ts->ksp_its = lits;
+
   /* copy the solution from cvode->y to cvode->update and sol */
   ierr = VecPlaceArray(cvode->w1,y_data);CHKERRQ(ierr);
   ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
   ierr = VecResetArray(cvode->w1);CHKERRQ(ierr);
   ierr = VecCopy(cvode->update,ts->vec_sol);CHKERRQ(ierr);
-  ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
-  ierr = CVSpilsGetNumLinIters(mem, &its);
-  ts->snes_its = its; ts->ksp_its = its;
 
   ts->time_step = t - ts->ptime;
-  ts->ptime     = t;
-  ts->steps++;
+  ts->ptime = t;
 
   ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
-  if (!cvode->monitorstep) ts->steps = nsteps;
+  if (!cvode->monitorstep) ts->steps = nsteps - 1; /* TSStep() increments the step counter by one */
   PetscFunctionReturn(0);
 }
 
@@ -356,6 +359,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   /* Specify max num of steps to be taken by cvode in its attempt to reach the next output time */
   flag = CVodeSetMaxNumSteps(mem,ts->max_steps);
+  if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxNumSteps() fails, flag %d",flag);
 
   /* call CVSpgmr to use GMRES as the linear solver.        */
   /* setup the ode integrator with the given preconditioner */
@@ -411,7 +415,7 @@ PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS
   ierr = PetscOptionsReal("-ts_sundials_maxdt","Maximum step size","TSSundialsSetMaxTimeStep",cvode->maxdt,&cvode->maxdt,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_sundials_linear_tolerance","Convergence tolerance for linear solve","TSSundialsSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ts_sundials_maxl","Max dimension of the Krylov subspace","TSSundialsSetMaxl",cvode->maxl,&cvode->maxl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_sundials_monitor_steps","Monitor SUNDIALS internel steps","TSSundialsMonitorInternalSteps",cvode->monitorstep,&cvode->monitorstep,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_sundials_monitor_steps","Monitor SUNDIALS internal steps","TSSundialsMonitorInternalSteps",cvode->monitorstep,&cvode->monitorstep,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetFromOptions(pc);CHKERRQ(ierr);

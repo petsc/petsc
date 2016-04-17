@@ -30,7 +30,6 @@ typedef struct {
   PetscInt  order;
 
   PetscBool adapt;
-  PetscReal time_step_prev;
   Vec       vec_sol_prev;
   Vec       vec_lte_work;
 
@@ -178,7 +177,7 @@ static PetscErrorCode TSAlpha_ResetStep(TS ts,PetscBool *initok)
 static PetscErrorCode TSStep_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscInt       rejections     = 0;
+  PetscInt       rejections = 0;
   PetscBool      stageok,accept = PETSC_TRUE;
   PetscReal      next_time_step = ts->time_step;
   PetscErrorCode ierr;
@@ -187,7 +186,6 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
   if (!ts->steprollback) {
-    if (th->adapt) { th->time_step_prev = ts->time_step_prev; }
     if (th->adapt) { ierr = VecCopy(th->X0,th->vec_sol_prev);CHKERRQ(ierr); }
     ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
     ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
@@ -205,8 +203,8 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
     ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
     ierr = TS_SNESSolve(ts,NULL,th->X1);CHKERRQ(ierr);
-    ierr = TSPostStage(ts,th->stage_time,0,&th->X1);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->X1,&stageok);CHKERRQ(ierr);
+    ierr = TSPostStage(ts,th->stage_time,0,&th->Xa);CHKERRQ(ierr);
+    ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->Xa,&stageok);CHKERRQ(ierr);
     if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
 
     th->status = TS_STEP_PENDING;
@@ -215,12 +213,12 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     th->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) {
       ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
-      ts->time_step = next_time_step; goto reject_step;
+      ts->time_step = next_time_step;
+      goto reject_step;
     }
 
     ts->ptime += ts->time_step;
     ts->time_step = next_time_step;
-    ts->steps++;
     break;
 
   reject_step:
@@ -249,7 +247,8 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
     ierr = VecWAXPY(Y,1.0,th->vec_sol_prev,X);CHKERRQ(ierr);
   } else {
     /* Compute LTE using backward differences with non-constant time step */
-    PetscReal   a = 1 + th->time_step_prev/ts->time_step;
+    PetscReal   h = ts->time_step, h_prev = ts->ptime - ts->ptime_prev;
+    PetscReal   a = 1 + h_prev/h;
     PetscScalar scal[3]; Vec vecs[3];
     scal[0] = +1/a;   scal[1] = -1/(a-1); scal[2] = +1/(a*(a-1));
     vecs[0] = th->X1; vecs[1] = th->X0;   vecs[2] = th->vec_sol_prev;
@@ -418,13 +417,16 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObjec
 static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscBool      ascii;
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&ascii);CHKERRQ(ierr);
-  if (ascii)    {ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n",(double)th->Alpha_m,(double)th->Alpha_f,(double)th->Gamma);CHKERRQ(ierr);}
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n",(double)th->Alpha_m,(double)th->Alpha_f,(double)th->Gamma);CHKERRQ(ierr);
+  }
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

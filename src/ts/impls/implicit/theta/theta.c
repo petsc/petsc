@@ -24,7 +24,6 @@
    PetscReal    time_step;
 
    PetscBool    adapt;                    /* Use time-step adaptivity ? */
-   PetscReal    time_step_prev;
    Vec          vec_sol_prev;
    Vec          vec_lte_work;
 
@@ -179,6 +178,8 @@
    PetscFunctionReturn(0);
  }
 
+#define TSEvent_Status(ts) (ts->event ? ts->event->status : TSEVENT_NONE)
+
  #undef __FUNCT__
  #define __FUNCT__ "TS_SNESSolve"
  static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
@@ -199,15 +200,13 @@
  static PetscErrorCode TSStep_Theta(TS ts)
  {
    TS_Theta       *th = (TS_Theta*)ts->data;
-   PetscInt       rejections     = 0;
+   PetscInt       rejections = 0;
    PetscBool      stageok,accept = PETSC_TRUE;
    PetscReal      next_time_step = ts->time_step;
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-
    if (!ts->steprollback) {
-     if (th->adapt) { th->time_step_prev = ts->time_step_prev; }
      if (th->adapt) { ierr = VecCopy(th->X0,th->vec_sol_prev);CHKERRQ(ierr); }
      ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
    }
@@ -217,8 +216,11 @@
 
      PetscReal shift = 1/(th->Theta*ts->time_step);
      th->stage_time = ts->ptime + (th->endpoint ? (PetscReal)1 : th->Theta)*ts->time_step;
-     ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
 
+     ierr = VecCopy(th->X0,th->X);CHKERRQ(ierr);
+     if (th->extrapolate && ts->steps > 0 && TSEvent_Status(ts) != TSEVENT_RESET_NEXTSTEP) {
+       ierr = VecAXPY(th->X,1/shift,th->Xdot);CHKERRQ(ierr);
+     }
      if (th->endpoint) { /* This formulation assumes linear time-independent mass matrix */
        if (!th->affine) {ierr = VecDuplicate(ts->vec_sol,&th->affine);CHKERRQ(ierr);}
        ierr = VecZeroEntries(th->Xdot);CHKERRQ(ierr);
@@ -227,14 +229,9 @@
      } else if (th->affine) { /* Just in case th->endpoint is changed between calls to TSStep_Theta() */
        ierr = VecZeroEntries(th->affine);CHKERRQ(ierr);
      }
-     if (th->extrapolate) {
-       ierr = VecWAXPY(th->X,1/shift,th->Xdot,th->X0);CHKERRQ(ierr);
-     } else {
-       ierr = VecCopy(th->X0,th->X);CHKERRQ(ierr);
-     }
-
+     ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
      ierr = TS_SNESSolve(ts,th->affine,th->X);CHKERRQ(ierr);
-     ierr = TSPostStage(ts,th->stage_time,0,&(th->X));CHKERRQ(ierr);
+     ierr = TSPostStage(ts,th->stage_time,0,&th->X);CHKERRQ(ierr);
      ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->X,&stageok);CHKERRQ(ierr);
      if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
 
@@ -249,7 +246,8 @@
      th->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
      if (!accept) {
        ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
-       ts->time_step = next_time_step; goto reject_step;
+       ts->time_step = next_time_step;
+       goto reject_step;
      }
 
      if (ts->costintegralfwd) { /* Save the info for the later use in cost integral evaluation */
@@ -259,10 +257,9 @@
 
      ts->ptime += ts->time_step;
      ts->time_step = next_time_step;
-     ts->steps++;
      break;
 
- reject_step:
+   reject_step:
      ts->reject++;
      if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
        ts->reason = TS_DIVERGED_STEP_REJECTED;
@@ -405,7 +402,6 @@
      }
    }
 
-   ts->steps++;
    th->status = TS_STEP_COMPLETE;
    PetscFunctionReturn(0);
  }
@@ -414,18 +410,16 @@
  #define __FUNCT__ "TSInterpolate_Theta"
  static PetscErrorCode TSInterpolate_Theta(TS ts,PetscReal t,Vec X)
  {
-   TS_Theta       *th   = (TS_Theta*)ts->data;
-   PetscReal      alpha = t - ts->ptime;
+   TS_Theta       *th = (TS_Theta*)ts->data;
+   PetscReal      dt  = t - ts->ptime;
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
    ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
-   if (th->endpoint) alpha *= th->Theta;
-   ierr = VecWAXPY(X,alpha,th->Xdot,th->X);CHKERRQ(ierr);
+   if (th->endpoint) dt *= th->Theta;
+   ierr = VecWAXPY(X,dt,th->Xdot,th->X);CHKERRQ(ierr);
    PetscFunctionReturn(0);
  }
-
-#define TSEvent_Status(ts) (ts->event ? ts->event->status : TSEVENT_NONE)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSEvaluateWLTE_Theta"
@@ -442,7 +436,8 @@ static PetscErrorCode TSEvaluateWLTE_Theta(TS ts,NormType wnormtype,PetscInt *or
     *wlte = -1;
   } else {
     /* Compute LTE using backward differences with non-constant time step */
-    PetscReal   a = 1 + th->time_step_prev/ts->time_step;
+    PetscReal   h = ts->time_step, h_prev = ts->ptime - ts->ptime_prev;
+    PetscReal   a = 1 + h_prev/h;
     PetscScalar scal[3]; Vec vecs[3];
     scal[0] = +1/a; scal[1] = -1/(a-1); scal[2] = +1/(a*(a-1));
     vecs[0] = X;    vecs[1] = th->X0;   vecs[2] = th->vec_sol_prev;
@@ -550,8 +545,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat A,Mat B,TS ts
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-
-  /* th->Xdot has already been computed in SNESTSFormFunction_Theta (SNES guarantees this) */
+  /* Xdot has already been computed in SNESTSFormFunction_Theta (SNES guarantees this) */
   ierr = TSThetaGetX0AndXdot(ts,dm,NULL,&Xdot);CHKERRQ(ierr);
 
   dmsave = ts->dm;
@@ -637,9 +631,9 @@ static PetscErrorCode TSSetFromOptions_Theta(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject,"Theta ODE solver options");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_adapt","Use time-step adaptivity with the Theta method","",th->adapt,&th->adapt,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_theta_initial_guess_extrapolate","Extrapolate stage initial guess from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -659,7 +653,8 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%g\n",(double)th->Theta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate ? "yes" : "no");CHKERRQ(ierr);
   }
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -746,9 +741,9 @@ static PetscErrorCode TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
 
    Options Database:
 +  -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
-.  -ts_theta_extrapolate <flg> - Extrapolate stage solution from previous solution (sometimes unstable)
 .  -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
--  -ts_theta_adapt <flg> - Use time-step adaptivity with the Theta method
+.  -ts_theta_adapt <flg> - Use time-step adaptivity with the Theta method
+-  -ts_theta_initial_guess_extrapolate <flg> - Extrapolate stage initial guess from previous solution (sometimes unstable)
 
    Notes:
 $  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
@@ -970,7 +965,8 @@ static PetscErrorCode TSView_BEuler(TS ts,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1023,7 +1019,8 @@ static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

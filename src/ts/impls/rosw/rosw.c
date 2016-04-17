@@ -54,7 +54,7 @@ typedef struct {
   Vec          Ystage;           /* Work vector for the state value at each stage */
   Vec          Zdot;             /* Ydot = Zdot + shift*Y */
   Vec          Zstage;           /* Y = Zstage + Y */
-  Vec          VecSolPrev;       /* Work vector holding the solution from the previous step (used for interpolation)*/
+  Vec          vec_sol_prev;     /* Solution from the previous step (used for interpolation and rollback)*/
   PetscScalar  *work;            /* Scalar work space of length number of stages, used to prepare VecMAXPY() */
   PetscReal    scoeff;           /* shift = scoeff/dt */
   PetscReal    stage_time;
@@ -293,7 +293,7 @@ M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWRegisterAll"
 /*@C
-  TSRosWRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in TSRosW
+  TSRosWRegisterAll - Registers all of the Rosenbrock-W methods in TSRosW
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
@@ -969,17 +969,10 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *
 static PetscErrorCode TSRollBack_RosW(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
-  RosWTableau    tab = ros->tableau;
-  const PetscInt s    = tab->s;
-  PetscScalar    *w = ros->work;
-  PetscInt       i;
-  Vec            *Y = ros->Y;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (i=0; i<s; i++) w[i] = -tab->bt[i];
-  ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
-  ros->status   = TS_STEP_INCOMPLETE;
+  ierr = VecCopy(ros->vec_sol_prev,ts->vec_sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -997,20 +990,20 @@ static PetscErrorCode TSStep_RosW(TS ts)
   Vec             *Y   = ros->Y,Ydot = ros->Ydot,Zdot = ros->Zdot,Zstage = ros->Zstage;
   SNES            snes;
   TSAdapt         adapt;
-  PetscInt        i,j,its,lits,reject,next_scheme;
-  PetscBool       accept;
-  PetscReal       next_time_step;
+  PetscInt        i,j,its,lits,next_scheme;
+  PetscInt        rejections = 0;
+  PetscBool       stageok,accept = PETSC_TRUE;
+  PetscReal       next_time_step = ts->time_step;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  accept         = PETSC_TRUE;
-  next_time_step = ts->time_step;
-  ros->status    = TS_STEP_INCOMPLETE;
+  if (!ts->steprollback) {
+    ierr = VecCopy(ts->vec_sol,ros->vec_sol_prev);CHKERRQ(ierr);
+  }
 
-  for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
+  ros->status = TS_STEP_INCOMPLETE;
+  while (!ts->reason && ros->status != TS_STEP_COMPLETE) {
     const PetscReal h = ts->time_step;
-    ierr = VecCopy(ts->vec_sol,ros->VecSolPrev);CHKERRQ(ierr); /*move this at the end*/
     for (i=0; i<s; i++) {
       ros->stage_time = ts->ptime + h*ASum[i];
       ierr = TSPreStage(ts,ros->stage_time);CHKERRQ(ierr);
@@ -1034,6 +1027,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
       ierr = VecZeroEntries(Y[i]);CHKERRQ(ierr);
 
       if (!ros->stage_explicit) {
+        ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
         if (!ros->recompute_jacobian && !i) {
           ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
         }
@@ -1042,8 +1036,8 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
         ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-        ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,Y[i],&accept);CHKERRQ(ierr);
-        if (!accept) goto reject_step;
+        ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,Y[i],&stageok);CHKERRQ(ierr);
+        if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
       } else {
         Mat J,Jp;
         ierr = VecZeroEntries(Ydot);CHKERRQ(ierr); /* Evaluate Y[i]=G(t,Ydot=0,Zstage) */
@@ -1065,29 +1059,34 @@ static PetscErrorCode TSStep_RosW(TS ts)
       }
       ierr = TSPostStage(ts,ros->stage_time,i,Y);CHKERRQ(ierr);
     }
-    ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
-    ros->status = TS_STEP_PENDING;
 
+    ros->status = TS_STEP_INCOMPLETE;
+    ierr = TSEvaluateStep_RosW(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
+    ros->status = TS_STEP_PENDING;
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
-    if (accept) {
-      /* ignore next_scheme for now */
-      ts->ptime    += ts->time_step;
+    ros->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
+    if (!accept) { /* Roll back the current step */
+      ierr = TSRollBack_RosW(ts);CHKERRQ(ierr);
       ts->time_step = next_time_step;
-      ts->steps++;
-      ros->status = TS_STEP_COMPLETE;
-      break;
-    } else {                    /* Roll back the current step */
-      ts->ptime += next_time_step; /* This will be undone in rollback */
-      ros->status = TS_STEP_INCOMPLETE;
-      ierr = TSRollBack(ts);CHKERRQ(ierr);
+      goto reject_step;
     }
-reject_step: continue;
+
+    /* Ignore next_scheme for now */
+    ts->ptime += ts->time_step;
+    ts->time_step = next_time_step;
+    break;
+
+  reject_step:
+    ts->reject++;
+    if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
+      ts->reason = TS_DIVERGED_STEP_REJECTED;
+      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
+    }
   }
-  if (ros->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
 }
 
@@ -1116,7 +1115,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
     t = (itime - ts->ptime)/h;
     break;
   case TS_STEP_COMPLETE:
-    h = ts->time_step_prev;
+    h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime)/h + 1; /* In the interval [0,1] */
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
@@ -1130,44 +1129,54 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
   }
 
   /* y(t+tt*h) = y(t) + Sum bt(tt) * GammaInv * Ydot */
-  /*U<-0*/
+  /* U <- 0*/
   ierr = VecZeroEntries(U);CHKERRQ(ierr);
-
-  /*U<- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
-  for (j=0; j<s; j++) w[j]=0;
+  /* U <- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
+  for (j=0; j<s; j++) w[j] = 0;
   for (j=0; j<s; j++) {
     for (i=j; i<s; i++) {
       w[j] +=  bt[i]*GammaInv[i*s+j];
     }
   }
   ierr = VecMAXPY(U,i,w,Y);CHKERRQ(ierr);
-
-  /*X<-y(t) + X*/
-  ierr = VecAXPY(U,1.0,ros->VecSolPrev);CHKERRQ(ierr);
+  /* U <- y(t) + U */
+  ierr = VecAXPY(U,1,ros->vec_sol_prev);CHKERRQ(ierr);
 
   ierr = PetscFree(bt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRosWTableauReset"
+static PetscErrorCode TSRosWTableauReset(TS ts)
+{
+  TS_RosW        *ros = (TS_RosW*)ts->data;
+  RosWTableau    tab  = ros->tableau;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!tab) PetscFunctionReturn(0);
+  ierr = VecDestroyVecs(tab->s,&ros->Y);CHKERRQ(ierr);
+  ierr = PetscFree(ros->work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TSReset_RosW"
 static PetscErrorCode TSReset_RosW(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
-  PetscInt       s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ros->tableau) PetscFunctionReturn(0);
-  s    = ros->tableau->s;
-  ierr = VecDestroyVecs(s,&ros->Y);CHKERRQ(ierr);
+  ierr = TSRosWTableauReset(ts);CHKERRQ(ierr);
   ierr = VecDestroy(&ros->Ydot);CHKERRQ(ierr);
   ierr = VecDestroy(&ros->Ystage);CHKERRQ(ierr);
   ierr = VecDestroy(&ros->Zdot);CHKERRQ(ierr);
   ierr = VecDestroy(&ros->Zstage);CHKERRQ(ierr);
-  ierr = VecDestroy(&ros->VecSolPrev);CHKERRQ(ierr);
-  ierr = PetscFree(ros->work);CHKERRQ(ierr);
+  ierr = VecDestroy(&ros->vec_sol_prev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1371,30 +1380,44 @@ static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat A,Mat B,TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSRosWTableauSetUp"
+static PetscErrorCode TSRosWTableauSetUp(TS ts)
+{
+  TS_RosW        *ros = (TS_RosW*)ts->data;
+  RosWTableau    tab  = ros->tableau;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicateVecs(ts->vec_sol,tab->s,&ros->Y);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tab->s,&ros->work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp_RosW"
 static PetscErrorCode TSSetUp_RosW(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
-  RosWTableau    tab  = ros->tableau;
-  PetscInt       s    = tab->s;
   PetscErrorCode ierr;
   DM             dm;
+  SNES           snes;
 
   PetscFunctionBegin;
-  if (!ros->tableau) {
-    ierr = TSRosWSetType(ts,TSRosWDefault);CHKERRQ(ierr);
-  }
-  ierr = VecDuplicateVecs(ts->vec_sol,s,&ros->Y);CHKERRQ(ierr);
+  ierr = TSRosWTableauSetUp(ts);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ros->Ydot);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ros->Ystage);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ros->Zdot);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ros->Zstage);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&ros->VecSolPrev);CHKERRQ(ierr);
-  ierr = PetscMalloc1(s,&ros->work);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&ros->vec_sol_prev);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRosW,DMRestrictHook_TSRosW,ts);CHKERRQ(ierr);
     ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRosW,DMSubDomainRestrictHook_TSRosW,ts);CHKERRQ(ierr);
+  }
+  /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!((PetscObject)snes)->type_name) {
+    ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1406,7 +1429,7 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;
-  char           rostype[256];
+  SNES           snes;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"RosW ODE solver options");CHKERRQ(ierr);
@@ -1415,25 +1438,22 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject
     PetscInt        count,choice;
     PetscBool       flg;
     const char      **namelist;
-    SNES            snes;
 
-    ierr = PetscStrncpy(rostype,TSRosWDefault,sizeof(rostype));CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    ierr = PetscOptionsEList("-ts_rosw_type","Family of Rosenbrock-W method","TSRosWSetType",(const char*const*)namelist,count,rostype,&choice,&flg);CHKERRQ(ierr);
-    ierr = TSRosWSetType(ts,flg ? namelist[choice] : rostype);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_rosw_type","Family of Rosenbrock-W method","TSRosWSetType",(const char*const*)namelist,count,ros->tableau->name,&choice,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = TSRosWSetType(ts,namelist[choice]);CHKERRQ(ierr);}
     ierr = PetscFree(namelist);CHKERRQ(ierr);
 
     ierr = PetscOptionsBool("-ts_rosw_recompute_jacobian","Recompute the Jacobian at each stage","TSRosWSetRecomputeJacobian",ros->recompute_jacobian,&ros->recompute_jacobian,NULL);CHKERRQ(ierr);
-
-    /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    if (!((PetscObject)snes)->type_name) {
-      ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
-    }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!((PetscObject)snes)->type_name) {
+    ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1463,18 +1483,17 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
 static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
-  RosWTableau    tab  = ros->tableau;
   PetscBool      iascii;
   PetscErrorCode ierr;
-  TSAdapt        adapt;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    TSRosWType rostype;
-    PetscInt   i;
-    PetscReal  abscissa[512];
-    char       buf[512];
+    RosWTableau tab  = ros->tableau;
+    TSRosWType  rostype;
+    char        buf[512];
+    PetscInt    i;
+    PetscReal   abscissa[512];
     ierr = TSRosWGetType(ts,&rostype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Rosenbrock-W %s\n",rostype);CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->ASum);CHKERRQ(ierr);
@@ -1483,9 +1502,8 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A+Gamma = %s\n",buf);CHKERRQ(ierr);
   }
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
-  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
+  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1495,11 +1513,11 @@ static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   SNES           snes;
-  TSAdapt        tsadapt;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
-  ierr = TSGetAdapt(ts,&tsadapt);CHKERRQ(ierr);
-  ierr = TSAdaptLoad(tsadapt,viewer);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptLoad(adapt,viewer);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
   /* function and Jacobian context for SNES when used with TS is always ts object */
@@ -1590,10 +1608,8 @@ PetscErrorCode TSRosWSetRecomputeJacobian(TS ts,PetscBool flg)
 static PetscErrorCode  TSRosWGetType_RosW(TS ts,TSRosWType *rostype)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ros->tableau) {ierr = TSRosWSetType(ts,TSRosWDefault);CHKERRQ(ierr);}
   *rostype = ros->tableau->name;
   PetscFunctionReturn(0);
 }
@@ -1615,8 +1631,9 @@ static PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)
   for (link = RosWTableauList; link; link=link->next) {
     ierr = PetscStrcmp(link->tab.name,rostype,&match);CHKERRQ(ierr);
     if (match) {
-      ierr = TSReset_RosW(ts);CHKERRQ(ierr);
+      if (ts->setupcalled) {ierr = TSRosWTableauReset(ts);CHKERRQ(ierr);}
       ros->tableau = &link->tab;
+      if (ts->setupcalled) {ierr = TSRosWTableauSetUp(ts);CHKERRQ(ierr);}
       PetscFunctionReturn(0);
     }
   }
@@ -1727,5 +1744,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWGetType_C",TSRosWGetType_RosW);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetType_C",TSRosWSetType_RosW);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetRecomputeJacobian_C",TSRosWSetRecomputeJacobian_RosW);CHKERRQ(ierr);
+
+  ierr = TSRosWSetType(ts,TSRosWDefault);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

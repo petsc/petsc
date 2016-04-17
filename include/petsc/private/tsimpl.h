@@ -1,4 +1,3 @@
-
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
 
@@ -78,17 +77,19 @@ struct _p_TSTrajectory {
 
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
+  TSProblemType  problem_type;
+  TSEquationType equation_type;
+
   DM            dm;
-  TSProblemType problem_type;
   Vec           vec_sol;
   TSAdapt       adapt;
   TSEvent       event;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
-  PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
+  PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*);
   PetscErrorCode (*monitordestroy[MAXTSMONITORS])(void**);
-  void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
-  PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
+  void *monitorcontext[MAXTSMONITORS];
+  PetscInt  numbermonitors;
   PetscErrorCode (*adjointmonitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
   PetscErrorCode (*adjointmonitordestroy[MAXTSMONITORS])(void**);
   void *adjointmonitorcontext[MAXTSMONITORS];
@@ -101,17 +102,16 @@ struct _p_TS {
   PetscErrorCode (*functiondomainerror)(TS,PetscReal,Vec,PetscBool*);
 
   /* ---------------------- Sensitivity Analysis support -----------------*/
-  TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
-  Vec       *vecs_sensi;             /* one vector for each cost function */
+  TSTrajectory trajectory;          /* All solutions are kept here for the entire time integration process */
+  Vec       *vecs_sensi;            /* one vector for each cost function */
   Vec       *vecs_sensip;
-  PetscInt  numcost;                 /* number of cost functions */
+  PetscInt  numcost;                /* number of cost functions */
   Vec       vec_costintegral;
   PetscInt  adjointsetupcalled;
   PetscInt  adjoint_max_steps;
   PetscBool adjoint_solve;          /* immediately call TSAdjointSolve() after TSSolve() is complete */
   PetscBool costintegralfwd;        /* cost integral is evaluated in the forward run if true */
-  /* workspace for Adjoint computations */
-  Vec       vec_costintegrand;
+  Vec       vec_costintegrand;      /* workspace for Adjoint computations */
   Mat       Jacp;
   void      *rhsjacobianpctx;
   void      *costintegrandctx;
@@ -147,8 +147,12 @@ struct _p_TS {
     PetscReal shift;            /* The derivative of the lhs wrt to Xdot */
   } ijacobian;
 
-  /* ---------------------Nonlinear Iteration------------------------------*/
-  SNES  snes;
+  /* --------------------Nonlinear Iteration------------------------------*/
+  SNES     snes;
+  PetscInt ksp_its;                /* total number of linear solver iterations */
+  PetscInt snes_its;               /* total number of nonlinear solver iterations */
+  PetscInt num_snes_failures;
+  PetscInt max_snes_failures;
 
   /* --- Data that is unique to each particular solver --- */
   PetscInt setupcalled;             /* true if setup has been called */
@@ -158,37 +162,25 @@ struct _p_TS {
   /* ------------------  Parameters -------------------------------------- */
   PetscInt  max_steps;              /* max number of steps */
   PetscReal max_time;               /* max time allowed */
-  PetscReal time_step;              /* current/completed time increment */
-  PetscReal time_step_prev;         /* previous time step  */
 
-  /*
-     these are temporary to support increasing the time step if nonlinear solver convergence remains good
-     and time_step was previously cut due to failed nonlinear solver
-  */
-  PetscReal time_step_orig;            /* original time step requested by user */
-  PetscInt  time_steps_since_decrease; /* number of timesteps since timestep was decreased due to lack of convergence */
-  /* ----------------------------------------------------------------------------------------------------------------*/
+  /* --------------------------------------------------------------------- */
 
-  PetscBool steprollback;           /* Is the current step rolled back? */
+  PetscBool steprollback;           /* flag to indicate that the step was rolled back */
   PetscInt  steps;                  /* steps taken so far in latest call to TSSolve() */
   PetscInt  total_steps;            /* steps taken in all calls to TSSolve() since the TS was created or since TSSetUp() was called */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
+  PetscReal time_step;              /* current time increment */
   PetscReal ptime_prev;             /* time at the start of the previous step */
+  PetscReal ptime_prev_rollback;    /* time at the start of the 2nd previous step to recover from rollback */
   PetscReal solvetime;              /* time at the conclusion of TSSolve() */
-  PetscInt  ksp_its;                /* total number of linear solver iterations */
-  PetscInt  snes_its;               /* total number of nonlinear solver iterations */
 
-  PetscInt num_snes_failures;
-  PetscInt max_snes_failures;
   TSConvergedReason reason;
-  TSEquationType equation_type;
   PetscBool errorifstepfailed;
-  TSExactFinalTimeOption  exact_final_time;
-  PetscBool retain_stages;
-  PetscInt reject,max_reject;
+  PetscInt  reject,max_reject;
+  TSExactFinalTimeOption exact_final_time;
 
-  PetscReal atol,rtol;          /* Relative and absolute tolerance for local truncation error */
-  Vec       vatol,vrtol;        /* Relative and absolute tolerance in vector form */
+  PetscReal atol,rtol;              /* Relative and absolute tolerance for local truncation error */
+  Vec       vatol,vrtol;            /* Relative and absolute tolerance in vector form */
   PetscReal cfltime,cfltime_local;
 
   /* ------------------- Default work-area management ------------------ */
@@ -239,7 +231,7 @@ struct _DMTSOps {
   PetscErrorCode (*ijacobianload)(void**,PetscViewer);
 
   TSSolutionFunction solution;
-  PetscErrorCode (*forcing)(TS,PetscReal,Vec,void*);
+  TSForcingFunction  forcing;
 
   PetscErrorCode (*destroy)(DMTS);
   PetscErrorCode (*duplicate)(DMTS,DMTS);

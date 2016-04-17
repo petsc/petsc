@@ -356,7 +356,8 @@ PETSC_EXTERN PetscErrorCode TSRHSJacobianSetReuse(TS,PetscBool);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS,TSSolutionFunction,void*);
-PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS,PetscErrorCode (*)(TS,PetscReal,Vec,void*),void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS,TSForcingFunction,void*);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
@@ -381,7 +382,6 @@ PETSC_EXTERN PetscErrorCode TSPreStep(TS);
 PETSC_EXTERN PetscErrorCode TSPreStage(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSPostStage(TS,PetscReal,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode TSPostStep(TS);
-PETSC_EXTERN PetscErrorCode TSSetRetainStages(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
@@ -397,7 +397,6 @@ PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscRea
 PETSC_EXTERN PetscErrorCode TSPseudoTimeStepDefault(TS,PetscReal*,void*);
 PETSC_EXTERN PetscErrorCode TSPseudoComputeTimeStep(TS,PetscReal *);
 PETSC_EXTERN PetscErrorCode TSPseudoSetMaxTimeStep(TS,PetscReal);
-
 PETSC_EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS,PetscErrorCode(*)(TS,Vec,void*,PetscReal*,PetscBool *),void*);
 PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStepDefault(TS,Vec,void*,PetscReal*,PetscBool *);
 PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,PetscBool *);
@@ -425,8 +424,8 @@ PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM,TSIJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM,TSIJacobian*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
-PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,PetscErrorCode (*)(TS,PetscReal,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**)(TS,PetscReal,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,TSForcingFunction,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,TSForcingFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSGetMinRadius(DM,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMTSSetMinRadius(DM,PetscReal);
 PETSC_EXTERN PetscErrorCode DMTSCheckFromOptions(TS, Vec, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **);

@@ -1,13 +1,12 @@
-
 static char help[] = "Parallel bouncing ball example to test TS event feature.\n";
 
 /*
   The dynamics of the bouncing ball is described by the ODE
                   u1_t = u2
                   u2_t = -9.8
-  
+
   Each processor is assigned one ball.
-  
+
   The event function routine checks for the ball hitting the
   ground (u1 = 0). Every time the ball hits the ground, its velocity u2 is attenuated by
   a factor of 0.9 and its height set to 1.0*rank.
@@ -42,7 +41,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (nevents) {
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %4.2f seconds\n",rank,(double)t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %6.3f seconds\n",rank,(double)t);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
     u[0] = 1.0*rank;
     u[1] = -0.9*u[1];
@@ -113,7 +112,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   }
   PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -123,8 +122,9 @@ int main(int argc,char **argv)
   Mat            A;             /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       n = 2,direction=-1;
+  PetscInt       n = 2;
   PetscScalar    *u;
+  PetscInt       direction=-1;
   PetscBool      terminate=PETSC_FALSE;
   TSAdapt        adapt;
 
@@ -154,6 +154,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,NULL);CHKERRQ(ierr);
@@ -171,28 +172,28 @@ int main(int argc,char **argv)
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  
+
   ierr = TSSetEventHandler(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
 
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  /* The adapative time step controller could take very large timesteps resulting in 
-     the same event occuring multiple times in the same interval. A max. step 
-     limit is enforced here to avoid this issue. 
+  /* The adapative time step controller could take very large timesteps resulting in
+     the same event occuring multiple times in the same interval. A maximum step size
+     limit is enforced here to avoid this issue.
   */
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-   
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  
+
   ierr = PetscFinalize();
   return(0);
 }

@@ -197,7 +197,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
-  ierr = TSAdaptSetType(adapt, type);CHKERRQ(ierr);
+  ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   if (adapt->ops->load) {
     ierr = (*adapt->ops->load)(adapt,viewer);CHKERRQ(ierr);
   }
@@ -367,8 +367,17 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
-  if (hmin != PETSC_DECIDE) adapt->dt_min = hmin;
-  if (hmax != PETSC_DECIDE) adapt->dt_max = hmax;
+  PetscValidLogicalCollectiveReal(adapt,hmin,2);
+  PetscValidLogicalCollectiveReal(adapt,hmax,3);
+  if (hmin != PETSC_DEFAULT && hmin < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Minimum time step %g must be non negative",(double)hmin);
+  if (hmax != PETSC_DEFAULT && hmax < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Minimum time step %g must be non negative",(double)hmax);
+  if (hmin != PETSC_DEFAULT) adapt->dt_min = hmin;
+  if (hmax != PETSC_DEFAULT) adapt->dt_max = hmax;
+#if defined(PETSC_USE_DEBUG)
+  hmin = adapt->dt_min;
+  hmax = adapt->dt_max;
+  if (hmax <= hmin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Maximum time step %g must geather than minimum time step %g",(double)hmax,(double)hmin);
+#endif
   PetscFunctionReturn(0);
 }
 
