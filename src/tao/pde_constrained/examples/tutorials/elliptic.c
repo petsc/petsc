@@ -701,7 +701,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
      Create scatter from y to y_1,y_2,...,y_ns
      *******************************
   */
-  ierr = PetscMalloc1(user->ns,&user->yi_scatter);
+  ierr = PetscMalloc1(user->ns,&user->yi_scatter);CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->suby);CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->subq);CHKERRQ(ierr);
 
@@ -988,7 +988,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     ierr = MatSetFromOptions(user->Div);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(user->Div,4,NULL,4,NULL);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(user->Div,6,NULL);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(user->Grad,&istart,&iend);
+    ierr = MatGetOwnershipRange(user->Grad,&istart,&iend);CHKERRQ(ierr);
 
     for (i=istart; i<iend; i++){
       if (i<m/3){
@@ -1118,8 +1118,8 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   ierr = MatMult(user->JsInv,user->q,user->ytrue);CHKERRQ(ierr);
   /* First compute Av_u = Av*exp(-u) */
-  ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->u); /* Note: user->u */
+  ierr = VecSet(user->uwork,0);CHKERRQ(ierr);
+  ierr = VecAXPY(user->uwork,-1.0,user->u);CHKERRQ(ierr); /* Note: user->u */
   ierr = VecExp(user->uwork);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 
@@ -1153,7 +1153,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     y[i] = h*(i+0.5);
     z[i] = h*(i+0.5);
   }
-  ierr = MatGetOwnershipRange(user->Q,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->Q,&istart,&iend);CHKERRQ(ierr);
 
   nx = user->mx; ny = user->mx; nz = user->mx;
   for (i=istart; i<iend; i++){

@@ -1136,16 +1136,16 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
 #endif
 
     /* send vectors to viewer */
-    ierr = PetscObjectSetName((PetscObject)res,"res");
+    ierr = PetscObjectSetName((PetscObject)res,"res");CHKERRQ(ierr);
     ierr = VecView(res,viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)user->x,"out");
+    ierr = PetscObjectSetName((PetscObject)user->x,"out");CHKERRQ(ierr);
     ierr = VecView(user->x, viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"aux");
+    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"aux");CHKERRQ(ierr);
     ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr);
     ierr = StressField(da);CHKERRQ(ierr); /* compute stress fields */
-    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"str");
+    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"str");CHKERRQ(ierr);
     ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)pars,"par");
+    ierr = PetscObjectSetName((PetscObject)pars,"par");CHKERRQ(ierr);
     ierr = VecView(pars, viewer);CHKERRQ(ierr);
 
     /* destroy viewer and vector */

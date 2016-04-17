@@ -515,7 +515,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       for (i=info.xs; i<info.xs + info.xm; i++) {
         ptconverged = PETSC_FALSE;
         pfnorm0     = 0.0;
-        pfnorm      = 0.0;
         fu          = 0.0;
         fv          = 0.0;
         fomega      = 0.0;
@@ -590,7 +589,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
            */
             yu = fu / dfudu;
             yv = fv / dfvdv;
-            yo = fomega / dfodo;
             yt = ftemp / dftdt;
             yo = (fomega - (dfodu*yu + dfodv*yv)) / dfodo;
             yt = (ftemp - (dftdu*yu + dftdv*yv)) / dftdt;
@@ -636,11 +634,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
           pfnorm = PetscRealPart(fu*fu + fv*fv + fomega*fomega + ftemp*ftemp);
           pfnorm = PetscSqrtReal(pfnorm);
           pynorm = PetscRealPart(yu*yu + yv*yv + yo*yo + yt*yt);
-          pfnorm = PetscSqrtReal(pynorm);
+          pynorm = PetscSqrtReal(pynorm);
           pxnorm = PetscRealPart(x[j][i].u*x[j][i].u + x[j][i].v*x[j][i].v + x[j][i].omega*x[j][i].omega + x[j][i].temp*x[j][i].temp);
           pxnorm = PetscSqrtReal(pxnorm);
           if (l == 0) pfnorm0 = pfnorm;
-          if (rtol*pfnorm0 > pfnorm ||
+          if (rtol*pfnorm0 >p fnorm ||
               atol > pfnorm ||
               pxnorm*stol > pynorm) ptconverged = PETSC_TRUE;
         }

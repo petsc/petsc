@@ -467,8 +467,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
     outptr[mn-m+i] = xc*inptr[mn-m+i]+xl*inptr[mn-m+i-1]+xr*inptr[mn-m+i+1]+2*yl*inptr[mn-m+i-m];
   }
 
-  ierr = VecRestoreArrayRead(tmp_in,&inptr);
-  ierr = VecRestoreArray(tmp_out,&outptr);
+  ierr = VecRestoreArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(tmp_out,&outptr);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

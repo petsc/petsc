@@ -307,7 +307,7 @@ PetscErrorCode StokesSetupMatBlock01(Stokes *s)
   PetscFunctionBeginUser;
   /* A[1] is 2N-by-N */
   ierr = MatCreate(PETSC_COMM_WORLD, &s->subA[1]);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(s->subA[1],"a01_");
+  ierr = MatSetOptionsPrefix(s->subA[1],"a01_");CHKERRQ(ierr);
   ierr = MatSetSizes(s->subA[1],PETSC_DECIDE,PETSC_DECIDE,2*s->nx*s->ny,s->nx*s->ny);CHKERRQ(ierr);
   ierr = MatSetType(s->subA[1],MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(s->subA[1],5,NULL,5,NULL);CHKERRQ(ierr);
@@ -379,13 +379,13 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s)
   ierr = VecReciprocal(diag);
 
   /* compute: - A10 diag(A00)^(-1) A01 */
-  ierr = MatDiagonalScale(s->subA[1],diag,NULL); /* (*warning* overwrites subA[1]) */
+  ierr = MatDiagonalScale(s->subA[1],diag,NULL);CHKERRQ(ierr); /* (*warning* overwrites subA[1]) */
   ierr = MatMatMult(s->subA[2],s->subA[1],MAT_INITIAL_MATRIX,PETSC_DEFAULT,&s->myS);CHKERRQ(ierr);
   ierr = MatScale(s->myS,-1.0);CHKERRQ(ierr);
 
   /* restore A10 */
-  ierr = MatGetDiagonal(s->subA[0],diag);
-  ierr = MatDiagonalScale(s->subA[1],diag,NULL);
+  ierr = MatGetDiagonal(s->subA[0],diag);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(s->subA[1],diag,NULL);CHKERRQ(ierr);
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

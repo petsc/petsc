@@ -100,7 +100,6 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
           istart_csr    = i;
           iend_csr      = i+1;
         }
-        iindex=k*dd.xm_l*dd.ym_l+j*dd.xm_l+i;
         if (internal_node) {
           istart_csr = i;
           iend_csr   = i+1;
@@ -587,7 +586,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   xyloc  = xloc*yloc;
   xyzloc = xloc*yloc*zloc;
 
-  ierr = MatCreate(PETSC_COMM_SELF,&glldata->elem_mat);
+  ierr = MatCreate(PETSC_COMM_SELF,&glldata->elem_mat);CHKERRQ(ierr);
   ierr = MatSetSizes(glldata->elem_mat,xyzloc,xyzloc,xyzloc,xyzloc);CHKERRQ(ierr);
   ierr = MatSetType(glldata->elem_mat,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(glldata->elem_mat,xyzloc,NULL);CHKERRQ(ierr); /* overestimated */

@@ -262,16 +262,16 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
   if (nev_loc == 0) PetscFunctionReturn(0);
 
   nev_loc += (*offset);
-  ierr     = VecDuplicate(evec[*offset],&vt1);
-  ierr     = VecDuplicate(evec[*offset],&vt2);
+  ierr     = VecDuplicate(evec[*offset],&vt1);CHKERRQ(ierr);
+  ierr     = VecDuplicate(evec[*offset],&vt2);CHKERRQ(ierr);
 
   switch (cklvl) {
   case 2:
     dot_max = 0.0;
     for (i = *offset; i<nev_loc; i++) {
-      ierr = MatMult(B, evec[i], vt1);
+      ierr = MatMult(B, evec[i], vt1);CHKERRQ(ierr);
       for (j=i; j<nev_loc; j++) {
-        ierr = VecDot(evec[j],vt1,&dot);
+        ierr = VecDot(evec[j],vt1,&dot);CHKERRQ(ierr);
         if (j == i) {
           dot = PetscAbsScalar(dot - 1.0);
         } else {
@@ -280,7 +280,7 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
         if (dot > dot_max) dot_max = dot;
 #if defined(DEBUG_CkEigenSolutions)
         if (dot > tols[1]) {
-          ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
+          ierr = VecNorm(evec[i],NORM_INFINITY,&norm);CHKERRQ(ierr);
           ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)ndot,(double)nnorm);CHKERRQ(ierr);
         }
 #endif
@@ -291,11 +291,11 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
   case 1:
     norm_max = 0.0;
     for (i = *offset; i< nev_loc; i++) {
-      ierr = MatMult(A, evec[i], vt1);
-      ierr = MatMult(B, evec[i], vt2);
+      ierr = MatMult(A, evec[i], vt1);CHKERRQ(ierr);
+      ierr = MatMult(B, evec[i], vt2);CHKERRQ(ierr);
       tmp  = -eval[i];
-      ierr = VecAXPY(vt1,tmp,vt2);
-      ierr = VecNorm(vt1, NORM_INFINITY, &norm);
+      ierr = VecAXPY(vt1,tmp,vt2);CHKERRQ(ierr);
+      ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
       norm = PetscAbsScalar(norm);
       if (norm > norm_max) norm_max = norm;
 #if defined(DEBUG_CkEigenSolutions)
@@ -312,7 +312,7 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
   default:
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&vt2);
-  ierr = VecDestroy(&vt1);
+  ierr = VecDestroy(&vt2);CHKERRQ(ierr);
+  ierr = VecDestroy(&vt1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

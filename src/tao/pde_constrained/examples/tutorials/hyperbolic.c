@@ -471,7 +471,7 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
   ierr = Scatter_yi(user->y,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
-  ierr = Scatter_uxi_uyi(X,user->uxiwork,user->uxi_scatter,user->uyiwork,user->uyi_scatter,user->nt);
+  ierr = Scatter_uxi_uyi(X,user->uxiwork,user->uxi_scatter,user->uyiwork,user->uyi_scatter,user->nt);CHKERRQ(ierr);
   for (i=0; i<user->nt; i++){
     ierr = VecPointwiseMult(user->uxiwork[i],user->yi[i],user->uxiwork[i]);CHKERRQ(ierr);
     ierr = VecPointwiseMult(user->uyiwork[i],user->yi[i],user->uyiwork[i]);CHKERRQ(ierr);
@@ -1186,7 +1186,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = VecCopy(user->utrue,user->u); /*  Set u=utrue temporarily for StateMatInv */
   ierr = VecSet(user->ytrue,0.0);CHKERRQ(ierr); /*  Initial guess */
   ierr = StateMatInvMult(user->Js,user->q,user->ytrue);CHKERRQ(ierr);
-  ierr = VecCopy(user->ur,user->u); /*  Reset u=ur */
+  ierr = VecCopy(user->ur,user->u);CHKERRQ(ierr); /*  Reset u=ur */
 
   /* Initial guess y0 for state given u0 */
   ierr = StateMatInvMult(user->Js,user->q,user->y);CHKERRQ(ierr);

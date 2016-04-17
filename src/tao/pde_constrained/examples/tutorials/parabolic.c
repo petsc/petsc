@@ -1095,7 +1095,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecDestroy(&yi);CHKERRQ(ierr);
 
   /* Create scatter from d to d_1,d_2,...,d_ns */
-  ierr = PetscMalloc1(user->ns*user->ndata,&user->di_scatter);
+  ierr = PetscMalloc1(user->ns*user->ndata,&user->di_scatter);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&di);CHKERRQ(ierr);
   ierr = VecSetSizes(di,PETSC_DECIDE,user->ndata);CHKERRQ(ierr);
   ierr = VecSetFromOptions(di);CHKERRQ(ierr);
@@ -1127,8 +1127,8 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecSetFromOptions(user->ytrue);CHKERRQ(ierr);
 
   /* First compute Av_u = Av*exp(-u) */
-  ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->utrue); /*  Note: user->utrue */
+  ierr = VecSet(user->uwork,0);CHKERRQ(ierr);
+  ierr = VecAXPY(user->uwork,-1.0,user->utrue);CHKERRQ(ierr); /*  Note: user->utrue */
   ierr = VecExp(user->uwork);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 
@@ -1155,9 +1155,9 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   /* Initial guess y0 for state given u0 */
 
   /* First compute Av_u = Av*exp(-u) */
-  ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->u); /*  Note: user->u */
-  ierr = VecExp(user->uwork);CHKERRQ(ierr);
+  ierr = VecSet(user->uwork,0);CHKERRQ(ierr);
+  ierr = VecAXPY(user->uwork,-1.0,user->u);CHKERRQ(ierr); /*  Note: user->u */
+  ierr = VecExp(user->uwork);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 
   /* Next form DSG = Div*S*Grad */

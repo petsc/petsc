@@ -106,7 +106,7 @@ PetscErrorCode IFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
-  ierr = VecAYPX(F,-1.0,Ydot);
+  ierr = VecAYPX(F,-1.0,Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -332,7 +332,7 @@ PetscErrorCode IFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
-  ierr = VecAYPX(F,-1.0,Ydot);
+  ierr = VecAYPX(F,-1.0,Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -721,7 +721,7 @@ PetscErrorCode IFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
-  ierr = VecAYPX(F,-1.0,Ydot);
+  ierr = VecAYPX(F,-1.0,Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
