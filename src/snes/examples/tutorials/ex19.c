@@ -638,7 +638,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
           pxnorm = PetscRealPart(x[j][i].u*x[j][i].u + x[j][i].v*x[j][i].v + x[j][i].omega*x[j][i].omega + x[j][i].temp*x[j][i].temp);
           pxnorm = PetscSqrtReal(pxnorm);
           if (l == 0) pfnorm0 = pfnorm;
-          if (rtol*pfnorm0 >p fnorm ||
+          if (rtol*pfnorm0 >pfnorm ||
               atol > pfnorm ||
               pxnorm*stol > pynorm) ptconverged = PETSC_TRUE;
         }
