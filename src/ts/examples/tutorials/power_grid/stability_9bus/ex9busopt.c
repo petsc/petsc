@@ -770,7 +770,7 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
   for (i=0; i < nload; i++) {
     Vr      = xnet[2*lbus[i]]; /* Real part of load bus voltage */
     Vi      = xnet[2*lbus[i]+1]; /* Imaginary part of the load bus voltage */
-    Vm      = PetscSqrtScalar(Vr*Vr + Vi*Vi); Vm 2= Vm*Vm; Vm4 = Vm2*Vm2;
+    Vm      = PetscSqrtScalar(Vr*Vr + Vi*Vi); Vm2= Vm*Vm; Vm4 = Vm2*Vm2;
     Vm0     = PetscSqrtScalar(v0[2*lbus[i]]*v0[2*lbus[i]] + v0[2*lbus[i]+1]*v0[2*lbus[i]+1]);
     PD      = QD = 0.0;
     dPD_dVr = dPD_dVi = dQD_dVr = dQD_dVi = 0.0;
