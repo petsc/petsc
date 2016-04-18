@@ -119,13 +119,11 @@ int main(int argc,char **argv)
   ierr       = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param > bratu_lambda_max || user.param < bratu_lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda, %g, is out of range, [%g, %g]", user.param, bratu_lambda_min, bratu_lambda_max);
   ierr       = PetscOptionsGetInt(NULL,NULL,"-mms",&MMS,NULL);CHKERRQ(ierr);
-  if (MMS == 3){
-    //set default mPar, nPar values
-    user.mPar  = 2;
-    user.nPar  = 1;
-    //get values from arg if available
-    ierr       = PetscOptionsGetInt(NULL,NULL,"-m_par",&user.mPar,NULL);CHKERRQ(ierr);
-    ierr       = PetscOptionsGetInt(NULL,NULL,"-n_par",&user.nPar,NULL);CHKERRQ(ierr);
+  if (MMS == 3) {
+    user.mPar = 2;
+    user.nPar = 1;
+    ierr = PetscOptionsGetInt(NULL,NULL,"-m_par",&user.mPar,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-n_par",&user.nPar,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -717,7 +715,6 @@ PetscErrorCode FormFunctionLocalMMS3(DMDALocalInfo *info,PetscScalar **vx,PetscS
         uyy     = (2.0*u - un - us)*hxdhy;
 
         f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u)-(PetscExpScalar(PetscSinReal(m*PETSC_PI*x*(1 - y))*PetscSinReal(n*PETSC_PI*(1 - x)*y))*lambda) + PetscSqr(PETSC_PI)*(-2*m*n*((-1 + x)*x + (-1 + y)*y)*PetscCosReal(m*PETSC_PI*x*(-1 + y))*PetscCosReal(n*PETSC_PI*(-1 + x)*y) + (PetscSqr(m)*(PetscSqr(x) + PetscSqr(-1 + y)) + PetscSqr(n)*(PetscSqr(-1 + x) + PetscSqr(y)))*PetscSinReal(m*PETSC_PI*x*(-1 + y))*PetscSinReal(n*PETSC_PI*(-1 + x)*y)));
-        //f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u)-(exp(PetscSinReal(4*PETSC_PI*x*(1 - y))*PetscSinReal(2*PETSC_PI*(1 - x)*y))*lambda) + 4*PetscSqr(PETSC_PI)*(4*(x - PetscSqr(x) + y - PetscSqr(y))*PetscCosReal(4*PETSC_PI*x*(-1 + y))*PetscCosReal(2*PETSC_PI*(-1 + x)*y) + (5 + x*(-2 + 5*x) + y*(-8 + 5*y))*PetscSinReal(4*PETSC_PI*x*(-1 + y))*PetscSinReal(2*PETSC_PI*(-1 + x)*y)));
       }
     }
   }
