@@ -791,12 +791,15 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 
         ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
         for (p = pStart; p < pEnd; ++p) {
+          PetscInt bdof;
+
           ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
           ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
-          if (dof-cdof) {
+          bdof = PetscAbs(dof) - cdof;
+          if (bdof) {
             if (bs < 0) {
-              bs = dof-cdof;
-            } else if (bs != dof-cdof) {
+              bs = bdof;
+            } else if (bs != bdof) {
               /* Layout does not admit a pointwise block size */
               bs = 1;
               break;
