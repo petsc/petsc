@@ -196,12 +196,12 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       switch (dof) {
       case 2:
-        r             = PetscSqr(coords[off+0]) + PetscSqr(coords[off+1]);
+        r             = PetscSqr(PetscRealPart(coords[off+0])) + PetscSqr(PetscRealPart(coords[off+1]));
         coords[off+0] = r == 0.0 ? 0.0 : PetscPowReal(r, (1 - p)/(2*p))*coords[off+0];
         coords[off+1] = r == 0.0 ? 0.0 : PetscPowReal(r, (1 - p)/(2*p))*coords[off+1];
         break;
       case 3:
-        r             = PetscSqr(coords[off+0]) + PetscSqr(coords[off+1]);
+        r             = PetscSqr(PetscRealPart(coords[off+0])) + PetscSqr(PetscRealPart(coords[off+1]));
         coords[off+0] = r == 0.0 ? 0.0 : PetscPowReal(r, (1 - p)/(2*p))*coords[off+0];
         coords[off+1] = r == 0.0 ? 0.0 : PetscPowReal(r, (1 - p)/(2*p))*coords[off+1];
         coords[off+2] = coords[off+2];
