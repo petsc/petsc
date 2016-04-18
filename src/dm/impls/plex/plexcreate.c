@@ -1692,7 +1692,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell
 */
-PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[])
+static PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[])
 {
   PetscInt      *cone, c, p;
   PetscErrorCode ierr;
@@ -1721,7 +1721,7 @@ PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, PetscIn
 /*
   This takes as input the coordinates for each vertex
 */
-PetscErrorCode DMPlexBuildCoordinates_Private(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const double vertexCoords[])
+static PetscErrorCode DMPlexBuildCoordinates_Private(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const double vertexCoords[])
 {
   PetscSection   coordSection;
   Vec            coordinates;
