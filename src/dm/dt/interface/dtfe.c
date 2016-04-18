@@ -3368,7 +3368,7 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field,
   PetscScalar    *u, *u_x, *a, *a_x;
   PetscReal      *x;
   PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux, cOffset = 0, cOffsetAux = 0, e;
+  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, e;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -3506,7 +3506,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
   PetscScalar    *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
   PetscReal      *x;
   PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        dim, Nf, NfAux = 0, bdim, Nb, Nc, totDim, totDimAux, cOffset = 0, cOffsetAux = 0, fOffset, e;
+  PetscInt        dim, Nf, NfAux = 0, bdim, Nb, Nc, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -3589,7 +3589,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
   PetscReal     **basisField, **basisFieldDer, *basisI, *basisDerI, *basisJ, *basisDerJ;
   PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
-  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux, e;
+  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux = 0, e;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -3772,7 +3772,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
   PetscReal     **basisField, **basisFieldDer, *basisI, *basisDerI, *basisJ, *basisDerJ;
   PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
   PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
-  PetscInt        dim, Nf, NfAux = 0, bdim, totDim, totDimAux, e;
+  PetscInt        dim, Nf, NfAux = 0, bdim, totDim, totDimAux = 0, e;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -4067,7 +4067,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, P
   PetscScalar     *f0, *f1, *u, *u_t, *u_x, *a, *a_x, *refSpaceDer;
   PetscReal       *x;
   PetscInt        *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt         dim, Nf, NfAux = 0, bdim, Nb, Nc, totDim, totDimAux, cOffset = 0, cOffsetAux = 0, fOffset, e;
+  PetscInt         dim, Nf, NfAux = 0, bdim, Nb, Nc, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -4145,7 +4145,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
   PetscReal     **basisField, **basisFieldDer, *basisI, *basisDerI, *basisJ, *basisDerJ;
   PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
   PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux, e;
+  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux = 0, e;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
