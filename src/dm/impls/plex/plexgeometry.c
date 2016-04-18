@@ -1181,6 +1181,11 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (dim > 2 && centroid) {
+    v0[0] = PetscRealPart(coords[0]);
+    v0[1] = PetscRealPart(coords[1]);
+    v0[2] = PetscRealPart(coords[2]);
+  }
   if (normal) {
     if (dim > 2) {
       const PetscReal x0 = PetscRealPart(coords[dim+0] - coords[0]), x1 = PetscRealPart(coords[dim*2+0] - coords[0]);
@@ -1188,9 +1193,6 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
       const PetscReal z0 = PetscRealPart(coords[dim+2] - coords[2]), z1 = PetscRealPart(coords[dim*2+2] - coords[2]);
       PetscReal       norm;
 
-      v0[0]     = PetscRealPart(coords[0]);
-      v0[1]     = PetscRealPart(coords[1]);
-      v0[2]     = PetscRealPart(coords[2]);
       normal[0] = y0*z1 - z0*y1;
       normal[1] = z0*x1 - x0*z1;
       normal[2] = x0*y1 - y0*x1;
