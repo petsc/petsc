@@ -1471,7 +1471,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     if (section) {ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);}
     if (section && numFields && dm->ops->createsubdm) {
-      *len = numFields;
+      if (len) *len = numFields;
       if (namelist) {ierr = PetscMalloc1(numFields,namelist);CHKERRQ(ierr);}
       if (islist)   {ierr = PetscMalloc1(numFields,islist);CHKERRQ(ierr);}
       if (dmlist)   {ierr = PetscMalloc1(numFields,dmlist);CHKERRQ(ierr);}
