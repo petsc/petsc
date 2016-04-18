@@ -1611,7 +1611,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
     if (ornt < 0) {
       PetscInt childSize, coff;
       ierr = DMPlexGetConeSize(dm, cp, &childSize);CHKERRQ(ierr);
-      coff = tmpO[i] < 0 ? -(tmpO[i]+1) : tmpO[i];
+      coff = co < 0 ? -(tmpO[i]+1) : tmpO[i];
       co   = childSize ? -(((coff+childSize-1)%childSize)+1) : 0;
     }
     closure[closureSize]   = cp;
