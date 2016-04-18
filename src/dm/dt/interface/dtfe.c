@@ -1565,8 +1565,8 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(numDof, 2);
-  *numDof = NULL;
-  if (sp->ops->getnumdof) {ierr = (*sp->ops->getnumdof)(sp, numDof);CHKERRQ(ierr);}
+  ierr = (*sp->ops->getnumdof)(sp, numDof);CHKERRQ(ierr);
+  if (!*numDof) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_LIB, "Empty numDof[] returned from dual space implementation");
   PetscFunctionReturn(0);
 }
 
@@ -2200,7 +2200,14 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 #define __FUNCT__ "PetscDualSpaceSetUp_Simple"
 PetscErrorCode PetscDualSpaceSetUp_Simple(PetscDualSpace sp)
 {
+  PetscDualSpace_Simple *s  = (PetscDualSpace_Simple *) sp->data;
+  DM                     dm = sp->dm;
+  PetscInt               dim;
+  PetscErrorCode         ierr;
+
   PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscCalloc1(dim+1, &s->numDof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2212,6 +2219,7 @@ PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFree(s->numDof);CHKERRQ(ierr);
   ierr = PetscFree(s);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceSimpleSetDimension_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceSimpleSetFunctional_C", NULL);CHKERRQ(ierr);
@@ -2271,6 +2279,17 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const 
   ierr = PetscFree(sp->functional);CHKERRQ(ierr);
   s->dim = dim;
   ierr = PetscCalloc1(s->dim, &sp->functional);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceGetNumDof_Simple"
+PetscErrorCode PetscDualSpaceGetNumDof_Simple(PetscDualSpace sp, const PetscInt **numDof)
+{
+  PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
+
+  PetscFunctionBegin;
+  *numDof = s->numDof;
   PetscFunctionReturn(0);
 }
 
@@ -2385,7 +2404,8 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace sp)
   ierr     = PetscNewLog(sp,&s);CHKERRQ(ierr);
   sp->data = s;
 
-  s->dim = 0;
+  s->dim    = 0;
+  s->numDof = NULL;
 
   ierr = PetscDualSpaceInitialize_Simple(sp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceSimpleSetDimension_C", PetscDualSpaceSimpleSetDimension_Simple);CHKERRQ(ierr);
