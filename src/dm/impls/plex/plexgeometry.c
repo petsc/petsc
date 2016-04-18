@@ -727,6 +727,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  if (invJ && !J) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   *detJ = 0.0;
   if (numCoords == 6) {
     const PetscInt dim = 3;
@@ -740,8 +741,8 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       J[3] = R[3]*J0; J[4] = R[4]; J[5] = R[5];
       J[6] = R[6]*J0; J[7] = R[7]; J[8] = R[8];
       DMPlex_Det3D_Internal(detJ, J);
+      if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
     }
-    if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
   } else if (numCoords == 4) {
     const PetscInt dim = 2;
     PetscReal      R[4], J0;
@@ -753,8 +754,8 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       J[0] = R[0]*J0; J[1] = R[1];
       J[2] = R[2]*J0; J[3] = R[3];
       DMPlex_Det2D_Internal(detJ, J);
+      if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
     }
-    if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
   } else if (numCoords == 2) {
     const PetscInt dim = 1;
 
@@ -763,8 +764,8 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       J[0]  = 0.5*(PetscRealPart(coords[1]) - PetscRealPart(coords[0]));
       *detJ = J[0];
       ierr = PetscLogFlops(2.0);CHKERRQ(ierr);
+      if (invJ) {invJ[0] = 1.0/J[0]; ierr = PetscLogFlops(1.0);CHKERRQ(ierr);}
     }
-    if (invJ) {invJ[0] = 1.0/J[0]; ierr = PetscLogFlops(1.0);CHKERRQ(ierr);}
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %D != 2", numCoords);
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
