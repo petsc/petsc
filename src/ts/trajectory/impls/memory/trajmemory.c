@@ -1683,73 +1683,60 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 
   PetscFunctionBegin;
   PetscStrcmp(((PetscObject)ts->adapt)->type_name,TSADAPTNONE,&flg);
-  if (flg) { /* fixed time step */
-    tjsch->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step)));
-  }
+  if (flg) tjsch->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step))); /* fixed time step */
   if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_cps_ram;
 
   if (tjsch->stride > 1) { /* two level mode */
     if (tjsch->save_stack && tjsch->max_cps_disk > 1 && tjsch->max_cps_disk <= tjsch->max_cps_ram) SETERRQ(tjsch->comm,PETSC_ERR_ARG_INCOMP,"The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
-    if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) { /* use revolve_offline for each stride */
-      tjsch->stype = TWO_LEVEL_REVOLVE;
-    }
-    if (tjsch->max_cps_disk > 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) { /* use revolve_offline for each stride */
-      tjsch->stype = TWO_LEVEL_TWO_REVOLVE;
-      diskblocks = tjsch->save_stack ? tjsch->max_cps_disk/(tjsch->max_cps_ram+1) : tjsch->max_cps_disk; /* The block size depends on whether the stack is saved. */
-      diskstack->stacksize = diskblocks;
-    }
-    if (tjsch->max_cps_disk <= 1 && (tjsch->max_cps_ram >= tjsch->stride || tjsch->max_cps_ram == -1)) { /* checkpoint all for each stride */
-      tjsch->stype = TWO_LEVEL_NOREVOLVE; /* can also be handled by TWO_LEVEL_REVOLVE */
-      stack->stacksize = tjsch->stride-1; /* need tjsch->stride-1 at most */
-    }
+    if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) tjsch->stype = TWO_LEVEL_REVOLVE; /* use revolve_offline for each stride */
+    if (tjsch->max_cps_disk > 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) tjsch->stype = TWO_LEVEL_TWO_REVOLVE;  /* use revolve_offline for each stride */
+    if (tjsch->max_cps_disk <= 1 && (tjsch->max_cps_ram >= tjsch->stride || tjsch->max_cps_ram == -1)) tjsch->stype = TWO_LEVEL_NOREVOLVE; /* can also be handled by TWO_LEVEL_REVOLVE */
   } else { /* single level mode */
     if (flg) { /* fixed time step */
-      if (tjsch->max_cps_ram >= tjsch->total_steps-1 || tjsch->max_cps_ram < 1) { /* checkpoint all */
-        tjsch->stype = NONE;
-        stack->stacksize = stack->solution_only ? tjsch->total_steps : tjsch->total_steps-1;
-      } else {
-        if (tjsch->max_cps_disk > 1) { /* disk can be used */
-          tjsch->stype = REVOLVE_MULTISTAGE;
-        } else { /* memory only */
-          tjsch->stype = REVOLVE_OFFLINE;
-        }
-      }
-    } else { /* adaptive time step */
-      tjsch->stype = NONE;
-      if(tjsch->max_cps_ram == -1) stack->stacksize = ts->max_steps; /* if max_cps_ram is not specified, use maximal allowed number of steps for stack size */
-      tjsch->total_steps = stack->solution_only ? stack->stacksize:stack->stacksize+1; /* will be updated as time integration advances */
-    }
-#ifdef PETSC_HAVE_REVOLVE
-    if (tjsch->use_online) { /* trick into online (for testing purpose only) */
-      tjsch->stype = REVOLVE_ONLINE;
-      stack->stacksize = tjsch->max_cps_ram;
-    }
-#endif
+      if (tjsch->max_cps_ram >= tjsch->total_steps-1 || tjsch->max_cps_ram < 1) tjsch->stype = NONE; /* checkpoint all */
+      else tjsch->stype = (tjsch->max_cps_disk>1) ? REVOLVE_MULTISTAGE : REVOLVE_OFFLINE;
+    } else tjsch->stype = NONE; /* checkpoint all for adaptive time step */
+    if (tjsch->use_online) tjsch->stype = REVOLVE_ONLINE; /* trick into online (for testing purpose only) */
   }
 
   if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
 #ifndef PETSC_HAVE_REVOLVE
     SETERRQ(tjsch->comm,PETSC_ERR_SUP,"revolve is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-revolve.");
 #else
-    if (tjsch->stype == TWO_LEVEL_REVOLVE) revolve_create_offline(tjsch->stride,tjsch->max_cps_ram);
-    else if (tjsch->stype == TWO_LEVEL_TWO_REVOLVE) {
-      revolve_create_offline(tjsch->stride,tjsch->max_cps_ram);
-      revolve2_create_offline((tjsch->total_steps+tjsch->stride-1)/tjsch->stride,diskblocks);
-      ierr = PetscCalloc1(1,&rctx2);CHKERRQ(ierr);
-      rctx2->snaps_in       = diskblocks;
-      rctx2->reverseonestep = PETSC_FALSE;
-      rctx2->check          = 0;
-      rctx2->oldcapo        = 0;
-      rctx2->capo           = 0;
-      rctx2->info           = 2;
-      rctx2->fine           = (tjsch->total_steps+tjsch->stride-1)/tjsch->stride;
-      tjsch->rctx2          = rctx2;
-      diskstack->top  = -1;
-      ierr = PetscMalloc1(diskstack->stacksize*sizeof(PetscInt),&diskstack->container);CHKERRQ(ierr);
-    } else if (tjsch->stype == REVOLVE_OFFLINE) revolve_create_offline(tjsch->total_steps,tjsch->max_cps_ram);
-    else if (tjsch->stype == REVOLVE_ONLINE) revolve_create_online(tjsch->max_cps_ram);
-    else if (tjsch->stype == REVOLVE_MULTISTAGE) revolve_create_multistage(tjsch->total_steps,tjsch->max_cps_ram+tjsch->max_cps_disk,tjsch->max_cps_ram);
-
+    switch (tjsch->stype) {
+      case TWO_LEVEL_REVOLVE:
+        revolve_create_offline(tjsch->stride,tjsch->max_cps_ram);
+        break;
+      case TWO_LEVEL_TWO_REVOLVE:
+        diskblocks = tjsch->save_stack ? tjsch->max_cps_disk/(tjsch->max_cps_ram+1) : tjsch->max_cps_disk; /* The block size depends on whether the stack is saved. */
+        diskstack->stacksize = diskblocks;
+        revolve_create_offline(tjsch->stride,tjsch->max_cps_ram);
+        revolve2_create_offline((tjsch->total_steps+tjsch->stride-1)/tjsch->stride,diskblocks);
+        ierr = PetscCalloc1(1,&rctx2);CHKERRQ(ierr);
+        rctx2->snaps_in       = diskblocks;
+        rctx2->reverseonestep = PETSC_FALSE;
+        rctx2->check          = 0;
+        rctx2->oldcapo        = 0;
+        rctx2->capo           = 0;
+        rctx2->info           = 2;
+        rctx2->fine           = (tjsch->total_steps+tjsch->stride-1)/tjsch->stride;
+        tjsch->rctx2          = rctx2;
+        diskstack->top        = -1;
+        ierr = PetscMalloc1(diskstack->stacksize*sizeof(PetscInt),&diskstack->container);CHKERRQ(ierr);
+        break;
+      case REVOLVE_OFFLINE:
+        revolve_create_offline(tjsch->total_steps,tjsch->max_cps_ram);
+        break;
+      case REVOLVE_ONLINE:
+        stack->stacksize = tjsch->max_cps_ram;
+        revolve_create_online(tjsch->max_cps_ram);
+        break;
+      case REVOLVE_MULTISTAGE:
+        revolve_create_multistage(tjsch->total_steps,tjsch->max_cps_ram+tjsch->max_cps_disk,tjsch->max_cps_ram);
+        break;
+      default:
+        break;
+    }
     ierr = PetscCalloc1(1,&rctx);CHKERRQ(ierr);
     rctx->snaps_in       = tjsch->max_cps_ram; /* for theta methods snaps_in=2*max_cps_ram */
     rctx->reverseonestep = PETSC_FALSE;
@@ -1761,6 +1748,15 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     tjsch->rctx          = rctx;
     if (tjsch->stype == REVOLVE_ONLINE) rctx->fine = -1;
 #endif
+  } else {
+    if (tjsch->stype == TWO_LEVEL_NOREVOLVE) stack->stacksize = tjsch->stride-1; /* need tjsch->stride-1 at most */
+    if (tjsch->stype == NONE) {
+      if (flg) stack->stacksize = stack->solution_only ? tjsch->total_steps : tjsch->total_steps-1; /* fix time step */
+      else { /* adaptive time step */
+        if(tjsch->max_cps_ram == -1) stack->stacksize = ts->max_steps; /* if max_cps_ram is not specified, use maximal allowed number of steps for stack size */
+        tjsch->total_steps = stack->solution_only ? stack->stacksize:stack->stacksize+1; /* will be updated as time integration advances */
+      }
+    }
   }
 
   tjsch->recompute = PETSC_FALSE;
