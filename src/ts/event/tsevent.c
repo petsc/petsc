@@ -363,12 +363,14 @@ PetscErrorCode TSEventHandler(TS ts)
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
 
   if (event->status == TSEVENT_NONE) {
+    if (ts->steps == 1) /* After first successful step */
+      event->timestep_orig = ts->ptime - ts->ptime_prev;
     event->timestep_prev = dt;
   }
 
   if (event->status == TSEVENT_RESET_NEXTSTEP) {
-    /* Restore previous time step */
-    dt = event->timestep_prev;
+    /* Restore time step */
+    dt = PetscMin(event->timestep_orig,event->timestep_prev);
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     event->status = TSEVENT_NONE;
   }
@@ -463,7 +465,7 @@ PetscErrorCode TSEventHandler(TS ts)
     ierr = TSPostEvent(ts,t,U);CHKERRQ(ierr);
 
     dt = event->ptime_end - t;
-    if (PetscAbsReal(dt) < PETSC_SMALL) dt += event->timestep_prev; /* XXX Should be done better */
+    if (PetscAbsReal(dt) < PETSC_SMALL) dt += PetscMin(event->timestep_orig,event->timestep_prev); /* XXX Should be done better */
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     event->iterctr = 0;
     PetscFunctionReturn(0);
