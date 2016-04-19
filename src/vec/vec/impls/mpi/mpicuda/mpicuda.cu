@@ -2,7 +2,6 @@
 /*
    This file contains routines for Parallel vector operations.
  */
-#define PETSC_SKIP_COMPLEX
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>

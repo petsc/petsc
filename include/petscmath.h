@@ -116,6 +116,10 @@ typedef __float128 PetscReal;
 #if defined(PETSC_HAVE_CUSP)
 #define complexlib cusp
 #include <cusp/complex.h>
+#elif defined(PETSC_HAVE_VECCUDA) && __CUDACC_VER_MAJOR__ > 6
+/* complex headers in thrust only available in CUDA 7.0 and above */
+#define complexlib thrust
+#include <thrust/complex.h>
 #else
 #define complexlib std
 #include <complex>

@@ -2,7 +2,6 @@
    Implements the sequential cuda vectors.
 */
 
-#define PETSC_SKIP_COMPLEX
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
@@ -193,7 +192,7 @@ PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     err = cudaMemcpy(yarray,xarray,bn*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(err);
   } else if (alpha == (PetscScalar)1.0) {
     cberr = cublasXaxpy(cublasv2handle,bn,&alpha,xarray,one,yarray,one);CHKERRCUBLAS(cberr);
@@ -219,7 +218,7 @@ PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
   cublasStatus_t cberr;
 
   PetscFunctionBegin;
-  if (alpha != 0.0) {
+  if (alpha != (PetscScalar)0.0) {
     ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
@@ -273,7 +272,7 @@ PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(win->map->n,&bn);CHKERRQ(ierr);
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     ierr = VecCopy_SeqCUDA(yin,win);CHKERRQ(ierr);
   } else {
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -354,7 +353,8 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(yin,&yarray);CHKERRQ(ierr);
-  cberr = cublasXdot(cublasv2handle,bn,xarray,one,yarray,one,z);CHKERRCUBLAS(cberr);
+  /* arguments y, x are reversed because BLAS complex conjugates the first argument, PETSc the second */
+  cberr = cublasXdot(cublasv2handle,bn,yarray,one,xarray,one,z);CHKERRCUBLAS(cberr);
   ierr = WaitForGPU();CHKERRCUDA(ierr);
   if (xin->map->n >0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
@@ -372,6 +372,7 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
 #define MDOT_WORKGROUP_SIZE 128
 #define MDOT_WORKGROUP_NUM  128
 
+#if !defined(PETSC_USE_COMPLEX)
 // M = 2:
 __global__ void VecMDot_SeqCUDA_kernel2(const PetscScalar *x,const PetscScalar *y0,const PetscScalar *y1,
                                         PetscInt size, PetscScalar *group_results)
@@ -565,6 +566,7 @@ __global__ void VecMDot_SeqCUDA_kernel8(const PetscScalar *x,const PetscScalar *
     group_results[blockIdx.x + 7 * gridDim.x] = tmp_buffer[7 * MDOT_WORKGROUP_SIZE];
   }
 }
+#endif /* !defined(PETSC_USE_COMPLEX) */
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMDot_SeqCUDA"
@@ -609,10 +611,10 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         ierr = VecCUDAGetArrayRead(yin[current_y_index+3],&y3ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y1ptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y2ptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y3ptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y2ptr,one,xptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y3ptr,one,xptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
 #else
         // run kernel:
         VecMDot_SeqCUDA_kernel4<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,y3ptr,n,group_results_gpu);
@@ -639,9 +641,9 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         ierr = VecCUDAGetArrayRead(yin[current_y_index+2],&y2ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y1ptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y2ptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y2ptr,one,xptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
 #else
         // run kernel:
         VecMDot_SeqCUDA_kernel3<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,n,group_results_gpu);
@@ -667,8 +669,8 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         ierr = VecCUDAGetArrayRead(yin[current_y_index+1],&y1ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y1ptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
 #else
         // run kernel:
         VecMDot_SeqCUDA_kernel2<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,n,group_results_gpu);
@@ -689,7 +691,7 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
 
       case 1:
         ierr = VecCUDAGetArrayRead(yin[current_y_index],&y0ptr);CHKERRQ(ierr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
         ierr = VecCUDARestoreArrayRead(yin[current_y_index],&y0ptr);CHKERRQ(ierr);
         current_y_index += 1;
         break;
@@ -705,14 +707,14 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         ierr = VecCUDAGetArrayRead(yin[current_y_index+7],&y7ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y0ptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y1ptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y2ptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y3ptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y4ptr,one,&z[current_y_index+4]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y5ptr,one,&z[current_y_index+5]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y6ptr,one,&z[current_y_index+6]);CHKERRCUBLAS(cberr);
-        cberr = cublasXdot(cublasv2handle,bn,xptr,one,y7ptr,one,&z[current_y_index+7]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y2ptr,one,xptr,one,&z[current_y_index+2]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y3ptr,one,xptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y4ptr,one,xptr,one,&z[current_y_index+4]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y5ptr,one,xptr,one,&z[current_y_index+5]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y6ptr,one,xptr,one,&z[current_y_index+6]);CHKERRCUBLAS(cberr);
+        cberr = cublasXdot(cublasv2handle,bn,y7ptr,one,xptr,one,&z[current_y_index+7]);CHKERRCUBLAS(cberr);
 #else
         // run kernel:
         VecMDot_SeqCUDA_kernel8<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,y3ptr,y4ptr,y5ptr,y6ptr,y7ptr,n,group_results_gpu);
@@ -761,7 +763,7 @@ PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
   PetscFunctionBegin;
   ierr = VecCUDAGetArrayWrite(xin,&xarray);CHKERRQ(ierr);
   if (alpha == (PetscScalar)0.0) {
-    err = cudaMemset(xarray,alpha,n*sizeof(PetscScalar));CHKERRCUDA(err);
+    err = cudaMemset(xarray,0,n*sizeof(PetscScalar));CHKERRCUDA(err);
   } else {
     try {
       xptr = thrust::device_pointer_cast(xarray);
@@ -785,9 +787,9 @@ PetscErrorCode VecScale_SeqCUDA(Vec xin,PetscScalar alpha)
   cublasStatus_t cberr;
 
   PetscFunctionBegin;
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     ierr = VecSet_SeqCUDA(xin,alpha);CHKERRQ(ierr);
-  } else if (alpha != 1.0) {
+  } else if (alpha != (PetscScalar)1.0) {
     ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
     cberr = cublasXscal(cublasv2handle,bn,&alpha,xarray,one);CHKERRCUBLAS(cberr);
@@ -906,13 +908,13 @@ PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
-  if (a == 0.0) {
+  if (a == (PetscScalar)0.0) {
     ierr = VecScale_SeqCUDA(yin,beta);CHKERRQ(ierr);
-  } else if (b == 1.0) {
+  } else if (b == (PetscScalar)1.0) {
     ierr = VecAXPY_SeqCUDA(yin,alpha,xin);CHKERRQ(ierr);
-  } else if (a == 1.0) {
+  } else if (a == (PetscScalar)1.0) {
     ierr = VecAYPX_SeqCUDA(yin,beta,xin);CHKERRQ(ierr);
-  } else if (b == 0.0) {
+  } else if (b == (PetscScalar)0.0) {
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUDAGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
     err = cudaMemcpy(yarray,xarray,yin->map->n*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(err);
@@ -942,7 +944,7 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
   PetscInt       n = zin->map->n;
 
   PetscFunctionBegin;
-  if (gamma == 1.0) {
+  if (gamma == (PetscScalar)1.0) {
     /* z = ax + b*y + z */
     ierr = VecAXPY_SeqCUDA(zin,alpha,xin);CHKERRQ(ierr);
     ierr = VecAXPY_SeqCUDA(zin,beta,yin);CHKERRQ(ierr);
