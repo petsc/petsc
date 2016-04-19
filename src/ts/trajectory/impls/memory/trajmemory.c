@@ -1673,11 +1673,12 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
   Stack          *stack = &tjsch->stack;
-  DiskStack      *diskstack = &tjsch->diskstack;
 #ifdef PETSC_HAVE_REVOLVE
   RevolveCTX     *rctx,*rctx2;
+  DiskStack      *diskstack = &tjsch->diskstack;
+  PetscInt       diskblocks;
 #endif
-  PetscInt       numY,diskblocks;
+  PetscInt       numY;
   PetscBool      flg;
   PetscErrorCode ierr;
 
