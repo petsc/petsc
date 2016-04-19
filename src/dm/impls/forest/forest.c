@@ -232,7 +232,7 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMForestSetBaseCoordinateMapping"
-PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
+PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM,PetscInt,PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
@@ -245,7 +245,7 @@ PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMForestGetBaseCoordinateMapping"
-PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
+PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(DM,PetscInt,PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
