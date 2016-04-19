@@ -1028,6 +1028,12 @@ runex25_2:
 	   else printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex25_2.tmp
 
+runex27:
+	-@${MPIEXEC} -n 1 ./ex27 -f ${DATAFILESPATH}/matrices/medium  -ksp_view  -ksp_monitor_short -ksp_max_it 100  > ex27_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex27_1.out ex27_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex27_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex27_1.tmp
+
 runex28:
 	-@${MPIEXEC} -n 1 ./ex28 -ksp_monitor_short -pc_type mg -pc_mg_type full -ksp_type fgmres -da_refine 2 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type ilu > ex28_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex28_1.out ex28_1.tmp) then true; \
@@ -1543,7 +1549,8 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PET
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
                                  runex10_9 runex10_10 runex10_19  runex10_ILU runex10_ILUBAIJ runex10_cg \
-                                 runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm
+                                 runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm \
+                                 ex27.PETSc runex27 ex27.rm
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =

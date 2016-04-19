@@ -83,32 +83,7 @@ int main(int argc,char **args)
   }
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
-  /*
-     If the loaded matrix is larger than the vector (due to being padded
-     to match the block size of the system), then create a new padded vector.
-  */
-  {
-    PetscInt    j,mvec,start,end,idex;
-    Vec         tmp;
-    PetscScalar *bold;
 
-    /* Create a new vector b by padding the old one */
-    ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
-    ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
-    ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
-    for (j=0; j<mvec; j++) {
-      idex = start+j;
-      ierr = VecSetValues(tmp,1,&idex,bold+j,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
-    b    = tmp;
-  }
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
