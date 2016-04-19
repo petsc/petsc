@@ -194,7 +194,6 @@ def chksynonyms():
     # Common external libraries
     argsAddDownload('hdf5')
     argsAddDownload('netcdf')
-    argsAddDownload('exodusii')
     argsAddDownload('metis')
 
     argsAddDownload('superlu_dist',['parmetis'])
