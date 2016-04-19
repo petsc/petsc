@@ -1696,7 +1696,9 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
       if (tjsch->max_cps_ram >= tjsch->total_steps-1 || tjsch->max_cps_ram < 1) tjsch->stype = NONE; /* checkpoint all */
       else tjsch->stype = (tjsch->max_cps_disk>1) ? REVOLVE_MULTISTAGE : REVOLVE_OFFLINE;
     } else tjsch->stype = NONE; /* checkpoint all for adaptive time step */
+#ifdef PETSC_HAVE_REVOLVE
     if (tjsch->use_online) tjsch->stype = REVOLVE_ONLINE; /* trick into online (for testing purpose only) */
+#endif
   }
 
   if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
