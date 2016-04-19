@@ -387,6 +387,8 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr   = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = PetscSqrtReal(appctx->h)*norm_2;
   ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
+  if (norm_2   < 1e-14) norm_2   = 0;
+  if (norm_max < 1e-14) norm_max = 0;
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %D: time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
