@@ -2961,7 +2961,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPforestMapCoordinates_Cell"
-static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, PetscErrorCode (*map) (PetscInt, const PetscReal [], PetscReal [], void *), void *mapCtx, p4est_geometry_t *geom, PetscInt cell, p4est_quadrant_t *q, p4est_topidx_t t, p4est_connectivity_t * conn, PetscScalar *coords)
+static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, p4est_geometry_t *geom, PetscInt cell, p4est_quadrant_t *q, p4est_topidx_t t, p4est_connectivity_t * conn, PetscScalar *coords)
 {
   PetscInt closureSize, c, coordStart, coordEnd, coordDim, p4estCoordDim;
   PetscInt *closure = NULL;
@@ -2989,105 +2989,96 @@ static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, PetscErrorCode (*map
         double coordP4est[3] = {0.};
         double coordP4estMapped[3] = {0.};
         PetscInt j;
+        PetscReal treeCoords[P4EST_CHILDREN][3] = {{0.}};
+        PetscReal eta[3] = {0.};
+        PetscInt  numRounds = 10;
+        PetscReal coordGuess[3] = {0.};
 
-        for (j = 0; j < p4estCoordDim; j++) {
-          coordP4est[j] = (double) PetscRealPart(coord[j]);
-        }
-        if (map) {
-          ierr = (map)(p4estCoordDim,coordP4est,coordP4estMapped,mapCtx);CHKERRQ(ierr);
-        }
-        else { /* invert the multilinear mapping using a few rounds of alternating directions */
-          PetscReal treeCoords[P4EST_CHILDREN][3] = {{0.}};
-          PetscReal eta[3] = {0.};
-          PetscInt  numRounds = 10;
-          PetscReal coordGuess[3] = {0.};
-
-          eta[0] = (PetscReal) q->x / (PetscReal) P4EST_ROOT_LEN;
-          eta[1] = (PetscReal) q->y / (PetscReal) P4EST_ROOT_LEN;
+        eta[0] = (PetscReal) q->x / (PetscReal) P4EST_ROOT_LEN;
+        eta[1] = (PetscReal) q->y / (PetscReal) P4EST_ROOT_LEN;
 #if defined(P4_TO_P8)
-          eta[2] = (PetscReal) q->z / (PetscReal) P4EST_ROOT_LEN;
+        eta[2] = (PetscReal) q->z / (PetscReal) P4EST_ROOT_LEN;
 #endif
 
-          for (j = 0; j < P4EST_CHILDREN; j++) {
-            PetscInt k;
+        for (j = 0; j < P4EST_CHILDREN; j++) {
+          PetscInt k;
 
-            for (k = 0; k < 3; k++) {
-              treeCoords[j][k] = conn->vertices[3 * conn->tree_to_vertex[P4EST_CHILDREN * t + j] + k];
-            }
+          for (k = 0; k < 3; k++) {
+            treeCoords[j][k] = conn->vertices[3 * conn->tree_to_vertex[P4EST_CHILDREN * t + j] + k];
           }
+        }
 
-          for (j = 0; j < P4EST_CHILDREN; j++) {
+        for (j = 0; j < P4EST_CHILDREN; j++) {
+          PetscInt  k;
+          PetscReal prod = 1.;
+
+          for (k = 0; k < P4EST_DIM; k++) {
+            prod *= (j & (1 << k)) ? eta[k] : (1. - eta[k]);
+          }
+          for (k = 0; k < 3; k++) {
+            coordGuess[k] += prod * treeCoords[j][k];
+          }
+        }
+
+        for (j = 0; j < numRounds; j++) {
+          PetscInt dir;
+
+          for (dir = 0; dir < P4EST_DIM; dir++) {
             PetscInt  k;
-            PetscReal prod = 1.;
+            PetscReal diff[3];
+            PetscReal dXdeta[3] = {0.};
+            PetscReal rhs, scale, update;
 
-            for (k = 0; k < P4EST_DIM; k++) {
-              prod *= (j & (1 << k)) ? eta[k] : (1. - eta[k]);
-            }
             for (k = 0; k < 3; k++) {
-              coordGuess[k] += prod * treeCoords[j][k];
+              diff[k] = coordP4est[k] - coordGuess[k];
             }
-          }
+            for (k = 0; k < P4EST_CHILDREN; k++) {
+              PetscInt  l;
+              PetscReal prod = 1.;
 
-          for (j = 0; j < numRounds; j++) {
-            PetscInt dir;
-
-            for (dir = 0; dir < P4EST_DIM; dir++) {
-              PetscInt  k;
-              PetscReal diff[3];
-              PetscReal dXdeta[3] = {0.};
-              PetscReal rhs, scale, update;
-
-              for (k = 0; k < 3; k++) {
-                diff[k] = coordP4est[k] - coordGuess[k];
-              }
-              for (k = 0; k < P4EST_CHILDREN; k++) {
-                PetscInt  l;
-                PetscReal prod = 1.;
-
-                for (l = 0; l < P4EST_DIM; l++) {
-                  if (l == dir) {
-                    prod *= (k & (1 << l)) ?  1. : -1.;
-                  }
-                  else {
-                    prod *= (k & (1 << l)) ? eta[l] : (1. - eta[l]);
-                  }
+              for (l = 0; l < P4EST_DIM; l++) {
+                if (l == dir) {
+                  prod *= (k & (1 << l)) ?  1. : -1.;
                 }
-                for (l = 0; l < 3; l++) {
-                  dXdeta[l] += prod * treeCoords[k][l];
-                }
-              }
-              rhs = 0.;
-              scale = 0;
-              for (k = 0; k < 3; k++) {
-                rhs   += diff[k] * dXdeta[k];
-                scale += dXdeta[k] * dXdeta[k];
-              }
-              update = rhs / scale;
-              eta[dir] += update;
-              eta[dir] = PetscMin(eta[dir],1.);
-              eta[dir] = PetscMax(eta[dir],0.);
-
-              coordGuess[0] = coordGuess[1] = coordGuess[2] = 0.;
-              for (k = 0; k < P4EST_CHILDREN; k++) {
-                PetscInt  l;
-                PetscReal prod = 1.;
-
-                for (l = 0; l < P4EST_DIM; l++) {
+                else {
                   prod *= (k & (1 << l)) ? eta[l] : (1. - eta[l]);
                 }
-                for (l = 0; l < 3; l++) {
-                  coordGuess[l] += prod * treeCoords[k][l];
-                }
+              }
+              for (l = 0; l < 3; l++) {
+                dXdeta[l] += prod * treeCoords[k][l];
+              }
+            }
+            rhs = 0.;
+            scale = 0;
+            for (k = 0; k < 3; k++) {
+              rhs   += diff[k] * dXdeta[k];
+              scale += dXdeta[k] * dXdeta[k];
+            }
+            update = rhs / scale;
+            eta[dir] += update;
+            eta[dir] = PetscMin(eta[dir],1.);
+            eta[dir] = PetscMax(eta[dir],0.);
+
+            coordGuess[0] = coordGuess[1] = coordGuess[2] = 0.;
+            for (k = 0; k < P4EST_CHILDREN; k++) {
+              PetscInt  l;
+              PetscReal prod = 1.;
+
+              for (l = 0; l < P4EST_DIM; l++) {
+                prod *= (k & (1 << l)) ? eta[l] : (1. - eta[l]);
+              }
+              for (l = 0; l < 3; l++) {
+                coordGuess[l] += prod * treeCoords[k][l];
               }
             }
           }
-
-          for (j = 0; j < 3; j++) {
-            coordP4est[j] = (double) eta[j];
-          }
-
-          (geom->X)(geom,t,coordP4est,coordP4estMapped);
         }
+
+        for (j = 0; j < 3; j++) {
+          coordP4est[j] = (double) eta[j];
+        }
+
+        (geom->X)(geom,t,coordP4est,coordP4estMapped);
         for (j = 0; j < p4estCoordDim; j++) {
           coord[j] = (PetscScalar) coordP4estMapped[j];
         }
@@ -3105,7 +3096,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
   DM_Forest *forest;
   DM_Forest_pforest *pforest;
   p4est_geometry_t *geom;
-  PetscInt cLocalStart, cLocalEnd;
+  PetscInt cLocalStart;
   Vec coordLocalVec;
   PetscScalar *coords;
   p4est_topidx_t flt, llt, t;
@@ -3120,46 +3111,78 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
   geom = pforest->topo->geom;
   ierr = DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx);CHKERRQ(ierr);
   if (!geom && !map) PetscFunctionReturn(0);
-  cLocalStart = pforest->cLocalStart;
-  cLocalEnd   = pforest->cLocalEnd;
   ierr = DMGetCoordinatesLocal(plex,&coordLocalVec);CHKERRQ(ierr);
   ierr = VecGetArray(coordLocalVec,&coords);CHKERRQ(ierr);
-  if (cLocalStart > 0) {
-    p4est_quadrant_t *ghosts = (p4est_quadrant_t *) pforest->ghost->ghosts.array;
-    PetscInt count;
+  if (map) { /* apply the map directly to the existing coordinates */
+    PetscSection coordSec;
+    PetscInt     coordStart, coordEnd, p, coordDim, p4estCoordDim;
 
-    for (count = 0; count < cLocalStart; count++) {
-      p4est_quadrant_t *quad = &ghosts[count];
-      p4est_topidx_t t = quad->p.which_tree;
+    ierr = DMGetCoordinateSection(plex,&coordSec);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(coordSec,&coordStart,&coordEnd);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(plex,&coordDim);CHKERRQ(ierr);
+    p4estCoordDim = PetscMin(coordDim,3);
+    for (p = coordStart; p < coordEnd; p++) {
+      PetscInt dof, off;
+      PetscInt nCoords, i;
+      ierr = PetscSectionGetDof(coordSec,p,&dof);CHKERRQ(ierr);
+      if (dof % coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Did not understand coordinate layout");
+      nCoords = dof / coordDim;
+      ierr = PetscSectionGetOffset(coordSec,p,&off);CHKERRQ(ierr);
+      for (i = 0; i < nCoords; i++) {
+        PetscScalar *coord = &coords[off + i * coordDim];
+        double coordP4est[3] = {0.};
+        double coordP4estMapped[3] = {0.};
+        PetscInt j;
 
-      ierr = DMPforestMapCoordinates_Cell(plex,map,mapCtx,geom,count,quad,t,pforest->topo->conn,coords);CHKERRQ(ierr);
+        for (j = 0; j < p4estCoordDim; j++) {
+          coordP4est[j] = (double) PetscRealPart(coord[j]);
+        }
+        ierr = (map)(p4estCoordDim,coordP4est,coordP4estMapped,mapCtx);CHKERRQ(ierr);
+        for (j = 0; j < p4estCoordDim; j++) {
+          coord[j] = (PetscScalar) coordP4estMapped[j];
+        }
+      }
     }
   }
-  flt = pforest->forest->first_local_tree;
-  llt = pforest->forest->last_local_tree;
-  trees = (p4est_tree_t *) pforest->forest->trees->array;
-  for (t = flt; t <= llt; t++) {
-    p4est_tree_t *tree = &(trees[t]);
-    PetscInt offset = cLocalStart + tree->quadrants_offset, i;
-    PetscInt numQuads = (PetscInt) tree->quadrants.elem_count;
-    p4est_quadrant_t *quads = (p4est_quadrant_t *) tree->quadrants.array;
+  else { /* we have to transform coordinates back to the unit cube (where geom is defined), and then apply geom */
+    cLocalStart = pforest->cLocalStart;
+    if (cLocalStart > 0) {
+      p4est_quadrant_t *ghosts = (p4est_quadrant_t *) pforest->ghost->ghosts.array;
+      PetscInt count;
 
-    for (i = 0; i < numQuads; i++) {
-      PetscInt count = i + offset;
+      for (count = 0; count < cLocalStart; count++) {
+        p4est_quadrant_t *quad = &ghosts[count];
+        p4est_topidx_t t = quad->p.which_tree;
 
-      ierr = DMPforestMapCoordinates_Cell(plex,map,mapCtx,geom,count,&quads[i],t,pforest->topo->conn,coords);CHKERRQ(ierr);
+        ierr = DMPforestMapCoordinates_Cell(plex,geom,count,quad,t,pforest->topo->conn,coords);CHKERRQ(ierr);
+      }
     }
-  }
-  if (cLocalStart > 0) {
-    p4est_quadrant_t *ghosts = (p4est_quadrant_t *) pforest->ghost->ghosts.array;
-    PetscInt numGhosts = (PetscInt) pforest->ghost->ghosts.elem_count;
-    PetscInt count;
+    flt = pforest->forest->first_local_tree;
+    llt = pforest->forest->last_local_tree;
+    trees = (p4est_tree_t *) pforest->forest->trees->array;
+    for (t = flt; t <= llt; t++) {
+      p4est_tree_t *tree = &(trees[t]);
+      PetscInt offset = cLocalStart + tree->quadrants_offset, i;
+      PetscInt numQuads = (PetscInt) tree->quadrants.elem_count;
+      p4est_quadrant_t *quads = (p4est_quadrant_t *) tree->quadrants.array;
 
-    for (count = cLocalStart; count < numGhosts; count++) {
-      p4est_quadrant_t *quad = &ghosts[count];
-      p4est_topidx_t t = quad->p.which_tree;
+      for (i = 0; i < numQuads; i++) {
+        PetscInt count = i + offset;
 
-      ierr = DMPforestMapCoordinates_Cell(plex,map,mapCtx,geom,count,quad,t,pforest->topo->conn,coords);CHKERRQ(ierr);
+        ierr = DMPforestMapCoordinates_Cell(plex,geom,count,&quads[i],t,pforest->topo->conn,coords);CHKERRQ(ierr);
+      }
+    }
+    if (cLocalStart > 0) {
+      p4est_quadrant_t *ghosts = (p4est_quadrant_t *) pforest->ghost->ghosts.array;
+      PetscInt numGhosts = (PetscInt) pforest->ghost->ghosts.elem_count;
+      PetscInt count;
+
+      for (count = cLocalStart; count < numGhosts; count++) {
+        p4est_quadrant_t *quad = &ghosts[count];
+        p4est_topidx_t t = quad->p.which_tree;
+
+        ierr = DMPforestMapCoordinates_Cell(plex,geom,count,quad,t,pforest->topo->conn,coords);CHKERRQ(ierr);
+      }
     }
   }
   ierr = VecRestoreArray(coordLocalVec,&coords);CHKERRQ(ierr);
