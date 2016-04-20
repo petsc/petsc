@@ -178,8 +178,6 @@
    PetscFunctionReturn(0);
  }
 
-#define TSEvent_Status(ts) (ts->event ? ts->event->status : TSEVENT_NONE)
-
  #undef __FUNCT__
  #define __FUNCT__ "TS_SNESSolve"
  static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
@@ -218,7 +216,7 @@
      th->stage_time = ts->ptime + (th->endpoint ? (PetscReal)1 : th->Theta)*ts->time_step;
 
      ierr = VecCopy(th->X0,th->X);CHKERRQ(ierr);
-     if (th->extrapolate && ts->steps > 0 && TSEvent_Status(ts) != TSEVENT_RESET_NEXTSTEP) {
+     if (th->extrapolate && !ts->steprestart) {
        ierr = VecAXPY(th->X,1/shift,th->Xdot);CHKERRQ(ierr);
      }
      if (th->endpoint) { /* This formulation assumes linear time-independent mass matrix */
@@ -233,7 +231,7 @@
      ierr = TS_SNESSolve(ts,th->affine,th->X);CHKERRQ(ierr);
      ierr = TSPostStage(ts,th->stage_time,0,&th->X);CHKERRQ(ierr);
      ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->X,&stageok);CHKERRQ(ierr);
-     if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
+     if (!stageok) goto reject_step;
 
      th->status = TS_STEP_PENDING;
      if (th->endpoint) {
@@ -260,7 +258,7 @@
      break;
 
    reject_step:
-     ts->reject++;
+     ts->reject++; accept = PETSC_FALSE;
      if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
        ts->reason = TS_DIVERGED_STEP_REJECTED;
        ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
@@ -431,11 +429,10 @@ static PetscErrorCode TSEvaluateWLTE_Theta(TS ts,NormType wnormtype,PetscInt *or
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ts->steps || TSEvent_Status(ts) == TSEVENT_RESET_NEXTSTEP) {
-    /* Cannot compute LTE in first step or in restart after event */
-    *wlte = -1;
-  } else {
-    /* Compute LTE using backward differences with non-constant time step */
+  /* Cannot compute LTE in first step or in restart after event */
+  if (ts->steprestart) {*wlte = -1; PetscFunctionReturn(0);}
+  /* Compute LTE using backward differences with non-constant time step */
+  {
     PetscReal   h = ts->time_step, h_prev = ts->ptime - ts->ptime_prev;
     PetscReal   a = 1 + h_prev/h;
     PetscScalar scal[3]; Vec vecs[3];

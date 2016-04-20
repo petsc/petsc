@@ -13,7 +13,6 @@
 static TSRKType  TSRKDefault = TSRK3BS;
 static PetscBool TSRKRegisterAllCalled;
 static PetscBool TSRKPackageInitialized;
-static PetscInt  explicit_stage_time_id;
 
 typedef struct _RKTableau *RKTableau;
 struct _RKTableau {
@@ -254,7 +253,6 @@ PetscErrorCode TSRKInitializePackage(void)
   if (TSRKPackageInitialized) PetscFunctionReturn(0);
   TSRKPackageInitialized = PETSC_TRUE;
   ierr = TSRKRegisterAll();CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataRegister(&explicit_stage_time_id);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSRKFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -455,17 +453,45 @@ static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSRollBack_RK"
+static PetscErrorCode TSRollBack_RK(TS ts)
+{
+  TS_RK           *rk = (TS_RK*)ts->data;
+  RKTableau       tab = rk->tableau;
+  const PetscInt  s  = tab->s;
+  const PetscReal *b = tab->b;
+  PetscScalar     *w = rk->work;
+  Vec             *YdotRHS = rk->YdotRHS;
+  PetscInt        j;
+  PetscReal       h;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  switch (rk->status) {
+  case TS_STEP_INCOMPLETE:
+  case TS_STEP_PENDING:
+    h = ts->time_step; break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev; break;
+  default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
+  }
+  for (j=0; j<s; j++) w[j] = -h*b[j];
+  ierr = VecMAXPY(ts->vec_sol,s,w,YdotRHS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_RK"
 static PetscErrorCode TSStep_RK(TS ts)
 {
   TS_RK           *rk   = (TS_RK*)ts->data;
   RKTableau        tab  = rk->tableau;
   const PetscInt   s = tab->s;
-  const PetscReal *A = tab->A,*b = tab->b,*c = tab->c;
+  const PetscReal *A = tab->A,*c = tab->c;
   PetscScalar     *w = rk->work;
   Vec             *Y = rk->Y,*YdotRHS = rk->YdotRHS;
   TSAdapt          adapt;
-  PetscInt         i,j,next_scheme;
+  PetscInt         i,j;
   PetscInt         rejections = 0;
   PetscBool        stageok,accept = PETSC_TRUE;
   PetscReal        next_time_step = ts->time_step;
@@ -486,22 +512,20 @@ static PetscErrorCode TSStep_RK(TS ts)
       ierr = TSPostStage(ts,rk->stage_time,i,Y); CHKERRQ(ierr);
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
       ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&stageok);CHKERRQ(ierr);
-      if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
+      if (!stageok) goto reject_step;
       ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
     }
 
     rk->status = TS_STEP_INCOMPLETE;
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     rk->status = TS_STEP_PENDING;
-    /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
+    ierr = TSAdaptChoose(adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
     rk->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
-      for (j=0; j<s; j++) w[j] = -h*b[j];
-      ierr = VecMAXPY(ts->vec_sol,s,w,rk->YdotRHS);CHKERRQ(ierr);
+      ierr = TSRollBack_RK(ts);CHKERRQ(ierr);
       ts->time_step = next_time_step;
       goto reject_step;
     }
@@ -511,14 +535,12 @@ static PetscErrorCode TSStep_RK(TS ts)
       rk->time_step = ts->time_step;
     }
 
-    /* Ignore next_scheme for now */
     ts->ptime += ts->time_step;
     ts->time_step = next_time_step;
-    ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
     break;
 
   reject_step:
-    ts->reject++;
+    ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
       ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
@@ -1025,6 +1047,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->step           = TSStep_RK;
   ts->ops->interpolate    = TSInterpolate_RK;
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
+  ts->ops->rollback       = TSRollBack_RK;
   ts->ops->setfromoptions = TSSetFromOptions_RK;
   ts->ops->getstages      = TSGetStages_RK;
   ts->ops->adjointstep    = TSAdjointStep_RK;
