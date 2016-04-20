@@ -3156,7 +3156,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
           coarsePoint = ghosts[cell].p.which_tree;
         }
         else if (cell < cLocalEnd) {
-          cell -= cLocalEnd;
+          cell -= cLocalStart;
           for (t = flt; t <= llt; t++) {
             p4est_tree_t *tree = &(trees[t]);
 
