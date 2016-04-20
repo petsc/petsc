@@ -166,6 +166,7 @@ struct _p_TS {
   /* --------------------------------------------------------------------- */
 
   PetscBool steprollback;           /* flag to indicate that the step was rolled back */
+  PetscBool steprestart;            /* flag to indicate that the timestepper has to discard any history and restart */
   PetscInt  steps;                  /* steps taken so far in latest call to TSSolve() */
   PetscInt  total_steps;            /* steps taken in all calls to TSSolve() since the TS was created or since TSSetUp() was called */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
