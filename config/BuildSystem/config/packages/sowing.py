@@ -54,7 +54,11 @@ class Configure(config.package.GNUPackage):
       self.logPrint("Not checking sowing on user request\n")
       return
 
-    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or self.framework.clArgDB.has_key('download-sowing') and not self.framework.batchBodies:
+    if self.framework.batchBodies:
+      self.logPrint('In --with-batch mode with outstanding batch tests to be made; hence skipping sowing for this configure')
+      return
+
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or self.framework.clArgDB.has_key('download-sowing'):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 
