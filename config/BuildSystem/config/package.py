@@ -447,6 +447,8 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
+    if self.framework.batchBodies:
+      return
     if self.argDB['download-'+self.downloadname.lower()]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
@@ -751,7 +753,7 @@ class Package(config.base.Configure):
     return
 
   def configure(self):
-    if self.download and self.argDB['download-'+self.downloadname.lower()]:
+    if self.download and self.argDB['download-'+self.downloadname.lower()] and not self.framework.batchBodies:
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
       if isinstance(downloadPackageVal, str):

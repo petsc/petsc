@@ -31,7 +31,10 @@ class Configure(config.package.GNUPackage):
     if config.setCompilers.Configure.isCygwin(self.log):
       if not config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
-    return config.package.Package.checkDownload(self)
+    if self.argDB['download-'+self.downloadname.lower()]:
+      return self.getInstallDir()
+    return ''
+
 
   def formGNUConfigureArgs(self):
     '''MPICH has many specific extra configure arguments'''
