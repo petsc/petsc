@@ -751,6 +751,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  if (invJ && !J) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   *detJ = 0.0;
   if (numCoords == 6) {
     const PetscInt dim = 3;
@@ -764,8 +765,8 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       J[3] = R[3]*J0; J[4] = R[4]; J[5] = R[5];
       J[6] = R[6]*J0; J[7] = R[7]; J[8] = R[8];
       DMPlex_Det3D_Internal(detJ, J);
+      if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
     }
-    if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
   } else if (numCoords == 4) {
     const PetscInt dim = 2;
     PetscReal      R[4], J0;
@@ -777,8 +778,8 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       J[0] = R[0]*J0; J[1] = R[1];
       J[2] = R[2]*J0; J[3] = R[3];
       DMPlex_Det2D_Internal(detJ, J);
+      if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
     }
-    if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
   } else if (numCoords == 2) {
     const PetscInt dim = 1;
 
@@ -787,8 +788,8 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       J[0]  = 0.5*(PetscRealPart(coords[1]) - PetscRealPart(coords[0]));
       *detJ = J[0];
       ierr = PetscLogFlops(2.0);CHKERRQ(ierr);
+      if (invJ) {invJ[0] = 1.0/J[0]; ierr = PetscLogFlops(1.0);CHKERRQ(ierr);}
     }
-    if (invJ) {invJ[0] = 1.0/J[0]; ierr = PetscLogFlops(1.0);CHKERRQ(ierr);}
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %D != 2", numCoords);
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1205,6 +1206,11 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (dim > 2 && centroid) {
+    v0[0] = PetscRealPart(coords[0]);
+    v0[1] = PetscRealPart(coords[1]);
+    v0[2] = PetscRealPart(coords[2]);
+  }
   if (normal) {
     if (dim > 2) {
       const PetscReal x0 = PetscRealPart(coords[dim+0] - coords[0]), x1 = PetscRealPart(coords[dim*2+0] - coords[0]);
@@ -1212,9 +1218,6 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
       const PetscReal z0 = PetscRealPart(coords[dim+2] - coords[2]), z1 = PetscRealPart(coords[dim*2+2] - coords[2]);
       PetscReal       norm;
 
-      v0[0]     = PetscRealPart(coords[0]);
-      v0[1]     = PetscRealPart(coords[1]);
-      v0[2]     = PetscRealPart(coords[2]);
       normal[0] = y0*z1 - z0*y1;
       normal[1] = z0*x1 - x0*z1;
       normal[2] = x0*y1 - y0*x1;

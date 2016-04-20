@@ -923,6 +923,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 @*/
 PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
+  PetscInt       bs = -1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -941,16 +942,20 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
       ierr = PetscMalloc1(size, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
       for (p = pStart, l = 0; p < pEnd; ++p) {
-        PetscInt dof, off, c;
+        PetscInt bdof, cdof, dof, off, c;
 
         /* Should probably use constrained dofs */
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
+        bdof = cdof ? 1 : dof;
+        if (bs < 0)          {bs = bdof;}
+        else if (bs != bdof) {bs = 1;}
         for (c = 0; c < dof; ++c, ++l) {
           ltog[l] = off+c;
         }
       }
-      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, 1,size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, bs < 0 ? 1 : bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
       if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
@@ -1467,7 +1472,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     if (section) {ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);}
     if (section && numFields && dm->ops->createsubdm) {
-      *len = numFields;
+      if (len) *len = numFields;
       if (namelist) {ierr = PetscMalloc1(numFields,namelist);CHKERRQ(ierr);}
       if (islist)   {ierr = PetscMalloc1(numFields,islist);CHKERRQ(ierr);}
       if (dmlist)   {ierr = PetscMalloc1(numFields,dmlist);CHKERRQ(ierr);}
