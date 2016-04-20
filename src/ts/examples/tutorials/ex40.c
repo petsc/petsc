@@ -45,7 +45,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 
   PetscFunctionBegin;
   if (event_list[0] == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %6.3f seconds\n",(double)t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %5.2f seconds\n",(double)t);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] =  0.0;

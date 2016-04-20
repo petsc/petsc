@@ -706,22 +706,22 @@ runex40_d:
 runex41: runex41_a runex41_b runex41_c runex41_d
 
 runex41_a:
-	-@${MPIEXEC} -n 2 ./ex41 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_a, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex41_b:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type arkimex > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type arkimex -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_b, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex41_c:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_c, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex41_d:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
