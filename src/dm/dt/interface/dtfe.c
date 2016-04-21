@@ -2327,7 +2327,8 @@ PetscErrorCode PetscDualSpaceGetDimension_Simple(PetscDualSpace sp, PetscInt *di
 PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const PetscInt dim)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
-  PetscInt               f;
+  DM                     dm;
+  PetscInt               spatialDim, f;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -2335,6 +2336,11 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const 
   ierr = PetscFree(sp->functional);CHKERRQ(ierr);
   s->dim = dim;
   ierr = PetscCalloc1(s->dim, &sp->functional);CHKERRQ(ierr);
+  ierr = PetscFree(s->numDof);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &spatialDim);CHKERRQ(ierr);
+  ierr = PetscCalloc1(spatialDim+1, &s->numDof);CHKERRQ(ierr);
+  s->numDof[spatialDim] = dim;
   PetscFunctionReturn(0);
 }
 
@@ -2436,7 +2442,7 @@ PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
   sp->ops->destroy        = PetscDualSpaceDestroy_Simple;
   sp->ops->duplicate      = PetscDualSpaceDuplicate_Simple;
   sp->ops->getdimension   = PetscDualSpaceGetDimension_Simple;
-  sp->ops->getnumdof      = NULL;
+  sp->ops->getnumdof      = PetscDualSpaceGetNumDof_Simple;
   PetscFunctionReturn(0);
 }
 
