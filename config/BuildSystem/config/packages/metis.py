@@ -3,7 +3,8 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/metis-5.1.0-p3.tar.gz']
+    self.gitcommit         = 'v5.1.0-p3'
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-metis.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/metis-5.1.0-p3.tar.gz']
     self.functions         = ['METIS_PartGraphKway']
     self.includes          = ['metis.h']
     self.liblist           = [['libmetis.a'],['libmetis.a','libexecinfo.a']]
