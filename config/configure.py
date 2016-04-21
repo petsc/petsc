@@ -147,10 +147,10 @@ def chksynonyms():
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
 
-    if name.startswith('--download-xsdk'):
+    if name.find('download-xsdk=') >= 0 or name.endswith('download-xsdk'):
       downloadxsdk = 1
 
-    if name.startswith('--download-ideas'):
+    if name.find('download-ideas=') >= 0 or name.endswith('download-ideas'):
       downloadideas = 1
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
