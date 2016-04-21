@@ -265,6 +265,18 @@ class BaseTestMatAnyAIJ(object):
         S1.destroy()
         S2.destroy()
 
+    def testGetRedundantMatrix(self):
+        if 'aijcrl' in self.A.getType(): return # duplicate not supported
+        self._preallocate()
+        self._set_values_ijv()
+        self.A.assemble()
+        #Test the most simple case
+        sizecommA = self.A.getComm().getSize()
+        Ared = self.A.getRedundantMatrix(sizecommA)
+        sizecommAred = Ared.getComm().getSize()
+        self.assertEqual(1, sizecommAred)
+        Ared.destroy()
+
     def testCreateTranspose(self):
         self._preallocate()
         self._set_values_ijv()
