@@ -230,7 +230,7 @@ runex1_2:
 	   ${RM} -f ex1_2.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 -ts_pseudo_frtol 1.e-5  > ex1f_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 -ts_pseudo_frtol 1.e-5  -snes_stol 1e-5 > ex1f_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || printf "${PWD}\nPossible problem with ex1f_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1f_1.tmp
 
