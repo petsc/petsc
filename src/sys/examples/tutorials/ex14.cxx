@@ -2,7 +2,7 @@
 static char help[] = "Demonstrates calling Trilinos and then PETSc in the same program.\n\n";
 
 /*T
-   Concepts: introduction to PETSc; Trilinos
+   Concepts: introduction to PETSc^Trilinos
    Processors: n
 
    Example obtained from: http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html
