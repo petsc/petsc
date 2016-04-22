@@ -104,6 +104,16 @@ class Configure(config.package.CMakePackage):
           raise RuntimeError('Error running ctest on xSDKTrilinos: '+output)
       except RuntimeError, e:
         raise RuntimeError('Error running ctest on xSDKTrilinos: '+str(e))
+    else:
+      self.logClear()
+      self.logPrintDivider( debugSection = 'screen')
+      self.logPrint('Since this is a batch system xSDKTrilinos cannot run tests directly', debugSection = 'screen')
+      self.logPrint('Submit the following program(s) to your batch system with four MPI processes', debugSection = 'screen')
+      if self.hypre.found:
+        self.logPrint(os.path.join(self.packageDir,'build','hypre','test','xSDKTrilinos_HypreTest.exe'), debugSection = 'screen')
+      self.logPrint(os.path.join(self.packageDir,'build','petsc','test','xSDKTrilinos_PETScAIJMatrix.exe'), debugSection = 'screen')
+      self.logPrintDivider( debugSection = 'screen')
+      self.logPrint('', debugSection = 'screen')
 
 
 
