@@ -633,6 +633,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
             }
           }
         }
+        PetscLogFlops(nz*bs*bs);
       }
       /* Bmat */
       v = bmat->a; jj = bmat->j;
@@ -649,6 +650,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
             }
           }
         }
+        PetscLogFlops(nz*bs*bs);
       }
       ierr  = MPIU_Allreduce(rsum,rsum2,mat->cmap->N,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
       *norm = 0.0;
