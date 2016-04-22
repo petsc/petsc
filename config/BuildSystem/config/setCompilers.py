@@ -1232,8 +1232,7 @@ class Configure(config.base.Configure):
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.argDB))
 
   def generateSharedLinkerGuesses(self):
-    useSharedLibraries = 'with-shared-libraries' in self.argDB and self.argDB['with-shared-libraries']
-    if not self.argDB['with-pic'] and not useSharedLibraries:
+    if not self.argDB['with-shared-libraries']:
       self.setStaticLinker()
       self.staticLinker = self.AR
       self.staticLibraries = 1
@@ -1267,13 +1266,15 @@ class Configure(config.base.Configure):
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
         yield (self.CXX, ['-G'], 'so')
       yield (self.CC, ['-G'], 'so')
-    # Default to static linker
-    self.setStaticLinker()
-    self.staticLinker = self.AR
-    self.staticLibraries = 1
-    self.LDFLAGS = ''
-    yield (self.AR, [], self.AR_LIB_SUFFIX)
-    raise RuntimeError('Archiver failed static link check')
+    # If user does not explicitly enable shared-libraries - disable shared libraries and default to static linker
+    if not 'with-shared-libraries' in self.framework.clArgDB:
+      self.argDB['with-shared-libraries'] = 0
+      self.setStaticLinker()
+      self.staticLinker = self.AR
+      self.staticLibraries = 1
+      self.LDFLAGS = ''
+      yield (self.AR, [], self.AR_LIB_SUFFIX)
+    raise RuntimeError('Exhausted all shared linker guesses. Could not determine how to create a shared library!')
 
   def checkSharedLinker(self):
     '''Check that the linker can produce shared libraries'''

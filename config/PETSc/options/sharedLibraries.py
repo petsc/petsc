@@ -110,8 +110,6 @@ class Configure(config.base.Configure):
 
 
   def configure(self):
-    # on windows use with-shared-libraries=0 as default
-    if self.setCompilers.isCygwin(self.log) and 'with-shared-libraries' not in self.framework.clArgDB: self.framework.argDB['with-shared-libraries'] = 0
     self.executeTest(self.checkSharedDynamicPicOptions)
     self.executeTest(self.configureSharedLibraries)
     self.executeTest(self.configureDynamicLibraries)
