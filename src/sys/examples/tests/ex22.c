@@ -57,5 +57,5 @@ int main(int argc,char **argv)
   if ((sshort[0] !=oshort[0])|| (sshort[1] != oshort[1]))     PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_SHORT\n");
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -78,6 +78,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(&vec);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_in);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

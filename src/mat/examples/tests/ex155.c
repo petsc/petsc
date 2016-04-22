@@ -72,7 +72,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecDestroy(&input);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 
 }

@@ -1020,5 +1020,5 @@ int main(int argc, char **argv)
     ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

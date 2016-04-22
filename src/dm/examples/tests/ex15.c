@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&v_f);CHKERRQ(ierr);
   ierr = DMDestroy(&da_f);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

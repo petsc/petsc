@@ -107,7 +107,7 @@ int main(int argc,char **args)
   ierr = PetscFree(evecs_array);CHKERRQ(ierr);
   ierr = PetscFree(ifail);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 #endif
 }
 /*------------------------------------------------

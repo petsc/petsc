@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   r64     = PetscIntMult64bit(a,b);
   tresult = PetscIntMultTruncate(a,b);
   ierr    = PetscIntMultError(a,b,&result);CHKERRQ(ierr);
-  ierr    = PetscFinalize();
-  return 0;
+  ierr    = ierr = PetscFinalize();
+  return ierr;
 }
 

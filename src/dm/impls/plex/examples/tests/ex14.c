@@ -87,5 +87,5 @@ int main(int argc, char **argv)
   if (!user.uninterpolate) {ierr = DMPlexCheckFaces(dm, PETSC_TRUE, 0);CHKERRQ(ierr);}
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -143,6 +143,6 @@ int main(int argc, char **argv)
   ierr = MatDestroy(&system);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

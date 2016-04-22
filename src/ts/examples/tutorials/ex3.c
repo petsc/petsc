@@ -243,7 +243,7 @@ int main(int argc,char **argv)
          options are chosen (e.g., -log_summary).
   */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__

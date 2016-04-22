@@ -160,5 +160,5 @@ int main(int argc,char **args)
   ierr = PetscFree(submatB);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

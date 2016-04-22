@@ -290,8 +290,8 @@ int main(int argc,char **args)
   PetscPreLoadEnd();
   ierr = AODestroy(&user.grid->ao);CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD, "Time taken in gradient calculation is %g sec.\n",grad_time);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /*---------------------------------------------------------------------*/

@@ -48,6 +48,6 @@ int main(int argc,char **argv)
   ierr = DMRestoreGlobalVector(da,&global2);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

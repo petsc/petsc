@@ -19,5 +19,5 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,0,"-snes_max_steps",&snes_max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"-ts_view = %s\n-ts_final_time = %f\n-ts_max_steps = %i\n-snes_max_steps = %i\n",ts_view ? "true" : "false",ts_final_time,ts_max_steps,snes_max_steps);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -96,8 +96,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
   ierr = VecDestroy(&UV);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 #undef __FUNCT__

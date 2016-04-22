@@ -169,5 +169,5 @@ PetscInt main(PetscInt argc,char **args)
   fftw_free(in2); ierr = VecDestroy(&fout1);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

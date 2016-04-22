@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&SBAIJ);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

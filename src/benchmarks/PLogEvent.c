@@ -56,5 +56,5 @@ int main(int argc,char **argv)
   fprintf(stderr,"\n");
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }

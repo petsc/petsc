@@ -766,6 +766,6 @@ int main(int argc,char ** argv)
   }
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
   ierr = PetscFree(wash);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

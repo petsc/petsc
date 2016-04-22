@@ -27,5 +27,5 @@ int main(int argc,char **args)
   }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

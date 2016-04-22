@@ -38,5 +38,5 @@ int main(int argc,char **argv)
   fprintf(stdout," Time %g\n",t2-t1);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }

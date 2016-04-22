@@ -74,5 +74,5 @@ int main(int argc,char **argv)
      See the PetscFinalize() manpage for more information.
   */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

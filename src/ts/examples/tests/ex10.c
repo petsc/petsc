@@ -440,8 +440,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = VecDestroy(&Usolution);CHKERRQ(ierr);
   ierr = VecDestroy(&V);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 

@@ -48,6 +48,6 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&is2);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

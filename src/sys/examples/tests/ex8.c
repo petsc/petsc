@@ -177,6 +177,6 @@ int main(int argc,char **argv)
   ierr = PetscFree(fromdata);CHKERRQ(ierr);
   ierr = PetscFree(fromranks);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

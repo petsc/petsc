@@ -194,6 +194,6 @@ int main(int argc, char **argv)
     }
   }
 #endif
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

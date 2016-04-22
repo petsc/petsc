@@ -75,6 +75,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = MatDestroy(&fact);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

@@ -141,5 +141,5 @@ int main(int argc,char **args)
   ierr = VecDestroy(&Z);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

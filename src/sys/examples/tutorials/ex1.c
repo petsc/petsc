@@ -61,5 +61,5 @@ int main(int argc,char **argv)
      manpage for more information.
   */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

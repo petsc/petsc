@@ -27,5 +27,5 @@ int main(int argc,char *argv[])
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = MatDestroy(&M);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

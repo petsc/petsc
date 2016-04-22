@@ -183,7 +183,7 @@ int main(int argc,char **args)
   ierr = PetscFree(indx3);CHKERRQ(ierr);
   ierr = PetscFree(indx4);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

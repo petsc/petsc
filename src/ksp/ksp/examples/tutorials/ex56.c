@@ -347,7 +347,7 @@ int main(int argc,char **args)
   ierr = PetscFree(coords);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* Data was previously provided in the file data/elem_3d_elast_v_25.tx */

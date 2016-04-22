@@ -97,8 +97,8 @@ int main(int argc, char *argv[])
   free(vol);
   free(eps);
   ierr = PetscRandomDestroy(&ran);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 void stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)

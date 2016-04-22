@@ -113,5 +113,5 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&ym4);CHKERRQ(ierr);
 #endif
   PetscFinalize();
-  return 0;
+  return ierr;
 }

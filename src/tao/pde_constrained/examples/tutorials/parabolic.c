@@ -236,8 +236,8 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&x0);CHKERRQ(ierr);
   ierr = ParabolicDestroy(&user);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

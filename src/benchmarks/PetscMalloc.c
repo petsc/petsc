@@ -58,5 +58,5 @@ int main(int argc,char **argv)
 
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }

@@ -230,7 +230,7 @@ int main(int argc,char **args)
 
   PetscPreLoadEnd();
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 /*------------------------------------------------
   Check the accuracy of the eigen solution

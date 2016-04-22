@@ -99,5 +99,5 @@ int main(int argc, char **argv)
   ierr = CheckMeshGeometry(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

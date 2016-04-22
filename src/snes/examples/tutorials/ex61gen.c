@@ -38,6 +38,6 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&values);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

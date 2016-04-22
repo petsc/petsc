@@ -69,18 +69,19 @@ static double Second(void);
 
 int main(int argc,char *argv[])
 {
-  const char   *label[4] = {"Copy", "Scale","Add", "Triad"};
-  const double bytes[4]  = {2 * sizeof(double) * N,
+  const char     *label[4] = {"Copy", "Scale","Add", "Triad"};
+  const double   bytes[4]  = {2 * sizeof(double) * N,
                             2 * sizeof(double) * N,
                             3 * sizeof(double) * N,
                             3 * sizeof(double) * N};
-  double       rmstime[4] = {0},maxtime[4] = {0},mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
-  int          quantum;
-  int          BytesPerWord,j,k,size;
-  PetscInt     node = -1;
-  double       scalar, t, times[4][NTIMES];
+  double         rmstime[4] = {0},maxtime[4] = {0},mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
+  int            quantum;
+  int            BytesPerWord,j,k,size;
+  PetscInt       node = -1;
+  double         scalar, t, times[4][NTIMES];
+  PetscErrorCode ierr;
 #if !STATIC_ALLOC
-  double       *PETSC_RESTRICT a,*PETSC_RESTRICT b,*PETSC_RESTRICT c;
+  double         *PETSC_RESTRICT a,*PETSC_RESTRICT b,*PETSC_RESTRICT c;
 #endif
 
   PetscInitialize(&argc,&argv,0,help);
@@ -90,13 +91,11 @@ int main(int argc,char *argv[])
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);
   BytesPerWord = sizeof(double);
-  PetscPrintf(PETSC_COMM_WORLD,"This system uses %d bytes per DOUBLE PRECISION word.\n",
-              BytesPerWord);
+  PetscPrintf(PETSC_COMM_WORLD,"This system uses %d bytes per DOUBLE PRECISION word.\n",BytesPerWord);
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);
   PetscPrintf(PETSC_COMM_WORLD,"Array size = %d, Offset = %d\n", N, OFFSET);
-  PetscPrintf(PETSC_COMM_WORLD,"Total memory required = %.1f MB per process.\n",
-              (3 * N * BytesPerWord) / 1048576.0);
+  PetscPrintf(PETSC_COMM_WORLD,"Total memory required = %.1f MB per process.\n",(3 * N * BytesPerWord) / 1048576.0);
   PetscPrintf(PETSC_COMM_WORLD,"Each test is run %d times, but only\n", NTIMES);
   PetscPrintf(PETSC_COMM_WORLD,"the *best* time for each is used.\n");
 
@@ -140,8 +139,7 @@ int main(int argc,char *argv[])
   for (j = 0; j < N; j++) a[j] = 2.0E0 * a[j];
   t = 1.0E6 * (Second() - t);
 
-  PetscPrintf(PETSC_COMM_WORLD,"Each test below will take on the order"
-              " of %d microseconds.\n", (int) t);
+  PetscPrintf(PETSC_COMM_WORLD,"Each test below will take on the order of %d microseconds.\n", (int) t);
   PetscPrintf(PETSC_COMM_WORLD,"   (= %d clock ticks)\n", (int) (t/quantum));
   PetscPrintf(PETSC_COMM_WORLD,"Increase the size of the arrays if this shows that\n");
   PetscPrintf(PETSC_COMM_WORLD,"you are not getting at least 20 clock ticks per test.\n");
@@ -256,14 +254,13 @@ int main(int argc,char *argv[])
       maxtime[j] = MAX(maxtime[j], times[j][k]);
     }
 
-
   PetscPrintf(PETSC_COMM_WORLD,"%8s:  %11s  %11s  %11s  %11s  %11s\n","Function","Rate (MB/s)","Total (MB/s)","RMS time","Min time","Max time");
   for (j=0; j<4; j++) {
     rmstime[j] = sqrt(rmstime[j]/(double)NTIMES);
     PetscPrintf(PETSC_COMM_WORLD,"%8s: %11.4f  %11.4f  %11.4f  %11.4f  %11.4f\n", label[j], 1.0e-06*bytes[j]/mintime[j], size*1.0e-06*bytes[j]/mintime[j], rmstime[j], mintime[j], maxtime[j]);
   }
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 static double Second()

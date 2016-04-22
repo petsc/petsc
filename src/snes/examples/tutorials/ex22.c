@@ -128,8 +128,8 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&user.u_lambda_viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&user.fu_lambda_viewer);CHKERRQ(ierr);
   }
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 typedef struct {

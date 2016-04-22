@@ -258,6 +258,6 @@ int main(int argc,char **args)
 #endif
   }
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

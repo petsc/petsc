@@ -47,7 +47,7 @@ int main(int argc,char **argv)
 
   ierr = AODestroy(&ao);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

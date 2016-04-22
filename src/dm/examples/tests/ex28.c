@@ -226,5 +226,5 @@ PetscInt main(PetscInt argc,char **args)
   ierr = DMRestoreGlobalVector(da,&zz);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

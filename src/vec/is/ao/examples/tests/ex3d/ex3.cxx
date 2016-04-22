@@ -62,6 +62,6 @@ int main(int argc, char** argv)
 
   if (myrank==0) cout << "AO is done." << endl;
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

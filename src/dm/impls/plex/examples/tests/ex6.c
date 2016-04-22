@@ -101,5 +101,5 @@ int main(int argc, char **argv)
   ierr = TestLookup(label, &user);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -44,6 +44,6 @@ int main(int argc, char *argv[])
   ierr = ISDestroy(&is0);CHKERRQ(ierr);
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

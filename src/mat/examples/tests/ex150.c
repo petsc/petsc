@@ -95,7 +95,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

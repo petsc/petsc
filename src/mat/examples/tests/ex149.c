@@ -83,7 +83,7 @@ PetscInt main(PetscInt argc,char **args)
 /*      ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr); */
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 
 }
 

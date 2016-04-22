@@ -158,5 +158,5 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

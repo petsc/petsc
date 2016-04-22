@@ -3446,5 +3446,5 @@ int main(int argc, char **argv)
   ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

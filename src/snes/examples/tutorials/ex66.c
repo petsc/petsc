@@ -343,5 +343,5 @@ int main(int argc, char **argv)
   sc_finalize();
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

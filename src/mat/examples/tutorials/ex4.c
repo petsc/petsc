@@ -86,7 +86,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&work2);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>
