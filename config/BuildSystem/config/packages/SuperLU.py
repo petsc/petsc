@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'v5.2.0 '
+    self.gitcommit        = 'v5.2.0'
     self.download         = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.0.tar.gz','git://https://github.com/xiaoyeli/superlu']
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
