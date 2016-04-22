@@ -717,7 +717,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   }
 
   if (!ts->steprollback) {
-    if (ts->equation_type >= TS_EQ_IMPLICIT) { /* Save the initial slope for the next step*/
+    if (ts->equation_type >= TS_EQ_IMPLICIT) { /* Save the initial slope for the next step */
       ierr = VecCopy(YdotI[s-1],Ydot0);CHKERRQ(ierr);
     }
     if (ark->extrapolate && !ts->steprestart) { /* Save the Y, YdotI, YdotRHS for extrapolation initial guess */
@@ -745,7 +745,10 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ierr = TSGetTime(ts_start,&ts->ptime);CHKERRQ(ierr);
     ierr = TSGetTimeStep(ts_start,&ts->time_step);CHKERRQ(ierr);
 
-    ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
+    { /* Save the initial slope for the next step */
+      TS_ARKIMEX *ark_start = (TS_ARKIMEX*)ts_start->data;
+      ierr = VecCopy(ark_start->YdotI[ark_start->tableau->s-1],Ydot0);CHKERRQ(ierr);
+    }
     ts->steps++;
     ts->total_steps++;
 
