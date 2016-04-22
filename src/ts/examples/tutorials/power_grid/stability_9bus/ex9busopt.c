@@ -995,7 +995,7 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,Vec *DICDP,Userctx *user)
     /* ierr   = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt %D th parameter: %g \n",i,(double)sensip);CHKERRQ(ierr); */
      y[i] = sensip;
   }
-  ierr = VecRestoreArray(mu,&y);
+  ierr = VecRestoreArray(mu,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1124,7 +1124,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(upperb,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 2.0; x_ptr[1] = 2.0; x_ptr[2] = 2.0;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
-  ierr = TaoSetVariableBounds(tao,lowerb,upperb);
+  ierr = TaoSetVariableBounds(tao,lowerb,upperb);CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -1155,7 +1155,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscFinalize();
   return(0);
 }
 

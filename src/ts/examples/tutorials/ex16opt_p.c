@@ -243,7 +243,7 @@ int main(int argc,char **argv)
   x_ptr[0] = 100.0;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
 
-  ierr = TaoSetVariableBounds(tao,lowerb,upperb);
+  ierr = TaoSetVariableBounds(tao,lowerb,upperb);CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscFinalize();
   PetscFunctionReturn(0);
 }
 
@@ -368,7 +368,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
-  ierr = VecCopy(user->mup[0],G);
+  ierr = VecCopy(user->mup[0],G);CHKERRQ(ierr);
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

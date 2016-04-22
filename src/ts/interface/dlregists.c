@@ -63,15 +63,15 @@ PetscErrorCode  TSInitializePackage(void)
   ierr = TSRegisterAll();CHKERRQ(ierr);
   ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("TSAdjointStep",    TS_CLASSID,&TS_AdjointStep);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSTrajectorySet",  TSTRAJECTORY_CLASSID,&TSTrajectory_Set);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSTrajectoryGet",  TSTRAJECTORY_CLASSID,&TSTrajectory_Get);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DiskWrite",        TS_CLASSID,&Disk_Write);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DiskRead",         TS_CLASSID,&Disk_Read);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSStep",           TS_CLASSID,&TS_Step);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSPseudoCmptTStp", TS_CLASSID,&TS_PseudoComputeTimeStep);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSFunctionEval",   TS_CLASSID,&TS_FunctionEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSJacobianEval",   TS_CLASSID,&TS_JacobianEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSAdjointStep",TS_CLASSID,&TS_AdjointStep);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSTrajSet",TSTRAJECTORY_CLASSID,&TSTrajectory_Set);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSTrajGet",TSTRAJECTORY_CLASSID,&TSTrajectory_Get);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSTrajDiskWrite",TS_CLASSID,&TSTrajectory_DiskWrite);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSTrajDiskRead",TS_CLASSID,&TSTrajectory_DiskRead);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSStep",TS_CLASSID,&TS_Step);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSPseudoCmptTStp",TS_CLASSID,&TS_PseudoComputeTimeStep);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSFunctionEval",TS_CLASSID,&TS_FunctionEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSJacobianEval",TS_CLASSID,&TS_JacobianEval);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

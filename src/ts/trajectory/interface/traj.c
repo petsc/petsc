@@ -110,7 +110,9 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tj,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  total number of recomputations for adjoint calculation=%D\n",tj->recomps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  total number of recomputations for adjoint calculation = %D\n",tj->recomps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  disk checkpoint reads = %D\n",tj->diskreads);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  disk checkpoint writes = %D\n",tj->diskwrites);CHKERRQ(ierr);
     if (tj->ops->view) {
       ierr = (*tj->ops->view)(tj,viewer);CHKERRQ(ierr);
     }
@@ -376,6 +378,10 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
   }
 
   tj->setupcalled = PETSC_TRUE;
-  tj->recomps     = 0;
+
+  /* Set the counters to zero */
+  tj->recomps    = 0;
+  tj->diskreads  = 0;
+  tj->diskwrites = 0;
   PetscFunctionReturn(0);
 }

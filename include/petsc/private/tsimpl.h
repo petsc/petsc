@@ -72,6 +72,7 @@ struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
   PetscInt setupcalled;             /* true if setup has been called */
   PetscInt recomps;                 /* counter for recomputations in the adjoint run */
+  PetscInt diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
   void *data;
 };
 
@@ -334,6 +335,6 @@ struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
 
-PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, Disk_Write, Disk_Read;
+PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 
 #endif
