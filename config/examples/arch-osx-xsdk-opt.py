@@ -2,6 +2,8 @@
 
 configure_options = [
   '--with-debugging=0',
+  '--download-hdf5',
+  '--download-netcdf',
   '--download-hypre=1',
   '--download-metis=1',
   '--download-parmetis=1',
