@@ -36,8 +36,8 @@ class Configure(config.package.CMakePackage):
     self.ml              = framework.require('config.packages.ml',self)
     self.exodusii        = framework.require('config.packages.exodusii',self)
     self.boost           = framework.require('config.packages.boost',self)
-    self.deps            = [self.mpi,self.blasLapack]
-    self.odeps           = [self.hwloc,self.hypre,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.netcdf,self.hdf5,self.boost]
+    self.deps            = [self.mpi,self.blasLapack,self.netcdf,self.hdf5]
+    self.odeps           = [self.hwloc,self.hypre,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.boost]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -106,6 +106,9 @@ class Configure(config.package.CMakePackage):
     # SEACAS which contains Exodusii needs to have the following turned off
     args.append('-DTPL_ENABLE_Matio=OFF')
     args.append('-DTPL_ENABLE_GLM=OFF')
+
+    # SEACAS finds an X11 to use but this can fail on some machines like the Cray
+    args.append('-DTPL_ENABLE_X11=OFF')
 
     # FEI include files cause crashes on Apple with clang compilers
     # args.append('-DTrilinos_ENABLE_fei=OFF')
@@ -202,7 +205,7 @@ class Configure(config.package.CMakePackage):
     if self.netcdf.found:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
       args.append('-DTPL_Netcdf_INCLUDE_DIRS="'+';'.join(self.netcdf.include)+'"')
-      args.append('-DTPL_Netcdf_LIBRARIES="'+self.libraries.toStringNoDupes(self.netcdf.lib)+'"')
+      args.append('-DTPL_Netcdf_LIBRARIES="'+self.libraries.toStringNoDupes(self.netcdf.lib+self.hdf5.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=OFF')
 
