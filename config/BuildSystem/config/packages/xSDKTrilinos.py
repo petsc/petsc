@@ -109,9 +109,12 @@ class Configure(config.package.CMakePackage):
       self.logPrintDivider( debugSection = 'screen')
       self.logPrint('Since this is a batch system xSDKTrilinos cannot run tests directly', debugSection = 'screen')
       self.logPrint('Submit the following program(s) to your batch system with four MPI processes', debugSection = 'screen')
+      linewidth = self.linewidth
+      self.linewidth = -1
       if self.hypre.found:
-        self.logPrint(os.path.join(self.packageDir,'build','hypre','test','xSDKTrilinos_HypreTest.exe'), debugSection = 'screen')
-      self.logPrint(os.path.join(self.packageDir,'build','petsc','test','xSDKTrilinos_PETScAIJMatrix.exe'), debugSection = 'screen')
+        self.logPrint(os.path.join(os.getcwd(),self.packageDir,'build','hypre','test','xSDKTrilinos_HypreTest.exe'), debugSection = 'screen')
+      self.logPrint(os.path.join(os.getcwd(),self.packageDir,'build','petsc','test','xSDKTrilinos_PETScAIJMatrix.exe'), debugSection = 'screen')
+      self.linewidth = linewidth
       self.logPrintDivider( debugSection = 'screen')
       self.logPrint('', debugSection = 'screen')
 
