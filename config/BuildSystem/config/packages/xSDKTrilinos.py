@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'origin/master'
-    self.download          = ['git://https://github.com/trilinos/xSDKTrilinos.git']
+    self.gitcommit         = 'trilinos-release-12-6-2'
+    self.download          = ['https://github.com/trilinos/xSDKTrilinos/archive/trilinos-release-12-6-2.tar.gz','git://https://github.com/trilinos/xSDKTrilinos.git']
     self.downloaddirname   = 'xSDKTrilinos'
     self.includes          = []
     self.functions         = []
