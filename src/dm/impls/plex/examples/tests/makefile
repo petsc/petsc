@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/plex/examples/tests/
 EXAMPLESC       = ex1.c ex3.c ex9.c ex15.c
-EXAMPLESF       = ex1f90.F ex2f90.F ex15f90.F
+EXAMPLESF       = ex1f90.F ex2f90.F
 MANSEC          = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
@@ -46,10 +46,6 @@ ex14: ex14.o chkopts
 ex15: ex15.o  chkopts
 	-${CLINKER} -o ex15 ex15.o ${PETSC_DM_LIB}
 	${RM} -f ex15.o
-
-ex15f90: ex15f90.o  chkopts
-	-${FLINKER} -o ex15f90 ex15f90.o ${PETSC_DM_LIB}
-	${RM} -f ex15f90.o
 
 #--------------------------------------------------------------------------
 runex1:

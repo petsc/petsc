@@ -140,37 +140,37 @@ static PetscErrorCode PetscDrawRestoreSingleton_Null(PetscDraw draw,PetscDraw *s
 }
 
 
-static struct _PetscDrawOps DvOps = { NULL,/*PetscDrawSetDoubleBuffer_Null*/
-                                      NULL,/*PetscDrawFlush_Null*/
+static struct _PetscDrawOps DvOps = { NULL,/* PetscDrawSetDoubleBuffer_Null */
+                                      NULL,/* PetscDrawFlush_Null */
                                       PetscDrawLine_Null,
-                                      NULL,/*PetscDrawLineSetWidth_Null*/
+                                      NULL,/* PetscDrawLineSetWidth_Null */
                                       PetscDrawLineGetWidth_Null,
                                       PetscDrawPoint_Null,
-                                      NULL,/*PetscDrawPointSetSize_Null*/
+                                      NULL,/* PetscDrawPointSetSize_Null */
                                       PetscDrawString_Null,
                                       PetscDrawStringVertical_Null,
-                                      NULL,/*PetscDrawStringSetSize_Null*/
+                                      NULL,/* PetscDrawStringSetSize_Null */
                                       PetscDrawStringGetSize_Null,
-                                      NULL,/*PetscDrawSetViewport_Null*/
-                                      NULL,/*PetscDrawClear_Null*/
+                                      NULL,/* PetscDrawSetViewport_Null */
+                                      NULL,/* PetscDrawClear_Null */
                                       PetscDrawRectangle_Null,
                                       PetscDrawTriangle_Null,
                                       PetscDrawEllipse_Null,
-                                      NULL,/*PetscDrawGetMouseButton_Null*/
-                                      NULL,/*PetscDrawPause_Null*/
-                                      NULL,/*PetscDrawBeginPage_Null*/
-                                      NULL,/*PetscDrawEndPage_Null*/
-                                      NULL,/*PetscDrawGetPopup_Null*/
-                                      NULL,/*PetscDrawSetTitle_Null*/
-                                      NULL,/*PetscDrawCheckResizedWindow_Null*/
-                                      NULL,/*PetscDrawResizeWindow_Null*/
-                                      NULL,/*PetscDrawDestroy_Null*/
-                                      NULL,/*PetscDrawView_Null*/
+                                      NULL,/* PetscDrawGetMouseButton_Null */
+                                      NULL,/* PetscDrawPause_Null */
+                                      NULL,/* PetscDrawBeginPage_Null */
+                                      NULL,/* PetscDrawEndPage_Null */
+                                      NULL,/* PetscDrawGetPopup_Null */
+                                      NULL,/* PetscDrawSetTitle_Null */
+                                      NULL,/* PetscDrawCheckResizedWindow_Null */
+                                      NULL,/* PetscDrawResizeWindow_Null */
+                                      NULL,/* PetscDrawDestroy_Null */
+                                      NULL,/* PetscDrawView_Null */
                                       PetscDrawGetSingleton_Null,
                                       PetscDrawRestoreSingleton_Null,
-                                      NULL,/*PetscDrawSave_Null*/
-                                      NULL,/*PetscDrawGetImage_Null*/
-                                      NULL,/*PetscDrawSetCoordinates_Null*/
+                                      NULL,/* PetscDrawSave_Null */
+                                      NULL,/* PetscDrawGetImage_Null */
+                                      NULL,/* PetscDrawSetCoordinates_Null */
                                       PetscDrawArrow_Null,
                                       PetscDrawCoordinateToPixel_Null,
                                       PetscDrawPixelToCoordinate_Null,

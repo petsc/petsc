@@ -1155,7 +1155,7 @@ PetscErrorCode DMForestGetCellWeightFactor(DM dm, PetscReal *weightsFactor)
 + cStart - the first cell on this process
 - cEnd - one after the final cell on this process
 
-  level: intermediate
+  Level: intermediate
 
 .seealso: DMForestGetCellSF()
 @*/
@@ -1189,7 +1189,7 @@ PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd)
   Output Parameter:
 . cellSF - the PetscSF
 
-  level: intermediate
+  Level: intermediate
 
 .seealso: DMForestGetCellChart()
 @*/
