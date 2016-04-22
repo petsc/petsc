@@ -1017,7 +1017,9 @@ class Configure(config.base.Configure):
 
   def generatePICGuesses(self):
     yield ''
-    if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
+    if self.language[-1] == 'CUDA':
+      yield '-Xcompiler -fPIC'
+    elif config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
       yield '-fPIC'
     else:
       yield '-PIC'
@@ -1039,9 +1041,11 @@ class Configure(config.base.Configure):
       languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
+    if hasattr(self, 'CUDAC'):
+      languages.append('CUDA')
     for language in languages:
       self.pushLanguage(language)
-      if language == 'C' or language == 'Cxx':
+      if language in ['C','Cxx','CUDA']:
         includeLine = 'void foo(void);\nvoid bar(void){foo();}\n'
       else:
         includeLine = '      function foo(a)\n      real:: a, bar\n      foo = bar(a)\n      end\n'

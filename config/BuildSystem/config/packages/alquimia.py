@@ -59,6 +59,20 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=RELEASE')
       args.append('-DXSDK_ENABLE_DEBUG=NO')
 
+
+    plibs = self.hdf5.lib
+    if self.framework.argDB['prefix']:
+       idir = os.path.join(self.installdir.dir,'lib')
+    else:
+       idir = os.path.join(self.petscdir.dir,self.arch,'lib')
+    if self.framework.argDB['with-single-library']:
+      plibs = self.libraries.toStringNoDupes(['-L'+idir,' -lpetsc']+plibs)
+    else:
+      plibs = self.libraries.toStringNoDupes(['-L'+idir,'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+plibs)
+
+    args.append('-DTPL_PETSC_LDFLAGS="'+plibs+'"')
+    args.append('-DTPL_PETSC_INCLUDE_DIRS="'+os.path.join(self.petscdir.dir,'include')+';'+';'.join(self.hdf5.include)+'"')
+
     args.append('-DXSDK_WITH_PFLOTRAN=ON')
     args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[0])
     args.append('-DTPL_PFLOTRAN_INCLUDE_DIRS='+self.pflotran.include[0])
