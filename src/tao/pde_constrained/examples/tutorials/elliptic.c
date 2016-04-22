@@ -915,7 +915,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatSetFromOptions(user->Av);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(user->Av,2,NULL,2,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->Av,2,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(user->Av,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->Av,&istart,&iend);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
     if (i<m/3){
@@ -948,7 +948,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatSetFromOptions(user->L);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(user->L,2,NULL,2,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->L,2,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(user->L,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->L,&istart,&iend);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
     if (i<m/3){

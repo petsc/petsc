@@ -571,8 +571,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
             u     = x[j][i].temp;
             uxx   = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
             uyy   = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-            ftemp =  uxx + uyy  + prandtl*((vxp*(u - x[j][i-1].temp) + vxm*(x[j][i+1].temp - u))*hy +
-                                           (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u))*hx) - bjitemp;
+            ftemp =  uxx + uyy  + prandtl*((vxp*(u - x[j][i-1].temp) + vxm*(x[j][i+1].temp - u))*hy + (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u))*hx) - bjitemp;
             dftdt = 2.0*(hydhx + hxdhy) + prandtl*((vxp - vxm)*hy + (vyp - vym)*hx);
             if (PetscRealPart(vx) > 0.0) dftdu = prandtl*(u - x[j][i-1].temp)*hy;
             else dftdu = prandtl*(x[j][i+1].temp - u)*hy;
@@ -589,7 +588,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
            */
             yu = fu / dfudu;
             yv = fv / dfvdv;
-            yt = ftemp / dftdt;
             yo = (fomega - (dfodu*yu + dfodv*yv)) / dfodo;
             yt = (ftemp - (dftdu*yu + dftdv*yv)) / dftdt;
 

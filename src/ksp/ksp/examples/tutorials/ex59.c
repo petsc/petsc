@@ -282,7 +282,7 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
         }
       }
     }
-    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann);
+    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann);CHKERRQ(ierr);
   }
   if (dirichlet) *dirichlet = temp_dirichlet;
   if (neumann) *neumann = temp_neumann;

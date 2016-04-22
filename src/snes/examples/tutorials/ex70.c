@@ -375,8 +375,8 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s)
   ierr = VecCreate(PETSC_COMM_WORLD,&diag);CHKERRQ(ierr);
   ierr = VecSetSizes(diag,PETSC_DECIDE,2*s->nx*s->ny);CHKERRQ(ierr);
   ierr = VecSetType(diag,VECMPI);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(s->subA[0],diag);
-  ierr = VecReciprocal(diag);
+  ierr = MatGetDiagonal(s->subA[0],diag);CHKERRQ(ierr);
+  ierr = VecReciprocal(diag);CHKERRQ(ierr);
 
   /* compute: - A10 diag(A00)^(-1) A01 */
   ierr = MatDiagonalScale(s->subA[1],diag,NULL);CHKERRQ(ierr); /* (*warning* overwrites subA[1]) */
