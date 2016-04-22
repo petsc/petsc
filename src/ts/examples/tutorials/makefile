@@ -672,12 +672,12 @@ runex31:
 	   ${RM} -f ex31_1.tmp
 
 runex35:
-	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor > ex35_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor -ts_adapt_basic_reject_safety 1 > ex35_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_1.out ex35_1.tmp || printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_1.tmp
 
 runex35_2:
-	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 > ex35_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 -ts_adapt_basic_reject_safety 1 > ex35_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 

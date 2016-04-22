@@ -3334,6 +3334,7 @@ PetscErrorCode  TSStep(TS ts)
   ts->ptime_prev = ptime;
   ts->steps++; ts->total_steps++;
   ts->steprollback = PETSC_FALSE;
+  ts->steprestart  = PETSC_FALSE;
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -3569,6 +3570,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ts->steprollback = PETSC_FALSE;
+    ts->steprestart  = PETSC_TRUE;
 
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);

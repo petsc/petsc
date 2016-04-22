@@ -990,7 +990,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
   Vec             *Y   = ros->Y,Ydot = ros->Ydot,Zdot = ros->Zdot,Zstage = ros->Zstage;
   SNES            snes;
   TSAdapt         adapt;
-  PetscInt        i,j,its,lits,next_scheme;
+  PetscInt        i,j,its,lits;
   PetscInt        rejections = 0;
   PetscBool       stageok,accept = PETSC_TRUE;
   PetscReal       next_time_step = ts->time_step;
@@ -1035,39 +1035,39 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
-        ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-        ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,Y[i],&stageok);CHKERRQ(ierr);
-        if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
       } else {
         Mat J,Jp;
         ierr = VecZeroEntries(Ydot);CHKERRQ(ierr); /* Evaluate Y[i]=G(t,Ydot=0,Zstage) */
         ierr = TSComputeIFunction(ts,ros->stage_time,Zstage,Ydot,Y[i],PETSC_FALSE);CHKERRQ(ierr);
         ierr = VecScale(Y[i],-1.0);CHKERRQ(ierr);
-        ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr); /*Y[i]=F(Zstage)-Zdot[=GammaInv*Y]*/
+        ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr); /*Y[i] = F(Zstage)-Zdot[=GammaInv*Y]*/
 
         ierr = VecZeroEntries(Zstage);CHKERRQ(ierr); /* Zstage = GammaExplicitCorr[i,j] * Y[j] */
         for (j=0; j<i; j++) w[j] = GammaExplicitCorr[i*s+j];
         ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr);
-        /*Y[i] += Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
+
+        /* Y[i] = Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
         ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
         ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatMult(J,Zstage,Zdot);CHKERRQ(ierr);
-
         ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr);
-        ierr = VecScale(Y[i],h);CHKERRQ(ierr);
         ts->ksp_its += 1;
+
+        ierr = VecScale(Y[i],h);CHKERRQ(ierr);
       }
       ierr = TSPostStage(ts,ros->stage_time,i,Y);CHKERRQ(ierr);
+      ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+      ierr = TSAdaptCheckStage(adapt,ts,ros->stage_time,Y[i],&stageok);CHKERRQ(ierr);
+      if (!stageok) goto reject_step;
     }
 
     ros->status = TS_STEP_INCOMPLETE;
     ierr = TSEvaluateStep_RosW(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     ros->status = TS_STEP_PENDING;
-    /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
+    ierr = TSAdaptChoose(adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
     ros->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
       ierr = TSRollBack_RosW(ts);CHKERRQ(ierr);
@@ -1075,13 +1075,12 @@ static PetscErrorCode TSStep_RosW(TS ts)
       goto reject_step;
     }
 
-    /* Ignore next_scheme for now */
     ts->ptime += ts->time_step;
     ts->time_step = next_time_step;
     break;
 
   reject_step:
-    ts->reject++;
+    ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
       ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);

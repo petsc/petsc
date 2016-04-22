@@ -15,7 +15,6 @@
 static TSARKIMEXType  TSARKIMEXDefault = TSARKIMEX3;
 static PetscBool      TSARKIMEXRegisterAllCalled;
 static PetscBool      TSARKIMEXPackageInitialized;
-static PetscInt       explicit_stage_time_id;
 static PetscErrorCode TSExtrapolate_ARKIMEX(TS,PetscReal,Vec);
 
 typedef struct _ARKTableau *ARKTableau;
@@ -480,7 +479,6 @@ PetscErrorCode TSARKIMEXInitializePackage(void)
   if (TSARKIMEXPackageInitialized) PetscFunctionReturn(0);
   TSARKIMEXPackageInitialized = PETSC_TRUE;
   ierr = TSARKIMEXRegisterAll();CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataRegister(&explicit_stage_time_id);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSARKIMEXFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -692,8 +690,6 @@ static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
   PetscFunctionReturn(0);
 }
 
-#define TSEvent_Status(ts) (ts->event ? ts->event->status : TSEVENT_NONE)
-
 #undef __FUNCT__
 #define __FUNCT__ "TSStep_ARKIMEX"
 static PetscErrorCode TSStep_ARKIMEX(TS ts)
@@ -707,7 +703,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscBool       extrapolate = ark->extrapolate;
   TSAdapt         adapt;
   SNES            snes;
-  PetscInt        i,j,its,lits,next_scheme;
+  PetscInt        i,j,its,lits;
   PetscInt        rejections = 0;
   PetscBool       stageok,accept = PETSC_TRUE;
   PetscReal       next_time_step = ts->time_step;
@@ -721,10 +717,10 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   }
 
   if (!ts->steprollback) {
-    if (ts->equation_type >= TS_EQ_IMPLICIT) { /* Save the initial slope for the next step*/
+    if (ts->equation_type >= TS_EQ_IMPLICIT) { /* Save the initial slope for the next step */
       ierr = VecCopy(YdotI[s-1],Ydot0);CHKERRQ(ierr);
     }
-    if (ark->extrapolate && ts->steps > 0) { /* Save the Y, YdotI, YdotRHS for extrapolation initial guess */
+    if (ark->extrapolate && !ts->steprestart) { /* Save the Y, YdotI, YdotRHS for extrapolation initial guess */
       for (i = 0; i<s; i++) {
         ierr = VecCopy(Y[i],ark->Y_prev[i]);CHKERRQ(ierr);
         ierr = VecCopy(YdotRHS[i],ark->YdotRHS_prev[i]);CHKERRQ(ierr);
@@ -733,42 +729,36 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     }
   }
 
-  if (!ts->steps || TSEvent_Status(ts) == TSEVENT_RESET_NEXTSTEP) extrapolate = PETSC_FALSE;
+  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage && ts->steprestart) {
+    TS ts_start;
+    ierr = TSClone(ts,&ts_start);CHKERRQ(ierr);
+    ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
+    ierr = TSSetDuration(ts_start,1,ts->ptime+ts->time_step);CHKERRQ(ierr);
+    ierr = TSSetExactFinalTime(ts_start,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+    ierr = TSSetTimeStep(ts_start,ts->time_step);CHKERRQ(ierr);
+    ierr = TSSetType(ts_start,TSARKIMEX);CHKERRQ(ierr);
+    ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSARKIMEXSetType(ts_start,TSARKIMEX1BEE);CHKERRQ(ierr);
 
-  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage && (!ts->event || (ts->event && ts->event->status != TSEVENT_PROCESSING))) {
-    TS        ts_start;
-    PetscReal valid_time;
-    PetscBool isvalid;
-    ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
-    if (!isvalid || valid_time != ts->ptime) {
-      ierr = TSClone(ts,&ts_start);CHKERRQ(ierr);
+    ierr = TSSolve(ts_start,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSGetTime(ts_start,&ts->ptime);CHKERRQ(ierr);
+    ierr = TSGetTimeStep(ts_start,&ts->time_step);CHKERRQ(ierr);
 
-      ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
-      ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
-      ierr = TSSetDuration(ts_start,1,ts->ptime+ts->time_step);CHKERRQ(ierr);
-      ierr = TSSetExactFinalTime(ts_start,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-      ierr = TSSetTimeStep(ts_start,ts->time_step);CHKERRQ(ierr);
-      ierr = TSSetType(ts_start,TSARKIMEX);CHKERRQ(ierr);
-      ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = TSARKIMEXSetType(ts_start,TSARKIMEX1BEE);CHKERRQ(ierr);
-
-      ierr = TSSolve(ts_start,ts->vec_sol);CHKERRQ(ierr);
-      ierr = TSGetTime(ts_start,&ts->ptime);CHKERRQ(ierr);
-      ierr = TSGetTimeStep(ts_start,&ts->time_step);CHKERRQ(ierr);
-
-      ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
-      ts->steps++;
-      ts->total_steps++;
-
-      /* Set the correct TS in SNES */
-      /* We'll try to bypass this by changing the method on the fly */
-      {
-        SNES snes;
-        ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-        ierr = TSSetSNES(ts,snes);CHKERRQ(ierr);
-      }
-      ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
+    { /* Save the initial slope for the next step */
+      TS_ARKIMEX *ark_start = (TS_ARKIMEX*)ts_start->data;
+      ierr = VecCopy(ark_start->YdotI[ark_start->tableau->s-1],Ydot0);CHKERRQ(ierr);
     }
+    ts->steps++;
+    ts->total_steps++;
+
+    /* Set the correct TS in SNES */
+    /* We'll try to bypass this by changing the method on the fly */
+    {
+      ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+      ierr = TSSetSNES(ts,snes);CHKERRQ(ierr);
+    }
+    ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
   }
 
   ark->status = TS_STEP_INCOMPLETE;
@@ -793,7 +783,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr = VecMAXPY(Z,i,w,YdotI);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*A[i*s+j];
         ierr = VecMAXPY(Z,i,w,YdotRHS);CHKERRQ(ierr);
-        if (extrapolate) {
+        if (extrapolate && !ts->steprestart) {
           /* Initial guess extrapolated from previous time step stage values */
           ierr = TSExtrapolate_ARKIMEX(ts,c[i],Y[i]);CHKERRQ(ierr);
         } else {
@@ -839,13 +829,12 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     }
 
     ark->status = TS_STEP_INCOMPLETE;
-    ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
+    ierr = TSEvaluateStep_ARKIMEX(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     ark->status = TS_STEP_PENDING;
-    /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
+    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,(PetscReal)tab->s,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSAdaptChoose(adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
     ark->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
       ierr = TSRollBack_ARKIMEX(ts);CHKERRQ(ierr);
@@ -853,17 +842,12 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       goto reject_step;
     }
 
-    /* Ignore next_scheme for now */
     ts->ptime += ts->time_step;
     ts->time_step = next_time_step;
-
-    if (tab->explicit_first_stage) {
-      ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
-    }
     break;
 
   reject_step:
-    ts->reject++;
+    ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
       ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
