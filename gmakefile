@@ -52,8 +52,9 @@ else
 endif
 libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(libpetscall_soname),$(libpetscall_static))
 
-generated := $(PETSC_ARCH)/lib/petsc/conf/files
-petscconf := $(PETSC_ARCH)/include/petscconf.h
+generated      := $(PETSC_ARCH)/lib/petsc/conf/files
+petscconf      := $(PETSC_ARCH)/include/petscconf.h
+petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
 all : $(generated) $(libpetscall)
 
@@ -74,7 +75,7 @@ else				# Show the full command line
   quiet = $($1)
 endif
 
-$(generated) : $(petscconf)
+$(generated) : $(petscconf) $(petscvariables)
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 -include $(generated)
@@ -187,8 +188,8 @@ $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.
 $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o
 $(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o
 
-# make sure all sources get recompiled when petscconf.h changes [i.e when configure is rerun]
-$(srcs.o) : $(petscconf)
+# all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
+$(srcs.o) : $(petscvariables)
 
 %/.DIR :
 	@mkdir -p $(@D)
