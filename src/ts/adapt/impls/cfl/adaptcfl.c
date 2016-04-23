@@ -65,6 +65,10 @@ static PetscErrorCode TSAdaptSetFromOptions_CFL(PetscOptionItems *PetscOptionsOb
   ierr = PetscOptionsHead(PetscOptionsObject,"CFL adaptive controller options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target CFL constraint","",cfl->safety,&cfl->safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether CFL constraint meets goal","",cfl->always_accept,&cfl->always_accept,NULL);CHKERRQ(ierr);
+  /* The TS implementations do not currently communicate CFL information to the controller.  There is a placeholder, but
+   * we do not believe it to provide sufficiently rich information.  That means the CFL adaptor is incomplete and
+   * unusable.  Do not delete the guard below unless you have finished the implementation. */
+  if (!cfl->always_accept) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Step rejection not implemented. The CFL implementation is incomplete/unusable");
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
