@@ -222,6 +222,10 @@ ex43: ex43.o chkopts
 	-${CLINKER} -o ex43 ex43.o ${PETSC_TS_LIB}
 	${RM} ex43.o
 
+ex44: ex44.o chkopts
+	-${CLINKER} -o ex44 ex44.o ${PETSC_TS_LIB}
+	${RM} ex44.o
+
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -snes_atol 1.e-7 -ts_pseudo_frtol 1.e-5 > ex1_1.tmp 2>&1;	  \
@@ -745,6 +749,23 @@ runex43_b:
 	   ${DIFF} output/ex43_b.out ex43_b.tmp || printf "${PWD}\nPossible problem with ex43, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_b.tmp
 
+runex44: runex44_a runex44_b runex44_2
+
+runex44_a:
+	-@${MPIEXEC} -n 1 ./ex44 > ex44_a.tmp 2>&1; \
+	   ${DIFF} output/ex44.out ex44_a.tmp || printf "${PWD}\nPossible problem with ex44_a, diffs above\n=========================================\n"; \
+	   ${RM} -f ex44_a.tmp
+
+runex44_b:
+	-@${MPIEXEC} -n 1 ./ex44 -ts_rtol 0 -ts_atol 1e-1 -ts_alpha_adapt > ex44_b.tmp 2>&1; \
+	   ${DIFF} output/ex44.out ex44_b.tmp || printf "${PWD}\nPossible problem with ex44_b, diffs above\n=========================================\n"; \
+	   ${RM} -f ex44_b.tmp
+
+runex44_2:
+	-@${MPIEXEC} -n 2 ./ex44 > ex44_2.tmp 2>&1; \
+	   ${DIFF} output/ex44_2.out ex44_2.tmp || printf "${PWD}\nPossible problem with ex44_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex44_2.tmp
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
@@ -759,7 +780,8 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 e
                             ex31.PETSc ex31.rm \
                             ex40.PETSc runex40 ex40.rm \
                             ex41.PETSc runex41 ex41.rm \
-                            ex43.PETSc runex43 ex43.rm
+                            ex43.PETSc runex43 ex43.rm \
+                            ex44.PETSc runex44 ex44.rm
 TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc runex12 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm \
                             ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm
@@ -771,7 +793,8 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm 
 TESTEXAMPLES_C_X	  = ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE =  ex22f.PETSc runex22f ex22f.rm ex22f_mf.PETSc runex22f_mf ex22f_mf.rm
-TESTEXAMPLES_C_X_MPIUNI =
+TESTEXAMPLES_C_X_MPIUNI   = ex43.PETSc runex43_a runex43_b ex43.rm \
+                            ex44.PETSc runex44_a runex44_b ex44.rm
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
 TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
