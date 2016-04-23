@@ -15,6 +15,7 @@ configure_options = [
   '--with-cxx-dialect=C++11',
   '--download-sowing=1',
   '--with-boost-dir=/usr/local',
+  '--with-shared-libraries=0',
   '--download-cmake=1'
   ]
 
