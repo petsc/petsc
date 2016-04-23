@@ -246,7 +246,7 @@ PetscErrorCode StokesRhs(Stokes *s)
     ierr = StokesGetPosition(s, row, &i, &j);CHKERRQ(ierr);
     if (row < s->nx*s->ny) {
       ierr = StokesRhsMomX(s, i, j, &val);CHKERRQ(ierr);
-    } else if (row < 2*s->nx*s->ny) {
+    } else {
       ierr = StokesRhsMomY(s, i, j, &val);CHKERRQ(ierr);
     }
     ierr = VecSetValue(b0, row, val, INSERT_VALUES);CHKERRQ(ierr);
