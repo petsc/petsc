@@ -83,7 +83,7 @@ static PetscErrorCode I2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F,void 
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
   ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
-  Res = a[0] + 9.8 + 0.5 * app->Cd * v[0]*v[0] * PetscSign(v[0]);
+  Res = a[0] + 9.8 + 0.5 * app->Cd * v[0]*v[0] * PetscSignReal(PetscRealPart(v[0]));
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
