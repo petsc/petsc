@@ -1111,6 +1111,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       }
     }
     *norm = PetscSqrtReal(sum_diag + 2*sum_off);
+    PetscLogFlops(2*bs2*a->nz);
   } else if (type == NORM_INFINITY || type == NORM_1) {  /* maximum row/column sum */
     ierr = PetscMalloc3(bs,&sum,mbs,&il,mbs,&jl);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) jl[i] = mbs;
@@ -1164,6 +1165,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       }
     }
     ierr = PetscFree3(sum,il,jl);CHKERRQ(ierr);
+    PetscLogFlops(mbs*a->nz-1);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this norm yet");
   PetscFunctionReturn(0);
 }
