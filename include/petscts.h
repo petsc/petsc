@@ -41,6 +41,8 @@ typedef const char* TSType;
 #define TSROSW            "rosw"
 #define TSEIMEX           "eimex"
 #define TSMIMEX           "mimex"
+#define TSBDF             "bdf"
+
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 
@@ -755,6 +757,10 @@ PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(TSRosWType,PetscReal,PetscReal,Pe
 PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
+
+PETSC_EXTERN PetscErrorCode TSBDFSetOrder(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSBDFUseAdapt(TS,PetscBool);
 
 /*
        PETSc interface to Sundials
