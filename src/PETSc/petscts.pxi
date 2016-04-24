@@ -10,12 +10,14 @@ cdef extern from * nogil:
     #PetscTSType TSPYTHON
     PetscTSType TSTHETA
     PetscTSType TSALPHA
+    PetscTSType TSALPHA2
     PetscTSType TSGL
     PetscTSType TSSSP
     PetscTSType TSARKIMEX
     PetscTSType TSROSW
     PetscTSType TSEIMEX
     PetscTSType TSMIMEX
+    PetscTSType TSBDF
 
     ctypedef enum PetscTSProblemType "TSProblemType":
       TS_LINEAR

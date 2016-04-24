@@ -2078,8 +2078,12 @@ cdef extern from * nogil:
       PetscErrorCode (*rhsjacobian)(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat,void*) except IERR
       PetscErrorCode (*ijacobian)  (PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,void*) except IERR
     ctypedef _TSUserOps *TSUserOps
+    struct _p_TSAdapt
+    ctypedef _p_TSAdapt *PetscTSAdapt "TSAdapt"
     struct _p_TS:
         void *data
+        PetscDM dm
+        PetscTSAdapt adapt
         TSOps ops
         TSUserOps userops
         TSProblemType problem_type
@@ -2091,7 +2095,6 @@ cdef extern from * nogil:
         PetscReal ptime
         PetscVec  vec_sol
         PetscReal time_step
-        PetscReal next_time_step
         PetscInt  max_steps
         PetscReal max_time
         TSConvergedReason reason
@@ -2101,7 +2104,9 @@ cdef extern from * nogil:
     PetscErrorCode TSGetSNES(PetscTS,PetscSNES*)
     PetscErrorCode TSPreStep(PetscTS)
     PetscErrorCode TSPreStage(PetscTS,PetscReal)
+    PetscErrorCode TSPostStage(PetscTS,PetscReal,PetscInt,PetscVec*)
     PetscErrorCode TSPostStep(PetscTS)
+    PetscErrorCode TSAdaptCheckStage(PetscTSAdapt,PetscTS,PetscReal,PetscVec,PetscBool*)
     PetscErrorCode TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
     PetscErrorCode TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
     PetscErrorCode TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,PetscBool)
@@ -2390,12 +2395,8 @@ cdef PetscErrorCode TSSolveStep_Python(
         solveStep(TS_(ts), <double>t, Vec_(x))
         return FunctionEnd()
     #
-    CHKERR( SNESSolve(ts.snes, NULL, x) )
-    cdef SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING
-    CHKERR( SNESGetConvergedReason(ts.snes, &snesreason) )
-    if snesreason < 0: ts.reason = TS_DIVERGED_NONLINEAR_SOLVE
-    if snesreason < 0: return FunctionEnd()
     cdef PetscInt nits = 0, lits = 0
+    CHKERR( SNESSolve(ts.snes, NULL, x) )
     CHKERR( SNESGetIterationNumber(ts.snes,&nits) )
     CHKERR( SNESGetLinearSolveIterations(ts.snes,&lits) )
     ts.snes_its += nits
@@ -2413,10 +2414,6 @@ cdef PetscErrorCode TSAdaptStep_Python(
     FunctionBegin(b"TSAdaptStep_Python")
     nextdt[0] = ts.time_step
     stepok[0] = PETSC_TRUE
-    #
-    cdef SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING
-    CHKERR( SNESGetConvergedReason(ts.snes,&snesreason) )
-    if snesreason < 0: stepok[0] = PETSC_FALSE
     #
     cdef adaptStep = PyTS(ts).adaptStep
     if adaptStep is None: return FunctionEnd()
@@ -2453,27 +2450,30 @@ cdef PetscErrorCode TSStep_Python_default(
     cdef PetscInt  r = 0
     cdef PetscReal tt = ts.ptime
     cdef PetscReal dt = ts.time_step
-    cdef PetscBool ok = PETSC_TRUE
+    cdef PetscBool accept  = PETSC_TRUE
+    cdef PetscBool stageok = PETSC_TRUE
     for r from 0 <= r < ts.max_reject:
-        ts.time_step = dt
         tt = ts.ptime + ts.time_step
         CHKERR( VecCopy(ts.vec_sol,vec_update) )
-        CHKERR( TSPreStep(ts) )
-        CHKERR( TSPreStage(ts,tt) )
+        CHKERR( TSPreStage(ts,tt+dt) )
         TSSolveStep_Python(ts,tt,vec_update)
-        TSAdaptStep_Python(ts,tt,vec_update,&dt,&ok)
-        if ok:  break
-        ts.reject += 1
+        CHKERR( TSPostStage(ts,tt+dt,0,&vec_update) );
+        CHKERR( TSAdaptCheckStage(ts.adapt,ts,tt+dt,vec_update,&stageok) );
+        if not stageok:
+            ts.reject += 1
+            continue
+        TSAdaptStep_Python(ts,tt,vec_update,&dt,&accept)
+        if not accept:
+            ts.time_step = dt
+            ts.reject += 1
+            continue
+        CHKERR( VecCopy(vec_update,ts.vec_sol) )
+        ts.ptime += ts.time_step
+        ts.time_step = dt
+        break
+    if (not stageok or not accept) and ts.reason == 0:
+        ts.reason = TS_DIVERGED_STEP_REJECTED
     <void>r # silent unused warning
-    if not ok:
-        if ts.reason == 0:
-            ts.reason = TS_DIVERGED_STEP_REJECTED
-        return FunctionEnd()
-    #
-    CHKERR( VecCopy(vec_update,ts.vec_sol) )
-    ts.ptime += ts.time_step
-    ts.time_step = dt
-    ts.steps += 1
     return FunctionEnd()
 
 # --------------------------------------------------------------------

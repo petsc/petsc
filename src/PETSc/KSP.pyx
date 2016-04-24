@@ -6,11 +6,15 @@ class KSPType(object):
     CG         = S_(KSPCG)
     GROPPCG    = S_(KSPGROPPCG)
     PIPECG     = S_(KSPPIPECG)
+    PIPECGRR   = S_(KSPPIPECGRR)
     CGNE       = S_(KSPCGNE)
     NASH       = S_(KSPNASH)
     STCG       = S_(KSPSTCG)
     GLTR       = S_(KSPGLTR)
+    FCG        = S_(KSPFCG)
+    PIPEFCG    = S_(KSPPIPEFCG)
     GMRES      = S_(KSPGMRES)
+    PIPEFGMRES = S_(KSPPIPEFGMRES)
     FGMRES     = S_(KSPFGMRES)
     LGMRES     = S_(KSPLGMRES)
     DGMRES     = S_(KSPDGMRES)
@@ -34,6 +38,9 @@ class KSPType(object):
     LCD        = S_(KSPLCD)
     PYTHON     = S_(KSPPYTHON)
     GCR        = S_(KSPGCR)
+    PIPEGCR    = S_(KSPPIPEGCR)
+    TSIRM      = S_(KSPTSIRM)
+    CGLS       = S_(KSPCGLS)
 
 class KSPNormType(object):
     # native

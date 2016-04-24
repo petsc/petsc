@@ -44,6 +44,7 @@ class PCType(object):
     AINVCUSP     = S_(PCAINVCUSP)
     BDDC         = S_(PCBDDC)
     KACZMARZ     = S_(PCKACZMARZ)
+    TELESCOPE    = S_(PCTELESCOPE)
 
 class PCSide(object):
     # native

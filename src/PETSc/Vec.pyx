@@ -11,6 +11,9 @@ class VecType(object):
     SEQVIENNACL= S_(VECSEQVIENNACL)
     MPIVIENNACL= S_(VECMPIVIENNACL)
     VIENNACL   = S_(VECVIENNACL)
+    SEQCUSP    = S_(VECSEQCUDA)
+    MPICUSP    = S_(VECMPICUDA)
+    CUSP       = S_(VECCUDA)
     NEST       = S_(VECNEST)
 
 class VecOption(object):
