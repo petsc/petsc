@@ -313,7 +313,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     PetscInt    *cum_recv_counts;
     PetscInt    *labels;
     PetscInt    ncc,cum_queue,mss,mns,j,k,s;
-    PetscInt    **refine_buffer,*private_labels;
+    PetscInt    **refine_buffer=NULL,*private_labels = NULL;
 
     ierr = PetscMalloc1(graph->nvtxs,&labels);CHKERRQ(ierr);
     ierr = PetscMemzero(labels,graph->nvtxs*sizeof(*labels));CHKERRQ(ierr);
