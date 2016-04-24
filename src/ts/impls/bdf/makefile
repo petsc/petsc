@@ -1,16 +1,14 @@
-
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = alpha1.c alpha2.c
+SOURCEC  = bdf.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscts
 MANSEC   = TS
-LOCDIR   = src/ts/impls/implicit/alpha/
+LOCDIR   = src/ts/impls/bdf/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-

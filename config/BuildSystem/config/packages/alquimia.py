@@ -18,6 +18,7 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.installdir    = framework.require('PETSc.options.installDir',  self)
     self.petscdir      = framework.require('PETSc.options.petscdir', self.setCompilers)
     self.mpi           = framework.require('config.packages.MPI', self)
     self.hdf5          = framework.require('config.packages.hdf5', self)

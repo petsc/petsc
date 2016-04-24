@@ -1407,6 +1407,394 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts,PetscBool reuse)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetI2Function"
+/*@C
+   TSSetI2Function - Set the function to compute F(t,U,U_t,U_tt) where F = 0 is the DAE to be solved.
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts  - the TS context obtained from TSCreate()
+.  F   - vector to hold the residual (or NULL to have it created internally)
+.  fun - the function evaluation routine
+-  ctx - user-defined context for private data for the function evaluation routine (may be NULL)
+
+   Calling sequence of fun:
+$  fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
+
++  t    - time at step/stage being solved
+.  U    - state vector
+.  U_t  - time derivative of state vector
+.  U_tt - second time derivative of state vector
+.  F    - function vector
+-  ctx  - [optional] user-defined context for matrix evaluation routine (may be NULL)
+
+   Level: beginner
+
+.keywords: TS, timestep, set, ODE, DAE, Function
+
+.seealso: TSSetI2Jacobian()
+@*/
+PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
+{
+  DM             dm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (F) PetscValidHeaderSpecific(F,VEC_CLASSID,2);
+  ierr = TSSetIFunction(ts,F,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetI2Function(dm,fun,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetI2Function"
+/*@C
+  TSGetI2Function - Returns the vector where the implicit residual is stored and the function/contex to compute it.
+
+  Not Collective
+
+  Input Parameter:
+. ts - the TS context
+
+  Output Parameter:
++ r - vector to hold residual (or NULL)
+. fun - the function to compute residual (or NULL)
+- ctx - the function context (or NULL)
+
+  Level: advanced
+
+.keywords: TS, nonlinear, get, function
+
+.seealso: TSSetI2Function(), SNESGetFunction()
+@*/
+PetscErrorCode TSGetI2Function(TS ts,Vec *r,TSI2Function *fun,void **ctx)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetI2Function(dm,fun,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetI2Jacobian"
+/*@C
+   TSSetIJacobian - Set the function to compute the matrix dF/dU + v*dF/dU_t  + a*dF/dU_tt
+        where F(t,U,U_t,U_tt) is the function you provided with TSSetI2Function().
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts  - the TS context obtained from TSCreate()
+.  J   - Jacobian matrix
+.  P   - preconditioning matrix for J (may be same as J)
+.  jac - the Jacobian evaluation routine
+-  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
+
+   Calling sequence of jac:
+$  jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat *J,Mat *P,MatStructure *m,void *ctx);
+
++  t    - time at step/stage being solved
+.  U    - state vector
+.  U_t  - time derivative of state vector
+.  U_tt - second time derivative of state vector
+.  v    - shift for U_t
+.  a    - shift for U_tt
+.  J    - Jacobian of G(U) = F(t,U,W+v*U,W'+a*U), equivalent to dF/dU + v*dF/dU_t  + a*dF/dU_tt
+.  P    - preconditioning matrix for J, may be same as J
+.  m    - flag indicating information about the preconditioner matrix
+          structure (same as flag in KSPSetOperators())
+-  ctx  - [optional] user-defined context for matrix evaluation routine
+
+   Notes:
+   The matrices J and P are exactly the matrices that are used by SNES for the nonlinear solve.
+
+   The matrix dF/dU + v*dF/dU_t + a*dF/dU_tt you provide turns out to be
+   the Jacobian of G(U) = F(t,U,W+v*U,W'+a*U) where F(t,U,U_t,U_tt) = 0 is the DAE to be solved.
+   The time integrator internally approximates U_t by W+v*U and U_tt by W'+a*U  where the positive "shift"
+   parameters 'a' and 'b' and vectors W, W' depend on the integration method, step size, and past states.
+
+   Level: beginner
+
+.keywords: TS, timestep, set, ODE, DAE, Jacobian
+
+.seealso: TSSetI2Function()
+@*/
+PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
+{
+  DM             dm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (J) PetscValidHeaderSpecific(J,MAT_CLASSID,2);
+  if (P) PetscValidHeaderSpecific(P,MAT_CLASSID,3);
+  ierr = TSSetIJacobian(ts,J,P,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetI2Jacobian(dm,jac,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetI2Jacobian"
+/*@C
+  TSGetI2Jacobian - Returns the implicit Jacobian at the present timestep.
+
+  Not Collective, but parallel objects are returned if TS is parallel
+
+  Input Parameter:
+. ts  - The TS context obtained from TSCreate()
+
+  Output Parameters:
++ J  - The (approximate) Jacobian of F(t,U,U_t,U_tt)
+. P - The matrix from which the preconditioner is constructed, often the same as J
+. jac - The function to compute the Jacobian matrices
+- ctx - User-defined context for Jacobian evaluation routine
+
+  Notes: You can pass in NULL for any return argument you do not need.
+
+  Level: advanced
+
+.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+
+.keywords: TS, timestep, get, matrix, Jacobian
+@*/
+PetscErrorCode  TSGetI2Jacobian(TS ts,Mat *J,Mat *P,TSI2Jacobian *jac,void **ctx)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+  DM             dm;
+
+  PetscFunctionBegin;
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,J,P,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetI2Jacobian(dm,jac,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeI2Function"
+/*@
+  TSComputeI2Function - Evaluates the DAE residual written in implicit form F(t,U,U_t,U_tt) = 0
+
+  Collective on TS and Vec
+
+  Input Parameters:
++ ts - the TS context
+. t - current time
+. U - state vector
+. V - time derivative of state vector (U_t)
+- A - second time derivative of state vector (U_tt)
+
+  Output Parameter:
+. F - the residual vector
+
+  Note:
+  Most users should not need to explicitly call this routine, as it
+  is used internally within the nonlinear solvers.
+
+  Level: developer
+
+.keywords: TS, compute, function, vector
+
+.seealso: TSSetI2Function()
+@*/
+PetscErrorCode TSComputeI2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F)
+{
+  DM             dm;
+  TSI2Function   I2Function;
+  void           *ctx;
+  TSRHSFunction  rhsfunction;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(V,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(A,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(F,VEC_CLASSID,6);
+
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetI2Function(dm,&I2Function,&ctx);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunction(dm,&rhsfunction,NULL);CHKERRQ(ierr);
+
+  if (!I2Function) {
+    ierr = TSComputeIFunction(ts,t,U,A,F,PETSC_FALSE);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,V,F);CHKERRQ(ierr);
+
+  PetscStackPush("TS user implicit function");
+  ierr = I2Function(ts,t,U,V,A,F,ctx);CHKERRQ(ierr);
+  PetscStackPop;
+
+  if (rhsfunction) {
+    Vec Frhs;
+    ierr = TSGetRHSVec_Private(ts,&Frhs);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,t,U,Frhs);CHKERRQ(ierr);
+    ierr = VecAXPY(F,-1,Frhs);CHKERRQ(ierr);
+  }
+
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,V,F);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeI2Jacobian"
+/*@
+  TSComputeI2Jacobian - Evaluates the Jacobian of the DAE
+
+  Collective on TS and Vec
+
+  Input Parameters:
++ ts - the TS context
+. t - current timestep
+. U - state vector
+. V - time derivative of state vector
+. A - second time derivative of state vector
+. shiftV - shift to apply, see note below
+- shiftA - shift to apply, see note below
+
+  Output Parameters:
++ J - Jacobian matrix
+- P - optional preconditioning matrix
+
+  Notes:
+  If F(t,U,V,A)=0 is the DAE, the required Jacobian is
+
+  dF/dU + shiftV*dF/dV + shiftA*dF/dA
+
+  Most users should not need to explicitly call this routine, as it
+  is used internally within the nonlinear solvers.
+
+  Level: developer
+
+.keywords: TS, compute, Jacobian, matrix
+
+.seealso:  TSSetI2Jacobian()
+@*/
+PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal shiftV,PetscReal shiftA,Mat J,Mat P)
+{
+  DM             dm;
+  TSI2Jacobian   I2Jacobian;
+  void           *ctx;
+  TSRHSJacobian  rhsjacobian;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(V,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(A,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(J,MAT_CLASSID,8);
+  PetscValidHeaderSpecific(P,MAT_CLASSID,9);
+
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetI2Jacobian(dm,&I2Jacobian,&ctx);CHKERRQ(ierr);
+  ierr = DMTSGetRHSJacobian(dm,&rhsjacobian,NULL);CHKERRQ(ierr);
+
+  if (!I2Jacobian) {
+    ierr = TSComputeIJacobian(ts,t,U,A,shiftA,J,P,PETSC_FALSE);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,J,P);CHKERRQ(ierr);
+
+  PetscStackPush("TS user implicit Jacobian");
+  ierr = I2Jacobian(ts,t,U,V,A,shiftV,shiftA,J,P,ctx);CHKERRQ(ierr);
+  PetscStackPop;
+
+  if (rhsjacobian) {
+    Mat Jrhs,Prhs; MatStructure axpy = DIFFERENT_NONZERO_PATTERN;
+    ierr = TSGetRHSMats_Private(ts,&Jrhs,&Prhs);CHKERRQ(ierr);
+    ierr = TSComputeRHSJacobian(ts,t,U,Jrhs,Prhs);CHKERRQ(ierr);
+    ierr = MatAXPY(J,-1,Jrhs,axpy);CHKERRQ(ierr);
+    if (P != J) {ierr = MatAXPY(P,-1,Prhs,axpy);CHKERRQ(ierr);}
+  }
+
+  ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,J,P);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TS2SetSolution"
+/*@
+   TS2SetSolution - Sets the initial solution and time derivative vectors
+   for use by the TS routines handling second order equations.
+
+   Logically Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+.  u - the solution vector
+-  v - the time derivative vector
+
+   Level: beginner
+
+.keywords: TS, timestep, set, solution, initial conditions
+@*/
+PetscErrorCode  TS2SetSolution(TS ts,Vec u,Vec v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,3);
+  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)v);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_dot);CHKERRQ(ierr);
+  ts->vec_dot = v;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TS2GetSolution"
+/*@
+   TS2GetSolution - Returns the solution and time derivative at the present timestep
+   for second order equations. It is valid to call this routine inside the function
+   that you are evaluating in order to move to the new timestep. This vector not
+   changed until the solution at the next timestep has been calculated.
+
+   Not Collective, but Vec returned is parallel if TS is parallel
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
++  u - the vector containing the solution
+-  v - the vector containing the time derivative
+
+   Level: intermediate
+
+.seealso: TS2SetSolution(), TSGetTimeStep(), TSGetTime()
+
+.keywords: TS, timestep, get, solution
+@*/
+PetscErrorCode  TS2GetSolution(TS ts,Vec *u,Vec *v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (u) PetscValidPointer(u,2);
+  if (v) PetscValidPointer(v,3);
+  if (u) *u = ts->vec_sol;
+  if (v) *v = ts->vec_dot;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSLoad"
 /*@C
   TSLoad - Loads a KSP that has been stored in binary  with KSPView().
@@ -1984,6 +2372,7 @@ PetscErrorCode  TSSetUp(TS ts)
   PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*);
   TSIFunction    ifun;
   TSIJacobian    ijac;
+  TSI2Jacobian   i2jac;
   TSRHSJacobian  rhsjac;
 
   PetscFunctionBegin;
@@ -2033,8 +2422,9 @@ PetscErrorCode  TSSetUp(TS ts)
    */
   ierr = DMSNESGetJacobian(dm,&jac,NULL);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijac,NULL);CHKERRQ(ierr);
+  ierr = DMTSGetI2Jacobian(dm,&i2jac,NULL);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjac,NULL);CHKERRQ(ierr);
-  if (!jac && (ijac || rhsjac)) {
+  if (!jac && (ijac || i2jac || rhsjac)) {
     ierr = DMSNESSetJacobian(dm,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   }
   ts->setupcalled = PETSC_TRUE;
@@ -2114,6 +2504,7 @@ PetscErrorCode  TSReset(TS ts)
   ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->Frhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_dot);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);

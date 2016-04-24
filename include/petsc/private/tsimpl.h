@@ -81,10 +81,11 @@ struct _p_TS {
   TSProblemType  problem_type;
   TSEquationType equation_type;
 
-  DM            dm;
-  Vec           vec_sol;
-  TSAdapt       adapt;
-  TSEvent       event;
+  DM             dm;
+  Vec            vec_sol; /* solution vector in first and second order equations */
+  Vec            vec_dot; /* time derivative vector in second order equations */
+  TSAdapt        adapt;
+  TSEvent        event;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*);
@@ -232,6 +233,9 @@ struct _DMTSOps {
   PetscErrorCode (*ijacobianview)(void*,PetscViewer);
   PetscErrorCode (*ijacobianload)(void**,PetscViewer);
 
+  TSI2Function i2function;
+  TSI2Jacobian i2jacobian;
+
   TSSolutionFunction solution;
   TSForcingFunction  forcing;
 
@@ -246,6 +250,9 @@ struct _p_DMTS {
 
   void *ifunctionctx;
   void *ijacobianctx;
+
+  void *i2functionctx;
+  void *i2jacobianctx;
 
   void *solutionctx;
   void *forcingctx;
