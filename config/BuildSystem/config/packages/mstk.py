@@ -21,6 +21,7 @@ class Configure(config.package.CMakePackage):
     self.mpi             = framework.require('config.packages.MPI',self)
     self.metis           = framework.require('config.packages.metis',self)
     self.zoltan          = framework.require('config.packages.Zoltan',self)
+    self.exodusii        = framework.require('config.packages.exodusii',self)
     self.trilinos        = framework.require('config.packages.Trilinos',self)
     self.deps            = [self.mpi]
     return
@@ -50,6 +51,12 @@ class Configure(config.package.CMakePackage):
         args.append('-DZOLTAN_DIR:FILEPATH='+self.zoltan.directory)
       else:
        args.append('-DZOLTAN_DIR:FILEPATH='+self.trilinos.directory)
+    if self.exodusii.found or self.trilinos.found:
+      args.append('-DENABLE_EXODUSII:BOOL=ON')
+      if self.exodusii.found:
+        args.append('-DEXODUSII_DIR:FILEPATH='+self.exodusii.directory)
+      else:
+        args.append('-DEXODUSII_DIR:FILEPATH='+self.trilinos.directory)
 
     #  Need to pass -DMETIS_5 to C and C++ compiler flags otherwise assumes older Metis
     args = self.rmArgsStartsWith(args,['-DCMAKE_CXX_FLAGS:STRING','-DCMAKE_C_FLAGS:STRING'])
