@@ -2023,6 +2023,11 @@ runex129_2:
 	   if (${DIFF} output/ex129.out ex129.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex129_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex129.tmp
+runex132:
+	-@${MPIEXEC} -n 1  ./ex132  > ex132_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex132_1.out ex132_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex132_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex132_1.tmp
 
 runex134:
 	-@${MPIEXEC} -n 2 ./ex134 -mat_ignore_lower_triangular | ${SED} 's,mem [0-9]\{4\},mem SKIP,' > ex134_1.tmp 2>&1; \
@@ -2502,7 +2507,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  ex109.PETSc runex109 runex109_1 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm \
                                  ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
-                                 ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
+                                 ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc runex132 ex132.rm \
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm \
                                  ex137.PETSc runex137 ex137.rm \
                                  ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm \

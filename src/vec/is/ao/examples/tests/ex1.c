@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   /* test MemoryScalable ao: ispetsc = NULL */
   /*-----------------------------------------------*/
   if (!rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\nTest AOCreateMemoryScalable with ispetsc=NULL:\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\nTest AOCreateMemoryScalable with ispetsc=NULL:\n");CHKERRQ(ierr);
   }
   ierr = AOCreateMemoryScalableIS(isapp,NULL,&ao);CHKERRQ(ierr);CHKERRQ(ierr);
 

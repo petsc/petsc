@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     ierr = KSPSetDM(ksp, shell); CHKERRQ(ierr);
 
     ierr = KSPCreateVecs(ksp, 1, &right, 1, &left); CHKERRQ(ierr);
-    ierr = VecView(right[0], PETSC_VIEWER_STDOUT_(c));
+    ierr = VecView(right[0], PETSC_VIEWER_STDOUT_(c));CHKERRQ(ierr);
     ierr = VecDestroyVecs(1,&right); CHKERRQ(ierr);
     ierr = VecDestroyVecs(1,&left); CHKERRQ(ierr);
 
