@@ -189,13 +189,16 @@ PetscOptionsGetAll(PetscOptions,char*[]);
         <li>TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
         <li>-ts_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
         <li>-ts_monitor_binary_solution filename should now be written as -ts_monitor_solution binary:filename</li>
-        <li>Renamed TSSetEventMonitor() to TSSetEventHandler()</li>
+        <li>Renamed TSSetEventMonitor() to TSSetEventHandler(). Updated many TS implementations to support event detection.</li>
+        <li>Updated TSTHETA, TSBEULER, and TSCN to support time adaptivity by estimating the local truncation error with a BDF-2 formula.</li>
         <li>Updated TSALPHA implementation. Removed TSAlphaSetAdapt() and TSAlphaAdaptDefault(), use TSAlphaUseAdapt() instead.</li>
+        <li>Added TSBDF, an implementation of backward difference formulas using constant order (1 to 6) and supporting time adaptivity.</li>
+        <li>Implemented new interface for second-order systems to avoid using a first-order system formulation. Added TSALPHA2 implementation (generalized-alpha, Chung &amp Hubert 1993) featuring user-controlled damping of high-frequency modes and time adaptivity through a BDF-2 formula.</li>
       </ul>
       <h4>DM/DA:</h4>
       <ul>
         <li>Added DMShellSetCreateRestriction</li>
-        <li>Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()</li>        
+        <li>Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()</li>
         <li>DMLabel labels are now available to all DM objects, not just DMPlex object</li>
         <li>DMClone() now handles copying the coordinates, so that DMCopyCoordinates() is no longer necessary</li>
       </ul>
