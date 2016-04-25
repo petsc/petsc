@@ -8637,7 +8637,7 @@ which can also be represented as the DAG
   \draw[sec] (e0)  -- (f0);
   \draw[sec] (e1)  -- (f0);
   \draw[sec] (e2)  -- (f0);
-  \draw[sec] (e2)  -- (f1);
+  \draw[sec] (e1)  -- (f1);
   \draw[sec] (e3)  -- (f1);
   \draw[sec] (e4)  -- (f1);
 \end{tikzpicture}
@@ -8665,7 +8665,7 @@ to preallocate correctly, we first setup sizes,
 and then point values,
 \begin{tabbing}
   DMPlexSetCone(dm, 0, [6, 7, 8]);\\
-  DMPlexSetCone(dm, 1, [8, 9, 10]);\\
+  DMPlexSetCone(dm, 1, [7, 9, 10]);\\
   DMPlexSetCone(dm, 6, [2, 3]);\\
   DMPlexSetCone(dm, 7, [3, 4]);\\
   DMPlexSetCone(dm, 8, [4, 2]);\\
