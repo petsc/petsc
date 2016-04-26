@@ -6411,6 +6411,23 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     PetscInt      dim;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
+    if (!ctx->names) {
+      PetscBool flg;
+      /* user provides names of variables to plot but no names has been set so assume names are integer values */
+      ierr = PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",&flg);CHKERRQ(ierr);
+      if (flg) {
+        PetscInt i,n;
+        char     **names;
+        ierr = VecGetSize(u,&n);CHKERRQ(ierr);
+        ierr = PetscMalloc1(n+1,&names);CHKERRQ(ierr);
+        for (i=0; i<n; i++) {
+          ierr = PetscMalloc1(5,&names[i]);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(names[i],5,"%D",i);CHKERRQ(ierr);
+        }
+        names[n] = NULL;
+        ctx->names = names;
+      }
+    }
     if (ctx->names && !ctx->displaynames) {
       char      **displaynames;
       PetscBool flg;
