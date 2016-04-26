@@ -140,6 +140,8 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   DMForestAdaptivityStrategy strat;
   PetscDS          ds;
   void             *ctx;
+  PetscErrorCode   (*map) (DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], void *);
+  void             *mapCtx;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -163,6 +165,8 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   ierr = DMForestSetAdaptivityStrategy(*tdm,strat);CHKERRQ(ierr);
   ierr = DMForestGetGradeFactor(dm,&factor);CHKERRQ(ierr);
   ierr = DMForestSetGradeFactor(*tdm,factor);CHKERRQ(ierr);
+  ierr = DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx);CHKERRQ(ierr);
+  ierr = DMForestSetBaseCoordinateMapping(*tdm,map,mapCtx);CHKERRQ(ierr);
   if (forest->ftemplate) {
     ierr = (forest->ftemplate) (dm, *tdm);CHKERRQ(ierr);
   }
@@ -346,6 +350,32 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(base, 2);
   *base = forest->base;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetBaseCoordinateMapping"
+PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM,PetscInt,PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  forest->mapcoordinates = func;
+  forest->mapcoordinatesctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetBaseCoordinateMapping"
+PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(DM,PetscInt,PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (func) *func = forest->mapcoordinates;
+  if (ctx) *((void **) ctx) = forest->mapcoordinatesctx;
   PetscFunctionReturn(0);
 }
 
