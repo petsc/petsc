@@ -4,32 +4,27 @@
 #include <petsc/private/kernels/blockinvert.h>
 #include <petscis.h>
 
-/*
-  input:
-   F -- numeric factor
-  output:
-   nneg, nzero, npos: matrix inertia
-*/
-
 #undef __FUNCT__
 #define __FUNCT__ "MatGetInertia_SeqSBAIJ"
-PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneig,PetscInt *nzero,PetscInt *npos)
+PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneg,PetscInt *nzero,PetscInt *npos)
 {
-  Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;
-  MatScalar    *dd       = fact_ptr->a;
-  PetscInt     mbs       =fact_ptr->mbs,bs=F->rmap->bs,i,nneig_tmp,npos_tmp,*fi = fact_ptr->diag;
+  Mat_SeqSBAIJ *fact=(Mat_SeqSBAIJ*)F->data;
+  MatScalar    *dd=fact->a;
+  PetscInt     mbs=fact->mbs,bs=F->rmap->bs,i,nneg_tmp,npos_tmp,*fi=fact->diag;
 
   PetscFunctionBegin;
   if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for bs: %D >1 yet",bs);
-  nneig_tmp = 0; npos_tmp = 0;
+  if (F->errortype==MAT_FACTOR_NUMERIC_ZEROPIVOT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatFactor fails with numeric zeropivot");
+
+  nneg_tmp = 0; npos_tmp = 0;
   for (i=0; i<mbs; i++) {
     if (PetscRealPart(dd[*fi]) > 0.0) npos_tmp++;
-    else if (PetscRealPart(dd[*fi]) < 0.0) nneig_tmp++;
+    else if (PetscRealPart(dd[*fi]) < 0.0) nneg_tmp++;
     fi++;
   }
-  if (nneig) *nneig = nneig_tmp;
+  if (nneg)  *nneg  = nneg_tmp;
   if (npos)  *npos  = npos_tmp;
-  if (nzero) *nzero = mbs - nneig_tmp - npos_tmp;
+  if (nzero) *nzero = mbs - nneg_tmp - npos_tmp;
   PetscFunctionReturn(0);
 }
 
