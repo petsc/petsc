@@ -440,7 +440,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   /* Test whether we are on the bottom edge of the global array */
   if (yints == 0) {
     j     = 0;
-    yints = yints + 1;
     /* bottom edge */
     for (i=info.xs; i<info.xs+info.xm; i++) {
 
@@ -459,7 +458,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   /* Test whether we are on the top edge of the global array */
   if (yinte == info.my) {
     j     = info.my - 1;
-    yinte = yinte - 1;
     /* top edge */
     for (i=info.xs; i<info.xs+info.xm; i++) {
       if (B) {
@@ -477,7 +475,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   /* Test whether we are on the left edge of the global array */
   if (xints == 0) {
     i     = 0;
-    xints = xints + 1;
     /* left edge */
     for (j=info.ys; j<info.ys+info.ym; j++) {
       if (B) {
@@ -495,7 +492,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   /* Test whether we are on the right edge of the global array */
   if (xinte == info.mx) {
     i     = info.mx - 1;
-    xinte = xinte - 1;
     /* right edge */
     for (j=info.ys; j<info.ys+info.ym; j++) {
       if (B) {

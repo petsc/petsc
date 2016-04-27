@@ -156,7 +156,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   PetscScalar    xi,yi;
   PetscScalar    sigmax=user->sigmax,sigmay=user->sigmay;
   PetscScalar    rho   =user->rho;
-  PetscScalar    mux   =user->mux,muy=user->muy;
+  PetscScalar    muy=user->muy;
   PetscMPIInt    rank;
   PetscScalar    sum;
 
