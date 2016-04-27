@@ -11,14 +11,14 @@ class TSType(object):
     PYTHON   = S_(TSPYTHON)
     THETA    = S_(TSTHETA)
     ALPHA    = S_(TSALPHA)
-    #ALPHA2  = S_(TSALPHA2)
+    ALPHA2  = S_(TSALPHA2)
     GL       = S_(TSGL)
     SSP      = S_(TSSSP)
     ARKIMEX  = S_(TSARKIMEX)
     ROSW     = S_(TSROSW)
     EIMEX    = S_(TSEIMEX)
     MIMEX    = S_(TSMIMEX)
-    #BDF      = S_(TSBDF)
+    BDF      = S_(TSBDF)
     # aliases
     FE = EULER
     BE = BEULER
