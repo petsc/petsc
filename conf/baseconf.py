@@ -262,19 +262,21 @@ class PetscConfig:
         version = ".".join([str(i) for i in self.version[0]])
         release = ("development", "release")[self.version[1]]
         version_info = version + ' ' + release
-        scalar_type = self['PETSC_SCALAR']
-        precision   = self['PETSC_PRECISION']
-        language    = self['PETSC_LANGUAGE']
-        compiler    = self['PCC']
-        linker      = self['PCC_LINKER']
-        log.info('PETSC_DIR:   %s' % PETSC_DIR )
-        log.info('PETSC_ARCH:  %s' % PETSC_ARCH )
-        log.info('version:     %s' % version_info)
-        log.info('scalar-type: %s' % scalar_type)
-        log.info('precision:   %s' % precision)
-        log.info('language:    %s' % language)
-        log.info('compiler:    %s' % compiler)
-        log.info('linker:      %s' % linker)
+        integer_size = '%s-bit' % self['PETSC_INDEX_SIZE']
+        scalar_type  = self['PETSC_SCALAR']
+        precision    = self['PETSC_PRECISION']
+        language     = self['PETSC_LANGUAGE']
+        compiler     = self['PCC']
+        linker       = self['PCC_LINKER']
+        log.info('PETSC_DIR:    %s' % PETSC_DIR )
+        log.info('PETSC_ARCH:   %s' % PETSC_ARCH )
+        log.info('version:      %s' % version_info)
+        log.info('integer-size: %s' % integer_size)
+        log.info('scalar-type:  %s' % scalar_type)
+        log.info('precision:    %s' % precision)
+        log.info('language:     %s' % language)
+        log.info('compiler:     %s' % compiler)
+        log.info('linker:       %s' % linker)
 
 # --------------------------------------------------------------------
 
