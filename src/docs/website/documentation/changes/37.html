@@ -172,6 +172,8 @@ PetscOptionsGetAll(PetscOptions,char*[]);
       <ul>
         <li>KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
         <li>-ksp_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
+        <li> A Flexible Conjugate Gradient (FCG) implementation has been added as KSPFCG.
+        <li> New implementations for pipelined, flexible Krylov methods have been added as KSPPIPEFGMRES, KSPPIPEFCG, and KSPPIPEGCR.
       </ul>
       <h4>SNES:</h4>
       <ul>

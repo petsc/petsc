@@ -1488,7 +1488,7 @@ PetscErrorCode TSGetI2Function(TS ts,Vec *r,TSI2Function *fun,void **ctx)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetI2Jacobian"
 /*@C
-   TSSetIJacobian - Set the function to compute the matrix dF/dU + v*dF/dU_t  + a*dF/dU_tt
+   TSSetI2Jacobian - Set the function to compute the matrix dF/dU + v*dF/dU_t  + a*dF/dU_tt
         where F(t,U,U_t,U_tt) is the function you provided with TSSetI2Function().
 
    Logically Collective on TS
@@ -1501,7 +1501,7 @@ PetscErrorCode TSGetI2Function(TS ts,Vec *r,TSI2Function *fun,void **ctx)
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
-$  jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat *J,Mat *P,MatStructure *m,void *ctx);
+$  jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat J,Mat P,void *ctx);
 
 +  t    - time at step/stage being solved
 .  U    - state vector
@@ -1511,8 +1511,6 @@ $  jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat *J,M
 .  a    - shift for U_tt
 .  J    - Jacobian of G(U) = F(t,U,W+v*U,W'+a*U), equivalent to dF/dU + v*dF/dU_t  + a*dF/dU_tt
 .  P    - preconditioning matrix for J, may be same as J
-.  m    - flag indicating information about the preconditioner matrix
-          structure (same as flag in KSPSetOperators())
 -  ctx  - [optional] user-defined context for matrix evaluation routine
 
    Notes:
@@ -1521,7 +1519,7 @@ $  jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,PetscReal a,Mat *J,M
    The matrix dF/dU + v*dF/dU_t + a*dF/dU_tt you provide turns out to be
    the Jacobian of G(U) = F(t,U,W+v*U,W'+a*U) where F(t,U,U_t,U_tt) = 0 is the DAE to be solved.
    The time integrator internally approximates U_t by W+v*U and U_tt by W'+a*U  where the positive "shift"
-   parameters 'a' and 'b' and vectors W, W' depend on the integration method, step size, and past states.
+   parameters 'v' and 'a' and vectors W, W' depend on the integration method, step size, and past states.
 
    Level: beginner
 
