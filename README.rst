@@ -17,7 +17,7 @@ Dependencies
 
 * A recent NumPy_ release.
 
-* To work with the in-development version, you need to install Cython_.
+* To work with the in-development version, you need Cython_.
 
 .. _PETSc:  http://www.mcs.anl.gov/petsc/
 .. _Python: http://www.python.org

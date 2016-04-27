@@ -19,5 +19,3 @@
 .. _petsc4py:     http://bitbucket.org/petsc/petsc4py
 
 .. _slepc4py:     http://bitbucket.org/slepc/slepc4py
-
-.. _CIMEC:        http://www.cimec.org.ar

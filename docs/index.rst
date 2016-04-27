@@ -4,8 +4,6 @@ PETSc for Python
 
 :Author:       Lisandro Dalcin
 :Contact:      dalcinl@gmail.com
-:Organization: `CIMEC <http://www.cimec.org.ar/>`_
-:Address:      CCT CONICET, 3000 Santa Fe, Argentina
 
 
 Online Documentation
@@ -50,11 +48,19 @@ project.
   Advances in Water Resources, 34(9):1124-1139, 2011.
   http://dx.doi.org/10.1016/j.advwatres.2011.04.013
 
+* S. Balay, S. Abhyankar, M.F. Adams, J. Brown, P. Brune, K. Buschelman,
+  L. Dalcin, V. Eijkhout, W.D. Gropp, D. Karpeyev, D. Kaushik,
+  M.G. Knepley, L. Curfman McInnes, K. Rupp, B.F. Smith, S. Zampini,
+  H. Zhang, and H. Zhang,
+  *PETSc Users Manual*, ANL-95/11 - Revision 3.7, 2016.
+  http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf
+
 
 Acknowledgments
 ---------------
 
-This project was partially supported by the Center for Numerical
-Porous Media, Division of Computer, Electrical, and Mathematical
-Sciences & Engineering, King Abdullah University of Science and
-Technology (KAUST).
+This project was partially supported by the
+Extreme Computing Research Center (ECRC),
+Division of Computer, Electrical, and
+Mathematical Sciences & Engineering (CEMSE),
+King Abdullah University of Science and Technology (KAUST).

@@ -11,7 +11,8 @@ project.
   http://dx.doi.org/10.1016/j.advwatres.2011.04.013
 
 * S. Balay, S. Abhyankar, M.F. Adams, J. Brown, P. Brune, K. Buschelman,
-  L. Dalcin, V. Eijkhout, W.D. Gropp, D. Kaushik, M.G. Knepley,
-  L. Curfman McInnes, K. Rupp, B.F. Smith, S. Zampini, and H. Zhang,
-  *PETSc Users Manual*, ANL-95/11 - Revision 3.6, 2015.
+  L. Dalcin, V. Eijkhout, W.D. Gropp, D. Karpeyev, D. Kaushik,
+  M.G. Knepley, L. Curfman McInnes, K. Rupp, B.F. Smith, S. Zampini,
+  H. Zhang, and H. Zhang,
+  *PETSc Users Manual*, ANL-95/11 - Revision 3.7, 2016.
   http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf

@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PETSc for Python'
-copyright = u'2015, Lisandro Dalcin'
+copyright = u'2016, Lisandro Dalcin'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -271,7 +271,7 @@ texinfo_documents = [
 epub_title = u'petsc4py'
 epub_author = u'Lisandro Dalcin'
 epub_publisher = u'Lisandro Dalcin'
-epub_copyright = u'2015, Lisandro Dalcin'
+epub_copyright = u'2016, Lisandro Dalcin'
 
 # The basename for the epub file. It defaults to the project name.
 epub_basename = u'petsc4py'
