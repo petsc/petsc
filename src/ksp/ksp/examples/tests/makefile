@@ -809,15 +809,21 @@ runex33:
 	   else printf "${PWD}\nPossible problem with ex33, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex33.tmp
 runex33_mumps:
-	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 > ex33.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex33_mumps, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex33.tmp
 runex33_mumps_2:
-	-@${MPIEXEC} -n 3 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 > ex33.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex33_mumps_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex33.tmp
+runex33_mkl_pardiso:
+	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mkl_pardiso > ex33.tmp 2>&1; \
+	if (${DIFF} output/ex33.out ex33.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex33_mumps, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex33.tmp
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex37:
 	-@${MPIEXEC} -n 1 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 1 > ex37.tmp 2>&1;\
@@ -1021,4 +1027,6 @@ TESTEXAMPLES_CUDA_DATAFILESPATH = ex43.PETSc runex43 runex43_2 runex43_3 runex43
 TESTEXAMPLES_SUITESPARSE       = ex32.PETSc runex32_cholmod runex32_cholmod_seqsbaij ex32.rm
 TESTEXAMPLES_CHOMBO            =
 TESTEXAMPLES_SUPERLU_DIST_COMPLEX = ex17.PETSc runex17_superlu_dist runex17_superlu_dist_2 ex17.rm
+TESTEXAMPLES_MUMPS             = ex33.PETSc runex33_mumps runex33_mumps_2 ex33.rm
+TESTEXAMPLES_MKL_PARDISO       = ex33.PETSc runex33_mkl_pardiso ex33.rm
 include ${PETSC_DIR}/lib/petsc/conf/test
