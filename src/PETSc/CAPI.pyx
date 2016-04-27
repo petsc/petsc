@@ -143,6 +143,19 @@ cdef api PetscScatter PyPetscScatter_Get(object arg) except ? NULL:
     retv = ob.sct
     return retv
 
+# -- Section --
+
+cdef api object PyPetscSection_New(PetscSection arg):
+    cdef Section retv = Section()
+    setref(&retv.sec, arg)
+    return retv
+
+cdef api PetscSection PyPetscSection_Get(object arg) except ? NULL:
+    cdef PetscSection retv = NULL
+    cdef Section ob = <Section?> arg
+    retv = ob.sec
+    return retv
+
 # -- Mat --
 
 cdef api object PyPetscMat_New(PetscMat arg):

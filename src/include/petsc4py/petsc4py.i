@@ -443,6 +443,7 @@ SWIG_From_dec(Type)(Type v) {
 %define SWIG_TYPECHECK_PETSC_SF            512 %enddef
 %define SWIG_TYPECHECK_PETSC_VEC           513 %enddef
 %define SWIG_TYPECHECK_PETSC_VEC_SCATTER   514 %enddef
+%define SWIG_TYPECHECK_PETSC_SECTION       515 %enddef
 
 %define SWIG_TYPECHECK_PETSC_MAT           520 %enddef
 %define SWIG_TYPECHECK_PETSC_MAT_NULLSPACE 521 %enddef
@@ -562,6 +563,7 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_objt( Petsc , SF          , SF                     , PETSC_SF            )
 %petsc4py_objt( Petsc , Vec         , Vec                    , PETSC_VEC           )
 %petsc4py_objt( Petsc , Scatter     , VecScatter             , PETSC_VEC_SCATTER   )
+%petsc4py_objt( Petsc , Section     , PetscSection           , PETSC_SECTION       )
 %petsc4py_objt( Petsc , Mat         , Mat                    , PETSC_MAT           )
 %petsc4py_objt( Petsc , NullSpace   , MatNullSpace           , PETSC_MAT_NULLSPACE )
 %petsc4py_objt( Petsc , KSP         , KSP                    , PETSC_KSP           )
