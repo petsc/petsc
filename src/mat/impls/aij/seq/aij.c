@@ -1959,7 +1959,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
     }
     *nrm = PetscSqrtReal(sum);
-    PetscLogFlops(2*a->nz);
+    ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     PetscReal *tmp;
     PetscInt  *jj = a->j;
@@ -1972,7 +1972,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
       if (tmp[j] > *nrm) *nrm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
-    PetscLogFlops(a->nz-1);
+    ierr = PetscLogFlops(PetscMax(a->nz-1,0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     *nrm = 0.0;
     for (j=0; j<A->rmap->n; j++) {
@@ -1983,7 +1983,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-    PetscLogFlops(a->nz-1);
+    ierr = PetscLogFlops(PetscMax(a->nz-1,0));CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for two norm");
   PetscFunctionReturn(0);
 }
