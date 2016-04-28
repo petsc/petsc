@@ -1304,13 +1304,15 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   PetscInt      *assignment, *points;
   PetscMPIInt    rank, p, v, i;
   PetscErrorCode ierr;
+  PetscInt       cstart, cend, dof;
+  PetscSection   dfsection;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   options[0] = 0; /* Use all defaults */
   /* Calculate vertex distribution */
-  ierr = PetscMalloc4(nparts+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment);CHKERRQ(ierr);
+  ierr = PetscMalloc5(nparts+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment,nvtxs,&vwgt);CHKERRQ(ierr);
   vtxdist[0] = 0;
   ierr = MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm);CHKERRQ(ierr);
   for (p = 2; p <= nparts; ++p) {
@@ -1321,6 +1323,13 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
     tpwgts[p] = 1.0/nparts;
   }
   ubvec[0] = 1.05;
+
+  ierr = DMPlexGetHeightStratum(dm,0,&cstart,&cend);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm,&dfsection);CHKERRQ(ierr);
+  for(i= cstart; i < cend; i++) {
+    ierr = PetscSectionGetDof(dfsection,i,&dof);CHKERRQ(ierr);
+    vwgt[i-cstart] = (dof == 0) ? 1 : dof;
+  }
 
   if (nparts == 1) {
     ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));CHKERRQ(ierr);
@@ -1351,7 +1360,7 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   }
   if (i != nvtxs) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
-  ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
+  ierr = PetscFree5(vtxdist,tpwgts,ubvec,assignment,vwgt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else
   SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
