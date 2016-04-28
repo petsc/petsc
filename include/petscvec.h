@@ -110,6 +110,7 @@ typedef const char* VecType;
 
 
 /* Logging support */
+#define    REAL_FILE_CLASSID 1211213
 #define    VEC_FILE_CLASSID 1211214
 PETSC_EXTERN PetscClassId VEC_CLASSID;
 PETSC_EXTERN PetscClassId VEC_SCATTER_CLASSID;
