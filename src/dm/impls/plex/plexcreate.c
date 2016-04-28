@@ -1498,7 +1498,7 @@ static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt n
   }
   PetscHashISize(vhash, numVerticesAdj);
   ierr = PetscMalloc1(numVerticesAdj, &verticesAdj);CHKERRQ(ierr);
-  ierr = PetscHashIGetKeys(vhash, &off, verticesAdj);CHKERRQ(ierr);
+  off = 0; ierr = PetscHashIGetKeys(vhash, &off, verticesAdj);CHKERRQ(ierr);
   if (off != numVerticesAdj) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %D should be %D", off, numVerticesAdj);
   ierr = PetscMalloc1(numVerticesAdj, &remoteVerticesAdj);CHKERRQ(ierr);
   for (v = 0; v < numVerticesAdj; ++v) {
