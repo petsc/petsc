@@ -6,13 +6,13 @@ typedef struct {
   PetscReal safety;             /* safety factor relative to target error */
   PetscReal reject_safety;      /* extra safety factor if the last step was rejected */
   Vec       Y;
-} TSAdapt_Basic;
+} TSAdapt_GLEE;
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdaptChoose_Basic"
-static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
+#define __FUNCT__ "TSAdaptChoose_GLEE"
+static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
 {
-  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  TSAdapt_GLEE  *basic = (TSAdapt_GLEE*)adapt->data;
   PetscErrorCode ierr;
   Vec            X,Y;
   PetscReal      enorm,hfac_lte,h_lte,safety;
@@ -60,10 +60,10 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdaptReset_Basic"
-static PetscErrorCode TSAdaptReset_Basic(TSAdapt adapt)
+#define __FUNCT__ "TSAdaptReset_GLEE"
+static PetscErrorCode TSAdaptReset_GLEE(TSAdapt adapt)
 {
-  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  TSAdapt_GLEE  *basic = (TSAdapt_GLEE*)adapt->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -72,28 +72,28 @@ static PetscErrorCode TSAdaptReset_Basic(TSAdapt adapt)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdaptDestroy_Basic"
-static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
+#define __FUNCT__ "TSAdaptDestroy_GLEE"
+static PetscErrorCode TSAdaptDestroy_GLEE(TSAdapt adapt)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSAdaptReset_Basic(adapt);CHKERRQ(ierr);
+  ierr = TSAdaptReset_GLEE(adapt);CHKERRQ(ierr);
   ierr = PetscFree(adapt->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetFromOptions_Basic"
-static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
+#define __FUNCT__ "TSAdaptSetFromOptions_GLEE"
+static PetscErrorCode TSAdaptSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
 {
-  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  TSAdapt_GLEE  *basic = (TSAdapt_GLEE*)adapt->data;
   PetscErrorCode ierr;
   PetscInt       two;
   PetscBool      set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Basic adaptive controller options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"GLEE adaptive controller options");CHKERRQ(ierr);
   two  = 2;
   ierr = PetscOptionsRealArray("-ts_adapt_basic_clip","Admissible decrease/increase in step size","",basic->clip,&two,&set);CHKERRQ(ierr);
   if (set && (two != 2 || basic->clip[0] > basic->clip[1])) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_basic_clip");
@@ -105,44 +105,44 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptionItems *PetscOptions
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdaptView_Basic"
-static PetscErrorCode TSAdaptView_Basic(TSAdapt adapt,PetscViewer viewer)
+#define __FUNCT__ "TSAdaptView_GLEE"
+static PetscErrorCode TSAdaptView_GLEE(TSAdapt adapt,PetscViewer viewer)
 {
-  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  TSAdapt_GLEE  *basic = (TSAdapt_GLEE*)adapt->data;
   PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (basic->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  Basic: always accepting steps\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"  Basic: clip fastest decrease %g, fastest increase %g\n",(double)basic->clip[0],(double)basic->clip[1]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Basic: safety factor %g, extra factor after step rejection %g\n",(double)basic->safety,(double)basic->reject_safety);CHKERRQ(ierr);
+    if (basic->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  GLEE: always accepting steps\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer,"  GLEE: clip fastest decrease %g, fastest increase %g\n",(double)basic->clip[0],(double)basic->clip[1]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GLEE: safety factor %g, extra factor after step rejection %g\n",(double)basic->safety,(double)basic->reject_safety);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdaptCreate_Basic"
+#define __FUNCT__ "TSAdaptCreate_GLEE"
 /*MC
-   TSADAPTBASIC - Basic adaptive controller for time stepping
+   TSADAPTBASIC - GLEE adaptive controller for time stepping
 
    Level: intermediate
 
 .seealso: TS, TSAdapt, TSSetAdapt()
 M*/
-PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt adapt)
 {
   PetscErrorCode ierr;
-  TSAdapt_Basic  *a;
+  TSAdapt_GLEE  *a;
 
   PetscFunctionBegin;
   ierr                       = PetscNewLog(adapt,&a);CHKERRQ(ierr);
   adapt->data                = (void*)a;
-  adapt->ops->choose         = TSAdaptChoose_Basic;
-  adapt->ops->setfromoptions = TSAdaptSetFromOptions_Basic;
-  adapt->ops->destroy        = TSAdaptDestroy_Basic;
-  adapt->ops->view           = TSAdaptView_Basic;
+  adapt->ops->choose         = TSAdaptChoose_GLEE;
+  adapt->ops->setfromoptions = TSAdaptSetFromOptions_GLEE;
+  adapt->ops->destroy        = TSAdaptDestroy_GLEE;
+  adapt->ops->view           = TSAdaptView_GLEE;
 
   a->clip[0]       = 0.1;
   a->clip[1]       = 10.;

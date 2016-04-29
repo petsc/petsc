@@ -577,6 +577,7 @@ typedef struct _p_TSAdapt *TSAdapt;
 .seealso: TSAdaptSetType(), TS
 E*/
 typedef const char *TSAdaptType;
+#define TSADAPTGLEE  "glee"
 #define TSADAPTBASIC "basic"
 #define TSADAPTNONE  "none"
 #define TSADAPTCFL   "cfl"

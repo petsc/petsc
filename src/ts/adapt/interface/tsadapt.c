@@ -7,6 +7,7 @@ static PetscFunctionList TSAdaptList;
 static PetscBool         TSAdaptPackageInitialized;
 static PetscBool         TSAdaptRegisterAllCalled;
 
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
@@ -70,6 +71,7 @@ PetscErrorCode  TSAdaptRegisterAll(void)
   PetscFunctionBegin;
   if (TSAdaptRegisterAllCalled) PetscFunctionReturn(0);
   TSAdaptRegisterAllCalled = PETSC_TRUE;
+  ierr = TSAdaptRegister(TSADAPTGLEE ,TSAdaptCreate_GLEE);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTNONE, TSAdaptCreate_None);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTBASIC,TSAdaptCreate_Basic);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTCFL,  TSAdaptCreate_CFL);CHKERRQ(ierr);
