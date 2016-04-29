@@ -308,5 +308,5 @@ PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalBegin(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalEnd(DM, Vec, Vec);
 
 /* mesh adaptation */
-PetscErrorCode DMPlexAdapt(DM dm, Vec metric, DM *dmCoarsened);
+PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char [], DM *dmCoarsened);
 #endif

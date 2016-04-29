@@ -7,11 +7,11 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexAdaptdm->coarseMesh"
-PetscErrorCode DMPlexAdapt(DM dm, Vec metric, DM *dmCoarsened)
+PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmCoarsened)
 {
 #ifdef PETSC_HAVE_PRAGMATIC
   DM             udm, coordDM;
-  DMLabel        bd;
+  DMLabel        bd, bdtags;
   Vec            coordinates;
   PetscSection   coordSection;
   const PetscScalar *coords;
@@ -75,6 +75,11 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, DM *dmCoarsened)
       SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
     }
     /* Create boundary mesh */
+    if ( bdyLabelName ) {
+      ierr = DMGetLabel(dm, bdyLabelName, &bdtags);CHKERRQ(ierr);
+    }
+    // TODO fix if bdyLabelName = "boundary"
+    // TODO a way to use only bdyLabelName would be to loop over its strata, if I can't get all the strata at once
     ierr = DMLabelCreate("boundary", &bd);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);        
     ierr = DMLabelGetStratumIS(bd, 1, &bdIS);CHKERRQ(ierr);
@@ -99,8 +104,10 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, DM *dmCoarsened)
       for (cl = 0; cl < closureSize*2; cl += 2) {
         if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart;
       }
-      /* TODO Fix */
-      bdFaceIds[f] = 1;
+      if ( bdyLabelName ) 
+        DMLabelGetValue(bdtags, faces[f], &bdFaceIds[f]);
+      else  
+        bdFaceIds[f] = 1;
       ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&bdIS);CHKERRQ(ierr);
