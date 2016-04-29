@@ -22,7 +22,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
-                ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c
+                ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c
 
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F
 
@@ -756,10 +756,14 @@ ex196f90: ex196f90.o chkopts
 	-${FLINKER} -o ex196f90 ex196f90.o ${PETSC_MAT_LIB}
 	${RM} ex196f90.o
 
-
 ex197: ex197.o chkopts
 	-${CLINKER} -o ex197 ex197.o ${PETSC_MAT_LIB}
 	${RM} ex197.o
+
+ex198: ex198.o chkopts
+	-${CLINKER} -o ex198 ex198.o ${PETSC_MAT_LIB}
+	${RM} ex198.o
+
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
