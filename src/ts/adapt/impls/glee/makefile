@@ -3,12 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = adaptbasic.c
+SOURCEC  = adaptglee.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscts
 MANSEC   = TS
-LOCDIR   = src/ts/adapt/impls/basic/
+LOCDIR   = src/ts/adapt/impls/glee/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
