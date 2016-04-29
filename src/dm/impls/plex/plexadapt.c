@@ -23,6 +23,9 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmC
   PetscInt       dim, numCorners, cStart, cEnd, numCells, numCoarseCells, c, vStart, vEnd, numVertices, numCoarseVertices, v, numBdFaces, f, maxConeSize, bdSize, coff;
   const PetscScalar   *metricArray;
   PetscReal     *met;
+  PetscInt       *cell, perm[28], isInFacetClosure[28], iVer, i, idx, facet;
+  PetscInt      *boundaryTags;
+    
 #endif
   PetscErrorCode ierr;
   MPI_Comm       comm;
@@ -136,8 +139,64 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmC
     }
     ierr = PetscMalloc1(numCoarseCells*(dim+1), &ccells);CHKERRQ(ierr); // only for simplicial meshes
     pragmatic_get_elements(ccells);
-    /* TODO Read out markers for boundary */
-    ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCoarseCells, numCoarseVertices, numCorners, PETSC_TRUE, ccells, dim, coarseCoords, &dm->coarseMesh);CHKERRQ(ierr);  
+    ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCoarseCells, numCoarseVertices, numCorners, PETSC_TRUE, ccells, dim, coarseCoords, &dm->coarseMesh);CHKERRQ(ierr);
+    /* Read out boundary tags */
+    pragmatic_get_boundaryTags(&boundaryTags);
+    if ( !bdyLabelName ) bdyLabelName = "boundary";
+    ierr = DMCreateLabel(dm->coarseMesh, bdyLabelName);;CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm->coarseMesh, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm->coarseMesh, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    for (c = cStart; c < cEnd; ++c) {
+      PetscInt       *cellClosure = NULL;
+      PetscInt        cellClosureSize, cl;
+      PetscInt       *facetClosure = NULL;
+      PetscInt        facetClosureSize, cl2;   
+      const PetscInt *facetList;
+      PetscInt        facetListSize, f;
+      
+      cell = &ccells[(c-cStart)*(dim+1)]; // pointing to the current cell in the ccell table
+      ierr = DMPlexGetTransitiveClosure(dm->coarseMesh, c, PETSC_TRUE, &cellClosureSize, &cellClosure);CHKERRQ(ierr);
+      // first, encode the permutation of the vertices indices betwenn the cell closure and pragmatic ordering
+      for (cl = 0; cl < cellClosureSize*2; cl+=2 ) {
+        if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) continue;
+        iVer = cellClosure[cl] - vStart;
+        for (i=0; i<dim+1; ++i) {
+          if ( iVer == cell[i] ) {
+            perm[cl] = i;    // the cl-th vertex of the closure is the i-th vertex of the ccell
+            break;
+          }
+        }
+      }
+      ierr = DMPlexGetCone(dm->coarseMesh, c, &facetList);CHKERRQ(ierr);     // list of edges/facets of the cell
+      ierr = DMPlexGetConeSize(dm->coarseMesh, c, &facetListSize);CHKERRQ(ierr);
+      // then, for each edge/facet of the cell, find the opposite vertex (ie the one not in the closure of the facet/edge)
+      for (f=0; f<facetListSize; ++f){
+        facet = facetList[f];
+        ierr = DMPlexGetTransitiveClosure(dm->coarseMesh, facet, PETSC_TRUE, &facetClosureSize, &facetClosure);CHKERRQ(ierr);
+        // loop over the vertices of the cell closure, and check if each vertex belongs to the edge/facet closure
+        PetscMemzero(isInFacetClosure, sizeof(isInFacetClosure));
+        for (cl = 0; cl < cellClosureSize*2; cl+=2) {
+          if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) isInFacetClosure[cl] = 1;
+          for (cl2 =0; cl2<facetClosureSize*2; cl2+=2){
+            if ((facetClosure[cl2] < vStart) || (facetClosure[cl2] >= vEnd)) continue;
+            if ( cellClosure[cl] == facetClosure[cl2] ) {
+              isInFacetClosure[cl] = 1;
+            }
+          }
+        }
+        // the vertex that was not marked is the vertex opposite to the edge/facet, ie the one giving the edge/facet boundary tag in pragmatic
+        for (cl = 0; cl < cellClosureSize*2; cl+=2 ) {
+          if ( !isInFacetClosure[cl] ) {
+            idx = (c-cStart)*(dim+1) + perm[cl];
+            if ( boundaryTags[idx] ) 
+              ierr = DMSetLabelValue(dm->coarseMesh, bdyLabelName, facet, boundaryTags[idx]);CHKERRQ(ierr);
+            break;
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm->coarseMesh, facet, PETSC_TRUE, &facetClosureSize, &facetClosure);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm->coarseMesh, c, PETSC_TRUE, &cellClosureSize, &cellClosure);CHKERRQ(ierr);
+    }
     pragmatic_finalize();
     ierr = PetscFree4(x, y, z, cells);CHKERRQ(ierr);
     ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
