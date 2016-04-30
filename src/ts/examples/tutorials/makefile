@@ -737,16 +737,14 @@ runex42:
 	   ${DIFF} output/ex42.out ex42.tmp || printf "${PWD}\nPossible problem with ex42, diffs above\n=========================================\n"; \
 	   ${RM} -f ex42.tmp
 
-runex43: runex43_a runex43_b
-
 runex43_a:
 	-@${MPIEXEC} -n 1 ./ex43 -ts_max_steps 10 -ts_view > ex43_a.tmp 2>&1; \
-	   ${DIFF} output/ex43_a.out ex43_a.tmp || printf "${PWD}\nPossible problem with ex43, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex43_a.out ex43_a.tmp || printf "${PWD}\nPossible problem with ex43_a, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_a.tmp
 
 runex43_b:
 	-@${MPIEXEC} -n 1 ./ex43 -ts_max_steps 10 -ts_rtol 0 -ts_atol 1e-5 -ts_alpha_adapt -ts_adapt_monitor > ex43_b.tmp 2>&1; \
-	   ${DIFF} output/ex43_b.out ex43_b.tmp || printf "${PWD}\nPossible problem with ex43, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex43_b.out ex43_b.tmp || printf "${PWD}\nPossible problem with ex43_b, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_b.tmp
 
 runex44: runex44_a runex44_b runex44_2
@@ -780,11 +778,12 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 e
                             ex31.PETSc ex31.rm \
                             ex40.PETSc runex40 ex40.rm \
                             ex41.PETSc runex41 ex41.rm \
-                            ex43.PETSc runex43 ex43.rm \
+                            ex43.PETSc ex43.rm \
                             ex44.PETSc runex44 ex44.rm
 TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc runex12 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm \
-                            ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm
+                            ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm \
+                            ex43.PETSc runex43_a runex43_b ex43.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
                             ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
