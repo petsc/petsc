@@ -124,5 +124,5 @@ int main(int argc,char **argv)
   ierr = test1_DAInjection3d(mx,my,mz);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

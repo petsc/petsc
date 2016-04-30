@@ -170,7 +170,7 @@ int main(int Argc,char **Args)
   ierr = MatDestroy(&fmat);CHKERRQ(ierr);
   ierr = KSPDestroy(&kspmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* --------------------------------------------------------------------- */

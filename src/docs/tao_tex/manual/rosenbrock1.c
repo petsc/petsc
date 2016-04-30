@@ -48,6 +48,6 @@ int main(int argc,char **argv)
   ierr = TaoDestroy(&tao); CHKERRQ(ierr);
   ierr = VecDestroy(&x); CHKERRQ(ierr);
   ierr = MatDestroy(&H); CHKERRQ(ierr);
-
-  PetscFinalize();
+  ierr = PetscFinalize();
+  return ierr;
 }

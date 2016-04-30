@@ -987,5 +987,5 @@ int main(int argc, char **argv)
   ierr = PetscFEDestroy(&user.fe);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

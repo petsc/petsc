@@ -282,7 +282,7 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
         }
       }
     }
-    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann);
+    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann);CHKERRQ(ierr);
   }
   if (dirichlet) *dirichlet = temp_dirichlet;
   if (neumann) *neumann = temp_neumann;
@@ -928,8 +928,8 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
 
   PetscFunctionBeginUser;
   dd->gcomm = PETSC_COMM_WORLD;
-  ierr      = MPI_Comm_size(dd->gcomm,&sizes);
-  ierr      = MPI_Comm_rank(dd->gcomm,&rank);
+  ierr      = MPI_Comm_size(dd->gcomm,&sizes);CHKERRQ(ierr);
+  ierr      = MPI_Comm_rank(dd->gcomm,&rank);CHKERRQ(ierr);
   /* test data passed in */
   if (sizes<2) SETERRQ(dd->gcomm,PETSC_ERR_USER,"This is not a uniprocessor test");
   /* Get informations from command line */

@@ -39,7 +39,7 @@ int main(int argc,char **args)
   PetscBool      table     = PETSC_FALSE,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscBool      outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its,num_numfac,n,M;
+  PetscInt       its,num_numfac;
   PetscReal      rnorm,enorm;
   PetscBool      preload=PETSC_TRUE,diagonalscale,isSymmetric,ckrnorm=PETSC_TRUE,Test_MatDuplicate=PETSC_FALSE,ckerror=PETSC_FALSE;
   PetscMPIInt    rank;
@@ -102,22 +102,22 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
-  if (!preload) {
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetString(NULL,NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg) {   /* rhs is stored in a separate file */
-      ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-    } else {
-      /* if file contains no RHS, then use a vector of all ones */
-      ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
-      ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-      ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-      ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-      ierr = VecSet(b,1.0);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)b, "Rhs vector");CHKERRQ(ierr);
-    }
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetString(NULL,NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {   /* rhs is stored in a separate file */
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+    ierr = VecLoad(b,fd);CHKERRQ(ierr);
+  } else {
+    /* if file contains no RHS, then use a vector of all ones */
+    ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+    ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
+    ierr = VecSet(b,1.0);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)b, "Rhs vector");CHKERRQ(ierr);
   }
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
@@ -187,36 +187,6 @@ int main(int argc,char **args)
     ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
   }
 
-  /*
-     If the loaded matrix is larger than the vector (due to being padded
-     to match the block size of the system), then create a new padded vector.
-  */
-
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
-  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
-  ierr = VecGetSize(b,&m);CHKERRQ(ierr);
-  if (M != m) {   /* Create a new vector b by padding the old one */
-    PetscInt    j,mvec,start,end,indx;
-    Vec         tmp;
-    PetscScalar *bold;
-
-    ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
-    ierr = VecSetSizes(tmp,n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
-    ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
-    for (j=0; j<mvec; j++) {
-      indx = start+j;
-      ierr = VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
-    b    = tmp;
-  }
   ierr = VecDuplicate(b,&b2);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x, "Solution vector");CHKERRQ(ierr);
@@ -418,6 +388,6 @@ int main(int argc,char **args)
      ----------------------------------------------------------- */
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

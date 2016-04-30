@@ -47,8 +47,8 @@ int main(int argc,char **args)
   ierr = PetscIntView(cnt,values,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscHeapDestroy(&h);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 

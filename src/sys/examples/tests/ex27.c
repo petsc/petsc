@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscMergeIntArray(5,first,6,second,&n,&result);CHKERRQ(ierr);
   ierr = PetscIntView(n,result,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

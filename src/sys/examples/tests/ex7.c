@@ -23,6 +23,6 @@ int main(int argc,char **argv)
   ierr = PetscSortIntWithPermutation(8, x2, index2);
   for (i=0; i<8; i++) printf(" %d     %d     %d\n",x2[i], index2[i],x2[index2[i]]);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

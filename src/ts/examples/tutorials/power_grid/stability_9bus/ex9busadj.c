@@ -745,7 +745,6 @@ int main(int argc,char **argv)
   /* sensitivity context */
   PetscScalar    *y_ptr;
   Vec            lambda[1];
-  PetscInt       steps, total_steps = 0;
   PetscInt       *idx2;
   Vec            Xdot;
   Vec            F_alg;
@@ -855,8 +854,6 @@ int main(int argc,char **argv)
   user.alg_flg = PETSC_FALSE;
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  total_steps += steps;
 
   /* Create the nonlinear solver for solving the algebraic system */
   /* Note that although the algebraic system needs to be solved only for
@@ -898,8 +895,7 @@ int main(int argc,char **argv)
   user.alg_flg = PETSC_FALSE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  total_steps += steps;
+
   /* Remove the fault */
   row_loc = 2*user.faultbus; col_loc = 2*user.faultbus+1;
   val     = -1/user.Rfault;
@@ -926,8 +922,6 @@ int main(int argc,char **argv)
   user.alg_flg = PETSC_TRUE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  total_steps += steps;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here

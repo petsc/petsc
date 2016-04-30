@@ -212,5 +212,5 @@ int main(int argc, char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

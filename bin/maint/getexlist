@@ -66,7 +66,7 @@ sub ProcessFile {
     $filename = $_[0];
     print "File $filename\n" if $debug;
     #print "$filename\n";
-    #return 0;
+    #return 0;>
     open(INFILE, "<$filename" ) || die "Could not open $filename\n";
     $top_file = "";
     $top_file_end = 0;

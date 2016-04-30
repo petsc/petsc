@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   // appropriate.  You don't have to do anything here!  Just return
   // from main().  Isn't that helpful?
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

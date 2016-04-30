@@ -229,7 +229,7 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

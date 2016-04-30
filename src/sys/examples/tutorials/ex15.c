@@ -68,5 +68,5 @@ int main(int argc,char **argv)
   ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

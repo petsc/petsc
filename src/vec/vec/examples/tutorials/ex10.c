@@ -125,6 +125,6 @@ int main(int argc,char **args)
   /* Free data structures */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

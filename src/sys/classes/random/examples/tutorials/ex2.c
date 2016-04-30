@@ -15,12 +15,12 @@ struct himaInfoTag {
 };
 typedef struct himaInfoTag himaInfo;
 
-PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo);
-PetscReal mcVal(PetscReal St, PetscReal r, PetscReal vol, PetscReal dt, PetscReal eps);
-void exchange(PetscReal *a, PetscReal *b);
-PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r,PetscReal dt, PetscReal eps[]);
-void stdNormalArray(PetscReal *eps, PetscInt numdim,PetscRandom ran);
-PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size);
+PetscErrorCode readData(MPI_Comm,himaInfo *);
+PetscReal mcVal(PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
+void exchange(PetscReal*, PetscReal*);
+PetscReal basketPayoff(PetscReal[], PetscReal[], PetscInt, PetscReal,PetscReal, PetscReal[]);
+void stdNormalArray(PetscReal*, PetscInt,PetscRandom);
+PetscInt divWork(PetscMPIInt, PetscInt, PetscMPIInt);
 
 /*
    Contributed by Xiaoyan Zeng <zengxia@iit.edu> and Liu, Kwong Ip" <kiliu@math.hkbu.edu.hk>
@@ -42,7 +42,6 @@ int main(int argc, char *argv[])
   himaInfo       hinfo;
   PetscRandom    ran;
   PetscErrorCode ierr;
-  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
@@ -50,13 +49,6 @@ int main(int argc, char *argv[])
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);       /* number of nodes */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);     /* my ranking */
-
-  ierr = PetscOptionsHasName(NULL,NULL, "-check_generators", &flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscRandomGetValue(ran,(PetscScalar*)&r);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",rank,r);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);
-  }
 
   hinfo.n           = 31;
   hinfo.r           = 0.04;
@@ -73,13 +65,14 @@ int main(int argc, char *argv[])
   r           = hinfo.r;
   dt          = hinfo.dt;
   totalNumSim = hinfo.totalNumSim;
-  vol         = hinfo.vol = (PetscReal*)malloc(sizeof(PetscReal)*(2*n+1));
+  ierr        = PetscMalloc1(2*n+1,&hinfo.vol);CHKERRQ(ierr);
+  vol         = hinfo.vol;
   St0         = hinfo.St0 = hinfo.vol + n;
   ierr        = readData(PETSC_COMM_WORLD,&hinfo);CHKERRQ(ierr);
 
   numdim = n*(n+1)/2;
   if (numdim%2 == 1) numdim++;
-  eps = (PetscReal*)malloc(sizeof(PetscReal)*numdim);
+  ierr = PetscMalloc1(numdim,&eps);CHKERRQ(ierr);
 
   myNumSim = divWork(rank,totalNumSim,size);
 
@@ -94,26 +87,26 @@ int main(int argc, char *argv[])
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
    payoff,(int)(stop - start),"parallel",size,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
 
-  free(vol);
-  free(eps);
+  ierr = PetscFree(vol);CHKERRQ(ierr);
+  ierr = PetscFree(eps);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&ran);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 void stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
 {
   PetscInt       i;
-  PetscReal      u1,u2,t;
+  PetscScalar    u1,u2,t;
   PetscErrorCode ierr;
 
   for (i=0; i<numdim; i+=2) {
-    ierr = PetscRandomGetValue(ran,(PetscScalar*)&u1);CHKERRABORT(PETSC_COMM_WORLD,ierr);
-    ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
+    ierr = PetscRandomGetValue(ran,&u1);CHKERRABORT(PETSC_COMM_WORLD,ierr);
+    ierr = PetscRandomGetValue(ran,&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
 
-    t        = PetscSqrtReal(-2*PetscLogReal(u1));
-    eps[i]   = t * PetscCosReal(2*PETSC_PI*u2);
-    eps[i+1] = t * PetscSinReal(2*PETSC_PI*u2);
+    t        = PetscSqrtReal(-2*PetscLogReal(PetscRealPart(u1)));
+    eps[i]   = t * PetscCosReal(2*PETSC_PI*PetscRealPart(u2));
+    eps[i+1] = t * PetscSinReal(2*PETSC_PI*PetscRealPart(u2));
   }
 }
 

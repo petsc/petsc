@@ -260,5 +260,5 @@ int main(int argc,char **argv)
   /* Clean storage for star forest. */
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

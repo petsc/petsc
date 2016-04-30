@@ -63,6 +63,6 @@ int main(int argc,char **args)
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

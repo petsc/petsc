@@ -77,29 +77,24 @@ int main(int argc,char **args)
   /* Secondly, create C2 = 2.0*C2 + C, C2 has non-zero pattern of C2 + C */
   ierr = PetscPrintf(PETSC_COMM_WORLD, "\ncreate C2 = 2.0*C2 + C, C2 has non-zero pattern of C2 + C \n");
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&C2);CHKERRQ(ierr);
-  /*
-  ierr = MatCreate(PETSC_COMM_WORLD,&C2);CHKERRQ(ierr);
-  ierr = MatSetSizes(C2,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C2);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(C2,5,NULL);CHKERRQ(ierr);
-  */
+
   for (Ii=Istart; Ii<Iend; Ii++) {
     v    = 1.0;
     ierr = MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  printf(" MatAXPY(C2,2.0,C,SUBSET_NONZERO_PATTERN)...\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD," MatAXPY(C2,2.0,C,SUBSET_NONZERO_PATTERN)...\n");CHKERRQ(ierr);
   ierr = MatAXPY(C2,2.0,C,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatGetInfo(C2,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," C2: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," C2: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);CHKERRQ(ierr);
 
   ierr = MatDestroy(&C1);CHKERRQ(ierr);
   ierr = MatDestroy(&C2);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

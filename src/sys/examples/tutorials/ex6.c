@@ -13,18 +13,17 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscBool flg = PETSC_TRUE;
+  PetscBool      flg = PETSC_TRUE;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-
   if (PetscLikely(flg)) {
     /* do something */
   }
-
   if (PetscUnlikely(flg)) {
     /* do something */
   }
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

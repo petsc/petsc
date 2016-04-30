@@ -194,5 +194,5 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecDestroy(&coords);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -595,5 +595,5 @@ int main(int argc, char **argv)
   ierr = MapleTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = FEMTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

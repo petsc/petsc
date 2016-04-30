@@ -172,5 +172,5 @@ int main(int argc,char **args)
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = VecDestroy(&ys);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

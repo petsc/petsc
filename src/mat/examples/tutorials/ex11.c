@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&mesh);CHKERRQ(ierr);
   ierr = MatDestroy(&dual);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

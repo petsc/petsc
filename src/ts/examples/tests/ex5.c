@@ -327,8 +327,8 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 /*****************************end main program********************************/
 /*****************************************************************************/
@@ -645,8 +645,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = DMGetLocalVector(da,&localT);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   dhx = (PetscReal)(Mx-1)/(5000*(Mx-1));  /* dhx = 1/dx; assume 2D space domain: [0.0, 1.e5] x [0.0, 1.e5] */
   dhy = (PetscReal)(My-1)/(5000*(Mx-1));  /* dhy = 1/dy; */
@@ -676,7 +675,6 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
       Ts = X[j][i].Ts; u = X[j][i].u; v = X[j][i].v; p = X[j][i].p; /*P = X[j][i].P; */
 
       sfctemp1 = (double)Ts;
-      sfctemp1 = (double)X[j][i].Ts;
       ierr     = calcfluxs(sfctemp1,airtemp,emma,fract,Tc,&fsfc1);CHKERRQ(ierr);        /* calculates surface net radiative flux */
       ierr     = sensibleflux(sfctemp1,airtemp,wind,&sheat);CHKERRQ(ierr);              /* calculate sensible heat flux */
       ierr     = latentflux(sfctemp1,dewtemp,wind,pressure1,&latentheat);CHKERRQ(ierr); /* calculates latent heat flux */

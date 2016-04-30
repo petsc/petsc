@@ -31,14 +31,12 @@ int main(int argc,char **argv)
   ierr = VecLoad(global,bviewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&bviewer);CHKERRQ(ierr);
 
-
   ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-
 
   /* Free memory */
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

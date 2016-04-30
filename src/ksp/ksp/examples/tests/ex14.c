@@ -278,8 +278,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

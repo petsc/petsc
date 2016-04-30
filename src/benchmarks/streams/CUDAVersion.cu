@@ -372,10 +372,10 @@ int main(int argc, char *argv[])
 
   ierr = setupStream(device, runDouble, cpuTiming);
   if (ierr >= 0) {
-    PetscErrorCode ierr2 = PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED");CHKERRQ(ierr2);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED");CHKERRQ(ierr);
   }
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

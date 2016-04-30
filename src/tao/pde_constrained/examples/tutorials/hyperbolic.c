@@ -232,8 +232,8 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&x0);CHKERRQ(ierr);
   ierr = HyperbolicDestroy(&user);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -569,7 +569,7 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   ierr = KSPGetIterationNumber(user->solver,&its);CHKERRQ(ierr);
   user->ksp_its = user->ksp_its + its;
   for (i=1; i<user->nt; i++){
-    ierr = MatMult(user->M,user->yiwork[i-1],user->ziwork[i-1]);
+    ierr = MatMult(user->M,user->yiwork[i-1],user->ziwork[i-1]);CHKERRQ(ierr);
     ierr = VecAXPY(user->yi[i],1.0,user->ziwork[i-1]);CHKERRQ(ierr);
     user->block_index = i;
     ierr = KSPSolve(user->solver,user->yi[i],user->yiwork[i]);CHKERRQ(ierr);
@@ -594,7 +594,7 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
 
   ierr = Scatter_yi(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
   ierr = Scatter_yi(Y,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
-  ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);
+  ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);CHKERRQ(ierr);
 
   i = user->nt - 1;
   user->block_index = i;
@@ -664,7 +664,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
   PetscFunctionBegin;
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter);CHKERRQ(ierr);
   ierr = Scatter_yi(user->y,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
-  ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);
+  ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);CHKERRQ(ierr);
 
   user->block_index = 0;
   ierr = MatMult(user->JsBlock,user->yi[0],user->yiwork[0]);CHKERRQ(ierr);
@@ -1151,8 +1151,8 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);CHKERRQ(ierr);
   ierr = MatShift(user->Divxy[0],0.0);CHKERRQ(ierr); /*  Force C[i] and Divxy[0] to share same nonzero pattern */
   ierr = MatAXPY(user->Divxy[0],0.0,user->Divxy[1],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PetscMalloc1(5*n,&user->C);
-  ierr = PetscMalloc1(2*n,&user->Cwork);
+  ierr = PetscMalloc1(5*n,&user->C);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*n,&user->Cwork);CHKERRQ(ierr);
   for (i=0; i<user->nt; i++){
     ierr = MatDuplicate(user->Divxy[0],MAT_COPY_VALUES,&user->C[i]);CHKERRQ(ierr);
     ierr = MatDuplicate(user->Divxy[1],MAT_COPY_VALUES,&user->Cwork[i]);CHKERRQ(ierr);

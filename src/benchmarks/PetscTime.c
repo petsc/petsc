@@ -34,5 +34,5 @@ int main(int argc,char **argv)
   fprintf(stdout,"%-15s : %e sec - Slept for 10 sec \n","PetscTime",(y-x));
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }

@@ -315,5 +315,5 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

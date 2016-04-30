@@ -90,5 +90,5 @@ int main(int argc,char **argv)
   ierr = KSPDestroy(&solver);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

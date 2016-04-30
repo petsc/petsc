@@ -90,5 +90,5 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&gauss);CHKERRQ(ierr);
   ierr = DMDestroy(&da2D);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

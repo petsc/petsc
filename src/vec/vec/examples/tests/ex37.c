@@ -283,11 +283,11 @@ PetscErrorCode test_axpy_dot_max(void)
 
 int main(int argc, char **args)
 {
-  PetscInitialize(&argc, &args,(char*)0, help);
+  PetscErrorCode ierr;
 
+  PetscInitialize(&argc, &args,(char*)0, help);
   test_view();
   test_axpy_dot_max();
-
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

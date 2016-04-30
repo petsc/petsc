@@ -205,7 +205,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /*=====================================================================
@@ -1105,23 +1105,23 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
     if (!rank) { /* on processor 0 */
       ierr = VecSetSizes(pars, 20, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);
-      ierr = VecSetValue(pars,1, (PetscScalar)(grid->nj),INSERT_VALUES);
-      ierr = VecSetValue(pars,2, (PetscScalar)(grid->dx),INSERT_VALUES);
-      ierr = VecSetValue(pars,3, (PetscScalar)(grid->dz),INSERT_VALUES);
-      ierr = VecSetValue(pars,4, (PetscScalar)(param->L),INSERT_VALUES);
-      ierr = VecSetValue(pars,5, (PetscScalar)(param->V),INSERT_VALUES);
+      ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,1, (PetscScalar)(grid->nj),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,2, (PetscScalar)(grid->dx),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,3, (PetscScalar)(grid->dz),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,4, (PetscScalar)(param->L),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,5, (PetscScalar)(param->V),INSERT_VALUES);CHKERRQ(ierr);
       /* skipped 6 intentionally */
-      ierr = VecSetValue(pars,7, (PetscScalar)(param->slab_dip),INSERT_VALUES);
-      ierr = VecSetValue(pars,8, (PetscScalar)(grid->jlid),INSERT_VALUES);
-      ierr = VecSetValue(pars,9, (PetscScalar)(param->lid_depth),INSERT_VALUES);
-      ierr = VecSetValue(pars,10,(PetscScalar)(grid->jfault),INSERT_VALUES);
-      ierr = VecSetValue(pars,11,(PetscScalar)(param->fault_depth),INSERT_VALUES);
-      ierr = VecSetValue(pars,12,(PetscScalar)(param->potentialT),INSERT_VALUES);
-      ierr = VecSetValue(pars,13,(PetscScalar)(param->ivisc),INSERT_VALUES);
-      ierr = VecSetValue(pars,14,(PetscScalar)(param->visc_cutoff),INSERT_VALUES);
-      ierr = VecSetValue(pars,15,(PetscScalar)(param->ibound),INSERT_VALUES);
-      ierr = VecSetValue(pars,16,(PetscScalar)(its),INSERT_VALUES);
+      ierr = VecSetValue(pars,7, (PetscScalar)(param->slab_dip),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,8, (PetscScalar)(grid->jlid),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,9, (PetscScalar)(param->lid_depth),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,10,(PetscScalar)(grid->jfault),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,11,(PetscScalar)(param->fault_depth),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,12,(PetscScalar)(param->potentialT),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,13,(PetscScalar)(param->ivisc),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,14,(PetscScalar)(param->visc_cutoff),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,15,(PetscScalar)(param->ibound),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,16,(PetscScalar)(its),INSERT_VALUES);CHKERRQ(ierr);
     } else { /* on some other processor */
       ierr = VecSetSizes(pars, 0, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);

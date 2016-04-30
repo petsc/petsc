@@ -41,5 +41,5 @@ int main(int argc,char **argv)
   if (found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found a bogus datatype");
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

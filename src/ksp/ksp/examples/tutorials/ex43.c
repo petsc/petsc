@@ -1562,7 +1562,7 @@ int main(int argc,char **args)
   ierr = solve_stokes_2d_coupled(mx,my);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* -------------------------- helpers for boundary conditions -------------------------------- */

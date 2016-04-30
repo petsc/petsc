@@ -27,5 +27,5 @@ int main(int argc,char **argv)
   delete nb;
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

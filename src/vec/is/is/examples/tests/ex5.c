@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = ISLocalToGlobalMappingRestoreInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

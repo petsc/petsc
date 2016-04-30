@@ -170,8 +170,8 @@ int main( int argc, char **argv )
   ierr = PetscFree(user.left);CHKERRQ(ierr);
   ierr = PetscFree(user.right);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 #undef __FUNCT__

@@ -22,6 +22,6 @@ int main(int argc,char **args)
     ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

@@ -14,7 +14,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c ex75.c \
                 ex76.c ex77.c ex78.c ex80.c ex81.c ex82.c ex83.c ex86.c ex87.c \
                 ex88.c ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c \
-                ex99.c ex100.c ex101.c ex102.c  ex104.c ex106.c \
+                ex100.c ex101.c ex102.c  ex104.c ex106.c \
                 ex108.c ex109.c ex110.c ex111.c ex112.c ex113.c \
                 ex114.c ex116.c ex117.c ex118.c ex119.c ex120.c \
                 ex121.c ex122.c ex124.c ex125.c ex127.c ex128.c \
@@ -2023,6 +2023,11 @@ runex129_2:
 	   if (${DIFF} output/ex129.out ex129.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex129_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex129.tmp
+runex132:
+	-@${MPIEXEC} -n 1  ./ex132  > ex132_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex132_1.out ex132_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex132_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex132_1.tmp
 
 runex134:
 	-@${MPIEXEC} -n 2 ./ex134 -mat_ignore_lower_triangular | ${SED} 's,mem [0-9]\{4\},mem SKIP,' > ex134_1.tmp 2>&1; \
@@ -2502,7 +2507,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  ex109.PETSc runex109 runex109_1 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm \
                                  ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
-                                 ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
+                                 ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc runex132 ex132.rm \
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm \
                                  ex137.PETSc runex137 ex137.rm \
                                  ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm \
@@ -2534,7 +2539,7 @@ TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm
                                  ex15.PETSc runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex35.PETSc \
                                  runex35 ex35.rm  ex48.PETSc runex48 ex48.rm ex71.PETSc ex71.rm \
                                  ex95.PETSc  ex95.rm ex101.PETSc runex101 ex101.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm  ex99.PETSc ex99.rm \
+TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm   \
                                  ex151.PETSc runex151 runex151_2 runex151_2b runex151_3 runex151_3b ex151.rm
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 runex40_2 ex40.rm ex41.PETSc runex41 ex41.rm \
                                  ex42.PETSc runex42 runex42_unsorted_seq runex42_unsorted_mpi runex42_unsorted_baij_seq runex42_unsorted_baij_mpi ex42.rm  \

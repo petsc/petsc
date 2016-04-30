@@ -6,5 +6,5 @@ int main(int argc, char **argv)
 {
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

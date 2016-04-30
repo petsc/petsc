@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscReal         s1norm,s2norm,rnorm,tol=1.e-10;
   PetscInt          rstart,rend,rows[2],cols[2],m,n,i,j,M,N,ct,row,ncols1,ncols2,bs;
   PetscMPIInt       rank,size;
-  PetscErrorCode    ierr;
+  PetscErrorCode    ierr = 0;
   const PetscInt    *cols1,*cols2;
   PetscScalar       vals1[4],vals2[4],v;
   const PetscScalar *v1,*v2;
@@ -210,5 +210,5 @@ int main(int argc,char **args)
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFinalize();
 #endif
-  return 0;
+  return ierr;
 }

@@ -129,6 +129,6 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   std::cout << "Destroyed DMMoab." << std::endl;
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

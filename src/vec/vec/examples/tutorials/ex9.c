@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&gx);CHKERRQ(ierr);
   if (flg) {ierr = PetscFree(tarray);CHKERRQ(ierr);}
   ierr = PetscFinalize();
-  return 0;
+  return ierr; 
 }
 
 

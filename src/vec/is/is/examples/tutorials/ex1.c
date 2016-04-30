@@ -80,6 +80,6 @@ int main(int argc,char **argv)
   */
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

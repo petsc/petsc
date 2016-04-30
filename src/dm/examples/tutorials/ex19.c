@@ -162,5 +162,5 @@ int main(int argc,char **argv)
 
   /* test moving data in and out */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

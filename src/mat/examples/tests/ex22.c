@@ -83,7 +83,7 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #include <petsc/private/matimpl.h>

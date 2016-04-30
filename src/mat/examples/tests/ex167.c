@@ -163,5 +163,5 @@ int main(int argc,char **args)
   }
   ierr = PetscFree(S);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

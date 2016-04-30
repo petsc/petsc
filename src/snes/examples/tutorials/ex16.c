@@ -120,8 +120,7 @@ int main(int argc,char **argv)
 
   ierr = SNESSetNGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   user.loading     = 0.0;
   user.arc         = PETSC_PI/3.;
   user.mu          = 4.0;
@@ -184,7 +183,7 @@ int main(int argc,char **argv)
 
   if (view) {
     PetscViewer viewer;
-    Vec coords;
+    Vec         coords;
     ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = VecView(x,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -200,7 +199,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 
@@ -262,7 +261,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
 
 void TensorTensor(PetscScalar *a,PetscScalar *b,PetscScalar *c)
 {
-  int i,j,m;
+  PetscInt i,j,m;
   for(i=0;i<3;i++) {
     for(j=0;j<3;j++) {
       c[i+3*j] = 0;
@@ -274,7 +273,7 @@ void TensorTensor(PetscScalar *a,PetscScalar *b,PetscScalar *c)
 
 void TensorTransposeTensor(PetscScalar *a,PetscScalar *b,PetscScalar *c)
 {
-  int i,j,m;
+  PetscInt i,j,m;
   for(i=0;i<3;i++) {
     for(j=0;j<3;j++) {
       c[i+3*j] = 0;
@@ -293,7 +292,7 @@ void TensorVector(PetscScalar *rot, PetscScalar *vec, PetscScalar *tvec)
 
 void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScalar *invJ,PetscScalar *F)
 {
-  int ii,jj,kk,l;
+  PetscInt ii,jj,kk,l;
   for (l = 0; l < 9; l++) {
     F[l] = 0.;
   }
@@ -304,8 +303,8 @@ void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScal
   for (kk=0;kk<NB;kk++){
     for (jj=0;jj<NB;jj++) {
       for (ii=0;ii<NB;ii++) {
-        PetscInt idx = ii + jj*NB + kk*NB*NB;
-        PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
+        PetscInt    idx = ii + jj*NB + kk*NB*NB;
+        PetscInt    bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
         PetscScalar lgrad[3];
         TensorVector(invJ,&grad[3*bidx],lgrad);
         F[0] += lgrad[0]*ex[idx][0]; F[1] += lgrad[1]*ex[idx][0]; F[2] += lgrad[2]*ex[idx][0];
@@ -318,10 +317,10 @@ void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScal
 
 void DeformationGradientJacobian(PetscInt qi,PetscInt qj,PetscInt qk,PetscInt ii,PetscInt jj,PetscInt kk,PetscInt fld,PetscScalar *invJ,PetscScalar *dF)
 {
-  int l;
+  PetscInt         l;
   PetscScalar lgrad[3];
-  PetscInt idx = ii + jj*NB + kk*NB*NB;
-  PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
+  PetscInt    idx = ii + jj*NB + kk*NB*NB;
+  PetscInt    bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
   for (l = 0; l < 9; l++) {
     dF[l] = 0.;
   }
@@ -332,7 +331,7 @@ void DeformationGradientJacobian(PetscInt qi,PetscInt qj,PetscInt qk,PetscInt ii
 
 void LagrangeGreenStrain(PetscScalar *F,PetscScalar *E)
 {
-  int i,j,m;
+  PetscInt i,j,m;
   for(i=0;i<3;i++) {
     for(j=0;j<3;j++) {
       E[i+3*j] = 0;
@@ -347,7 +346,7 @@ void LagrangeGreenStrain(PetscScalar *F,PetscScalar *E)
 
 void SaintVenantKirchoff(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScalar *S)
 {
-  int i,j;
+  PetscInt    i,j;
   PetscScalar E[9];
   PetscScalar trE=0;
   LagrangeGreenStrain(F,E);
@@ -367,7 +366,7 @@ void SaintVenantKirchoff(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScala
 void SaintVenantKirchoffJacobian(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScalar *dF,PetscScalar *dS)
 {
   PetscScalar FtdF[9],dE[9];
-  PetscInt i,j;
+  PetscInt    i,j;
   PetscScalar dtrE=0.;
   TensorTransposeTensor(dF,F,dE);
   TensorTransposeTensor(F,dF,FtdF);
@@ -392,6 +391,7 @@ PetscErrorCode FormElements()
 {
   PetscInt i,j,k,ii,jj,kk;
   PetscReal bx,by,bz,dbx,dby,dbz;
+  
   PetscFunctionBegin;
   /* construct the basis function values and derivatives */
   for (k = 0; k < NB; k++) {
@@ -477,6 +477,7 @@ void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppC
   PetscScalar F[9],S[9],dF[9],dS[9],dFS[9],FdS[9],FS[9];
   PetscReal   scl;
   PetscInt    i,j,k,l,ii,jj,kk,ll,qi,qj,qk,m;
+  
   if (ej) for (i = 0; i < NPB*NPB; i++) ej[i] = 0.;
   if (ef) for (i = 0; i < NEB; i++) {ef[i][0] = 0.;ef[i][1] = 0.;ef[i][2] = 0.;}
   /* loop over quadrature */
@@ -557,6 +558,7 @@ void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Fi
   PetscInt    l,ll,qi,qj,qk,m;
   PetscInt idx = i + j*NB + k*NB*NB;
   PetscScalar lgrad[3];
+  
   if (ej) for (l = 0; l < 9; l++) ej[l] = 0.;
   if (ef) for (l = 0; l < 1; l++) {ef[l][0] = 0.;ef[l][1] = 0.;ef[l][2] = 0.;}
   /* loop over quadrature */
@@ -633,27 +635,26 @@ void ApplyBCsElement(PetscInt mx,PetscInt my, PetscInt mz, PetscInt i, PetscInt 
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,void *ptr)
 {
   /* values for each basis function at each quadrature point */
-  AppCtx      *user = (AppCtx*)ptr;
-
-  PetscInt i,j,k,m,l;
-  PetscInt ii,jj,kk;
-
-  PetscScalar ej[NPB*NPB];
-  PetscScalar vals[NPB*NPB];
-  Field ex[NEB];
-  CoordField ec[NEB];
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscInt       i,j,k,m,l;
+  PetscInt       ii,jj,kk;
+  PetscScalar    ej[NPB*NPB];
+  PetscScalar    vals[NPB*NPB];
+  Field          ex[NEB];
+  CoordField     ec[NEB];
 
   PetscErrorCode ierr;
-  PetscInt xs=info->xs,ys=info->ys,zs=info->zs;
-  PetscInt xm=info->xm,ym=info->ym,zm=info->zm;
-  PetscInt xes,yes,zes,xee,yee,zee;
-  PetscInt mx=info->mx,my=info->my,mz=info->mz;
-  DM          cda;
-  CoordField  ***c;
-  Vec         C;
-  PetscInt    nrows;
-  MatStencil  col[NPB],row[NPB];
-  PetscScalar v[9];
+  PetscInt       xs=info->xs,ys=info->ys,zs=info->zs;
+  PetscInt       xm=info->xm,ym=info->ym,zm=info->zm;
+  PetscInt       xes,yes,zes,xee,yee,zee;
+  PetscInt       mx=info->mx,my=info->my,mz=info->mz;
+  DM             cda;
+  CoordField     ***c;
+  Vec            C;
+  PetscInt       nrows;
+  MatStencil     col[NPB],row[NPB];
+  PetscScalar    v[9];
+  
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(info->da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(info->da,&C);CHKERRQ(ierr);
@@ -739,23 +740,22 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void *ptr)
 {
   /* values for each basis function at each quadrature point */
-  AppCtx      *user = (AppCtx*)ptr;
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscInt       i,j,k,l;
+  PetscInt       ii,jj,kk;
 
-  PetscInt i,j,k,l;
-  PetscInt ii,jj,kk;
-
-  Field ef[NEB];
-  Field ex[NEB];
-  CoordField ec[NEB];
+  Field          ef[NEB];
+  Field          ex[NEB];
+  CoordField     ec[NEB];
 
   PetscErrorCode ierr;
-  PetscInt xs=info->xs,ys=info->ys,zs=info->zs;
-  PetscInt xm=info->xm,ym=info->ym,zm=info->zm;
-  PetscInt xes,yes,zes,xee,yee,zee;
-  PetscInt mx=info->mx,my=info->my,mz=info->mz;
-  DM          cda;
-  CoordField  ***c;
-  Vec         C;
+  PetscInt       xs=info->xs,ys=info->ys,zs=info->zs;
+  PetscInt       xm=info->xm,ym=info->ym,zm=info->zm;
+  PetscInt       xes,yes,zes,xee,yee,zee;
+  PetscInt       mx=info->mx,my=info->my,mz=info->mz;
+  DM             cda;
+  CoordField     ***c;
+  Vec            C;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(info->da,&cda);CHKERRQ(ierr);
@@ -821,8 +821,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
 PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
 {
   /* values for each basis function at each quadrature point */
-  AppCtx      *user = (AppCtx*)ptr;
-
+  AppCtx         *user = (AppCtx*)ptr;
   PetscInt       i,j,k,l,m,n,s;
   PetscInt       pi,pj,pk;
   Field          ef[1];
@@ -935,16 +934,18 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormCoordinates"
-PetscErrorCode FormCoordinates(DM da,AppCtx *user) {
+PetscErrorCode FormCoordinates(DM da,AppCtx *user)
+{
   PetscErrorCode ierr;
-  Vec coords;
-  DM cda;
+  Vec            coords;
+  DM             cda;
   PetscInt       mx,my,mz;
   PetscInt       i,j,k,xs,ys,zs,xm,ym,zm;
-  CoordField ***x;
+  CoordField     ***x;
+
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDM(da,&cda);
-  ierr = DMCreateGlobalVector(cda,&coords);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(cda,&coords);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,coords,&x);CHKERRQ(ierr);
@@ -976,8 +977,8 @@ PetscErrorCode InitialGuess(DM da,AppCtx *user,Vec X)
   PetscInt       mx,my,mz;
   PetscErrorCode ierr;
   Field          ***x;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
@@ -1010,8 +1011,8 @@ PetscErrorCode FormRHS(DM da,AppCtx *user,Vec X)
   PetscInt       mx,my,mz;
   PetscErrorCode ierr;
   Field          ***x;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
@@ -1030,7 +1031,6 @@ PetscErrorCode FormRHS(DM da,AppCtx *user,Vec X)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "DisplayLine"
 PetscErrorCode DisplayLine(SNES snes,Vec X)
@@ -1042,6 +1042,7 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
   DM             da,cda;
   Vec            C;
   PetscMPIInt    size,rank;
+
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

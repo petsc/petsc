@@ -62,7 +62,6 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value)
     }
   }
   ierr = DMDAVecRestoreArray(da, v, &p);CHKERRQ(ierr);
-
   return 0;
 }
 
@@ -119,5 +118,5 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&local);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

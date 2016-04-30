@@ -75,5 +75,5 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"tanh(%f) = %f\n",(double)PetscRealPart(a),(double)PetscRealPart(b));CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

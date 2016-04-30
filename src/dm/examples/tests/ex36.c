@@ -658,5 +658,5 @@ int main(int argc,char **argv)
   }
 
   ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  return ierr;
 }

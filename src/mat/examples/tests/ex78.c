@@ -155,6 +155,6 @@ int main(int argc,char **args)
   if (flg_u) {ierr = VecDestroy(&u);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

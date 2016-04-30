@@ -33,6 +33,6 @@ int main(int argc,char **argv)
     ierr = PetscStrncmp(user,"exit",4,&userhappy);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

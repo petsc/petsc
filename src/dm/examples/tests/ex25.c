@@ -42,6 +42,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

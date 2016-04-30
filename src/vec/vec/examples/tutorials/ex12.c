@@ -68,6 +68,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   ierr = VecDestroy(&s);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

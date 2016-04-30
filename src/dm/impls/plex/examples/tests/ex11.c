@@ -217,5 +217,5 @@ int main(int argc, char **argv)
   ierr = TestEmptyStrata(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = TestDistribution(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

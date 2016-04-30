@@ -445,6 +445,11 @@ runex2f_2:
 	   if (${DIFF} output/ex2f_2.out ex2f_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2f_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2f_2.tmp
+runex4:
+	-@${MPIEXEC} -n 1 ./ex4 -pc_type none > ex4_1.tmp 2>&1; \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex4_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex4_1.tmp
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -1511,7 +1516,7 @@ runex65:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3  \
                                  runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
-                                 ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
+                                 ex4.PETSc ex4.rm ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
                                  ex6.PETSc runex6 runex6_1 runex6_2 ex6.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
@@ -1582,7 +1587,7 @@ TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
 TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
 TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
 TESTEXAMPLES_CUDA_DATAFILESPATH         = ex10.PETSc runex10_aijcusparse ex10.rm
-TESTEXAMPLES_CUDA                       = ex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+TESTEXAMPLES_CUDA                       = ex4.PETSc runex4 ex4.rm exex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
                                           ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
 TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm

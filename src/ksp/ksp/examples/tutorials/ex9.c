@@ -347,7 +347,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 #undef __FUNCT__
 #define __FUNCT__ "CheckError"

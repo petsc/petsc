@@ -67,5 +67,5 @@ int main(int argc, char **argv)
   ierr = DMPatchSolve(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

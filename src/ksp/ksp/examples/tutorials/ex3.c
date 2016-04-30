@@ -185,7 +185,7 @@ int main(int argc,char **args)
          options are chosen (e.g., -log_summary).
   */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* --------------------------------------------------------------------- */

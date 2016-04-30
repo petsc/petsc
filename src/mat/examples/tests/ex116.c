@@ -178,7 +178,7 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 /*------------------------------------------------
   Check the accuracy of the eigen solution

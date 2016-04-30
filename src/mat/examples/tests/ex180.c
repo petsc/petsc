@@ -28,5 +28,5 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

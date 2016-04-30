@@ -304,8 +304,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /* ------------------------------------------------------------------ */

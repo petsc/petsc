@@ -127,6 +127,6 @@ int main(int argc, char *argv[])
   ierr = ISDestroy(&isl0b);CHKERRQ(ierr);
   ierr = ISDestroy(&isl0);CHKERRQ(ierr);
   ierr = ISDestroy(&isl1);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

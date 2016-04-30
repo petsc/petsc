@@ -93,6 +93,6 @@ int main(int argc, char** argv)
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

@@ -226,5 +226,5 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,0,help);
   ierr = port_lsd_bfbt();CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
