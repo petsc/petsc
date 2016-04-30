@@ -49,8 +49,8 @@ class Laplace1D(object):
     def mult(self, A, x, y):
         LOG('Laplace1D.mult()')
         M, N = A.getSize()
-        xx = x[...] # to numpy array
-        yy = y[...] # to numpy array
+        xx = x.getArray(readonly=1) # to numpy array
+        yy = y.getArray(readonly=0) # to numpy array
         yy[0]    =  2.0*xx[0] - xx[1]
         yy[1:-1] = - xx[:-2] + 2.0*xx[1:-1] - xx[2:]
         yy[-1]   = - xx[-2] + 2.0*xx[-1]
@@ -83,7 +83,7 @@ class Jacobi(object):
 
     def setUp(self, pc):
         LOG('Jacobi.setUp()')
-        A, B, flag = pc.getOperators()
+        A, B = pc.getOperators()
         self.diag = B.getDiagonal(self.diag)
 
     def apply(self, pc, x, y):
@@ -127,7 +127,7 @@ class ConjGrad(object):
         pcg(ksp, A, P, b, x, *self.work)
 
 def get_op_pc(ksp, transpose=False):
-    op, _, _ = ksp.getOperators()
+    op, _ = ksp.getOperators()
     pc = ksp.getPC()
     if not transpose:
         A = op.mult
@@ -141,7 +141,7 @@ def do_loop(ksp, r):
     its = ksp.getIterationNumber()
     rnorm = r.norm()
     ksp.setResidualNorm(rnorm)
-    ksp.logConvergenceHistory(its, rnorm)
+    ksp.logConvergenceHistory(rnorm)
     ksp.monitor(its, rnorm)
     reason = ksp.callConvergenceTest(its, rnorm)
     if not reason:
