@@ -3178,11 +3178,29 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     if (nullsp) {
       ierr = MatNullSpaceRemove(nullsp,rhs);CHKERRQ(ierr);
     }
-    if (applytranspose) {
-      ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
-    } else {
-      ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
-    }
+     if (applytranspose) {
+       if (pcbddc->benign_apply_coarse_only) { /* need just to apply the coarse preconditioner */
+         PC        coarse_pc;
+
+         ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
+         ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+         ierr = PCApplyTranspose(coarse_pc,rhs,sol);CHKERRQ(ierr);
+         ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+       } else {
+         ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+       }
+     } else {
+       if (pcbddc->benign_apply_coarse_only) { /* need just to apply the coarse preconditioner */
+         PC        coarse_pc;
+
+         ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
+         ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+         ierr = PCApply(coarse_pc,rhs,sol);CHKERRQ(ierr);
+         ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+       } else {
+         ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+       }
+     }
     /* we don't the benign correction at coarser levels anymore */
     if (pcbddc->benign_have_null && isbddc) {
       PC        coarse_pc;
@@ -5972,8 +5990,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPGetPC(pcbddc->coarse_ksp,&check_pc);CHKERRQ(ierr);
       ierr = KSPSetPC(check_ksp,check_pc);CHKERRQ(ierr);
       /* create random vec */
-      ierr = KSPGetSolution(pcbddc->coarse_ksp,&coarse_vec);CHKERRQ(ierr);
-      ierr = VecDuplicate(coarse_vec,&check_vec);CHKERRQ(ierr);
+      ierr = MatCreateVecs(coarse_mat,&coarse_vec,&check_vec);CHKERRQ(ierr);
       ierr = VecSetRandom(check_vec,NULL);CHKERRQ(ierr);
       if (CoarseNullSpace) {
         ierr = MatNullSpaceRemove(CoarseNullSpace,check_vec);CHKERRQ(ierr);
@@ -5992,8 +6009,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         lambda_max = eigs_r[neigs-1];
         lambda_min = eigs_r[0];
         if (pcbddc->use_coarse_estimates) {
-          if (lambda_max>lambda_min) {
-            ierr = KSPChebyshevSetEigenvalues(pcbddc->coarse_ksp,lambda_max,lambda_min);CHKERRQ(ierr);
+          if (lambda_max>=lambda_min) { /* using PETSC_SMALL since lambda_max == lambda_min is not allowed by KSPChebyshevSetEigenvalues */
+            ierr = KSPChebyshevSetEigenvalues(pcbddc->coarse_ksp,lambda_max+PETSC_SMALL,lambda_min);CHKERRQ(ierr);
             ierr = KSPRichardsonSetScale(pcbddc->coarse_ksp,2.0/(lambda_max+lambda_min));CHKERRQ(ierr);
           }
         }
@@ -6029,6 +6046,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PetscViewerASCIISubtractTab(dbg_viewer,2*(pcbddc->current_level+1));CHKERRQ(ierr);
       }
       ierr = VecDestroy(&check_vec);CHKERRQ(ierr);
+      ierr = VecDestroy(&coarse_vec);CHKERRQ(ierr);
       ierr = KSPDestroy(&check_ksp);CHKERRQ(ierr);
       if (compute_eigs) {
         ierr = PetscFree(eigs_r);CHKERRQ(ierr);
