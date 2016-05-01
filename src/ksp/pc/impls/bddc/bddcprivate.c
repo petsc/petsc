@@ -3178,29 +3178,29 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     if (nullsp) {
       ierr = MatNullSpaceRemove(nullsp,rhs);CHKERRQ(ierr);
     }
-     if (applytranspose) {
-       if (pcbddc->benign_apply_coarse_only) { /* need just to apply the coarse preconditioner */
-         PC        coarse_pc;
+    if (applytranspose) {
+      if (pcbddc->benign_apply_coarse_only) { /* need just to apply the coarse preconditioner */
+        PC        coarse_pc;
 
-         ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
-         ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
-         ierr = PCApplyTranspose(coarse_pc,rhs,sol);CHKERRQ(ierr);
-         ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
-       } else {
-         ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
-       }
-     } else {
-       if (pcbddc->benign_apply_coarse_only) { /* need just to apply the coarse preconditioner */
-         PC        coarse_pc;
+        ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
+        ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+        ierr = PCApplyTranspose(coarse_pc,rhs,sol);CHKERRQ(ierr);
+        ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+      } else {
+        ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+      }
+    } else {
+      if (pcbddc->benign_apply_coarse_only) { /* need just to apply the coarse preconditioner */
+        PC        coarse_pc;
 
-         ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
-         ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
-         ierr = PCApply(coarse_pc,rhs,sol);CHKERRQ(ierr);
-         ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
-       } else {
-         ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
-       }
-     }
+        ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
+        ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+        ierr = PCApply(coarse_pc,rhs,sol);CHKERRQ(ierr);
+        ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+      } else {
+        ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+      }
+    }
     /* we don't the benign correction at coarser levels anymore */
     if (pcbddc->benign_have_null && isbddc) {
       PC        coarse_pc;
