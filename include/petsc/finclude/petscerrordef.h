@@ -18,6 +18,8 @@
 #define PETSC_ERR_MEMC             78
 #define PETSC_ERR_CONV_FAILED      82
 #define PETSC_ERR_USER             83
+#define PETSC_ERR_SYS              88
+#define PETSC_ERR_POINTER          70
 
 #define PETSC_ERR_ARG_SIZ          60
 #define PETSC_ERR_ARG_IDN          61
@@ -28,6 +30,7 @@
 #define PETSC_ERR_ARG_NOTSAMETYPE  69
 #define PETSC_ERR_ARG_NOTSAMECOMM  80
 #define PETSC_ERR_ARG_WRONGSTATE   73
+#define PETSC_ERR_ARG_TYPENOTSET   89
 #define PETSC_ERR_ARG_INCOMP       75
 #define PETSC_ERR_ARG_NULL         85
 #define PETSC_ERR_ARG_UNKNOWN_TYPE 86
@@ -39,5 +42,12 @@
 
 #define PETSC_ERR_MAT_LU_ZRPVT     71
 #define PETSC_ERR_MAT_CH_ZRPVT     81
+
+#define PETSC_ERR_INT_OVERFLOW     84
+
+#define PETSC_ERR_FLOP_COUNT       90
+#define PETSC_ERR_NOT_CONVERGED    91
+#define PETSC_ERR_MISSING_FACTOR   92
+#define PETSC_ERR_OPT_OVERWRITE    93
 
 #endif
