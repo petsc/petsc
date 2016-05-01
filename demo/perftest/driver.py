@@ -84,6 +84,8 @@ def run_test(nx,ny,nz,samples,plot=False):
     ts.setTime(0.0)
     ts.setMaxTime(1.0)
     ts.setMaxSteps(10)
+    eft = PETSc.TS.ExactFinalTime.STEPOVER
+    ts.setExactFinalTime(eft)
 
     x = PETSc.Vec().createSeq(nx*ny*nz)
     ts.setSolution(x)

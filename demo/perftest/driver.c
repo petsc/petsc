@@ -79,10 +79,11 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,10,1.0);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,f,FormFunction,app);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_mf","1");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue(NULL,"-snes_mf","1");CHKERRQ(ierr);
   {
     SNES snes;
     KSP  ksp;
@@ -97,11 +98,7 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   while (loops-- > 0) {
     ierr = FormInitial(0.0,x,app);CHKERRQ(ierr);
     ierr = PetscTime(&t1);CHKERRQ(ierr);
-#if PETSC_VERSION_LE(3,3,0)
-    ierr = TSSolve(ts,x,PETSC_NULL);CHKERRQ(ierr);
-#else
     ierr = TSSolve(ts,x);CHKERRQ(ierr);
-#endif
     ierr = PetscTime(&t2);CHKERRQ(ierr);
     *wt = PetscMin(*wt,t2-t1);
   }
@@ -120,7 +117,7 @@ PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   *v = defv;
-  ierr = PetscOptionsGetInt(PETSC_NULL,name,v,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,name,v,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
