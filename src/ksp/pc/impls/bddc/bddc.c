@@ -1192,7 +1192,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipecg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCHEBYSHEV,&ischeby);CHKERRQ(ierr);
-    if (pcbddc->switch_static || (!iscg && !ischeby && !isgroppcg && !ispipecg && !ispipecgrr)) {
+    ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_TRUE);CHKERRQ(ierr);
+    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || (!iscg && !ischeby && !isgroppcg && !ispipecg && !ispipecgrr)) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
@@ -1288,12 +1289,12 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     pcbddc->benign_apply_coarse_only = PETSC_TRUE;
     if (!pcbddc->benign_skip_correction) {
       ierr = PCApply_BDDC(pc,rhs,pcbddc->benign_vec);CHKERRQ(ierr);
+      benign_correction_computed = PETSC_TRUE;
       /* store the original rhs if not done earlier */
       if (save_rhs) {
         ierr = VecSwap(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
         save_rhs = PETSC_FALSE;
       }
-      benign_correction_computed = PETSC_TRUE;
       if (pcbddc->temp_solution_used) {
         ierr = VecAXPY(pcbddc->temp_solution,1.0,pcbddc->benign_vec);CHKERRQ(ierr);
       }

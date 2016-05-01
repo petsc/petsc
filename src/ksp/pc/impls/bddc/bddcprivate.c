@@ -3169,6 +3169,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
       if (isbddc && pcbddc->benign_apply_coarse_only && !pcbddc->benign_skip_correction) {
         PC_BDDC* coarsepcbddc = (PC_BDDC*)(coarse_pc->data);
         coarsepcbddc->benign_skip_correction = PETSC_FALSE;
+        coarsepcbddc->benign_apply_coarse_only = PETSC_TRUE;
       }
     }
     ierr = KSPGetRhs(pcbddc->coarse_ksp,&rhs);CHKERRQ(ierr);
@@ -3209,6 +3210,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
       ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
       coarsepcbddc = (PC_BDDC*)(coarse_pc->data);
       coarsepcbddc->benign_skip_correction = PETSC_TRUE;
+      coarsepcbddc->benign_apply_coarse_only = PETSC_FALSE;
     }
     if (nullsp) {
       ierr = MatNullSpaceRemove(nullsp,sol);CHKERRQ(ierr);
