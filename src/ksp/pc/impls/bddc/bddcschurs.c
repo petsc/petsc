@@ -850,7 +850,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatGetLocalSize(sub_schurs->A,&n,NULL);CHKERRQ(ierr);
     size_active_schur = local_size;
 
-    /* import scaling vector */
+    /* import scaling vector (wrong formulation if we have 3D edges) */
     if (scaling && compute_Stilda) {
       const PetscScalar *array;
       PetscScalar       *array2;
@@ -1281,6 +1281,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = VecGetArray(Dall,&array);CHKERRQ(ierr);
         ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,subset_size,array+cum,&D);CHKERRQ(ierr);
         ierr = VecRestoreArray(Dall,&array);CHKERRQ(ierr);
+        ierr = VecShift(D,-1.);CHKERRQ(ierr);
         ierr = MatDiagonalScale(SEj,D,D);CHKERRQ(ierr);
         ierr = MatDestroy(&SEj);CHKERRQ(ierr);
         ierr = VecDestroy(&D);CHKERRQ(ierr);
