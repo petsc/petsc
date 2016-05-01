@@ -102,7 +102,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
   /* ASCII viewer */
   if (isascii) {
     PetscMPIInt   color,rank;
-    Petsc64bitInt loc[4],gsum[4],gmax[4],gmin[4];
+    Petsc64bitInt loc[6],gsum[5],gmax[5],gmin[5],totbenign;
     PetscScalar   interface_size;
     PetscReal     ratio1=0.,ratio2=0.;
     Vec           counter;
@@ -146,7 +146,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick: %d\n",pcbddc->benign_saddle_point);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick is active: %d (algebraic computation of no-net-flux %d)\n",pcbddc->benign_have_null,pcbddc->benign_compute_nonetflux);CHKERRQ(ierr);
 
-    /* compute some number on the domain decomposition */
+    /* compute some numbers on the domain decomposition */
     ierr = VecSet(pcis->vec1_B,1.0);CHKERRQ(ierr);
     ierr = MatCreateVecs(pc->pmat,&counter,0);CHKERRQ(ierr);
     ierr = VecSet(counter,0.0);CHKERRQ(ierr);
@@ -155,16 +155,19 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = VecSum(counter,&interface_size);CHKERRQ(ierr);
     ierr = VecDestroy(&counter);CHKERRQ(ierr);
     gsum[0] = 1;
-    gsum[1] = gsum[2] = gsum[3] = 0;
+    gsum[1] = gsum[2] = gsum[3] = gsum[4] = 0;
     loc[0] = !!pcis->n;
     loc[1] = pcis->n - pcis->n_B;
     loc[2] = pcis->n_B;
     loc[3] = pcbddc->local_primal_size;
-    ierr = MPI_Reduce(loc,gsum,4,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    if (!loc[0]) loc[1] = loc[2] = loc[3] = -1;
-    ierr = MPI_Reduce(loc,gmax,4,MPIU_INT64,MPI_MAX,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    if (!loc[0]) loc[1] = loc[2] = loc[3] = PETSC_MAX_INT;
-    ierr = MPI_Reduce(loc,gmin,4,MPIU_INT64,MPI_MIN,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    loc[4] = pcis->n;
+    loc[5] = pcbddc->benign_n;
+    ierr = MPI_Reduce(loc,gsum,5,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = -1;
+    ierr = MPI_Reduce(loc,gmax,5,MPIU_INT64,MPI_MAX,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = PETSC_MAX_INT;
+    ierr = MPI_Reduce(loc,gmin,5,MPIU_INT64,MPI_MIN,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPI_Reduce(&loc[5],&totbenign,1,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     if (pcbddc->coarse_size) {
       ratio1 = pc->pmat->rmap->N/(1.*pcbddc->coarse_size);
       ratio2 = PetscRealPart(interface_size)/pcbddc->coarse_size;
@@ -173,10 +176,14 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Global dofs sizes: all %d interface %d coarse %d\n",pc->pmat->rmap->N,(PetscInt)PetscRealPart(interface_size),pcbddc->coarse_size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Coarsening ratios: all/coarse %d interface/coarse %d\n",(PetscInt)ratio1,(PetscInt)ratio2);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Active processes : %d\n",(PetscInt)gsum[0]);CHKERRQ(ierr);
+    if (pcbddc->benign_have_null) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subs      : %d\n",(PetscInt)totbenign);CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Dofs type        :\tMIN\tMAX\tMEAN\n",(PetscInt)gmin[1],(PetscInt)gmax[1],(PetscInt)(gsum[1]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Interior  dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[1],(PetscInt)gmax[1],(PetscInt)(gsum[1]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Interface dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[2],(PetscInt)gmax[2],(PetscInt)(gsum[2]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Primal    dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[3],(PetscInt)gmax[3],(PetscInt)(gsum[3]/gsum[0]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Local     dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[4],(PetscInt)gmax[4],(PetscInt)(gsum[4]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: ********************************** COARSE PROBLEM DETAILS *********************************\n",pcbddc->current_level);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
@@ -1524,6 +1531,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
     computeconstraintsmatrix = PETSC_TRUE;
+    if (pcbddc->adaptive_selection && !pcbddc->use_deluxe_scaling && !pcbddc->mat_graph->twodim) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute the adaptive primal space for a problem with 3D edges without deluxe scaling");
+    }
   }
 
   /* check existence of a divergence free extension, i.e.
