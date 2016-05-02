@@ -87,7 +87,7 @@ int main(int argc,char **args)
   PetscLogStagePop();
 
   /* Show result */
-  ierr = MatMult(A,x,u);
+  ierr = MatMult(A,x,u);CHKERRQ(ierr);
   ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);

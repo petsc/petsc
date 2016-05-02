@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,&N);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   Mbs  = M/bs;
 
   ierr = PetscMalloc1(bs,&rows);CHKERRQ(ierr);

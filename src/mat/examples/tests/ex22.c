@@ -23,7 +23,7 @@ int main(int argc,char **args)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&C);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {

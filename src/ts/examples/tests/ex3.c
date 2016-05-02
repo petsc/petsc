@@ -141,7 +141,7 @@ int main(int argc,char **argv)
      * places.
      */
     ierr = TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);
+    ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);CHKERRQ(ierr);
   }
 
   /* use petsc to compute the jacobian by finite differences */
@@ -191,7 +191,7 @@ int main(int argc,char **argv)
 
   ierr = PetscFinalize();
   return ierr;
-  }
+}
 
 /*------------------------------------------------------------------------
   Set exact solution

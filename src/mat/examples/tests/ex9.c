@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   /* Form vectors */
   ierr = MatCreateVecs(C,&x,&y);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&ldim);
+  ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;

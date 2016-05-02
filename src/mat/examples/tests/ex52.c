@@ -57,7 +57,6 @@ int main(int argc,char **args)
     row /= bs;
     col  = start/bs;
     ierr = PetscMalloc1(bs*bs,&bval);CHKERRQ(ierr);
-    /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Set offproc blockvalues, blockrow %d, blockcol: %d\n",rank,row,col);CHKERRQ(ierr); */
     k = 1;
     /* row oriented - defalt */
     for (i=0; i<bs; i++) {
@@ -72,7 +71,7 @@ int main(int argc,char **args)
   }
 
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

@@ -70,7 +70,7 @@ int main(int argc,char **args)
     Mat             BB;
 
     if (displayMat) {
-      if (!rank) printf("Before partitioning/reordering, A:\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Before partitioning/reordering, A:\n");CHKERRQ(ierr);
       ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
 
@@ -96,9 +96,9 @@ int main(int argc,char **args)
     ierr = ISDestroy(&mis);CHKERRQ(ierr);
     if (displayIS && !rank) {
       PetscInt i;
-      printf("[ %d ] count:\n",rank);
-      for (i=0; i<size; i++) printf(" %d",count[i]);
-      printf("\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[ %d ] count:\n",rank);CHKERRQ(ierr);
+      for (i=0; i<size; i++) {ierr = PetscPrintf(PETSC_COMM_WORLD," %d",count[i]);CHKERRQ(ierr);}
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
     }
 
     ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ int main(int argc,char **args)
 
     ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
     if (displayMat) {
-      if (!rank) printf("After partitioning/reordering, A:\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"After partitioning/reordering, A:\n");CHKERRQ(ierr);
       ierr = MatView(BB,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
 

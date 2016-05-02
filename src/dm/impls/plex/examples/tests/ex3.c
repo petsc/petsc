@@ -36,14 +36,14 @@ typedef struct {
 /* u = 1 */
 PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
+  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = user->constants[d];
   return 0;
 }
 PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
+  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = 0.0;
   return 0;
@@ -52,14 +52,14 @@ PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[
 /* u = x */
 PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
+  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = coords[d];
   return 0;
 }
 PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
+  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d, e;
   for (d = 0; d < user->dim; ++d) {
     u[d] = 0.0;
@@ -107,14 +107,14 @@ PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], 
 /* u = tanh(x) */
 PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
+  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = tanh(coords[d] - 0.5);
   return 0;
 }
 PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
+  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < user->dim; ++d) u[d] = 1.0/PetscSqr(cosh(coords[d] - 0.5)) * n[d];
   return 0;
@@ -163,7 +163,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -227,8 +227,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         *dm = ncdm;
         ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
       }
-    }
-    else {
+    } else {
       ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
@@ -239,8 +238,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     if (user->simplex) {
       ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
     }
   }
@@ -278,11 +276,9 @@ static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt
         for (e = 0; e < dim; e++) {
           if (d == e && d == compI && d == compJ) {
             C[((compI*dim+compJ)*dim+d)*dim+e] = 1.0;
-          }
-          else if ((d == compJ && e == compI) || (d == e && compI == compJ)) {
+          } else if ((d == compJ && e == compI) || (d == e && compI == compJ)) {
             C[((compI*dim+compJ)*dim+d)*dim+e] = 0.5;
-          }
-          else {
+          } else {
             C[((compI*dim+compJ)*dim+d)*dim+e] = 0.0;
           }
         }
@@ -311,7 +307,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     PetscInt     *anchors;
     PetscInt      offset;
     IS            aIS;
-    MPI_Comm comm = PetscObjectComm((PetscObject)dm);
+    MPI_Comm      comm = PetscObjectComm((PetscObject)dm);
 
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     if (size > 1) SETERRQ(comm,PETSC_ERR_SUP,"Local constraint test can only be performed in serial");
@@ -357,15 +353,15 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = DMSetField(dm, 0, (PetscObject) user->fe);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (!isPlex) {
-      PetscSection    section;
-      const PetscInt *numDof;
-      PetscInt        numComp;
+    PetscSection    section;
+    const PetscInt *numDof;
+    PetscInt        numComp;
 
-      ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
-      ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
-      ierr = DMDACreateSection(dm, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-      ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
+    ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
+    ierr = DMDACreateSection(dm, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
+    ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   }
   if (!user->simplex && user->constraints) {
     /* test getting local constraint matrix that matches section */
@@ -483,7 +479,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     Mat          E;
     MatNullSpace sp;
     PetscBool    isNullSpace;
-    PetscDS ds;
+    PetscDS      ds;
 
     if (user->numComponents != user->dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, user->dim);
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
@@ -495,8 +491,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     ierr = MatNullSpaceTest(sp,E,&isNullSpace);CHKERRQ(ierr);
     if (isNullSpace) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: PASS\n");CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: FAIL\n");CHKERRQ(ierr);
     }
     ierr = MatNullSpaceDestroy(&sp);CHKERRQ(ierr);
@@ -534,15 +529,15 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
 #define __FUNCT__ "TestFVGrad"
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
-  MPI_Comm comm;
-  DM dmRedist, dmfv, dmgrad, dmCell, refTree;
-  PetscFV fv;
-  PetscInt nvecs, v, cStart, cEnd, cEndInterior;
-  PetscMPIInt size;
-  Vec cellgeom, grad, locGrad;
+  MPI_Comm          comm;
+  DM                dmRedist, dmfv, dmgrad, dmCell, refTree;
+  PetscFV           fv;
+  PetscInt          nvecs, v, cStart, cEnd, cEndInterior;
+  PetscMPIInt       size;
+  Vec               cellgeom, grad, locGrad;
   const PetscScalar *cgeom;
-  PetscReal allVecMaxDiff = 0., fvTol = 100. * PETSC_MACHINE_EPSILON;
-  PetscErrorCode ierr;
+  PetscReal         allVecMaxDiff = 0., fvTol = 100. * PETSC_MACHINE_EPSILON;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)dm);
@@ -585,23 +580,22 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   ierr = DMPlexGetHybridBounds(dmgrad,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
   cEndInterior = (cEndInterior < 0) ? cEnd: cEndInterior;
   for (v = 0; v < nvecs; v++) {
-    Vec locX;
-    PetscInt c;
-    PetscScalar trueGrad[3][3] = {{0.}};
+    Vec               locX;
+    PetscInt          c;
+    PetscScalar       trueGrad[3][3] = {{0.}};
     const PetscScalar *gradArray;
-    PetscReal maxDiff, maxDiffGlob;
+    PetscReal         maxDiff, maxDiffGlob;
 
     ierr = DMGetLocalVector(dmfv,&locX);CHKERRQ(ierr);
     /* get the local projection of the rigid body mode */
     for (c = cStart; c < cEnd; c++) {
       PetscFVCellGeom *cg;
-      PetscScalar cx[3] = {0.,0.,0.};
+      PetscScalar     cx[3] = {0.,0.,0.};
 
       ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
       if (v < user->dim) {
         cx[v] = 1.;
-      }
-      else {
+      } else {
         PetscInt w = v - user->dim;
 
         cx[(w + 1) % user->dim] =  cg->centroid[(w + 2) % user->dim];
@@ -624,8 +618,8 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     maxDiff = 0.;
     for (c = cStart; c < cEndInterior; c++) {
       PetscScalar *compGrad;
-      PetscInt i, j, k;
-      PetscReal FrobDiff = 0.;
+      PetscInt    i, j, k;
+      PetscReal   FrobDiff = 0.;
 
       ierr = DMPlexPointLocalRead(dmgrad, c, gradArray, &compGrad);CHKERRQ(ierr);
 
@@ -645,8 +639,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   }
   if (allVecMaxDiff < fvTol) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: PASS\n");CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL at tolerance %g with max difference %g\n",fvTol,allVecMaxDiff);CHKERRQ(ierr);
   }
   ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);

@@ -58,7 +58,7 @@ int main(int argc,char **argv)
 
   /* Get size of fine grids and coarse grids */
   user.ratio     = 2;
-  user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
+  user.coarse.mx = 4; user.coarse.my = 4; user.coarse.mz = 4;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
@@ -115,9 +115,6 @@ int main(int argc,char **argv)
     for (i=0; i<b->i[m]; i++) b->a[i] = one;
 
   }
-  /* if (!rank) printf("A:\n"); */
-  /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
@@ -130,13 +127,9 @@ int main(int argc,char **argv)
 
   /* Create interpolation between the fine and coarse grids */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
-  /* if (!rank) printf("P:\n"); */
-  /* ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Get R = P^T */
   ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
-  /* if (!rank) printf("R:\n"); */
-  /* ierr = MatView(R, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* C = R*A*P */
   ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -146,7 +139,7 @@ int main(int argc,char **argv)
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&flg);CHKERRQ(ierr);
-  if (!flg) printf("RAP != PtAP\n");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Matrices are not equal");
   ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
 
   /* Clean up */

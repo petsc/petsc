@@ -55,7 +55,6 @@ int main(int argc,char **argv)
   ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
 
-
   /* A is non-symmetric. Make A = 0.5*(A + Atrans) symmetric for testing icc and cholesky */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
   ierr = MatAXPY(A,1.0,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -71,7 +70,7 @@ int main(int argc,char **argv)
     ierr = MatIsTranspose(A,A,0.0,&issymm);CHKERRQ(ierr);
     if (issymm) {
       ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    } else printf("Warning: A is non-symmetric\n");
+    } else {ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric\n");CHKERRQ(ierr);}
     ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     A    = sA;

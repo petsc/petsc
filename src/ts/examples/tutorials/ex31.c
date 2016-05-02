@@ -219,7 +219,7 @@ PetscErrorCode IFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
-  ierr = VecAYPX(F,-1.0,Ydot);
+  ierr = VecAYPX(F,-1.0,Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1183,8 +1183,7 @@ int main(int argc, char **argv)
   }
   ierr = PetscFree(error);CHKERRQ(ierr);
 
-  /* Exit */
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }
 

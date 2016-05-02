@@ -174,7 +174,7 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 
 #undef __FUNCT__

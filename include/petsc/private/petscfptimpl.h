@@ -22,11 +22,12 @@ extern PetscFPT  PetscFPTData;
 PETSC_STATIC_INLINE PetscErrorCode  PetscFPTView(PetscViewer viewer)
 {
   PetscInt       i;
+  PetscErrorCode ierr;
 
   if (!PetscFPTData) return(0);
   for (i=0; i<PetscFPTData->tablesize; i++) {
     if (PetscFPTData->functionpointer[i]) {
-      printf("%s()\n",PetscFPTData->functionname[i]);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"%s()\n",PetscFPTData->functionname[i]);CHKERRQ(ierr);
     }
   }
   return(0);

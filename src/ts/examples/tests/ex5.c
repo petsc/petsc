@@ -679,7 +679,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
       ierr     = sensibleflux(sfctemp1,airtemp,wind,&sheat);CHKERRQ(ierr);              /* calculate sensible heat flux */
       ierr     = latentflux(sfctemp1,dewtemp,wind,pressure1,&latentheat);CHKERRQ(ierr); /* calculates latent heat flux */
       ierr     = calc_gflux(sfctemp1,deep_grnd_temp,&groundflux);CHKERRQ(ierr);         /* calculates flux from earth below surface soil layer by conduction */
-      ierr     = calcfluxa(sfctemp1,airtemp,emma,&Ra);                                  /* Calculates the change in downward radiative flux */
+      ierr     = calcfluxa(sfctemp1,airtemp,emma,&Ra);CHKERRQ(ierr);                    /* Calculates the change in downward radiative flux */
       fsfc1    = fsfc1 + latentheat + sheat + groundflux;                               /* adds radiative, sensible heat, latent heat, and ground heat flux yielding net flux */
 
       /* convective coefficients for upwinding */
