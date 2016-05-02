@@ -23,7 +23,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   ierr = PetscDataTypeFromString("Scalar",&dtype,&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find scalar datatype");

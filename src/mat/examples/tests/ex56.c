@@ -14,8 +14,7 @@ int main(int argc,char **args)
   PetscScalar    x[6][9],y[3][3],one=1.0;
   PetscBool      flg,testsbaij=PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 

@@ -89,7 +89,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */

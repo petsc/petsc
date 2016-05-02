@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscScalar    v[3];
   PetscReal      omega = 1.0,norm;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetReal(NULL,NULL,"-omega",&omega,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 

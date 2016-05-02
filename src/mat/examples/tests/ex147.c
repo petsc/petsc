@@ -22,7 +22,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscRandom    rnd;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 #endif

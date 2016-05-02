@@ -28,7 +28,7 @@ int main(int argc,char **args)
   MatPartitioning part;
   IS              is;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);

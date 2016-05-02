@@ -1000,7 +1000,7 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   if (user.runType == RUN_REFERENCE) {
     ierr = TestTriangle(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);

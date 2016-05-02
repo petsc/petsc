@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* set up discretization matrix for fine grid */
   fine_ctx.mx = 9; fine_ctx.my = 9;
   ierr        = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,&flg);CHKERRQ(ierr);

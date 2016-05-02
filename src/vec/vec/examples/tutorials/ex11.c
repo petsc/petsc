@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscScalar    one = 1.0;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /*

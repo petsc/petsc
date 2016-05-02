@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   PetscScalar         *xx;
   SNESConvergedReason reason;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context

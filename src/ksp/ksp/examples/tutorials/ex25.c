@@ -40,8 +40,7 @@ int main(int argc,char **argv)
   Vec            x;
   PetscReal      nrm;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   user.k = 1;
   user.e = .99;
   ierr   = PetscOptionsGetInt(NULL,0,"-k",&user.k,0);CHKERRQ(ierr);

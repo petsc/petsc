@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   SNES           snes;
   UserCtx        user;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);

@@ -29,7 +29,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscReal      h2,sigma1 = 100.0;
   PetscInt       dim,Ii,J,Istart,Iend,n = 6,its,use_random,one=1;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
 #endif

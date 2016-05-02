@@ -137,7 +137,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   DM             da;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   PetscOptionsSetValue(NULL,"-file","ex30_output");
   PetscOptionsSetValue(NULL,"-snes_monitor_short",NULL);
   PetscOptionsSetValue(NULL,"-snes_max_it","20");
@@ -899,7 +899,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 
   ierr = PetscOptionsHasName(NULL,NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-test",&(param->param_test));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));
+  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));CHKERRQ(ierr);
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */

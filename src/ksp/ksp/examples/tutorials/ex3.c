@@ -44,7 +44,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows,i,m = 5,start,end,its;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1);
   M    = m*m;

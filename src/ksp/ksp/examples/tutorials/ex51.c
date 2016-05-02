@@ -44,7 +44,7 @@ int main(int argc,char **args)
   PetscReal      *gllNode, *gllWgts;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL);CHKERRQ(ierr);

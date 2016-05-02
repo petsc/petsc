@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   FILE           *fp;
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
 
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 #if defined(PETSC_USE_64BIT_INDICES)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n");
   ierr = PetscFinalize();

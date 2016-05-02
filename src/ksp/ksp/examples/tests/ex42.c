@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
 
   /* Create parallel diagonal matrix */

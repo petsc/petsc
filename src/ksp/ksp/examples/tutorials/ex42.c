@@ -2056,16 +2056,13 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   mx   = my = mz = 10;
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
   my   = mx; mz = mx;
   ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mz",&mz,NULL);CHKERRQ(ierr);
-
   ierr = solve_stokes_3d_coupled(mx,my,mz);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   return ierr;
 }

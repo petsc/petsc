@@ -57,8 +57,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   UnitedStates   unitedstates;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscFinalize();
   return ierr;
 }

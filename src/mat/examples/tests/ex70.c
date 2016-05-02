@@ -14,8 +14,7 @@ int main(int argc,char **args)
   PetscScalar    v[] = {1.0,2.0,3.0,4.0};
   Vec            x;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);

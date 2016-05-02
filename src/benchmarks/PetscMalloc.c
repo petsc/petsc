@@ -9,12 +9,12 @@ int main(int argc,char **argv)
   PetscLogDouble x,y;
   double         value;
   void           *arr[1000],*dummy;
-  int            ierr,i,rand1[1000],rand2[1000];
+  int            i,rand1[1000],rand2[1000];
+  PetscErrorCode ierr;
   PetscRandom    r;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,0,0);
-
+  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   for (i=0; i<1000; i++) {

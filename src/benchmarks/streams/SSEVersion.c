@@ -84,9 +84,9 @@ int main(int argc,char *argv[])
   double         *PETSC_RESTRICT a,*PETSC_RESTRICT b,*PETSC_RESTRICT c;
 #endif
 
-  PetscInitialize(&argc,&argv,0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  PetscOptionsGetInt(NULL,NULL,"-node",&node,NULL);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-node",&node,NULL);CHKERRQ(ierr);
   /* --- SETUP --- determine precision and check timing --- */
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);

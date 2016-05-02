@@ -13,8 +13,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   IS             isrow;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&A);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {

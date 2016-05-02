@@ -1553,14 +1553,11 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       mx,my;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   mx   = my = 10;
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL);CHKERRQ(ierr);
-
   ierr = solve_stokes_2d_coupled(mx,my);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   return ierr;
 }

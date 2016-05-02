@@ -12,7 +12,7 @@ int main(int argc,char *argv[])
   PetscErrorCode ierr;
   DM             da,daf;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,5,PETSC_DECIDE,PETSC_DECIDE,41,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMRefine(da,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);
   ierr = DMCreateInterpolation(da,daf,&M,NULL);CHKERRQ(ierr);

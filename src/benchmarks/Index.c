@@ -13,7 +13,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,0,0);
+  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   ierr = test1();CHKERRQ(ierr);
   ierr = test2();CHKERRQ(ierr);
   ierr = PetscFinalize();

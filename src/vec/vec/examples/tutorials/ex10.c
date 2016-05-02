@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   isbinary  = ishdf5 = PETSC_FALSE;
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 

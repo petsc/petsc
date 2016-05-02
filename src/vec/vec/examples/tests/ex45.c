@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   PetscScalar    value;
   const PetscInt vidx[] = {1,2},sidx[] = {1,0};
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /*

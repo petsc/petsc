@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
   PetscRandom    ran;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(ran);CHKERRQ(ierr);
 

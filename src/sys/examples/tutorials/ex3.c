@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   PetscLogEvent  USER_EVENT,check_USER_EVENT;
 #endif
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /*
      Create a new user-defined event.

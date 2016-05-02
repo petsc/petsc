@@ -23,7 +23,7 @@ int main(int argc,char **args)
   char           solver[256];
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor test");
   /* Determine which type of solver we want to test for */

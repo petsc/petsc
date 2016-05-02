@@ -669,7 +669,7 @@ int main(int argc, char **argv)
   KSP            ksp;
   PetscErrorCode ierr;
 
-  ierr     = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr     = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   s.nx     = 4;
   s.ny     = 6;
   ierr     = PetscOptionsGetInt(NULL,NULL, "-nx", &s.nx, NULL);CHKERRQ(ierr);

@@ -28,7 +28,7 @@ int main(int argc,char **args)
                             {-1.0, -2.0, 5.0+DIAG_S, -2.0},
                             {-2.0, -1.0, -2.0, 5.0+DIAG_S} };
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr  = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);

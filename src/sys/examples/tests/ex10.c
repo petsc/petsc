@@ -8,7 +8,7 @@ static char help[] = "Tests PetscMemmove()\n";
 int main(int argc,char **argv)
 {
   int i,*a,*b,ierr;
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
   ierr = PetscMalloc1(20,&b);CHKERRQ(ierr);

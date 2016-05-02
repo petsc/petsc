@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscScalar    values[6];
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"Must be run with one processor");

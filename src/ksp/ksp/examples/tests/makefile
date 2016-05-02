@@ -818,6 +818,16 @@ runex33_mumps_2:
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex33_mumps_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex33.tmp
+runex36:
+	-@${MPIEXEC} -n 1 ./ex36 > ex36.tmp 2>&1;\
+	if (${DIFF} output/ex36.out ex36.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex36, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex36.tmp
+runex36_2:
+	-@${MPIEXEC} -n 3 ./ex36 > ex36_2.tmp 2>&1;\
+	if (${DIFF} output/ex36_2.out ex36_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex36_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex36_2.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex37:
 	-@${MPIEXEC} -n 1 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 1 > ex37.tmp 2>&1;\
@@ -1003,8 +1013,8 @@ TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm
-TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
-TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 runex17_2 ex17.rm
+TESTEXAMPLES_C_X_MPIUNI        = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
+TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 runex17_2 ex17.rm ex36.PETSc ex36.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
                                  ex25.PETSc runex25 ex25.rm ex27.PETSc runex27 ex25.rm \

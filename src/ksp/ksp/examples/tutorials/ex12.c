@@ -52,7 +52,7 @@ int main(int argc,char **args)
   PetscScalar    v,one = 1.0,neg_one = -1.0;
   PC             pc;      /* preconditioner context */
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 

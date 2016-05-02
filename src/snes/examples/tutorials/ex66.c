@@ -209,24 +209,22 @@ static int refine_fn(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  SNES           snes; /* nonlinear solver */
-  DM             dm;   /* problem definition */
-  Vec            u;    /* solution, residual vectors */
-  AppCtx         user; /* user-defined work context */
-  PetscSection   section;
-  PetscInt       v, lsize;
-  PetscReal      ferrors[1];
-  void         (*initialGuess[2])(const PetscReal x[], PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
-  PetscErrorCode ierr;
-
+  SNES                 snes; /* nonlinear solver */
+  DM                   dm;   /* problem definition */
+  Vec                  u;    /* solution, residual vectors */
+  AppCtx               user; /* user-defined work context */
+  PetscSection         section;
+  PetscInt             v, lsize;
+  PetscReal            ferrors[1];
+  void                 (*initialGuess[2])(const PetscReal x[], PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
+  PetscErrorCode       ierr;
   p4est_connectivity_t *conn;
   p4est_t              *p4est;
   p4est_ghost_t        *ghost;
   p4est_lnodes_t       *lnodes;
   int                   startlevel, endlevel, level;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   sc_init(PETSC_COMM_WORLD, 1, 1, NULL, SC_LP_ESSENTIAL);
   p4est_init(NULL, SC_LP_PRODUCTION);  /* SC_LP_ERROR for silence. */
 

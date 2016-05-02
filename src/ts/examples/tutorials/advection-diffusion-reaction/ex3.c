@@ -62,7 +62,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr          = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr          = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   appctx.a      = 1.0;
   appctx.d      = 0.0;
   ierr          = PetscOptionsGetScalar(NULL,NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);

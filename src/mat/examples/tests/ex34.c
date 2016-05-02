@@ -16,8 +16,7 @@ int main(int argc,char **args)
   char           file[256];
   PetscViewer    fd;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Read matrix and RHS */
   ierr = PetscOptionsGetString(NULL,NULL,"-fin",file,256,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,help);

@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscScalar    values[16],one = 1.0;
   Vec            x;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"Can only run on one processor");
 

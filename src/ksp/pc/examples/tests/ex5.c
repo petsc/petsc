@@ -41,8 +41,7 @@ int main(int Argc,char **Args)
   PC             pcmg,pc;
   PetscBool      flg;
 
-  PetscInitialize(&Argc,&Args,(char*)0,help);
-
+  ierr = PetscInitialize(&Argc,&Args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-x",&x_mesh,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-l",&levels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-c",&cycles,NULL);CHKERRQ(ierr);

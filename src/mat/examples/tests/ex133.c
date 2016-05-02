@@ -13,8 +13,7 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PetscScalar    x[6][9];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Test is only for seqeuntial");
   ierr   = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,NULL,&A);CHKERRQ(ierr);

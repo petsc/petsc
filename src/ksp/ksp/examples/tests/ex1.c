@@ -14,7 +14,7 @@ int main(int argc,char **args)
   KSP            ksp;
   PetscReal      norm;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 
   /* create stiffness matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
@@ -35,7 +35,6 @@ int main(int argc,char **args)
 
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-
 
   /* solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

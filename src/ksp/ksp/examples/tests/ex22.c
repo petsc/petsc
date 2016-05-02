@@ -229,7 +229,7 @@ int main(int argc, char **args)
 {
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc, &args,(char*)0, help);
+  ierr = PetscInitialize(&argc, &args,(char*)0, help);if (ierr) return ierr;
   ierr = test_solve();CHKERRQ(ierr);
   ierr = test_solve_matgetvecs();CHKERRQ(ierr);
   PetscFinalize();

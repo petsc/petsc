@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   PetscReal      norm;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);

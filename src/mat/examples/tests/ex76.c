@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscBool      TestAIJ  =PETSC_FALSE,TestBAIJ=PETSC_TRUE;
   PetscInt       TestShift=0;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
   if (i-Ii || j-J) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
   }
 
   /* Vectors */
@@ -168,7 +168,7 @@ int main(int argc,char **args)
   /* Test aij matrix A */
   if (TestAIJ) {
     if (displ>0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"AIJ: \n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"AIJ: \n");CHKERRQ(ierr);
     }
     i = 0;
     for (lvl=-1; lvl<10; lvl++) {
@@ -195,7 +195,7 @@ int main(int argc,char **args)
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
 
       if (displ>0) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
       err[i++] = norm2;
     }
@@ -204,7 +204,7 @@ int main(int argc,char **args)
   /* Test baij matrix A */
   if (TestBAIJ) {
     if (displ>0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"BAIJ: \n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"BAIJ: \n");CHKERRQ(ierr);
     }
     i = 0;
     for (lvl=-1; lvl<10; lvl++) {
@@ -230,7 +230,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
       if (displ>0) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
       err[i++] = norm2;
     }
@@ -238,7 +238,7 @@ int main(int argc,char **args)
 
   /* Test sbaij matrix sA */
   if (displ>0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"SBAIJ: \n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"SBAIJ: \n");CHKERRQ(ierr);
   }
   i = 0;
   for (lvl=-1; lvl<10; lvl++) {
@@ -288,7 +288,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     if (displ>0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
     }
     err[i] -= norm2;
     if (err[i] > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER," level: %d, err: %g\n", lvl,(double)err[i]);

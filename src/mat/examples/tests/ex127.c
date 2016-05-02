@@ -18,11 +18,11 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscInt       m,i,j;
   PetscScalar    v,sigma2;
-  PetscRandom    rctx;
+  PetscRandom    rctx = NULL;
   PetscReal      h2,sigma1=100.0,norm;
-  PetscInt       dim,Ii,J,n = 3,use_random,rstart,rend;
+  PetscInt       dim,Ii,J,n = 3,rstart,rend;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
 #endif
@@ -42,9 +42,7 @@ int main(int argc,char **args)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(NULL,NULL,"-norandom",&flg);CHKERRQ(ierr);
-  if (flg) use_random = 0;
-  else use_random = 1;
-  if (use_random) {
+  if (!flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(rctx,0.0,PETSC_i);CHKERRQ(ierr);
@@ -111,12 +109,12 @@ int main(int argc,char **args)
   if (flg) {
     Mat Hermit;
     if (disp_mat) {
-      if (!rank) printf(" A:\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD," A:\n");CHKERRQ(ierr);
       ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX, &Hermit);
     if (disp_mat) {
-      if (!rank) printf(" A_Hermitian:\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD," A_Hermitian:\n");CHKERRQ(ierr);
       ierr = MatView(Hermit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatEqual(A, Hermit, &flg);
@@ -128,7 +126,7 @@ int main(int argc,char **args)
   /* Create a Hermitian matrix As in sbaij format */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As);CHKERRQ(ierr);
   if (disp_mat) {
-    if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," As:\n");CHKERRQ(ierr);}
+    ierr = PetscPrintf(PETSC_COMM_WORLD," As:\n");CHKERRQ(ierr);
     ierr = MatView(As,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -136,7 +134,7 @@ int main(int argc,char **args)
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  if (use_random) {
+  if (rctx) {
     ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
   } else {
     ierr = VecSet(x,1.0);CHKERRQ(ierr);
@@ -152,19 +150,19 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
   ierr = MatMult(As,x,ys);CHKERRQ(ierr);
   if (disp_vec) {
-    printf("y = A*x:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"y = A*x:\n");CHKERRQ(ierr);
     ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"ys = As*x:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"ys = As*x:\n");CHKERRQ(ierr);
     ierr = VecView(ys,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecAXPY(y,-1.0,ys);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_INFINITY,&norm);CHKERRQ(ierr);
   if (norm > 1.e-12 || disp_vec) {
-    printf("|| A*x - As*x || = %g\n",(double)norm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"|| A*x - As*x || = %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* Free spaces */
-  if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&As);CHKERRQ(ierr);
 

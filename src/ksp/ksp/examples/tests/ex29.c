@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   /* set up discretization matrix for fine grid */
   /* ML requires input of fine-grid matrix. It determines nlevels. */
   fine_ctx.mx = 9; fine_ctx.my = 9;

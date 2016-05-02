@@ -20,7 +20,7 @@ int main(int argc,char **args)
   KSPType        kspname;
   PCType         pcname;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* Create and initialize vectors */

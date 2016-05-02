@@ -7,7 +7,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   {
     PetscReal a,b,c;
     a = 0.5;

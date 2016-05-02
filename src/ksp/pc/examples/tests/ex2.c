@@ -19,8 +19,7 @@ int main(int argc,char **args)
   KSPType        kspname;
   PetscReal      norm,tol=1000.*PETSC_MACHINE_EPSILON;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Create and initialize vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar);CHKERRQ(ierr);

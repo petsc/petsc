@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   // with size 1, whose only process has rank 0.
   Teuchos::RCP<const Teuchos::Comm<int> > comm = Tpetra::DefaultPlatform::getDefaultPlatform ().getComm ();
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.

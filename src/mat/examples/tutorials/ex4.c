@@ -26,8 +26,7 @@ int main(int argc,char **args)
   PetscInt       i,N,n,M,m;
   PetscScalar    *xx;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
      Determine file from which we read the matrix
 

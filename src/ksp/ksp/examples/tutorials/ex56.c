@@ -29,7 +29,7 @@ int main(int argc,char **args)
   PetscLogStage  stage[6];
   PetscScalar    DD1[24][24];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr  = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);

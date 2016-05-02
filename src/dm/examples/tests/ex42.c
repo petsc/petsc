@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
   
-  PetscInitialize(&argc,&argv,0,help);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = test_3d("3d.vtr");CHKERRQ(ierr);
   ierr = test_2d("2d.vtr");CHKERRQ(ierr);
   ierr = test_2d_nocoord("2d_nocoord.vtr");CHKERRQ(ierr);

@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /*
      Test IS of size 0

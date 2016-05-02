@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscReal      nrm;
   PetscErrorCode ierr,size=8,lda=10, i,j;
 
-  PetscInitialize(&argc,&argv,0,help);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   /* Create matrix and three vectors: these are all normal */
   ierr = PetscMalloc1(lda*size,&b);CHKERRQ(ierr);
   for (i=0; i<size; i++) {

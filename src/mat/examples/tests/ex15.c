@@ -18,7 +18,7 @@ int main(int argc,char **args)
   MatFactorInfo  info;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);

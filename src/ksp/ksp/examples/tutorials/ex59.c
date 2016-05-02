@@ -331,7 +331,7 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
   ierr = DMDASetAOType(da,AOMEMORYSCALABLE);CHKERRQ(ierr);
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,dd.xm_l*dd.ym_l*dd.zm_l,global_indices);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(dd.gcomm,1,localsize,global_indices,PETSC_OWN_POINTER,&temp_isg2lmap);
+  ierr = ISLocalToGlobalMappingCreate(dd.gcomm,1,localsize,global_indices,PETSC_OWN_POINTER,&temp_isg2lmap);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   *isg2lmap = temp_isg2lmap;
   PetscFunctionReturn(0);
@@ -1004,7 +1004,7 @@ int main(int argc,char **args)
   Vec            exact_solution     =0,fetidp_solution=0,fetidp_rhs=0;
 
   /* Init PETSc */
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Initialize DomainData */
   ierr = InitializeDomainData(&dd);CHKERRQ(ierr);
   /* Decompose domain */
@@ -1096,8 +1096,7 @@ int main(int argc,char **args)
   ierr = KSPDestroy(&KSPwithBDDC);CHKERRQ(ierr);
   ierr = KSPDestroy(&KSPwithFETIDP);CHKERRQ(ierr);
   /* Quit PETSc */
-  ierr = PetscFinalize();CHKERRQ(ierr);
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

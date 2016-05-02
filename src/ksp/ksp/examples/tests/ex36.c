@@ -19,15 +19,15 @@ PetscInt main(PetscInt argc,char **args)
   PetscMPIInt    size,rank;
   PetscInt       i,j;
   PetscScalar    v,sigma2;
-  PetscRandom    rctx;
+  PetscRandom    rctx = NULL;
   PetscReal      h2,sigma1=100.0;
-  PetscInt       dim,Ii,J,n = 3,use_random,rstart,rend;
+  PetscInt       dim,Ii,J,n = 3,rstart,rend;
   KSP            ksp;
   PC             pc;
   Mat            F;
   PetscInt       nneg, nzero, npos;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
 #endif
@@ -43,11 +43,10 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(NULL,NULL,"-norandom",&flg);CHKERRQ(ierr);
-  if (flg) use_random = 0;
-  else use_random = 1;
-  if (use_random) {
+  if (!flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(rctx,0.0,PETSC_i);CHKERRQ(ierr);
@@ -83,7 +82,7 @@ PetscInt main(PetscInt argc,char **args)
   if (flg) {
     Mat Trans;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
-    ierr = MatEqual(A, Trans, &flg);
+    ierr = MatEqual(A, Trans, &flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"A is not symmetric");
     ierr = MatDestroy(&Trans);CHKERRQ(ierr);
   }
@@ -114,15 +113,15 @@ PetscInt main(PetscInt argc,char **args)
   if (flg) {
     Mat Hermit;
     if (disp_mat) {
-      if (!rank) printf(" A:\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD," A:\n");CHKERRQ(ierr);
       ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX, &Hermit);
     if (disp_mat) {
-      if (!rank) printf(" A_Hermitian:\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD," A_Hermitian:\n");CHKERRQ(ierr);
       ierr = MatView(Hermit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
-    ierr = MatEqual(A, Hermit, &flg);
+    ierr = MatEqual(A, Hermit, &flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"A is not Hermitian");
     ierr = MatDestroy(&Hermit);CHKERRQ(ierr);
   }
@@ -131,7 +130,7 @@ PetscInt main(PetscInt argc,char **args)
   /* Create a Hermitian matrix As in sbaij format */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As);CHKERRQ(ierr);
   if (disp_mat) {
-    if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," As:\n");CHKERRQ(ierr);}
+    ierr = PetscPrintf(PETSC_COMM_WORLD," As:\n");CHKERRQ(ierr);
     ierr = MatView(As,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -148,13 +147,11 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
   ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
-  }
+  ierr = PetscPrintf(PETSC_COMM_WORLD," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
 
   /* Free spaces */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&As);CHKERRQ(ierr);
   ierr = PetscFinalize();

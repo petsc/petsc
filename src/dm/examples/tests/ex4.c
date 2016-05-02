@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   DMDAStencilType  st = DMDA_STENCIL_BOX;
   AO               ao;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);
 
   /* Readoptions */

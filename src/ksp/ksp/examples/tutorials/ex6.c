@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscBool      userSubdomains = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &args, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &args, NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL, "-M", &M, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL, "-user_subdomains", &userSubdomains, NULL);CHKERRQ(ierr);

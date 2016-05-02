@@ -419,7 +419,7 @@ int main(int argc,char **argv)
   TSDAESimple    tsdae;
   Vec            U,V,Usolution;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = TSDAESimpleCreate(PETSC_COMM_WORLD,&tsdae);CHKERRQ(ierr);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U);CHKERRQ(ierr);

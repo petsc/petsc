@@ -8,7 +8,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"A string followed by integer %D\n",22);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"A string followed by double %5g another %g\n",23.2,11.3);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"and then an int %D\n",30);CHKERRQ(ierr);

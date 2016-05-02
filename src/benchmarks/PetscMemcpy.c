@@ -7,11 +7,11 @@
 int main(int argc,char **argv)
 {
   PetscLogDouble x,y,z;
-  int            i,ierr;
+  PetscInt       i;
+  PetscErrorCode ierr;
   PetscScalar    *A,*B;
 
-  PetscInitialize(&argc,&argv,0,0);
-
+  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   ierr = PetscMalloc1(8000000,&A);CHKERRQ(ierr);
   ierr = PetscMalloc1(8000000,&B);CHKERRQ(ierr);
 

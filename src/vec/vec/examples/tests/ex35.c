@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   Vec            x;
   PetscScalar    ****xx;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = VecCreateSeq(PETSC_COMM_WORLD,m*n*p*q,&x);CHKERRQ(ierr);
   ierr = VecGetArray4d(x,m,n,p,q,0,0,0,0,&xx);CHKERRQ(ierr);
   cnt  = 0;

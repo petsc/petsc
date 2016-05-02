@@ -18,9 +18,7 @@ int main(int argc,char **args)
   PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL);CHKERRQ(ierr);

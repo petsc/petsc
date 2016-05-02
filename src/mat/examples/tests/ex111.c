@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscReal      fill=2.0,norm;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(WRITEFILE)
   {
     PetscViewer viewer;

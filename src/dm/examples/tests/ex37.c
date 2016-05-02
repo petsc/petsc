@@ -22,8 +22,7 @@ int main(int argc,char **argv)
   Vec            global;
   PF             pf;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,3,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = PFCreate(PETSC_COMM_WORLD,1,3,&pf);CHKERRQ(ierr);

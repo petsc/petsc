@@ -1150,7 +1150,7 @@ int main(int argc, char **argv)
   PetscInt        r;
 
   /* Initialize program */
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* Check if running with only 1 proc */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

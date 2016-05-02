@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* server indicates we WAIT for someone to connect to our socket */
   ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,"server",PETSC_DEFAULT,&fd);CHKERRQ(ierr);
 

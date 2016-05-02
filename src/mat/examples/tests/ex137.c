@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscScalar    aa[7];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for two processes");

@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   Mat_MPIAIJ     *Ampiaij;
   PetscMPIInt    size,rank;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size == 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Must run with 2 or more processes");CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -70,5 +70,5 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFree(oj);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }

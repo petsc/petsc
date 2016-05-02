@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscViewer    fd;
   PetscLogStage  stage1;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 
   /* Read matrix and RHS */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);

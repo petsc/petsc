@@ -67,7 +67,7 @@ int main(int argc,char **args)
   MPI_Comm        comm;
   PetscReal       e;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PC");CHKERRQ(ierr);

@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   IS             set;
   const PetscInt *indices;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   n     = 10;
   first = 3;

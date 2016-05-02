@@ -30,7 +30,7 @@ int main(int argc,char **args)
   El::HermitianEigSubset<PetscElemScalar>       subset;
   El::HermitianEigCtrl<PetscElemScalar>   ctrl;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if !defined(PETSC_HAVE_ELEMENTAL)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires ELEMENTAL");
 #endif

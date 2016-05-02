@@ -43,11 +43,11 @@ int main(int argc,char **args)
   PetscInt       m = 6,n = 7,t,tmax = 2,i,Ii,j,N;
   PetscScalar    *userx,*rho,*solution,*userb,hx,hy,x,y;
   PetscReal      enorm;
+
   /*
      Initialize the PETSc libraries
   */
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.
@@ -131,8 +131,7 @@ int main(int argc,char **args)
   ierr = PetscFree(userb);CHKERRQ(ierr);
   ierr = UserFinalizeLinearSolver(&userctx);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 
 /* ------------------------------------------------------------------------*/

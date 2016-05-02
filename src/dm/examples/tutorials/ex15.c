@@ -245,8 +245,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      usempiio = PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL,NULL,"-usempiio",&usempiio,NULL);CHKERRQ(ierr);
   if (!usempiio) {
     ierr = TestDMDAVec(PETSC_FALSE);CHKERRQ(ierr);

@@ -53,9 +53,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscBool      errorinmatmult = PETSC_FALSE,errorinpcapply = PETSC_FALSE,errorinpcsetup = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
-
-  PetscFunctionBeginUser;
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_matmult",&errorinmatmult,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_pcapply",&errorinpcapply,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_pcsetup",&errorinpcsetup,NULL);CHKERRQ(ierr);

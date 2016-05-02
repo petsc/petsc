@@ -360,7 +360,7 @@ int main(int argc, char *argv[])
   PetscBool      cpuTiming = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, 0, help);if (ierr) return ierr;
   ierr = PetscPrintf(PETSC_COMM_SELF, "[Single and Double-Precision Device-Only STREAM Benchmark implementation in CUDA]\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "%s Starting...\n\n", argv[0]);CHKERRQ(ierr);
 
