@@ -528,7 +528,7 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
     case TS_STEP_PENDING:
       h = ts->time_step; break;
     case TS_STEP_COMPLETE:
-      h = ts->time_step_prev; break;
+      h = ts->ptime - ts->ptime_prev; break;
     default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
 
@@ -686,7 +686,7 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts,PetscReal itime,Vec X)
       t = (itime - ts->ptime)/h;
       break;
     case TS_STEP_COMPLETE:
-      h = ts->time_step_prev;
+      h = ts->ptime - ts->ptime_prev;
       t = (itime - ts->ptime)/h + 1; /* In the interval [0,1] */
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
