@@ -112,8 +112,7 @@ int main(int argc,char **args)
 
   /* check error */
   for (i=0; i<N; i++) {
-    x    = h*(i % (m+1)); y = h*(i/(m+1));
-    val  = y;
+    val  = h*(i/(m+1));
     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);

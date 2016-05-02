@@ -52,7 +52,7 @@ int main(int argc,char **args)
   end   = start + M/size + ((M%size) > rank);
 
   /* Form the element stiffness for the Laplacian */
-  ierr = FormElementStiffness(h*h,Ke);
+  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     /* location of lower left corner of element */
     /* node numbers for the four corners of element */

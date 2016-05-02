@@ -93,7 +93,7 @@ int main(int argc,char **args)
 #endif
   }
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u,"Test_Vec");
+  ierr = PetscObjectSetName((PetscObject) u,"Test_Vec");CHKERRQ(ierr);
 
   if (vstage2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector sizes...\n");CHKERRQ(ierr);
