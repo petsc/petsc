@@ -2149,7 +2149,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
     send[2*(p-startF)+1] = lastCell - firstCell;
     ierr = MPI_Isend(&send[2*(p-startF)],2,MPIU_INT,p,tag,comm,&sendReqs[p-startF]);CHKERRQ(ierr);
   }
-  ierr = MPI_Waitall((PetscMPIInt)(endC-startC),recvReqs,NULL);CHKERRQ(ierr);
+  ierr = MPI_Waitall((PetscMPIInt)(endC-startC),recvReqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PETSC_COMM_SELF,&section);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(section,startC,endC);CHKERRQ(ierr);
   for (p = startC; p < endC; p++) {
@@ -2173,7 +2173,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf,cEnd-cStart,nLeaves,NULL,PETSC_OWN_POINTER,leaves,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  ierr = MPI_Waitall((PetscMPIInt)(endF-startF),sendReqs,NULL);CHKERRQ(ierr);
+  ierr = MPI_Waitall((PetscMPIInt)(endF-startF),sendReqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ierr = PetscFree2(send,sendReqs);CHKERRQ(ierr);
   ierr = PetscFree2(recv,recvReqs);CHKERRQ(ierr);
   *coveringSF = sf;
