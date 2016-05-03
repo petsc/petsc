@@ -56,7 +56,11 @@ static int DMRefinePattern_Corner(p4est_t * p4est, p4est_topidx_t which_tree, p4
   ctx = (DMRefinePatternCtx*) p4est->user_pointer;
   if (quadrant->level >= ctx->maxLevel) return 0;
 
-  memset(&root,0,sizeof(p4est_quadrant_t));
+  root.x = root.y = 0;
+#if defined(P4_TO_P8)
+  root.z = 0;
+#endif
+  root.level = 0;
   p4est_quadrant_corner_descendant(&root,&rootcorner,ctx->corner,quadrant->level);
   if (p4est_quadrant_is_equal(quadrant,&rootcorner)) return 1;
   return 0;
