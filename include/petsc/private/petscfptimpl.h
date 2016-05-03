@@ -27,7 +27,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTView(PetscViewer viewer)
   if (!PetscFPTData) return(0);
   for (i=0; i<PetscFPTData->tablesize; i++) {
     if (PetscFPTData->functionpointer[i]) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"%s()\n",PetscFPTData->functionname[i]);CHKERRQ(ierr);
+      printf("%s()\n",PetscFPTData->functionname[i]);
     }
   }
   return(0);
