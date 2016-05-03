@@ -1065,9 +1065,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
             remotesAll[i].index = -1;
           }
           for (i = 0; i < nleaves; i++) remotesAll[(leaves ? leaves[i] : i) + cLocalStart] = remotes[i];
-          ierr = PetscSFSetUp(cellSF);CHKERRQ(ierr);
-          ierr = PetscSFBcastBegin(cellSF,MPIU_2INT,remotesAll,remotesAll);CHKERRQ(ierr);
-          ierr = PetscSFBcastEnd(cellSF,MPIU_2INT,remotesAll,remotesAll);CHKERRQ(ierr);
+          ierr       = PetscSFSetUp(cellSF);CHKERRQ(ierr);
+          ierr       = PetscSFBcastBegin(cellSF,MPIU_2INT,remotesAll,remotesAll);CHKERRQ(ierr);
+          ierr       = PetscSFBcastEnd(cellSF,MPIU_2INT,remotesAll,remotesAll);CHKERRQ(ierr);
           nleavesNew = 0;
           for (i = 0; i < nleaves; i++) {
             if (remotesAll[i].rank >= 0) nleavesNew++;
@@ -2638,8 +2638,8 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       for (p = pStartF; p < pEndF; p++) {
         if (roots[p-pStartF].index >= 0) numLeaves++;
       }
-      ierr = PetscMalloc1(numLeaves,&leaves);CHKERRQ(ierr);
-      ierr = PetscMalloc1(numLeaves,&iremote);CHKERRQ(ierr);
+      ierr      = PetscMalloc1(numLeaves,&leaves);CHKERRQ(ierr);
+      ierr      = PetscMalloc1(numLeaves,&iremote);CHKERRQ(ierr);
       numLeaves = 0;
       for (p = pStartF; p < pEndF; p++) {
         if (roots[p-pStartF].index >= 0) {
@@ -3272,12 +3272,8 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 #if defined(PETSC_USE_DEBUG)
     {
       PetscInt p;
-      for (p = pStartA; p < pEndA; p++) {
-        adaptValues[p-pStartA] = -1;
-      }
-      for (p = pStart; p < pEnd; p++) {
-        values[p-pStart] = -2;
-      }
+      for (p = pStartA; p < pEndA; p++) adaptValues[p-pStartA] = -1;
+      for (p = pStart; p < pEnd; p++)   values[p-pStart]       = -2;
       if (transferForward) {
         ierr = PetscSFBcastBegin(transferForward,MPIU_INT,adaptValues,values);CHKERRQ(ierr);
         ierr = PetscSFBcastEnd(transferForward,MPIU_INT,adaptValues,values);CHKERRQ(ierr);
