@@ -883,7 +883,7 @@ runex41:
 	   else printf "${PWD}\nPossible problem with ex41_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex41_1.tmp
 runex41_2:
-	-@${MPIEXEC} -n 1 ./ex41  > ex41_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex41  > ex41_2.tmp 2>&1;\
 	   if (${DIFF} output/ex41_2.out ex41_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex41_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex41_2.tmp

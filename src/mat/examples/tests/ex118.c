@@ -105,9 +105,9 @@ int main(int argc,char **args)
   ierr = PetscFree(iblock);CHKERRQ(ierr);
   ierr = PetscFree(evecs_array);CHKERRQ(ierr);
   ierr = PetscFree(ifail);CHKERRQ(ierr);
-#endif
   ierr = PetscFinalize();
   return ierr;
+#endif
 }
 /*------------------------------------------------
   Check the accuracy of the eigen solution
