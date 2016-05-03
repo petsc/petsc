@@ -178,7 +178,7 @@ cdef inline tuple asOwnershipRanges(object ownership_ranges,
         elif p[0] != nlz: raise ValueError(
             "ownership range size %d and number or processors %d" %
              (toInt(nlz), toInt(p[0])))
-    return ranges
+    return tuple(ranges)
 
 cdef inline tuple toOwnershipRanges(PetscInt dim,
                                     PetscInt m, PetscInt n, PetscInt p,
