@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscScalar    *barray,*xarray,*uarray,*array,one=1.0;
   PetscInt       type=1;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Load the matrix */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
@@ -115,7 +115,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-4 && !rank) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its);CHKERRQ(ierr);
-    printf("Error: Residual norm of each block |subb - subA*subx |= %g\n",(double)norm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Residual norm of each block |subb - subA*subx |= %g\n",(double)norm);CHKERRQ(ierr);
   }
   ierr = VecResetArray(subb);CHKERRQ(ierr);
   ierr = VecResetArray(subx);CHKERRQ(ierr);
@@ -125,11 +125,11 @@ int main(int argc,char **args)
   if (flg && rank == id) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%g\n",(double)PetscRealPart(array[i]));
+    for (i=0; i<m; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i]));}
     ierr = VecRestoreArray(subb,&array);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank);CHKERRQ(ierr);
     ierr = VecGetArray(subx,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%g\n",(double)PetscRealPart(array[i]));
+    for (i=0; i<m; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i]));}
     ierr = VecRestoreArray(subx,&array);CHKERRQ(ierr);
   }
 

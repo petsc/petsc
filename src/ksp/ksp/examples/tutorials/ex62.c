@@ -60,7 +60,7 @@ int main(int argc,char **args)
   PetscBool      user_set_subdomains=PETSC_FALSE;
   PetscReal      one,e;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PCGASM");CHKERRQ(ierr);
   m = 15;

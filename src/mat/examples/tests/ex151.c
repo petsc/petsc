@@ -24,8 +24,7 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscBool      view_sparse;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* ------- Assemble matrix, --------- */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,5,7);CHKERRQ(ierr);

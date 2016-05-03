@@ -29,7 +29,7 @@ int main(int argc,char **args)
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -293,10 +293,9 @@ int main(int argc,char **args)
       ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
       if (norm > PETSC_SMALL) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqDense and P SeqDense and MAT_REUSE_MATRIX: %g\n",norm);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqDense and P SeqDense and MAT_REUSE_MATRIX: %g\n",norm);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
-
       ierr = MatDestroy(&Cdensetest);CHKERRQ(ierr);
       ierr = MatDestroy(&Pdense);CHKERRQ(ierr);
       ierr = MatDestroy(&Adense);CHKERRQ(ierr);

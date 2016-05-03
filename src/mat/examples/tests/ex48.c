@@ -18,8 +18,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   MatFactorInfo  info;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Test MatSetValues() and MatGetValues() */
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);

@@ -28,8 +28,7 @@ int main(int argc,char **args)
   int            fcomm;
   Vec            vec;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* This function should be called to be able to use PETSc routines
      from the FORTRAN subroutines needed by this program */
 

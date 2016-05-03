@@ -17,21 +17,21 @@ int main(int argc,char **args)
   PetscScalar    neg_one = -1.0,four=4.0,value[3];
   IS             perm,cperm;
   PetscRandom    rdm;
-  PetscInt       reorder=0,displ=0;
+  PetscBool      reorder = PETSC_FALSE,displ = PETSC_FALSE;
   MatFactorInfo  factinfo;
   PetscBool      equal;
-  PetscBool      TestAIJ  =PETSC_FALSE,TestBAIJ=PETSC_TRUE;
+  PetscBool      TestAIJ = PETSC_FALSE,TestBAIJ = PETSC_TRUE;
   PetscInt       TestShift=0;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-reorder",&reorder,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-reorder",&reorder,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-testaij",&TestAIJ,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-testShift",&TestShift,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-displ",&displ,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-displ",&displ,NULL);CHKERRQ(ierr);
 
   n = mbs*bs;
   if (TestAIJ) { /* A is in aij format */
@@ -135,7 +135,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
   if (i-Ii || j-J) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
   }
 
   /* Vectors */
@@ -167,8 +167,8 @@ int main(int argc,char **args)
   /*------------------------------------------*/
   /* Test aij matrix A */
   if (TestAIJ) {
-    if (displ>0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"AIJ: \n");
+    if (displ) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"AIJ: \n");CHKERRQ(ierr);
     }
     i = 0;
     for (lvl=-1; lvl<10; lvl++) {
@@ -194,8 +194,8 @@ int main(int argc,char **args)
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
 
-      if (displ>0) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);
+      if (displ) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
       err[i++] = norm2;
     }
@@ -203,8 +203,8 @@ int main(int argc,char **args)
 
   /* Test baij matrix A */
   if (TestBAIJ) {
-    if (displ>0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"BAIJ: \n");
+    if (displ) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"BAIJ: \n");CHKERRQ(ierr);
     }
     i = 0;
     for (lvl=-1; lvl<10; lvl++) {
@@ -229,16 +229,16 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (displ>0) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);
+      if (displ) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
       err[i++] = norm2;
     }
   }
 
   /* Test sbaij matrix sA */
-  if (displ>0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"SBAIJ: \n");
+  if (displ) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"SBAIJ: \n");CHKERRQ(ierr);
   }
   i = 0;
   for (lvl=-1; lvl<10; lvl++) {
@@ -287,11 +287,11 @@ int main(int argc,char **args)
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-    if (displ>0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %D, error: %g\n", lvl,(double)norm2);
+    if (displ) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
     }
     err[i] -= norm2;
-    if (err[i] > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER," level: %d, err: %g\n", lvl,(double)err[i]);
+    if (err[i] > tol) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER," level: %d, err: %g\n", lvl,(double)err[i]);
   }
 
   ierr = ISDestroy(&perm);CHKERRQ(ierr);

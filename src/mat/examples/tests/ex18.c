@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscBool      upwind = PETSC_FALSE, nonlocalBC = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = nlocal*size;

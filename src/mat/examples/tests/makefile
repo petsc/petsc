@@ -1511,13 +1511,6 @@ runex76:
 	else printf "${PWD}\nPossible problem with ex76, diffs above\n=========================================\n"; fi; \
 	${RM} -f ex76_1.tmp
 
-runex76_2:
-	-@touch ex76_1.tmp;\
-	${MPIEXEC} -n 1 ./ex76 -testaij -reorder 1 >> ex76_1.tmp 2>&1; \
-	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex76_2, diffs above\n=========================================\n"; fi; \
-	${RM} -f ex76_1.tmp
-
 runex76_3:
 	-@touch ex76_1.tmp;\
 	${MPIEXEC} -n 1 ./ex76 -testaij >> ex76_1.tmp 2>&1; \

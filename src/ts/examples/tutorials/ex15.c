@@ -60,7 +60,7 @@ int main(int argc,char **argv)
                             1: slow finite difference;
                             2: fd with coloring; */
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* Initialize user application context */
   user.da           = NULL;
   user.nstencilpts  = 5;

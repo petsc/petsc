@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   PetscInt       dof=1,M=-8;
   PetscBool      flg,trans=PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-trans",&trans,NULL);CHKERRQ(ierr);
@@ -55,7 +55,6 @@ int main(int argc,char **argv)
   ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
 
-
   /* A is non-symmetric. Make A = 0.5*(A + Atrans) symmetric for testing icc and cholesky */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
   ierr = MatAXPY(A,1.0,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -71,7 +70,7 @@ int main(int argc,char **argv)
     ierr = MatIsTranspose(A,A,0.0,&issymm);CHKERRQ(ierr);
     if (issymm) {
       ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    } else printf("Warning: A is non-symmetric\n");
+    } else {ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric\n");CHKERRQ(ierr);}
     ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     A    = sA;
@@ -140,7 +139,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   /* For simplicity, this example only works on mx=my=mz */
-  if (mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
+  if (mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %D = my %D = mz %D\n",mx,my,mz);
 
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;

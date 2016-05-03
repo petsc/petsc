@@ -164,8 +164,7 @@ int main(int argc, char **argv)
   PetscInt        f;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-digits", "The number of significant digits for the integral","ex3.c",digits,&digits,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();

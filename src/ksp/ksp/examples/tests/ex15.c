@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PC             pc;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* Create vectors */

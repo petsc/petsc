@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da,cda;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);

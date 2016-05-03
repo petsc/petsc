@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   Vec            init_sol; /* ts solution vector */
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
@@ -141,7 +141,7 @@ int main(int argc,char **argv)
      * places.
      */
     ierr = TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);
+    ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);CHKERRQ(ierr);
   }
 
   /* use petsc to compute the jacobian by finite differences */
@@ -191,7 +191,7 @@ int main(int argc,char **argv)
 
   ierr = PetscFinalize();
   return ierr;
-  }
+}
 
 /*------------------------------------------------------------------------
   Set exact solution

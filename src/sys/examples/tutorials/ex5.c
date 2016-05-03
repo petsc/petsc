@@ -66,7 +66,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* Create an empty bag */
   ierr = PetscBagCreate(PETSC_COMM_WORLD,sizeof(Parameter),&bag);CHKERRQ(ierr);

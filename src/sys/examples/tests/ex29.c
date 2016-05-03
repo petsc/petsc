@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt       a = 2009,b = 5612,result,tresult;
   Petsc64bitInt  r64;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr    = PetscIntMultError(a,b,&result);CHKERRQ(ierr);
   a       = PETSC_MPI_INT_MAX-22,b = PETSC_MPI_INT_MAX/22;
   r64     = PetscIntMult64bit(a,b);

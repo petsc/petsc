@@ -18,7 +18,7 @@ int main(int argc,char **args)
   Vec            x,y;
   MPI_Comm       subcomm;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   /* Form vectors */
   ierr = MatCreateVecs(C,&x,&y);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&ldim);
+  ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;

@@ -30,7 +30,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size < 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must run with at least 4 MPI processes");

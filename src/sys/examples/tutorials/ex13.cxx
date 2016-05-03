@@ -47,7 +47,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   RCP<const Comm<int> > comm (new MpiComm<int> (PETSC_COMM_WORLD));
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.

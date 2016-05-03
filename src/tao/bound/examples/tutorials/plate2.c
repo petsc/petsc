@@ -844,7 +844,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
       ierr = VecSetRandom(X, rctx);CHKERRQ(ierr);
     }
     ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-    ierr = VecShift(X, np5);
+    ierr = VecShift(X, np5);CHKERRQ(ierr);
 
   } else { /* Take an average of the boundary conditions */
 

@@ -13,7 +13,7 @@ int main(int argc,char *argv[])
   const PetscInt *lx,*ly,*lz;
   PetscMPIInt    rank,size;
 
-  PetscInitialize(&argc,&argv,0,help);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,0,"-dim",&dim,0);CHKERRQ(ierr);
   switch (dim) {
   case 2:
@@ -39,6 +39,6 @@ int main(int argc,char *argv[])
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();
   return ierr;
 }

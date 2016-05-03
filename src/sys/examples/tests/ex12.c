@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscBool      values_view=PETSC_FALSE;
   PetscMPIInt    rank;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,0,"-values_view",&values_view,NULL);CHKERRQ(ierr);

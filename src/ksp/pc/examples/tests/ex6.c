@@ -35,7 +35,7 @@ int main(int argc,char **args)
   IS             *is1,*is2;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */

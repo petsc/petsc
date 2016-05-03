@@ -1100,16 +1100,13 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       mx,my;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   mx   = my = 10;
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL);CHKERRQ(ierr);
-
   ierr = solve_elasticity_2d(mx,my);CHKERRQ(ierr);
-
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /* -------------------------- helpers for boundary conditions -------------------------------- */

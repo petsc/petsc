@@ -23,9 +23,7 @@ PetscErrorCode test_3d(const char filename[])
   PetscInt          i,j,k;
   PetscErrorCode    ierr;
 
-  ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_STAR, M,N,P,
-                      PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,NULL,&da);CHKERRQ(ierr);
 
   ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -68,9 +66,7 @@ PetscErrorCode test_2d(const char filename[])
   PetscInt          i,j;
   PetscErrorCode    ierr;
 
-  ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_STAR, M,N,
-                      PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
@@ -109,9 +105,7 @@ PetscErrorCode test_2d_nocoord(const char filename[])
   PetscInt          i,j;
   PetscErrorCode    ierr;
 
-  ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_STAR, M,N,
-                      PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,sw,NULL,NULL,&da);CHKERRQ(ierr);
 
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&v);CHKERRQ(ierr);
@@ -180,7 +174,7 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
   
-  PetscInitialize(&argc,&argv,0,help);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = test_3d("3d.vtr");CHKERRQ(ierr);
   ierr = test_2d("2d.vtr");CHKERRQ(ierr);
   ierr = test_2d_nocoord("2d_nocoord.vtr");CHKERRQ(ierr);

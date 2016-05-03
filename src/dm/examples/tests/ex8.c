@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   VecScatter       scatter;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Read options */

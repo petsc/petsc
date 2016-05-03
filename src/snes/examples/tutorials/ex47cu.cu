@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   char           *tmp,typeName[256];
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrstr(typeName,"cusp",&tmp);CHKERRQ(ierr);

@@ -23,13 +23,11 @@ int main(int argc,char **args)
   KSP            ksp;
 #endif
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
   ierr = PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL);CHKERRQ(ierr);
-
 
   /* Read matrix and RHS */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -89,7 +87,7 @@ int main(int argc,char **args)
   PetscLogStagePop();
 
   /* Show result */
-  ierr = MatMult(A,x,u);
+  ierr = MatMult(A,x,u);CHKERRQ(ierr);
   ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -113,9 +111,8 @@ int main(int argc,char **args)
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-
-  ierr = PetscFinalize();
 #endif
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

@@ -57,8 +57,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       bc;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASetInterpolationType(da, DMDA_Q0);CHKERRQ(ierr);
@@ -66,20 +65,18 @@ int main(int argc,char **argv)
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
 
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");CHKERRQ(ierr);
   user.nu     = 0.1;
   ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, NULL);CHKERRQ(ierr);
   bc          = (PetscInt)NEUMANN;
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
-  ierr        = PetscOptionsEnd();
+  ierr        = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-
   ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
-
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();

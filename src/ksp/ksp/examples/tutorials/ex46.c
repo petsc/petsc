@@ -39,8 +39,7 @@ int main(int argc,char **argv)
   PetscLogStage  stage;
   DMDALocalInfo  info;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /*
      Create distributed array to handle parallel distribution.
      The problem size will default to 8 by 7, but this can be

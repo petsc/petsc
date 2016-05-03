@@ -758,7 +758,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
     /* Get pointers to vector data */
-    ierr = DMDAVecGetArray(user->dm,X,(void**)&x);
+    ierr = DMDAVecGetArray(user->dm,X,(void**)&x);CHKERRQ(ierr);
 
     /* Perform local computations */
     for (j=ys; j<ys+ym; j++){
@@ -766,7 +766,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
         x[j][i] = ( ((j+1)*user->bottom[i-xs+1]+(my-j+1)*user->top[i-xs+1])/(my+2)+((i+1)*user->left[j-ys+1]+(mx-i+1)*user->right[j-ys+1])/(mx+2))/2.0;
       }
     }
-    ierr = DMDAVecRestoreArray(user->dm,X,(void**)&x); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(user->dm,X,(void**)&x);CHKERRQ(ierr);
     ierr = PetscLogFlops(9*xm*ym);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

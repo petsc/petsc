@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscInt               output[2],inglobals[13],outlocals[13];
   ISLocalToGlobalMapping mapping;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /*
       Create a local to global mapping. Each processor independently

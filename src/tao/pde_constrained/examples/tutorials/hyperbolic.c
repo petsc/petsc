@@ -125,9 +125,8 @@ int main(int argc, char **argv)
 #if defined(PETSC_USE_LOG)
   PetscLogStage      stages[1];
 #endif
-  
-  PetscInitialize(&argc, &argv, (char*)0,help);
 
+  ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
   user.mx = 32;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
@@ -198,11 +197,8 @@ int main(int argc, char **argv)
   ierr = TaoSetObjectiveRoutine(tao, FormFunction, (void *)&user);CHKERRQ(ierr);
   ierr = TaoSetGradientRoutine(tao, FormGradient, (void *)&user);CHKERRQ(ierr);
   ierr = TaoSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user);CHKERRQ(ierr);
-
   ierr = TaoSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, (void *)&user);CHKERRQ(ierr);
-
   ierr = TaoSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user);CHKERRQ(ierr);
-
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is);CHKERRQ(ierr);
 
@@ -1183,7 +1179,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = VecSetSizes(user->ytrue,PETSC_DECIDE,n*user->nt);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->ytrue);CHKERRQ(ierr);
   user->c_formed = PETSC_TRUE;
-  ierr = VecCopy(user->utrue,user->u); /*  Set u=utrue temporarily for StateMatInv */
+  ierr = VecCopy(user->utrue,user->u);CHKERRQ(ierr); /*  Set u=utrue temporarily for StateMatInv */
   ierr = VecSet(user->ytrue,0.0);CHKERRQ(ierr); /*  Initial guess */
   ierr = StateMatInvMult(user->Js,user->q,user->ytrue);CHKERRQ(ierr);
   ierr = VecCopy(user->ur,user->u);CHKERRQ(ierr); /*  Reset u=ur */

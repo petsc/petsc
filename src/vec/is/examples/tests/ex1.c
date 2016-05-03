@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   IS                     isx;
   ISLocalToGlobalMapping ltog;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,ix,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(isx,&ltog);CHKERRQ(ierr);

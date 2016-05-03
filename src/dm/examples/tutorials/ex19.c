@@ -11,9 +11,8 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   DM             da;
-  /* Initialize the Petsc context */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* Build of the DMDA -- 1D -- boundary_none */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"1D -- DM_BOUNDARY_NONE\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);

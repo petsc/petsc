@@ -20,7 +20,7 @@ int CreateError(PetscReal x)
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscPrintf(PETSC_COMM_SELF,"This is a contrived example to test floating pointing\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"It is not a true error.\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Run with -fp_trap to catch the floating point error\n");CHKERRQ(ierr);

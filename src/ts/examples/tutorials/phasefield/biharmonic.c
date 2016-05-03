@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ctx.kappa       = 1.0;
   ierr            = PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
   ctx.degenerate  = PETSC_FALSE;
@@ -213,7 +213,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

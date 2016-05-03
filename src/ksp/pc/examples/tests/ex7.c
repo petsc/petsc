@@ -15,8 +15,7 @@ int main(int argc,char **args)
   PC             pc;
   Vec            xtmp;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);

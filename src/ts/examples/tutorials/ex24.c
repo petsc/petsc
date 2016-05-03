@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   PetscBool      view_final;
   Ctx            ctx;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ctx.n = 3;
   ierr  = PetscOptionsGetInt(NULL,NULL,"-n",&ctx.n,NULL);CHKERRQ(ierr);
   if (ctx.n < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimension specified with -n must be at least 2");

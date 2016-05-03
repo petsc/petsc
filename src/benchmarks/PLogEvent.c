@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,0,0);
+  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   PetscLogEventRegister("*DummyEvent",0,&e1);
   /* To take care of the paging effects */
   ierr = PetscTime(&x);CHKERRQ(ierr);

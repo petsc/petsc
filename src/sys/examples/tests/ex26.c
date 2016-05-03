@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   PetscInt       newp = 0, N = 0, i, j;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL);CHKERRQ(ierr);
   ierr = PetscHashIJCreate(&table);CHKERRQ(ierr);
   ierr = PetscHashIJSetMultivalued(table, PETSC_FALSE);CHKERRQ(ierr);

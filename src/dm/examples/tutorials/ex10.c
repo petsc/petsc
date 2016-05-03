@@ -35,9 +35,7 @@ int main(int argc,char **argv)
   dy=(yp-ym)/(Ny-1);
 
   /* Initialize the Petsc context */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
-  /* Build of the DMDA */
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,Nx,Ny,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da2D);CHKERRQ(ierr);
 
   /* Set the coordinates */

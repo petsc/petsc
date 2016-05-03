@@ -123,7 +123,7 @@ int main(int argc, char **argv)
   PetscLogStage  gpuStage, cpuStage;
 #endif
 
-  ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, 0, help);if (ierr) return ierr;
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
   ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL, "-view", &doView, NULL);CHKERRQ(ierr);

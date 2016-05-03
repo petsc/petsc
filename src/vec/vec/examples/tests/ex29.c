@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscBool      subset = PETSC_FALSE,flg;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   bs   = size;
 

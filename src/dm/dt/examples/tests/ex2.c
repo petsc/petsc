@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscReal      src_points[1000],target_points[1000],*R;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);CHKERRQ(ierr);
   {
     ndegrees   = 1000;

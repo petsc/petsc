@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     MPI_Comm       c;
     PetscErrorCode ierr;
 
-    PetscInitialize(&argc, &argv, NULL, NULL);
+    ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
     c = PETSC_COMM_WORLD;
 
     ierr = MatCreate(c, &A); CHKERRQ(ierr);

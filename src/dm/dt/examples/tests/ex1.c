@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   PetscReal      points[1000],weights[1000],interval[2];
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);CHKERRQ(ierr);
   {
     ndegrees   = 1000;

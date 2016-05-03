@@ -33,7 +33,7 @@ int main(int argc,char **args)
   PetscScalar    one = 1.0,Ke[16],*vals;
   PetscReal      h,norm;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
 
   N    = (m+1)*(m+1); /* dimension of matrix */
@@ -52,7 +52,7 @@ int main(int argc,char **args)
   end   = start + M/size + ((M%size) > rank);
 
   /* Form the element stiffness for the Laplacian */
-  ierr = FormElementStiffness(h*h,Ke);
+  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     /* location of lower left corner of element */
     /* node numbers for the four corners of element */

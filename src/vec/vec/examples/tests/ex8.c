@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* create two vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);

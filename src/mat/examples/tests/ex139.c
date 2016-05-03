@@ -37,7 +37,7 @@ int main(int argc,char *argv[])
   IS                     is0,is1;
   PetscBool              diag,blocked;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsBegin(comm,NULL,"LocalRef Test Options",NULL);CHKERRQ(ierr);

@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   float          ofloat[2],sfloat[2];
   short          oshort[2],sshort[2];
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   sint[0]    = oint[0]    = 5;
   sint[1]    = oint[1]    = 19;

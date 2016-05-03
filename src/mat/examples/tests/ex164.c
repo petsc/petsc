@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       n = 10;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MatCreateSeqDense(PETSC_COMM_WORLD,n,n,NULL,&A);CHKERRQ(ierr);
   ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatView(C,NULL);CHKERRQ(ierr);

@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   DMDAStencilType  st = DMDA_STENCIL_BOX;
   AO               ao;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);
 
   /* Readoptions */
@@ -150,8 +150,7 @@ int main(int argc,char **argv)
         iloc = w*((j-Ys)*Xm + i-Xs);
         for (l=0; l<w; l++) {
           if (iglobal[kk] != ltog[iloc+l]) {
-            ierr = PetscFPrintf(PETSC_COMM_SELF,stdout,"[%d] Problem with mapping: j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",
-                                rank,j,i,l,ltog[iloc+l],iglobal[kk]);
+            ierr = PetscFPrintf(PETSC_COMM_SELF,stdout,"[%d] Problem with mapping: j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",rank,j,i,l,ltog[iloc+l],iglobal[kk]);CHKERRQ(ierr);
           }
           kk++;
         }

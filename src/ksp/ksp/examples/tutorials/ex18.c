@@ -42,7 +42,7 @@ int main(int argc,char **args)
   PetscLogStage stage;
 #endif
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Poisson example options","");CHKERRQ(ierr);
   {
     m                = 8;

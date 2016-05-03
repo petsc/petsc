@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   const PetscScalar *x,*y;
   PetscScalar       *f;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* create vectors X,Y and F and set values in it*/
   ierr = VecCreate(PETSC_COMM_SELF,&X);CHKERRQ(ierr);

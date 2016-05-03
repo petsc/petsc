@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PC             pc;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -55,7 +55,7 @@ int main(int argc,char **args)
 
     /* Create a new vector b by padding the old one */
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-    if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+    if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
     ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
     ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);

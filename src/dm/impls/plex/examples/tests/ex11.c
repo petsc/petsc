@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   /*ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);*/
   ierr = TestInsertion();CHKERRQ(ierr);
   ierr = TestEmptyStrata(PETSC_COMM_WORLD);CHKERRQ(ierr);

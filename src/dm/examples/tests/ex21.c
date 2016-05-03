@@ -113,16 +113,14 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   mx   = 2;
   my   = 2;
   mz   = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-my", &my, 0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0);CHKERRQ(ierr);
-
   ierr = test1_DAInjection3d(mx,my,mz);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   return ierr;
 }

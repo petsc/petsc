@@ -18,7 +18,7 @@ int main(int argc,char *argv[])
   Mat            A;
   Vec            x,b,lf;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

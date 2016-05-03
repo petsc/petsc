@@ -18,7 +18,7 @@ int main(int argc, char **argv)
   PetscBool      interpolate = PETSC_TRUE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, interpolate, &dm);CHKERRQ(ierr);

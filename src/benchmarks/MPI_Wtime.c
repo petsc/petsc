@@ -8,7 +8,7 @@ int main(int argc,char **argv)
   double x,y;
   int    ierr;
 
-  PetscInitialize(&argc,&argv,0,0);
+  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   /* To take care of paging effects */
   y = MPI_Wtime();
 

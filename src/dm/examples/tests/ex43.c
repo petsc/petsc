@@ -25,12 +25,9 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v)
   DMDALocalInfo  info;
 
   com = PetscObjectComm((PetscObject)da);
-  MPI_Comm_rank(com, &rank);
-
+  ierr = MPI_Comm_rank(com, &rank);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
-
   ierr = PetscSynchronizedPrintf(com, "begin rank %d portion (with ghosts, %D x %D)\n",rank, info.gxm, info.gym);CHKERRQ(ierr);
-
   ierr = DMDAVecGetArray(da, v, &p);CHKERRQ(ierr);
   for (i = info.gxs; i < info.gxs + info.gxm; i++) {
     for (j = info.gys; j < info.gys + info.gym; j++) {
@@ -39,7 +36,6 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v)
     ierr = PetscSynchronizedPrintf(com, "\n");CHKERRQ(ierr);
   }
   ierr = DMDAVecRestoreArray(da, v, &p);CHKERRQ(ierr);
-
   ierr = PetscSynchronizedPrintf(com, "end rank %d portion\n", rank);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(com, PETSC_STDOUT);CHKERRQ(ierr);
   return 0;
@@ -77,18 +73,8 @@ int main(int argc, char **argv)
   DMBoundaryType   bx    = DM_BOUNDARY_PERIODIC, by = DM_BOUNDARY_PERIODIC;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);CHKERRQ(ierr);
-
-  /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,
-                      bx, by,
-                      stype,
-                      M, N,
-                      PETSC_DECIDE, PETSC_DECIDE,
-                      1, 1,
-                      NULL, NULL,
-                      &da);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da, &local);CHKERRQ(ierr);
 
   ierr  = VecSet(local, value);CHKERRQ(ierr);

@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscBool      flg = PETSC_TRUE;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   if (PetscLikely(flg)) {
     /* do something */
   }

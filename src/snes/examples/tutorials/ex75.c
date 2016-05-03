@@ -590,7 +590,7 @@ int main(int argc, char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = MapleTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = FEMTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);

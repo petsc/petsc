@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscInt       n = 5;
   Mat            mat;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
 

@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscLogStage  stages[2];
 #endif
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -38,14 +38,14 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,mbs*bs,mbs*bs,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,bs,PETSC_DEFAULT,NULL);
+  ierr = MatSeqBAIJSetPreallocation(A,bs,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A,bs,PETSC_DEFAULT,NULL,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,&N);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   Mbs  = M/bs;
 
   ierr = PetscMalloc1(bs,&rows);CHKERRQ(ierr);
@@ -88,8 +88,8 @@ int main(int argc,char **args)
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
   ierr = MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);
-  ierr = MatEqual(A, Atrans, &flg);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
+  ierr = MatEqual(A, Atrans, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
@@ -142,8 +142,8 @@ int main(int argc,char **args)
     }
   }
 
-  ierr = PetscLogStageRegister("MatOv_SBAIJ",&stages[0]);
-  ierr = PetscLogStageRegister("MatOv_BAIJ",&stages[1]);
+  ierr = PetscLogStageRegister("MatOv_SBAIJ",&stages[0]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("MatOv_BAIJ",&stages[1]);CHKERRQ(ierr);
 
   /* Test MatIncreaseOverlap */
   if (TestOverlap) {

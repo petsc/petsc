@@ -21,7 +21,7 @@ int main(int argc,char **args)
   PetscScalar    neg_one = -1.0,one = 1.0,value[3];
   PetscBool      TEST_PROCEDURAL=PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-procedural",&TEST_PROCEDURAL,NULL);CHKERRQ(ierr);
 
@@ -118,7 +118,7 @@ int main(int argc,char **args)
     ierr = PetscObjectGetComm((PetscObject)A_redundant,&subcomm);CHKERRQ(ierr); 
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     if (subsize==1 && !rank) {
-      printf("A_redundant:\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"A_redundant:\n");CHKERRQ(ierr);
       ierr = MatView(A_redundant,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
   } else {

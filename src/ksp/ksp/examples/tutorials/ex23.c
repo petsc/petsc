@@ -31,7 +31,7 @@ int main(int argc,char **args)
   PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
   PetscScalar    neg_one = -1.0,one = 1.0,value[3];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

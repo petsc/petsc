@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscInt       *result,n;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscMergeIntArray(5,first,6,second,&n,&result);CHKERRQ(ierr);
   ierr = PetscIntView(n,result,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscFinalize();

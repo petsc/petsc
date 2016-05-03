@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   IS             set;
   PetscBool      isblock;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /*
     Create a block index set. The index set has 4 blocks each of size 3.

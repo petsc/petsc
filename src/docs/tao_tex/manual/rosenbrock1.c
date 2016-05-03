@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   Tao            tao;       /* Tao context */
   AppCtx         user;      /* user-defined application context */
 
-  PetscInitialize(&argc,&argv,(char*)0,0);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,0);CHKERRQ(ierr);
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0;

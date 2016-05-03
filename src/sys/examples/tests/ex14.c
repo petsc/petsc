@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscScalar a,array[10];
   PetscReal   rarray[10];
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a));CHKERRQ(ierr);
 

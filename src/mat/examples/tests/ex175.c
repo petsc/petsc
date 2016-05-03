@@ -12,8 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Create a complex non-hermitian matrix */
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);

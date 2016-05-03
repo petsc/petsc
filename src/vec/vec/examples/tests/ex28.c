@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscReal      result3,result4,result[2],result3a,result4a,resulta[2];
   Vec            x,y,vecs[40];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* create vector */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);

@@ -19,7 +19,7 @@ int main(int argc,char **args)
   Vec            x,y;
   PetscRandom    rand;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */

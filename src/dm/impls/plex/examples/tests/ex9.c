@@ -385,7 +385,7 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(&user);CHKERRQ(ierr);
   ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_SELF, &user, &dm);CHKERRQ(ierr);

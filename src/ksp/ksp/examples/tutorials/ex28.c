@@ -21,8 +21,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            x;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,-3,2,1,0,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);

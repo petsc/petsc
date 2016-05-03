@@ -127,7 +127,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
   PetscInt       n;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   /* Create solver */
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   /* Create mesh */

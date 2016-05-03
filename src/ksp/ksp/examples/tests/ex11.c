@@ -223,7 +223,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = port_lsd_bfbt();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

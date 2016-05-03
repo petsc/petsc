@@ -106,22 +106,21 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  AppCtx         user;                 /* user-defined work context */
-  moab::ErrorCode merr;
-  PetscErrorCode ierr;
-  Vec            vec;
+  AppCtx            user;                 /* user-defined work context */
+  moab::ErrorCode   merr;
+  PetscErrorCode    ierr;
+  Vec               vec;
   moab::Interface*  mbImpl=NULL;
   moab::Tag         datatag=NULL;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
 
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr); /* create the MOAB dm and the mesh */
 
   ierr = DMMoabGetInterface(user.dm, &mbImpl);CHKERRQ(ierr);
   merr = mbImpl->tag_get_handle(user.tagname, datatag);MBERRNM(merr);
-  ierr = DMMoabCreateVector(user.dm, datatag, NULL, PETSC_TRUE, PETSC_FALSE,
-                              &vec);CHKERRQ(ierr); /* create a vec from user-input tag */
+  ierr = DMMoabCreateVector(user.dm, datatag, NULL, PETSC_TRUE, PETSC_FALSE,&vec);CHKERRQ(ierr); /* create a vec from user-input tag */
 
   std::cout << "Created VecMoab from existing tag." << std::endl;
   ierr = VecDestroy(&vec);CHKERRQ(ierr);

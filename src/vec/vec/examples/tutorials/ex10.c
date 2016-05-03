@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   isbinary  = ishdf5 = PETSC_FALSE;
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
@@ -93,7 +93,7 @@ int main(int argc,char **args)
 #endif
   }
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u,"Test_Vec");
+  ierr = PetscObjectSetName((PetscObject) u,"Test_Vec");CHKERRQ(ierr);
 
   if (vstage2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector sizes...\n");CHKERRQ(ierr);

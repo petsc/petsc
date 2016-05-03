@@ -72,20 +72,20 @@ using Teuchos::rcp;
 
 #include "petsc.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   //  Teuchos::GlobalMPISession mpiSession(&argc,&argv);
-  PetscInitialize(&argc,&argv,NULL,NULL);
+  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
   
-  Epetra_MpiComm Comm(MPI_COMM_WORLD);
-
+  Epetra_MpiComm         Comm(MPI_COMM_WORLD);
   Epetra_Map*            Map;
   // pointer to the matrix to be created
   Epetra_CrsMatrix*      Matrix;
   // container for parameters
   Teuchos::ParameterList GaleriList;
   // here we specify the global dimension of the problem
-  int nx = 10 * Comm.NumProc();
-  int ny = 10 * Comm.NumProc();
+  int                    nx = 10 * Comm.NumProc();
+  int                    ny = 10 * Comm.NumProc();
   GaleriList.set("nx", nx);
   GaleriList.set("ny", ny);
 

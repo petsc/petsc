@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscScalar    value[3],*vals;
   PetscInt       i,col[3],n=5,bs=1;
   
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
 
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(seqmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(seqmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] seqmat:\n",rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] seqmat:\n",rank);CHKERRQ(ierr);
     ierr = MatView(seqmat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

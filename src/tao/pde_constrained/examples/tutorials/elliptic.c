@@ -126,7 +126,7 @@ int main(int argc, char **argv)
   PetscInt           ntests = 1;
   PetscInt           i;
 
-  PetscInitialize(&argc, &argv, (char*)0,help);
+  ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
   user.mx = 8;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
@@ -1018,7 +1018,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     ierr = MatDuplicate(user->Div,MAT_SHARE_NONZERO_PATTERN,&user->Divwork);CHKERRQ(ierr);
   } else {
     ierr = MatCreate(PETSC_COMM_WORLD,&user->Diag);CHKERRQ(ierr);
-    ierr = MatSetSizes(user->Diag,PETSC_DECIDE,PETSC_DECIDE,m,m);
+    ierr = MatSetSizes(user->Diag,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
     ierr = MatSetFromOptions(user->Diag);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(user->Diag,1,NULL,0,NULL);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(user->Diag,1,NULL);CHKERRQ(ierr);

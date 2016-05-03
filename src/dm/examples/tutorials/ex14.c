@@ -64,21 +64,16 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   DM             da,*subda;
+  PetscInt       i,dim=3;
+  PetscMPIInt    size,rank;
+  Vec            v;
+  Vec            slvec,sgvec;
+  IS             *ois,*iis;
+  VecScatter     oscata;
+  VecScatter     *iscat,*oscat,*gscat;
+  DMDALocalInfo  info;
 
-  PetscInt    i,dim=3;
-  PetscMPIInt size,rank;
-
-  Vec v;
-  Vec slvec,sgvec;
-
-  IS         *ois,*iis;
-  VecScatter oscata;
-  VecScatter *iscat,*oscat,*gscat;
-
-  DMDALocalInfo info;
-
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */

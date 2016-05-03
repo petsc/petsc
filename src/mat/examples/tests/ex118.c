@@ -9,11 +9,11 @@ extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscScala
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
+  PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX) || defined(PETSC_MISSING_LAPACK_DSTEBZ) || defined(PETSC_MISSING_LAPACK_STEIN)
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires LAPACK routines dstebz and stien and real numbers");
 #else
-  PetscErrorCode ierr;
   PetscReal      *work,tols[2];
   PetscInt       i,j;
   PetscBLASInt   n,il=1,iu=5,*iblock,*isplit,*iwork,nevs,*ifail,cklvl=2;
@@ -25,8 +25,7 @@ int main(int argc,char **args)
   PetscReal      vl=0.0,vu=4.0,tol= 1000*PETSC_MACHINE_EPSILON;
   PetscBLASInt   nsplit,info;
 
-
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 

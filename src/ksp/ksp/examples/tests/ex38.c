@@ -47,18 +47,15 @@ int main(int argc,char **args)
   PetscLogStage stage;
 #endif
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   n1 = 64;
   n2 = 64;
-
   ierr = PetscOptionsGetInt(NULL,NULL,"-n1",&n1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n2",&n2,NULL);CHKERRQ(ierr);
 
   h     = 1.0/n1;
   gamma = 4.0;
   beta  = 0.01;
-
   ierr = PetscOptionsGetReal(NULL,NULL,"-h",&h,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-gamma",&gamma,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-beta",&beta,NULL);CHKERRQ(ierr);

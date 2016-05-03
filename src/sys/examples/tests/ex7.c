@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscInt       x2[] = {39, 9, 19, 39, 29, 39, 29, 39},index2[8];
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   printf("1st test\n");
   for (i=0; i<5; i++) index[i] = i;
   ierr = PetscSortIntWithPermutation(5, x, index);

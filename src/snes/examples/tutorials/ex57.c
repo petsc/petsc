@@ -4,7 +4,7 @@ static char help[] = "REPLACE WITH AN ACTUAL EXAMPLE\n\n";
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = PetscFinalize();
   return ierr;
 }

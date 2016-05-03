@@ -62,7 +62,6 @@ int main(int argc,char **argv)
 {
   KSP            ksp;
   DM             dm;
-  
   UserContext    user;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
   const char     *fields[1] = {"T-Variable"};
@@ -71,9 +70,8 @@ int main(int argc,char **argv)
   Vec            b,x;
   PetscBool      use_extfile,io;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
-  MPI_Comm_size(PETSC_COMM_WORLD,&np);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&np);CHKERRQ(ierr);
 
   ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex35.c");
   user.dim    = 2;

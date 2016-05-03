@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   Vec            x;
   PetscBool      set_option_negidx = PETSC_FALSE, set_values_negidx = PETSC_FALSE, get_values_negidx = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -44,9 +44,6 @@ int main(int argc,char **argv)
   ierr = VecGetOwnershipRange(x,&istart,&iend);CHKERRQ(ierr);
   m    = iend - istart;
 
-
-  /* Set the vectors */
-
   ierr = PetscMalloc1(n,&values);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
 
@@ -58,9 +55,7 @@ int main(int argc,char **argv)
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank);CHKERRQ(ierr);
   for (i = 0; i<m; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,
-                                   "%d: idx[%D] == %D; val[%D] == %f\n",
-                                   rank, i, indices[i], i, (double)PetscRealPart(values[i]));CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d: idx[%D] == %D; val[%D] == %f\n",rank,i,indices[i],i,(double)PetscRealPart(values[i]));CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
@@ -93,8 +88,7 @@ int main(int argc,char **argv)
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetched values:\n", rank);CHKERRQ(ierr);
   for (i = 0; i<m; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%D] == %D; val[%D] == %f\n",
-                                   rank, i, indices[i], i, (double)PetscRealPart(values[i]));CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%D] == %D; val[%D] == %f\n",rank,i,indices[i],i,(double)PetscRealPart(values[i]));CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
@@ -107,7 +101,6 @@ int main(int argc,char **argv)
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 

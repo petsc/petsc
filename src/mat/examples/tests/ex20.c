@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   char           mtype[256];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* This example does not work correctly for np > 2 */
