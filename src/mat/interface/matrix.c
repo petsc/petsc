@@ -9077,7 +9077,8 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (!P->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (P->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
-  if (P->rmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap->N,A->cmap->N);
+  if (A->rmap->N!= A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix A must be square, %D != %D",A->rmap->N,A->cmap->N);
+  if (P->rmap->N != A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap->N,A->cmap->N);
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
 
