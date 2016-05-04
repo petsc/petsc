@@ -166,7 +166,7 @@ int main(int argc,char **argv)
   stepsz[0] = 1.0/(2.0*(nz-1)*(nz-1)); /* (mesh_size)^2/2.0 */
   ftime     = 0.0;
   for (k=0; k<nphase; k++) {
-    if (nphase > 1) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Phase %D initial time %g, stepsz %g, duration: %g\n",k,(double)ftime,(double)stepsz[k],(double)((k+1)*T));}
+    if (nphase > 1) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Phase %D initial time %g, stepsz %g, duration: %g\n",k,(double)ftime,(double)stepsz[k],(double)((k+1)*T));CHKERRQ(ierr);}
     ierr = TSSetInitialTimeStep(ts,ftime,stepsz[k]);CHKERRQ(ierr);
     ierr = TSSetDuration(ts,max_steps,(k+1)*T);CHKERRQ(ierr);
     ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);

@@ -282,7 +282,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   hx   = 1.0/(PetscReal)info.mx;
 

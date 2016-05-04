@@ -265,7 +265,7 @@ int main(int argc,char **args)
         Assemble the matrix again to test repeated setup and solves.
      ------------------------------------------------------------------- */
 
-  ierr = AssembleMatrix(A,m,n);
+  ierr = AssembleMatrix(A,m,n);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------

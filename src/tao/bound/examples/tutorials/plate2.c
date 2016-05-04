@@ -76,7 +76,7 @@ int main( int argc, char **argv )
   AppCtx                 user;                 /* user-defined work context */
 
   /* Initialize PETSc, TAO */
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
 
   /* Specify default dimension of the problem */
   user.mx = 10; user.my = 10; user.bheight=0.1;
@@ -104,9 +104,7 @@ int main( int argc, char **argv )
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  ierr = DMDACreate2d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,
-                      NULL,NULL,&user.dm);CHKERRQ(ierr);
+  ierr = DMDACreate2d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.dm);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DM; The local vectors are
@@ -120,8 +118,6 @@ int main( int argc, char **argv )
 
   ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xu);CHKERRQ(ierr);
-
-
 
   /* The TAO code begins here */
 
@@ -149,7 +145,7 @@ int main( int argc, char **argv )
   ierr = MatSetLocalToGlobalMapping(user.H,isltog,isltog);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-matrixfree",&flg);CHKERRQ(ierr);
   if (flg) {
-      ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,N,N,(void*)&user,&H_shell);
+      ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,N,N,(void*)&user,&H_shell);CHKERRQ(ierr);
       ierr = MatShellSetOperation(H_shell,MATOP_MULT,(void(*)(void))MyMatMult);CHKERRQ(ierr);
       ierr = MatSetOption(H_shell,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
       ierr = TaoSetHessianRoutine(tao,H_shell,H_shell,MatrixFreeHessian,(void*)&user);CHKERRQ(ierr);
