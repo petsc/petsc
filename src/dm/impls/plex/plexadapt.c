@@ -6,7 +6,7 @@
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexAdaptdm->coarseMesh"
+#define __FUNCT__ "DMPlexAdapt"
 PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmCoarsened)
 {
 #ifdef PETSC_HAVE_PRAGMATIC
@@ -82,12 +82,13 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmC
       ierr = DMGetLabel(dm, bdyLabelName, &bdtags);CHKERRQ(ierr);
     }
     // TODO fix if bdyLabelName = "boundary"
-    // TODO a way to use only bdyLabelName would be to loop over its strata, if I can't get all the strata at once
+    // TODO a way to use only bdyLabelName would be to loop over its strata, if I can't get all the strata at once ?
     ierr = DMLabelCreate("boundary", &bd);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);        
     ierr = DMLabelGetStratumIS(bd, 1, &bdIS);CHKERRQ(ierr);
     ierr = DMLabelGetStratumSize(bd, 1, &numBdFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(bdIS, &faces);CHKERRQ(ierr);
+    // TODO why not assume that we are considering simplicial meshes, in which case bdSize = dim*numBdFaces ?
     for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
       PetscInt *closure = NULL;
       PetscInt  closureSize, cl;
@@ -143,7 +144,8 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmC
     /* Read out boundary tags */
     pragmatic_get_boundaryTags(&boundaryTags);
     if ( !bdyLabelName ) bdyLabelName = "boundary";
-    ierr = DMCreateLabel(dm->coarseMesh, bdyLabelName);;CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm->coarseMesh, bdyLabelName);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm->coarseMesh, bdyLabelName, &bd);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(dm->coarseMesh, 0, &cStart, &cEnd);CHKERRQ(ierr);
     ierr = DMPlexGetDepthStratum(dm->coarseMesh, 0, &vStart, &vEnd);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
@@ -162,7 +164,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmC
         iVer = cellClosure[cl] - vStart;
         for (i=0; i<dim+1; ++i) {
           if ( iVer == cell[i] ) {
-            perm[cl] = i;    // the cl-th vertex of the closure is the i-th vertex of the ccell
+            perm[cl] = i;    // the cl-th element of the closure is the i-th vertex of the cell
             break;
           }
         }
@@ -189,7 +191,8 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmC
           if ( !isInFacetClosure[cl] ) {
             idx = (c-cStart)*(dim+1) + perm[cl];
             if ( boundaryTags[idx] ) 
-              ierr = DMSetLabelValue(dm->coarseMesh, bdyLabelName, facet, boundaryTags[idx]);CHKERRQ(ierr);
+//              ierr = DMSetLabelValue(dm->coarseMesh, bdyLabelName, facet, boundaryTags[idx]);CHKERRQ(ierr);
+              ierr = DMLabelSetValue(bd, facet, boundaryTags[idx]);CHKERRQ(ierr);
             break;
           }
         }
