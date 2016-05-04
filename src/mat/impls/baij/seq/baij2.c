@@ -117,9 +117,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,nrows*bs,ncols*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    /* This routine is called by baij and sbaij routines */
-    ierr = MatSeqBAIJSetPreallocation(C,bs,0,lens);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation(C,bs,0,lens);CHKERRQ(ierr); 
+    ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(C,bs,0,lens);CHKERRQ(ierr);
   }
   c = (Mat_SeqBAIJ*)(C->data);
   for (i=0; i<nrows; i++) {
