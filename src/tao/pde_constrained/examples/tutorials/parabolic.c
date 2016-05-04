@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   PetscLogStage      stages[1];
 #endif
 
-  PetscInitialize(&argc, &argv, (char*)0,help);
+  ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
   user.mx = 8;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
@@ -999,7 +999,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatScale(user->L,PetscPowScalar(h,1.5));CHKERRQ(ierr);
 
   /* Generate Div matrix */
-  ierr = MatTranspose(user->Grad,MAT_INITIAL_MATRIX,&user->Div);
+  ierr = MatTranspose(user->Grad,MAT_INITIAL_MATRIX,&user->Div);CHKERRQ(ierr);
 
   /* Build work vectors and matrices */
   ierr = VecCreate(PETSC_COMM_WORLD,&user->S);CHKERRQ(ierr);
@@ -1114,7 +1114,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecDestroy(&di);CHKERRQ(ierr);
 
   /* Assemble RHS of forward problem */
-  ierr = VecCopy(bc,user->yiwork[0]);
+  ierr = VecCopy(bc,user->yiwork[0]);CHKERRQ(ierr);
   for (i=1; i<user->nt; i++){
     ierr = VecSet(user->yiwork[i],0.0);CHKERRQ(ierr);
   }

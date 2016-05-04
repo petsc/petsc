@@ -33,7 +33,6 @@ int main(int argc,char **args)
   ierr = MatSetType(sA,MATSBAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
-  /* printf(" mattype: %s\n",type); */
   ierr = MatMPISBAIJSetPreallocation(sA,bs,d_nz,NULL,o_nz,NULL);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(sA,bs,d_nz,NULL);CHKERRQ(ierr);
   ierr = MatSetOption(sA,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
@@ -162,14 +161,15 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatGetSize(), MatGetLocalSize() */
-  ierr = MatGetSize(sA, &i,&j); ierr = MatGetSize(A, &i2,&j2);
+  ierr = MatGetSize(sA, &i,&j); ierr = MatGetSize(A, &i2,&j2);CHKERRQ(ierr);
   i   -= i2; j -= j2;
   if (i || j) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
-  ierr = MatGetLocalSize(sA, &i,&j); ierr = MatGetLocalSize(A, &i2,&j2);
+  ierr = MatGetLocalSize(sA, &i,&j);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A, &i2,&j2);CHKERRQ(ierr);
   i2  -= i; j2 -= j;
   if (i2 || j2) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank);CHKERRQ(ierr);
@@ -197,19 +197,19 @@ int main(int argc,char **args)
   ierr  = MatNorm(sA,NORM_FROBENIUS,&r2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && !rank) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_INFINITY,&r1);CHKERRQ(ierr);
   ierr  = MatNorm(sA,NORM_INFINITY,&r2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && !rank) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_1,&r1);CHKERRQ(ierr);
   ierr  = MatNorm(sA,NORM_1,&r2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(r1-r2)/r2;
   if (rnorm > tol && !rank) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);CHKERRQ(ierr);
   }
 
   /* Test MatGetOwnershipRange() */

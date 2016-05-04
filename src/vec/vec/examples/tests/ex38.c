@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   IS             is0,is1;
   PetscErrorCode ierr;
 
-  ierr   = PetscInitialize(&argc,&argv,0,help);
+  ierr   = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   comm   = PETSC_COMM_WORLD;
   viewer = PETSC_VIEWER_STDOUT_WORLD;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

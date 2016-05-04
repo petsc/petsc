@@ -128,8 +128,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();
 #endif
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

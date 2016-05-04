@@ -35,8 +35,8 @@ int main(int argc, char **argv)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc, "0", zero);
-  ierr = PCFieldSplitSetIS(pc, "1", one);
+  ierr = PCFieldSplitSetIS(pc, "0", zero);CHKERRQ(ierr);
+  ierr = PCFieldSplitSetIS(pc, "1", one);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
