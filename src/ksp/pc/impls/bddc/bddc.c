@@ -1184,19 +1184,18 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscBool      save_rhs = PETSC_TRUE, benign_correction_computed;
 
   PetscFunctionBegin;
-  /* if we are working with CG or CHEBYSHEV, one dirichlet solve can be avoided during Krylov iterations */
+  /* if we are working with CG, one dirichlet solve can be avoided during Krylov iterations */
   if (ksp) {
-    PetscBool iscg, ischeby, isgroppcg, ispipecg, ispipecgrr;
+    PetscBool iscg, isgroppcg, ispipecg, ispipecgrr;
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPGROPPCG,&isgroppcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipecg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCHEBYSHEV,&ischeby);CHKERRQ(ierr);
-    ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_TRUE);CHKERRQ(ierr);
-    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || (!iscg && !ischeby && !isgroppcg && !ispipecg && !ispipecgrr)) {
+    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || (!iscg && !isgroppcg && !ispipecg && !ispipecgrr)) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
+
   /* Creates parallel work vectors used in presolve */
   if (!pcbddc->original_rhs) {
     ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
@@ -1282,7 +1281,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
      and remove non-benign solution from the rhs */
   benign_correction_computed = PETSC_FALSE;
   if (rhs && pcbddc->benign_compute_correction && pcbddc->benign_have_null) {
-    /* compute u^*_h as in Xuemin Tu's thesis (see Section 4.8.1) */
+    /* compute u^*_h using ideas similar to those in Xuemin Tu's PhD thesis (see Section 4.8.1)
+       Recursively apply BDDC in the multilevel case */
     if (!pcbddc->benign_vec) {
       ierr = VecDuplicate(rhs,&pcbddc->benign_vec);CHKERRQ(ierr);
     }
@@ -1290,15 +1290,15 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (!pcbddc->benign_skip_correction) {
       ierr = PCApply_BDDC(pc,rhs,pcbddc->benign_vec);CHKERRQ(ierr);
       benign_correction_computed = PETSC_TRUE;
+      if (pcbddc->temp_solution_used) {
+        ierr = VecAXPY(pcbddc->temp_solution,1.0,pcbddc->benign_vec);CHKERRQ(ierr);
+      }
+      ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
       /* store the original rhs if not done earlier */
       if (save_rhs) {
         ierr = VecSwap(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
         save_rhs = PETSC_FALSE;
       }
-      if (pcbddc->temp_solution_used) {
-        ierr = VecAXPY(pcbddc->temp_solution,1.0,pcbddc->benign_vec);CHKERRQ(ierr);
-      }
-      ierr = VecScale(pcbddc->benign_vec,-1.0);CHKERRQ(ierr);
       if (pcbddc->rhs_change) {
         ierr = MatMultAdd(pc->mat,pcbddc->benign_vec,rhs,rhs);CHKERRQ(ierr);
       } else {
@@ -1308,6 +1308,17 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
     pcbddc->benign_apply_coarse_only = PETSC_FALSE;
   }
+#if 0
+  if (pcbddc->dbg_flag && benign_correction_computed) {
+    Vec v;
+    ierr = VecDuplicate(pcis->vec1_global,&v);CHKERRQ(ierr);
+    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,v);CHKERRQ(ierr);
+    ierr = PCBDDCBenignGetOrSetP0(pc,v,PETSC_TRUE);CHKERRQ(ierr);
+    PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)),"LEVEL %d: IS CORRECTION BENIGN?\n",pcbddc->current_level);
+    PetscScalarView(pcbddc->benign_n,pcbddc->benign_p0,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)));
+    ierr = VecDestroy(&v);CHKERRQ(ierr);
+  }
+#endif
 
   /* set initial guess if using PCG */
   if (x && pcbddc->use_exact_dirichlet_trick) {
@@ -1477,6 +1488,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* detect local disconnected subdomains if requested and not done before */
   if (pcbddc->detect_disconnected && !pcbddc->n_local_subs) {
     ierr = MatDetectDisconnectedComponents(pcbddc->local_mat,PETSC_FALSE,&pcbddc->n_local_subs,&pcbddc->local_subs);CHKERRQ(ierr);
+  }
+
+  /* compute topology info in local ordering */
+  if (pcbddc->recompute_topography) {
+    ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
   }
 
   /*
@@ -1820,6 +1836,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     }
     ierr = PCBDDCBenignGetOrSetP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
   }
+
   if (pcbddc->ChangeOfBasisMatrix) {
     Vec swap;
 

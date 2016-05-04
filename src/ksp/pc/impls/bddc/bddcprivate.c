@@ -5,6 +5,56 @@
 #include <petsc/private/sfimpl.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCComputeLocalTopologyInfo"
+PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
+{
+  PetscErrorCode ierr;
+  Vec            local,global;
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
+
+  PetscFunctionBegin;
+  ierr = MatCreateVecs(pc->pmat,&global,NULL);CHKERRQ(ierr);
+  /* need to convert from global to local topology information and remove references to information in global ordering */
+  ierr = MatCreateVecs(matis->A,&local,NULL);CHKERRQ(ierr);
+  if (pcbddc->user_provided_isfordofs) {
+    if (pcbddc->n_ISForDofs) {
+      PetscInt i;
+      ierr = PetscMalloc1(pcbddc->n_ISForDofs,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->n_ISForDofs;i++) {
+        ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+        ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
+      }
+      pcbddc->n_ISForDofsLocal = pcbddc->n_ISForDofs;
+      pcbddc->n_ISForDofs = 0;
+      ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
+    }
+  } else {
+    if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering */
+      PetscInt i, n = matis->A->rmap->n;
+      ierr = MatGetBlockSize(pc->pmat,&pcbddc->n_ISForDofsLocal);CHKERRQ(ierr);
+      ierr = PetscMalloc1(pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+      }
+    }
+  }
+
+  if (!pcbddc->DirichletBoundariesLocal && pcbddc->DirichletBoundaries) {
+    ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
+  }
+  if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) {
+    ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
+  }
+  if (!pcbddc->user_primal_vertices_local && pcbddc->user_primal_vertices) {
+    ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->user_primal_vertices,&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = VecDestroy(&local);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCBenignMatMult_Private_Private"
 PetscErrorCode PCBDDCBenignMatMult_Private_Private(Mat A, Vec x, Vec y, PetscBool transpose)
 {
@@ -482,6 +532,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   IS             pressures,zerodiag,*zerodiag_subs;
   PetscInt       nz,n;
+  PetscInt       *interior_dofs,n_interior_dofs;
   PetscBool      sorted,have_null,has_null_pressures,recompute_zerodiag;
   PetscErrorCode ierr;
 
@@ -534,12 +585,53 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   /* in case disconnected subdomains info is present, split the pressures accordingly (otherwise the benign trick could fail) */
   zerodiag_subs = NULL;
   pcbddc->benign_n = 0;
+  n_interior_dofs = 0;
+  interior_dofs = NULL;
+  if (pcbddc->current_level) { /* need to compute interior nodes */
+    PetscInt n,i,j;
+    PetscInt n_neigh,*neigh,*n_shared,**shared;
+    PetscInt *iwork;
+
+    ierr = ISLocalToGlobalMappingGetSize(pc->pmat->rmap->mapping,&n);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetInfo(pc->pmat->rmap->mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n,&iwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&interior_dofs);CHKERRQ(ierr);
+    for (i=0;i<n_neigh;i++)
+      for (j=0;j<n_shared[i];j++)
+          iwork[shared[i][j]] += 1;
+    for (i=0;i<n;i++)
+      if (!iwork[i])
+        interior_dofs[n_interior_dofs++] = i;
+    ierr = PetscFree(iwork);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreInfo(pc->pmat->rmap->mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  }
   if (has_null_pressures) {
-    IS       *subs;
-    PetscInt nsubs,i;
+    IS             *subs;
+    PetscInt       nsubs,i,j,nl;
+    const PetscInt *idxs;
+    PetscScalar    *array;
+    Vec            *work;
+    Mat_IS*        matis = (Mat_IS*)(pc->pmat->data);
 
     subs = pcbddc->local_subs;
     nsubs = pcbddc->n_local_subs;
+    /* these vectors are needed to check if the constant on pressures is in the kernel of the local operator B (i.e. B(v_I,p0) should be zero) */
+    if (pcbddc->current_level) {
+      ierr = VecDuplicateVecs(matis->y,2,&work);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(zerodiag,&nl);CHKERRQ(ierr);
+      ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
+      /* work[0] = 1_p */
+      ierr = VecSet(work[0],0.);CHKERRQ(ierr);
+      ierr = VecGetArray(work[0],&array);CHKERRQ(ierr);
+      for (j=0;j<nl;j++) array[idxs[j]] = 1.;
+      ierr = VecRestoreArray(work[0],&array);CHKERRQ(ierr);
+      /* work[0] = 1_v */
+      ierr = VecSet(work[1],1.);CHKERRQ(ierr);
+      ierr = VecGetArray(work[1],&array);CHKERRQ(ierr);
+      for (j=0;j<nl;j++) array[idxs[j]] = 0.;
+      ierr = VecRestoreArray(work[1],&array);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
+    }
     if (nsubs > 1) {
       ierr = PetscCalloc1(nsubs,&zerodiag_subs);CHKERRQ(ierr);
       for (i=0;i<nsubs;i++) {
@@ -553,7 +645,36 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
         if (nl) {
           PetscBool valid = PETSC_TRUE;
 
-          if (pressures) {
+          if (pcbddc->current_level) {
+            ierr = VecSet(matis->x,0);CHKERRQ(ierr);
+            ierr = ISGetLocalSize(subs[i],&nl);CHKERRQ(ierr);
+            ierr = ISGetIndices(subs[i],&idxs);CHKERRQ(ierr);
+            ierr = VecGetArray(matis->x,&array);CHKERRQ(ierr);
+            for (j=0;j<nl;j++) array[idxs[j]] = 1.;
+            ierr = VecRestoreArray(matis->x,&array);CHKERRQ(ierr);
+            ierr = ISRestoreIndices(subs[i],&idxs);CHKERRQ(ierr);
+            ierr = VecPointwiseMult(matis->x,work[0],matis->x);CHKERRQ(ierr);
+            ierr = MatMult(matis->A,matis->x,matis->y);CHKERRQ(ierr);
+            ierr = VecPointwiseMult(matis->y,work[1],matis->y);CHKERRQ(ierr);
+            ierr = VecGetArray(matis->y,&array);CHKERRQ(ierr);
+            for (j=0;j<n_interior_dofs;j++) {
+              if (PetscAbsScalar(array[interior_dofs[j]]) > PETSC_SMALL) {
+                valid = PETSC_FALSE;
+                break;
+              }
+            }
+            ierr = VecRestoreArray(matis->y,&array);CHKERRQ(ierr);
+          }
+          if (valid && pcbddc->NeumannBoundariesLocal) {
+            IS       t_bc;
+            PetscInt nzb;
+
+            ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,pcbddc->NeumannBoundariesLocal,&t_bc);CHKERRQ(ierr);
+            ierr = ISGetLocalSize(t_bc,&nzb);CHKERRQ(ierr);
+            ierr = ISDestroy(&t_bc);CHKERRQ(ierr);
+            if (nzb) valid = PETSC_FALSE;
+          }
+          if (valid && pressures) {
             IS t_pressure_subs;
             ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,pressures,&t_pressure_subs);CHKERRQ(ierr);
             ierr = ISEqual(t_pressure_subs,t_zerodiag_subs,&valid);CHKERRQ(ierr);
@@ -571,8 +692,26 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
       }
     } else { /* there's just one subdomain (or zero if they have not been detected */
       PetscBool valid = PETSC_TRUE;
-      if (pressures) {
+
+      if (pcbddc->NeumannBoundariesLocal) {
+        PetscInt nzb;
+        ierr = ISGetLocalSize(pcbddc->NeumannBoundariesLocal,&nzb);CHKERRQ(ierr);
+        if (nzb) valid = PETSC_FALSE;
+      }
+      if (valid && pressures) {
         ierr = ISEqual(pressures,zerodiag,&valid);CHKERRQ(ierr);
+      }
+      if (valid && pcbddc->current_level) {
+        ierr = MatMult(matis->A,work[0],matis->x);CHKERRQ(ierr);
+        ierr = VecPointwiseMult(matis->x,work[1],matis->x);CHKERRQ(ierr);
+        ierr = VecGetArray(matis->x,&array);CHKERRQ(ierr);
+        for (j=0;j<n_interior_dofs;j++) {
+            if (PetscAbsScalar(array[interior_dofs[j]]) > PETSC_SMALL) {
+              valid = PETSC_FALSE;
+              break;
+          }
+        }
+        ierr = VecRestoreArray(matis->x,&array);CHKERRQ(ierr);
       }
       if (valid) {
         pcbddc->benign_n = 1;
@@ -581,7 +720,11 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
         zerodiag_subs[0] = zerodiag;
       }
     }
+    if (pcbddc->current_level) {
+      ierr = VecDestroyVecs(2,&work);CHKERRQ(ierr);
+    }
   }
+  ierr = PetscFree(interior_dofs);CHKERRQ(ierr);
 
   if (!pcbddc->benign_n) {
     PetscInt n;
@@ -641,6 +784,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     Vec                    quad_vec;
     PetscScalar            *pvals;
     PetscInt               i,np,*dummyins;
+    IS                     isused = NULL;
+    PetscBool              participate = PETSC_TRUE;
 
     /* create vector to hold quadrature weights */
     ierr = MatCreateVecs(pc->pmat,&quad_vec,NULL);CHKERRQ(ierr);
@@ -650,10 +795,13 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
 
     /* compute B^{(i)T} * 1_p */
     np = 0;
-    if (zerodiag) {
-      ierr = ISGetLocalSize(zerodiag,&np);CHKERRQ(ierr);
-    } else if (pressures) {
-      ierr = ISGetLocalSize(pressures,&np);CHKERRQ(ierr);
+    if (pressures) {
+      isused = pressures;
+    } else {
+      isused = zerodiag;
+    }
+    if (isused) {
+      ierr = ISGetLocalSize(isused,&np);CHKERRQ(ierr);
     }
     ierr = PetscMalloc1(np,&pvals);CHKERRQ(ierr);
     for (i=0;i<np;i++) pvals[i] = 1.;
@@ -661,27 +809,26 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     if (np) {
       const PetscInt *pidxs;
 
-      if (zerodiag) {
-        ierr = ISGetIndices(zerodiag,&pidxs);CHKERRQ(ierr);
-      } else if (pressures) {
-        ierr = ISGetIndices(pressures,&pidxs);CHKERRQ(ierr);
+      if (isused) {
+        ierr = ISGetIndices(isused,&pidxs);CHKERRQ(ierr);
       }
       ierr = VecSetValues(matis->x,np,pidxs,pvals,INSERT_VALUES);CHKERRQ(ierr);
-      if (zerodiag) {
-        ierr = ISRestoreIndices(zerodiag,&pidxs);CHKERRQ(ierr);
-      } else if (pressures) {
-        ierr = ISRestoreIndices(pressures,&pidxs);CHKERRQ(ierr);
+      if (isused) {
+        ierr = ISRestoreIndices(isused,&pidxs);CHKERRQ(ierr);
       }
     }
     ierr = VecAssemblyBegin(matis->x);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(matis->x);CHKERRQ(ierr);
     ierr = MatMult(matis->A,matis->x,matis->y);CHKERRQ(ierr);
     ierr = PetscFree(pvals);CHKERRQ(ierr);
-
+    if (!isused) participate = PETSC_FALSE;
     /* decide which of the sharing ranks (per dof) has to insert the values (should just be a matter of having a different orientation) */
     ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
     for (i=0;i<matis->sf->nroots;i++) matis->sf_rootdata[i] = -1;
-    for (i=0;i<matis->sf->nleaves;i++) matis->sf_leafdata[i] = PetscGlobalRank;
+    for (i=0;i<matis->sf->nleaves;i++)
+      if (participate) matis->sf_leafdata[i] = PetscGlobalRank;
+      else  matis->sf_leafdata[i] = -1;
+
     ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_MAX);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_MAX);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
@@ -3180,18 +3327,13 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
       ierr = MatNullSpaceRemove(nullsp,rhs);CHKERRQ(ierr);
     }
     if (applytranspose) {
-      if (pcbddc->benign_apply_coarse_only) { /* need just to apply the coarse preconditioner */
-        PC        coarse_pc;
-
-        ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
-        ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
-        ierr = PCApplyTranspose(coarse_pc,rhs,sol);CHKERRQ(ierr);
-        ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
+      if (pcbddc->benign_apply_coarse_only) {
+        SETERRQ(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),PETSC_ERR_SUP,"Not yet implemented");
       } else {
         ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
       }
     } else {
-      if (pcbddc->benign_apply_coarse_only) { /* need just to apply the coarse preconditioner */
+      if (pcbddc->benign_apply_coarse_only && isbddc) { /* need just to apply the coarse preconditioner during presolve */
         PC        coarse_pc;
 
         ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
@@ -3394,7 +3536,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* Get index sets for faces, edges and vertices from graph */
     ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);CHKERRQ(ierr);
     /* print some info */
-    if (pcbddc->dbg_flag) {
+    if (pcbddc->dbg_flag && !pcbddc->sub_schurs) {
       PetscInt nv;
 
       ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -4530,38 +4672,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
 
-  /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal */
-  if (pcbddc->user_provided_isfordofs) {
-    if (pcbddc->n_ISForDofs) { /* need to convert from global to local and remove references to global dofs splitting */
-      ierr = PetscMalloc1(pcbddc->n_ISForDofs,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
-      for (i=0;i<pcbddc->n_ISForDofs;i++) {
-        ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
-        ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
-      }
-      pcbddc->n_ISForDofsLocal = pcbddc->n_ISForDofs;
-      pcbddc->n_ISForDofs = 0;
-      ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
-    }
-  } else {
-    if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering */
-      ierr = MatGetBlockSize(pc->pmat,&pcbddc->n_ISForDofsLocal);CHKERRQ(ierr);
-      ierr = PetscMalloc1(pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
-      for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
-        ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),pcis->n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
-      }
-    }
-  }
-
   /* Setup of Graph */
-  if (!pcbddc->DirichletBoundariesLocal && pcbddc->DirichletBoundaries) { /* need to convert from global to local */
-    ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
-  }
-  if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) { /* need to convert from global to local */
-    ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
-  }
-  if (!pcbddc->user_primal_vertices_local && pcbddc->user_primal_vertices) { /* need to convert from global to local */
-    ierr = PCBDDCGlobalToLocal(matis->rctx,pcis->vec1_global,pcis->vec1_N,pcbddc->user_primal_vertices,&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
-  }
   ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,pcbddc->vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
 
   /* attach info on disconnected subdomains if present */
@@ -5698,6 +5809,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     } else {
       ierr = MatISSubassemble(t_coarse_mat_is,pcbddc->coarse_subassembling,0,restr,full_restr,PETSC_FALSE,&coarse_mat_is,nis,isarray);CHKERRQ(ierr);
     }
+    /* TODO: if (pcbddc->benign_have_null) -> give a hint to the coarser levels if they have to locally apply the benign trick or not */
   } else {
     ierr = MatISSubassemble(t_coarse_mat_is,pcbddc->coarse_subassembling,0,restr,full_restr,PETSC_FALSE,&coarse_mat_is,nis,isarray);CHKERRQ(ierr);
   }

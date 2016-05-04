@@ -56,6 +56,7 @@ PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
 PetscErrorCode PCBDDCAdaptiveSelection(PC);
+PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC);
 PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 PetscErrorCode MatDetectDisconnectedComponents(Mat,PetscBool,PetscInt*,IS*[]);
 PetscErrorCode MatSeqAIJCompress(Mat,Mat*);
