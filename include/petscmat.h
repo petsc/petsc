@@ -93,6 +93,8 @@ J*/
 #define MatSolverPackage char*
 #define MATSOLVERSUPERLU      "superlu"
 #define MATSOLVERSUPERLU_DIST "superlu_dist"
+#define MATSOLVERSTRUMPACK    "strumpack"
+#define MATSOLVERSTRUMPACK_MPI "strumpack_mpi"
 #define MATSOLVERUMFPACK      "umfpack"
 #define MATSOLVERCHOLMOD      "cholmod"
 #define MATSOLVERKLU          "klu"

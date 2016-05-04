@@ -10,7 +10,7 @@ SOURCEF  =
 SOURCEH  = aij.h
 LIBBASE  = libpetscmat
 DIRS     = superlu umfpack essl lusol matlab csrperm crl bas ftn-kernels seqcusp seqviennacl \
-           cholmod seqcusparse klu mkl_pardiso
+           cholmod seqcusparse klu mkl_pardiso strumpack
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/
 
