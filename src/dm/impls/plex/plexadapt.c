@@ -23,7 +23,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmC
   PetscInt       dim, numCorners, cStart, cEnd, numCells, numCoarseCells, c, vStart, vEnd, numVertices, numCoarseVertices, v, numBdFaces, f, maxConeSize, bdSize, coff;
   const PetscScalar   *metricArray;
   PetscReal     *met;
-  PetscInt       *cell, perm[28], isInFacetClosure[28], iVer, i, idx, facet;
+  PetscInt       *cell, perm[30], isInFacetClosure[30], iVer, i, idx, facet; // 30 is twice the max size of a cell closure in 3D for tet meshes
   PetscInt      *boundaryTags;
     
 #endif
@@ -201,9 +201,10 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmC
       ierr = DMPlexRestoreTransitiveClosure(dm->coarseMesh, c, PETSC_TRUE, &cellClosureSize, &cellClosure);CHKERRQ(ierr);
     }
     pragmatic_finalize();
-    ierr = PetscFree4(x, y, z, cells);CHKERRQ(ierr);
+    ierr = PetscFree5(x, y, z, cells, met);CHKERRQ(ierr);
     ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
     ierr = PetscFree(coarseCoords);CHKERRQ(ierr);
+    ierr = PetscFree(ccells);CHKERRQ(ierr);
   }
 #endif
   ierr = PetscObjectReference((PetscObject) dm->coarseMesh);CHKERRQ(ierr);
