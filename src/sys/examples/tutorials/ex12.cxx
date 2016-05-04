@@ -2,7 +2,7 @@
 static char help[] = "Demonstrates call PETSc and Chombo in the same program.\n\n";
 
 /*T
-   Concepts: introduction to PETSc; Chombo
+   Concepts: introduction to PETSc^Chombo
    Processors: n
 T*/
 
@@ -22,10 +22,10 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   Box::Box *nb = new Box::Box();
   delete nb;
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

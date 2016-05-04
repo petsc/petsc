@@ -54,6 +54,8 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr = VecNormBegin(RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
     ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);           /*   (RT,ART)           */
     ierr = VecNormEnd  (RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
+  } else if (ksp->normtype == KSP_NORM_NONE) {
+      dp   = 0.0; /* meaningless value that is passed to monitor and convergence test */
   } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);         /*   dp <- R'*R         */
     ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);          /*   (RT,ART)           */
@@ -61,7 +63,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
     ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);           /*   (RT,ART)           */
     dp   = PetscSqrtReal(PetscAbsScalar(btop));                  /* dp = sqrt(R,AR)      */
-  }
+  } else SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
   if (PetscAbsScalar(btop) < 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
     ierr        = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
@@ -104,7 +106,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       dp   = PetscSqrtReal(PetscAbsScalar(btop));                /* dp = sqrt(R,AR)       */
     } else if (ksp->normtype == KSP_NORM_NONE) {
       ierr = VecDotEnd(RT,ART,&btop);CHKERRQ(ierr);
-      dp   = 0.0;
+      dp   = 0.0; /* meaningless value that is passed to monitor and convergence test */
     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecAXPY(R,ai,AP);CHKERRQ(ierr);           /*   R   <- R - ai*AP    */
       ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */

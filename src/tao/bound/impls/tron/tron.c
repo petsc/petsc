@@ -144,7 +144,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
     /* If no free variables */
     if (tron->n_free == 0) {
-      actred=0;
       ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
       ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
       ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
@@ -152,9 +151,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
         reason = TAO_CONVERGED_STEPTOL;
         ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
       }
-
       break;
-
     }
     /* use free_local to mask/submat gradient, hessian, stepdirection */
     ierr = TaoVecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->R);CHKERRQ(ierr);
@@ -184,13 +181,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
       /* Add dxfree matrix to compute step direction vector */
       ierr = VecISAXPY(tao->stepdirection,tron->Free_Local,1.0,tron->DXFree);CHKERRQ(ierr);
-      if (0) {
-        PetscReal rhs,stepnorm;
-        ierr = VecNorm(tron->R,NORM_2,&rhs);CHKERRQ(ierr);
-        ierr = VecNorm(tron->DXFree,NORM_2,&stepnorm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"|rhs|=%g\t|s|=%g\n",(double)rhs,(double)stepnorm);CHKERRQ(ierr);
-      }
-
 
       ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
       ierr = PetscInfo1(tao,"Expected decrease in function value: %14.12e\n",(double)gdx);CHKERRQ(ierr);
@@ -249,7 +239,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
         delta /= 4.0;
       }
     } /* end linear solve loop */
-
 
     tron->f=f; tron->actred=actred; tao->trust=delta;
     tao->niter++;

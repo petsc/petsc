@@ -23,11 +23,11 @@ static const char NLEQERR_citation[] = "@book{deuflhard2011,\n"
 #define __FUNCT__ "SNESLineSearchReset_NLEQERR"
 static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
 {
-  SNESLineSearch_NLEQERR *nleqerr;
+  SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR*)linesearch->data;
 
-  nleqerr   = (SNESLineSearch_NLEQERR*)linesearch->data;
-  nleqerr->mu_curr    = 0.0;
-  nleqerr->norm_delta_x_prev = -1.0;
+  PetscFunctionBegin;
+  nleqerr->mu_curr               = 0.0;
+  nleqerr->norm_delta_x_prev     = -1.0;
   nleqerr->norm_bar_delta_x_prev = -1.0;
   PetscFunctionReturn(0);
 }
@@ -36,17 +36,17 @@ static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
 #define __FUNCT__ "SNESLineSearchApply_NLEQERR"
 static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 {
-  PetscBool         changed_y,changed_w;
-  PetscErrorCode    ierr;
-  Vec               X,F,Y,W,G;
-  SNES              snes;
-  PetscReal         fnorm, xnorm, ynorm, gnorm, wnorm;
-  PetscReal         lambda, minlambda, stol;
-  PetscViewer       monitor;
-  PetscInt          max_its, count, snes_iteration;
-  PetscReal         theta, mudash, lambdadash;
-  SNESLineSearch_NLEQERR *nleqerr;
-  KSPConvergedReason kspreason;
+  PetscBool              changed_y,changed_w;
+  PetscErrorCode         ierr;
+  Vec                    X,F,Y,W,G;
+  SNES                   snes;
+  PetscReal              fnorm, xnorm, ynorm, gnorm, wnorm;
+  PetscReal              lambda, minlambda, stol;
+  PetscViewer            monitor;
+  PetscInt               max_its, count, snes_iteration;
+  PetscReal              theta, mudash, lambdadash;
+  SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR*)linesearch->data;
+  KSPConvergedReason     kspreason;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(NLEQERR_citation, &NLEQERR_cited);CHKERRQ(ierr);
@@ -58,11 +58,10 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetDefaultMonitor(linesearch, &monitor);CHKERRQ(ierr);
   ierr = SNESLineSearchGetTolerances(linesearch,&minlambda,NULL,NULL,NULL,NULL,&max_its);CHKERRQ(ierr);
   ierr = SNESGetTolerances(snes,NULL,NULL,&stol,NULL,NULL);CHKERRQ(ierr);
-  nleqerr   = (SNESLineSearch_NLEQERR*)linesearch->data;
 
   /* reset the state of the Lipschitz estimates */
   ierr = SNESGetIterationNumber(snes, &snes_iteration);CHKERRQ(ierr);
-  if (snes_iteration == 0) {
+  if (!snes_iteration) {
     ierr = SNESLineSearchReset_NLEQERR(linesearch);CHKERRQ(ierr);
   }
 
@@ -75,8 +74,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   ierr = VecNormEnd(Y, NORM_2, &ynorm);CHKERRQ(ierr);
   ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
 
-  /* Note: Y is *minus* the Newton step. For whatever reason PETSc doesn't solve with the minus on
-     the RHS. */
+  /* Note: Y is *minus* the Newton step. For whatever reason PETSc doesn't solve with the minus on  the RHS. */
 
   if (ynorm == 0.0) {
     if (monitor) {
@@ -157,6 +155,15 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 
       /* and clean up the state for next time */
       ierr = SNESLineSearchReset_NLEQERR(linesearch);CHKERRQ(ierr);
+      /*
+         The clang static analyzer detected a problem here; once the loop is broken the values
+         nleqerr->norm_delta_x_prev     = ynorm;
+         nleqerr->norm_bar_delta_x_prev = wnorm;
+         are set, but wnorm has not even been computed.
+         I don't know if this is the correct fix but by setting ynorm and wnorm to -1.0 at
+         least the linesearch object is kept in the state set by the SNESLineSearchReset_NLEQERR() call above
+      */
+      ynorm = wnorm = -1.0;
       break;
     }
 
@@ -246,9 +253,9 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   }
 
   /* copy the solution and information from this iteration over */
-  nleqerr->norm_delta_x_prev = ynorm;
+  nleqerr->norm_delta_x_prev     = ynorm;
   nleqerr->norm_bar_delta_x_prev = wnorm;
-  nleqerr->lambda_prev = lambda;
+  nleqerr->lambda_prev           = lambda;
 
   ierr = VecCopy(G, X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);

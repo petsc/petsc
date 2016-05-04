@@ -66,7 +66,7 @@ program main
   TS             ts
   Vec            X
   Mat            J
-  PetscInt       steps,maxsteps,mx
+  PetscInt       maxsteps,mx
   PetscBool      OptionSaveToDisk
   PetscErrorCode ierr
   DM             da
@@ -198,7 +198,10 @@ program main
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Free work space.
-  ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#ifdef MF_EX22F_MF
+  call MatDestroy(A,ierr)
+#endif
   call MatDestroy(J,ierr)
   call VecDestroy(X,ierr)
   call TSDestroy(ts,ierr)
@@ -221,7 +224,7 @@ subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                       &
        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
-       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+       PETSC_NULL_INTEGER,ierr)
   call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,  &
        xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
   call DMDAGetGhostCorners(da,                                      &
@@ -268,7 +271,6 @@ subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
 
   DM             da
   PetscInt       mx,xs,xe,gxs,gxe
-  Vec            Xloc
   PetscOffset    ixx,ixxdot,iff
   PetscScalar    xx(0:1),xxdot(0:1),ff(0:1)
 
@@ -276,16 +278,16 @@ subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
   call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
 
   ! Get access to vector data
-  call VecGetArray(X,xx,ixx,ierr)
-  call VecGetArray(Xdot,xxdot,ixxdot,ierr)
+  call VecGetArrayRead(X,xx,ixx,ierr)
+  call VecGetArrayRead(Xdot,xxdot,ixxdot,ierr)
   call VecGetArray(F,ff,iff,ierr)
 
   call FormIFunctionLocal(mx,xs,xe,gxs,gxe,                         &
        xx(ixx),xxdot(ixxdot),ff(iff),                               &
        user(user_a),user(user_k),user(user_s),ierr)
 
-  call VecRestoreArray(X,xx,ixx,ierr)
-  call VecRestoreArray(Xdot,xxdot,ixxdot,ierr)
+  call VecRestoreArrayRead(X,xx,ixx,ierr)
+  call VecRestoreArrayRead(Xdot,xxdot,ixxdot,ierr)
   call VecRestoreArray(F,ff,iff,ierr)
 end subroutine FormIFunction
 
@@ -381,14 +383,14 @@ subroutine FormRHSFunction(ts,t,X,F,user,ierr)
   call DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr)
 
   ! Get access to vector data
-  call VecGetArray(Xloc,xx,ixx,ierr)
+  call VecGetArrayRead(Xloc,xx,ixx,ierr)
   call VecGetArray(F,ff,iff,ierr)
 
   call FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,                       &
        t,xx(ixx),ff(iff),                                           &
        user(user_a),user(user_k),user(user_s),ierr)
 
-  call VecRestoreArray(Xloc,xx,ixx,ierr)
+  call VecRestoreArrayRead(Xloc,xx,ixx,ierr)
   call VecRestoreArray(F,ff,iff,ierr)
   call DMRestoreLocalVector(da,Xloc,ierr)
 end subroutine FormRHSFunction
@@ -480,7 +482,6 @@ subroutine FormInitialSolution(ts,X,user,ierr)
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscdmda.h>
   TS ts
-  PetscReal t
   Vec X
   PetscReal user(6)
   PetscErrorCode ierr
@@ -560,7 +561,7 @@ subroutine  MyMult(A,X,F,ierr)
   PetscErrorCode ierr
   PetscScalar shift
 
-  Mat J,Jpre
+!  Mat J,Jpre
 
   PetscReal user(6)
 
@@ -620,9 +621,9 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscdmda.h>
 
-  Vec X,Xloc
+  Vec X
   DM             da
-  PetscInt xs,xe
+  PetscInt xs,xe,two
   PetscInt gdof,i
   PetscErrorCode ierr
   PetscOffset    ixx
@@ -630,9 +631,10 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
   PetscScalar    xx(0:1)
 
 
-  call VecGetArray(X,xx,ixx,ierr)
+  call VecGetArrayRead(X,xx,ixx,ierr)
 
-  data2=reshape(xx(ixx:ixx+gdof),(/2,xe-xs+1/))
+  two = 2
+  data2=reshape(xx(ixx:ixx+gdof),(/two,xe-xs+1/))
   data=reshape(data2,(/gdof/))
   open(1020,file='solution_out_ex22f_mf.txt')
   do i=1,gdof
@@ -640,5 +642,5 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
   end do
   close(1020)
 
-  call VecRestoreArray(X,xx,ixx,ierr)
+  call VecRestoreArrayRead(X,xx,ixx,ierr)
 end subroutine SaveSolutionToDisk

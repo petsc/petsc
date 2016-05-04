@@ -1,7 +1,7 @@
 #ifndef WASH_H
 #define WASH_H
 
-#include <petsc.h>
+#include <petscdmnetwork.h>
 #include "pipe.h"
 
 /* junction              */

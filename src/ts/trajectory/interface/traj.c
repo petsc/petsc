@@ -26,7 +26,7 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get;
 
 .seealso: TSTrajectoryRegisterAll(), TSTrajectoryRegisterDestroy()
 @*/
-PetscErrorCode  TSTrajectoryRegister(const char sname[],PetscErrorCode (*function)(TSTrajectory,TS))
+PetscErrorCode TSTrajectoryRegister(const char sname[],PetscErrorCode (*function)(TSTrajectory,TS))
 {
   PetscErrorCode ierr;
 
@@ -110,7 +110,9 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tj,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  total number of recomputations for adjoint calculation=%D\n",tj->recomps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  total number of recomputations for adjoint calculation = %D\n",tj->recomps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  disk checkpoint reads = %D\n",tj->diskreads);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  disk checkpoint writes = %D\n",tj->diskwrites);CHKERRQ(ierr);
     if (tj->ops->view) {
       ierr = (*tj->ops->view)(tj,viewer);CHKERRQ(ierr);
     }
@@ -223,6 +225,7 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSTrajectoryRegisterAllCalled) PetscFunctionReturn(0);
   TSTrajectoryRegisterAllCalled = PETSC_TRUE;
 
   ierr = TSTrajectoryRegister(TSTRAJECTORYBASIC,TSTrajectoryCreate_Basic);CHKERRQ(ierr);
@@ -289,10 +292,10 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
   if (((PetscObject)tj)->type_name) defaultType = ((PetscObject)tj)->type_name;
   else defaultType = TSTRAJECTORYBASIC;
 
-  if (!TSRegisterAllCalled) {ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);}
+  ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);
   ierr = PetscOptionsFList("-ts_trajectory_type","TSTrajectory method"," TSTrajectorySetType",TSTrajectoryList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrcmp(typeName,TSTRAJECTORYMEMORY,&flg);
+    ierr = PetscStrcmp(typeName,TSTRAJECTORYMEMORY,&flg);CHKERRQ(ierr);
     ierr = TSTrajectorySetType(tj,ts,typeName);CHKERRQ(ierr);
   } else {
     ierr = TSTrajectorySetType(tj,ts,defaultType);CHKERRQ(ierr);
@@ -375,6 +378,10 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
   }
 
   tj->setupcalled = PETSC_TRUE;
-  tj->recomps     = 0;
+
+  /* Set the counters to zero */
+  tj->recomps    = 0;
+  tj->diskreads  = 0;
+  tj->diskwrites = 0;
   PetscFunctionReturn(0);
 }

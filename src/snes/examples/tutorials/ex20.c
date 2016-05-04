@@ -67,8 +67,7 @@ int main(int argc,char **argv)
   PetscReal      litspit;
   DM             da;
 
-  PetscInitialize(&argc,&argv,NULL,help);
-
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   /* set problem parameters */
   user.tleft  = 1.0;
   user.tright = 0.1;
@@ -106,8 +105,7 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 /* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__

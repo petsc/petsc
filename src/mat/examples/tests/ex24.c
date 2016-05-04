@@ -12,8 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
@@ -50,5 +49,5 @@ int main(int argc,char **args)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

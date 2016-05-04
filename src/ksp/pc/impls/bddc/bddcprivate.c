@@ -2566,7 +2566,7 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
   Mat            *work_mat;
   IS             isrow_s,iscol_s;
   PetscBool      rsorted,csorted;
-  PetscInt       rsize,*idxs_perm_r,csize,*idxs_perm_c;
+  PetscInt       rsize,*idxs_perm_r=NULL,csize,*idxs_perm_c=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2602,7 +2602,7 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
       iscol_s = isrow_s;
     } else {
       const PetscInt *idxs;
-      PetscInt *idxs_sorted,i;
+      PetscInt       *idxs_sorted,i;
 
       ierr = PetscMalloc1(csize,&idxs_perm_c);CHKERRQ(ierr);
       ierr = PetscMalloc1(csize,&idxs_sorted);CHKERRQ(ierr);
@@ -5456,7 +5456,6 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   if (!newisdense) {
     PetscInt *new_local_nnz=0;
 
-    ptr_vals = recv_buffer_vals;
     ptr_idxs = recv_buffer_idxs_local;
     if (n_recvs) {
       ierr = PetscCalloc1(new_local_rows,&new_local_nnz);CHKERRQ(ierr);

@@ -23,4 +23,3 @@ iter = 10, Function value: 0.0333093,  Residual: 0.0029151   Constraint: 1.15079
 iter = 11, Function value: 0.0332472,  Residual: 0.00430169   Constraint: 0.00330794 
 KSP Iterations = 1075
 KSP iterations within initialization: 37
-TAO failed to converge.

@@ -217,7 +217,7 @@ int main(int argc,char **argv)
   ierr = Destroy_AppContext(&user);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

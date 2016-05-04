@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   PetscInt     i;                     /* nonlinear solve iteration number */
   PetscBool    no_output = PETSC_FALSE;             /* flag indicating whether to surpress output */
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsGetBool(NULL,NULL,"-no_output",&no_output,NULL);CHKERRQ(ierr);
 
@@ -278,8 +278,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

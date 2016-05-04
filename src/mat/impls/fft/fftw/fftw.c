@@ -434,7 +434,7 @@ PetscErrorCode MatCreateVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatCreateVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,"MatCreateVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -684,7 +684,7 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"VecScatterPetscToFFTW_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,"VecScatterPetscToFFTW_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -921,7 +921,7 @@ PetscErrorCode VecScatterFFTWToPetsc(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"VecScatterFFTWToPetsc_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,"VecScatterFFTWToPetsc_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

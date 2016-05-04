@@ -395,13 +395,13 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
         }
         ierr = VecRestoreArrayRead(Coords,&coords);CHKERRQ(ierr);
       } else {       /* Fabricate some coordinates using grid index */
-        for (j=0, k=0, i=0; i<xm; i++) {
+        for (i=0; i<xm; i++) {
           array[i] = xs+i;
         }
-        for (i=0, k=0, j=0; j<ym; j++) {
+        for (j=0; j<ym; j++) {
           array[j+xm] = ys+j;
         }
-        for (i=0, j=0, k=0; k<zm; k++) {
+        for (k=0; k<zm; k++) {
           array[k+xm+ym] = zs+k;
         }
       }

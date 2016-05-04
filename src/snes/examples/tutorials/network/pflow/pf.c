@@ -10,7 +10,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 */
 
 #include "pf.h"
-#include <petscdmnetwork.h>
 
 PetscMPIInt rank;
 
@@ -583,6 +582,6 @@ int main(int argc,char ** argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

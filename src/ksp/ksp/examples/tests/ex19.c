@@ -62,8 +62,7 @@ int main(int argc,char **argv)
   PC             pc;
   PetscScalar    one = 1.0;
 
-  PetscInitialize(&argc,&argv,NULL,help);
-
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   user.ratio     = 2;
   user.coarse.mx = 5; user.coarse.my = 5;
 
@@ -165,8 +164,7 @@ int main(int argc,char **argv)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&user.Ii);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

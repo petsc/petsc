@@ -16,6 +16,10 @@ foreach TEST ($*)
   $SCP $USR@${MACH}:${LOC}/make.log ${LOGDIR}/make_${BRANCH}_${CONF}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/make_${BRANCH}_${CONF}_${MACH}.log &
   $SCP $USR@${MACH}:${LOC}/examples.log ${LOGDIR}/examples_${BRANCH}_${CONF}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/examples_${BRANCH}_${CONF}_${MACH}.log &
   $SCP $USR@${MACH}:${LOC}/gcov.tar.gz ${LOGDIR}/gcov/gcov_${BRANCH}_${CONF}_${MACH}.tar.gz ;/bin/chmod a+r ${LOGDIR}/gcov/gcov_${BRANCH}_${CONF}_${MACH}.tar.gz &
+  if ( "${CONF}" == "arch-linux-analyzer") then
+    $SCP -r -q $USR@${MACH}:${LOC}/analyzer-build-results/ ${LOGDIR}/analyzer-build_${BRANCH}.log &
+    $SCP -r -q $USR@${MACH}:${LOC}/analyzer-ex-results/ ${LOGDIR}/analyzer-ex_${BRANCH}.log &
+  endif
 end
 sleep 60
 /bin/chmod a+r ${LOGDIR}/*

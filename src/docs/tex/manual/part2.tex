@@ -481,7 +481,7 @@ represented locally in the mapping are not included in \trl{idxout}, so that
 potentially \trl{nout} is smaller than \trl{nin}.  One must
 pass in an array long enough to hold all the indices. One can call
 ISGlobalToLocalMappingApplyBlock() with \trl{idxout} equal to
-PETSC\_NULL to determine the required length (returned in
+NULL to determine the required length (returned in
 \trl{nout}) and then allocate the required space and call
 ISGlobalToLocalMappingApplyBlock() a second time to set the values.
 
@@ -564,7 +564,7 @@ indicates the number of degrees of freedom at each array point,
 and \trl{s} is the stencil width (i.e., the width of the ghost point region).
 The optional arrays \trl{lx} and \trl{ly} may contain the number of nodes
 along the x and y axis for each cell, i.e. the dimension of \trl{lx} is
-\trl{m} and the dimension of \trl{ly} is \trl{n}; or PETSC\_NULL
+\trl{m} and the dimension of \trl{ly} is \trl{n}; or NULL
 may be passed in.
 
 Two types of distributed array communication data structures
@@ -1062,7 +1062,7 @@ or
 \end{tabbing}
 Here  \trl{n} is the
 number of local vector entries, \trl{N} is the number of \sindex{vectors, with ghost values}
-global entries (or PETSC\_NULL) and \trl{nghost} is the number of
+global entries (or NULL) and \trl{nghost} is the number of
 ghost entries. The array \trl{ghosts} is of size \trl{nghost} and contains the
 global vector location for each local ghost location. Using VecDuplicate()
 or VecDuplicateVecs() on a ghosted vector will generate additional ghosted vectors.
@@ -1281,7 +1281,7 @@ one uses the command
 \end{tabbing}
 where \trl{nz} or \trl{nnz} can be used to preallocate matrix memory,
 as discussed below. The user can set \trl{nz=0} and \trl{
-nnz=}PETSC\_NULL for PETSc to control all matrix memory allocation.
+nnz=}NULL for PETSc to control all matrix memory allocation.
 
 The sequential and parallel AIJ matrix storage formats by default
 employ {\em i-nodes} (identical nodes) when possible.  We search for
@@ -1422,8 +1422,8 @@ must match the local size used in the vector creation routine VecCreateMPI() for
 Likewise, the \trl{n} used must match that used as the local size in
 VecCreateMPI() for \trl{x}.
 
-The user must set \trl{d_nz=0}, \trl{o_nz=0}, \trl{d_nnz=}PETSC\_NULL, and
-\trl{o_nnz=}PETSC\_NULL for PETSc to control dynamic allocation of matrix
+The user must set \trl{d_nz=0}, \trl{o_nz=0}, \trl{d_nnz=}NULL, and
+\trl{o_nnz=}NULL for PETSc to control dynamic allocation of matrix
 memory space.  Analogous to \trl{nz} and \trl{nnz} for the routine
 MatCreateSeqAIJ(), these arguments optionally specify
 nonzero information for the diagonal (\trl{d_nz} and \trl{d_nnz}) and
@@ -1559,7 +1559,7 @@ call
 The variable \trl{data} enables the user to optionally provide the
 location of the data for matrix storage (intended for Fortran users who
 wish to allocate their own storage space).  Most users should merely
-set \trl{data} to PETSC\_NULL for PETSc to control matrix memory allocation.
+set \trl{data} to NULL for PETSc to control matrix memory allocation.
 To create a parallel, dense matrix, \trl{A}, the user should call
 \begin{tabbing}
   MatCreateDense(MPI\_Comm comm,int m,int n,int M,int N,PetscScalar *data,Mat *A)
@@ -1829,7 +1829,7 @@ or equivalently,
   MatZeroRowsIS(Mat A,IS rows,PetscScalar diag\_value,Vec x,Vec b);
 \end{tabbing}
 For sparse matrices this removes the data structures for certain rows
-of the matrix. If the pointer \trl{diag_value} is PETSC\_NULL, it
+of the matrix. If the pointer \trl{diag_value} is NULL, it
 even removes the diagonal entry. If the pointer is not null, it uses that
 given value at the pointer location
 in the diagonal entry of the eliminated rows.
@@ -1891,8 +1891,8 @@ The argument \trl{ncols} returns the number of nonzeros in that row,
 while \trl{cols} and \trl{vals} returns the column indices (with indices
 starting at zero) and values in the row. If only the column
 indices are needed (and not the corresponding matrix elements), one
-can use PETSC\_NULL for the \trl{vals} argument. Similarly,
-one can use PETSC\_NULL for the \trl{cols} argument.
+can use NULL for the \trl{vals} argument. Similarly,
+one can use NULL for the \trl{cols} argument.
 The user can only examine the values extracted with MatGetRow();
 the values {\em cannot} be altered.
 To change the matrix entries, one must use MatSetValues().
@@ -1987,7 +1987,7 @@ Now that a new numbering of the nodes has been determined, one must
 renumber all the nodes and migrate the grid information to the correct process.
 The command
 \begin{tabbing}
- AOCreateBasicIS(isg,PETSC\_NULL,\&ao);
+ AOCreateBasicIS(isg,NULL,\&ao);
 \end{tabbing}
 generates, see Section \ref{sec_ao}, an AO object that can be used in conjunction with the
 \trl{is} and \trl{isg} to move the relevant grid information to the correct process
@@ -2503,7 +2503,7 @@ iterative process, one uses the command
 \end{tabbing}
 where the solution is returned in \trl{v}. The user can optionally provide
 a vector in \trl{w} as the location to store the vector; however, if
-\trl{w} is PETSC\_NULL, space allocated by PETSc in the KSP context is
+\trl{w} is NULL, space allocated by PETSc in the KSP context is
 used. One should not destroy this vector. For certain KSP methods,
 (e.g., GMRES), the construction of the solution is expensive, while for many
 others it requires not even a vector copy.
@@ -3854,7 +3854,7 @@ the command
 \end{tabbing}
 The argument \trl{ctx} is an optional user-defined context, which can
 store any private, application-specific data required by the
-function evaluation routine; PETSC\_NULL should be used if such information
+function evaluation routine; NULL should be used if such information
 is not needed.  In C and C++, a user-defined context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
@@ -5183,6 +5183,90 @@ where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$
 \end{itemize}
 
 \subsection{Error control via variable time-stepping}
+\newcommand{\SErr}{\rm wlte}
+\newcommand{\TolA}{{\rm Tol}_{\rm A}}
+\newcommand{\TolR}{{\rm Tol}_{\rm R}}
+Most of the time stepping methods avaialable in PETSc have an error
+estimation and error control mechanism. This mechanism is implemented by changing the
+step size in order to maintain user specified absolute and relative
+tolerances. The PETSc object responsible with error control is
+TSAdapt. The avaialble TSAdapt types are listed in Table \ref{tab:adaptors}.
+%
+\begin{table}[tb]
+\centering
+\caption{TSAdapt: available adaptors.\label{tab:adaptors}}
+\begin{tabular}{|l|c|l|}
+\hline
+ID & Name & Notes\\
+\hline
+TSADAPTBASIC& "basic"   & the default
+adaptor \\
+\hline
+TSADAPTNONE & "none"    & no adaptivity\\
+%\hline
+%TSADAPTCFL  & "cfl"&\\
+\hline
+\end{tabular}
+\end{table}
+%
+%\bigskip
+
+\noindent\textbf{\trl{TSAdapt} basic.} %\label{sec:ts:adapt:basic}
+The user typically provides a
+desired absolute $\TolA$ or a relative $\TolR$ error
+tolerance by invoking TSSetTolerances or at the command line with
+options \trl{-ts_atol} and \trl{-ts_rtol}. The error estimate is based on the local truncation error, so for
+every step the algorithm verifies that the estimated local truncation
+error satisfies the tolerances provided by the user and computes a new
+step size to be taken. For multistage methods, the local truncation is
+obtained by comparing the solution $y$ to a lower order
+$\widehat{p}=p-1$ approximation, $\widehat{y}$, where $p$ 
+is the order of the method and $\widehat{p}$ the order of $\widehat{y}$.
+
+The adaptive controller at step $n$ computes a tolerance level
+%%%
+\begin{eqnarray*}
+Tol_n(i)&=&\TolA(i) +  \max(y_n(i),\widehat{y}_n(i)) \TolR(i)\,,
+\end{eqnarray*}
+%%%
+and forms the acceptable error level 
+%%%
+\begin{eqnarray*}
+\SErr_n&=& \frac{1}{m} \sum_{i=1}^{m}\sqrt{\frac{\left\|y_n(i)
+  -\widehat{y}_n(i)\right\|}{Tol(i)}}\,,
+\end{eqnarray*}
+%%%
+where the errors are computed componentwise, $m$ is the dimension of
+$y$ and \trl{-ts_adapt_wnormtype} is 2 (default).
+If \trl{-ts_adapt_wnormtype} is $\infty$ (max norm), then
+%%%
+\begin{eqnarray*}
+\SErr_n&=& \max_{1\dots m}\frac{\left\|y_n(i)
+  -\widehat{y}_n(i)\right\|}{Tol(i)}\,.
+\end{eqnarray*}
+%%%
+The error tolerances are satisfied when $\SErr \le 1.0$. 
+
+The next step size is based on this error estimate, and determined by
+%%%
+\begin{eqnarray}
+  \label{eq:hnew}
+ \Delta t_{\rm new}(t)&=&\Delta t_{\rm{old}} \min(\alpha_{\max},
+ \max(\alpha_{\min}, \beta (1/\SErr)^\frac{1}{\widehat{p}+1}))\,,
+\end{eqnarray}
+%%%
+where $\alpha_{\min}=$\trl{-ts_adapt_basic_clip}[0] and
+$\alpha_{\max}$=\trl{-ts_adapt_basic_clip}[1] keep the change in
+$\Delta t$
+to within a certain factor, and $\beta<1$ is chosen
+through \trl{-ts_adapt_basic_safety} so that there is 
+some margin to which the tolerances are satisfied and so that the
+probability of rejection is decreased.
+
+This adaptive controller works in the following way. After completing
+step $k$, if $\SErr_{k+1} \le 1.0$, then the step is accepted and the
+next step is modified according to (\ref{eq:hnew}); otherwise, the step
+is rejected and retaken with the step length computed in (\ref{eq:hnew}).
 
 \subsection{Handling of discontinuities}
 
@@ -5190,8 +5274,8 @@ For problems that involve discontinuous right hand sides, one can set an ``event
 $ g(t,u) $ for PETSc to detect and locate the times of discontinuities (zeros of $g(t,u)$). Events can be defined through the
 event monitoring routine
 \begin{tabbing}
-     TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
-     ~~PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
+     TSSetEventHandler(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
+     ~~PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
      ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
 \end{tabbing}
 Here, \trl{nevents} denotes the number of events, \trl{direction} sets the type of zero crossing to be detected for
@@ -5200,10 +5284,10 @@ the time-stepping should continue or halt when an event is located, \trl{eventmo
 defined routine that specifies the event description, \trl{postevent} is an optional user-defined routine to take
 specific actions following an event.
 
-The arguments to \trl{eventmonitor()} are the timestep context, current time, input state $u$, array of event function
+The arguments to \trl{eventhandler()} are the timestep context, current time, input state $u$, array of event function
 value, and the (optional) user-provided context \trl{eventP}.
 
-The arguments to \trl{posteventmonitor()} routine are
+The arguments to \trl{postevent()} routine are
 the timestep context, number of events occured, indices of events occured, current time, input state $u$, a boolean flag indicating forward solve (1) or adjoint solve (0), and the (optional)
 user-provided context \trl{eventP}.
 
@@ -5577,7 +5661,7 @@ where one lists the functions. In Fortran use
 Next one uses the call
 \begin{tabbing}
   DMDASetSNESLocal(DM dm,\\
-   PetscErrorCode (*localfunction)(DMDALocalInfo *info,void *x,void *f,void* appctx),PETSC\_NULL,\\
+   PetscErrorCode (*localfunction)(DMDALocalInfo *info,void *x,void *f,void* appctx),NULL,\\
   ad\_localfunction,ad\_mf\_localfunction);
 \end{tabbing}
 where the names of the last two functions are obtained
@@ -5653,7 +5737,7 @@ One creates a viewer to MATLAB via
 \begin{tabbing}
 PetscViewerSocketOpen(MPI\_Comm,char *machine,int port,PetscViewer *v);
 \end{tabbing}
-(port is usually set to \trl{PETSC_DEFAULT}, use PETSC\_NULL for the machine if the
+(port is usually set to \trl{PETSC_DEFAULT}, use NULL for the machine if the
 MATLAB interactive session is running on the same machine as the PETSc program)
 and then sends matrices or vectors via
 \begin{tabbing}
@@ -5662,7 +5746,7 @@ and then sends matrices or vectors via
 \end{tabbing}
 One can also send arrays or integer arrays via PetscIntView(), PetscRealView() and PetscScalarView().
 One may start the MATLAB program manually or use the PETSc command
-PetscStartMATLAB\trl{(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be PETSC\_NULL.
+PetscStartMATLAB\trl{(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be NULL.
 
 To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
 is in your MATLAB path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
@@ -5677,7 +5761,7 @@ One creates access to the MATLAB engine via
 \begin{tabbing}
   PetscMatlabEngineCreate(MPI\_Comm comm,char *machine,PetscMatlabEngine *e);
 \end{tabbing}
-where \trl{machine} is the name of the machine hosting MATLAB (PETSC\_NULL may be used for localhost).
+where \trl{machine} is the name of the machine hosting MATLAB (NULL may be used for localhost).
 One can send objects to MATLAB via
 \begin{tabbing}
   PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
@@ -5923,13 +6007,13 @@ The macros are used, for example, as follows:
 
 In several PETSc C functions, one has the option of passing a 0 (null)
 argument (for example, the fifth argument of MatCreateSeqAIJ()).
-From Fortran, users {\em must} pass \trl{NULL_XXX} to indicate a
+From Fortran, users {\em must} pass \trl{PETSC_NULL_XXX} to indicate a
 null argument (where XXX is \trl{INTEGER}, \trl{DOUBLE}, \trl{CHARACTER},
 or \trl{SCALAR} depending on the type of argument required);
-\findex{NULL_INTEGER} passing \findex{NULL_SCALAR} 0 from
-\findex{NULL_DOUBLE} Fortran \findex{NULL_CHARACTER}  will crash
+\findex{PETSC_NULL_INTEGER} passing \findex{PETSC_NULL_SCALAR} 0 from
+\findex{PETSC_NULL_DOUBLE} Fortran \findex{PETSC_NULL_CHARACTER}  will crash
 the code.   Note
-that the C convention of passing PETSC\_NULL (or 0) {\em cannot}
+that the C convention of passing NULL (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
 routine PetscOptionsGetInt(), one must use the following command in
 Fortran:
@@ -5938,7 +6022,7 @@ Fortran:
 \end{tabbing}
 
 This Fortran requirement is inconsistent with C, where the
-user can employ PETSC\_NULL for all null arguments.
+user can employ NULL for all null arguments.
 
 \subsection{Duplicating Multiple Vectors}
 \label{sec_fortvecd}
@@ -7107,7 +7191,7 @@ routines set \trl{flg=PETSC_TRUE} if the corresponding option was found, \trl{fl
 was not found.  The optional argument
 \trl{pre} indicates that the true name of the option is the given name
 (with the dash ``-'' removed) prepended by the prefix \trl{pre}.
-Usually \trl{pre} should be set to PETSC\_NULL (or \trl{NULL_CHARACTER}
+Usually \trl{pre} should be set to NULL (or \trl{PETSC_NULL_CHARACTER}
 for Fortran); its purpose is to
 allow someone to rename all the options in a package without knowing
 the names of the individual options.  For example, when using block
@@ -8553,7 +8637,7 @@ which can also be represented as the DAG
   \draw[sec] (e0)  -- (f0);
   \draw[sec] (e1)  -- (f0);
   \draw[sec] (e2)  -- (f0);
-  \draw[sec] (e2)  -- (f1);
+  \draw[sec] (e1)  -- (f1);
   \draw[sec] (e3)  -- (f1);
   \draw[sec] (e4)  -- (f1);
 \end{tikzpicture}
@@ -8581,7 +8665,7 @@ to preallocate correctly, we first setup sizes,
 and then point values,
 \begin{tabbing}
   DMPlexSetCone(dm, 0, [6, 7, 8]);\\
-  DMPlexSetCone(dm, 1, [8, 9, 10]);\\
+  DMPlexSetCone(dm, 1, [7, 9, 10]);\\
   DMPlexSetCone(dm, 6, [2, 3]);\\
   DMPlexSetCone(dm, 7, [3, 4]);\\
   DMPlexSetCone(dm, 8, [4, 2]);\\
@@ -8687,7 +8771,7 @@ as the transitive closure of the element point in the mesh DAG, where each point
 retrieve the data using PetscSection methods,
 \begin{tabbing}
   PetscScalar *a;\\
-  PetscInt     numPoints, *points = PETSC\_NULL, p;\\
+  PetscInt     numPoints, *points = NULL, p;\\
 \\
   VecGetArray(u, \&a);\\
   DMPlexGetTransitiveClosure(dm, cell, PETSC\_TRUE, \&numPoints, \&points);\\

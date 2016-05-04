@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscReal      normf,normi,norm1;
   MatInfo        info;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -31,6 +31,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
+  ierr = MatSetUp(mat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
@@ -85,6 +86,6 @@ int main(int argc,char **argv)
   if (mat) {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

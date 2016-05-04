@@ -53,7 +53,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscValidLogicalCollectiveInt(draw,dim,2);
   PetscValidPointer(drawsp,3);
 
-  ierr = PetscHeaderCreate(sp,PETSC_DRAWSP_CLASSID,"PetscDrawSP","Scatter Plot","Draw",PetscObjectComm((PetscObject)draw),PetscDrawSPDestroy,NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,PETSC_DRAWSP_CLASSID,"DrawSP","Scatter Plot","Draw",PetscObjectComm((PetscObject)draw),PetscDrawSPDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)sp);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);

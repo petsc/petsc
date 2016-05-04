@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v1.0'
-    self.download          = ['git://https://github.com/LBL-EESA/alquimia-dev.git']
+    self.gitcommit         = 'v1.0.2'
+    self.download          = ['https://github.com/LBL-EESA/alquimia-dev/archive/'+self.gitcommit+'.tar.gz','git://https://github.com/LBL-EESA/alquimia-dev.git']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
@@ -17,12 +17,13 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.compilerFlags   = framework.require('config.compilerFlags', self)
-    self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
-    self.mpi   = framework.require('config.packages.MPI', self)
-    self.hdf5  = framework.require('config.packages.hdf5', self)
-    self.pflotran  = framework.require('config.packages.pflotran', self)
-    self.deps  = [self.mpi, self.hdf5, self.pflotran]
+    self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.installdir    = framework.require('PETSc.options.installDir',  self)
+    self.petscdir      = framework.require('PETSc.options.petscdir', self.setCompilers)
+    self.mpi           = framework.require('config.packages.MPI', self)
+    self.hdf5          = framework.require('config.packages.hdf5', self)
+    self.pflotran      = framework.require('config.packages.pflotran', self)
+    self.deps          = [self.mpi, self.hdf5, self.pflotran]
     return
 
   # the install is delayed until postProcess() since Alquimia requires PETSc 
@@ -58,6 +59,20 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DCMAKE_BUILD_TYPE=RELEASE')
       args.append('-DXSDK_ENABLE_DEBUG=NO')
+
+
+    plibs = self.hdf5.lib
+    if self.framework.argDB['prefix']:
+       idir = os.path.join(self.installdir.dir,'lib')
+    else:
+       idir = os.path.join(self.petscdir.dir,self.arch,'lib')
+    if self.framework.argDB['with-single-library']:
+      plibs = self.libraries.toStringNoDupes(['-L'+idir,' -lpetsc']+plibs)
+    else:
+      plibs = self.libraries.toStringNoDupes(['-L'+idir,'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+plibs)
+
+    args.append('-DTPL_PETSC_LDFLAGS="'+plibs+'"')
+    args.append('-DTPL_PETSC_INCLUDE_DIRS="'+os.path.join(self.petscdir.dir,'include')+';'+';'.join(self.hdf5.include)+'"')
 
     args.append('-DXSDK_WITH_PFLOTRAN=ON')
     args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[0])

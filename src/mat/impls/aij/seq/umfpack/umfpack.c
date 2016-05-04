@@ -414,6 +414,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERUMFPACK,&B->solvertype);CHKERRQ(ierr);
+
   /* initializations */
   /* ------------------------------------------------*/
   /* get the default control parameters */

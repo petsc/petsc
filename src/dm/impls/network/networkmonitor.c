@@ -142,8 +142,8 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
   ierr = MPI_Comm_rank(monitor->comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(monitor->comm, &size);CHKERRQ(ierr);
 
-  ierr = DMNetworkGetVertexRange(monitor->network, &vStart, &vEnd);
-  ierr = DMNetworkGetEdgeRange(monitor->network, &eStart, &eEnd);
+  ierr = DMNetworkGetVertexRange(monitor->network, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMNetworkGetEdgeRange(monitor->network, &eStart, &eEnd);CHKERRQ(ierr);
 
   /* Make window title */
   if (vStart <= element && element < vEnd) {

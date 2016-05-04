@@ -7,7 +7,7 @@
       PetscInt, target, dimension(4) :: EC
       PetscInt, pointer :: pEC(:)
       PetscInt, pointer :: pES(:)
-      PetscInt c,d, firstCell, numCells
+      PetscInt c, firstCell, numCells
       PetscInt v, numVertices, numPoints
       PetscInt i0,i4
       PetscErrorCode ierr

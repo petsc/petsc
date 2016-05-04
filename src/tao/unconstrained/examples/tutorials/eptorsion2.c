@@ -49,7 +49,7 @@ The command line options are:\n\
    Routines: TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoGetConvergedReason(); TaoDestroy();
+   Routines: TaoDestroy();
    Processors: n
 T*/
 
@@ -83,7 +83,6 @@ int main(int argc, char **argv)
     Mat                H;
     PetscInt           Nx, Ny;
     Tao                tao;
-    TaoConvergedReason reason;
     PetscBool          flg;
     KSP                ksp;
     PC                 pc;
@@ -143,12 +142,6 @@ int main(int argc, char **argv)
 
     /* SOLVE THE APPLICATION */
     ierr = TaoSolve(tao); CHKERRQ(ierr);
-
-    /* Get information on termination */
-    ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-    if (reason <= 0){
-        ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
-    }
 
     /* Free TAO data structures */
     ierr = TaoDestroy(&tao);CHKERRQ(ierr);

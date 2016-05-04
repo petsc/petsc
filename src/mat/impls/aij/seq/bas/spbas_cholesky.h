@@ -414,7 +414,6 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
             ierr   = spbas_cholesky_garbage_collect(&retval,  i, &n_row_alloc_ok, &n_alloc_used, max_row_nnz);CHKERRQ(ierr);
             ierr   = spbas_cholesky_row_alloc(retval, k, max_row_nnz[k], &n_alloc_used);CHKERRQ(ierr);
             r_icol = retval.icols[i];
-            r_val  = retval.values[i];
           } else CHKERRQ(ierr);
         }
 

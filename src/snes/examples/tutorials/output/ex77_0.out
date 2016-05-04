@@ -1,0 +1,28 @@
+  0 SNES Function norm 1.718465885608e-01 
+    0 KSP Residual norm 1.718465885608e-01 
+    1 KSP Residual norm 1.379231283449e-02 
+    2 KSP Residual norm 1.090585875088e-12 
+  Linear solve converged due to CONVERGED_RTOL iterations 2
+  1 SNES Function norm 7.270304959661e-02 
+    0 KSP Residual norm 7.270304959661e-02 
+    1 KSP Residual norm 4.823684535261e-03 
+    2 KSP Residual norm 4.481284144447e-13 
+  Linear solve converged due to CONVERGED_RTOL iterations 2
+  2 SNES Function norm 1.392280024205e-02 
+    0 KSP Residual norm 1.392280024205e-02 
+    1 KSP Residual norm 9.569425421188e-04 
+    2 KSP Residual norm 8.366591404843e-14 
+  Linear solve converged due to CONVERGED_RTOL iterations 2
+  3 SNES Function norm 1.774100371393e-03 
+    0 KSP Residual norm 1.774100371393e-03 
+    1 KSP Residual norm 4.531409261672e-05 
+    2 KSP Residual norm 4.408071777200e-15 
+  Linear solve converged due to CONVERGED_RTOL iterations 2
+  4 SNES Function norm 5.052280433618e-05 
+    0 KSP Residual norm 5.052280433618e-05 
+    1 KSP Residual norm 1.027053406108e-06 
+    2 KSP Residual norm 9.675162756442e-17 
+  Linear solve converged due to CONVERGED_RTOL iterations 2
+  5 SNES Function norm 1.680275725085e-07 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+Number of SNES iterations = 5

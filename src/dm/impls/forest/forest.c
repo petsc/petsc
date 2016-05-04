@@ -24,7 +24,7 @@ static PetscErrorCode DMForestPackageFinalize(void)
   PetscFunctionBegin;
   while (link) {
     oldLink = link;
-    ierr = PetscFree(oldLink->name);
+    ierr = PetscFree(oldLink->name);CHKERRQ(ierr);
     link = oldLink->next;
     ierr = PetscFree(oldLink);CHKERRQ(ierr);
   }
@@ -140,6 +140,8 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   DMForestAdaptivityStrategy strat;
   PetscDS          ds;
   void             *ctx;
+  PetscErrorCode   (*map) (DM, PetscInt, PetscInt, const PetscReal[], PetscReal[], void *);
+  void             *mapCtx;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -163,6 +165,8 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   ierr = DMForestSetAdaptivityStrategy(*tdm,strat);CHKERRQ(ierr);
   ierr = DMForestGetGradeFactor(dm,&factor);CHKERRQ(ierr);
   ierr = DMForestSetGradeFactor(*tdm,factor);CHKERRQ(ierr);
+  ierr = DMForestGetBaseCoordinateMapping(dm,&map,&mapCtx);CHKERRQ(ierr);
+  ierr = DMForestSetBaseCoordinateMapping(*tdm,map,mapCtx);CHKERRQ(ierr);
   if (forest->ftemplate) {
     ierr = (forest->ftemplate) (dm, *tdm);CHKERRQ(ierr);
   }
@@ -346,6 +350,32 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(base, 2);
   *base = forest->base;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetBaseCoordinateMapping"
+PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM,PetscInt,PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  forest->mapcoordinates = func;
+  forest->mapcoordinatesctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetBaseCoordinateMapping"
+PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func)(DM,PetscInt,PetscInt,const PetscReal [],PetscReal [],void *),void *ctx)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (func) *func = forest->mapcoordinates;
+  if (ctx) *((void **) ctx) = forest->mapcoordinatesctx;
   PetscFunctionReturn(0);
 }
 
@@ -1155,7 +1185,7 @@ PetscErrorCode DMForestGetCellWeightFactor(DM dm, PetscReal *weightsFactor)
 + cStart - the first cell on this process
 - cEnd - one after the final cell on this process
 
-  level: intermediate
+  Level: intermediate
 
 .seealso: DMForestGetCellSF()
 @*/
@@ -1189,7 +1219,7 @@ PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd)
   Output Parameter:
 . cellSF - the PetscSF
 
-  level: intermediate
+  Level: intermediate
 
 .seealso: DMForestGetCellChart()
 @*/
@@ -1583,6 +1613,15 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  {
+    PetscMPIInt mpiComparison;
+    MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
+
+    ierr = MPI_Comm_compare(comm, dmcomm, &mpiComparison);CHKERRQ(ierr);
+    if (mpiComparison != MPI_IDENT && mpiComparison != MPI_CONGRUENT) {
+      SETERRQ(dmcomm,PETSC_ERR_SUP,"No support for different communicators yet");
+    }
+  }
   ierr = DMGetCoarseDM(dm,&coarseDM);CHKERRQ(ierr);
   if (coarseDM) {
     ierr = PetscObjectReference((PetscObject)coarseDM);CHKERRQ(ierr);
@@ -1590,6 +1629,7 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
     PetscFunctionReturn(0);
   }
   ierr = DMForestTemplate(dm,comm,dmCoarsened);CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_FOREST_COARSEN);CHKERRQ(ierr);
   ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
   if (!coarsen) {
     ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);

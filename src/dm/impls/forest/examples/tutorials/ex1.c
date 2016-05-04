@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   PetscBool      flg;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
   ierr = PetscStrncpy(typeString,DMFOREST,256);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);CHKERRQ(ierr);
@@ -29,5 +29,5 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

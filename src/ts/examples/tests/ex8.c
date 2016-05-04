@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   TS             ts;
   Vec            tsrhs,UV;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
@@ -96,8 +96,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
   ierr = VecDestroy(&UV);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 #undef __FUNCT__

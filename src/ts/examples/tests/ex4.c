@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   TSType         tstype;
   PetscBool      sundials;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* set data */
@@ -206,7 +206,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   if (fd_jacobian_coloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* -------------------------------------------------------------------*/
@@ -467,8 +467,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
     outptr[mn-m+i] = xc*inptr[mn-m+i]+xl*inptr[mn-m+i-1]+xr*inptr[mn-m+i+1]+2*yl*inptr[mn-m+i-m];
   }
 
-  ierr = VecRestoreArrayRead(tmp_in,&inptr);
-  ierr = VecRestoreArray(tmp_out,&outptr);
+  ierr = VecRestoreArrayRead(tmp_in,&inptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(tmp_out,&outptr);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -494,6 +494,6 @@ PetscErrorCode PostStep(TS ts)
 
   PetscFunctionBeginUser;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",(double)t);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",(double)t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

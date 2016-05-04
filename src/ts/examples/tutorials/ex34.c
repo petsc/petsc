@@ -224,7 +224,7 @@ int main(int argc, char **argv)
   struct _User      user;
   PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, -11, 3, 1, NULL, &dm);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dm, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
@@ -275,5 +275,5 @@ int main(int argc, char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

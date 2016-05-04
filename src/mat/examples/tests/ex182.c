@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscBool      issbaij;
 
-  PetscInitialize(&argc,&argv,(char*) 0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -39,6 +39,6 @@ int main(int argc,char **argv)
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

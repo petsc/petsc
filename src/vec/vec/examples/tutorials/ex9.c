@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   PetscScalar    value,*array,*tarray=0;
   Vec            lx,gx,gxs;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 2) SETERRQ(PETSC_COMM_SELF,1,"Must run example with two processors\n");
@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&gx);CHKERRQ(ierr);
   if (flg) {ierr = PetscFree(tarray);CHKERRQ(ierr);}
   ierr = PetscFinalize();
-  return 0;
+  return ierr; 
 }
 
 

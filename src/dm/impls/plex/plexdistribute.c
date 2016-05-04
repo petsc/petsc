@@ -1099,9 +1099,9 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
 {
   DM_Plex         *mesh = (DM_Plex*) dm->data;
   MPI_Comm         comm;
-  DMLabel          depth;
+  DMLabel          depthLabel;
   PetscMPIInt      rank;
-  PetscInt         numLabels, numLocalLabels, l;
+  PetscInt         depth, d, numLabels, numLocalLabels, l;
   PetscBool        hasLabels = PETSC_FALSE, lsendDepth, sendDepth;
   PetscObjectState depthState = -1;
   PetscErrorCode   ierr;
@@ -1114,13 +1114,14 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   /* If the user has changed the depth label, communicate it instead */
-  ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
-  if (depth) {ierr = DMLabelGetState(depth, &depthState);CHKERRQ(ierr);}
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  if (depthLabel) {ierr = DMLabelGetState(depthLabel, &depthState);CHKERRQ(ierr);}
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
   ierr = MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
   if (sendDepth) {
-    ierr = DMRemoveLabel(dmParallel, "depth", &depth);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&depth);CHKERRQ(ierr);
+    ierr = DMRemoveLabel(dmParallel, "depth", &depthLabel);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&depthLabel);CHKERRQ(ierr);
   }
   /* Everyone must have either the same number of labels, or none */
   ierr = DMGetNumLabels(dm, &numLocalLabels);CHKERRQ(ierr);
@@ -1139,6 +1140,19 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
     ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
     if (isdepth && !sendDepth) continue;
     ierr = DMLabelDistribute(label, migrationSF, &labelNew);CHKERRQ(ierr);
+    if (isdepth) {
+      /* Put in any missing strata which can occur if users are managing the depth label themselves */
+      PetscInt gdepth;
+
+      ierr = MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+      if ((depth >= 0) && (gdepth != depth)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", depth, gdepth);
+      for (d = 0; d <= gdepth; ++d) {
+        PetscBool has;
+
+        ierr = DMLabelHasStratum(labelNew, d, &has);CHKERRQ(ierr);
+        if (!has) ierr = DMLabelAddStratum(labelNew, d);CHKERRQ(ierr);
+      }
+    }
     ierr = DMAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);

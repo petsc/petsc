@@ -567,7 +567,6 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
     for (kk=0; kk<nloc; kk++) lid_cprowID[kk] = -1;
     /* set index into compressed row 'lid_cprowID' */
     if (matB) {
-      ii = matB->compressedrow.i;
       for (ix=0; ix<matB->compressedrow.nrows; ix++) {
         lid_cprowID[matB->compressedrow.rindex[ix]] = ix;
       }

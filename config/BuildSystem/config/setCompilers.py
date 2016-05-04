@@ -189,6 +189,21 @@ class Configure(config.base.Configure):
     return 0
   isGfortran46plus = staticmethod(isGfortran46plus)
 
+  def isGfortran47plus(compiler, log):
+    '''returns true if the compiler is gfortran-4.7.x or later'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output +  error
+      import re
+      strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      if strmatch:
+        VMAJOR,VMINOR = strmatch.groups()
+        if (int(VMAJOR),int(VMINOR)) >= (4,7):
+          return 1
+    except RuntimeError:
+      pass
+    return 0
+  isGfortran47plus = staticmethod(isGfortran47plus)
 
   def isG95(compiler, log):
     '''Returns true if the compiler is g95'''
@@ -1002,7 +1017,9 @@ class Configure(config.base.Configure):
 
   def generatePICGuesses(self):
     yield ''
-    if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
+    if self.language[-1] == 'CUDA':
+      yield '-Xcompiler -fPIC'
+    elif config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
       yield '-fPIC'
     else:
       yield '-PIC'
@@ -1024,9 +1041,11 @@ class Configure(config.base.Configure):
       languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
+    if hasattr(self, 'CUDAC'):
+      languages.append('CUDA')
     for language in languages:
       self.pushLanguage(language)
-      if language == 'C' or language == 'Cxx':
+      if language in ['C','Cxx','CUDA']:
         includeLine = 'void foo(void);\nvoid bar(void){foo();}\n'
       else:
         includeLine = '      function foo(a)\n      real:: a, bar\n      foo = bar(a)\n      end\n'
@@ -1217,8 +1236,7 @@ class Configure(config.base.Configure):
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.argDB))
 
   def generateSharedLinkerGuesses(self):
-    useSharedLibraries = 'with-shared-libraries' in self.argDB and self.argDB['with-shared-libraries']
-    if not self.argDB['with-pic'] and not useSharedLibraries:
+    if not self.argDB['with-shared-libraries']:
       self.setStaticLinker()
       self.staticLinker = self.AR
       self.staticLibraries = 1
@@ -1252,13 +1270,15 @@ class Configure(config.base.Configure):
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
         yield (self.CXX, ['-G'], 'so')
       yield (self.CC, ['-G'], 'so')
-    # Default to static linker
-    self.setStaticLinker()
-    self.staticLinker = self.AR
-    self.staticLibraries = 1
-    self.LDFLAGS = ''
-    yield (self.AR, [], self.AR_LIB_SUFFIX)
-    raise RuntimeError('Archiver failed static link check')
+    # If user does not explicitly enable shared-libraries - disable shared libraries and default to static linker
+    if not 'with-shared-libraries' in self.framework.clArgDB:
+      self.argDB['with-shared-libraries'] = 0
+      self.setStaticLinker()
+      self.staticLinker = self.AR
+      self.staticLibraries = 1
+      self.LDFLAGS = ''
+      yield (self.AR, [], self.AR_LIB_SUFFIX)
+    raise RuntimeError('Exhausted all shared linker guesses. Could not determine how to create a shared library!')
 
   def checkSharedLinker(self):
     '''Check that the linker can produce shared libraries'''

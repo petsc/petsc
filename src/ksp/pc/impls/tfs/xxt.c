@@ -568,7 +568,7 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
   PCTFS_rvec_set(lhs,1.0,n);
   PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",level);
   PCTFS_rvec_zero(rsum,2);
-  for (ct=i=0; i<n; i++) {
+  for (i=0; i<n; i++) {
     if (lhs[i]!=0.0) {
       rsum[0]+=1.0/lhs[i]; rsum[1]+=lhs[i];
     }

@@ -27,8 +27,7 @@ int main(int argc,char **args)
   FILE           *file;
   char           head[81];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #endif
@@ -97,5 +96,5 @@ int main(int argc,char **args)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

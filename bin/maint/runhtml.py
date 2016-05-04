@@ -178,8 +178,13 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       print "Processing " + match.group(1)
 
       ### Start table row
-      outfile.write("<tr><td>" + match.group(1) + "</td>")
-
+      if match.group(1).find('linux-analyzer') >= 0:
+        outfile.write("<tr><td>" + match.group(1) +
+                      " <a href=\"analyzer-build_" + sys.argv[1] + ".log/index.html\"><FONT style=\"BACKGROUND-COLOR: orange\">[B]</FONT></a>" +
+                      " <a href=\"analyzer-ex_" + sys.argv[1] + ".log/index.html\"><FONT style=\"BACKGROUND-COLOR: orange\">[E]</FONT></a>" +
+                      "</td>")
+      else:
+        outfile.write("<tr><td>" + match.group(1) + "</td>")
       #
       # Check if some logs are missing. If so, don't process further and write 'incomplete' to table:
       #
@@ -216,7 +221,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       # Checking for successful completion
       configure_success = False
       for line in open(logfile_configure_full):
-        if re.search(r'Configure stage complete', line):
+        if re.search(r'Configure stage complete', line) or  re.search(r'Installation complete', line):
           outfile.write("<td class=\"green\">Success</td>")
           outfile.write(format_time(execution_time(logfile_configure_full)))
           configure_success = True
@@ -233,11 +238,12 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       outfile.write("<td></td>")
       # Warnings:
       warning_list = []
-      exclude_warnings = ["unrecognized .pragma",
+      exclude_warnings_re = ["unrecognized .pragma",
                           "warning: .SSL",
                           "warning: .BIO_",
                           "warning: treating 'c' input as 'c..' when in C.. mode",
-                          "warning: statement not reached",
+                          "warning[s]* generated"]
+      exclude_warnings = ["warning: statement not reached",
                           "warning: loop not entered at top",
                           "is deprecated",
                           "is superseded",
@@ -247,14 +253,22 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "(aka 'const long *') doesn't match specified 'MPI' type tag that requires 'long long *'",
                           "(aka 'long *') doesn't match specified 'MPI' type tag that requires 'long long *'",
                           "cusp/complex.h", "cusp/detail/device/generalized_spmv/coo_flat.h",
+                          "Warning: Cannot tell what pointer points to, assuming global memory space",
+                          "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_'",
+                          "warning: linker scope was specified more than once",
                           "thrust/detail/vector_base.inl", "thrust/detail/tuple_transform.h", "detail/tuple.inl", "detail/launch_closure.inl"]
       for line in open(logfile_make_full):
         if re.search(r'[Ww]arning[: ]', line):
           has_serious_warning = True
-          for warning in exclude_warnings:
-            if line.find(warning):
+          for warning in exclude_warnings_re:
+            if re.search(warning, line):
               has_serious_warning = False
               break
+          if has_serious_warning:
+            for warning in exclude_warnings:
+              if re.search(warning, line) or line.find(warning)>=0 :
+                has_serious_warning = False
+                break
           if has_serious_warning == True:
             warning_list.append(line)
       num_warnings = len(warning_list)
@@ -312,7 +326,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       outfile.write("<td></td>")
       example_problem_num = 0
       write_to_summary = True
-      if match.group(1).startswith("c-exodus-dbg-builder"):
+      if match.group(1).startswith("c-exodus-dbg-builder") or match.group(1).startswith("linux-analyzer"):
         write_to_summary = False
       for line in open(logfile_examples_full):
         if write_to_summary:

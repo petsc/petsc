@@ -1,0 +1,222 @@
+<pre>
+lid velocity = 2.68464e-05, prandtl # = 1., grashof # = 1.
+  0 SNES Function norm 5.194474049528e-03 
+    0 KSP Residual norm 6.985670957091e-01 
+    1 KSP Residual norm 4.349416215089e-01 
+    2 KSP Residual norm 3.316468577665e-01 
+    3 KSP Residual norm 2.105067833378e-01 
+    4 KSP Residual norm 1.357071094861e-01 
+    5 KSP Residual norm 8.427671445378e-02 
+    6 KSP Residual norm 5.034592597969e-02 
+    7 KSP Residual norm 2.960410490401e-02 
+    8 KSP Residual norm 1.721165681045e-02 
+    9 KSP Residual norm 1.033085293580e-02 
+   10 KSP Residual norm 6.265750683826e-03 
+   11 KSP Residual norm 3.793934316058e-03 
+   12 KSP Residual norm 2.436555060778e-03 
+   13 KSP Residual norm 1.763606438457e-03 
+   14 KSP Residual norm 1.338185868611e-03 
+   15 KSP Residual norm 1.014361389687e-03 
+   16 KSP Residual norm 7.278350045812e-04 
+   17 KSP Residual norm 4.742480462032e-04 
+   18 KSP Residual norm 3.045985356329e-04 
+   19 KSP Residual norm 1.844155021870e-04 
+   20 KSP Residual norm 1.100891775882e-04 
+   21 KSP Residual norm 6.670078679660e-05 
+   22 KSP Residual norm 4.273216994802e-05 
+   23 KSP Residual norm 2.641747160974e-05 
+   24 KSP Residual norm 1.621361996831e-05 
+   25 KSP Residual norm 1.003535653733e-05 
+   26 KSP Residual norm 5.870178235497e-06 
+  1 SNES Function norm 2.018098248428e-06 
+    0 KSP Residual norm 1.483970763859e-05 
+    1 KSP Residual norm 8.979146742279e-06 
+    2 KSP Residual norm 5.756582775717e-06 
+    3 KSP Residual norm 3.189637457098e-06 
+    4 KSP Residual norm 2.029465645427e-06 
+    5 KSP Residual norm 1.421260465284e-06 
+    6 KSP Residual norm 1.037556493617e-06 
+    7 KSP Residual norm 8.236804804389e-07 
+    8 KSP Residual norm 6.692531093053e-07 
+    9 KSP Residual norm 5.198414872322e-07 
+   10 KSP Residual norm 3.736373427449e-07 
+   11 KSP Residual norm 2.468609119375e-07 
+   12 KSP Residual norm 1.592624809288e-07 
+   13 KSP Residual norm 1.101958496163e-07 
+   14 KSP Residual norm 7.311703611954e-08 
+   15 KSP Residual norm 5.002553446310e-08 
+   16 KSP Residual norm 3.397244595716e-08 
+   17 KSP Residual norm 2.187622285384e-08 
+   18 KSP Residual norm 1.335729742897e-08 
+   19 KSP Residual norm 8.173317260632e-09 
+   20 KSP Residual norm 5.412295220600e-09 
+   21 KSP Residual norm 3.352348018067e-09 
+   22 KSP Residual norm 2.060996989142e-09 
+   23 KSP Residual norm 1.358320123310e-09 
+   24 KSP Residual norm 9.288548368615e-10 
+   25 KSP Residual norm 6.548495195013e-10 
+   26 KSP Residual norm 4.606372084423e-10 
+   27 KSP Residual norm 3.228647589745e-10 
+   28 KSP Residual norm 2.172836717955e-10 
+   29 KSP Residual norm 1.570620297724e-10 
+   30 KSP Residual norm 1.120809761411e-10 
+  2 SNES Function norm 3.343800892552e-11 
+SNES Object: 16 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=56
+  total number of function evaluations=3
+  norm schedule ALWAYS
+  SNESLineSearch Object:   16 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object:   16 MPI processes
+    type: gmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object:   16 MPI processes
+    type: ml
+      MG: type is MULTIPLICATIVE, levels=5 cycles=v
+        Cycles per PCApply=1
+        Using Galerkin computed coarse grid matrices
+    Coarse grid solver -- level -------------------------------
+      KSP Object:      (mg_coarse_)       16 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object:      (mg_coarse_)       16 MPI processes
+        type: redundant
+          Redundant preconditioner: First (color=0) of 16 PCs follows
+          KSP Object:          (mg_coarse_redundant_)           1 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object:          (mg_coarse_redundant_)           1 MPI processes
+            type: lu
+              LU: out-of-place factorization
+              tolerance for zero pivot 2.22045e-14
+              using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+              matrix ordering: nd
+              factor fill ratio given 5., needed 1.
+                Factored matrix follows:
+                  Mat Object:                   1 MPI processes
+                    type: seqaij
+                    rows=64, cols=64, bs=4
+                    package used to perform factorization: petsc
+                    total: nonzeros=4064, allocated nonzeros=4064
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node routines: found 14 nodes, limit used is 5
+            linear system matrix = precond matrix:
+            Mat Object:             1 MPI processes
+              type: seqaij
+              rows=64, cols=64, bs=4
+              total: nonzeros=4064, allocated nonzeros=4064
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 14 nodes, limit used is 5
+        linear system matrix = precond matrix:
+        Mat Object:         16 MPI processes
+          type: mpiaij
+          rows=64, cols=64, bs=4
+          total: nonzeros=4064, allocated nonzeros=4064
+          total number of mallocs used during MatSetValues calls =0
+            using I-node (on process 0) routines: found 1 nodes, limit used is 5
+    Down solver (pre-smoother) on level 1 -------------------------------
+      KSP Object:      (mg_levels_1_)       16 MPI processes
+        type: richardson
+          Richardson: damping factor=1.
+        maximum iterations=2
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object:      (mg_levels_1_)       16 MPI processes
+        type: sor
+          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+        linear system matrix = precond matrix:
+        Mat Object:         16 MPI processes
+          type: mpiaij
+          rows=336, cols=336, bs=4
+          total: nonzeros=26976, allocated nonzeros=26976
+          total number of mallocs used during MatSetValues calls =0
+            using I-node (on process 0) routines: found 4 nodes, limit used is 5
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 2 -------------------------------
+      KSP Object:      (mg_levels_2_)       16 MPI processes
+        type: richardson
+          Richardson: damping factor=1.
+        maximum iterations=2
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object:      (mg_levels_2_)       16 MPI processes
+        type: sor
+          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+        linear system matrix = precond matrix:
+        Mat Object:         16 MPI processes
+          type: mpiaij
+          rows=2964, cols=2964, bs=4
+          total: nonzeros=151840, allocated nonzeros=151840
+          total number of mallocs used during MatSetValues calls =0
+            using I-node (on process 0) routines: found 50 nodes, limit used is 5
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 3 -------------------------------
+      KSP Object:      (mg_levels_3_)       16 MPI processes
+        type: richardson
+          Richardson: damping factor=1.
+        maximum iterations=2
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object:      (mg_levels_3_)       16 MPI processes
+        type: sor
+          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+        linear system matrix = precond matrix:
+        Mat Object:         16 MPI processes
+          type: mpiaij
+          rows=26900, cols=26900, bs=4
+          total: nonzeros=987952, allocated nonzeros=987952
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node (on process 0) routines
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 4 -------------------------------
+      KSP Object:      (mg_levels_4_)       16 MPI processes
+        type: richardson
+          Richardson: damping factor=1.
+        maximum iterations=2
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object:      (mg_levels_4_)       16 MPI processes
+        type: sor
+          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+        linear system matrix = precond matrix:
+        Mat Object:         16 MPI processes
+          type: mpiaij
+          rows=148996, cols=148996, bs=4
+          total: nonzeros=2967568, allocated nonzeros=2967568
+          total number of mallocs used during MatSetValues calls =0
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    linear system matrix = precond matrix:
+    Mat Object:     16 MPI processes
+      type: mpiaij
+      rows=148996, cols=148996, bs=4
+      total: nonzeros=2967568, allocated nonzeros=2967568
+      total number of mallocs used during MatSetValues calls =0
+Number of SNES iterations = 2
+</pre>

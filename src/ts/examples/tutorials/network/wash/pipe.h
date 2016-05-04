@@ -4,7 +4,9 @@
 #define GRAV 9.806
 #define PIPE_CHARACTERISTIC 10000000.0
 
-#include <petsc.h>
+#include <petscts.h>
+#include <petscdmda.h>
+
 
 typedef struct {
   PetscScalar q;       /* flow rate */

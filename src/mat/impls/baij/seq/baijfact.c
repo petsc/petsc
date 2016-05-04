@@ -701,6 +701,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,const MatFactorType
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqBAIJ;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factortype = ftype;
+
+  ierr = PetscFree((*B)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&(*B)->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1622,7 +1625,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   bi[2*mbs+1] = bdiag[0]+1; /* endof bj and ba array */
   for (i=0; i<mbs; i++) {
     /* copy initial fill into linked list */
-    nzi = 0; /* nonzeros for active row i */
     nzi = ai[r[i]+1] - ai[r[i]];
     if (!nzi) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     nzi_al = adiag[r[i]] - ai[r[i]];

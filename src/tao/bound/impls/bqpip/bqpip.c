@@ -305,10 +305,9 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = VecDot(qp->DS, qp->DT, gap+1);CHKERRQ(ierr);
 
     qp->rnorm=(qp->dinfeas+qp->psteplength*qp->pinfeas)/(qp->m+qp->n);
-    pstep = qp->psteplength; dstep = qp->dsteplength;
+    pstep = qp->psteplength;
     step = PetscMin(qp->psteplength,qp->dsteplength);
-    sigmamu= ( pstep*pstep*(gap[0]+gap[1]) +
-               (1 - pstep + pstep*sigma)*qp->gap  )/qp->m;
+    sigmamu= ( pstep*pstep*(gap[0]+gap[1]) +  (1 - pstep + pstep*sigma)*qp->gap  )/qp->m;
 
     if (qp->predcorr && step < 0.9){
       if (sigmamu < qp->mu){
@@ -351,7 +350,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
 
     /* Take the step */
-    pstep = qp->psteplength; dstep = qp->dsteplength;
+    dstep = qp->dsteplength;
 
     ierr = VecAXPY(qp->Z, dstep, qp->DZ);CHKERRQ(ierr);
     ierr = VecAXPY(qp->S, dstep, qp->DS);CHKERRQ(ierr);
@@ -377,7 +376,6 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     if (qp->m>0) qp->mu=qp->gap/(qp->m);
     qp->rgap=qp->gap/( PetscAbsReal(qp->dobj) + PetscAbsReal(qp->pobj) + 1.0 );
   }  /* END MAIN LOOP  */
-
   PetscFunctionReturn(0);
 }
 
@@ -388,7 +386,6 @@ static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *qp, Tao tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* Calculate DG */
   ierr = VecCopy(tao->stepdirection, qp->DG);CHKERRQ(ierr);
   ierr = VecAXPY(qp->DG, 1.0, qp->R3);CHKERRQ(ierr);
@@ -397,7 +394,6 @@ static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *qp, Tao tao)
   ierr = VecCopy(tao->stepdirection, qp->DT);CHKERRQ(ierr);
   ierr = VecScale(qp->DT, -1.0);CHKERRQ(ierr);
   ierr = VecAXPY(qp->DT, -1.0, qp->R5);CHKERRQ(ierr);
-
 
   /* Calculate DZ */
   ierr = VecAXPY(qp->DZ, -1.0, qp->Z);CHKERRQ(ierr);
@@ -410,7 +406,6 @@ static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *qp, Tao tao)
   ierr = VecPointwiseDivide(qp->TSwork, qp->DT, qp->T);CHKERRQ(ierr);
   ierr = VecPointwiseMult(qp->TSwork, qp->TSwork, qp->S);CHKERRQ(ierr);
   ierr = VecAXPY(qp->DS, -1.0, qp->TSwork);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -419,16 +414,14 @@ static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *qp, Tao tao)
 static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp, Tao tao)
 {
   PetscErrorCode ierr;
-  PetscReal dtmp = 1.0 - qp->psteplength;
+  PetscReal      dtmp = 1.0 - qp->psteplength;
 
   PetscFunctionBegin;
-
   /* Compute R3 and R5 */
 
   ierr = VecScale(qp->R3, dtmp);CHKERRQ(ierr);
   ierr = VecScale(qp->R5, dtmp);CHKERRQ(ierr);
   qp->pinfeas=dtmp*qp->pinfeas;
-
 
   ierr = VecCopy(qp->S, tao->gradient);CHKERRQ(ierr);
   ierr = VecAXPY(tao->gradient, -1.0, qp->Z);CHKERRQ(ierr);
@@ -440,7 +433,6 @@ static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp, Tao tao)
 
   ierr = VecNorm(tao->gradient, NORM_1, &qp->dinfeas);CHKERRQ(ierr);
   qp->rnorm=(qp->dinfeas+qp->pinfeas)/(qp->m+qp->n);
-
   PetscFunctionReturn(0);
 }
 
@@ -448,7 +440,7 @@ static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp, Tao tao)
 #define __FUNCT__ "QPStepLength"
 static PetscErrorCode QPStepLength(TAO_BQPIP *qp)
 {
-  PetscReal tstep1,tstep2,tstep3,tstep4,tstep;
+  PetscReal      tstep1,tstep2,tstep3,tstep4,tstep;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -476,8 +468,8 @@ static PetscErrorCode QPStepLength(TAO_BQPIP *qp)
 #define __FUNCT__ "TaoComputeDual_BQPIP"
 PetscErrorCode TaoComputeDual_BQPIP(Tao tao,Vec DXL, Vec DXU)
 {
-  TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
-  PetscErrorCode       ierr;
+  TAO_BQPIP       *qp = (TAO_BQPIP*)tao->data;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = VecCopy(qp->Z, DXL);CHKERRQ(ierr);
@@ -486,13 +478,12 @@ PetscErrorCode TaoComputeDual_BQPIP(Tao tao,Vec DXL, Vec DXU)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "QPIPComputeNormFromCentralPath"
 PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 {
-  PetscErrorCode       ierr;
-  PetscReal    gap[2],mu[2], nmu;
+  PetscErrorCode ierr;
+  PetscReal      gap[2],mu[2], nmu;
 
   PetscFunctionBegin;
   ierr = VecPointwiseMult(qp->GZwork, qp->G, qp->Z);CHKERRQ(ierr);
@@ -513,7 +504,6 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 
   qp->pathnorm=PetscSqrtScalar( (gap[0]+gap[1]) );
   *norm=qp->pathnorm;
-
   PetscFunctionReturn(0);
 }
 

@@ -342,6 +342,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERKLU,&B->solvertype);CHKERRQ(ierr);
+
   /* initializations */
   /* ------------------------------------------------*/
   /* get the default control parameters */

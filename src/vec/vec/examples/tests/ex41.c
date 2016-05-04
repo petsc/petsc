@@ -134,6 +134,6 @@ int main(int argc, char **args)
 
   test_vec_ops();
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

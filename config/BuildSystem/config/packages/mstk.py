@@ -21,10 +21,15 @@ class Configure(config.package.CMakePackage):
     self.mpi             = framework.require('config.packages.MPI',self)
     self.metis           = framework.require('config.packages.metis',self)
     self.zoltan          = framework.require('config.packages.Zoltan',self)
+    self.exodusii        = framework.require('config.packages.exodusii',self)
+    self.trilinos        = framework.require('config.packages.Trilinos',self)
     self.deps            = [self.mpi]
     return
 
   def formCMakeConfigureArgs(self):
+    if self.checkSharedLibrariesEnabled():
+      raise RuntimeError('mstk cannot be built with shared libraries, run with --download-mstk-shared=0')
+
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
     if self.compilerFlags.debugging:
@@ -35,14 +40,23 @@ class Configure(config.package.CMakePackage):
       args.append('-DXSDK_ENABLE_DEBUG=NO')
 
     args.append('-DENABLE_PARALLEL=yes')
-    if not self.metis.found and not self.zoltan.found:
-      raise  RuntimeError('MSTK requires either Metis (--download-metis) or Zoltan (--download-zoltan --download-parmetis --download-metis)!')
+    if not self.metis.found and not self.zoltan.found and not self.trilinos:
+      raise  RuntimeError('MSTK requires either Metis (--download-metis) or Zoltan (--download-zoltan (or --download-trilinos) --download-parmetis --download-metis)!')
     if self.metis.found:
       args.append('-DENABLE_METIS:BOOL=ON')
       args.append('-DMETIS_DIR:FILEPATH='+self.metis.directory)
-    if self.zoltan.found:
+    if self.zoltan.found or self.trilinos.found:
       args.append('-DENABLE_ZOLTAN:BOOL=ON')
-      args.append('-DZOLTAN_DIR:FILEPATH='+self.zoltan.directory)
+      if self.zoltan.found:
+        args.append('-DZOLTAN_DIR:FILEPATH='+self.zoltan.directory)
+      else:
+       args.append('-DZOLTAN_DIR:FILEPATH='+self.trilinos.directory)
+    if self.exodusii.found or self.trilinos.found:
+      args.append('-DENABLE_EXODUSII:BOOL=ON')
+      if self.exodusii.found:
+        args.append('-DEXODUSII_DIR:FILEPATH='+self.exodusii.directory)
+      else:
+        args.append('-DEXODUSII_DIR:FILEPATH='+self.trilinos.directory)
 
     #  Need to pass -DMETIS_5 to C and C++ compiler flags otherwise assumes older Metis
     args = self.rmArgsStartsWith(args,['-DCMAKE_CXX_FLAGS:STRING','-DCMAKE_C_FLAGS:STRING'])

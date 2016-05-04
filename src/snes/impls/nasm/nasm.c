@@ -156,8 +156,8 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
     if (!nasm->xl[i]) {
       ierr = SNESGetDM(nasm->subsnes[i],&subdm);CHKERRQ(ierr);
       ierr = DMCreateLocalVector(subdm,&nasm->xl[i]);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,NULL,nasm->xl[i]);CHKERRQ(ierr);
     }
-    ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,NULL,nasm->xl[i]);CHKERRQ(ierr);
   }
   if (nasm->finaljacobian) {
     ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
@@ -774,7 +774,6 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec Xfinal)
     for (i=0; i<nasm->n; i++) {
       Xlloc = nasm->xl[i];
       gscat = nasm->gscatter[i];
-      oscat = nasm->oscatter[i];
       ierr = VecScatterBegin(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
   }

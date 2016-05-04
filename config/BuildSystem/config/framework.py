@@ -924,9 +924,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.logClear()
       print '=================================================================================\r'
       print '    Since your compute nodes require use of a batch system or mpiexec you must:  \r'
-      print ' 1) Submit ./'+confname+' to 1 processor of your batch system or system you are  \r'
-      print '    cross-compiling for; this will generate the file reconfigure.py              \r'
-      print ' 2) Run ./'+reconfname+' (to complete the configure process).                    \r'
+      print '\r'
+      print ' 1) cd '+os.getcwd()+'\r'
+      print '\r'
+      print ' 2) Submit ./'+confname+' to 1 processor of your batch system or system you are  \r'
+      print '    cross-compiling for; this will generate the file '+reconfname+'              \r'
+      print '\r'
+      print ' 3) Run ./'+reconfname+' (to complete the configure process).                    \r'
       print '=================================================================================\r'
       sys.exit(0)
     return

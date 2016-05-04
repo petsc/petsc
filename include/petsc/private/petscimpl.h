@@ -7,6 +7,11 @@
 #define _PETSCHEAD_H
 #include <petscsys.h>
 
+#if defined(PETSC_HAVE_CUDA)
+#include <cuda.h>
+#include <cublas_v2.h>
+#endif
+
 /*
    All major PETSc data structures have a common core; this is defined
    below by PETSCHEADER.
@@ -753,9 +758,7 @@ typedef struct {
    Level: developer
 E*/
 typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
-#endif
-
-#if defined(PETSC_HAVE_VIENNACL)
+#elif defined(PETSC_HAVE_VIENNACL)
 /*E
     PetscViennaCLFlag - indicates which memory (CPU, GPU, or none contains valid vector
 
@@ -767,6 +770,22 @@ typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BO
    Level: developer
 E*/
 typedef enum {PETSC_VIENNACL_UNALLOCATED,PETSC_VIENNACL_GPU,PETSC_VIENNACL_CPU,PETSC_VIENNACL_BOTH} PetscViennaCLFlag;
+#elif defined(PETSC_HAVE_VECCUDA)
+/*E
+    PetscCUDAFlag - indicates which memory (CPU, GPU, or none contains valid vector
+
+   PETSC_CUDA_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_CUDA_GPU - GPU has valid vector/matrix entries
+   PETSC_CUDA_CPU - CPU has valid vector/matrix entries
+   PETSC_CUDA_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+
+   Level: developer
+E*/
+typedef enum {PETSC_CUDA_UNALLOCATED,PETSC_CUDA_GPU,PETSC_CUDA_CPU,PETSC_CUDA_BOTH} PetscCUDAFlag;
+#endif
+
+#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VECCUDA)
+PETSC_EXTERN cublasHandle_t cublasv2handle;
 #endif
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;

@@ -173,7 +173,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   IS             is1,is2;
   PetscErrorCode ierr;
-  PetscInt       *vary,*iary,nrows,ncols,i,bs=A->rmap->bs,count,maxmnbs;
+  PetscInt       *vary,*iary,nrows,ncols,i,bs=A->rmap->bs,count,maxmnbs,j;
   const PetscInt *irow,*icol;
 
   PetscFunctionBegin;
@@ -193,7 +193,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   }
   count = 0;
   for (i=0; i<nrows; i++) {
-    PetscInt j = irow[i] / bs;
+    j = irow[i] / bs;
     if ((vary[j]--)==bs) iary[count++] = j;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
@@ -205,7 +205,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   }
   count = 0;
   for (i=0; i<ncols; i++) {
-    PetscInt j = icol[i] / bs;
+    j = icol[i] / bs;
     if ((vary[j]--)==bs) iary[count++] = j;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
@@ -1906,6 +1906,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
     }
     *norm = PetscSqrtReal(sum);
+    ierr = PetscLogFlops(2*bs2*nz);CHKERRQ(ierr);
   } else if (type == NORM_1) { /* maximum column sum */
     PetscReal *tmp;
     PetscInt  *bcol = a->j;
@@ -1924,6 +1925,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
       if (tmp[j] > *norm) *norm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
+    ierr = PetscLogFlops(PetscMax(bs2*nz-1,0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) { /* maximum row sum */
     *norm = 0.0;
     for (k=0; k<bs; k++) {
@@ -1939,6 +1941,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
         if (sum > *norm) *norm = sum;
       }
     }
+    ierr = PetscLogFlops(PetscMax(bs2*nz-1,0));CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this norm yet");
   PetscFunctionReturn(0);
 }

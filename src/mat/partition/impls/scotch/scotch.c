@@ -83,7 +83,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part,PetscRea
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(imb,2);
-  ierr = PetscTryMethod(part,"MatPartitioningPTScotchGetImbalance_C",(MatPartitioning,PetscReal*),(part,imb));CHKERRQ(ierr);
+  ierr = PetscUseMethod(part,"MatPartitioningPTScotchGetImbalance_C",(MatPartitioning,PetscReal*),(part,imb));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -178,7 +178,7 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part,MPPTScotc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(strategy,2);
-  ierr = PetscTryMethod(part,"MatPartitioningPTScotchGetStrategy_C",(MatPartitioning,MPPTScotchStrategyType*),(part,strategy));CHKERRQ(ierr);
+  ierr = PetscUseMethod(part,"MatPartitioningPTScotchGetStrategy_C",(MatPartitioning,MPPTScotchStrategyType*),(part,strategy));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

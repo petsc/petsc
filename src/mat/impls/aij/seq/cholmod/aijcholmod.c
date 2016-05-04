@@ -89,6 +89,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   B->assembled    = PETSC_TRUE; /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERCHOLMOD,&B->solvertype);CHKERRQ(ierr);
+
   ierr = CholmodStart(B);CHKERRQ(ierr);
   *F   = B;
   PetscFunctionReturn(0);

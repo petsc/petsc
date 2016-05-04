@@ -128,8 +128,8 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&user.u_lambda_viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&user.fu_lambda_viewer);CHKERRQ(ierr);
   }
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 typedef struct {
@@ -264,7 +264,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   ierr = DMGetApplicationContext(packer,&user);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
-  ierr = VecView(u_lambda,user->u_lambda_viewer);
+  ierr = VecView(u_lambda,user->u_lambda_viewer);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
 
   ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
@@ -281,7 +281,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
   norm = norm/PetscSqrtReal((PetscReal)N-1.);
   if (dw) ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Error at x = 0 %g\n",(double)norm,(double)PetscRealPart(dw[0]));CHKERRQ(ierr);
-  ierr = VecView(u_lambda,user->fu_lambda_viewer);
+  ierr = VecView(u_lambda,user->fu_lambda_viewer);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecDestroy(&Uexact);CHKERRQ(ierr);
   PetscFunctionReturn(0);

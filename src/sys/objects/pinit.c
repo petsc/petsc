@@ -6,16 +6,16 @@
 #include <petscvalgrind.h>
 #include <petscviewer.h>
 
-#if defined(PETSC_HAVE_CUDA)
-#include <cublas.h>
-#endif
-
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogInitialize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
 PetscFPT PetscFPTData = 0;
+#endif
+
+#if defined(PETSC_HAVE_CUDA)
+cublasHandle_t cublasv2handle = NULL;
 #endif
 
 #if defined(PETSC_HAVE_SAWS)
@@ -410,7 +410,7 @@ PetscErrorCode PetscCitationsInitialize()
 
   PetscFunctionBegin;
   ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Shrirang Abhyankar and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Karl Rupp and Barry F. Smith\n            and Stefano Zampini and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.6},\n  Institution = {Argonne National Laboratory},\n  Year = {2015}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Shrirang Abhyankar and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Karl Rupp and Barry F. Smith\n            and Stefano Zampini and Hong Zhang and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.7},\n  Institution = {Argonne National Laboratory},\n  Year = {2016}\n}\n",NULL);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -736,6 +736,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscMPIInt    flag, size;
   PetscBool      flg;
   char           hostname[256];
+#if defined(PETSC_HAVE_CUDA)
+  cublasStatus_t cberr;
+#endif
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -914,7 +917,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (flg) {
     PetscMPIInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) cublasInit();
+      if (p == PetscGlobalRank) {
+        cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
+      }
       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
   }
@@ -985,6 +990,9 @@ PetscErrorCode  PetscFinalize(void)
   PetscBool      flg;
 #if defined(PETSC_USE_LOG)
   char           mname[PETSC_MAX_PATH_LEN];
+#endif
+#if defined(PETSC_HAVE_CUDA)
+  cublasStatus_t cberr;
 #endif
 
   PetscFunctionBegin;
@@ -1319,7 +1327,11 @@ PetscErrorCode  PetscFinalize(void)
   if (flg) {
     PetscInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) cublasShutdown();
+      if (p == PetscGlobalRank) {
+        if (cublasv2handle) {
+          cberr = cublasDestroy(cublasv2handle);CHKERRCUBLAS(cberr);
+        }
+      }
       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
   }

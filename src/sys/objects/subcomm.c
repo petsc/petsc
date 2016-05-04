@@ -270,6 +270,18 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSubcommDestroy"
+/*@C
+  PetscSubcommDestroy - Destroys a PetscSubcomm object
+
+   Collective on PetscSubcomm
+
+   Input Parameter:
+   .  psubcomm - the PetscSubcomm context
+
+   Level: advanced
+
+.seealso: PetscSubcommCreate(),PetscSubcommSetType()
+@*/
 PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;

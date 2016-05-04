@@ -521,7 +521,6 @@ static PetscErrorCode VecMin_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,Pets
   }
 
   /* Otherwise we have a nest */
-  bx = (Vec_Nest*)x->data;
   nr = bx->nb;
 
   /* now descend recursively */

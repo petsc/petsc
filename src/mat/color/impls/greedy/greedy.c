@@ -424,7 +424,6 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
           }
         }
         /* assign this one the lowest color possible by seeing if there's a gap in the sequence of sorted neighbor colors */
-        pcol=0;
         for (j=0;j<masksize;j++) {
           if (mask[j]!=idx) {
             break;

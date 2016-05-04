@@ -28,9 +28,7 @@ int main(int argc,char **args)
   PetscInt       n,cstart,cend;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
@@ -62,6 +60,6 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

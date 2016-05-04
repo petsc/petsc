@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscReal      norm,dnorm;
   PetscViewer    H5viewer;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,11,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -60,5 +60,5 @@ int main(int argc,char **args)
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

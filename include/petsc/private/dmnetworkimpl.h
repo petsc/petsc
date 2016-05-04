@@ -9,7 +9,7 @@
 
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
-  PetscInt ndata; 
+  PetscInt ndata;
   PetscInt size[MAX_DATA_AT_POINT];
   PetscInt key[MAX_DATA_AT_POINT];
   PetscInt offset[MAX_DATA_AT_POINT];
@@ -21,9 +21,9 @@ struct _p_DMNetworkComponentValue {
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct {
-  char     name[20];
+  char     name[32-sizeof(PetscInt)];
   PetscInt size;
-}DMNetworkComponent PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} DMNetworkComponent PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct {
   PetscInt                          refct;  /* reference count */
@@ -41,7 +41,7 @@ typedef struct {
   PetscSection                      GlobalDofSection; /* Global Dof section */
   PetscInt                          ncomponent; /* Number of components */
   DMNetworkComponent                component[10]; /* List of components */
-  DMNetworkComponentHeader          header;  
+  DMNetworkComponentHeader          header;
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */

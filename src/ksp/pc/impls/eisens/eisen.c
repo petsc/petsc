@@ -371,7 +371,7 @@ PetscErrorCode  PCEisenstatGetOmega(PC pc,PetscReal *omega)
 #undef __FUNCT__
 #define __FUNCT__ "PCEisenstatGetNoDiagonalScaling"
 /*@
-   PCEisenstatGetNoDiagonalScaling - Causes the Eisenstat preconditioner
+   PCEisenstatGetNoDiagonalScaling - Tells if the Eisenstat preconditioner
    not to do additional diagonal preconditioning. For matrices with a constant
    along the diagonal, this may save a small amount of work.
 
@@ -402,7 +402,7 @@ PetscErrorCode  PCEisenstatGetNoDiagonalScaling(PC pc,PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCEisenstatGetNoDiagonalScaling_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCEisenstatGetNoDiagonalScaling_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

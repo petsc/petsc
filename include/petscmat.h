@@ -518,8 +518,6 @@ PETSC_EXTERN PetscErrorCode MatMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatMatMultNumeric(Mat,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode MatMatMatMult(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatMatMatMultSymbolic(Mat,Mat,Mat,PetscReal,Mat*);
-PETSC_EXTERN PetscErrorCode MatMatMatMultNumeric(Mat,Mat,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);

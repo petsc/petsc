@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscReal      fill=2.0,norm;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(WRITEFILE)
   {
     PetscViewer viewer;
@@ -69,5 +69,5 @@ int main(int argc,char **args)
   ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

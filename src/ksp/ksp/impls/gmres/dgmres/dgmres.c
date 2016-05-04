@@ -60,7 +60,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm(KSP ksp,PetscInt *neig)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -70,7 +70,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP),(ksp));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP),(ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -80,7 +80,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation(KSP ksp, Vec x, Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),"KSPDGMRESApplyDeflation_C",(KSP, Vec, Vec),(ksp, x, y));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp),"KSPDGMRESApplyDeflation_C",(KSP, Vec, Vec),(ksp, x, y));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -91,7 +91,7 @@ PetscErrorCode  KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp), "KSPDGMRESImproveEig_C",(KSP, PetscInt),(ksp, neig));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp), "KSPDGMRESImproveEig_C",(KSP, PetscInt),(ksp, neig));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -659,8 +659,7 @@ static PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *E
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_DGMRESComputeDeflationData, ksp, 0,0,0);CHKERRQ(ierr);
-  if (dgmres->neig == 0) PetscFunctionReturn(0);
-  if (max_neig < (r+neig1) && !dgmres->improve) {
+  if (dgmres->neig == 0 || (max_neig < (r+neig1) && !dgmres->improve)) {
     ierr = PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -701,6 +700,7 @@ static PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *E
 
   if ((r+neig1) > max_neig && dgmres->improve) {    /* Improve the approximate eigenvectors in X by solving a new generalized eigenvalue -- Quite expensive to do this actually */
     ierr = KSPDGMRESImproveEig(ksp, neig);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);   /* We return here since data for M have been improved in  KSPDGMRESImproveEig()*/
   }
 

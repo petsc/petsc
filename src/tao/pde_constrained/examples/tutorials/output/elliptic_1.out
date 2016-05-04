@@ -30,4 +30,3 @@ iter = 14, Function value: 0.0331292,  Residual: 0.00118582   Constraint: 0.0023
 iter = 14, Function value: 0.0331293,  Residual: 0.000999862   Constraint: 2.63004e-11 
 KSP Iterations = 1385
 KSP iterations within initialization: 37
-Optimization terminated with status 3.

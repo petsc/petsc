@@ -40,8 +40,8 @@
 \ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 3.6}}
-{}{June 2015}
+{\rm This document is intended for use with PETSc 3.7}}
+{}{April 2016}
 
 \newpage
 
@@ -72,14 +72,6 @@ PETSc is designed using a object-oriented
 architecture. This means that libraries consist of {\em objects} that
 have certain, defined functionality. This document defines how these
 objects are implemented.
-
-This manual discusses the PETSc library design and describes
-how to develop new library codes that are compatible with other PETSc components
-including PETSc 3.0.
-The idea is not to develop one massive library that everyone shoves code
-into; rather, to develop an architecture that allows many people
-to (as painlessly as possible) contribute (and maintain) their own libraries,
-in a distributed fashion.
 
 The text assumes
 that you are familiar with PETSc and have access to PETSc source code and documentation
@@ -116,9 +108,9 @@ to be directed to \trl{petsc-maint@mcs.anl.gov}.
 \chapter{Answering petsc-maint@mcs.anl.gov and petsc-users@mcs.anl.gov}
 
 \begin{itemize}
-\item Try to be polite (this is not always easy)
-\item Address the person by name (when it is possible to determine their name)
-\item Appologize for the problem when it is appropriate (but not otherwise)
+\item Try to be polite (this is not always easy).
+\item Address the person by name (when it is possible to determine their name).
+\item Appologize for the problem when it is appropriate (but not otherwise).
 \item Thank the person for their patience if it is more than six hours since the report came in.
 \item if the person drops the petsc-maint or petsc-users from the mailing list add it back in.
 \end{itemize}
@@ -128,7 +120,7 @@ Often it pays to not ask too many questions or give to many suggestions in the s
 \chapter{Style Guide}
 
 The PETSc team uses certain conventions to make our source code consistent. Groups
-developing classs compatible with PETSc are, of course, free to organize their
+developing code compatible with PETSc are, of course, free to organize their
 own source code anyway they like.
 
 \section{Names}
@@ -148,8 +140,6 @@ We use several conventions:
            \trl{StashValues_Private}) or
         \item have an appended \trl{_Subtype} (for example,
            \trl{MatMult_SeqAIJ}).
-        \item have an appended \trl{_Default} (for example,
-           \trl{KSPBuildSolutionDefault}) if used by several classes.
       \end{itemize}
 
       In addition, functions that are not intended for use outside
@@ -161,7 +151,7 @@ We use several conventions:
 \item Each application usable function begins with the name of the class object, followed by any subclass name,
       for example, ISInvertPermutation(), MatMult() or KSPGMRESSetRestart().
 \item Functions that PETSc provides as defaults for user provideable functions end with \trl{Default} (for example, \trl{KSPMonitorDefault()} or \trl{PetscSignalHandlerDefault()})
-\item Options database keys are lower case, have an underscore between words and match the function name associated with the option without the word set. For example, \trl{-ksp_gmres_restart}.
+\item Options database keys are lower case, have an underscore between words and match the function name associated with the option without the word {\em set} or {\em get}. For example, \trl{-ksp_gmres_restart}.
 \end{itemize}
 
 \section{Coding Conventions and Style Guide}
@@ -170,7 +160,7 @@ Within the PETSc source code, we adhere to the following guidelines
 so that the code is uniform and easily maintainable:
 
 \begin{itemize}
-\item Public PETSc includes, \trl{petsc*.h}, cannot include private PETSc \trl{petsc/private/*impl.h} includes.
+\item Public PETSc includes, \trl{petsc*.h}, should not include private PETSc \trl{petsc/private/*impl.h} includes.
 \item Public and private PETSc includes, cannot include include files in the PETSc source tree.
 \item All PETSc function bodies are indented two characters.
 \item Each additional level of loops, if statements, etc. is indented
@@ -188,7 +178,7 @@ instead of
    int    i,j;\\
    Scalar a;
 \end{tabbing}
-\item Array and pointer arguments to functions where the array values are not changed should be labeled as \trl{const} arguments.
+\item Array and pointer arguments where the array values are not changed should be labeled as \trl{const} arguments.
 \item Scalar values passed to functions should {\bf never} be labeled as const.
 \item The prototypes for functions should not include the names of the variables; for example write
 \begin{tabbing}
@@ -230,7 +220,7 @@ as
 \end{tabbing}
 \item {\em Never}  have
 \begin{tabbing}
-   if\= (  ) \\
+   if \=(  ) \\
      \>a single indented line
 \end{tabbing}
 or
@@ -244,10 +234,11 @@ instead use either
 \end{tabbing}
 or
 \begin{tabbing}
-   if\= (  ) \{\\
+   if \= (  ) \{\\
      \>a single indented line\\
    \}
 \end{tabbing}
+\item Always have a space between {\em if} or {\em for} and the following {\em ()}.
 \item {\em No} tabs are allowed in {\em any} of the source code.
 \item Do not use sqrt(), pow(), sin() etc directly in PETSc source code or examples, rather use PetscSqrtScalar(), PetscSqrtReal() etc depending on the context. See petscmath.h for expressions to use.
 \item The open bracket \{ should be on the same line as the {\em if ()} test, {\em for ()}, etc. never on
@@ -277,7 +268,7 @@ instead write
 \begin{tabbing}
    ierr = PetscMalloc1(10,\&a);CHKERRQ(ierr);
 \end{tabbing}
-\item Except in code that may be called before PETSc is fully initialized, always use PetscMalloc(), PetscNew(), and PetscFree(), not \trl{malloc()} and \trl{free()}.
+\item Except in code that may be called before PETSc is fully initialized, always use PetscMallocN(), PetscCallocN(), PetscNew(), and PetscFree(), not \trl{malloc()} and \trl{free()}.
 \item {\em No} space after the ) in a cast, no space between the type and the * in a caste.
 \item {\em No} space before or after a , in lists
 That is, do not write
@@ -318,10 +309,19 @@ instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg
 PETSc uses formatted comments and the Sowing packages to generate documentation (manual pages) and the fortran interfaces. Documentation for Sowing and the formating may be found at \href{http://www.cs.uiuc.edu/homes/wgropp/projects/software/sowing/doctext.pdf}{http://www.cs.uiuc.edu/homes/wgropp/projects/software/sowing/doctext.pdf}.
 
 \begin{verbatim}
-/*@     indicates a formatted comment of a function that will be used for both documentation and a Fortran interface.
-/*@C    a formatted comment of a function that will be used only for documentation
-/*E     a formatted comment of an enum used for documentation only
-/*M     a formatted comment of a CPP macro used for both documentation and a Fortran interface.
+/*@     indicates a formatted comment of a function that will be used for
+        both documentation and a Fortran interface.
+/*@C    a formatted comment of a function that will be used only for
+        documentation
+/*E     a formatted comment of an enum used for documentation only, note that
+        each of these needs to be listed in lib/petsc/conf/bfort-petsc.txt as
+        a native and defined in the corresponding
+        include/petsc/finclude/petscxxxdef.h fortran include file and the values
+        set as parameters in the file include/petsc/finclude/petscxxx.h
+/*S     a formatted comment for a data type such as KSP, note that each of these
+        needs to be listed in lib/petsc/conf/bfort-petsc.txt as a nativeptr
+/*M     a formatted comment of a CPP macro used for both documentation and
+        a Fortran interface.
 /*MC    a formatted comment of a CPP macro for documentation
 \end{verbatim}
 
@@ -602,8 +602,8 @@ implemented using C \trl{struct}s, that contain the data and function pointers
 for operations on the data (much like virtual functions in classes in C++).
 Each classs consists of three parts:
 \begin{itemize}
-\item a (small) common part shared by all PETSc compatible libraries.
-\item another common part shared by all PETSc implementations of the class and
+\item a (small) common part shared by all PETSc classes (for example both KSP and PC have this same header).
+\item another common part shared by all PETSc implementations of the class (for example both KSP\_GMRES and KSP\_CG have this common sub-header) and
 \item a private part used by only one particular implementation written in PETSc.
 \end{itemize}
 For example, all matrix (Mat) classs share a function table of operations that

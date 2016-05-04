@@ -706,8 +706,14 @@ PetscErrorCode  PetscOptionsInsert(PetscOptions options,int *argc,char ***args,c
   char           pfile[PETSC_MAX_PATH_LEN];
   PetscBool      flag = PETSC_FALSE;
 
+  
   PetscFunctionBegin;
-  options = options ? options : defaultoptions;
+  if (!options) {
+    if (!defaultoptions) {
+      ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
+    }
+    options = defaultoptions;
+  }
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   options->argc = (argc) ? *argc : 0;
@@ -943,7 +949,10 @@ PetscErrorCode  PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
   ierr = PetscOptionsValidKey(buf,&key);CHKERRQ(ierr);
   if (!key) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter, do not include leading '-')",prefix);
 
-  if (!options) {ierr = PetscOptionsInsert(NULL,0,0,0);CHKERRQ(ierr);}
+  if (!options) {
+    ierr = PetscOptionsInsert(NULL,0,0,0);CHKERRQ(ierr);
+    options = defaultoptions;
+  }
   if (options->prefixind >= MAXPREFIXES) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES",MAXPREFIXES);
   start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
   ierr = PetscStrlen(prefix,&n);CHKERRQ(ierr);
@@ -1100,7 +1109,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
   name++; /* skip starting hyphen */
   if (options->prefixind > 0) {
     strncpy(fullname,options->prefix,sizeof(fullname));
-    strncat(fullname,name,sizeof(fullname)-1);
+    strncat(fullname,name,sizeof(fullname)-strlen(fullname)-1);
     name = fullname;
   }
 
@@ -1155,7 +1164,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
     options->used[i]   = options->used[i-1];
   }
   /* insert new name and value */
-  len = name ? strlen(name) : 0;
+  len = strlen(name);
   options->names[n] = (char*)malloc((len+1)*sizeof(char));
   if (!options->names[n]) return PETSC_ERR_MEM;
   strcpy(options->names[n],name);
@@ -1164,7 +1173,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
     options->values[n] = (char*)malloc((len+1)*sizeof(char));
     if (!options->values[n]) return PETSC_ERR_MEM;
     strcpy(options->values[n],value);
-  } else options->values[n] = 0;
+  } else options->values[n] = NULL;
   options->used[n] = PETSC_FALSE;
   options->N++;
   return 0;
@@ -1709,13 +1718,14 @@ PetscErrorCode  PetscOptionsGetBool(PetscOptions options,const char pre[],const 
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
-  PetscValidIntPointer(ivalue,3);
+  if (ivalue) PetscValidIntPointer(ivalue,3);
   options = options ? options : defaultoptions;
   ierr = PetscOptionsFindPair_Private(options,pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (set) *set = PETSC_TRUE;
-    if (!value) *ivalue = PETSC_TRUE;
-    else {
+    if (!value) {
+      if (ivalue) *ivalue = PETSC_TRUE;
+    } else {
       ierr = PetscOptionsStringToBool(value, ivalue);CHKERRQ(ierr);
     }
   } else {
@@ -2570,7 +2580,11 @@ PetscErrorCode  PetscOptionsSetFromOptions(PetscOptions options)
   PetscViewer    monviewer;
 
   PetscFunctionBegin;
-  options = options ? options : defaultoptions;
+  /*
+     The options argument is currently ignored since we currently maintain only a single options database
+
+     options = options ? options : defaultoptions;
+  */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for handling options","PetscOptions");CHKERRQ(ierr);
   ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",flgc,&flgc,NULL);CHKERRQ(ierr);

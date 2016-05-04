@@ -75,7 +75,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
+  ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &cellNumbering);CHKERRQ(ierr);
   ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
   for (*numVertices = 0, p = pStart; p < pEnd; p++) {
     /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
@@ -119,6 +119,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
     ierr = ISLocalToGlobalMappingRestoreIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApplyBlock(ltogCells, vOffsets[*numVertices], graph, graph);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&ltogCells);CHKERRQ(ierr);
+    ierr = ISDestroy(&cellNumbering);CHKERRQ(ierr);
   }
   if (adjacency) *adjacency = graph;
   /* Clean up */
@@ -858,7 +859,7 @@ PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM dm, Pe
     PetscMPIInt rank;
     PetscInt nvGlobal, *offsets, myFirst, myLast;
 
-    ierr = PetscMalloc1(size+1,&offsets);
+    ierr = PetscMalloc1(size+1,&offsets);CHKERRQ(ierr);
     offsets[0] = 0;
     ierr = MPI_Allgather(&numVertices,1,MPIU_INT,&offsets[1],1,MPIU_INT,comm);CHKERRQ(ierr);
     for (np = 2; np <= size; np++) {
@@ -1303,13 +1304,15 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   PetscInt      *assignment, *points;
   PetscMPIInt    rank, p, v, i;
   PetscErrorCode ierr;
+  PetscInt       cstart, cend, dof;
+  PetscSection   dfsection;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   options[0] = 0; /* Use all defaults */
   /* Calculate vertex distribution */
-  ierr = PetscMalloc4(nparts+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment);CHKERRQ(ierr);
+  ierr = PetscMalloc5(nparts+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment,nvtxs,&vwgt);CHKERRQ(ierr);
   vtxdist[0] = 0;
   ierr = MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm);CHKERRQ(ierr);
   for (p = 2; p <= nparts; ++p) {
@@ -1321,8 +1324,15 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   }
   ubvec[0] = 1.05;
 
+  ierr = DMPlexGetHeightStratum(dm,0,&cstart,&cend);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm,&dfsection);CHKERRQ(ierr);
+  for(i= cstart; i < cend; i++) {
+    ierr = PetscSectionGetDof(dfsection,i,&dof);CHKERRQ(ierr);
+    vwgt[i-cstart] = (dof == 0) ? 1 : dof;
+  }
+
   if (nparts == 1) {
-    ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));
+    ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));CHKERRQ(ierr);
   } else {
     if (vtxdist[1] == vtxdist[nparts]) {
       if (!rank) {
@@ -1350,7 +1360,7 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   }
   if (i != nvtxs) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
-  ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
+  ierr = PetscFree5(vtxdist,tpwgts,ubvec,assignment,vwgt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else
   SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");

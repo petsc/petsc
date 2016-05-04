@@ -60,7 +60,7 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
   PetscValidLogicalCollectiveInt(draw,bins,2);
   PetscValidPointer(hist,3);
 
-  ierr = PetscHeaderCreate(h,PETSC_DRAWHG_CLASSID,"PetscDrawHG","Histogram","Draw",PetscObjectComm((PetscObject)draw),PetscDrawHGDestroy,NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(h,PETSC_DRAWHG_CLASSID,"DrawHG","Histogram","Draw",PetscObjectComm((PetscObject)draw),PetscDrawHGDestroy,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)h);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
   color = hist->color;
-  if (color == PETSC_DRAW_ROTATE) bcolor = 2;
+  if (color == PETSC_DRAW_ROTATE) bcolor = PETSC_DRAW_BLACK+1;
   else bcolor = color;
 
   xmin      = hist->xmin;
@@ -329,8 +329,6 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,binLeft,bins[0],binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      if (color == PETSC_DRAW_ROTATE && bins[0] != 0.0) bcolor++;
-      if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = 2;
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   } else {
@@ -386,7 +384,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
         ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
         ierr = PetscDrawLine(draw,binLeft,bins[i],binRight,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
         if (color == PETSC_DRAW_ROTATE && bins[i]) bcolor++;
-        if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = 2;
+        if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = PETSC_DRAW_BLACK+1;
       }
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);

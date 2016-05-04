@@ -43,7 +43,7 @@ int main(int argc,char **args)
   KSP            ksp;
   PetscBool      viewkspest = PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-ksp_est_view",&viewkspest,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1); /* dimension of matrix */
@@ -109,8 +109,7 @@ int main(int argc,char **args)
   count = 2*m; /* left side */
   for (i=2*m+1; i<m*(m+1); i+= m+1) rows[count++] = i;
   for (i=0; i<4*m; i++) {
-    x    = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
-    val  = y;
+    val  = h*(rows[i]/(m+1));
     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -146,8 +145,7 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-    x    = h*(i % (m+1)); y = h*(i/(m+1));
-    val  = y;
+    val  = h*(i/(m+1));
     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
@@ -164,7 +162,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

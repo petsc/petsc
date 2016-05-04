@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   IS             is,isc;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -34,5 +34,5 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&isc);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

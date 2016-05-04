@@ -125,11 +125,12 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   if (dm->coordinateDM) {
     DM           ncdm;
     PetscSection cs;
-    PetscInt     pEnd = -1;
+    PetscInt     pEnd = -1, pEndMax = -1;
 
     ierr = DMGetDefaultSection(dm->coordinateDM, &cs);CHKERRQ(ierr);
     if (cs) {ierr = PetscSectionGetChart(cs, NULL, &pEnd);CHKERRQ(ierr);}
-    if (pEnd >= 0) {
+    ierr = MPI_Allreduce(&pEnd,&pEndMax,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    if (pEndMax >= 0) {
       ierr = DMClone(dm->coordinateDM, &ncdm);CHKERRQ(ierr);
       ierr = DMSetDefaultSection(ncdm, cs);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(*newdm, ncdm);CHKERRQ(ierr);
@@ -922,6 +923,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 @*/
 PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
+  PetscInt       bs = -1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -940,16 +942,20 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
       ierr = PetscMalloc1(size, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
       for (p = pStart, l = 0; p < pEnd; ++p) {
-        PetscInt dof, off, c;
+        PetscInt bdof, cdof, dof, off, c;
 
         /* Should probably use constrained dofs */
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
+        bdof = cdof ? 1 : dof;
+        if (bs < 0)          {bs = bdof;}
+        else if (bs != bdof) {bs = 1;}
         for (c = 0; c < dof; ++c, ++l) {
           ltog[l] = off+c;
         }
       }
-      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, 1,size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, bs < 0 ? 1 : bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
       if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
@@ -1466,7 +1472,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     if (section) {ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);}
     if (section && numFields && dm->ops->createsubdm) {
-      *len = numFields;
+      if (len) *len = numFields;
       if (namelist) {ierr = PetscMalloc1(numFields,namelist);CHKERRQ(ierr);}
       if (islist)   {ierr = PetscMalloc1(numFields,islist);CHKERRQ(ierr);}
       if (dmlist)   {ierr = PetscMalloc1(numFields,dmlist);CHKERRQ(ierr);}
@@ -1580,6 +1586,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
     ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist);CHKERRQ(ierr);
     /* copy subdomain hooks and context over to the subdomain DMs */
     if (dmlist) {
+      if (!*dmlist) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_POINTER,"Method mapped to dm->ops->createdomaindecomposition must allocate at least one DM");
       for (i = 0; i < l; i++) {
         for (link=dm->subdomainhook; link; link=link->next) {
           if (link->ddhook) {ierr = (*link->ddhook)(dm,(*dmlist)[i],link->ctx);CHKERRQ(ierr);}
@@ -4804,33 +4811,66 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 #undef __FUNCT__
 #define __FUNCT__ "DMLocatePoints"
 /*@
-  DMLocatePoints - Locate the points in v in the mesh and return an IS of the containing cells
+  DMLocatePoints - Locate the points in v in the mesh and return a PetscSF of the containing cells
 
-  Not collective
+  Collective on Vec v (see explanation below)
 
   Input Parameters:
 + dm - The DM
-- v - The Vec of points
+. v - The Vec of points
+- cells - Points to either NULL, or a PetscSF with guesses for which cells contain each point.
 
   Output Parameter:
-. cells - The local cell numbers for cells which contain the points
+. cells - The PetscSF containing the ranks and local indices of the containing points.
+
 
   Level: developer
+
+  To do a search of the local cells of the mesh, v should have PETSC_COMM_SELF as its communicator.
+
+  To do a search of all the cells in the distributed mesh, v should have the same communicator as
+  dm.
+
+  If *cellSF is NULL on input, a PetscSF will be created.
+
+  If *cellSF is not NULL on input, it should point to an existing PetscSF, whose graph will be used as initial
+  guesses.
+
+  An array that maps each point to its containing cell can be obtained with
+
+    const PetscSFNode *cells;
+    PetscInt           nFound;
+    const PetscSFNode *found;
+
+    PetscSFGetGraph(cells,NULL,&nFound,&found,&cells);
+
+  Where cells[i].rank is the rank of the cell containing point found[i] (or i if found == NULL), and cells[i].index is
+  the index of the cell in its rank's local numbering.
 
 .keywords: point location, mesh
 .seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
 @*/
-PetscErrorCode DMLocatePoints(DM dm, Vec v, IS *cells)
+PetscErrorCode DMLocatePoints(DM dm, Vec v, PetscSF *cellSF)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
-  PetscValidPointer(cells,3);
+  PetscValidPointer(cellSF,3);
+  if (*cellSF) {
+    PetscMPIInt result;
+
+    PetscValidHeaderSpecific(cellSF,PETSCSF_CLASSID,3);
+    ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)v),PetscObjectComm((PetscObject)cellSF),&result);CHKERRQ(ierr);
+    if (result != MPI_IDENT && result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"cellSF must have a communicator congruent to v's");
+  }
+  else {
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)v),cellSF);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventBegin(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
   if (dm->ops->locatepoints) {
-    ierr = (*dm->ops->locatepoints)(dm,v,cells);CHKERRQ(ierr);
+    ierr = (*dm->ops->locatepoints)(dm,v,*cellSF);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Point location not available for this DM");
   ierr = PetscLogEventEnd(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -6046,7 +6086,7 @@ PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const c
     b = b->next;
     ++n;
   }
-  if (n != bd) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  if (!b) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
   if (isEssential) {
     PetscValidPointer(isEssential, 3);
     *isEssential = b->essential;

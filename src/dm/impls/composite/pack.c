@@ -747,7 +747,7 @@ PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
   if (!com->setup) {
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
-  ierr = VecCreateSeq(PetscObjectComm((PetscObject)dm),com->nghost,lvec);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,com->nghost,lvec);CHKERRQ(ierr);
   ierr = VecSetDM(*lvec, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

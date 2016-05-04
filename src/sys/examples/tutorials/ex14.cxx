@@ -2,7 +2,7 @@
 static char help[] = "Demonstrates calling Trilinos and then PETSc in the same program.\n\n";
 
 /*T
-   Concepts: introduction to PETSc; Trilinos
+   Concepts: introduction to PETSc^Trilinos
    Processors: n
 
    Example obtained from: http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   // with size 1, whose only process has rank 0.
   Teuchos::RCP<const Teuchos::Comm<int> > comm = Tpetra::DefaultPlatform::getDefaultPlatform ().getComm ();
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   // appropriate.  You don't have to do anything here!  Just return
   // from main().  Isn't that helpful?
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

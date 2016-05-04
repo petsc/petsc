@@ -31,7 +31,7 @@ The command line options are:\n\
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoGetConvergedReason(); TaoDestroy();
+   Routines: TaoDestroy();
    Processors: n
 T*/
 
@@ -72,7 +72,6 @@ int main( int argc, char **argv )
   PetscReal          d1000 = 1000;
   PetscBool          flg;              /* A return variable when checking for user options */
   Tao                tao;                /* Tao solver context */
-  TaoConvergedReason reason;
   KSP                ksp;
   AppCtx             user;               /* user-defined work context */
   PetscReal          zero=0.0;           /* lower bound on all variables */
@@ -167,11 +166,6 @@ int main( int argc, char **argv )
 
   /* Solve the bound constrained problem */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
-  }
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&x);CHKERRQ(ierr);

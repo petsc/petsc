@@ -13,8 +13,7 @@ int main(int argc,char **args)
   PetscScalar    values[11];
   PetscViewer    view;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) values[i] = (PetscReal)i;
@@ -40,6 +39,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

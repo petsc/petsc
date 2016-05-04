@@ -40,8 +40,6 @@
 
       ! Petsc-stuff
       PetscErrorCode            :: ierr
-      PetscViewer               :: viewer
-      PetscReal                 :: threshTime
 
       ! MPI-stuff
       integer                   :: rank, size
@@ -53,7 +51,6 @@
       ! Own stuff
       integer                   :: role                 ! is this process a BOY, a GIRL or a TEACHER?
       integer                   :: i, j
-      character(len=60)         :: filename
 !====================================================================
 !     Initializations
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

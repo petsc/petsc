@@ -5,4 +5,3 @@ KSP Iterations = 224
 KSP iterations within initialization: 89
 Total KSP iterations over 1 trial(s): 313
 KSP iterations per trial: 224
-TAO failed to converge.

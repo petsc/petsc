@@ -134,7 +134,6 @@ int main(int argc,char **argv)
   struct _n_User     user;
   PetscErrorCode     ierr;
   Tao                tao;
-  TaoConvergedReason reason;
   Vec                lowerb,upperb;
   KSP                ksp;
   PC                 pc;
@@ -244,7 +243,7 @@ int main(int argc,char **argv)
   x_ptr[0] = 100.0;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
 
-  ierr = TaoSetVariableBounds(tao,lowerb,upperb);
+  ierr = TaoSetVariableBounds(tao,lowerb,upperb);CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -258,12 +257,6 @@ int main(int argc,char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
-
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0){
-      ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
-  }
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */
@@ -285,7 +278,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscFinalize();
   PetscFunctionReturn(0);
 }
 
@@ -375,7 +368,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
-  ierr = VecCopy(user->mup[0],G);
+  ierr = VecCopy(user->mup[0],G);CHKERRQ(ierr);
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

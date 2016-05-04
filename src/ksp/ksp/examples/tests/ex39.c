@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v, co1, co2;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   n1 = 32;
   n2 = 32;
   n3 = 32;
@@ -117,5 +117,5 @@ int main(int argc,char **args)
   ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

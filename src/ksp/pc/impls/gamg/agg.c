@@ -773,7 +773,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
         }
         /* copy in B_i matrix - column oriented */
         data = &data_in[flid*bs];
-        for (kk = ii = 0; ii < bs; ii++) {
+        for (ii = 0; ii < bs; ii++) {
           for (jj = 0; jj < N; jj++) {
             PetscReal d = data[jj*data_stride + ii];
             qqc[jj*Mdata + aggID*bs + ii] = d;
@@ -1152,7 +1152,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET8],0,0,0,0);CHKERRQ(ierr);
 #endif
-  if (size > 1) ierr = PetscFree(data_w_ghost);CHKERRQ(ierr);
+  if (size > 1) {ierr = PetscFree(data_w_ghost);CHKERRQ(ierr);}
   ierr = PetscFree(flid_fgid);CHKERRQ(ierr);
 
   *a_P_out = Prol;  /* out */

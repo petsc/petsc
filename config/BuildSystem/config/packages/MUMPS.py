@@ -29,13 +29,16 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack   = framework.require('config.packages.BlasLapack',self)
     self.mpi          = framework.require('config.packages.MPI',self)
+    self.metis        = framework.require('config.packages.metis',self)
     if self.argDB['with-mumps-serial']:
       self.deps       = [self.blasLapack]
+      self.odeps      = [self.metis]
     else:
       self.scalapack  = framework.require('config.packages.scalapack',self)
       self.deps       = [self.scalapack,self.mpi,self.blasLapack]
       self.parmetis   = framework.require('config.packages.parmetis',self)
       self.ptscotch   = framework.require('config.packages.PTScotch',self)
+      self.odeps      = [self.metis,self.parmetis,self.ptscotch]
     return
 
   def consistencyChecks(self):
@@ -66,11 +69,16 @@ class Configure(config.package.Package):
     # Disable threads on BGL
     if self.libraries.isBGL():
       orderingsc += ' -DWITHOUT_PTHREAD'
+    if self.metis.found:
+      g.write('IMETIS = '+self.headers.toString(self.metis.include)+'\n')
+      g.write('LMETIS = '+self.libraries.toString(self.metis.lib)+'\n')
+      orderingsc += ' -Dmetis'
+      orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'metis'
     if self.parmetis.found:
-      g.write('IMETIS = '+self.headers.toString(self.parmetis.include)+'\n')
-      g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n')
-      orderingsc += ' -Dmetis -Dparmetis'
-      orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'metis '+self.compilers.FortranDefineCompilerOption+'parmetis'
+      g.write('IPARMETIS = '+self.headers.toString(self.parmetis.include)+'\n')
+      g.write('LPARMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n')
+      orderingsc += ' -Dparmetis'
+      orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'parmetis'
     if self.ptscotch.found:
       g.write('ISCOTCH = '+self.headers.toString(self.ptscotch.include)+'\n')
       g.write('LSCOTCH = '+self.libraries.toString(self.ptscotch.lib)+'\n')
@@ -79,8 +87,8 @@ class Configure(config.package.Package):
 
     g.write('ORDERINGSC = '+orderingsc+'\n')
     g.write('ORDERINGSF = '+orderingsf+'\n')
-    g.write('LORDERINGS  = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
-    g.write('IORDERINGSC = $(IMETIS) $(IPORD) $(ISCOTCH)\n')
+    g.write('LORDERINGS  = $(LPARMETIS) $(LMETIS) $(LPORD) $(LSCOTCH)\n')
+    g.write('IORDERINGSC = $(IPARMETIS) $(IMETIS) $(IPORD) $(ISCOTCH)\n')
     g.write('IORDERINGSF = $(ISCOTCH)\n')
 
     g.write('RM = /bin/rm -f\n')
@@ -139,13 +147,3 @@ class Configure(config.package.Package):
       self.postInstall(output1+err1+output2+err2,'Makefile.inc')
     return self.installDir
 
-  def configureLibrary(self):
-    if not self.argDB['with-mumps-serial']:
-      if self.parmetis.found:
-        self.deps.append(self.parmetis)
-      if self.ptscotch.found:
-        self.deps.append(self.ptscotch)
-    config.package.Package.configureLibrary(self)
-     # [parallem mumps] make sure either ptscotch or parmetis is enabled
-    if not self.argDB['with-mumps-serial'] and not self.ptscotch.found and not self.parmetis.found:
-       raise RuntimeError('MUMPS requires either Parmetis or PTScotch. Use either --download-parmetis or --download-ptscotch')

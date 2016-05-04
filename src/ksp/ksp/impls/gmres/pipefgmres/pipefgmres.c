@@ -255,7 +255,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
     /* The recurred computation for the preconditioned vector (u) */
     ierr = VecCopy(Q,PREVEC(loc_it+1));CHKERRQ(ierr);
     ierr = VecMAXPY(PREVEC(loc_it+1),loc_it+1,lhh,&PREVEC(0));CHKERRQ(ierr);
-    ierr = VecScale(PREVEC(loc_it+1),1.0/tt);
+    ierr = VecScale(PREVEC(loc_it+1),1.0/tt);CHKERRQ(ierr);
 
     /* Unshift an entry in the GS coefficients ("removing the bar") */
     lhh[loc_it]         -= shift;
@@ -264,7 +264,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
        Note placement AFTER the "unshift" */
     ierr = VecCopy(W,ZVEC(loc_it+1));CHKERRQ(ierr);
     ierr = VecMAXPY(ZVEC(loc_it+1),loc_it+1,lhh,&ZVEC(0));CHKERRQ(ierr);
-    ierr = VecScale(ZVEC(loc_it+1),1.0/tt);
+    ierr = VecScale(ZVEC(loc_it+1),1.0/tt);CHKERRQ(ierr);
 
     /* Happy Breakdown Check */
     hapbnd = PetscAbsScalar((tt) / *RS(loc_it));

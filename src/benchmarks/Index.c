@@ -13,13 +13,11 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,0,0);
-
+  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   ierr = test1();CHKERRQ(ierr);
   ierr = test2();CHKERRQ(ierr);
-
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 
 #undef __FUNCT__
@@ -39,8 +37,6 @@ int test1(void)
 
   ierr = PetscMalloc1(2000,&z);CHKERRQ(ierr);
   ierr = PetscMalloc1(2000,&zi);CHKERRQ(ierr);
-
-
 
   /* Take care of paging effects */
   ierr = PetscTime(&t1);CHKERRQ(ierr);

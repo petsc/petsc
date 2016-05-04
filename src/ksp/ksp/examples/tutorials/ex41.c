@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
@@ -47,6 +47,6 @@ int main(int argc,char **args)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

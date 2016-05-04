@@ -189,7 +189,6 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
 	}
   }/*end if ext->ord_adapt*/
   ts->ptime += ts->time_step;
-  ts->steps++;
   ext->status = TS_STEP_COMPLETE;
 
   if (ext->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
@@ -203,9 +202,8 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts,PetscReal itime,Vec X)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscReal      t,a,b;
-  Vec            Y0=ext->VecSolPrev,Y1=ext->Y,
-                         Ydot=ext->Ydot,YdotI=ext->YdotI;
-  const PetscReal h = ts->time_step_prev;
+  Vec            Y0=ext->VecSolPrev,Y1=ext->Y,Ydot=ext->Ydot,YdotI=ext->YdotI;
+  const PetscReal h = ts->ptime - ts->ptime_prev;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   t = (itime -ts->ptime + h)/h;

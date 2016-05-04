@@ -399,8 +399,8 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     for (Qi.i = is; Qi.i < ie; Qi.i++) {
       interpIndices[0] = Qi.i;
       interpIndices[1] = Qi.j;
-      if (c->velocityInterpLocal) c->velocityInterpLocal(velocityArray, interpIndices, c->numVelocityComp, c->velocityComp, velocityValues, c->velocityCtx);
-      else c->velocityInterp(c->velocity, interpIndices, c->numVelocityComp, c->velocityComp, velocityValues, c->velocityCtx);
+      if (c->velocityInterpLocal) {ierr = c->velocityInterpLocal(velocityArray, interpIndices, c->numVelocityComp, c->velocityComp, velocityValues, c->velocityCtx);CHKERRQ(ierr);}
+      else {ierr = c->velocityInterp(c->velocity, interpIndices, c->numVelocityComp, c->velocityComp, velocityValues, c->velocityCtx);CHKERRQ(ierr);}
       Qi.x = Qi.i - velocityValues[0]*dt/2.0;
       Qi.y = Qi.j - velocityValues[1]*dt/2.0;
 
@@ -427,11 +427,11 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       interpIndices[0] = Qi.x;
       interpIndices[1] = Qi.y;
       if (c->velocityInterpLocal) {
-        c->velocityInterpLocal(velocityArray,    interpIndices, c->numVelocityComp, c->velocityComp, velocityValues,    c->velocityCtx);
-        c->velocityInterpLocal(velocityArrayOld, interpIndices, c->numVelocityComp, c->velocityComp, velocityValuesOld, c->velocityCtx);
+        ierr = c->velocityInterpLocal(velocityArray,    interpIndices, c->numVelocityComp, c->velocityComp, velocityValues, c->velocityCtx);CHKERRQ(ierr);
+        ierr = c->velocityInterpLocal(velocityArrayOld, interpIndices, c->numVelocityComp, c->velocityComp, velocityValuesOld, c->velocityCtx);CHKERRQ(ierr);
       } else {
-        c->velocityInterp(c->velocity,    interpIndices, c->numVelocityComp, c->velocityComp, velocityValues,    c->velocityCtx);
-        c->velocityInterp(c->velocityOld, interpIndices, c->numVelocityComp, c->velocityComp, velocityValuesOld, c->velocityCtx);
+        ierr = c->velocityInterp(c->velocity,    interpIndices, c->numVelocityComp, c->velocityComp, velocityValues, c->velocityCtx);CHKERRQ(ierr);
+        ierr = c->velocityInterp(c->velocityOld, interpIndices, c->numVelocityComp, c->velocityComp, velocityValuesOld, c->velocityCtx);CHKERRQ(ierr);
       }
       Qi.x = 0.5*(velocityValues[0] + velocityValuesOld[0]);
       Qi.y = 0.5*(velocityValues[1] + velocityValuesOld[1]);
@@ -453,11 +453,11 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     interpIndices[0] = Qi.x;
     interpIndices[1] = Qi.y;
     if (c->velocityInterpLocal) {
-      c->velocityInterpLocal(velocityArray,    interpIndices, c->numVelocityComp, c->velocityComp, velocityValues,    c->velocityCtx);
-      c->velocityInterpLocal(velocityArrayOld, interpIndices, c->numVelocityComp, c->velocityComp, velocityValuesOld, c->velocityCtx);
+      ierr = c->velocityInterpLocal(velocityArray,    interpIndices, c->numVelocityComp, c->velocityComp, velocityValues,    c->velocityCtx);CHKERRQ(ierr);
+      ierr = c->velocityInterpLocal(velocityArrayOld, interpIndices, c->numVelocityComp, c->velocityComp, velocityValuesOld, c->velocityCtx);CHKERRQ(ierr);
     } else {
-      c->velocityInterp(c->velocity,    interpIndices, c->numVelocityComp, c->velocityComp, velocityValues,    c->velocityCtx);
-      c->velocityInterp(c->velocityOld, interpIndices, c->numVelocityComp, c->velocityComp, velocityValuesOld, c->velocityCtx);
+      ierr = c->velocityInterp(c->velocity,    interpIndices, c->numVelocityComp, c->velocityComp, velocityValues,    c->velocityCtx);CHKERRQ(ierr);
+      ierr = c->velocityInterp(c->velocityOld, interpIndices, c->numVelocityComp, c->velocityComp, velocityValuesOld, c->velocityCtx);CHKERRQ(ierr);
     }
     Qi.x = 0.5*(velocityValues[0] + velocityValuesOld[0]);
     Qi.y = 0.5*(velocityValues[1] + velocityValuesOld[1]);
@@ -514,8 +514,8 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     if (c->neighbors[c->queue[n].proc] == rank) {
       interpIndices[0] = c->queue[n].x;
       interpIndices[1] = c->queue[n].y;
-      if (c->fieldInterpLocal) c->fieldInterpLocal(fieldArray, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);
-      else c->fieldInterp(c->field, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);
+      if (c->fieldInterpLocal) {ierr = c->fieldInterpLocal(fieldArray, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);CHKERRQ(ierr);}
+      else {ierr = c->fieldInterp(c->field, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);CHKERRQ(ierr);}
       for (comp = 0; comp < c->numFieldComp; comp++) c->queue[n].field[comp] = fieldValues[comp];
     }
   }
@@ -539,8 +539,8 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       if ((im < (PetscScalar) is - 1.) || (im > (PetscScalar) ie) || (jm < (PetscScalar)  js - 1.) || (jm > (PetscScalar) je)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "Nonlocal point: (%g,%g)", im, jm);
     }
 
-    if (c->fieldInterpLocal) c->fieldInterpLocal(fieldArray, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);
-    else c->fieldInterp(c->field, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);
+    if (c->fieldInterpLocal) {ierr = c->fieldInterpLocal(fieldArray, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);CHKERRQ(ierr);}
+    else {ierr = c->fieldInterp(c->field, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);CHKERRQ(ierr);}
     for (comp = 0; comp < c->numFieldComp; comp++) c->queueRemote[n].field[comp] = fieldValues[comp];
   }
   ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeRemote,0,0,0,0);CHKERRQ(ierr);

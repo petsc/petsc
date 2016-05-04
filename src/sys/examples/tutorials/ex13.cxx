@@ -2,7 +2,7 @@
 static char help[] = "Demonstrates call PETSc first and then Trilinos in the same program.\n\n";
 
 /*T
-   Concepts: introduction to PETSc; Trilinos
+   Concepts: introduction to PETSc^Trilinos
    Processors: n
 
    Example obtained from: http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   RCP<const Comm<int> > comm (new MpiComm<int> (PETSC_COMM_WORLD));
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.
@@ -64,5 +64,5 @@ int main(int argc,char **argv)
   }
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

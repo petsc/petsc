@@ -137,7 +137,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   DM             da;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   PetscOptionsSetValue(NULL,"-file","ex30_output");
   PetscOptionsSetValue(NULL,"-snes_monitor_short",NULL);
   PetscOptionsSetValue(NULL,"-snes_max_it","20");
@@ -205,7 +205,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /*=====================================================================
@@ -899,7 +899,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 
   ierr = PetscOptionsHasName(NULL,NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-test",&(param->param_test));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));
+  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));CHKERRQ(ierr);
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */
@@ -1105,23 +1105,23 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
     if (!rank) { /* on processor 0 */
       ierr = VecSetSizes(pars, 20, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);
-      ierr = VecSetValue(pars,1, (PetscScalar)(grid->nj),INSERT_VALUES);
-      ierr = VecSetValue(pars,2, (PetscScalar)(grid->dx),INSERT_VALUES);
-      ierr = VecSetValue(pars,3, (PetscScalar)(grid->dz),INSERT_VALUES);
-      ierr = VecSetValue(pars,4, (PetscScalar)(param->L),INSERT_VALUES);
-      ierr = VecSetValue(pars,5, (PetscScalar)(param->V),INSERT_VALUES);
+      ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,1, (PetscScalar)(grid->nj),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,2, (PetscScalar)(grid->dx),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,3, (PetscScalar)(grid->dz),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,4, (PetscScalar)(param->L),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,5, (PetscScalar)(param->V),INSERT_VALUES);CHKERRQ(ierr);
       /* skipped 6 intentionally */
-      ierr = VecSetValue(pars,7, (PetscScalar)(param->slab_dip),INSERT_VALUES);
-      ierr = VecSetValue(pars,8, (PetscScalar)(grid->jlid),INSERT_VALUES);
-      ierr = VecSetValue(pars,9, (PetscScalar)(param->lid_depth),INSERT_VALUES);
-      ierr = VecSetValue(pars,10,(PetscScalar)(grid->jfault),INSERT_VALUES);
-      ierr = VecSetValue(pars,11,(PetscScalar)(param->fault_depth),INSERT_VALUES);
-      ierr = VecSetValue(pars,12,(PetscScalar)(param->potentialT),INSERT_VALUES);
-      ierr = VecSetValue(pars,13,(PetscScalar)(param->ivisc),INSERT_VALUES);
-      ierr = VecSetValue(pars,14,(PetscScalar)(param->visc_cutoff),INSERT_VALUES);
-      ierr = VecSetValue(pars,15,(PetscScalar)(param->ibound),INSERT_VALUES);
-      ierr = VecSetValue(pars,16,(PetscScalar)(its),INSERT_VALUES);
+      ierr = VecSetValue(pars,7, (PetscScalar)(param->slab_dip),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,8, (PetscScalar)(grid->jlid),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,9, (PetscScalar)(param->lid_depth),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,10,(PetscScalar)(grid->jfault),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,11,(PetscScalar)(param->fault_depth),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,12,(PetscScalar)(param->potentialT),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,13,(PetscScalar)(param->ivisc),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,14,(PetscScalar)(param->visc_cutoff),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,15,(PetscScalar)(param->ibound),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,16,(PetscScalar)(its),INSERT_VALUES);CHKERRQ(ierr);
     } else { /* on some other processor */
       ierr = VecSetSizes(pars, 0, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
@@ -1136,16 +1136,16 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
 #endif
 
     /* send vectors to viewer */
-    ierr = PetscObjectSetName((PetscObject)res,"res");
+    ierr = PetscObjectSetName((PetscObject)res,"res");CHKERRQ(ierr);
     ierr = VecView(res,viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)user->x,"out");
+    ierr = PetscObjectSetName((PetscObject)user->x,"out");CHKERRQ(ierr);
     ierr = VecView(user->x, viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"aux");
+    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"aux");CHKERRQ(ierr);
     ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr);
     ierr = StressField(da);CHKERRQ(ierr); /* compute stress fields */
-    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"str");
+    ierr = PetscObjectSetName((PetscObject)(user->Xguess),"str");CHKERRQ(ierr);
     ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)pars,"par");
+    ierr = PetscObjectSetName((PetscObject)pars,"par");CHKERRQ(ierr);
     ierr = VecView(pars, viewer);CHKERRQ(ierr);
 
     /* destroy viewer and vector */
@@ -1350,7 +1350,9 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
       param->kspmon = PETSC_FALSE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n");
     } else {
-      ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,NULL,NULL);CHKERRQ(ierr);
+      PetscViewerAndFormat *vf;
+      ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorSingularValue,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
 
       param->kspmon = PETSC_TRUE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");

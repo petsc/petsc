@@ -57,7 +57,6 @@ PetscErrorCode main(int argc,char **argv)
 {
   PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
   Tao                tao;
-  TaoConvergedReason reason;
   KSP                ksp;
   PC                 pc;
   AppCtx             user;                /* application context */
@@ -84,29 +83,22 @@ PetscErrorCode main(int argc,char **argv)
 
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
-  /* TODO -- why didn't that work? */
-  ierr = PetscOptionsSetValue(NULL,"-pc_factor_mat_solver_package","superlu");CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+  /*
+      This algorithm produces matrices with zeros along the diagonal therefore we need to use
+    SuperLU which does partial pivoting
+  */
+  ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
-
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-
-  /* Analyze solution */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason < 0) {
-    ierr = PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscPrintf(MPI_COMM_WORLD, "Optimization terminated with status %D.\n", reason);CHKERRQ(ierr);
-  }
 
   ierr = DestroyProblem(&user);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 #undef __FUNCT__
@@ -136,7 +128,8 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = MatSetFromOptions(user->Ai);CHKERRQ(ierr);
 
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->n,user->n,1,NULL,&user->H);  ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->n,user->n,1,NULL,&user->H);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

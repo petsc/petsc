@@ -43,7 +43,6 @@
 
       PetscErrorCode   ierr          ! used to check for functions returning nonzeros
       Vec              x             ! solution vector
-      Vec              xl, xu        ! lower and upper bounds vectorsp
       PetscInt         m             ! number of local elements in vector
       Tao              tao           ! Tao solver context
       Mat              H             ! Hessian matrix

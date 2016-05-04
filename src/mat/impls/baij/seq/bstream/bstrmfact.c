@@ -265,6 +265,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype
   (*B)->assembled              = PETSC_TRUE;  /* required by -ksp_view */
   (*B)->preallocated           = PETSC_TRUE;
 
+  ierr = PetscFree((*B)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERBSTRM,&(*B)->solvertype);CHKERRQ(ierr);
+
   ierr        = PetscNewLog(*B,&bstrm);CHKERRQ(ierr);
   (*B)->spptr = (void*) bstrm;
   ierr        = PetscObjectComposeFunction((PetscObject)*B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_bstrm);CHKERRQ(ierr);

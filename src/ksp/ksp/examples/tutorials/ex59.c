@@ -100,7 +100,6 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
           istart_csr    = i;
           iend_csr      = i+1;
         }
-        iindex=k*dd.xm_l*dd.ym_l+j*dd.xm_l+i;
         if (internal_node) {
           istart_csr = i;
           iend_csr   = i+1;
@@ -283,7 +282,7 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
         }
       }
     }
-    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann);
+    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann);CHKERRQ(ierr);
   }
   if (dirichlet) *dirichlet = temp_dirichlet;
   if (neumann) *neumann = temp_neumann;
@@ -332,7 +331,7 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
   ierr = DMDASetAOType(da,AOMEMORYSCALABLE);CHKERRQ(ierr);
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,dd.xm_l*dd.ym_l*dd.zm_l,global_indices);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(dd.gcomm,1,localsize,global_indices,PETSC_OWN_POINTER,&temp_isg2lmap);
+  ierr = ISLocalToGlobalMappingCreate(dd.gcomm,1,localsize,global_indices,PETSC_OWN_POINTER,&temp_isg2lmap);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   *isg2lmap = temp_isg2lmap;
   PetscFunctionReturn(0);
@@ -587,7 +586,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   xyloc  = xloc*yloc;
   xyzloc = xloc*yloc*zloc;
 
-  ierr = MatCreate(PETSC_COMM_SELF,&glldata->elem_mat);
+  ierr = MatCreate(PETSC_COMM_SELF,&glldata->elem_mat);CHKERRQ(ierr);
   ierr = MatSetSizes(glldata->elem_mat,xyzloc,xyzloc,xyzloc,xyzloc);CHKERRQ(ierr);
   ierr = MatSetType(glldata->elem_mat,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(glldata->elem_mat,xyzloc,NULL);CHKERRQ(ierr); /* overestimated */
@@ -929,8 +928,8 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
 
   PetscFunctionBeginUser;
   dd->gcomm = PETSC_COMM_WORLD;
-  ierr      = MPI_Comm_size(dd->gcomm,&sizes);
-  ierr      = MPI_Comm_rank(dd->gcomm,&rank);
+  ierr      = MPI_Comm_size(dd->gcomm,&sizes);CHKERRQ(ierr);
+  ierr      = MPI_Comm_rank(dd->gcomm,&rank);CHKERRQ(ierr);
   /* test data passed in */
   if (sizes<2) SETERRQ(dd->gcomm,PETSC_ERR_USER,"This is not a uniprocessor test");
   /* Get informations from command line */
@@ -1005,7 +1004,7 @@ int main(int argc,char **args)
   Vec            exact_solution     =0,fetidp_solution=0,fetidp_rhs=0;
 
   /* Init PETSc */
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Initialize DomainData */
   ierr = InitializeDomainData(&dd);CHKERRQ(ierr);
   /* Decompose domain */
@@ -1097,8 +1096,7 @@ int main(int argc,char **args)
   ierr = KSPDestroy(&KSPwithBDDC);CHKERRQ(ierr);
   ierr = KSPDestroy(&KSPwithFETIDP);CHKERRQ(ierr);
   /* Quit PETSc */
-  ierr = PetscFinalize();CHKERRQ(ierr);
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

@@ -739,7 +739,6 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
   for (i=0;i<nl;i++) {
     diag = 0.;
     if (gidx[i] >= fs && gidx[i] < fe) {
-      li = gidx[i] - fs;
       pncols=0;
       cid = lcid[i];
       if (cid >= 0) {
@@ -826,7 +825,6 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
         }
       }
       ci = gidx[i];
-      li = gidx[i] - fs;
       if (pncols > 0) {
         ierr = MatSetValues(*P,1,&ci,pncols,picol,pvcol,INSERT_VALUES);CHKERRQ(ierr);
       }

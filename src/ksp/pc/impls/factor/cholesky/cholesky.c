@@ -81,6 +81,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
   PetscErrorCode ierr;
   PetscBool      flg;
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
+  const MatSolverPackage stype;
 
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
@@ -160,6 +161,11 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     if (F->errortype) { /* FactorNumeric() fails */
       pc->failedreason = (PCFailedReason)F->errortype;
     }
+  }
+
+  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  if (!stype) {
+    ierr = PCFactorSetMatSolverPackage(pc,((PC_Factor*)dir)->fact->solvertype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

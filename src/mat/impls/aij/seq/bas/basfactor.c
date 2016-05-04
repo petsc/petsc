@@ -199,5 +199,8 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A,MatFactorType ftype,Ma
     (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_Bas;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factortype = ftype;
+  
+  ierr = PetscFree((*B)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERBAS,&(*B)->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

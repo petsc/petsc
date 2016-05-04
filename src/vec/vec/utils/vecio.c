@@ -8,7 +8,6 @@
 #include <petscsys.h>
 #include <petscvec.h>         /*I  "petscvec.h"  I*/
 #include <petsc/private/vecimpl.h>
-#include <petscmat.h> /* so that MAT_FILE_CLASSID is defined */
 #include <petscviewerhdf5.h>
 
 #undef __FUNCT__
@@ -26,8 +25,7 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
   type = tr[0];
   if (type != VEC_FILE_CLASSID) {
     ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-    if (type == MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix is next in file, not a vector as you requested");
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a vector next in file");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a vector next in file");
   }
   *rows = tr[1];
   PetscFunctionReturn(0);

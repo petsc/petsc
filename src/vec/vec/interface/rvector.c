@@ -22,6 +22,8 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUSP)
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUSP_CPU || vec->valid_GPU_array == PETSC_CUSP_BOTH)) {
+#elif defined(PETSC_HAVE_VECCUDA)
+  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUDA_CPU || vec->valid_GPU_array == PETSC_CUDA_BOTH)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
 #endif
@@ -1650,10 +1652,15 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
     } else if (x->valid_GPU_array == PETSC_CUSP_UNALLOCATED) {
       ierr = VecCUSPAllocateCheckHost(x); CHKERRQ(ierr);
     }
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
+#elif defined(PETSC_HAVE_VIENNACL)
     if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
+    }
+#elif defined(PETSC_HAVE_VECCUDA)
+    if (x->valid_GPU_array == PETSC_CUDA_GPU) {
+      ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+    } else if (x->valid_GPU_array == PETSC_CUDA_UNALLOCATED) {
+      ierr = VecCUDAAllocateCheckHost(x); CHKERRQ(ierr);
     }
 #endif
     *a = *((PetscScalar**)x->data);
@@ -1700,10 +1707,13 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
     if (x->valid_GPU_array == PETSC_CUSP_GPU) {
       ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
     }
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
+#elif defined(PETSC_HAVE_VIENNACL)
     if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
+    }
+#elif defined(PETSC_HAVE_VECCUDA)
+    if (x->valid_GPU_array == PETSC_CUDA_GPU) {
+      ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
     }
 #endif
     *a = *((PetscScalar **)x->data);
@@ -1853,9 +1863,10 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   if (x->petscnative) {
 #if defined(PETSC_HAVE_CUSP)
     x->valid_GPU_array = PETSC_CUSP_CPU;
-#endif
-#if defined(PETSC_HAVE_VIENNACL)
+#elif defined(PETSC_HAVE_VIENNACL)
     x->valid_GPU_array = PETSC_VIENNACL_CPU;
+#elif defined(PETSC_HAVE_VECCUDA)
+    x->valid_GPU_array = PETSC_CUDA_CPU;
 #endif
   } else {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);

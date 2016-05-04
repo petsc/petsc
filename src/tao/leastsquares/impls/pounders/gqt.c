@@ -1,4 +1,4 @@
-#include <petsc.h>
+#include <petscsys.h>
 #include <petscblaslapack.h>
 
 #undef __FUNCT__
@@ -233,7 +233,6 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
   PetscReal      alpha, anorm, bnorm, parc, parf, parl, pars, par=*retpar,paru, prod, rxnorm, rznorm=0.0, temp, xnorm;
 
   PetscFunctionBegin;
-  iter = 0;
   parf = 0.0;
   xnorm = 0.0;
   rxnorm = 0.0;

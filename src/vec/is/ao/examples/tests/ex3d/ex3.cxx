@@ -10,8 +10,8 @@ static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.e
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <assert.h>
-#include <petsc.h>
+#include <petscvec.h>
+#include <petscao.h>
 
 using namespace std;
 
@@ -62,6 +62,6 @@ int main(int argc, char** argv)
 
   if (myrank==0) cout << "AO is done." << endl;
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

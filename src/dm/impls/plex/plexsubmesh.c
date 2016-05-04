@@ -918,7 +918,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   /* Calculate number of hybrid points */
   for (d = 1; d <= depth; ++d) numHybridPoints[d]     = numSplitPoints[d-1] + numUnsplitPoints[d-1]; /* There is a hybrid cell/face/edge for every split face/edge/vertex   */
   for (d = 0; d <= depth; ++d) depthShift[2*d+1]      = numSplitPoints[d] + numHybridPoints[d];
-  ierr = DMPlexShiftPointSetUp_Internal(depth,depthShift);
+  ierr = DMPlexShiftPointSetUp_Internal(depth,depthShift);CHKERRQ(ierr);
   /* the end of the points in this stratum that come before the new points:
    * shifting pMaxNew[d] gets the new start of the next stratum, then count back the old hybrid points and the newly
    * added points */
@@ -1586,7 +1586,7 @@ static PetscErrorCode GetSurfaceSide_Static(DM dm, DM subdm, PetscInt numSubpoin
 PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscBool flip, DM subdm)
 {
   DMLabel         depthLabel;
-  IS              dimIS, subpointIS, facePosIS, faceNegIS, crossEdgeIS = NULL;
+  IS              dimIS, subpointIS = NULL, facePosIS, faceNegIS, crossEdgeIS = NULL;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
   PetscInt       *pMax;
@@ -1612,6 +1612,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   ierr = DMLabelGetStratumIS(label, dim-1, &dimIS);CHKERRQ(ierr);
   if (!dimIS) {
     ierr = PetscFree(pMax);CHKERRQ(ierr);
+    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
@@ -1662,10 +1663,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   }
   ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
-  if (subdm) {
-    if (subpointIS) {ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);}
-    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
-  }
+  if (subpointIS) {ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);}
+  ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
   /* Mark boundary points as unsplit */
   if (blabel) {
     ierr = DMLabelGetStratumIS(blabel, 1, &dimIS);CHKERRQ(ierr);
@@ -2109,7 +2108,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
 {
   DMLabel         label = NULL;
   const PetscInt *cone;
-  PetscInt        dim, cMax, cEnd, c, subc = 0, p, coneSize;
+  PetscInt        dim, cMax, cEnd, c, subc = 0, p, coneSize = -1;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -2135,8 +2134,9 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
     *numFaces = cEnd - cMax;
     ierr = DMPlexGetConeSize(dm, cMax, &coneSize);CHKERRQ(ierr);
   }
-  *nFV = hasLagrange ? coneSize/3 : coneSize/2;
   ierr = PetscMalloc1(*numFaces *2, subCells);CHKERRQ(ierr);
+  if (!(*numFaces)) PetscFunctionReturn(0);
+  *nFV = hasLagrange ? coneSize/3 : coneSize/2;
   for (c = cMax; c < cEnd; ++c) {
     const PetscInt *cells;
     PetscInt        numCells;
@@ -2283,7 +2283,6 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
       2, 5,  3, /* left */
     };
 
-    faceSize = faceSizeTri;
     for (i = 0; i < faceSizeTri; ++i) sortedIndices[i] = indices[i];
     ierr = PetscSortInt(faceSizeTri, sortedIndices);CHKERRQ(ierr);
     for (iFace = 0; iFace < 3; ++iFace) {
@@ -2326,7 +2325,6 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
       3, 0,  7, /* left */
     };
 
-    faceSize = faceSizeQuad;
     for (i = 0; i < faceSizeQuad; ++i) sortedIndices[i] = indices[i];
     ierr = PetscSortInt(faceSizeQuad, sortedIndices);CHKERRQ(ierr);
     for (iFace = 0; iFace < 4; ++iFace) {
@@ -2383,7 +2381,6 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
       1, 0, 4, 7,  /* left */
     };
 
-    faceSize = faceSizeHex;
     for (i = 0; i < faceSizeHex; ++i) sortedIndices[i] = indices[i];
     ierr = PetscSortInt(faceSizeHex, sortedIndices);CHKERRQ(ierr);
     for (iFace = 0; iFace < 6; ++iFace) {
@@ -2428,7 +2425,6 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
       2, 3, 5,  8, 6, 9,  /* left */
     };
 
-    faceSize = faceSizeTet;
     for (i = 0; i < faceSizeTet; ++i) sortedIndices[i] = indices[i];
     ierr = PetscSortInt(faceSizeTet, sortedIndices);CHKERRQ(ierr);
     for (iFace=0; iFace < 4; ++iFace) {
@@ -2487,7 +2483,6 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
       3, 0, 4, 7,  11, 16, 15, 19,  20 /* left */
     };
 
-    faceSize = faceSizeQuadHex;
     for (i = 0; i < faceSizeQuadHex; ++i) sortedIndices[i] = indices[i];
     ierr = PetscSortInt(faceSizeQuadHex, sortedIndices);CHKERRQ(ierr);
     for (iFace = 0; iFace < 6; ++iFace) {

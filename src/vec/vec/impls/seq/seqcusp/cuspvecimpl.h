@@ -10,7 +10,6 @@
 #include <vector>
 #include <string>
 
-#include <cublas.h>
 #if defined(CUSP_VERSION) && CUSP_VERSION >= 500
 #include <cusp/blas/blas.h>
 #else
@@ -45,7 +44,7 @@ PETSC_INTERN PetscErrorCode VecDotNorm2_SeqCUSP(Vec,Vec,PetscScalar*, PetscScala
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqCUSP(Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode VecWAXPY_SeqCUSP(Vec,PetscScalar,Vec,Vec);
 PETSC_INTERN PetscErrorCode VecMDot_SeqCUSP(Vec,PetscInt,const Vec[],PetscScalar*);
-PETSC_INTERN PetscErrorCode VecSet_SeqCUSP(Vec,PetscScalar);
+PETSC_EXTERN PetscErrorCode VecSet_SeqCUSP(Vec,PetscScalar);
 PETSC_INTERN PetscErrorCode VecMAXPY_SeqCUSP(Vec,PetscInt,const PetscScalar*,Vec*);
 PETSC_INTERN PetscErrorCode VecAXPBYPCZ_SeqCUSP(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
 PETSC_INTERN PetscErrorCode VecPointwiseMult_SeqCUSP(Vec,Vec,Vec);
@@ -55,7 +54,7 @@ PETSC_INTERN PetscErrorCode VecReplaceArray_SeqCUSP(Vec,const PetscScalar*);
 PETSC_INTERN PetscErrorCode VecDot_SeqCUSP(Vec,Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecTDot_SeqCUSP(Vec,Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecScale_SeqCUSP(Vec,PetscScalar);
-PETSC_INTERN PetscErrorCode VecCopy_SeqCUSP(Vec,Vec);
+PETSC_EXTERN PetscErrorCode VecCopy_SeqCUSP(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecSwap_SeqCUSP(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecAXPY_SeqCUSP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecAXPBY_SeqCUSP(Vec,PetscScalar,PetscScalar,Vec);
@@ -75,7 +74,6 @@ PETSC_INTERN PetscErrorCode VecCopy_SeqCUSP_Private(Vec xin,Vec yin);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP_Private(Vec xin,PetscRandom r);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUSP_Private(Vec v);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqCUSP_Private(Vec vin);
-PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck(Vec v);
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci);

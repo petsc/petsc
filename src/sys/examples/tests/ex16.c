@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   char           buffer[256],*output,user[256];
   PetscBool      userhappy = PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   ierr = PetscMatlabEngineGetOutput(PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD),&output);CHKERRQ(ierr);
@@ -33,6 +33,6 @@ int main(int argc,char **argv)
     ierr = PetscStrncmp(user,"exit",4,&userhappy);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

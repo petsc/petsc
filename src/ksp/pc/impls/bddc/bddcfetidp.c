@@ -187,7 +187,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 
   /* init data for scaling factors exchange */
   partial_sum = 0;
-  j = 0;
   ierr = PetscMalloc1(pcis->n_neigh,&ptrs_buffer);CHKERRQ(ierr);
   ierr = PetscMalloc1(pcis->n_neigh-1,&send_reqs);CHKERRQ(ierr);
   ierr = PetscMalloc1(pcis->n_neigh-1,&recv_reqs);CHKERRQ(ierr);
@@ -243,7 +242,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PetscMalloc1(n_local_lambda,&cols_B_delta);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_local_lambda,&scaling_factors);CHKERRQ(ierr);
   ierr = ISGetIndices(subset_n,&aux_global_numbering);CHKERRQ(ierr);
-  n_global_lambda=0;
   partial_sum=0;
   cum = 0;
   for (i=0;i<dual_size;i++) {

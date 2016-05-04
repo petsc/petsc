@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = alpha.c
+SOURCEC  = alpha1.c alpha2.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscts

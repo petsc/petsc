@@ -360,7 +360,7 @@ int main(int argc, char *argv[])
   PetscBool      cpuTiming = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, 0, help);if (ierr) return ierr;
   ierr = PetscPrintf(PETSC_COMM_SELF, "[Single and Double-Precision Device-Only STREAM Benchmark implementation in CUDA]\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "%s Starting...\n\n", argv[0]);CHKERRQ(ierr);
 
@@ -372,10 +372,10 @@ int main(int argc, char *argv[])
 
   ierr = setupStream(device, runDouble, cpuTiming);
   if (ierr >= 0) {
-    PetscErrorCode ierr2 = PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED");CHKERRQ(ierr2);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED");CHKERRQ(ierr);
   }
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

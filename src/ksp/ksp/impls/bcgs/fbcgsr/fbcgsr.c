@@ -77,9 +77,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   }
 
   /* Test for nothing to do */
-  if (ksp->normtype != KSP_NORM_NONE) {
-    ierr = VecNorm(R,NORM_2,&rho);CHKERRQ(ierr);
-  }
+  ierr = VecNorm(R,NORM_2,&rho);CHKERRQ(ierr);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = rho;

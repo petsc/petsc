@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'origin/master'
-    self.download         = ['git://https://bitbucket.org/petsc/pkg-chombo-3.2.git','https://bitbucket.org/petsc/pkg-chombo-3.2/get/master.tar.gz']
+    self.gitcommit        = '57c046a1ae4643148aa6bac36cb8105cd5ba71ce'
+    self.download         = ['git://https://bitbucket.org/petsc/pkg-chombo-3.2.git','https://bitbucket.org/petsc/pkg-chombo-3.2/get/'+self.gitcommit+'.tar.gz']
     self.functionsCxx     = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()'] 
     self.includedir       = 'include'
     self.includes         = ['CH_config.H']

@@ -152,7 +152,6 @@ int main(int argc,char **argv)
   struct _n_User     user;
   PetscErrorCode     ierr;
   Tao                tao;
-  TaoConvergedReason reason;
   KSP                ksp;
   PC                 pc;
 
@@ -255,11 +254,7 @@ int main(int argc,char **argv)
   ierr = TaoSetTolerances(tao,1e-7,1e-7,1e-7);CHKERRQ(ierr);
 
   ierr = TaoSolve(tao); CHKERRQ(ierr);
-  /* Get information on termination */
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
-  if (reason <= 0){
-      ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
-  }
+
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
@@ -275,7 +270,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user.mup[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscFinalize();
   PetscFunctionReturn(0);
 }
 
@@ -357,7 +352,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetCostGradients(ts,1,user_ptr->lambda,user_ptr->mup);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-  ierr = VecCopy(user_ptr->mup[0],G);
+  ierr = VecCopy(user_ptr->mup[0],G);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

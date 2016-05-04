@@ -79,7 +79,7 @@ PetscErrorCode  MatFinalizePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MUMPS(void);
 #endif
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_VECCUDA)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSPARSE(void);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
@@ -328,7 +328,7 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatSolverPackageRegister_MUMPS();CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_VECCUDA)
   ierr = MatSolverPackageRegister_CUSPARSE();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)

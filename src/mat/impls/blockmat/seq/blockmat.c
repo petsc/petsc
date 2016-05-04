@@ -336,7 +336,6 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     }
 
     currentcol = -1;
-    notdone    = PETSC_TRUE;
     while (PETSC_TRUE) {
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
@@ -380,9 +379,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
       }
     }
 
-    notdone = PETSC_TRUE;
     while (PETSC_TRUE) {  /* loops over blocks in block row */
-
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
       ierr    = PetscMemzero(llens,bs*sizeof(PetscInt));CHKERRQ(ierr);

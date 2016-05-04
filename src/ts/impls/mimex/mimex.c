@@ -178,7 +178,6 @@ static PetscErrorCode TSStep_Mimex_Split(TS ts)
   ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
   ierr = TSPreStage(ts, ts->ptime);CHKERRQ(ierr);
   /* Compute implicit update */
   mimex->stage_time = ts->ptime + ts->time_step;
@@ -228,7 +227,6 @@ static PetscErrorCode TSStep_Mimex_Split(TS ts)
   ierr = VecRestoreArray(sol, &asol);CHKERRQ(ierr);
   ierr = TSPostStage(ts, ts->ptime, 0, &sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
-  ts->steps++;
   PetscFunctionReturn(0);
 }
 
@@ -244,7 +242,6 @@ static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
   ierr = TSPreStage(ts, ts->ptime);CHKERRQ(ierr);
   /* Compute implicit update */
   mimex->stage_time = ts->ptime + ts->time_step;
@@ -253,7 +250,6 @@ static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
   ierr = SNESSolve(ts->snes, NULL, update);CHKERRQ(ierr);
   ierr = VecCopy(update, sol);CHKERRQ(ierr);
   ierr = TSPostStage(ts, ts->ptime, 0, &sol);CHKERRQ(ierr);
-  ts->steps++;
   PetscFunctionReturn(0);
 }
 
@@ -364,7 +360,7 @@ static PetscErrorCode TSInterpolate_Mimex(TS ts,PetscReal t,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeLinearStability_Mimex"
-PetscErrorCode TSComputeLinearStability_Mimex(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
+static PetscErrorCode TSComputeLinearStability_Mimex(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
 {
   PetscFunctionBegin;
   *yr = 1.0 + xr;

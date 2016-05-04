@@ -52,7 +52,9 @@ else
 endif
 libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(libpetscall_soname),$(libpetscall_static))
 
-generated := $(PETSC_ARCH)/lib/petsc/conf/files
+generated      := $(PETSC_ARCH)/lib/petsc/conf/files
+petscconf      := $(PETSC_ARCH)/include/petscconf.h
+petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
 all : $(generated) $(libpetscall)
 
@@ -73,7 +75,7 @@ else				# Show the full command line
   quiet = $($1)
 endif
 
-$(PETSC_ARCH)/lib/petsc/conf/files : $(PETSC_ARCH)/include/petscconf.h
+$(generated) : $(petscconf) $(petscvariables)
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 -include $(generated)
@@ -87,7 +89,7 @@ endif
 PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
 PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
 PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
-PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
+PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
 langs := c cu cxx F
@@ -177,7 +179,6 @@ endif
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
   MPIUNI_MOD := $(MODDIR)/mpi.mod
-  $(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o: $(PETSC_ARCH)/include/petscconf.h src/sys/mpiuni/f90-mod/mpiunimod.F
 endif
 $(OBJDIR)/src/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o)
 $(OBJDIR)/src/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
@@ -186,6 +187,9 @@ $(OBJDIR)/src/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/src/mat/f90-mod/petscmatmo
 $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
 $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o
 $(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o
+
+# all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
+$(srcs.o) : $(petscvariables)
 
 %/.DIR :
 	@mkdir -p $(@D)

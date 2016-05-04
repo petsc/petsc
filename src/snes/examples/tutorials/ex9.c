@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   DMDALocalInfo       info;
   PetscReal           error1,errorinf;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD,
                       DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,

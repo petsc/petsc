@@ -10,7 +10,7 @@ multilevel nonlinear solvers.\n\n\n";
 #include <petscviewerhdf5.h>
 
 typedef enum {NEUMANN, DIRICHLET, NONE} BCType;
-typedef enum {RUN_FULL, RUN_TEST, RUN_PERF} RunType;
+typedef enum {RUN_FULL, RUN_EXACT, RUN_TEST, RUN_PERF} RunType;
 typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR} CoeffType;
 
 typedef struct {
@@ -275,7 +275,7 @@ static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscRe
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
-  const char    *runTypes[3] = {"full", "test", "perf"};
+  const char    *runTypes[4] = {"full", "exact", "test", "perf"};
   const char    *coeffTypes[4] = {"none", "analytic", "field", "nonlinear"};
   PetscInt       bc, run, coeff;
   PetscBool      flg;
@@ -753,7 +753,7 @@ int main(int argc, char **argv)
   PetscBool      isFAS;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
@@ -853,10 +853,12 @@ int main(int argc, char **argv)
       }
     }
   }
-  if (user.runType == RUN_FULL) {
+  if (user.runType == RUN_FULL || user.runType == RUN_EXACT) {
     PetscErrorCode (*initialGuess[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {zero};
 
-    ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+    if (user.runType == RUN_FULL) {
+      ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+    }
     if (user.debug) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -926,5 +928,5 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

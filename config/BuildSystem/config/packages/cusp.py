@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     self.libdir          = ''
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
+    self.complex         = 0   # Currently CUSP with complex numbers is not supported
     self.CUSPVersion     = '0400' # Minimal cusp version is 0.4 
     self.CUSPVersionStr  = str(int(self.CUSPVersion)/1000) + '.' + str(int(self.CUSPVersion)%100)
     return

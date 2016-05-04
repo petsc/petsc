@@ -113,7 +113,7 @@ PetscErrorCode PetscViewerXMLPutDouble(PetscViewer viewer, const char *name, con
 
   PetscFunctionBegin;
   if (!desc) {
-    ierr = PetscSNPrintf(buffer,sizeof(buffer), "%*s<%s>%s</%s>\n", XMLSectionDepth, "", name, format, name);
+    ierr = PetscSNPrintf(buffer,sizeof(buffer), "%*s<%s>%s</%s>\n", XMLSectionDepth, "", name, format, name);CHKERRQ(ierr);
   } else {
     ierr = PetscSNPrintf(buffer,sizeof(buffer), "%*s<%s desc=\"%s\">%s</%s>\n", XMLSectionDepth, "", name, desc, format, name);CHKERRQ(ierr);
   }

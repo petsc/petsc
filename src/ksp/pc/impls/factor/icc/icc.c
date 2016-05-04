@@ -10,6 +10,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   PetscErrorCode ierr;
   MatInfo        info;
   Mat            F;
+  const MatSolverPackage stype;
 
   PetscFunctionBegin;
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
@@ -40,6 +41,11 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   ierr = MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   if (F->errortype) { /* FactorNumeric() fails */
     pc->failedreason = (PCFailedReason)F->errortype;
+  }
+
+  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  if (!stype) {
+    ierr = PCFactorSetMatSolverPackage(pc,((PC_Factor*)icc)->fact->solvertype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

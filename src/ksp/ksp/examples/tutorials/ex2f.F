@@ -50,6 +50,7 @@
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscviewer.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -83,6 +84,7 @@
       Mat         A
       KSP         ksp
       PetscRandom rctx
+      PetscViewerAndFormat vf;
 
 !  These variables are not currently used.
 !      PC          pc
@@ -256,7 +258,14 @@
      &                         '-my_ksp_monitor',flg,ierr)
       if (flg) then
         call KSPMonitorSet(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
-     &                     PETSC_NULL_FUNCTION,ierr)
+     &        PETSC_NULL_FUNCTION,ierr)
+!
+!     Also use the default KSP monitor routine showing how it may be used from Fortran
+!
+        call PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,      &
+     &          PETSC_VIEWER_DEFAULT,vf,ierr)
+        call KSPMonitorSet(ksp,KSPMonitorDefault,vf,                    &
+     &                     PetscViewerAndFormatDestroy,ierr)
       endif
 
 

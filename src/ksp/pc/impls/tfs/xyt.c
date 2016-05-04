@@ -566,8 +566,7 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
 
   /* x  = X.Y^T.b */
   /* uu = Y^T.b */
-  for (y_ptr=y,iptr=ycol_indices; *iptr!=-1; y_ptr+=len)
-  {
+  for (y_ptr=y,iptr=ycol_indices; *iptr!=-1; y_ptr+=len) {
     off       =*iptr++;
     len       =*iptr++;
     ierr      = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
@@ -644,10 +643,8 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",level);
   ierr = PetscInfo(0,"done first PCTFS_gs_gop_hc\n");CHKERRQ(ierr);
   PCTFS_rvec_zero(rsum,2);
-  for (ct=i=0; i<n; i++)
-  {
+  for (i=0; i<n; i++) {
     if (lhs[i]!=0.0) { rsum[0]+=1.0/lhs[i]; rsum[1]+=lhs[i]; }
-
     if (lhs[i]!=1.0) shared=1;
   }
 
@@ -758,7 +755,6 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info*,PetscScalar*,PetscScalar*), void *grid_data)
 {
   mv_info *mvi;
-
 
   mvi              = (mv_info*)malloc(sizeof(mv_info));
   mvi->n           = n;

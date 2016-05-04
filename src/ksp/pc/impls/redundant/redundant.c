@@ -6,16 +6,37 @@
 #include <petscksp.h>           /*I "petscksp.h" I*/
 
 typedef struct {
-  KSP          ksp;
-  PC           pc;                   /* actual preconditioner used on each processor */
-  Vec          xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of PetscObjectComm((PetscObject)pc) */
-  Vec          xdup,ydup;            /* parallel vector that congregates xsub or ysub facilitating vector scattering */
-  Mat          pmats;                /* matrix and optional preconditioner matrix belong to a subcommunicator */
-  VecScatter   scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
-  PetscBool    useparallelmat;
-  PetscSubcomm psubcomm;
-  PetscInt     nsubcomm;           /* num of data structure PetscSubcomm */
+  KSP                ksp;
+  PC                 pc;                   /* actual preconditioner used on each processor */
+  Vec                xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of PetscObjectComm((PetscObject)pc) */
+  Vec                xdup,ydup;            /* parallel vector that congregates xsub or ysub facilitating vector scattering */
+  Mat                pmats;                /* matrix and optional preconditioner matrix belong to a subcommunicator */
+  VecScatter         scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
+  PetscBool          useparallelmat;
+  PetscSubcomm       psubcomm;
+  PetscInt           nsubcomm;             /* num of data structure PetscSubcomm */
+  PetscBool          shifttypeset;
+  MatFactorShiftType shifttype;
 } PC_Redundant;
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorSetShiftType_Redundant"
+PetscErrorCode  PCFactorSetShiftType_Redundant(PC pc,MatFactorShiftType shifttype)
+{
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (red->ksp) {
+    PC pc;
+    ierr = KSPGetPC(red->ksp,&pc);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftType(pc,shifttype);CHKERRQ(ierr);
+  } else {
+    red->shifttypeset = PETSC_TRUE;
+    red->shifttype    = shifttype;
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCView_Redundant"
@@ -411,7 +432,10 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
     ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
-  
+    if (red->shifttypeset) {
+      ierr = PCFactorSetShiftType(red->pc,red->shifttype);CHKERRQ(ierr);
+      red->shifttypeset = PETSC_FALSE;
+    }
     ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
     ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
   }
@@ -443,7 +467,7 @@ PetscErrorCode PCRedundantGetKSP(PC pc,KSP *innerksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(innerksp,2);
-  ierr = PetscTryMethod(pc,"PCRedundantGetKSP_C",(PC,KSP*),(pc,innerksp));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCRedundantGetKSP_C",(PC,KSP*),(pc,innerksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -485,7 +509,7 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat)  PetscValidPointer(mat,2);
   if (pmat) PetscValidPointer(pmat,3);
-  ierr = PetscTryMethod(pc,"PCRedundantGetOperators_C",(PC,Mat*,Mat*),(pc,mat,pmat));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCRedundantGetOperators_C",(PC,Mat*,Mat*),(pc,mat,pmat));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -502,6 +526,8 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
    Level: intermediate
 
    Notes: The default KSP is preonly and the default PC is LU.
+
+   PCFactorSetShiftType() applied to this PC will convey they shift type into the inner PC if it is factorization based.
 
    Developer Notes: Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
 
@@ -537,6 +563,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetNumber_C",PCRedundantSetNumber_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetKSP_C",PCRedundantGetKSP_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetOperators_C",PCRedundantGetOperators_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

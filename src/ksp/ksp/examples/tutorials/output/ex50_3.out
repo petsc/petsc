@@ -1,84 +1,84 @@
   0 KSP Residual norm 0.00155763 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   1 KSP Residual norm 0.0011563 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   2 KSP Residual norm 0.000993389 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   3 KSP Residual norm 0.000952171 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   4 KSP Residual norm 0.000949391 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   5 KSP Residual norm 0.000792457 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   6 KSP Residual norm 0.000697745 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   7 KSP Residual norm 0.000484358 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   8 KSP Residual norm 0.000300552 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
   9 KSP Residual norm 0.000131759 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  10 KSP Residual norm 6.73986e-05 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  11 KSP Residual norm 5.43671e-05 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  12 KSP Residual norm 3.59469e-05 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  13 KSP Residual norm 2.25574e-05 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  14 KSP Residual norm 1.77549e-05 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  15 KSP Residual norm 1.2293e-05 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  16 KSP Residual norm 6.84465e-06 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  17 KSP Residual norm 4.50069e-06 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  18 KSP Residual norm 2.04863e-06 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  19 KSP Residual norm 8.13744e-07 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  20 KSP Residual norm 8.0942e-07 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  21 KSP Residual norm 5.6214e-07 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  22 KSP Residual norm 4.05378e-07 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  23 KSP Residual norm 2.04857e-07 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  24 KSP Residual norm 8.73485e-08 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  25 KSP Residual norm 8.13089e-08 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  26 KSP Residual norm 1.57171e-08 
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
-    Linear mg_coarse_ solve converged due to CONVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
+    Linear mg_coarse_ solve did not converge due to DIVERGED_ITS iterations 5
  27 KSP Residual norm 1.17067e-08 

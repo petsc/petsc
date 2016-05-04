@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   Tao            tao;       /* Tao context */
   AppCtx         user;      /* user-defined application context */
 
-  PetscInitialize(&argc,&argv,(char*)0,0);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,0);CHKERRQ(ierr);
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0;
@@ -48,6 +48,6 @@ int main(int argc,char **argv)
   ierr = TaoDestroy(&tao); CHKERRQ(ierr);
   ierr = VecDestroy(&x); CHKERRQ(ierr);
   ierr = MatDestroy(&H); CHKERRQ(ierr);
-
-  PetscFinalize();
+  ierr = PetscFinalize();
+  return ierr;
 }

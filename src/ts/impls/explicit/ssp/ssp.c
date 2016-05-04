@@ -199,8 +199,11 @@ static PetscErrorCode TSSSPStep_RK_10_4(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 #define __FUNCT__ "TSSetUp_SSP"
 static PetscErrorCode TSSetUp_SSP(TS ts)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -210,16 +213,25 @@ static PetscErrorCode TSStep_SSP(TS ts)
 {
   TS_SSP         *ssp = (TS_SSP*)ts->data;
   Vec            sol  = ts->vec_sol;
+  PetscBool      stageok,accept = PETSC_TRUE;
+  PetscReal      next_time_step = ts->time_step;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
   ierr = (*ssp->onestep)(ts,ts->ptime,ts->time_step,sol);CHKERRQ(ierr);
+  ierr = TSPostStage(ts,ts->ptime,0,&sol);CHKERRQ(ierr);
+  ierr = TSAdaptCheckStage(ts->adapt,ts,ts->ptime+ts->time_step,sol,&stageok);CHKERRQ(ierr);
+  if(!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
+
+  ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
+  if (!accept) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
+
   ts->ptime += ts->time_step;
-  ts->steps++;
+  ts->time_step = next_time_step;
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TSReset_SSP"
 static PetscErrorCode TSReset_SSP(TS ts)
@@ -305,7 +317,7 @@ PetscErrorCode TSSSPGetType(TS ts,TSSSPType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSSSPGetType_C",(TS,TSSSPType*),(ts,type));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ts,"TSSSPGetType_C",(TS,TSSSPType*),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -361,7 +373,7 @@ PetscErrorCode TSSSPGetNumStages(TS ts,PetscInt *nstages)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSSSPGetNumStages_C",(TS,PetscInt*),(ts,nstages));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ts,"TSSSPGetNumStages_C",(TS,PetscInt*),(ts,nstages));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -437,7 +449,13 @@ static PetscErrorCode TSSetFromOptions_SSP(PetscOptionItems *PetscOptionsObject,
 #define __FUNCT__ "TSView_SSP"
 static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
 {
+  TS_SSP         *ssp = (TS_SSP*)ts->data;
+  PetscBool      ascii;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&ascii);CHKERRQ(ierr);
+  if (ascii) {ierr = PetscViewerASCIIPrintf(viewer,"  Scheme: %s\n",ssp->type_name);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

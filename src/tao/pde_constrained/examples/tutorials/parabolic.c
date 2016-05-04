@@ -14,7 +14,7 @@
    Routines: TaoSetFromOptions();
    Routines: TaoSetHistory(); TaoGetHistory();
    Routines: TaoSolve();
-   Routines: TaoGetConvergedReason(); TaoDestroy();
+   Routines: TaoDestroy();
    Processors: n
 T*/
 
@@ -119,7 +119,6 @@ int main(int argc, char **argv)
   PetscErrorCode     ierr;
   Vec                x,x0;
   Tao                tao;
-  TaoConvergedReason reason;
   AppCtx             user;
   IS                 is_allstate,is_alldesign;
   PetscInt           lo,hi,hi2,lo2,ksp_old;
@@ -231,20 +230,14 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%D\n",user.ksp_its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"KSP iterations per trial: ");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%D\n",(user.ksp_its-user.ksp_its_initial)/ntests);CHKERRQ(ierr);
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
 
-  if (reason < 0) {
-    ierr = PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscPrintf(MPI_COMM_WORLD, "Optimization terminated with status %D.\n", reason);CHKERRQ(ierr);
-  }
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&x0);CHKERRQ(ierr);
   ierr = ParabolicDestroy(&user);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -971,7 +964,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatSetFromOptions(user->L);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(user->L,2,NULL,2,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->L,2,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(user->L,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->L,&istart,&iend);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
     if (i<m/3){
@@ -1081,7 +1074,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = PCShellSetContext(user->prec,user);CHKERRQ(ierr);
 
   /* Create scatter from y to y_1,y_2,...,y_nt */
-  ierr = PetscMalloc1(user->nt*user->m,&user->yi_scatter);
+  ierr = PetscMalloc1(user->nt*user->m,&user->yi_scatter);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&yi);CHKERRQ(ierr);
   ierr = VecSetSizes(yi,PETSC_DECIDE,user->mx*user->mx*user->mx);CHKERRQ(ierr);
   ierr = VecSetFromOptions(yi);CHKERRQ(ierr);
@@ -1102,7 +1095,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecDestroy(&yi);CHKERRQ(ierr);
 
   /* Create scatter from d to d_1,d_2,...,d_ns */
-  ierr = PetscMalloc1(user->ns*user->ndata,&user->di_scatter);
+  ierr = PetscMalloc1(user->ns*user->ndata,&user->di_scatter);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&di);CHKERRQ(ierr);
   ierr = VecSetSizes(di,PETSC_DECIDE,user->ndata);CHKERRQ(ierr);
   ierr = VecSetFromOptions(di);CHKERRQ(ierr);
@@ -1134,8 +1127,8 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecSetFromOptions(user->ytrue);CHKERRQ(ierr);
 
   /* First compute Av_u = Av*exp(-u) */
-  ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->utrue); /*  Note: user->utrue */
+  ierr = VecSet(user->uwork,0);CHKERRQ(ierr);
+  ierr = VecAXPY(user->uwork,-1.0,user->utrue);CHKERRQ(ierr); /*  Note: user->utrue */
   ierr = VecExp(user->uwork);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 
@@ -1162,9 +1155,9 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   /* Initial guess y0 for state given u0 */
 
   /* First compute Av_u = Av*exp(-u) */
-  ierr = VecSet(user->uwork,0);
-  ierr = VecAXPY(user->uwork,-1.0,user->u); /*  Note: user->u */
-  ierr = VecExp(user->uwork);CHKERRQ(ierr);
+  ierr = VecSet(user->uwork,0);CHKERRQ(ierr);
+  ierr = VecAXPY(user->uwork,-1.0,user->u);CHKERRQ(ierr); /*  Note: user->u */
+  ierr = VecExp(user->uwork);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 
   /* Next form DSG = Div*S*Grad */
@@ -1197,7 +1190,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
     z[i] = h*(i+0.5);
   }
 
-  ierr = MatGetOwnershipRange(user->Qblock,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->Qblock,&istart,&iend);CHKERRQ(ierr);
   nx = user->mx; ny = user->mx; nz = user->mx;
   for (i=istart; i<iend; i++){
     xri = xr[i];
@@ -1284,7 +1277,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = Scatter_i(user->ywork,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
   for (j=0; j<user->ns; j++){
     i = user->sample_times[j];
-    ierr = MatMult(user->Qblock,user->yiwork[i],user->di[j]);
+    ierr = MatMult(user->Qblock,user->yiwork[i],user->di[j]);CHKERRQ(ierr);
   }
   ierr = Gather_i(user->d,user->di,user->di_scatter,user->ns);CHKERRQ(ierr);
 

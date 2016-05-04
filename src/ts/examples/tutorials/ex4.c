@@ -109,7 +109,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr        = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr        = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   appctx.comm = PETSC_COMM_WORLD;
 
   m               = 60;
@@ -280,7 +280,7 @@ int main(int argc,char **argv)
          options are chosen (e.g., -log_summary).
   */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -437,6 +437,8 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr   = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = PetscSqrtReal(appctx->h)*norm_2;
   ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
+  if (norm_2   < 1e-14) norm_2   = 0;
+  if (norm_max < 1e-14) norm_max = 0;
 
   /*
      PetscPrintf() causes only the first processor in this

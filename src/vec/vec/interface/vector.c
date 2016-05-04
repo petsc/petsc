@@ -15,6 +15,8 @@ PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_Reduce
 PetscLogEvent VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUSPCopyFromGPU, VEC_CUSPCopyToGPU;
 PetscLogEvent VEC_CUSPCopyFromGPUSome, VEC_CUSPCopyToGPUSome;
 PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
+PetscLogEvent VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
+PetscLogEvent VEC_CUDACopyFromGPUSome, VEC_CUDACopyToGPUSome;
 
 extern PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 #undef __FUNCT__
@@ -470,7 +472,7 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidPointer(V,3);
   PetscValidType(v,1);
-  ierr = (*v->ops->duplicatevecs)(v, m,V);CHKERRQ(ierr);
+  ierr = (*v->ops->duplicatevecs)(v,m,V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -499,14 +501,12 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
   PetscFunctionBegin;
   PetscValidPointer(vv,1);
-  if (!*vv) PetscFunctionReturn(0);
+  if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
+  if (!m || !*vv) {*vv  = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
   PetscValidType(**vv,1);
-  if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
-  if (!m) PetscFunctionReturn(0);
-  if (!*vv) PetscFunctionReturn(0);
   ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
-  *vv  = 0;
+  *vv  = NULL;
   PetscFunctionReturn(0);
 }
 

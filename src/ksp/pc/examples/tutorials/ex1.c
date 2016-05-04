@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   PetscInt           i,j,its;
   PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   comm = MPI_COMM_SELF;
 
   /*
@@ -117,6 +117,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&D);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = KSPDestroy(&solver);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

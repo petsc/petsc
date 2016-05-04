@@ -75,7 +75,6 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
-  it = 0;
   VecCopy(R,lcd->P[0]);
 
   while (!ksp->reason && ksp->its < ksp->max_it) {

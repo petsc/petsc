@@ -55,7 +55,6 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->user              = NULL;
   t->ptime             = 0.0;
   t->time_step         = 0.1;
-  t->time_step_orig    = 0.1;
   t->max_time          = 5.0;
   t->steprollback      = PETSC_FALSE;
   t->steps             = 0;
@@ -80,8 +79,10 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->vec_costintegral = NULL;
   t->trajectory       = NULL;
 
-  /* all methods that do not do adaptivity should delete this object in their constructor */
-  ierr = TSGetAdapt(t,NULL);CHKERRQ(ierr);
+  /* All methods that do not do adaptivity at all
+   * should delete this object in their constructor */
+  ierr = TSGetAdapt(t,&t->adapt);CHKERRQ(ierr);
+
   *ts = t;
   PetscFunctionReturn(0);
 }

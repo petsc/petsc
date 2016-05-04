@@ -69,7 +69,12 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) {
+    if (bcgs->guess) {
+      ierr = VecAXPY(X,1.0,bcgs->guess);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP);CHKERRQ(ierr);

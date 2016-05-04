@@ -9,7 +9,6 @@ if __name__ == '__main__':
     '--download-moab',
     '--download-mpich',
     '--download-netcdf',
-    '--download-netcdf-cxx',
     '--with-clanguage=c++',
     'PETSC_ARCH=arch-moab',
   ]

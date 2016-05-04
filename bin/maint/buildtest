@@ -74,18 +74,35 @@ if ( $? ) then
 else
   set BUILDER="yes"
 endif
+#
+# check if PETSC_ARCH has name analyzer - if so enable build with clang static analyzer
+#
+echo $PETSC_ARCH | grep analyzer > /dev/null
+if ( $? ) then
+  set ANALYZER=""
+  set ANALYZER_PCC=""
+else
+  set ANALYZER="scan-build -o analyzer-results-dir"
+  #set ANALYZER_PCC="PCC=/nfs2/petsc/soft/linux-Ubuntu_12.04-x86_64/clang-3.8.0/libexec/ccc-analyzer"
+  set ANALYZER_PCC=P`scan-build env |grep ^CC=`
+endif
 set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 
 if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all-legacy test >>& build.log
   set err=$?
 else
-  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
+  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
   set err=$?
 endif
 echo '****************************************************' >>& build.log
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
-#if ( $err ) exit
+if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
+#
+if ( "${ANALYZER}" != "" ) then
+  mv analyzer-results-dir/* analyzer-build-results
+endif
+
 #
 # Run examples
 #
@@ -106,7 +123,7 @@ else
   setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/bin/maint/petsc-val.supp"
 endif
 rm -f examples.log
-echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND}  `date` " > examples.log
+echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
 git log -1 >>& examples.log
 if ( -f /usr/bin/cygpath ) then
   set wnPETSC_DIR=`cygpath -m ${nPETSC_DIR}`
@@ -116,9 +133,13 @@ endif
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py regression >>& examples.log
 else
-  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$wnPETSC_DIR  alltests TESTMODE=$TESTMODE "${VALGRIND}" |& grep -v 'up to date' >>& examples.log
+  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$wnPETSC_DIR alltests TESTMODE=$TESTMODE "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
 endif
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
+
+if ( "${ANALYZER}" != "" ) then
+  mv analyzer-results-dir/* analyzer-ex-results
+endif
 
 if ( "${GCOV}" != "" ) then
   rm -f gcov.log

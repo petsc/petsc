@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   TS             ts;
   Vec            tsrhs,U;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
@@ -83,8 +83,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = SNESDestroy(&ctx.snes);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 #undef __FUNCT__

@@ -628,6 +628,9 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_SuperLU;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERSUPERLU,&B->solvertype);CHKERRQ(ierr);
+
   B->ops->destroy     = MatDestroy_SuperLU;
   B->ops->view        = MatView_SuperLU;
   B->ops->getdiagonal = MatGetDiagonal_SuperLU;

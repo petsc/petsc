@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   PetscInt       its,n = 5,i;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-variant",&user.variant);CHKERRQ(ierr);
   h    = 1.0/(n-1);
@@ -94,8 +94,7 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&monP.viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
