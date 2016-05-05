@@ -707,6 +707,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   ierr = VecDestroy(&cglobal);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1018,7 +1019,6 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
   ierr = MatSetBlockSize(*A,bs);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATIS);CHKERRQ(ierr);
-  ierr = MatSetUp(*A);CHKERRQ(ierr);
   if (rmap && cmap) {
     ierr = MatSetLocalToGlobalMapping(*A,rmap,cmap);CHKERRQ(ierr);
   } else if (!rmap) {
