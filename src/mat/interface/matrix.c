@@ -2770,6 +2770,21 @@ PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetInfo_External"
+/*
+   This is used by external packages where it is not easy to get the info from the actual 
+   matrix factorization.
+*/
+PetscErrorCode MatGetInfo_External(Mat A,MatInfoType flag,MatInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(info,sizeof(MatInfo));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------*/
 
 #undef __FUNCT__

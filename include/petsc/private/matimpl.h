@@ -340,6 +340,7 @@ PETSC_INTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,
 PETSC_INTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
 PETSC_INTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
 PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
+PETSC_INTERN PetscErrorCode MatGetInfo_External(Mat,MatInfoType,MatInfo*);
 
 typedef struct {
   PetscInt   dim;

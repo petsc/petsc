@@ -536,17 +536,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInfo_Superlu"
-static PetscErrorCode MatGetInfo_Superlu(Mat A,MatInfoType flag,MatInfo *info)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscMemzero(info,sizeof(MatInfo));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*MC
   MATSOLVERSUPERLU = "superlu" - A solver package providing solvers LU and ILU for sequential matrices
   via the external package SuperLU.
@@ -604,7 +593,7 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SuperLU;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_SuperLU;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
-  B->ops->getinfo = MatGetInfo_Superlu;
+  B->ops->getinfo = MatGetInfo_External;
 
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERSUPERLU,&B->solvertype);CHKERRQ(ierr);

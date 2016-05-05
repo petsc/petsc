@@ -462,17 +462,6 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const Mat
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetInfo_SuperLU_DIST"
-static PetscErrorCode MatGetInfo_SuperLU_DIST(Mat A,MatInfoType flag,MatInfo *info)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscMemzero(info,sizeof(MatInfo));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatFactorInfo_SuperLU_DIST"
 static PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
@@ -565,7 +554,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,M,N);CHKERRQ(ierr);
   ierr = PetscStrallocpy("superlu_dist",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
-  B->ops->getinfo          = MatGetInfo_SuperLU_DIST;
+  B->ops->getinfo          = MatGetInfo_External;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->view             = MatView_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_SuperLU_DIST;
