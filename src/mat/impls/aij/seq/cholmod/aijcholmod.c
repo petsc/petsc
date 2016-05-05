@@ -71,17 +71,17 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = PetscStrallocpy("cholmod",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
-
   ierr = PetscNewLog(B,&chol);CHKERRQ(ierr);
 
   chol->Wrap    = MatWrapCholmod_seqaij;
-  chol->Destroy = MatDestroy_SeqAIJ;
-  B->spptr      = chol;
+  B->data       = chol;
 
+  B->ops->getinfo                = MatGetInfo_External;
   B->ops->matsolve               = NULL;
   B->ops->view                   = MatView_CHOLMOD;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
   B->ops->destroy                = MatDestroy_CHOLMOD;
+  B->ops->getinfo                = MatGetInfo_External;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_cholmod);CHKERRQ(ierr);
 
