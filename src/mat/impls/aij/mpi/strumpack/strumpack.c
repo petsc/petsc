@@ -3,11 +3,11 @@
 #include <StrumpackSparseSolver.h>
 
 /*
-    GLOBAL - The sparse matrix and right hand side are all stored initially on process 0. Should be called centralized
-    DISTRIBUTED - The sparse matrix and right hand size are initially stored across the entire MPI communicator.
+    CENTRALIZED - STRUMPACK expects the entire sparse matrix and right-hand side on every process.
+    DISTRIBUTED - STRUMPACK expects the sparse matrix and right-hand side to be distributed across the entire MPI communicator.
 */
-typedef enum {GLOBAL, DISTRIBUTED} STRUMPACK_MatInputMode;
-const char *STRUMPACK_MatInputModes[] = {"GLOBAL","DISTRIBUTED","STRUMPACK_MatInputMode","PETSC_",0};
+typedef enum {CENTRALIZED, DISTRIBUTED} STRUMPACK_MatInputMode;
+const char *STRUMPACK_MatInputModes[] = {"CENTRALIZED","DISTRIBUTED","STRUMPACK_MatInputMode","PETSC_",0};
 
 typedef struct {
   STRUMPACK_SparseSolver S;
@@ -69,7 +69,7 @@ PetscErrorCode MatSolve_STRUMPACK_MPI(Mat A,Vec b_mpi,Vec x)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  if (size > 1 && sp->MatInputMode == GLOBAL) {
+  if (size > 1 && sp->MatInputMode == CENTRALIZED) {
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
     ierr = VecGetArray(x_seq,&xptr);CHKERRQ(ierr);
     /* global mat input, convert b to b_seq */
@@ -93,7 +93,7 @@ PetscErrorCode MatSolve_STRUMPACK_MPI(Mat A,Vec b_mpi,Vec x)
     else                                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: solve failed");
   }
 
-  if (size > 1 && sp->MatInputMode == GLOBAL) {
+  if (size > 1 && sp->MatInputMode == CENTRALIZED) {
     ierr = VecRestoreArrayRead(b_seq,&bptr);CHKERRQ(ierr);
     ierr = VecDestroy(&b_seq);CHKERRQ(ierr);
     /* convert seq x to mpi x */
@@ -143,7 +143,7 @@ PetscErrorCode MatLUFactorNumeric_STRUMPACK_MPI(Mat F,Mat A,const MatFactorInfo 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
 
-  if (sp->MatInputMode == GLOBAL) { /* global mat input */
+  if (sp->MatInputMode == CENTRALIZED) { /* global mat input */
     if (size > 1) { /* convert mpi A to seq mat A */
       ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
       ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
@@ -178,7 +178,7 @@ PetscErrorCode MatLUFactorNumeric_STRUMPACK_MPI(Mat F,Mat A,const MatFactorInfo 
     else                                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: factorization failed");
   }
 
-  if (sp->MatInputMode == GLOBAL && size > 1) {
+  if (sp->MatInputMode == CENTRALIZED && size > 1) {
     ierr = MatDestroy(&A_seq);CHKERRQ(ierr);
   }
 
@@ -248,10 +248,10 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack_mpi(Mat A,MatFactorType f
 
   ierr = PetscOptionsEnum("-mat_strumpack_mpi_matinput","Matrix input mode (global or distributed)","None",STRUMPACK_MatInputModes,
                           (PetscEnum)sp->MatInputMode,(PetscEnum*)&sp->MatInputMode,NULL);CHKERRQ(ierr);
-  if (sp->MatInputMode == DISTRIBUTED && size == 1) sp->MatInputMode = GLOBAL;
+  if (sp->MatInputMode == DISTRIBUTED && size == 1) sp->MatInputMode = CENTRALIZED;
   if (sp->MatInputMode == DISTRIBUTED) {
     iface = STRUMPACK_MPI_DIST;
-  } else if (sp->MatInputMode == GLOBAL) {
+  } else if (sp->MatInputMode == CENTRALIZED) {
     iface = STRUMPACK_MPI;
   }
   if (PetscLogPrintInfo) verb = PETSC_TRUE;
