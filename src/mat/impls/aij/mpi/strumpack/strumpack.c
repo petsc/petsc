@@ -91,7 +91,6 @@ PetscErrorCode MatSolve_STRUMPACK_MPI(Mat A,Vec b_mpi,Vec x)
     if (sp_err == STRUMPACK_MATRIX_NOT_SET)        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
     else if (sp_err == STRUMPACK_REORDERING_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
     else                                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: solve failed");
-    }
   }
 
   if (size > 1 && sp->MatInputMode == GLOBAL) {

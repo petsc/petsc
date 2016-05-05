@@ -124,7 +124,6 @@ PetscErrorCode MatSolve_STRUMPACK_Private(Mat A,Vec b,Vec x)
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
   if (sp_err == STRUMPACK_MATRIX_NOT_SET)        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
   else if (sp_err == STRUMPACK_REORDERING_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
-  }
   PetscFunctionReturn(0);
 }
 
