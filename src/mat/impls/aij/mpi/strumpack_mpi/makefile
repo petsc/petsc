@@ -4,13 +4,13 @@ ALL: lib
 
 CFLAGS   = ${STRUMPACK_INCLUDE}
 FFLAGS   =
-SOURCEC	 = strumpack.c
+SOURCEC	 = strumpack_mpi.c
 SOURCEF	 =
 SOURCEH	 =
 LIBBASE	 = libpetscmat
 DIRS	 =
 MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/aij/mpi/strumpack/
+LOCDIR	 = src/mat/impls/aij/mpi/strumpack_mpi/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
