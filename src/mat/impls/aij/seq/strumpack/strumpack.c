@@ -36,9 +36,8 @@ PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorInfo *inf
   PetscFunctionBegin;
 
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) { /* check if matrix is square! */
-    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type: STRUMPACK only supports square matrices");
-  }
+  /* check if matrix is square! */
+  if (m != n) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type: STRUMPACK only supports square matrices");
 
   /* Numerical factorization */
   if (F->factortype == MAT_FACTOR_LU) {
@@ -48,13 +47,9 @@ PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorInfo *inf
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
   if (sp_err != STRUMPACK_SUCCESS) {
-    if (sp_err == STRUMPACK_MATRIX_NOT_SET) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
-    } else if (sp_err == STRUMPACK_REORDERING_ERROR) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: factorization failed");
-    }
+    if (sp_err == STRUMPACK_MATRIX_NOT_SET)        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
+    else if (sp_err == STRUMPACK_REORDERING_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
+    else                                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: factorization failed");
   }
 
   F->ops->solve          = MatSolve_STRUMPACK;
@@ -127,10 +122,8 @@ PetscErrorCode MatSolve_STRUMPACK_Private(Mat A,Vec b,Vec x)
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   ierr = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
-  if (sp_err == STRUMPACK_MATRIX_NOT_SET) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
-  } else if (sp_err == STRUMPACK_REORDERING_ERROR) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
+  if (sp_err == STRUMPACK_MATRIX_NOT_SET)        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
+  else if (sp_err == STRUMPACK_REORDERING_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
   }
   PetscFunctionReturn(0);
 }
@@ -243,7 +236,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_strumpack(Mat A,MatFactorType ft
   else verb = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_strumpack_verbose","Print STRUMPACK information","None",verb,&verb,NULL);CHKERRQ(ierr);
 
-  PetscGetArgs(&argc,&args);
+  ierr = PetscGetArgs(&argc,&args);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #if defined(PETSC_USE_COMPLEX)

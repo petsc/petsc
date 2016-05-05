@@ -88,12 +88,9 @@ PetscErrorCode MatSolve_STRUMPACK_MPI(Mat A,Vec b_mpi,Vec x)
   PetscStackCall("STRUMPACK_solve",sp_err = STRUMPACK_solve(sp->S,(PetscScalar*)bptr,xptr,0));
 
   if (sp_err != STRUMPACK_SUCCESS) {
-    if (sp_err == STRUMPACK_MATRIX_NOT_SET) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
-    } else if (sp_err == STRUMPACK_REORDERING_ERROR) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: solve failed");
+    if (sp_err == STRUMPACK_MATRIX_NOT_SET)        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
+    else if (sp_err == STRUMPACK_REORDERING_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
+    else                                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: solve failed");
     }
   }
 
@@ -169,8 +166,7 @@ PetscErrorCode MatLUFactorNumeric_STRUMPACK_MPI(Mat F,Mat A,const MatFactorInfo 
     Mat_MPIAIJ *mat = (Mat_MPIAIJ*)A->data;
     A_d = (Mat_SeqAIJ*)(mat->A)->data;
     A_o = (Mat_SeqAIJ*)(mat->B)->data;
-    PetscStackCall("STRUMPACK_set_MPIAIJ_matrix",STRUMPACK_set_MPIAIJ_matrix(
-                     sp->S,&m,A_d->i,A_d->j,A_d->a,A_o->i,A_o->j,A_o->a,mat->garray));
+    PetscStackCall("STRUMPACK_set_MPIAIJ_matrix",STRUMPACK_set_MPIAIJ_matrix(sp->S,&m,A_d->i,A_d->j,A_d->a,A_o->i,A_o->j,A_o->a,mat->garray));
   }
 
   /* Reorder and Factor the matrix. */
@@ -178,13 +174,9 @@ PetscErrorCode MatLUFactorNumeric_STRUMPACK_MPI(Mat F,Mat A,const MatFactorInfo 
   PetscStackCall("STRUMPACK_reorder",sp_err = STRUMPACK_reorder(sp->S));
   PetscStackCall("STRUMPACK_factor",sp_err = STRUMPACK_factor(sp->S));
   if (sp_err != STRUMPACK_SUCCESS) {
-    if (sp_err == STRUMPACK_MATRIX_NOT_SET) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
-    } else if (sp_err == STRUMPACK_REORDERING_ERROR) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: factorization failed");
-    }
+    if (sp_err == STRUMPACK_MATRIX_NOT_SET)        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix was not set");
+    else if (sp_err == STRUMPACK_REORDERING_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
+    else                                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: factorization failed");
   }
 
   if (sp->MatInputMode == GLOBAL && size > 1) {
@@ -269,7 +261,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack_mpi(Mat A,MatFactorType f
 
   PetscOptionsEnd();
 
-  PetscGetArgs(&argc,&args);
+  ierr = PetscGetArgs(&argc,&args);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #if defined(PETSC_USE_COMPLEX)
