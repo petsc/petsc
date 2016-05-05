@@ -985,6 +985,24 @@ PetscErrorCode DMForestSetComputeAdaptivitySF(DM dm, PetscBool computeSF)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMForestTransferVec"
+PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmIn   ,DM_CLASSID  ,1);
+  PetscValidHeaderSpecific(vecIn  ,VEC_CLASSID ,2);
+  PetscValidHeaderSpecific(dmOut  ,DM_CLASSID  ,3);
+  PetscValidHeaderSpecific(vecOut ,VEC_CLASSID ,4);
+  forest = (DM_Forest *) dmIn->data;
+  if (!forest->transfervec) SETERRQ(PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"DMForestTransferVec() not implemented");
+  ierr = (forest->transfervec)(dmIn,vecIn,dmOut,vecOut);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMForestGetComputeAdaptivitySF"
 /*@
   DMForestGetComputeAdaptivitySF - Get whether transfer PetscSFs should be computed relating the cells of the

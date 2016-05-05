@@ -3956,6 +3956,28 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
   PetscFunctionReturn(0);
 }
 
+#define DMForestTransferVec_pforest _append_pforest(DMForestTransferVec)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMForestTransferVec_pforest)
+static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut)
+{
+  DM                adapt;
+  DM_Forest         *forestIn, *forestOut, *forestAdapt;
+  DM_Forest_pforest *pforestIn, *pforestOut;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr        = DMForestGetAdaptivityForest(dmOut,&adapt);CHKERRQ(ierr);
+  forestIn    = (DM_Forest *) dmIn->data;
+  forestOut   = (DM_Forest *) dmOut->data;
+  forestAdapt = (DM_Forest *) adapt ? adapt->data : NULL;
+
+  if (forestAdapt != forestIn) SETERRQ(PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"Only support transfer from pre-adaptivity to post-adaptivity right now");
+  pforestIn   = (DM_Forest_pforest *) forestIn->data;
+  pforestOut  = (DM_Forest_pforest *) forestOut->data;
+  PetscFunctionReturn(0);
+}
+
 #define DMCreateCoordinateDM_pforest _append_pforest(DMCreateCoordinateDM)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMCreateCoordinateDM_pforest)
@@ -4387,6 +4409,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   forest->data                      = pforest;
   forest->destroy                   = DMForestDestroy_pforest;
   forest->ftemplate                 = DMForestTemplate_pforest;
+  forest->transfervec               = DMForestTransferVec_pforest;
   forest->createcellchart           = DMForestCreateCellChart_pforest;
   forest->createcellsf              = DMForestCreateCellSF_pforest;
   pforest->topo                     = NULL;
