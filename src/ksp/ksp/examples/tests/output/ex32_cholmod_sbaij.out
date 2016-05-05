@@ -21,7 +21,6 @@ PC Object: 1 MPI processes
           package used to perform factorization: cholmod
           total: nonzeros=0, allocated nonzeros=0
           total number of mallocs used during MatSetValues calls =0
-              block size is -1
             CHOLMOD run parameters:
               Pack factors after symbolic factorization: TRUE
               Common.dbound            0.  (Smallest absolute value of diagonal entries of D)

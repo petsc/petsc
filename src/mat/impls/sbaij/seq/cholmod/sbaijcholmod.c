@@ -275,7 +275,6 @@ PETSC_INTERN PetscErrorCode  MatView_CHOLMOD(Mat F,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = MatView_SeqSBAIJ(F,viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
