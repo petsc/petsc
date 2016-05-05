@@ -738,6 +738,12 @@ PetscErrorCode MatSetUp(Mat A)
     ierr = PetscInfo(A,"Warning not preallocating matrix storage\n");CHKERRQ(ierr);
     ierr = (*A->ops->setup)(A);CHKERRQ(ierr);
   }
+  if (A->rmap->n < 0 || A->rmap->N < 0) {
+    ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  }
+  if (A->cmap->n < 0 || A->cmap->N < 0) {
+    ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  }
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
