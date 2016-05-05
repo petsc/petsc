@@ -15,7 +15,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   TSAdapt_GLEE  *basic = (TSAdapt_GLEE*)adapt->data;
   PetscErrorCode ierr;
   Vec            X,Y;
-  PetscReal      enorm,hfac_lte,h_lte,safety;
+  PetscReal      enorm,enorma,enormr,hfac_lte,h_lte,safety;
   PetscInt       order,stepno;
 
   PetscFunctionBegin;
@@ -27,7 +27,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
 
   safety = basic->safety;
-  ierr   = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
+  ierr   = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   if (enorm > 1.) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {

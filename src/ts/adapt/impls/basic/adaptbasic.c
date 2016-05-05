@@ -15,6 +15,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscInt       order  = PETSC_DECIDE;
   PetscReal      enorm  = -1;
+  PetscReal      enorma,enormr;
   PetscReal      safety = basic->safety;
   PetscReal      hfac_lte,h_lte;
   PetscErrorCode ierr;
@@ -31,7 +32,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
     if (!basic->Y) {ierr = VecDuplicate(ts->vec_sol,&basic->Y);CHKERRQ(ierr);}
     order = adapt->candidates.order[0];
     ierr = TSEvaluateStep(ts,order-1,basic->Y,NULL);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,basic->Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,basic->Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   }
 
   if (enorm < 0) {

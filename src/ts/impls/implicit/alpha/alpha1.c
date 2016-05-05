@@ -237,6 +237,7 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   Vec            X = th->X1;           /* X = solution */
   Vec            Y = th->vec_lte_work; /* Y = X + LTE  */
+  PetscReal      wltea,wlter;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -253,7 +254,7 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
     ierr = VecCopy(X,Y);CHKERRQ(ierr);
     ierr = VecMAXPY(Y,3,scal,vecs);CHKERRQ(ierr);
   }
-  ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte);CHKERRQ(ierr);
+  ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte,&wltea,&wlter);CHKERRQ(ierr);
   if (order) *order = 2;
   PetscFunctionReturn(0);
 }

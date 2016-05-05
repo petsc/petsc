@@ -426,6 +426,7 @@ static PetscErrorCode TSEvaluateWLTE_Theta(TS ts,NormType wnormtype,PetscInt *or
   TS_Theta       *th = (TS_Theta*)ts->data;
   Vec            X = ts->vec_sol;      /* X = solution */
   Vec            Y = th->vec_lte_work; /* Y = X + LTE  */
+  PetscReal      wltea,wlter;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -440,7 +441,7 @@ static PetscErrorCode TSEvaluateWLTE_Theta(TS ts,NormType wnormtype,PetscInt *or
     vecs[0] = X;    vecs[1] = th->X0;   vecs[2] = th->vec_sol_prev;
     ierr = VecCopy(X,Y);CHKERRQ(ierr);
     ierr = VecMAXPY(Y,3,scal,vecs);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte,&wltea,&wlter);CHKERRQ(ierr);
   }
   if (order) *order = 2;
   PetscFunctionReturn(0);
