@@ -208,66 +208,38 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_strumpack(Mat A,MatFactorType ft
   PetscBool              verb;
   PetscInt               argc;
   char                   **args;
+  const STRUMPACK_PRECISION table[2][2][2] = {{{STRUMPACK_FLOATCOMPLEX_64,STRUMPACK_DOUBLECOMPLEX_64},
+                                               {STRUMPACK_FLOAT_64,STRUMPACK_DOUBLECOMPLEX_64}},
+                                              {{STRUMPACK_FLOATCOMPLEX,STRUMPACK_DOUBLECOMPLEX},
+                                               {STRUMPACK_FLOAT,STRUMPACK_DOUBLE}}};
+  const STRUMPACK_PRECISION prec = table[(PETSC_SIZEOF_INT==8)?0:1][(PETSC_SCALAR==PETSC_COMPLEX)?0:1][(PETSC_REAL==PETSC_FLOAT)?0:1];
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
-
   B->ops->destroy     = MatDestroy_STRUMPACK;
   B->ops->view        = MatView_STRUMPACK;
   B->ops->getdiagonal = MatGetDiagonal_STRUMPACK;
   B->factortype       = ftype;
   B->assembled        = PETSC_TRUE;           /* required by -ksp_view */
   B->preallocated     = PETSC_TRUE;
-
   ierr = PetscNewLog(B,&sp);CHKERRQ(ierr);
-
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_strumpack);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"STRUMPACK Options","Mat");CHKERRQ(ierr);
   if (PetscLogPrintInfo) verb = PETSC_TRUE;
   else verb = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_strumpack_verbose","Print STRUMPACK information","None",verb,&verb,NULL);CHKERRQ(ierr);
+  PetscOptionsEnd();
 
   ierr = PetscGetArgs(&argc,&args);CHKERRQ(ierr);
-
-#if defined(PETSC_USE_64BIT_INDICES)
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,STRUMPACK_FLOATCOMPLEX_64,STRUMPACK_MT,argc,args,verb));
-#else
-  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,STRUMPACK_DOUBLECOMPLEX_64,STRUMPACK_MT,argc,args,verb));
-#endif
-#else
-#if defined(PETSC_USE_REAL_SINGLE)
-  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,STRUMPACK_FLOAT_64,STRUMPACK_MT,argc,args,verb));
-#else
-  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,STRUMPACK_DOUBLE_64,STRUMPACK_MT,argc,args,verb));
-#endif
-#endif
-#else
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,STRUMPACK_FLOATCOMPLEX,STRUMPACK_MT,argc,args,verb));
-#else
-  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,STRUMPACK_DOUBLECOMPLEX,STRUMPACK_MT,argc,args,verb));
-#endif
-#else
-#if defined(PETSC_USE_REAL_SINGLE)
-  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,STRUMPACK_FLOAT,STRUMPACK_MT,argc,args,verb));
-#else
-  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,STRUMPACK_DOUBLE,STRUMPACK_MT,argc,args,verb));
-#endif
-#endif
-#endif
-
-  PetscOptionsEnd();
+  PetscStackCall("STRUMPACK_init",STRUMPACK_init(sp,0,prec,STRUMPACK_MT,argc,args,verb));
+  PetscStackCall("STRUMPACK_set_from_options",STRUMPACK_set_from_options(*sp));
 
   B->spptr = sp;
   *F       = B;
