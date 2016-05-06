@@ -3485,55 +3485,44 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices_Injection(DM re
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeInjectorTree"
-PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFine, PetscInt *childIds, Mat mat)
+#define __FUNCT__ "DMPlexReferenceTreeGetInjector"
+static PetscErrorCode DMPlexReferenceTreeGetInjector(DM refTree,Mat *injRef)
 {
-  DM             refTree;
-  PetscSF        coarseToFineEmbedded;
-  const PetscInt *rootDegrees;
-  PetscSection   multiRootSec, rootIndicesSec, leafIndicesSec;
-  PetscSection   globalCoarse, globalFine;
-  PetscSection   localCoarse, localFine;
-  PetscSection   cSecRef;
-  PetscInt       *rootIndices, *leafIndices, *parentIndices, pRefStart, pRefEnd;
-  Mat            cMatRef, injRef;
-  PetscInt       numFields, numMulti, maxDof;
-  PetscInt       pStartC, pEndC, pStartF, pEndF, p;
-  PetscInt       *offsets, *offsetsCopy, *rowOffsets;
-  PetscLayout    rowMap, colMap;
-  PetscInt       rowStart, rowEnd, colStart, colEnd, *nnzD, *nnzO;
+  Mat            cMatRef;
   PetscObject    injRefObj;
-  PetscScalar    ***childrenMats=NULL ; /* gcc -O gives 'may be used uninitialized' warning'. Initializing to suppress this warning */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  /* get the templates for the fine-to-coarse injection from the reference tree */
-  ierr = DMPlexGetReferenceTree(coarse,&refTree);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(refTree,&cSecRef,&cMatRef);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(cSecRef,&pRefStart,&pRefEnd);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,NULL,&cMatRef);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)cMatRef,"DMPlexComputeInjectorTree_refTree",&injRefObj);CHKERRQ(ierr);
-  injRef = (Mat) injRefObj;
-  if (!injRef) {
-    ierr = DMPlexComputeInjectorReferenceTree(refTree,&injRef);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)cMatRef,"DMPlexComputeInjectorTree_refTree",(PetscObject)injRef);CHKERRQ(ierr);
+  *injRef = (Mat) injRefObj;
+  if (!*injRef) {
+    ierr = DMPlexComputeInjectorReferenceTree(refTree,injRef);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)cMatRef,"DMPlexComputeInjectorTree_refTree",(PetscObject)*injRef);CHKERRQ(ierr);
     /* there is now a reference in cMatRef, which should be the only one for symmetry with the above case */
-    ierr = PetscObjectDereference((PetscObject)injRef);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)*injRef);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetInjectorSFEmbedded"
+static PetscErrorCode DMPlexGetInjectorSFEmbedded(DM coarse, DM fine, PetscSF coarseToFine, const PetscInt *childIds, PetscInt numFields, PetscInt *offsets, PetscSF *embedded, PetscSection *leafSec, PetscInt **leaves)
+{
+  PetscInt       pStartF, pEndF, pStartC, pEndC, p;
+  PetscSection   globalCoarse, globalFine;
+  PetscSection   localCoarse, localFine, leafIndicesSec;
+  PetscInt       *leafIndices;
+  PetscSF        coarseToFineEmbedded;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetChart(coarse,&pStartC,&pEndC);CHKERRQ(ierr);
   ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(fine,&localFine);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(fine,&globalFine);CHKERRQ(ierr);
-
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)fine),&leafIndicesSec);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(leafIndicesSec,pStartF, pEndF);CHKERRQ(ierr);
-
-  ierr = PetscSectionGetNumFields(localFine,&numFields);CHKERRQ(ierr);
-  {
-    PetscInt maxFields = PetscMax(1,numFields) + 1;
-    ierr = PetscMalloc3(maxFields,&offsets,maxFields,&offsetsCopy,maxFields,&rowOffsets);CHKERRQ(ierr);
-  }
-
   { /* winnow fine points that don't have global dofs out of the sf */
     PetscInt dof, cdof, numPointsWithDofs, offset, *pointsWithDofs, numIndices;
 
@@ -3588,7 +3577,6 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
   ierr = DMPlexGetChart(coarse,&pStartC,&pEndC);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(coarse,&localCoarse);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(coarse,&globalCoarse);CHKERRQ(ierr);
-  ierr = PetscSectionGetMaxDof(localCoarse,&maxDof);CHKERRQ(ierr);
 
   { /* there may be the case where an sf root has a parent: broadcast parents back to children */
     MPI_Datatype threeInt;
@@ -3694,6 +3682,56 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
     ierr = PetscFree(pointsWithDofs);CHKERRQ(ierr);
     coarseToFineEmbedded = sfDofsOnly;
   }
+  *embedded = coarseToFineEmbedded;
+  *leafSec  = leafIndicesSec;
+  *leaves   = leafIndices;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeInjectorTree"
+PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFine, PetscInt *childIds, Mat mat)
+{
+  DM             refTree;
+  PetscSF        coarseToFineEmbedded;
+  const PetscInt *rootDegrees;
+  PetscSection   multiRootSec, rootIndicesSec, leafIndicesSec;
+  PetscSection   globalCoarse, globalFine;
+  PetscSection   localCoarse, localFine;
+  PetscSection   cSecRef;
+  PetscInt       *rootIndices, *leafIndices, *parentIndices, pRefStart, pRefEnd;
+  Mat            injRef;
+  PetscInt       numFields, numMulti, maxDof;
+  PetscInt       pStartC, pEndC, pStartF, pEndF, p;
+  PetscInt       *offsets, *offsetsCopy, *rowOffsets;
+  PetscLayout    rowMap, colMap;
+  PetscInt       rowStart, rowEnd, colStart, colEnd, *nnzD, *nnzO;
+  PetscScalar    ***childrenMats=NULL ; /* gcc -O gives 'may be used uninitialized' warning'. Initializing to suppress this warning */
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  /* get the templates for the fine-to-coarse injection from the reference tree */
+  ierr = DMPlexGetReferenceTree(coarse,&refTree);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&cSecRef,NULL);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(cSecRef,&pRefStart,&pRefEnd);CHKERRQ(ierr);
+  ierr = DMPlexReferenceTreeGetInjector(refTree,&injRef);CHKERRQ(ierr);
+
+  ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(fine,&localFine);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(fine,&globalFine);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(localFine,&numFields);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(coarse,&pStartC,&pEndC);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(coarse,&localCoarse);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(coarse,&globalCoarse);CHKERRQ(ierr);
+  ierr = PetscSectionGetMaxDof(localCoarse,&maxDof);CHKERRQ(ierr);
+  {
+    PetscInt maxFields = PetscMax(1,numFields) + 1;
+    ierr = PetscMalloc3(maxFields,&offsets,maxFields,&offsetsCopy,maxFields,&rowOffsets);CHKERRQ(ierr);
+  }
+
+  ierr = DMPlexGetInjectorSFEmbedded(coarse,fine,coarseToFine,childIds,numFields,offsets,&coarseToFineEmbedded,&leafIndicesSec,&leafIndices);CHKERRQ(ierr);
 
   /* communicate back to the coarse mesh which coarse points have children (that may require injection) */
   ierr = PetscSFComputeDegreeBegin(coarseToFineEmbedded,&rootDegrees);CHKERRQ(ierr);
@@ -3935,9 +3973,35 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexTransferVecTree_Interpolate"
+static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse, DM fine, Vec vecFine, PetscSF coarseToFine, PetscInt *cids)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexTransferVecTree_Inject"
+static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coarse, Vec vecCoarse, PetscSF coarseToFine, PetscInt *cids)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexTransferVecTree"
 PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscSF sfIn, PetscSF sfOut, PetscInt *cidsIn, PetscInt *cidsOut)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  if (sfIn) {
+    ierr = DMPlexTransferVecTree_Interpolate(dmIn,vecIn,dmOut,vecOut,sfIn,cidsIn);CHKERRQ(ierr);
+  }
+  if (sfOut) {
+    ierr = DMPlexTransferVecTree_Inject(dmIn,vecIn,dmOut,vecOut,sfOut,cidsOut);CHKERRQ(ierr);
+  }
+  if (sfOut) {
+  }
   PetscFunctionReturn(0);
 }

@@ -3961,12 +3961,13 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
 #define __FUNCT__ _pforest_string(DMForestTransferVec_pforest)
 static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut)
 {
-  DM                adapt, plexIn, plexOut;
-  DM_Forest         *forestIn, *forestAdapt;
-  PetscInt          dofPerDim[4] = {1};
-  PetscSF           inSF, outSF;
-  PetscInt          *inCids, *outCids;
-  PetscErrorCode    ierr;
+  DM                        adapt, plexIn, plexOut;
+  DM_Forest                 *forestIn, *forestAdapt;
+  PetscInt                  dofPerDim[4] = {1};
+  PetscSF                   inSF = NULL, outSF = NULL;
+  PetscInt                  *inCids = NULL, *outCids = NULL;
+  DMForestAdaptivityPurpose purpose;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   ierr        = DMForestGetAdaptivityForest(dmOut,&adapt);CHKERRQ(ierr);
@@ -3974,14 +3975,26 @@ static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, 
   forestAdapt = (DM_Forest *) adapt ? adapt->data : NULL;
 
   if (forestAdapt != forestIn) SETERRQ(PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"Only support transfer from pre-adaptivity to post-adaptivity right now");
+  ierr = DMForestGetAdaptivityPurpose(dmOut,&purpose);CHKERRQ(ierr);
+  switch (purpose) {
+  case DM_FOREST_REFINE:
+    ierr = DMPforestGetTransferSF_Internal(dmIn,dmOut,dofPerDim,&inSF,PETSC_TRUE,&inCids);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(inSF);CHKERRQ(ierr);
+    break;
+  case DM_FOREST_COARSEN:
+    ierr = DMPforestGetTransferSF_Internal(dmOut,dmIn,dofPerDim,&outSF,PETSC_TRUE,&outCids);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(outSF);CHKERRQ(ierr);
+    break;
+  default:
+    ierr = DMPforestGetTransferSF_Internal(dmIn,dmOut,dofPerDim,&inSF,PETSC_TRUE,&inCids);CHKERRQ(ierr);
+    ierr = DMPforestGetTransferSF_Internal(dmOut,dmIn,dofPerDim,&outSF,PETSC_FALSE,&outCids);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(inSF);CHKERRQ(ierr);
+    ierr = PetscSFSetUp(outSF);CHKERRQ(ierr);
+  }
 
   ierr = DMPforestGetPlex(dmIn,&plexIn);CHKERRQ(ierr);
   ierr = DMPforestGetPlex(dmOut,&plexOut);CHKERRQ(ierr);
 
-  ierr = DMPforestGetTransferSF_Internal(dmIn,dmOut,dofPerDim,&inSF,PETSC_TRUE,&inCids);CHKERRQ(ierr);
-  ierr = DMPforestGetTransferSF_Internal(dmOut,dmIn,dofPerDim,&outSF,PETSC_FALSE,&outCids);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(inSF);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(outSF);CHKERRQ(ierr);
   ierr = DMPlexTransferVecTree(plexIn,vecIn,plexOut,vecOut,inSF,outSF,inCids,outCids);CHKERRQ(ierr);
   ierr = PetscFree(inCids);CHKERRQ(ierr);
   ierr = PetscFree(outCids);CHKERRQ(ierr);
