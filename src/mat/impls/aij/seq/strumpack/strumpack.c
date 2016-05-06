@@ -206,13 +206,13 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_strumpack(Mat A,MatFactorType ft
   STRUMPACK_SparseSolver *sp;
   PetscErrorCode         ierr;
   PetscBool              verb;
-  PetscInt               argc;
+  int                    argc;
   char                   **args;
   const STRUMPACK_PRECISION table[2][2][2] = {{{STRUMPACK_FLOATCOMPLEX_64,STRUMPACK_DOUBLECOMPLEX_64},
-                                               {STRUMPACK_FLOAT_64,STRUMPACK_DOUBLECOMPLEX_64}},
+                                               {STRUMPACK_FLOAT_64,STRUMPACK_DOUBLE_64}},
                                               {{STRUMPACK_FLOATCOMPLEX,STRUMPACK_DOUBLECOMPLEX},
                                                {STRUMPACK_FLOAT,STRUMPACK_DOUBLE}}};
-  const STRUMPACK_PRECISION prec = table[(PETSC_SIZEOF_INT==8)?0:1][(PETSC_SCALAR==PETSC_COMPLEX)?0:1][(PETSC_REAL==PETSC_FLOAT)?0:1];
+  const STRUMPACK_PRECISION prec = table[(sizeof(PetscInt)==8)?0:1][(PETSC_SCALAR==PETSC_COMPLEX)?0:1][(PETSC_REAL==PETSC_FLOAT)?0:1];
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
