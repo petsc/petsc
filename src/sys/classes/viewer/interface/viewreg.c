@@ -6,6 +6,45 @@
 
 PetscFunctionList PetscViewerList = 0;
 
+/*
+  A standard run of an implicit TS generated 60 help message hashes,
+  thus we reserve room for 5 combinations of prefixes. If that is not
+  enough then any additional help messages will be printed multiple times.
+*/
+#define PETSCSTRINGHASHSIZE 300
+typedef struct {
+  int           cnt;
+  unsigned long hashes[PETSCSTRINGHASHSIZE];
+} PetscStrHash;
+
+/*
+    This is the djb2 due to Dan Bernstein http://www.cse.yorku.ca/~oz/hash.html
+*/
+PETSC_STATIC_INLINE unsigned long PetscStrHashHash(const char *pre,const char *str)
+{
+  unsigned long hash = 5381;
+  int           c;
+
+  if (pre) {
+    while ((c = *pre++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+  }
+  while ((c = *str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+  return hash;
+}
+
+PETSC_STATIC_INLINE PetscBool PetscStrHashCheck(PetscStrHash *ht,const char *pre,const char *str)
+{
+  unsigned long h = PetscStrHashHash(pre,str);
+  int           i;
+  for (i=0; i<ht->cnt; i++) {
+    if (ht->hashes[i] == h) return PETSC_TRUE;
+  }
+  if (ht->cnt >= PETSCSTRINGHASHSIZE) return PETSC_FALSE;
+  ht->hashes[ht->cnt++] = h;
+  return PETSC_FALSE;
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetViewer"
 /*@C
@@ -48,9 +87,10 @@ $       saws[:communicatorname]                    publishes object to the Scien
 @*/
 PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char name[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
-  char           *value;
-  PetscErrorCode ierr;
-  PetscBool      flag,hashelp;
+  char                 *value;
+  PetscErrorCode       ierr;
+  PetscBool            flag,hashelp;
+  static  PetscStrHash ht;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
@@ -62,11 +102,17 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 
   ierr = PetscOptionsHasName(NULL,NULL,"-help",&hashelp);CHKERRQ(ierr);
   if (hashelp) {
-    ierr = (*PetscHelpPrintf)(comm,"  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Triggers display of a PETSc object to screen or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Triggers saving of a PETSc object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -%s%s draw[:drawtype]: %s (%s)\n",pre ? pre : "",name+1,"Triggers drawing of a PETSc object","PetscOptionsGetViewer");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Triggers push of a PETSc object to a Unix socket","PetscOptionsGetViewer");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -%s%s saws[:communicatorname]: %s (%s)\n",pre ? pre : "",name+1,"Triggers publishing of a PETSc object to SAWs","PetscOptionsGetViewer");CHKERRQ(ierr);
+    if (!PetscStrHashCheck(&ht,pre,name)) {
+      if (viewer) {
+        ierr = (*PetscHelpPrintf)(comm,"\n  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
+        ierr = (*PetscHelpPrintf)(comm,"    -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
+        ierr = (*PetscHelpPrintf)(comm,"    -%s%s draw[:drawtype]: %s (%s)\n",pre ? pre : "",name+1,"Draws object","PetscOptionsGetViewer");CHKERRQ(ierr);
+        ierr = (*PetscHelpPrintf)(comm,"    -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Pushes object to a Unix socket","PetscOptionsGetViewer");CHKERRQ(ierr);
+        ierr = (*PetscHelpPrintf)(comm,"    -%s%s saws[:communicatorname]: %s (%s)\n\n",pre ? pre : "",name+1,"Publishes object to SAWs","PetscOptionsGetViewer");CHKERRQ(ierr);
+      } else {
+        ierr = (*PetscHelpPrintf)(comm,"    -%s%s\n",pre ? pre : "",name+1);CHKERRQ(ierr);
+      }
+    }
   }
 
   if (format) *format = PETSC_VIEWER_DEFAULT;
