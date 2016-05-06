@@ -106,13 +106,6 @@
 #define MATSEQSBAIJ        'seqsbaij'
 #define MATMPISBAIJ        'mpisbaij'
 
-#define MATSEQBSTRM        'seqbstrm'
-#define MATMPIBSTRM        'mpibstrm'
-#define MATBSTRM           'bstrm'
-#define MATSEQSBSTRM       'seqsbstrm'
-#define MATMPISBSTRM       'mpisbstrm'
-#define MATSBSTRM          'sbstrm'
-
 #define MATDAAD            'daad'
 #define MATMFFD            'mffd'
 #define MATNORMAL          'normal'
@@ -153,8 +146,6 @@
 #define MATSOLVERPETSC        'petsc'
 #define MATSOLVERBAS          'bas'
 #define MATSOLVERCUSPARSE     'cusparse'
-#define MATSOLVERBSTRM        'bstrm'
-#define MATSOLVERSBSTRM       'sbstrm'
 
 !
 ! GPU Storage Formats for CUSP and CUSPARSE
