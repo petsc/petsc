@@ -3,44 +3,45 @@
 #include <StrumpackSparseSolver.h>
 
 /*
-    CENTRALIZED - STRUMPACK expects the entire sparse matrix and right-hand side on every process.
+  These are only relevant for MATMPIAIJ, not for MATSEQAIJ.
+    REPLICATED  - STRUMPACK expects the entire sparse matrix and right-hand side on every process.
     DISTRIBUTED - STRUMPACK expects the sparse matrix and right-hand side to be distributed across the entire MPI communicator.
 */
-typedef enum {CENTRALIZED, DISTRIBUTED} STRUMPACK_MatInputMode;
-const char *STRUMPACK_MatInputModes[] = {"CENTRALIZED","DISTRIBUTED","STRUMPACK_MatInputMode","PETSC_",0};
+typedef enum {REPLICATED, DISTRIBUTED} STRUMPACK_MatInputMode;
+const char *STRUMPACK_MatInputModes[] = {"REPLICATED","DISTRIBUTED","STRUMPACK_MatInputMode","PETSC_",0};
 
 typedef struct {
   STRUMPACK_SparseSolver S;
   STRUMPACK_MatInputMode MatInputMode;
 } STRUMPACK_data;
 
-extern PetscErrorCode MatFactorInfo_STRUMPACK_MPI(Mat,PetscViewer);
-extern PetscErrorCode MatLUFactorNumeric_STRUMPACK_MPI(Mat,Mat,const MatFactorInfo*);
-extern PetscErrorCode MatDestroy_STRUMPACK_MPI(Mat);
-extern PetscErrorCode MatView_STRUMPACK_MPI(Mat,PetscViewer);
-extern PetscErrorCode MatSolve_STRUMPACK_MPI(Mat,Vec,Vec);
-extern PetscErrorCode MatLUFactorSymbolic_STRUMPACK_MPI(Mat,Mat,IS,IS,const MatFactorInfo*);
+extern PetscErrorCode MatFactorInfo_STRUMPACK(Mat,PetscViewer);
+extern PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat,Mat,const MatFactorInfo*);
+extern PetscErrorCode MatDestroy_STRUMPACK(Mat);
+extern PetscErrorCode MatView_STRUMPACK(Mat,PetscViewer);
+extern PetscErrorCode MatSolve_STRUMPACK(Mat,Vec,Vec);
+extern PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat,Mat,IS,IS,const MatFactorInfo*);
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_STRUMPACK_MPI"
-PetscErrorCode MatGetDiagonal_STRUMPACK_MPI(Mat A,Vec v)
+#define __FUNCT__ "MatGetDiagonal_STRUMPACK"
+PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A,Vec v)
 {
   PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type: STRUMPACK_MPI factor");
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type: STRUMPACK factor");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDestroy_STRUMPACK_MPI"
-PetscErrorCode MatDestroy_STRUMPACK_MPI(Mat A)
+#define __FUNCT__ "MatDestroy_STRUMPACK"
+PetscErrorCode MatDestroy_STRUMPACK(Mat A)
 {
   STRUMPACK_data *sp = (STRUMPACK_data*)A->spptr;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  /* Deallocate STRUMPACK_MPI storage */
+  /* Deallocate STRUMPACK storage */
   PetscStackCall("STRUMPACK_destroy",STRUMPACK_destroy(&(sp->S)));
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
@@ -53,8 +54,8 @@ PetscErrorCode MatDestroy_STRUMPACK_MPI(Mat A)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSolve_STRUMPACK_MPI"
-PetscErrorCode MatSolve_STRUMPACK_MPI(Mat A,Vec b_mpi,Vec x)
+#define __FUNCT__ "MatSolve_STRUMPACK"
+PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
 {
   STRUMPACK_data        *sp = (STRUMPACK_data*)A->spptr;
   STRUMPACK_RETURN_CODE sp_err;
@@ -69,7 +70,7 @@ PetscErrorCode MatSolve_STRUMPACK_MPI(Mat A,Vec b_mpi,Vec x)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  if (size > 1 && sp->MatInputMode == CENTRALIZED) {
+  if (size > 1 && sp->MatInputMode == REPLICATED) {
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
     ierr = VecGetArray(x_seq,&xptr);CHKERRQ(ierr);
     /* global mat input, convert b to b_seq */
@@ -93,7 +94,7 @@ PetscErrorCode MatSolve_STRUMPACK_MPI(Mat A,Vec b_mpi,Vec x)
     else                                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: solve failed");
   }
 
-  if (size > 1 && sp->MatInputMode == CENTRALIZED) {
+  if (size > 1 && sp->MatInputMode == REPLICATED) {
     ierr = VecRestoreArrayRead(b_seq,&bptr);CHKERRQ(ierr);
     ierr = VecDestroy(&b_seq);CHKERRQ(ierr);
     /* convert seq x to mpi x */
@@ -111,8 +112,8 @@ PetscErrorCode MatSolve_STRUMPACK_MPI(Mat A,Vec b_mpi,Vec x)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatSolve_STRUMPACK_MPI"
-PetscErrorCode MatMatSolve_STRUMPACK_MPI(Mat A,Mat B_mpi,Mat X)
+#define __FUNCT__ "MatMatSolve_STRUMPACK"
+PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
 {
   PetscErrorCode   ierr;
   PetscBool        flg;
@@ -122,50 +123,53 @@ PetscErrorCode MatMatSolve_STRUMPACK_MPI(Mat A,Mat B_mpi,Mat X)
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_STRUMPACK_MPI() is not implemented yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_STRUMPACK() is not implemented yet");
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_STRUMPACK_MPI"
-PetscErrorCode MatLUFactorNumeric_STRUMPACK_MPI(Mat F,Mat A,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorNumeric_STRUMPACK"
+PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
   STRUMPACK_data        *sp = (STRUMPACK_data*)F->spptr;
   STRUMPACK_RETURN_CODE sp_err;
   Mat                   *tseq,A_seq = NULL;
   Mat_SeqAIJ            *A_d,*A_o;
+  Mat_MPIAIJ            *mat;
   PetscErrorCode        ierr;
   PetscInt              M=A->rmap->N,m=A->rmap->n,N=A->cmap->N;
   PetscMPIInt           size;
   IS                    isrow;
+  PetscBool             flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
 
-  if (sp->MatInputMode == CENTRALIZED) { /* global mat input */
-    if (size > 1) { /* convert mpi A to seq mat A */
-      ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
-      ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
-      ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-      A_seq = *tseq;
-      ierr  = PetscFree(tseq);CHKERRQ(ierr);
-      A_d   = (Mat_SeqAIJ*)A_seq->data;
-    } else {
-      PetscBool flg;
-      ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-      if (flg) {
-        Mat_MPIAIJ *At = (Mat_MPIAIJ*)A->data;
-        A = At->A;
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
+  if (flg) { /* A is MATMPIAIJ */
+    if (sp->MatInputMode == REPLICATED) {
+      if (size > 1) { /* convert mpi A to seq mat A */
+        ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
+        ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
+        ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+        A_seq = *tseq;
+        ierr  = PetscFree(tseq);CHKERRQ(ierr);
+        A_d   = (Mat_SeqAIJ*)A_seq->data;
+      } else { /* size == 1 */
+        mat = (Mat_MPIAIJ*)A->data;
+        A_d = (Mat_SeqAIJ*)(mat->A)->data;
       }
-      A_d = (Mat_SeqAIJ*)A->data;
+      PetscStackCall("STRUMPACK_set_csr_matrix",STRUMPACK_set_csr_matrix(sp->S,&N,A_d->i,A_d->j,A_d->a,0));
+    } else { /* sp->MatInputMode == DISTRIBUTED */
+      mat = (Mat_MPIAIJ*)A->data;
+      A_d = (Mat_SeqAIJ*)(mat->A)->data;
+      A_o = (Mat_SeqAIJ*)(mat->B)->data;
+      PetscStackCall("STRUMPACK_set_MPIAIJ_matrix",STRUMPACK_set_MPIAIJ_matrix(sp->S,&m,A_d->i,A_d->j,A_d->a,A_o->i,A_o->j,A_o->a,mat->garray));
     }
+  } else { /* A is MATSEQAIJ */
+    A_d = (Mat_SeqAIJ*)A->data;
     PetscStackCall("STRUMPACK_set_csr_matrix",STRUMPACK_set_csr_matrix(sp->S,&N,A_d->i,A_d->j,A_d->a,0));
-  } else { /* distributed mat input */
-    Mat_MPIAIJ *mat = (Mat_MPIAIJ*)A->data;
-    A_d = (Mat_SeqAIJ*)(mat->A)->data;
-    A_o = (Mat_SeqAIJ*)(mat->B)->data;
-    PetscStackCall("STRUMPACK_set_MPIAIJ_matrix",STRUMPACK_set_MPIAIJ_matrix(sp->S,&m,A_d->i,A_d->j,A_d->a,A_o->i,A_o->j,A_o->a,mat->garray));
   }
 
   /* Reorder and Factor the matrix. */
@@ -177,37 +181,35 @@ PetscErrorCode MatLUFactorNumeric_STRUMPACK_MPI(Mat F,Mat A,const MatFactorInfo 
     else if (sp_err == STRUMPACK_REORDERING_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed");
     else                                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: factorization failed");
   }
-
-  if (sp->MatInputMode == CENTRALIZED && size > 1) {
+  if (flg && sp->MatInputMode == REPLICATED && size > 1) {
     ierr = MatDestroy(&A_seq);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_STRUMPACK_MPI"
-PetscErrorCode MatLUFactorSymbolic_STRUMPACK_MPI(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorSymbolic_STRUMPACK"
+PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  F->ops->lufactornumeric = MatLUFactorNumeric_STRUMPACK_MPI;
-  F->ops->solve           = MatSolve_STRUMPACK_MPI;
-  F->ops->matsolve        = MatMatSolve_STRUMPACK_MPI;
+  F->ops->lufactornumeric = MatLUFactorNumeric_STRUMPACK;
+  F->ops->solve           = MatSolve_STRUMPACK;
+  F->ops->matsolve        = MatMatSolve_STRUMPACK;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_aij_strumpack_mpi"
-PetscErrorCode MatFactorGetSolverPackage_aij_strumpack_mpi(Mat A,const MatSolverPackage *type)
+#define __FUNCT__ "MatFactorGetSolverPackage_aij_strumpack"
+PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MATSOLVERSTRUMPACK_MPI;
+  *type = MATSOLVERSTRUMPACK;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_aij_strumpack_mpi"
-PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack_mpi(Mat A,MatFactorType ftype,Mat *F)
+#define __FUNCT__ "MatGetFactor_aij_strumpack"
+PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat                 B;
   STRUMPACK_data      *sp;
@@ -215,7 +217,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack_mpi(Mat A,MatFactorType f
   PetscInt            M=A->rmap->N,N=A->cmap->N;
   PetscMPIInt         size;
   STRUMPACK_INTERFACE iface;
-  PetscBool           verb;
+  PetscBool           verb,flg;
   int                 argc;
   char                **args;
   const STRUMPACK_PRECISION table[2][2][2] = {{{STRUMPACK_FLOATCOMPLEX_64,STRUMPACK_DOUBLECOMPLEX_64},
@@ -232,26 +234,27 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack_mpi(Mat A,MatFactorType f
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_STRUMPACK_MPI;
-  B->ops->view             = MatView_STRUMPACK_MPI;
-  B->ops->destroy          = MatDestroy_STRUMPACK_MPI;
-  B->ops->getdiagonal      = MatGetDiagonal_STRUMPACK_MPI;
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_aij_strumpack_mpi);CHKERRQ(ierr);
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_STRUMPACK;
+  B->ops->view             = MatView_STRUMPACK;
+  B->ops->destroy          = MatDestroy_STRUMPACK;
+  B->ops->getdiagonal      = MatGetDiagonal_STRUMPACK;
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_aij_strumpack);CHKERRQ(ierr);
   B->factortype = MAT_FACTOR_LU;
   ierr     = PetscNewLog(B,&sp);CHKERRQ(ierr);
   B->spptr = sp;
 
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"STRUMPACK_MPI Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"STRUMPACK Options","Mat");CHKERRQ(ierr);
   sp->MatInputMode = DISTRIBUTED;
   iface = STRUMPACK_MPI_DIST;
-  ierr = PetscOptionsEnum("-mat_strumpack_mpi_matinput","Matrix input mode (global or distributed)","None",STRUMPACK_MatInputModes,
+  ierr = PetscOptionsEnum("-mat_strumpack_matinput","Matrix input mode (global or distributed)","None",STRUMPACK_MatInputModes,
                           (PetscEnum)sp->MatInputMode,(PetscEnum*)&sp->MatInputMode,NULL);CHKERRQ(ierr);
-  if (sp->MatInputMode == DISTRIBUTED && size == 1) sp->MatInputMode = CENTRALIZED;
-  if (sp->MatInputMode == DISTRIBUTED) {
-    iface = STRUMPACK_MPI_DIST;
-  } else if (sp->MatInputMode == CENTRALIZED) {
-    iface = STRUMPACK_MPI;
-  }
+  if (sp->MatInputMode == DISTRIBUTED && size == 1) sp->MatInputMode = REPLICATED;
+  if (sp->MatInputMode == DISTRIBUTED)     iface = STRUMPACK_MPI_DIST;
+  else if (sp->MatInputMode == REPLICATED) iface = STRUMPACK_MPI;
+
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg);
+  if (flg) iface = STRUMPACK_MT;
+
   if (PetscLogPrintInfo) verb = PETSC_TRUE;
   else verb = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_strumpack_verbose","Print STRUMPACK information","None",verb,&verb,NULL);CHKERRQ(ierr);
@@ -266,33 +269,33 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack_mpi(Mat A,MatFactorType f
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_STRUMPACK_MPI"
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_STRUMPACK_MPI(void)
+#define __FUNCT__ "MatSolverPackageRegister_STRUMPACK"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_STRUMPACK(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK_MPI,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack_mpi);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK_MPI,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack_mpi);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_STRUMPACK_MPI"
-PetscErrorCode MatFactorInfo_STRUMPACK_MPI(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatFactorInfo_STRUMPACK"
+PetscErrorCode MatFactorInfo_STRUMPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* check if matrix is strumpack type */
-  if (A->ops->solve != MatSolve_STRUMPACK_MPI) PetscFunctionReturn(0);
-  ierr = PetscViewerASCIIPrintf(viewer,"STRUMPACK_MPI sparse solver!\n");CHKERRQ(ierr);
+  if (A->ops->solve != MatSolve_STRUMPACK) PetscFunctionReturn(0);
+  ierr = PetscViewerASCIIPrintf(viewer,"STRUMPACK sparse solver!\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatView_STRUMPACK_MPI"
-PetscErrorCode MatView_STRUMPACK_MPI(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatView_STRUMPACK"
+PetscErrorCode MatView_STRUMPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscBool         iascii;
@@ -303,7 +306,7 @@ PetscErrorCode MatView_STRUMPACK_MPI(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_STRUMPACK_MPI(A,viewer);CHKERRQ(ierr);
+      ierr = MatFactorInfo_STRUMPACK(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -311,9 +314,9 @@ PetscErrorCode MatView_STRUMPACK_MPI(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MATSOLVERSSTRUMPACK_MPI - Parallel direct solver package for LU factorization
+  MATSOLVERSSTRUMPACK - Parallel direct solver package for LU factorization
 
-  Use ./configure --download-strumpack --download-parmetis --download-metis --download-ptscotch (and ScaLAPACK?/BLACS?) to have PETSc installed with SuperLU_DIST
+  Use ./configure --download-strumpack to have PETSc installed with STRUMPACK
 
   Use -pc_type lu -pc_factor_mat_solver_package strumpack to us this direct solver
 
