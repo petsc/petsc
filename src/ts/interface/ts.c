@@ -2335,14 +2335,14 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, error
 @*/
-PetscErrorCode  TSGetTimeError(TS ts,Vec *v)
+PetscErrorCode  TSGetTimeError(TS ts,PetscInt n,Vec *v)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->ops->gettimeerror) {
-    ierr = (*ts->ops->gettimeerror)(ts,v);CHKERRQ(ierr); 
+    ierr = (*ts->ops->gettimeerror)(ts,n,v);CHKERRQ(ierr); 
   } else {
     ierr = VecZeroEntries(*v);CHKERRQ(ierr);
   }

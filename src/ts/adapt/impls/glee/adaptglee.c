@@ -13,6 +13,7 @@ typedef struct {
 static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
 {
   TSAdapt_GLEE  *basic = (TSAdapt_GLEE*)adapt->data;
+  TSType         time_scheme;      /* Type of time-integration scheme        */
   PetscErrorCode ierr;
   Vec            X,Y;
   PetscReal      enorm,enorma,enormr,hfac_lte,h_lte,safety;
@@ -20,14 +21,23 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
 
   PetscFunctionBegin;
   ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-  if (!basic->Y) {ierr = VecDuplicate(X,&basic->Y);CHKERRQ(ierr);}
-  Y     = basic->Y;
-  order = adapt->candidates.order[0];
-  ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
 
   safety = basic->safety;
-  ierr   = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+  ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
+  if (!strcmp(time_scheme,TSGLEE)){
+    /* the method is of GLEE type */
+    ierr = TSGetTimeError(ts,-1,&X);CHKERRQ(ierr);
+    ierr = TSGetTimeError(ts, 0,&Y);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+  } else {
+    /* the method is NOT of GLEE type */
+    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
+    if (!basic->Y) {ierr = VecDuplicate(X,&basic->Y);CHKERRQ(ierr);}
+    Y     = basic->Y;
+    order = adapt->candidates.order[0];
+    ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
+    ierr  = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+  }
   if (enorm > 1.) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {

@@ -55,6 +55,7 @@ typedef struct {
   Vec          *YdotStage; /* Stage right hand side */
   Vec          W;          /* Right-hand-side for implicit stage solve */
   Vec          Ydot;       /* Work vector holding Ydot during residual evaluation */
+  Vec          yGErr;      /* Vector holding the global error after a step is completed */
   PetscScalar  *work;      /* Scalar work */
   PetscReal    scoeff;     /* shift = scoeff/dt */
   PetscReal    stage_time;
@@ -559,7 +560,7 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
       ierr = VecMAXPY(X,r,F,Y);CHKERRQ(ierr);
     } else {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
-  
+
   } else if (order == tab->order-1) {
 
     /* Complete with the embedded method (Fembed) */
@@ -665,6 +666,9 @@ static PetscErrorCode TSStep_GLEE(TS ts)
       ts->time_step  = next_time_step;
       ts->steps++;
       glee->status = TS_STEP_COMPLETE;
+      /* compute and store the global error */
+      /* Note: this is not needed if TSAdaptGLEE is not used */
+      ierr = TSGetTimeError(ts,0,&(glee->yGErr));CHKERRQ(ierr);
       ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
       break;
     } else {                    /* Roll back the current step */
@@ -734,6 +738,7 @@ static PetscErrorCode TSReset_GLEE(TS ts)
   ierr = VecDestroyVecs(s,&glee->YStage);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&glee->YdotStage);CHKERRQ(ierr);
   ierr = VecDestroy(&glee->Ydot);CHKERRQ(ierr);
+  ierr = VecDestroy(&glee->yGErr);CHKERRQ(ierr);
   ierr = VecDestroy(&glee->W);CHKERRQ(ierr);
   ierr = PetscFree(glee->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -893,6 +898,7 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   ierr = VecDuplicateVecs(ts->vec_sol,s,&glee->YStage);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&glee->YdotStage);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&glee->Ydot);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&glee->yGErr);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&glee->W);CHKERRQ(ierr);
   ierr = PetscMalloc1(s,&glee->work);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -1159,7 +1165,7 @@ PetscErrorCode TSGetAuxSolution_GLEE(TS ts,Vec *X)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGetTimeError_GLEE"
-PetscErrorCode TSGetTimeError_GLEE(TS ts,Vec *X)
+PetscErrorCode TSGetTimeError_GLEE(TS ts,PetscInt n,Vec *X)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
   GLEETableau     tab   = glee->tableau;
@@ -1169,8 +1175,12 @@ PetscErrorCode TSGetTimeError_GLEE(TS ts,Vec *X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = VecZeroEntries(*X);CHKERRQ(ierr);
-  ierr = VecMAXPY((*X),r,F,Y);CHKERRQ(ierr);
+  if(n==0){
+    ierr = VecZeroEntries(*X);CHKERRQ(ierr);
+    ierr = VecMAXPY((*X),r,F,Y);CHKERRQ(ierr);
+  } else if(n==-1) {
+    ierr = VecCopy(glee->yGErr,*X);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1189,6 +1199,7 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
   if (r != 2) SETERRQ2(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
   for (i=1; i<r; i++) {
     ierr = VecCopy(ts->vec_sol,Y[i]); CHKERRQ(ierr);
+    ierr = VecCopy(X,glee->yGErr); CHKERRQ(ierr);
     ierr = VecAXPBY(Y[i],S[0],S[1],X); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

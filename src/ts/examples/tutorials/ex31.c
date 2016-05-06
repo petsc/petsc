@@ -1219,7 +1219,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   /* Get the estimated error, if available */
   ierr = VecDuplicate(Y,&Yerr);CHKERRQ(ierr);
   ierr = VecZeroEntries(Yerr);CHKERRQ(ierr);
-  ierr = TSGetTimeError(ts,&Yerr);CHKERRQ(ierr);
+  ierr = TSGetTimeError(ts,0,&Yerr);CHKERRQ(ierr);
   ierr = VecNorm(Yerr,NORM_2,&err_norm);
   ierr = VecDestroy(&Yerr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Estimated Error = %E\n",err_norm);CHKERRQ(ierr);
