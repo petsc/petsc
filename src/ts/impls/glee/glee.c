@@ -1,6 +1,7 @@
 /*
   Code for time stepping with the General Linear with Error Estimation method
 
+
   Notes:
   The general system is written as
 
@@ -9,6 +10,15 @@
 */
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
+
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@ARTICLE{Constantinescu_TR2016b,\n"
+  " author = {Constantinescu, E.M.},\n"
+  " title = {Estimating Global Errors in Time Stepping},\n"
+  " journal = {ArXiv e-prints},\n"
+  " year = 2016,\n"
+  " adsurl = {http://adsabs.harvard.edu/abs/2015arXiv150305166C}\n}\n";
 
 static TSGLEEType   TSGLEEDefaultType = TSGLEE35;
 static PetscBool    TSGLEERegisterAllCalled;
@@ -594,6 +604,8 @@ static PetscErrorCode TSStep_GLEE(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   for (i=0; i<r; i++) { ierr = VecCopy(Y[i],X[i]); CHKERRQ(ierr); }
 
   ierr           = TSGetSNES(ts,&snes);CHKERRQ(ierr);
