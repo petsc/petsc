@@ -73,7 +73,7 @@ PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
   if (size > 1 && sp->MatInputMode == REPLICATED) {
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
     ierr = VecGetArray(x_seq,&xptr);CHKERRQ(ierr);
-    /* global mat input, convert b to b_seq */
+    /* replicated mat input, convert b to b_seq */
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&b_seq);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iden);CHKERRQ(ierr);
     ierr = VecScatterCreate(b_mpi,iden,b_seq,iden,&scat);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"STRUMPACK Options","Mat");CHKERRQ(ierr);
   sp->MatInputMode = DISTRIBUTED;
   iface = STRUMPACK_MPI_DIST;
-  ierr = PetscOptionsEnum("-mat_strumpack_matinput","Matrix input mode (global or distributed)","None",STRUMPACK_MatInputModes,
+  ierr = PetscOptionsEnum("-mat_strumpack_matinput","Matrix input mode (replicated or distributed)","None",STRUMPACK_MatInputModes,
                           (PetscEnum)sp->MatInputMode,(PetscEnum*)&sp->MatInputMode,NULL);CHKERRQ(ierr);
   if (sp->MatInputMode == DISTRIBUTED && size == 1) sp->MatInputMode = REPLICATED;
   if (sp->MatInputMode == DISTRIBUTED)     iface = STRUMPACK_MPI_DIST;
