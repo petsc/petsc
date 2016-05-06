@@ -4925,7 +4925,10 @@ eimex&extrapolated IMEX \cite{Constantinescu_A2010a}&one-step&$\ge
 \hline
 arkimex&  see Tab.\ \ref{tab:IMEX:RK:PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
 \hline
-rosw& see Tab.\ \ref{tab:IMEX:RosW:PETSc} &Rosenbrock-W &linearly implicit&$1-4$\\
+rosw& see Tab.\ \ref{tab:IMEX:RosW:PETSc} &Rosenbrock-W &linearly
+implicit&$1-4$\\ \hline
+glee& see Tab.\ \ref{tab:IMEX:GLEE:PETSc} &GL with global
+error&explicit and implicit&$1-3$\\
 \hline
 \end{tabular}%}
 \label{tab:TSPET}
@@ -5099,7 +5102,6 @@ Table \ref{tab:IMEX:RosW:PETSc}.
 %
 \begin{table}
 \centering
-
 \caption{\label{tab:IMEX:RosW:PETSc}List
 of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number
   of stages and implicit stages, the scheme order and stage-order,
@@ -5152,7 +5154,99 @@ ark3       &unpublished&
 \end{tabular}}
 \end{table}
 %
+\noindent{\bf GLEE methods.} In this section we describe explicit and
+implicit time stepping methods with global error estimation that are
+introduced in \cite{Constantinescu_TR2016b}.
+The solution vector for a GLEE method is either [$y$, $\tilde{y}$] or
+[$y$,$\varepsilon$], where $y$ is the solution, $\tilde{y}$ is the
+``auxiliary solution,'' and $\varepsilon$ is the error. The working
+vector that TSGLEE uses is $Y$ = [$y$,$\tilde{y}$], or
+[$y$,$\varepsilon$]. A GLEE method is defined by 
+%%%%%
+\begin{itemize}
+\item $(p,r,s)$: (order, steps, and stages),
+\item $\gamma$: factor representing the global error ratio,
+\item $A, U, B, V$: method coefficients,
+\item $S$: starting method to compute the working vector from the
+solution (say at the beginning of time integration) so that $Y = Sy$,
+\item $F$: finalizing method to compute the solution from the working
+vector,$y = FY$.
+\item $F_{embed}$: coefficients for computing the auxiliary solution
+$\tilde{y}$ from the working vector ($\tilde{y} = F_{embed} Y$),
+\item $F_{error}$: coefficients to compute the estimated error vector
+from the working vector ($\varepsilon = F_{error} Y$).
+\item $S_{error}$: coefficients to initialize the auxiliary solution
+($\tilde{y}$ or $\varepsilon$) from a specified error vector
+($\varepsilon$). It is currently implemented only for $r = 2$. $y_{aux} =
+S_{error}[0]*\varepsilon + S_{error}[1]*y$, where $y_{aux}$ is the 2nd
+component of the working vector $Y$. 
+\end{itemize}
+%%%%%%%
+The methods can be described in two mathematically equivalently forms:
+propagate two components (call it $y\tilde{y}$ form) and propagating the
+solution and its estimated error (call it $y\varepsilon$ form). The
+two forms are not explicitly specified in TSGLEE, the specific values
+of $B, U, S, F, F_{embed}$, and $F_{error}$ characterize whether the method is
+in $y\tilde{y}$ or $y\varepsilon$ form.
 
+Particular API used by this TS method:
+\begin{itemize}
+\item TSGetSolutionComponents: Get all the solution components of the working vector\\
+    ierr = TSGetSolutionComponents(TS,int*,Vec*)\\
+    Call with NULL as the last argument to get the total number of
+    components in the working vector $Y$ (this is $r$ (not $r-1$)),
+    then call to get the $i$-th solution component. 
+\item TSGetAuxSolution: Returns the auxiliary solution $\tilde{y}$ (computed as $F_{embed} Y$)\\
+    ierr = TSGetAuxSolution(TS,Vec*)
+\item TSGetTimeError: Returns the estimated error vector $\varepsilon$ (computed as $F_{error} Y$)\\
+    ierr = TSGetTimeError(TS,Vec*)
+\item TSSetTimeError: Initializes the auxiliary solution ($\tilde{y}$
+or $\varepsilon$) for a specified initial error. \\
+    ierr = TSSetTimeError(TS,Vec)
+\end{itemize}
+
+The local error is estimated as $\varepsilon(n+1)-\varepsilon(n)$
+this is to be used in the error control. The error in $y\tilde{y}$
+GLEE is $\varepsilon(n) = \frac{1}{1-\gamma} * (\tilde{y}(n) - y(n))$. 
+
+Note that $y$ and $\tilde{y}$ are reported to \trl{TSAdapt} basic, and thus it
+computes the local error as $\varepsilon_{loc} = (\tilde{y} -
+y)$. However, the actual local error is  $\varepsilon_{loc}
+= \varepsilon_{n+1} - \varepsilon_n = \frac{1}{1-\gamma} * [(\tilde{y} -
+y)_{n+1} - (\tilde{y} - y)_n]$. 
+
+%
+\begin{table}
+\centering
+\caption{
+\label{tab:IMEX:GLEE:PETSc}
+List
+of the currently available GL schemes with global error estimation
+introduced in \cite{Constantinescu_TR2016b}.}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+{\bf TS} &{\bf Reference}& {\bf IM/EX} &{\bf (p,r,s)}&{\bf $\gamma$}
+&{\bf Form}&{\bf Notes}\\
+\hline
+TSGLEEi1     &BE1    &IM&1,3,2& 0.5&$y\varepsilon$&Based on backward Euler\\
+\hline
+TSGLEE23     &23     &EX&2,3,2&   0&$y\varepsilon$&\\
+\hline
+TSGLEE24     &24     &EX&2,4,2&   0&  $y\tilde{y}$&\\
+\hline
+TSGLEE25I    &25i    &EX&2,5,2&   0&  $y\tilde{y}$&\\
+\hline
+TSGLEE35     &35     &EX&3,5,2&	  0&  $y\tilde{y}$&\\
+\hline
+TSGLEEEXRK2A &exrk2a &EX&2,6,2&0.25&$y\varepsilon$&\\
+\hline
+TSGLEERK32G1 &rk32g1 &EX&3,8,2&	 0 &$y\varepsilon$&\\
+\hline
+TSGLEERK285EX&rk285ex&EX&2,9,2&0.25&$y\varepsilon$&\\
+\hline
+\end{tabular}
+\end{table}
+%
 
 \subsection{Using fully implicit methods}
 Either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a DM that provides a coloring so the Jacobian can be computed efficiently via finite differences.
@@ -8984,4 +9078,7 @@ for(v=Start; v \trl{<} End; v++) \{ \\
 %%  LocalWords:  TSSetEquationType TSARKIMEXSetFullyImplicit PETSc CN
 %%  LocalWords:  DAEs ODEs Runge Kutta nonstiff SSP SDIRK ars ARS PRS
 %%  LocalWords:  prssp nonSDIRK bpr ROSW linearized Rosenbrock PDAE
-%%  LocalWords:  Zoltan ra pw rodas sandu assp lassp RK
+%%  LocalWords:  Zoltan ra pw rodas sandu assp lassp RK TSGLEE Sy nd
+%%  LocalWords:  API TSGetSolutionComponents ierr Vec th TSAdapt loc
+%%  LocalWords:  TSGetAuxSolution TSGetTimeError TSSetTimeError GL rk
+%%  LocalWords:  TSGLEEi TSGLEEEXRK exrk TSGLEERK DM
