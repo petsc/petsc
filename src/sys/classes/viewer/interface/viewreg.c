@@ -17,33 +17,19 @@ typedef struct {
   unsigned long hashes[PETSCSTRINGHASHSIZE];
 } PetscStrHash;
 
-/*
-    This is the djb2 due to Dan Bernstein http://www.cse.yorku.ca/~oz/hash.html
-*/
-PETSC_STATIC_INLINE unsigned long PetscStrHashHash(const char *pre,const char *str)
+#include "../src/sys/utils/hash.h"
+
+KHASH_SET_INIT_STR(PetscOptionsGetViewerPrinted)
+static khash_t(PetscOptionsGetViewerPrinted) *PrintedOptions = NULL;
+static PetscSegBuffer strings = NULL;
+
+static PetscErrorCode PetscOptionsGetViewerPrintedDestroy(void)
 {
-  unsigned long hash = 5381;
-  int           c;
-
-  if (pre) {
-    while ((c = *pre++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-  }
-  while ((c = *str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-  return hash;
+  PetscErrorCode ierr;
+  kh_destroy(PetscOptionsGetViewerPrinted,PrintedOptions);
+  ierr = PetscSegBufferDestroy(&strings);CHKERRQ(ierr);
+  return 0;
 }
-
-PETSC_STATIC_INLINE PetscBool PetscStrHashCheck(PetscStrHash *ht,const char *pre,const char *str)
-{
-  unsigned long h = PetscStrHashHash(pre,str);
-  int           i;
-  for (i=0; i<ht->cnt; i++) {
-    if (ht->hashes[i] == h) return PETSC_TRUE;
-  }
-  if (ht->cnt >= PETSCSTRINGHASHSIZE) return PETSC_FALSE;
-  ht->hashes[ht->cnt++] = h;
-  return PETSC_FALSE;
-}
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetViewer"
@@ -90,7 +76,6 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   char                 *value;
   PetscErrorCode       ierr;
   PetscBool            flag,hashelp;
-  static  PetscStrHash ht;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
@@ -102,7 +87,26 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 
   ierr = PetscOptionsHasName(NULL,NULL,"-help",&hashelp);CHKERRQ(ierr);
   if (hashelp) {
-    if (!PetscStrHashCheck(&ht,pre,name)) {
+    khint_t newitem;
+    if (!PrintedOptions) {
+      PrintedOptions = kh_init(PetscOptionsGetViewerPrinted);
+      ierr = PetscSegBufferCreate(sizeof(char),10000,&strings);CHKERRQ(ierr);
+      ierr = PetscRegisterFinalize(PetscOptionsGetViewerPrintedDestroy);CHKERRQ(ierr);
+    }
+    if (!pre) {
+      kh_put(PetscOptionsGetViewerPrinted,PrintedOptions,name+1,&newitem);
+    } else {
+      size_t l1,l2;
+      char   *both;
+
+      ierr = PetscStrlen(pre,&l1);CHKERRQ(ierr);
+      ierr = PetscStrlen(name+1,&l2);CHKERRQ(ierr);
+      ierr = PetscSegBufferGet(strings,l1+l2+1,&both);CHKERRQ(ierr);
+      ierr = PetscStrcpy(both,pre);CHKERRQ(ierr);
+      ierr = PetscStrcat(both,name+1);CHKERRQ(ierr);
+      kh_put(PetscOptionsGetViewerPrinted,PrintedOptions,both,&newitem);
+    }
+    if (newitem) {
       if (viewer) {
         ierr = (*PetscHelpPrintf)(comm,"\n  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
         ierr = (*PetscHelpPrintf)(comm,"    -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
