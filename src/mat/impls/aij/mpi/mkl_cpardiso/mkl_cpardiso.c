@@ -239,7 +239,9 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
       &mat_mkl_cpardiso->err);
   }
 
-  ierr = PetscFree(mat_mkl_cpardiso->ia);CHKERRQ(ierr);
+  if (mat_mkl_cpardiso->ConvertToTriples == MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO) {
+    ierr = PetscFree(mat_mkl_cpardiso->ia);CHKERRQ(ierr);
+  }
   ierr = MPI_Comm_free(&(mat_mkl_cpardiso->comm_mkl_cpardiso));CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
