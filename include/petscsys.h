@@ -1652,6 +1652,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject,const
 #define PetscObjectComposeFunction(a,b,d) PetscObjectComposeFunction_Private(a,b,(PetscVoidFunction)(d))
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSetPrintedOptions(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject,PetscObject);
 PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 
 #include <petscviewertypes.h>
