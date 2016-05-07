@@ -1410,12 +1410,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   merge->buf_ri    = buf_ri;
   merge->buf_rj    = buf_rj;
   merge->owners_co = owners_co;
-  merge->destroy   = Cmpi->ops->destroy;
-  merge->duplicate = Cmpi->ops->duplicate;
-
-  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
-  Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c           = (Mat_MPIAIJ*)Cmpi->data;
@@ -1423,6 +1417,12 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ptap->api   = NULL;
   ptap->apj   = NULL;
   ptap->merge = merge;
+  ptap->destroy   = Cmpi->ops->destroy;
+  ptap->duplicate = Cmpi->ops->duplicate;
+
+  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
+  Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
+  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)
