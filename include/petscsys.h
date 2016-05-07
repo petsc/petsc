@@ -2878,6 +2878,12 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
  * possible. */
 PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,(size_t)count,(void**)slot);}
 
+typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
+extern PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton;
+PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted*);
+PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted*);
+PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted,const char*,const char*,PetscBool*);
+
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 #undef __FUNCT__
 #define __FUNCT__ "PetscCitationsRegister"

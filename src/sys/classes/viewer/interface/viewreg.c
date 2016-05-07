@@ -6,22 +6,96 @@
 
 PetscFunctionList PetscViewerList = 0;
 
-/*
-  Use a hash set to prevent the same help message from being printed multiple times
-*/
-
 #include "../src/sys/utils/hash.h"
 
-KHASH_SET_INIT_STR(PetscOptionsGetViewerPrinted)
-static khash_t(PetscOptionsGetViewerPrinted) *PrintedOptions = NULL;
-static PetscSegBuffer strings = NULL;
 
-static PetscErrorCode PetscOptionsGetViewerPrintedDestroy(void)
+PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton = NULL;
+KHASH_SET_INIT_STR(HTPrinted)
+struct  _n_PetscOptionsHelpPrinted{
+  khash_t(HTPrinted) *printed;
+  PetscSegBuffer     strings;
+};
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsHelpPrintedDestroy"
+PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
 {
   PetscErrorCode ierr;
-  kh_destroy(PetscOptionsGetViewerPrinted,PrintedOptions);
-  ierr = PetscSegBufferDestroy(&strings);CHKERRQ(ierr);
-  return 0;
+
+  PetscFunctionBegin;
+  if (!*hp) PetscFunctionReturn(0);
+  kh_destroy(HTPrinted,(*hp)->printed);
+  ierr = PetscSegBufferDestroy(&(*hp)->strings);CHKERRQ(ierr);
+  ierr = PetscFree(*hp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsHelpPrintedCreate"
+/*@C
+      PetscOptionsHelpPrintedCreate - Creates an object used to manage tracking which help messages have
+         been printed so they will not be printed again.
+
+     Not collective
+
+    Level: developer
+
+.seealso: PetscOptionsHelpPrintedCheck(), PetscOptionsHelpPrintChecked()
+@*/
+PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
+{
+  PetscErrorCode             ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(hp);CHKERRQ(ierr);
+  (*hp)->printed = kh_init(HTPrinted);
+  ierr = PetscSegBufferCreate(sizeof(char),10000,&(*hp)->strings);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsHelpPrintedCheck"
+/*@C
+      PetscOptionsHelpPrintedCheck - Checks if a particular pre, name pair has previous been entered (meaning the help message was printed)
+
+     Not collective
+
+    Input Parameters:
++     hp - the object used to manage tracking what help messages have been printed
+.     pre - the prefix part of the string, many be NULL
+-     name - the string to look for (cannot be NULL)
+
+    Output Parameter:
+.     found - PETSC_TRUE if the string was already set
+
+    Level: intermediate
+
+
+.seealso: PetscOptionsHelpPrintedCreate()
+@*/
+PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp,const char *pre,const char* name,PetscBool *found)
+{
+  size_t          l1,l2;
+  char            *both;
+  khint_t         newitem;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(pre,&l1);CHKERRQ(ierr);
+  ierr = PetscStrlen(name,&l2);CHKERRQ(ierr);
+  if (l1+l2 == 0) {
+    *found = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscSegBufferGet(hp->strings,l1+l2+1,&both);CHKERRQ(ierr);
+  ierr = PetscStrcpy(both,pre);CHKERRQ(ierr);
+  ierr = PetscStrcat(both,name);CHKERRQ(ierr);
+  kh_put(HTPrinted,hp->printed,both,&newitem);
+  if (!newitem) {
+    ierr = PetscSegBufferUnuse(hp->strings,l1+l2+1);CHKERRQ(ierr);
+  }
+  *found = newitem ? PETSC_FALSE : PETSC_TRUE;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -66,9 +140,9 @@ $       saws[:communicatorname]                    publishes object to the Scien
 @*/
 PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char name[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
-  char                 *value;
-  PetscErrorCode       ierr;
-  PetscBool            flag,hashelp;
+  char                           *value;
+  PetscErrorCode                 ierr;
+  PetscBool                      flag,hashelp;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
@@ -80,26 +154,13 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 
   ierr = PetscOptionsHasName(NULL,NULL,"-help",&hashelp);CHKERRQ(ierr);
   if (hashelp) {
-    khint_t newitem;
-    if (!PrintedOptions) {
-      PrintedOptions = kh_init(PetscOptionsGetViewerPrinted);
-      ierr = PetscSegBufferCreate(sizeof(char),10000,&strings);CHKERRQ(ierr);
-      ierr = PetscRegisterFinalize(PetscOptionsGetViewerPrintedDestroy);CHKERRQ(ierr);
-    }
-    if (!pre) {
-      kh_put(PetscOptionsGetViewerPrinted,PrintedOptions,name+1,&newitem);
-    } else {
-      size_t l1,l2;
-      char   *both;
+    PetscBool found;
 
-      ierr = PetscStrlen(pre,&l1);CHKERRQ(ierr);
-      ierr = PetscStrlen(name+1,&l2);CHKERRQ(ierr);
-      ierr = PetscSegBufferGet(strings,l1+l2+1,&both);CHKERRQ(ierr);
-      ierr = PetscStrcpy(both,pre);CHKERRQ(ierr);
-      ierr = PetscStrcat(both,name+1);CHKERRQ(ierr);
-      kh_put(PetscOptionsGetViewerPrinted,PrintedOptions,both,&newitem);
+    if (!PetscOptionsHelpPrintedSingleton) {
+      ierr = PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
     }
-    if (newitem) {
+    ierr = PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton,pre,name,&found);CHKERRQ(ierr);
+    if (!found) {
       if (viewer) {
         ierr = (*PetscHelpPrintf)(comm,"\n  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
         ierr = (*PetscHelpPrintf)(comm,"    -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);

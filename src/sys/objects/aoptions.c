@@ -29,6 +29,10 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!PetscOptionsHelpPrintedSingleton) {
+    ierr = PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton,prefix,title,&PetscOptionsObject->alreadyprinted);CHKERRQ(ierr);
   PetscOptionsObject->next          = 0;
   PetscOptionsObject->comm          = comm;
   PetscOptionsObject->changedmethod = PETSC_FALSE;
