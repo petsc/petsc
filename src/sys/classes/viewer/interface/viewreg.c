@@ -7,15 +7,8 @@
 PetscFunctionList PetscViewerList = 0;
 
 /*
-  A standard run of an implicit TS generated 60 help message hashes,
-  thus we reserve room for 5 combinations of prefixes. If that is not
-  enough then any additional help messages will be printed multiple times.
+  Use a hash set to prevent the same help message from being printed multiple times
 */
-#define PETSCSTRINGHASHSIZE 300
-typedef struct {
-  int           cnt;
-  unsigned long hashes[PETSCSTRINGHASHSIZE];
-} PetscStrHash;
 
 #include "../src/sys/utils/hash.h"
 
