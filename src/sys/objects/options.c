@@ -1047,7 +1047,7 @@ PetscErrorCode  PetscObjectSetPrintedOptions(PetscObject obj)
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectInheritPrintedOptions"
 /*@
-    PetscObjectSetPrintedOptions - If the child object is not on the rank 0 process of the parent object and the child is sequential then the child gets it set.
+    PetscObjectInheritPrintedOptions - If the child object is not on the rank 0 process of the parent object and the child is sequential then the child gets it set.
 
   Input Parameters:
 +  pobj - the parent object
