@@ -102,9 +102,9 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     }
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
     ierr   = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
-    if(pmetis->repartition){
+    if (pmetis->repartition){
       PetscStackCallParmetis(ParMETIS_V3_AdaptiveRepart,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,&itr,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
-    }else{
+    } else{
       PetscStackCallParmetis(ParMETIS_V3_PartKway,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
     }
     ierr   = MPI_Comm_free(&comm);CHKERRQ(ierr);

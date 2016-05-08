@@ -337,7 +337,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /*
       Compute differencing parameter
   */
-  if (!ctx->ops->compute) {
+  if (!((PetscObject)ctx)->type_name) {
     ierr = MatMFFDSetType(mat,MATMFFD_WP);CHKERRQ(ierr);
     ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
   }

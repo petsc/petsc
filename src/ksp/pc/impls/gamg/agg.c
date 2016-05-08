@@ -1031,19 +1031,19 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
 {
   PC_MG          *mg       = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg  = (PC_GAMG*)mg->innerctx;
-  const PetscInt data_cols = pc_gamg->data_cell_cols;
+  const PetscInt col_bs = pc_gamg->data_cell_cols;
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,nloc,ii,jj,kk,my0,nLocalSelected,bs;
   Mat            Prol;
   PetscMPIInt    rank, size;
   MPI_Comm       comm;
-  const PetscInt col_bs = data_cols;
   PetscReal      *data_w_ghost;
   PetscInt       myCrs0, nbnodes=0, *flid_fgid;
   MatType        mtype;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
+  if (col_bs < 1) SETERRQ(comm,PETSC_ERR_PLIB,"Column bs cannot be less than 1");
   ierr = PetscLogEventBegin(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -1066,12 +1066,8 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
   ierr = MatSetSizes(Prol,nloc*bs,nLocalSelected*col_bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Prol, bs, col_bs);CHKERRQ(ierr);
   ierr = MatSetType(Prol, mtype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Prol, data_cols, NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Prol,data_cols, NULL,data_cols, NULL);CHKERRQ(ierr);
-  /* nloc*bs, nLocalSelected*col_bs, */
-  /* PETSC_DETERMINE, PETSC_DETERMINE, */
-  /* data_cols, NULL, data_cols, NULL, */
-  /* &Prol); */
+  ierr = MatSeqAIJSetPreallocation(Prol, col_bs, NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Prol,col_bs, NULL,col_bs, NULL);CHKERRQ(ierr);
 
   /* can get all points "removed" */
   ierr =  MatGetSize(Prol, &kk, &ii);CHKERRQ(ierr);
@@ -1095,7 +1091,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
   if (size > 1) { /*  */
     PetscReal *tmp_gdata,*tmp_ldata,*tp2;
     ierr = PetscMalloc1(nloc, &tmp_ldata);CHKERRQ(ierr);
-    for (jj = 0; jj < data_cols; jj++) {
+    for (jj = 0; jj < col_bs; jj++) {
       for (kk = 0; kk < bs; kk++) {
         PetscInt        ii,stride;
         const PetscReal *tp = pc_gamg->data + jj*bs*nloc + kk;
@@ -1104,7 +1100,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
         ierr = PCGAMGGetDataWithGhosts(Gmat, 1, tmp_ldata, &stride, &tmp_gdata);CHKERRQ(ierr);
 
         if (!jj && !kk) { /* now I know how many todal nodes - allocate */
-          ierr    = PetscMalloc1(stride*bs*data_cols, &data_w_ghost);CHKERRQ(ierr);
+          ierr    = PetscMalloc1(stride*bs*col_bs, &data_w_ghost);CHKERRQ(ierr);
           nbnodes = bs*stride;
         }
         tp2 = data_w_ghost + jj*bs*stride + kk;
@@ -1142,12 +1138,12 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
 #endif
   {
     PetscReal *data_out = NULL;
-    ierr = formProl0(agg_lists, bs, data_cols, myCrs0, nbnodes,data_w_ghost, flid_fgid, &data_out, Prol);CHKERRQ(ierr);
+    ierr = formProl0(agg_lists, bs, col_bs, myCrs0, nbnodes,data_w_ghost, flid_fgid, &data_out, Prol);CHKERRQ(ierr);
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
 
     pc_gamg->data           = data_out;
-    pc_gamg->data_cell_rows = data_cols;
-    pc_gamg->data_sz        = data_cols*data_cols*nLocalSelected;
+    pc_gamg->data_cell_rows = col_bs;
+    pc_gamg->data_sz        = col_bs*col_bs*nLocalSelected;
   }
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET8],0,0,0,0);CHKERRQ(ierr);

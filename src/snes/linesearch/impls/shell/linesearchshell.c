@@ -76,6 +76,13 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 
    Not Collective
 
+   Input Parameter:
+.     linesearch - the line search object
+
+   Output Parameters:
++    func  - the user function; can be NULL if you do not want it
+-    ctx   - the user function context; can be NULL if you do not want it
+
    Level: advanced
 
    .keywords: SNESLineSearch, get, Shell, user, function
@@ -94,8 +101,8 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
   if (ctx)  PetscValidPointer(ctx,3);
   ierr = PetscObjectTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
-    *ctx  = shell->ctx;
-    *func = shell->func;
+    if (func) *func = shell->func;
+    if (ctx) *ctx  = shell->ctx;
   }
   PetscFunctionReturn(0);
 }

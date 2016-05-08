@@ -379,6 +379,8 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
   MPI_Comm            comm;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
@@ -539,6 +541,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   MPI_Comm            comm;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
@@ -569,7 +572,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
    VecNormEnd - Ends a split phase norm computation.
 
    Input Parameters:
-+  x - the first vector (can be NULL)
++  x - the first vector 
 .  ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
 -  result - where the result will go
 
@@ -577,6 +580,8 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 
    Notes:
    Each call to VecNormBegin() should be paired with a call to VecNormEnd().
+
+   The x vector is not allowed to be NULL, otherwise the vector would not have its correctly cached norm value
 
 .seealso: VecNormBegin(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd(), PetscCommSplitReductionBegin()
 
@@ -588,12 +593,13 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   MPI_Comm            comm;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);  
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   ierr = PetscSplitReductionEnd(sr);CHKERRQ(ierr);
 
   if (sr->numopsend >= sr->numopsbegin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
-  if (x && (void*)x != sr->invecs[sr->numopsend]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+  if ((void*)x != sr->invecs[sr->numopsend]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   if (sr->reducetype[sr->numopsend] != REDUCE_MAX && ntype == NORM_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
   result[0] = PetscRealPart(sr->gvalues[sr->numopsend++]);
 
