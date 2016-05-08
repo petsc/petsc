@@ -1033,7 +1033,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(exact_solution,NULL);CHKERRQ(ierr);
   ierr = VecShift(exact_solution,-0.5);CHKERRQ(ierr);
   ierr = VecScale(exact_solution,100.0);CHKERRQ(ierr);
-  ierr = VecGetSize(exact_solution,&ndofs);
+  ierr = VecGetSize(exact_solution,&ndofs);CHKERRQ(ierr);
   if (dd.pure_neumann) {
     ierr = VecSum(exact_solution,&scalar_value);CHKERRQ(ierr);
     scalar_value = -scalar_value/(PetscScalar)ndofs;

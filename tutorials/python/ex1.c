@@ -83,15 +83,11 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,0,help);
-
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = PetscPythonInitialize(PYTHON_EXE,PYTHON_LIB);CHKERRQ(ierr);
-
   ierr = RunTest();PetscPythonPrintError();CHKERRQ(ierr);
-
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 
 /* ------------------------------------------------------- */

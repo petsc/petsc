@@ -31,9 +31,9 @@ int main(int argc,char **args)
   } else {
     ierr = PetscObjectTypeCompare((PetscObject)C,MATMPIAIJ,&isAIJ);CHKERRQ(ierr);
   }
-  ierr = MatSeqAIJSetPreallocation(C,3,NULL);
+  ierr = MatSeqAIJSetPreallocation(C,3,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(C,3,NULL,3,NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(C,bs,3,NULL);
+  ierr = MatSeqBAIJSetPreallocation(C,bs,3,NULL);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(C,bs,3,NULL,3,NULL);CHKERRQ(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;

@@ -120,7 +120,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscInitialize(&argc,&argv,"options.inf",help);
+  ierr =  PetscInitialize(&argc,&argv,"options.inf",help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -176,7 +176,7 @@ int main(int argc,char **argv)
   sprintf(part_name,"output.%d",rank);
   fptr1 = fopen(part_name,"w");
   if (!fptr1) SETERRQ(PETSC_COMM_SELF,0,"Could no open output file");
-  ierr = PetscMalloc1(user.Nvglobal,&user.gloInd);
+  ierr = PetscMalloc1(user.Nvglobal,&user.gloInd);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Rank is %D\n",rank);CHKERRQ(ierr);
   for (inode = 0; inode < user.Nvglobal; inode++) {
     if (!fgets(str,256,fptr)) SETERRQ(PETSC_COMM_SELF,1,"fgets read failed");
@@ -503,8 +503,7 @@ int main(int argc,char **argv)
     ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"

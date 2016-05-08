@@ -37,5 +37,5 @@ int main(int argc,char **argv)
 
   ierr = PetscFree(localvert);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }

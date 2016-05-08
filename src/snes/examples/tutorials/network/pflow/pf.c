@@ -430,7 +430,7 @@ int main(int argc,char ** argv)
   Mat            J;
   SNES           snes;
 
-  PetscInitialize(&argc,&argv,"pfoptions",help);
+  ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Create an empty network object */

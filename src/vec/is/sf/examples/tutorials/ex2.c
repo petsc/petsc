@@ -22,8 +22,7 @@ int main(int argc, char **argv)
   PetscInt    *ilocal;
   PetscSFNode *iremote;
 
-  PetscInitialize(&argc,&argv,NULL,help);
-
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 

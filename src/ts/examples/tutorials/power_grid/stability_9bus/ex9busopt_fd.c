@@ -912,8 +912,8 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&user.dmpgrid);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_diff);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_alg);CHKERRQ(ierr);
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /* ------------------------------------------------------------------ */

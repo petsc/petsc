@@ -23,7 +23,7 @@ int main(int argc, char** argv)
   char infile[PETSC_MAX_PATH_LEN],datafiles[PETSC_MAX_PATH_LEN];
   PetscBool flg;
 
-  PetscInitialize(&argc, &argv, (char*)0, help);
+  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
   int size=-1;   MPI_Comm_size(PETSC_COMM_WORLD, &size);
   int myrank=-1; MPI_Comm_rank(PETSC_COMM_WORLD, &myrank);
 

@@ -19,7 +19,7 @@ int main(int argc, char **argv)
   char           filename[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv, (char*)0, help);
+  ierr = PetscInitialize(&argc,&argv, (char*)0, help);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,4*n,&x);CHKERRQ(ierr);

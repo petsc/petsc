@@ -123,7 +123,6 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
-
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }

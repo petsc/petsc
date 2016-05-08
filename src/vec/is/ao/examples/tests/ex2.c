@@ -33,14 +33,13 @@ int main(int argc,char **argv)
 
   /* create the application ordering */
   ierr = AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao);CHKERRQ(ierr);
-
   ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* check the mapping */
   ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (ispetsc[i] != isapp[i]) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %D to %D\n",rank,i,ispetsc[i]);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %D to %D\n",rank,i,ispetsc[i]);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree2(ispetsc,isapp);CHKERRQ(ierr);

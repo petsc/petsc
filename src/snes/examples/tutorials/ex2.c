@@ -182,8 +182,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&J);CHKERRQ(ierr);  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&monP.viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

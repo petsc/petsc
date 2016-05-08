@@ -91,8 +91,7 @@ PetscErrorCode main(int argc,char **argv)
   PetscReal          one=1.0;
 
   /* Initialize TAO,PETSc */
-  PetscInitialize(&argc,&argv,(char *)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size >1) SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
 

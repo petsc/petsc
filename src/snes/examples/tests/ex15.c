@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
 
   /* Initialize PETSC */
-  PetscInitialize(&argc, &argv,(char*)0,help);
+  ierr = PetscInitialize(&argc, &argv,(char*)0,help);if (ierr) return ierr;
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");

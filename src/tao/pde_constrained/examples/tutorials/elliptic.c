@@ -726,7 +726,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecGetLocalSize(user->subd,&dsubnlocal);CHKERRQ(ierr);
   ierr = VecSetSizes(user->d,dsubnlocal*user->ns,user->ndata*user->ns);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->d);CHKERRQ(ierr);
-  ierr = PetscMalloc1(user->ns,&user->di_scatter);
+  ierr = PetscMalloc1(user->ns,&user->di_scatter);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(user->d,&lo2,&hi2);CHKERRQ(ierr);
   istart = 0;

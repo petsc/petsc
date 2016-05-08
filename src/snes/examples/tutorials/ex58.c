@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   Mat            J;                 /* Jacobian matrix */
   DM             da;
 
-  PetscInitialize(&argc, &argv, (char*)0, help);
+  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
 
   /* Create distributed array to manage the 2d grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);

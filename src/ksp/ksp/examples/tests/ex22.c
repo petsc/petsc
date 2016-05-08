@@ -232,6 +232,6 @@ int main(int argc, char **args)
   ierr = PetscInitialize(&argc, &args,(char*)0, help);if (ierr) return ierr;
   ierr = test_solve();CHKERRQ(ierr);
   ierr = test_solve_matgetvecs();CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();
   return ierr;
 }

@@ -69,6 +69,6 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();
   return ierr;
 }

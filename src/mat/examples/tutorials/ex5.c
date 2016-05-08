@@ -143,7 +143,7 @@ int main(int argc,char **args)
   char           name[1024];
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,0,help);
+  ierr = PetscInitialize(&argc,&args,0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-f",name,1024,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must pass in filename with -f option");
   ierr = Mat_Parallel_Load(PETSC_COMM_WORLD,name,&A);CHKERRQ(ierr);

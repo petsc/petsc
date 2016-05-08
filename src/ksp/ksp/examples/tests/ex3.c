@@ -61,10 +61,8 @@ int main(int argc,char **args)
   end   = start + M/size + ((M%size) > rank);
 
   /* Assemble matrix */
-  ierr = FormElementStiffness(h*h,Ke);   /* element stiffness for Laplacian */
+  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);   /* element stiffness for Laplacian */
   for (i=start; i<end; i++) {
-    /* location of lower left corner of element */
-    x = h*(i % m); y = h*(i/m);
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;

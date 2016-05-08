@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscViewer    viewer;
 
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,"advection-diffusion-reaction/ex1");CHKERRQ(ierr);
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"advection-diffusion-reaction/binaryoutput",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -34,6 +34,5 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,NULL);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }

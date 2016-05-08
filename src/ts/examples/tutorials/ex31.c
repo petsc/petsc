@@ -1078,7 +1078,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = VecSet(Y,0);CHKERRQ(ierr);
 
   /* Initialize the problem */
-  ierr = Initialize(Y,&ptype[0]);
+  ierr = Initialize(Y,&ptype[0]);CHKERRQ(ierr);
 
   /* Create and initialize the time-integrator                            */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
@@ -1096,11 +1096,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
-  } else if ((!strcmp(time_scheme,TSTHETA)) ||
-             (!strcmp(time_scheme,TSBEULER)) ||
-             (!strcmp(time_scheme,TSCN)) ||
-             (!strcmp(time_scheme,TSALPHA)) ||
-             (!strcmp(time_scheme,TSARKIMEX))) {
+  } else if ((!strcmp(time_scheme,TSTHETA)) || (!strcmp(time_scheme,TSBEULER)) || (!strcmp(time_scheme,TSCN)) || (!strcmp(time_scheme,TSALPHA)) || (!strcmp(time_scheme,TSARKIMEX))) {
     /* Implicit time-integration -> specify left-hand side function ydot-f(y) = 0 */
     /* and its Jacobian function                                                 */
     ierr = TSSetIFunction(ts,NULL,IFunction,&ptype[0]);CHKERRQ(ierr);
@@ -1182,7 +1178,6 @@ int main(int argc, char **argv)
     }
   }
   ierr = PetscFree(error);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   return ierr;
 }

@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscInitialize(&argc, &argv, (char*) 0, help);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL);CHKERRQ(ierr);
 
@@ -113,6 +113,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&y3);CHKERRQ(ierr);
   ierr = VecDestroy(&y4);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 

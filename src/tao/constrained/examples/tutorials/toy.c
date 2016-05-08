@@ -61,7 +61,7 @@ PetscErrorCode main(int argc,char **argv)
   PC                 pc;
   AppCtx             user;                /* application context */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- TOY Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution should be f(1,1)=-2\n");CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr);

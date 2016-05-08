@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   AppCtx         user; /* Application context */
   PetscViewer    viewer;
 
-  PetscInitialize(&argc,&argv,"petscopt_ex7", help);
+  ierr = PetscInitialize(&argc,&argv,"petscopt_ex7", help);if (ierr) return ierr;
 
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
@@ -69,8 +69,8 @@ int main(int argc, char **argv)
   ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0,0);CHKERRQ(ierr);
-  ierr = DMDASetCoordinateName(user.da,0,"X - the angle");
-  ierr = DMDASetCoordinateName(user.da,1,"Y - the speed");
+  ierr = DMDASetCoordinateName(user.da,0,"X - the angle");CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(user.da,1,"Y - the speed");CHKERRQ(ierr);
 
   /* Get global vector x from DM  */
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);

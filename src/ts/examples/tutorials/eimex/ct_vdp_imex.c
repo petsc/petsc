@@ -58,8 +58,7 @@ int main(int argc, char **argv)
   struct _User      user;       /* user-defined work context */
   PetscViewer       viewer;
 
-  PetscInitialize(&argc,&argv,NULL,help);
-
+  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
   /* Initialize user application context */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");
   user.mu      = 1e0;

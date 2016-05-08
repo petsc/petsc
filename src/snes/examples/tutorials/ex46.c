@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 
 #undef __FUNCT__

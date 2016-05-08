@@ -49,7 +49,6 @@ int main(int argc,char **argv)
   ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }

@@ -95,7 +95,7 @@ int main(int argc,char **args)
   {
     /* Check the symmetry of C because it will be converted to a sbaij matrix */
     Mat Ctrans;
-    ierr = MatTranspose(C, MAT_INITIAL_MATRIX,&Ctrans);
+    ierr = MatTranspose(C, MAT_INITIAL_MATRIX,&Ctrans);CHKERRQ(ierr);
     ierr = MatEqual(C, Ctrans, &flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);

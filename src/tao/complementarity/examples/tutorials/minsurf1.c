@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   AppCtx         user;                    /* user-defined work context */
 
   /* Initialize PETSc, TAO */
-  PetscInitialize(&argc, &argv, (char *)0, help );
+  ierr = PetscInitialize(&argc, &argv, (char *)0, help );CHKERRQ(ierr);
 
   /* Specify default dimension of the problem */
   user.mx = 4; user.my = 4;
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"mx:%D, my:%D\n", user.mx,user.my);CHKERRQ(ierr);
 
   /* Create appropriate vectors and matrices */
-  ierr = VecCreateSeq(MPI_COMM_SELF, N, &x);
+  ierr = VecCreateSeq(MPI_COMM_SELF, N, &x);CHKERRQ(ierr);
   ierr = VecDuplicate(x, &c);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, NULL, &J);CHKERRQ(ierr);
 

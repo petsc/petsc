@@ -281,6 +281,6 @@ int main(int argc,char **argv)
   
   ierr = PetscFree(app.sw);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }
 

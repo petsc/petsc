@@ -220,7 +220,7 @@ int main(int argc, char **argv)
   PetscInt       its;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc, &argv, NULL, help);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);
   if(size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only");
 

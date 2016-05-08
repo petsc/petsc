@@ -426,7 +426,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }

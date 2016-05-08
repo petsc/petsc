@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* read matrices A, B and C */
   ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fA options");
@@ -59,6 +59,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
