@@ -68,6 +68,7 @@ PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
 PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,IS*);
 PetscErrorCode PCBDDCBenignCheck(PC,IS);
 PetscErrorCode PCBDDCBenignShellMat(PC,PetscBool);
+PetscErrorCode PCBDDCBenignRemoveInterior(PC,Vec,Vec);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);

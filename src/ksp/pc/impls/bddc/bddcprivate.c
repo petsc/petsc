@@ -55,6 +55,48 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCBenignRemoveInterior"
+PetscErrorCode PCBDDCBenignRemoveInterior(PC pc,Vec r,Vec z)
+{
+  PC_IS             *pcis = (PC_IS*)(pc->data);
+  PC_BDDC           *pcbddc = (PC_BDDC*)(pc->data);
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (!pcbddc->benign_have_null) {
+    PetscFunctionReturn(0);
+  }
+  if (pcbddc->ChangeOfBasisMatrix) {
+    Vec swap;
+
+    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,r,pcbddc->work_change);CHKERRQ(ierr);
+    swap = pcbddc->work_change;
+    pcbddc->work_change = r;
+    r = swap;
+  }
+  ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (pcbddc->benign_n) {
+    ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  } else {
+    ierr = VecSet(pcis->vec2_D,0.);CHKERRQ(ierr);
+  }
+  ierr = VecSet(z,0.);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  if (pcbddc->ChangeOfBasisMatrix) {
+    Vec swap;
+
+    swap = r;
+    r = pcbddc->work_change;
+    pcbddc->work_change = swap;
+    ierr = VecCopy(z,pcbddc->work_change);CHKERRQ(ierr);
+    ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcbddc->work_change,z);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCBenignMatMult_Private_Private"
 PetscErrorCode PCBDDCBenignMatMult_Private_Private(Mat A, Vec x, Vec y, PetscBool transpose)
 {
@@ -3338,7 +3380,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
 
         ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
         ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
-        ierr = PCApply(coarse_pc,rhs,sol);CHKERRQ(ierr);
+        ierr = PCBDDCBenignRemoveInterior(coarse_pc,rhs,sol);CHKERRQ(ierr);
         ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
       } else {
         ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
