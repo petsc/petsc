@@ -4079,6 +4079,7 @@ PetscErrorCode MatSolverPackageRegister(const MatSolverPackage package,const Mat
   while (next) {
     ierr = PetscStrcasecmp(package,next->name,&flg);CHKERRQ(ierr);
     if (flg) {
+      if (!next->handlers) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatSolverPackageHolder is missing handlers");
       inext = next->handlers;
       while (inext) {
         ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
