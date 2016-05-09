@@ -15,17 +15,10 @@ typedef struct {
   STRUMPACK_MatInputMode MatInputMode;
 } STRUMPACK_data;
 
-extern PetscErrorCode MatFactorInfo_STRUMPACK(Mat,PetscViewer);
-extern PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat,Mat,const MatFactorInfo*);
-extern PetscErrorCode MatDestroy_STRUMPACK(Mat);
-extern PetscErrorCode MatView_STRUMPACK(Mat,PetscViewer);
-extern PetscErrorCode MatSolve_STRUMPACK(Mat,Vec,Vec);
-extern PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat,Mat,IS,IS,const MatFactorInfo*);
-extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_STRUMPACK"
-PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A,Vec v)
+static PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A,Vec v)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type: STRUMPACK factor");
@@ -34,7 +27,7 @@ PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A,Vec v)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_STRUMPACK"
-PetscErrorCode MatDestroy_STRUMPACK(Mat A)
+static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
 {
   STRUMPACK_data *sp = (STRUMPACK_data*)A->spptr;
   PetscErrorCode ierr;
@@ -55,7 +48,7 @@ PetscErrorCode MatDestroy_STRUMPACK(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_STRUMPACK"
-PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
+static PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
 {
   STRUMPACK_data        *sp = (STRUMPACK_data*)A->spptr;
   STRUMPACK_RETURN_CODE sp_err;
@@ -113,7 +106,7 @@ PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatSolve_STRUMPACK"
-PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
+static PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
 {
   PetscErrorCode   ierr;
   PetscBool        flg;
@@ -127,10 +120,41 @@ PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorInfo_STRUMPACK"
+static PetscErrorCode MatFactorInfo_STRUMPACK(Mat A,PetscViewer viewer)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* check if matrix is strumpack type */
+  if (A->ops->solve != MatSolve_STRUMPACK) PetscFunctionReturn(0);
+  ierr = PetscViewerASCIIPrintf(viewer,"STRUMPACK sparse solver!\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatView_STRUMPACK"
+static PetscErrorCode MatView_STRUMPACK(Mat A,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  PetscBool         iascii;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO) {
+      ierr = MatFactorInfo_STRUMPACK(A,viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_STRUMPACK"
-PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
   STRUMPACK_data        *sp = (STRUMPACK_data*)F->spptr;
   STRUMPACK_RETURN_CODE sp_err;
@@ -189,7 +213,7 @@ PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorInfo *inf
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_STRUMPACK"
-PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   F->ops->lufactornumeric = MatLUFactorNumeric_STRUMPACK;
@@ -200,7 +224,7 @@ PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F,Mat A,IS r,IS c,const MatFact
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_aij_strumpack"
-PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSTRUMPACK;
@@ -209,7 +233,7 @@ PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSolverPack
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_aij_strumpack"
-PETSC_EXTERN PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *F)
+static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat                 B;
   STRUMPACK_data      *sp;
@@ -279,39 +303,6 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_STRUMPACK(void)
   ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_STRUMPACK"
-PetscErrorCode MatFactorInfo_STRUMPACK(Mat A,PetscViewer viewer)
-{
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  /* check if matrix is strumpack type */
-  if (A->ops->solve != MatSolve_STRUMPACK) PetscFunctionReturn(0);
-  ierr = PetscViewerASCIIPrintf(viewer,"STRUMPACK sparse solver!\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatView_STRUMPACK"
-PetscErrorCode MatView_STRUMPACK(Mat A,PetscViewer viewer)
-{
-  PetscErrorCode    ierr;
-  PetscBool         iascii;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_STRUMPACK(A,viewer);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 
 /*MC
   MATSOLVERSSTRUMPACK - Parallel direct solver package for LU factorization
