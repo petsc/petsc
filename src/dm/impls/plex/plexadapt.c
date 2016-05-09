@@ -26,7 +26,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   PetscInt             numBdFaces, f, maxConeSize, bdSize, coff;
   const PetscScalar   *metricArray;
   PetscReal           *met;
-  PetscInt            *cell, perm[30], isInFacetClosure[30], iVer, cellOff, i, idx, facet; // 30 is twice the max size of a cell closure in 3D for tet meshes
+  PetscInt            *cell, perm[4], isInFacetClosure[4], iVer, cellOff, i, j, idx, facet; // 30 is twice the max size of a cell closure in 3D for tet meshes
   PetscInt            *boundaryTags;
   PetscBool           flag, hasBdyFacet;
     
@@ -186,15 +186,17 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     cell = &cellsAdp[cellOff]; // pointing to the current cell in the ccell table
     ierr = DMPlexGetTransitiveClosure(*dmAdapted, c, PETSC_TRUE, &cellClosureSize, &cellClosure);CHKERRQ(ierr);
     /* first, encode the permutation of the vertices indices betwenn the cell closure and pragmatic ordering */
-    for (cl = 0; cl < cellClosureSize*2; cl+=2) {
+    j = 0;
+    for (cl=0; cl<cellClosureSize*2; cl+=2) {
       if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) continue;
       iVer = cellClosure[cl] - vStart;
       for (i=0; i<dim+1; ++i) {
         if (iVer == cell[i]) {
-          perm[cl] = i;    // the cl-th element of the closure is the i-th vertex of the cell
+          perm[j] = i;    // the cl-th element of the closure is the i-th vertex of the cell
           break;
         }
       }
+      j++;
     }
     ierr = DMPlexGetCone(*dmAdapted, c, &facetList);CHKERRQ(ierr);     // list of edges/facets of the cell
     ierr = DMPlexGetConeSize(*dmAdapted, c, &facetListSize);CHKERRQ(ierr);
@@ -204,24 +206,29 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
       ierr = DMPlexGetTransitiveClosure(*dmAdapted, facet, PETSC_TRUE, &facetClosureSize, &facetClosure);CHKERRQ(ierr);
       /* loop over the vertices of the cell closure, and check if each vertex belongs to the edge/facet closure */
       PetscMemzero(isInFacetClosure, sizeof(isInFacetClosure));
-      for (cl = 0; cl < cellClosureSize*2; cl+=2) {
-        if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) isInFacetClosure[cl] = 1;
-        for (cl2 =0; cl2<facetClosureSize*2; cl2+=2){
+      j = 0;
+      for (cl=0; cl<cellClosureSize*2; cl+=2) {
+        if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) continue; //isInFacetClosure[cl] = 1;
+        for (cl2=0; cl2<facetClosureSize*2; cl2+=2){
           if ((facetClosure[cl2] < vStart) || (facetClosure[cl2] >= vEnd)) continue;
           if (cellClosure[cl] == facetClosure[cl2]) {
-            isInFacetClosure[cl] = 1;
+            isInFacetClosure[j] = 1;
           }
         }
+        j++;
       }
       /* the vertex that was not marked is the vertex opposite to the edge/facet, ie the one giving the edge/facet boundary tag in pragmatic */
-      for (cl = 0; cl < cellClosureSize*2; cl+=2) {
-        if (!isInFacetClosure[cl]) {
-          idx = cellOff + perm[cl];
+      j = 0;
+      for (cl=0; cl<cellClosureSize*2; cl+=2) {
+        if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) continue;
+        if (!isInFacetClosure[j]) {
+          idx = cellOff + perm[j];
           if (boundaryTags[idx]) {
             ierr = DMLabelSetValue(bdTagsAdp, facet, boundaryTags[idx]);CHKERRQ(ierr);
           }
           break;
         }
+        j++;
       }
       ierr = DMPlexRestoreTransitiveClosure(*dmAdapted, facet, PETSC_TRUE, &facetClosureSize, &facetClosure);CHKERRQ(ierr);
     }
