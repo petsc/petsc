@@ -26,9 +26,9 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   PetscInt             numBdFaces, f, maxConeSize, bdSize, coff;
   const PetscScalar   *metricArray;
   PetscReal           *met;
-  PetscInt            *cell, perm[30], isInFacetClosure[30], iVer, i, idx, facet; // 30 is twice the max size of a cell closure in 3D for tet meshes
+  PetscInt            *cell, perm[30], isInFacetClosure[30], iVer, cellOff, i, idx, facet; // 30 is twice the max size of a cell closure in 3D for tet meshes
   PetscInt            *boundaryTags;
-  PetscBool           flag;
+  PetscBool           flag, hasBdyFacet;
     
 #endif
   PetscErrorCode ierr;
@@ -173,8 +173,17 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     const PetscInt *facetList;
     PetscInt        facetListSize, f;
     
-    // TODO: ne puis-je pas sauter les cells sans aucune frontière ?
-    cell = &cellsAdp[(c-cStart)*(dim+1)]; // pointing to the current cell in the ccell table
+    cellOff = (c-cStart)*(dim+1);  // gives the offset corresponding to the cell in pragmatic boundary arrays. Simplicial mesh assumed
+    hasBdyFacet = 0;
+    for (i=0; i<(dim+1); ++i) {
+      if (boundaryTags[cellOff + i]) {
+        hasBdyFacet = 1;
+        break;
+      }
+    }
+    if (!hasBdyFacet) continue; // The cell has no boundary facet => no boundary tagging
+    
+    cell = &cellsAdp[cellOff]; // pointing to the current cell in the ccell table
     ierr = DMPlexGetTransitiveClosure(*dmAdapted, c, PETSC_TRUE, &cellClosureSize, &cellClosure);CHKERRQ(ierr);
     /* first, encode the permutation of the vertices indices betwenn the cell closure and pragmatic ordering */
     for (cl = 0; cl < cellClosureSize*2; cl+=2) {
@@ -207,7 +216,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
       /* the vertex that was not marked is the vertex opposite to the edge/facet, ie the one giving the edge/facet boundary tag in pragmatic */
       for (cl = 0; cl < cellClosureSize*2; cl+=2) {
         if (!isInFacetClosure[cl]) {
-          idx = (c-cStart)*(dim+1) + perm[cl];
+          idx = cellOff + perm[cl];
           if (boundaryTags[idx]) {
             ierr = DMLabelSetValue(bdTagsAdp, facet, boundaryTags[idx]);CHKERRQ(ierr);
           }
