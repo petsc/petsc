@@ -899,6 +899,7 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   ierr = VecDuplicateVecs(ts->vec_sol,s,&glee->YdotStage);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&glee->Ydot);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&glee->yGErr);CHKERRQ(ierr);
+  ierr = VecZeroEntries(glee->yGErr);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&glee->W);CHKERRQ(ierr);
   ierr = PetscMalloc1(s,&glee->work);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -1175,11 +1176,11 @@ PetscErrorCode TSGetTimeError_GLEE(TS ts,PetscInt n,Vec *X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = VecZeroEntries(*X);CHKERRQ(ierr);
   if(n==0){
-    ierr = VecZeroEntries(*X);CHKERRQ(ierr);
     ierr = VecMAXPY((*X),r,F,Y);CHKERRQ(ierr);
   } else if(n==-1) {
-    ierr = VecCopy(glee->yGErr,*X);CHKERRQ(ierr);
+    *X=glee->yGErr;
   }
   PetscFunctionReturn(0);
 }

@@ -5198,8 +5198,10 @@ Particular API used by this TS method:
     then call to get the $i$-th solution component. 
 \item TSGetAuxSolution: Returns the auxiliary solution $\tilde{y}$ (computed as $F_{embed} Y$)\\
     ierr = TSGetAuxSolution(TS,Vec*)
-\item TSGetTimeError: Returns the estimated error vector $\varepsilon$ (computed as $F_{error} Y$)\\
-    ierr = TSGetTimeError(TS,Vec*)
+\item TSGetTimeError: Returns the estimated error vector $\varepsilon$
+(computed as $F_{error} Y$ if $n=0$ or restores the error estimate at
+    the end of the previous step if $n=-1$)\\
+    ierr = TSGetTimeError(TS,PetscInt n,Vec*)
 \item TSSetTimeError: Initializes the auxiliary solution ($\tilde{y}$
 or $\varepsilon$) for a specified initial error. \\
     ierr = TSSetTimeError(TS,Vec)

@@ -2327,6 +2327,7 @@ PetscErrorCode  TSGetAuxSolution(TS ts,Vec *v)
 
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
+.  n - current estimate (n=0) or previous one (n=-1)
 .  v - the vector containing the error (same size as the solution).
 
    Level: intermediate
