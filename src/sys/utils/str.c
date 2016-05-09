@@ -70,7 +70,7 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
   for (i=0; i<n; i++) {
     if (s[i] != sp) break;
   }
-  for (;i<n+1; i++) {
+  for (;i<n; i++) {
     if ((s[i] == sp || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
     else if (s[i] != sp) {lens[*argc]++;flg = PETSC_FALSE;}
   }
