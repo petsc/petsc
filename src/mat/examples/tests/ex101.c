@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&pA);CHKERRQ(ierr);
 
   /* Create AIJ equivalent matrix, aijP, for comparison testing */
-  ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);
+  ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);CHKERRQ(ierr);
 
   /* Create AIJ matrix, A */
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);

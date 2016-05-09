@@ -217,8 +217,7 @@ PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt
     *p1 = fpos*(3*p[j][i] - 4*p[j][i-1] + p[j][i-2])/(2*user->dx) + fneg*(-p[j][i+2] + 4*p[j][i+1] - 3*p[j][i])/(2*user->dx);
   } else if (user->st_width == 3) {
     *p1 = fpos*(2*p[j][i+1] + 3*p[j][i] - 6*p[j][i-1] + p[j][i-2])/(6*user->dx) + fneg*(-p[j][i+2] + 6*p[j][i+1] - 3*p[j][i] - 2*p[j][i-1])/(6*user->dx);
-  }
-  /* *p1 = f*(p[j][i+1] - p[j][i-1])/user->dx;*/
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No support for wider stencils");
   PetscFunctionReturn(0);
 }
 
@@ -238,9 +237,7 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
     *p2 = fpos*(3*p[j][i] - 4*p[j-1][i] + p[j-2][i])/(2*user->dy) + fneg*(-p[j+2][i] + 4*p[j+1][i] - 3*p[j][i])/(2*user->dy);
   } else if (user->st_width == 3) {
     *p2 = fpos*(2*p[j+1][i] + 3*p[j][i] - 6*p[j-1][i] + p[j-2][i])/(6*user->dy) + fneg*(-p[j+2][i] + 6*p[j+1][i] - 3*p[j][i] - 2*p[j-1][i])/(6*user->dy);
-  }
-
-  /* *p2 = f*(p[j+1][i] - p[j-1][i])/user->dy;*/
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No support for wider stencils");
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +253,7 @@ PetscErrorCode diffuse(PetscScalar **p,PetscInt i,PetscInt j,PetscReal t,PetscSc
     *p_diff = user->disper_coe*((-p[j-2][i] + 16*p[j-1][i] - 30*p[j][i] + 16*p[j+1][i] - p[j+2][i])/(12.0*user->dy*user->dy));
   } else if (user->st_width == 3) {
     *p_diff = user->disper_coe*((2*p[j-3][i] - 27*p[j-2][i] + 270*p[j-1][i] - 490*p[j][i] + 270*p[j+1][i] - 27*p[j+2][i] + 2*p[j+3][i])/(180.0*user->dy*user->dy));
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No support for wider stencils");
   PetscFunctionReturn(0);
 }
 

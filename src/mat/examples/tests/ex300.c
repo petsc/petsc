@@ -67,8 +67,7 @@ int main(int argc,char **args)
   ierr = MatConvert(C,MATSAME, MAT_INITIAL_MATRIX, &lMatA);CHKERRQ(ierr);
   ierr = MatView(lMatA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  v = -1.0;
-  ierr = MatShift(lMatA,v);
+  ierr = MatShift(lMatA,-1.0);CHKERRQ(ierr);
 
   ierr = MatDestroy(&lMatA);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);

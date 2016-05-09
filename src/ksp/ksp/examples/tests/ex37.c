@@ -123,9 +123,9 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
   if (flg && rank == id) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);CHKERRQ(ierr);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i]));}
+    for (i=0; i<m; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%g\n",(double)PetscRealPart(array[i]));CHKERRQ(ierr);}
     ierr = VecRestoreArray(subb,&array);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank);CHKERRQ(ierr);
     ierr = VecGetArray(subx,&array);CHKERRQ(ierr);

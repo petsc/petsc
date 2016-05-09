@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (rank == prid) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A: \n",rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A: \n",rank);CHKERRQ(ierr);
     ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

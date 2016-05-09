@@ -1078,7 +1078,7 @@ int main(int argc,char **args)
   }
   ierr = VecAXPY(fetidp_solution_all,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  ierr = VecGetSize(fetidp_solution,&ndofs);
+  ierr = VecGetSize(fetidp_solution,&ndofs);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n");CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);

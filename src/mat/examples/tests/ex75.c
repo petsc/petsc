@@ -156,7 +156,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatGetSize(), MatGetLocalSize() */
-  ierr = MatGetSize(sA, &i,&j); ierr = MatGetSize(A, &i2,&j2);CHKERRQ(ierr);
+  ierr = MatGetSize(sA, &i,&j); CHKERRQ(ierr);
+  ierr = MatGetSize(A, &i2,&j2);CHKERRQ(ierr);
   i   -= i2; j -= j2;
   if (i || j) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank);CHKERRQ(ierr);
@@ -304,7 +305,6 @@ int main(int argc,char **args)
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&sB);CHKERRQ(ierr);
-
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);

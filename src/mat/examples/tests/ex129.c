@@ -116,7 +116,7 @@ int main(int argc,char **args)
   ierr = MatSolveTransposeAdd(F,b,y,x);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,y,b1);CHKERRQ(ierr);
   ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd(A,x,b1,b1);
+  ierr = MatMultTransposeAdd(A,x,b1,b1);CHKERRQ(ierr);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {

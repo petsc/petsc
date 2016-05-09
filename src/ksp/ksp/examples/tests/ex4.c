@@ -88,8 +88,7 @@ int main(int argc,char **args)
   for (i=2*m+1; i<m*(m+1); i+= m+1) rows[count++] = i;
 
   for (i=0; i<4*m; i++) {
-    x    = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
-    val  = y;
+    val = h*(rows[i]/(m+1));
     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
   }
