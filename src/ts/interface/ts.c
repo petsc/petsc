@@ -6167,10 +6167,13 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
   n_glb  = err_glb[3];
   na_glb = err_glb[4];
   nr_glb = err_glb[5];
-
-  *norm  = PetscSqrtReal(gsum  / n_glb );
-  *norma = PetscSqrtReal(gsuma / na_glb);
-  *normr = PetscSqrtReal(gsumr / nr_glb);
+  
+  *norm  = 0.;
+  if(n_glb>0. ){*norm  = PetscSqrtReal(gsum  / n_glb );}
+  *norma = 0.;
+  if(na_glb>0.){*norma = PetscSqrtReal(gsuma / na_glb);}
+  *normr = 0.;
+  if(nr_glb>0.){*normr = PetscSqrtReal(gsumr / nr_glb);}
 
   if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");

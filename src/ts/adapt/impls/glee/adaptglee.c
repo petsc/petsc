@@ -18,7 +18,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   PetscErrorCode ierr;
   Vec            X,Y,Z;
   PetscReal      enorm,enorma,enormr,hfac_lte,h_lte,safety;
-  PetscInt       order,stepno;
+  PetscInt       order,order_add,stepno;
 
   PetscFunctionBegin;
   ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
@@ -27,6 +27,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
   if (!strcmp(time_scheme,TSGLEE)){
     /* the method is of GLEE type */
+    order_add=1; /* typically same order estimates */
     if (!glee->X) {
       ierr = TSGetSolution(ts,&Z);CHKERRQ(ierr);
       ierr = VecDuplicate(Z,&glee->X);CHKERRQ(ierr);
@@ -39,6 +40,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
     ierr = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   } else {
     /* the method is NOT of GLEE type */
+    order_add=0; /* typically lower order estimates */
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     if (!glee->Y) {ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);}
     Y     = glee->Y;
@@ -67,7 +69,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   if (enorm == 0.0) {
     hfac_lte = safety * PETSC_INFINITY;
   } else {
-    hfac_lte = safety * PetscPowReal(enorm,-1./(order));
+    hfac_lte = safety * PetscPowReal(enorm,-1./(order+order_add));
   }
   h_lte    = h * PetscClipInterval(hfac_lte,glee->clip[0],glee->clip[1]);
 
