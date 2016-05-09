@@ -527,7 +527,6 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
     nz = 0; val = *v;
     for (i=0; i <M; i++) {
       rnz = ai[i+1] - adiag[i];
-      ajj = aj + adiag[i];
       v1  = av + adiag[i];
       for (j=0; j<rnz; j++) {
         val[nz++] = v1[j];
@@ -1289,7 +1288,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   ierr = PetscOptionsReal("-mat_mumps_cntl_4","CNTL(4): value for static pivoting","None",mumps->id.CNTL(4),&mumps->id.CNTL(4),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_mumps_cntl_5","CNTL(5): fixation for null pivots","None",mumps->id.CNTL(5),&mumps->id.CNTL(5),NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsString("-mat_mumps_ooc_tmpdir", "out of core directory", "None", mumps->id.ooc_tmpdir, mumps->id.ooc_tmpdir, 256, NULL);
+  ierr = PetscOptionsString("-mat_mumps_ooc_tmpdir", "out of core directory", "None", mumps->id.ooc_tmpdir, mumps->id.ooc_tmpdir, 256, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsIntArray("-mat_mumps_view_info","request INFO local to each processor","",info,&ninfo,NULL);CHKERRQ(ierr);
   if (ninfo) {
@@ -1298,13 +1297,11 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
     mumps->ninfo = ninfo;
     for (i=0; i<ninfo; i++) {
       if (info[i] < 0 || info[i]>40) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %d must between 1 and 40\n",ninfo);
-      else {
-        mumps->info[i] = info[i];
-      }
+      else  mumps->info[i] = info[i];
     }
   }
 
-  PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1315,7 +1312,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &mumps->myid);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &mumps->myid);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&mumps->size);CHKERRQ(ierr);
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(mumps->comm_mumps));CHKERRQ(ierr);
 
@@ -1659,32 +1656,32 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %g \n",mumps->myid,mumps->id.RINFO(1));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d]  %g \n",mumps->myid,mumps->id.RINFO(2));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d]  %g \n",mumps->myid,mumps->id.RINFO(3));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIPrintf(viewer, "  INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] %d \n",mumps->myid,mumps->id.INFO(15));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIPrintf(viewer, "  INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",mumps->myid,mumps->id.INFO(16));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIPrintf(viewer, "  INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",mumps->myid,mumps->id.INFO(23));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
       if (mumps->ninfo && mumps->ninfo <= 40){
         PetscInt i;
         for (i=0; i<mumps->ninfo; i++){
           ierr = PetscViewerASCIIPrintf(viewer, "  INFO(%d): \n",mumps->info[i]);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",mumps->myid,mumps->id.INFO(mumps->info[i]));CHKERRQ(ierr);
-          ierr = PetscViewerFlush(viewer);
+          ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
         }
       }
 

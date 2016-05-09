@@ -86,7 +86,8 @@ PETSC_STATIC_INLINE PetscErrorCode RestorePointArray_Private(DM dm,PetscInt *rn,
   PetscFunctionBegin;
   if (rn) *rn = 0;
   if (rpoints) {
-    ierr = DMRestoreWorkArray(dm,*rn, PETSC_INT, (void*) rpoints);CHKERRQ(ierr);
+    /* note the second argument to DMRestoreWorkArray() is always ignored */
+    ierr = DMRestoreWorkArray(dm,0, PETSC_INT, (void*) rpoints);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -103,6 +104,7 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
   PetscFunctionBegin;
   if (!useClosure) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Star operation is not yet supported");
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(closureSize,4);
   ierr = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm,  0,  &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm,  1,  &fStart, &fEnd);CHKERRQ(ierr);
@@ -133,7 +135,7 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
       PetscInt xf = cy*nxF + cx + xfStart;
       PetscInt yf = c + yfStart;
 
-      if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 9;}
+      *closureSize = 9;
       if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
       (*closure)[0] = p; (*closure)[1] = yf; (*closure)[2] = xf+1; (*closure)[3] = yf+nyF; (*closure)[4] = xf+0; (*closure)[5] = v+0; (*closure)[6]= v+1; (*closure)[7] = v+nVx+1; (*closure)[8] = v+nVx+0;
     } else {
@@ -155,14 +157,14 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
       PetscInt xf = cy*nxF + cx + xfStart;
       PetscInt yf = c + yfStart;
 
-      if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 26;}
+      *closureSize = 26;
       if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
 #endif
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
     }
   } else if ((p >= vStart) || (p < vEnd)) {
     /* Vertex */
-    if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 1;}
+    *closureSize = 1;
     if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
     (*closure)[0] = p;
   } else if ((p >= fStart) || (p < fStart + nXF)) {
@@ -172,7 +174,7 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
       /* 2 vertices: The bottom vertex has the same numbering as the face */
       PetscInt f = p - xfStart;
 
-      if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 3;}
+      *closureSize = 3;
       if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
       (*closure)[0] = p; (*closure)[1] = f; (*closure)[2] = f+nVx;
     } else if (dim == 3) {
@@ -186,7 +188,7 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
       /* 2 vertices: The left vertex has the same numbering as the face */
       PetscInt f = p - yfStart;
 
-      if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 3;}
+      *closureSize = 3;
       if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
       (*closure)[0] = p; (*closure)[1] = f; (*closure)[2]= f+1;
     } else if (dim == 3) {

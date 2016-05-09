@@ -1165,7 +1165,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
    . pc - this
    . Amat - matrix on this fine level
  In/Output Parameter:
-   . a_P_out - prolongation operator to the next level
+   . a_P - prolongation operator to the next level
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGOptProlongator_AGG"
@@ -1178,57 +1178,58 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   PetscInt       jj;
   Mat            Prol  = *a_P;
   MPI_Comm       comm;
+  KSP            eksp;
+  Vec            bb, xx;
+  PC             epc;
+  PetscReal      alpha, emax, emin;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_GAMGOptProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
 
+  /* compute maximum value of operator to be used in smoother */
+  if (0 < pc_gamg_agg->nsmooths) {
+    ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
+    ierr = VecSetRandom(bb,pc_gamg->random);CHKERRQ(ierr);
+
+    ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
+    ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(eksp, "gamg_est_");CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
+
+    ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
+    ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
+
+    ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);
+    ierr = PCSetType(epc, PCJACOBI);CHKERRQ(ierr);  /* smoother in smoothed agg. */
+
+    /* solve - keep stuff out of logging */
+    ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
+    ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
+    ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
+    ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
+    ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
+
+    ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
+    ierr = PetscInfo3(pc,"Smooth P0: max eigen=%e min=%e PC=%s\n",emax,emin,PCJACOBI);CHKERRQ(ierr);
+    ierr = VecDestroy(&xx);CHKERRQ(ierr);
+    ierr = VecDestroy(&bb);CHKERRQ(ierr);
+    ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
+  }
+
   /* smooth P0 */
   for (jj = 0; jj < pc_gamg_agg->nsmooths; jj++) {
     Mat       tMat;
     Vec       diag;
-    PetscReal alpha, emax, emin;
+
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
 #endif
-    if (!jj) {
-      KSP         eksp;
-      Vec         bb, xx;
-      PC          epc;
-
-      ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
-      ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
-
-      ierr = VecSetRandom(bb,pc_gamg->random);CHKERRQ(ierr);
-
-      ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
-      ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
-      ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(eksp, "gamg_est_");CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
-
-      ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
-      ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
-
-      ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);
-      ierr = PCSetType(epc, PCJACOBI);CHKERRQ(ierr);  /* smoother in smoothed agg. */
-
-      /* solve - keep stuff out of logging */
-      ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
-      ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
-      ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
-      ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
-
-      ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
-      ierr = PetscInfo3(pc,"Smooth P0: max eigen=%e min=%e PC=%s\n",emax,emin,PCJACOBI);CHKERRQ(ierr);
-      ierr = VecDestroy(&xx);CHKERRQ(ierr);
-      ierr = VecDestroy(&bb);CHKERRQ(ierr);
-      ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
-    }
 
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
     ierr  = MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat);CHKERRQ(ierr);

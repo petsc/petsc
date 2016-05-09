@@ -978,7 +978,6 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       cstart = rstart;
       Juser = network->Je[3*e]; /* Jacobian(e,e) */
       ierr = MatSetblock_private(Juser,nrows,rows,nrows,cstart,J);CHKERRQ(ierr);
-
       ierr = PetscFree(rows);CHKERRQ(ierr);
     }
   }
@@ -987,11 +986,10 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   /*---------------------------------*/
   ierr = DMNetworkGetVertexRange(dm,&vStart,&vEnd);CHKERRQ(ierr);
   if (vEnd - vStart) {
-    if (!network->Jv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Uer must provide Jv");
-    vptr = network->Jvptr;
-    if (!vptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Uer must provide vptr");
+    if (!network->Jv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"User must provide Jv");
+    if (!(vptr = network->Jvptr)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"User must provide vptr");
   }
-  
+
   for (v=vStart; v<vEnd; v++) {
     /* Get row indices */
     ierr = DMNetworkGetVariableGlobalOffset(dm,v,&rstart);CHKERRQ(ierr);

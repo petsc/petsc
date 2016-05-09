@@ -332,11 +332,9 @@ PetscErrorCode SNESNASMSetType_NASM(SNES snes,PCASMType type)
 PetscErrorCode SNESNASMGetType(SNES snes,PCASMType *type)
 {
   PetscErrorCode ierr;
-  PetscErrorCode (*f)(SNES,PCASMType*);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMGetType_C",&f);CHKERRQ(ierr);
-  if (f) {ierr = (f)(snes,type);CHKERRQ(ierr);}
+  ierr = PetscUseMethod(snes,"SNESNASMGetType_C",(SNES,PCASMType*),(snes,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

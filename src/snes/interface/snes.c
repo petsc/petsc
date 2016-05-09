@@ -4854,13 +4854,13 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetDM"
 /*@
-   SNESSetDM - Sets the DM that may be used by some preconditioners
+   SNESSetDM - Sets the DM that may be used by some nonlinear solvers or their underlying preconditioners
 
    Logically Collective on SNES
 
    Input Parameters:
-+  snes - the preconditioner context
--  dm - the dm
++  snes - the nonlinear solver context
+-  dm - the dm, cannot be NULL
 
    Level: intermediate
 
@@ -4874,7 +4874,8 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (snes->dm) {               /* Move the DMSNES context over to the new DM unless the new DM already has one */
     if (snes->dm->dmsnes && snes->dmAuto && !dm->dmsnes) {
       ierr = DMCopyDMSNES(snes->dm,dm);CHKERRQ(ierr);
