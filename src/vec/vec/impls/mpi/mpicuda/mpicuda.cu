@@ -233,7 +233,7 @@ PetscErrorCode VecCreate_CUDA(Vec v)
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
-   If the user-provided array is NULL, then VecPlaceArray() can be used
+   If the user-provided array is NULL, then VecCUDAPlaceArray() can be used
    at a later stage to SET the array for storing the vector values.
 
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().

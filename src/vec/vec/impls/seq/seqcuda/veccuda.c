@@ -289,7 +289,7 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
 #undef __FUNCT__
 #define __FUNCT__ "VecCreateSeqCUDAWithArray"
 /*@C
-   VecCreateSeqCUDAWithArray - Creates a standard, sequential array-style vector,
+   VecCreateSeqCUDAWithArray - Creates a CUDA sequential array-style vector,
    where the user provides the array space to store the vector values. The array
    provided must be a GPU array.
 
