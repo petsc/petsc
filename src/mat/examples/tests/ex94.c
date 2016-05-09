@@ -102,8 +102,8 @@ int main(int argc,char **args)
     Test_MatMatMatMult = PETSC_FALSE;
   }
 
-  /* Test MatMatMult() */
-  /*-------------------*/
+  /* 1) Test MatMatMult() */
+  /* ---------------------*/
   if (Test_MatMatMult) {
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -124,14 +124,14 @@ int main(int argc,char **args)
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
 
-    /* Test MatDuplicate() of C */
+    /* Test MatDuplicate() of C=A*B */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
     ierr = MatDestroy(&C1);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
   } /* if (Test_MatMatMult) */
 
-  /* Test MatTransposeMatMult() and MatMatTransposeMult() */
-  /*------------------------------------------------------*/
+  /* 2) Test MatTransposeMatMult() and MatMatTransposeMult() */
+  /* ------------------------------------------------------- */
   if (Test_MatMatTr) {
     /* Create P */
     PetscInt PN,rstart,rend;
@@ -186,6 +186,10 @@ int main(int argc,char **args)
       }
     }
     ierr = MatDestroy(&C1);CHKERRQ(ierr);
+
+    /* Test MatDuplicate() of C=P^T*B */
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(&C1);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     /* C = B*R^T */
@@ -210,8 +214,8 @@ int main(int argc,char **args)
     ierr = MatDestroy(&R);CHKERRQ(ierr);
   }
 
-  /* Test MatPtAP() */
-  /*----------------------*/
+  /* 3) Test MatPtAP() */
+  /*-------------------*/
   if (Test_MatPtAP) {
     PetscInt PN;
     Mat      Cdup;
@@ -302,12 +306,13 @@ int main(int argc,char **args)
       ierr = MatDestroy(&Adense);CHKERRQ(ierr);
     }
 
-    /* Test MatDuplicate() */
+    /* Test MatDuplicate() of C=PtAP */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
     ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
 
     if (size>1) Test_MatRARt = PETSC_FALSE;
-    /* Test MatRARt() */
+    /* 4) Test MatRARt() */
+    /* ----------------- */
     if (Test_MatRARt) {
       Mat       R, RARt;
       PetscBool equal;
@@ -383,7 +388,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   PetscPreLoadEnd();
-  ierr = PetscFinalize();
+  PetscFinalize();
   return 0;
 }
 
