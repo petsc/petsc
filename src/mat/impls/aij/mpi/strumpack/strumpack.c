@@ -269,13 +269,17 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"STRUMPACK Options","Mat");CHKERRQ(ierr);
   sp->MatInputMode = DISTRIBUTED;
-  iface = STRUMPACK_MPI_DIST;
   ierr = PetscOptionsEnum("-mat_strumpack_matinput","Matrix input mode (replicated or distributed)","None",STRUMPACK_MatInputModes,
                           (PetscEnum)sp->MatInputMode,(PetscEnum*)&sp->MatInputMode,NULL);CHKERRQ(ierr);
   if (sp->MatInputMode == DISTRIBUTED && size == 1) sp->MatInputMode = REPLICATED;
-  if (sp->MatInputMode == DISTRIBUTED)     iface = STRUMPACK_MPI_DIST;
-  else if (sp->MatInputMode == REPLICATED) iface = STRUMPACK_MPI;
-
+  switch (sp->MatInputMode) {
+  case REPLICATED:
+    iface = STRUMPACK_MPI;
+    break;
+  case DISTRIBUTED:
+  default:
+    iface = STRUMPACK_MPI_DIST;
+  }
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg);
   if (flg) iface = STRUMPACK_MT;
 
@@ -285,6 +289,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   PetscOptionsEnd();
 
   ierr = PetscGetArgs(&argc,&args);CHKERRQ(ierr);
+  /* TODO get options from .petscrc, PETSC_OPTIONS, etc? */
   PetscStackCall("STRUMPACK_init",STRUMPACK_init(&(sp->S),PetscObjectComm((PetscObject)A),prec,iface,argc,args,verb));
   PetscStackCall("STRUMPACK_set_from_options",STRUMPACK_set_from_options(sp->S));
 
