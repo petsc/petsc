@@ -243,7 +243,8 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   STRUMPACK_INTERFACE iface;
   PetscBool           verb,flg;
   int                 argc;
-  char                **args;
+  char                **args,*copts,*pname;
+  size_t              len;
   const STRUMPACK_PRECISION table[2][2][2] = {{{STRUMPACK_FLOATCOMPLEX_64,STRUMPACK_DOUBLECOMPLEX_64},
                                                {STRUMPACK_FLOAT_64,STRUMPACK_DOUBLE_64}},
                                               {{STRUMPACK_FLOATCOMPLEX,STRUMPACK_DOUBLECOMPLEX},
@@ -288,10 +289,22 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   ierr = PetscOptionsBool("-mat_strumpack_verbose","Print STRUMPACK information","None",verb,&verb,NULL);CHKERRQ(ierr);
   PetscOptionsEnd();
 
-  ierr = PetscGetArgs(&argc,&args);CHKERRQ(ierr);
-  /* TODO get options from .petscrc, PETSC_OPTIONS, etc? */
+  ierr = PetscOptionsGetAll(NULL,&copts);CHKERRQ(ierr);
+  ierr = PetscStrlen(copts,&len);CHKERRQ(ierr);
+  len += PETSC_MAX_PATH_LEN+1;
+  ierr = PetscMalloc1(len,&pname);CHKERRQ(ierr);
+  /* first string is assumed to be the program name, so add program name to options string */
+  ierr = PetscGetProgramName(pname,len);CHKERRQ(ierr);
+  ierr = PetscStrcat(pname," ");CHKERRQ(ierr);
+  ierr = PetscStrcat(pname,copts);CHKERRQ(ierr);
+  ierr = PetscStrToArray(copts,' ',&argc,&args);CHKERRQ(ierr);
+  ierr = PetscFree(copts);CHKERRQ(ierr);
+  ierr = PetscFree(pname);CHKERRQ(ierr);
+
   PetscStackCall("STRUMPACK_init",STRUMPACK_init(&(sp->S),PetscObjectComm((PetscObject)A),prec,iface,argc,args,verb));
   PetscStackCall("STRUMPACK_set_from_options",STRUMPACK_set_from_options(sp->S));
+
+  ierr = PetscStrToArrayDestroy(argc,args);CHKERRQ(ierr);
 
   *F = B;
   PetscFunctionReturn(0);
