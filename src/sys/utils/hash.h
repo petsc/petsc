@@ -155,7 +155,7 @@ static const double __ac_HASH_UPPER = 0.77;
         PETSC_STATIC_INLINE void kh_destroy_##name(kh_##name##_t *h)                         \
         {                                                                                    \
                 if (h) {                                                                     \
-                        free(h->keys); free(h->flags);                                       \
+                  free((void*)h->keys); free(h->flags);                 \
                         free(h->vals);                                                       \
                         free(h);                                                             \
                 }                                                                            \
@@ -194,7 +194,7 @@ static const double __ac_HASH_UPPER = 0.77;
                                 new_flags = (khint32_t*)malloc(((new_n_buckets>>4) + 1) * sizeof(khint32_t));          \
                                 memset(new_flags, 0xaa, ((new_n_buckets>>4) + 1) * sizeof(khint32_t));                 \
                                 if (h->n_buckets < new_n_buckets) {                                                    \
-                                        h->keys = (khkey_t*)realloc(h->keys, new_n_buckets * sizeof(khkey_t));         \
+                                  h->keys = (khkey_t*)realloc((void*)h->keys, new_n_buckets * sizeof(khkey_t)); \
                                         if (kh_is_map)                                                                 \
                                                 h->vals = (khval_t*)realloc(h->vals, new_n_buckets * sizeof(khval_t)); \
                                 }                                                            \
@@ -230,7 +230,7 @@ static const double __ac_HASH_UPPER = 0.77;
                                 }                                                            \
                         }                                                                    \
                         if (h->n_buckets > new_n_buckets) {                                  \
-                                h->keys = (khkey_t*)realloc(h->keys, new_n_buckets * sizeof(khkey_t)); \
+                          h->keys = (khkey_t*)realloc((void*)h->keys, new_n_buckets * sizeof(khkey_t)); \
                                 if (kh_is_map)                                               \
                                         h->vals = (khval_t*)realloc(h->vals, new_n_buckets * sizeof(khval_t)); \
                         }                                                                    \
