@@ -121,7 +121,7 @@ class Configure(config.package.Package):
     else:
       raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-version')
     if self.defaultScalarType.lower() == 'complex':
-      CUDAVersionComplex    = '7000' # Minimal cuda version for complex is 7.0
+      CUDAVersionComplex    = '7050' # Minimal cuda version for complex is 7.5
       CUDAVersionComplexStr = str(int(CUDAVersionComplex)/1000) + '.' + str(int(CUDAVersionComplex)/10%10)
       if 'known-cuda-version' in self.argDB:
         if self.argDB['known-cuda-version'] < CUDAVersionComplex:
