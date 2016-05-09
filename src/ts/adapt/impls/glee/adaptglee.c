@@ -67,7 +67,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   if (enorm == 0.0) {
     hfac_lte = safety * PETSC_INFINITY;
   } else {
-    hfac_lte = safety * PetscPowReal(enorm,-1./order);
+    hfac_lte = safety * PetscPowReal(enorm,-1./(order));
   }
   h_lte    = h * PetscClipInterval(hfac_lte,glee->clip[0],glee->clip[1]);
 

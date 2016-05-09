@@ -1200,8 +1200,8 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
   if (r != 2) SETERRQ2(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
   for (i=1; i<r; i++) {
     ierr = VecCopy(ts->vec_sol,Y[i]); CHKERRQ(ierr);
-    ierr = VecCopy(X,glee->yGErr); CHKERRQ(ierr);
     ierr = VecAXPBY(Y[i],S[0],S[1],X); CHKERRQ(ierr);
+    ierr = VecCopy(X,glee->yGErr); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
