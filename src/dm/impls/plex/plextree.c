@@ -4013,7 +4013,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
   PetscSection   localCoarse, localFine;
   PetscSection   cSecRef;
   PetscInt       *parentIndices, pRefStart, pRefEnd;
-  PetscScalar    *rootValues;
+  PetscScalar    *rootValues, *parentValues;
   Mat            injRef;
   PetscInt       numFields, maxDof;
   PetscInt       pStartC, pEndC, pStartF, pEndF, p;
@@ -4046,7 +4046,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 
   ierr = DMPlexTransferInjectorTree(coarse,fine,coarseToFine,cids,vecFine,numFields,offsets,&multiRootSec,&rootIndicesSec,NULL,&rootValues);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(maxDof,&parentIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxDof,&parentIndices,maxDof,&parentValues);CHKERRQ(ierr);
 
   /* count indices */
   ierr = VecGetLayout(vecFine,&rowMap);CHKERRQ(ierr);
@@ -4098,17 +4098,53 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
       if (childId == -2) { /* skip */
         continue;
       } else if (childId == -1) { /* equivalent points: scatter */
-        ierr = VecSetValues(vecCoarse,numIndices,parentIndices,childValues,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = VecSetValues(vecCoarse,numIndices,parentIndices,childValues,ADD_VALUES);CHKERRQ(ierr);
       } else {
-        /* TODO: Apply children mats */
-#if 0
-#endif
+        PetscInt parentId, f, lim;
+
+        ierr = DMPlexGetTreeParent(refTree,childId,&parentId,NULL);CHKERRQ(ierr);
+
+        lim = PetscMax(1,numFields);
+        offsets[0] = 0;
+        if (numFields) {
+          PetscInt f;
+
+          for (f = 0; f < numFields; f++) {
+            PetscInt fDof;
+            ierr = PetscSectionGetFieldDof(cSecRef,childId,f,&fDof);CHKERRQ(ierr);
+
+            offsets[f + 1] = fDof + offsets[f];
+          }
+        }
+        else {
+          PetscInt cDof;
+
+          ierr = PetscSectionGetDof(cSecRef,childId,&cDof);CHKERRQ(ierr);
+          offsets[1] = cDof;
+        }
+        for (f = 0; f < lim; f++) {
+          PetscScalar       *childMat   = &childrenMats[childId - pRefStart][f][0];
+          PetscInt          *rowIndices = &parentIndices[rowOffsets[f]];
+          PetscInt          m           = rowOffsets[f+1]-rowOffsets[f];
+          PetscInt          n           = offsets[f+1]-offsets[f];
+          PetscInt          i, j;
+          const PetscScalar *colValues  = &childValues[offsets[f]];
+
+          for (i = 0; i < m; i++) {
+            PetscScalar val = 0.;
+            for (j = 0; j < n; j++) {
+              val += childMat[n * i + j] * colValues[j];
+            }
+            parentValues[i] = val;
+          }
+          ierr = VecSetValues(vecCoarse,m,rowIndices,parentValues,ADD_VALUES);CHKERRQ(ierr);
+        }
       }
     }
   }
   ierr = PetscSectionDestroy(&multiRootSec);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&rootIndicesSec);CHKERRQ(ierr);
-  ierr = PetscFree(parentIndices);CHKERRQ(ierr);
+  ierr = PetscFree2(parentIndices,parentValues);CHKERRQ(ierr);
   ierr = DMPlexReferenceTreeRestoreChildrenMatrices_Injection(refTree,injRef,&childrenMats);CHKERRQ(ierr);
   ierr = PetscFree(rootValues);CHKERRQ(ierr);
   ierr = PetscFree3(offsets,offsetsCopy,rowOffsets);CHKERRQ(ierr);
