@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include <agmresimpl.h>
+#include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 /*
  *  This file implements the RODDEC algorithm : its purpose is to orthogonalize a set of vectors distributed across several processes. These processes are organized in a virtual ring.
  * References : [1] Sidje, Roger B. Alternatives for parallel Krylov subspace basis computation. Numer. Linear Algebra Appl. 4 (1997), no. 4, 305-331

@@ -9,7 +9,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Anderson"
-PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
@@ -39,7 +39,7 @@ PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve_Anderson"
-PetscErrorCode SNESSolve_Anderson(SNES snes)
+static PetscErrorCode SNESSolve_Anderson(SNES snes)
 {
   SNES_NGMRES         *ngmres = (SNES_NGMRES*) snes->data;
   /* present solution, residual, and preconditioned residual */

@@ -9,7 +9,7 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_PIPECG"
-PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
+static PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -28,7 +28,7 @@ PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_PIPECG"
-PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
+static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;

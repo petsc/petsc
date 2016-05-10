@@ -27,7 +27,7 @@ static PetscErrorCode  KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_CGNE"
-PetscErrorCode KSPSetUp_CGNE(KSP ksp)
+static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
@@ -63,7 +63,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_CGNE"
-PetscErrorCode  KSPSolve_CGNE(KSP ksp)
+static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;

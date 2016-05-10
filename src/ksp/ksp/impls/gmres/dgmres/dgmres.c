@@ -566,7 +566,7 @@ PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESSetEigen_DGMRES"
-static PetscErrorCode  KSPDGMRESSetEigen_DGMRES(KSP ksp,PetscInt neig)
+PetscErrorCode  KSPDGMRESSetEigen_DGMRES(KSP ksp,PetscInt neig)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
@@ -643,7 +643,7 @@ PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESComputeDeflationData_DGMRES"
-static PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
+PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
   PetscErrorCode ierr;
@@ -788,7 +788,7 @@ static PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *E
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESComputeSchurForm_DGMRES"
-static PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
+PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
   PetscErrorCode ierr;
@@ -938,7 +938,7 @@ static PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESApplyDeflation_DGMRES"
-static PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
+PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
   PetscInt       i, r     = dgmres->r;
