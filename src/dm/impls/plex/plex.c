@@ -784,41 +784,34 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   if (!isShell) {
     PetscBool fillMatrix = (PetscBool) !dm->prealloc_only;
     PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal, bsMax, bsMin;
+    PetscInt  pStart, pEnd, p, dof, cdof;
 
-    if (bs < 0) {
-      if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
-        PetscInt pStart, pEnd, p, dof, cdof;
+    ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt bdof;
 
-        ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-        for (p = pStart; p < pEnd; ++p) {
-          PetscInt bdof;
-
-          ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
-          ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
-          bdof = PetscAbs(dof) - cdof;
-          if (bdof) {
-            if (bs < 0) {
-              bs = bdof;
-            } else if (bs != bdof) {
-              /* Layout does not admit a pointwise block size */
-              bs = 1;
-              break;
-            }
-          }
-        }
-        /* Must have same blocksize on all procs (some might have no points) */
-        bsLocal = bs;
-        ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-        bsLocal = bs < 0 ? bsMax : bs;
-        ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-        if (bsMin != bsMax) {
+      ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
+      bdof = PetscAbs(dof) - cdof;
+      if (bdof) {
+        if (bs < 0) {
+          bs = bdof;
+        } else if (bs != bdof) {
+          /* Layout does not admit a pointwise block size */
           bs = 1;
-        } else {
-          bs = bsMax;
+          break;
         }
-      } else {
-        bs = 1;
       }
+    }
+    /* Must have same blocksize on all procs (some might have no points) */
+    bsLocal = bs;
+    ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    bsLocal = bs < 0 ? bsMax : bs;
+    ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    if (bsMin != bsMax) {
+      bs = 1;
+    } else {
+      bs = bsMax;
     }
     ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
     ierr = DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
