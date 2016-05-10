@@ -508,10 +508,10 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
   } /* node loop */
 
   if (isMPI) {
-    PetscScalar   *cpcol_2_parent,*cpcol_2_gid;
-    Vec           tempVec,ghostgids2,ghostparents2;
-    PetscInt      cpid,nghost_2;
-    GAMGHashTable gid_cpid;
+    PetscScalar     *cpcol_2_parent,*cpcol_2_gid;
+    Vec             tempVec,ghostgids2,ghostparents2;
+    PetscInt        cpid,nghost_2;
+    PCGAMGHashTable gid_cpid;
 
     ierr = VecGetSize(mpimat_2->lvec, &nghost_2);CHKERRQ(ierr);
     ierr = MatCreateVecs(Gmat_2, &tempVec, 0);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     ierr = VecDestroy(&tempVec);CHKERRQ(ierr);
 
     /* look for deleted ghosts and add to table */
-    ierr = GAMGTableCreate(2*nghost_2+1, &gid_cpid);CHKERRQ(ierr);
+    ierr = PCGAMGHashTableCreate(2*nghost_2+1, &gid_cpid);CHKERRQ(ierr);
     for (cpid = 0; cpid < nghost_2; cpid++) {
       NState state = (NState)PetscRealPart(cpcol_2_state[cpid]);
       if (state==DELETED) {
@@ -550,7 +550,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
         PetscInt sgid_old = (PetscInt)PetscRealPart(cpcol_2_par_orig[cpid]);
         if (sgid_old == -1 && sgid_new != -1) {
           PetscInt gid = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
-          ierr = GAMGTableAdd(&gid_cpid, gid, cpid);CHKERRQ(ierr);
+          ierr = PCGAMGHashTableAdd(&gid_cpid, gid, cpid);CHKERRQ(ierr);
         }
       }
     }
@@ -567,7 +567,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
           ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
 
           if (gid < my0 || gid >= Iend) {
-            ierr = GAMGTableFind(&gid_cpid, gid, &cpid);CHKERRQ(ierr);
+            ierr = PCGAMGHashTableFind(&gid_cpid, gid, &cpid);CHKERRQ(ierr);
             if (cpid != -1) {
               /* a moved ghost - */
               /* id_llist_2[lastid] = id_llist_2[flid];    /\* remove 'flid' from list *\/ */
@@ -579,7 +579,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
         } /* loop over list of deleted */
       } /* selected */
     }
-    ierr = GAMGTableDestroy(&gid_cpid);CHKERRQ(ierr);
+    ierr = PCGAMGHashTableDestroy(&gid_cpid);CHKERRQ(ierr);
 
     /* look at ghosts, see if they changed - and it */
     for (cpid = 0; cpid < nghost_2; cpid++) {
@@ -690,13 +690,13 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 #define __FUNCT__ "formProl0"
 static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscInt nSAvec,PetscInt my0crs,PetscInt data_stride,PetscReal data_in[],const PetscInt flid_fgid[],PetscReal **a_data_out,Mat a_Prol)
 {
-  PetscErrorCode ierr;
-  PetscInt       Istart,my0,Iend,nloc,clid,flid = 0,aggID,kk,jj,ii,mm,ndone,nSelected,minsz,nghosts,out_data_stride;
-  MPI_Comm       comm;
-  PetscMPIInt    rank;
-  PetscReal      *out_data;
-  PetscCDPos     pos;
-  GAMGHashTable  fgid_flid;
+  PetscErrorCode  ierr;
+  PetscInt        Istart,my0,Iend,nloc,clid,flid = 0,aggID,kk,jj,ii,mm,ndone,nSelected,minsz,nghosts,out_data_stride;
+  MPI_Comm        comm;
+  PetscMPIInt     rank;
+  PetscReal       *out_data;
+  PetscCDPos      pos;
+  PCGAMGHashTable fgid_flid;
 
 /* #define OUT_AGGS */
 #if defined(OUT_AGGS)
@@ -712,9 +712,9 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
   Iend   /= bs;
   nghosts = data_stride/bs - nloc;
 
-  ierr = GAMGTableCreate(2*nghosts+1, &fgid_flid);CHKERRQ(ierr);
+  ierr = PCGAMGHashTableCreate(2*nghosts+1, &fgid_flid);CHKERRQ(ierr);
   for (kk=0; kk<nghosts; kk++) {
-    ierr = GAMGTableAdd(&fgid_flid, flid_fgid[nloc+kk], nloc+kk);CHKERRQ(ierr);
+    ierr = PCGAMGHashTableAdd(&fgid_flid, flid_fgid[nloc+kk], nloc+kk);CHKERRQ(ierr);
   }
 
 #if defined(OUT_AGGS)
@@ -768,7 +768,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
 
         if (gid1 >= my0 && gid1 < Iend) flid = gid1 - my0;
         else {
-          ierr = GAMGTableFind(&fgid_flid, gid1, &flid);CHKERRQ(ierr);
+          ierr = PCGAMGHashTableFind(&fgid_flid, gid1, &flid);CHKERRQ(ierr);
           if (flid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot find gid1 in table");
         }
         /* copy in B_i matrix - column oriented */
@@ -852,7 +852,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
 #if defined(OUT_AGGS)
   if (llev==1) fclose(file);
 #endif
-  ierr = GAMGTableDestroy(&fgid_flid);CHKERRQ(ierr);
+  ierr = PCGAMGHashTableDestroy(&fgid_flid);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

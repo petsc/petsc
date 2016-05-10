@@ -492,7 +492,7 @@ PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPCGSetType_CG"
-static PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
+PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
 

@@ -73,21 +73,21 @@ PETSC_INTERN PetscLogEvent PC_GAMGProlongator_GEO;
 PETSC_INTERN PetscLogEvent PC_GAMGOptProlongator_AGG;
 #endif
 
-typedef struct _GAMGHashTable {
+typedef struct _PCGAMGHashTable {
   PetscInt *table;
   PetscInt *data;
   PetscInt size;
-} GAMGHashTable;
+} PCGAMGHashTable;
 
 
-PETSC_EXTERN PetscErrorCode GAMGTableCreate(PetscInt, GAMGHashTable*);
-PETSC_EXTERN PetscErrorCode GAMGTableDestroy(GAMGHashTable*);
-PETSC_EXTERN PetscErrorCode GAMGTableAdd(GAMGHashTable*,PetscInt,PetscInt);
+PETSC_INTERN PetscErrorCode PCGAMGHashTableCreate(PetscInt, PCGAMGHashTable*);
+PETSC_INTERN PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable*);
+PETSC_INTERN PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable*,PetscInt,PetscInt);
 
 #define GAMG_HASH(key) ((((PetscInt)7)*key)%a_tab->size)
 #undef __FUNCT__
-#define __FUNCT__ "GAMGTableFind"
-PETSC_STATIC_INLINE PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
+#define __FUNCT__ "PCGAMGHashTableFind"
+PETSC_STATIC_INLINE PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
 {
   PetscInt kk,idx;
 
