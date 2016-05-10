@@ -7,7 +7,21 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexAdapt"
-/* write docstring */
+/*@
+  DMPlexAdapt - Generates a mesh adapted to the specified metric field using the pragmatic library.
+
+  Input Parameters:
++ dm - The DM object
+. metric - The metric to which the mesh is adapted, defined vertex-wise.
+- bdyLabelName - Label name for boundary tags. These will be preserved in the output mesh. bdyLabelName should be different from "boundary".
+
+  Output Parameter:
+. dmAdapted  - Pointer to the DM object containing the adapted mesh
+
+  Level: advanced
+
+.seealso: DMCoarsen(), DMRefine()
+@*/
 PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmAdapted)
 {
 #ifdef PETSC_HAVE_PRAGMATIC
@@ -15,28 +29,27 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   DMLabel              bd, bdTags, bdTagsAdp;
   Vec                  coordinates;
   PetscSection         coordSection;
-  const PetscScalar   *coords;
-  double              *coordsAdp;
   IS                   bdIS;
+  double              *coordsAdp;  
+  const PetscScalar   *coords;
   PetscReal           *x, *y, *z, *xAdp, *yAdp, *zAdp;
+  const PetscScalar   *metricArray;
+  PetscReal           *met;
   const PetscInt      *faces;
   PetscInt            *cells, *cellsAdp, *bdFaces, *bdFaceIds;
+  PetscInt            *boundaryTags;
   PetscInt             dim, numCornersAdp, cStart, cEnd, numCells, numCellsAdp, c; 
   PetscInt             vStart, vEnd, numVertices, numVerticesAdp, v;
   PetscInt             numBdFaces, f, maxConeSize, bdSize, coff;
-  const PetscScalar   *metricArray;
-  PetscReal           *met;
-  PetscInt            *cell, perm[4], isInFacetClosure[4], iVer, cellOff, i, j, idx, facet; // 30 is twice the max size of a cell closure in 3D for tet meshes
-  PetscInt            *boundaryTags;
-  PetscBool           flag, hasBdyFacet;
-    
+  PetscInt            *cell, iVer, cellOff, i, j, idx, facet; 
+  PetscInt             perm[4], isInFacetClosure[4]; // 4 = max number of facets for an element in 2D & 3D. Only for simplicial meshes
+  PetscBool            flag, hasBdyFacet;
 #endif
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
+  PetscErrorCode       ierr;
+  MPI_Comm             comm;
 
   PetscFunctionBegin;
-  printf("DEBUG  PETSc  ======= DMPlexAdapt begin\n");
-  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_PRAGMATIC
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
@@ -58,7 +71,6 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     x[v-vStart] = coords[off+0];
     y[v-vStart] = coords[off+1];
     if (dim > 2) z[v-vStart] = coords[off+2];
-    
     ierr = PetscMemcpy(&met[dim*dim*(v-vStart)], &metricArray[dim*off], dim*dim*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
@@ -82,7 +94,6 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
   /* Create boundary mesh */
-  printf("DEBUG  PETSc  creating boundary mesh\n");
   if (bdyLabelName) {
     ierr = PetscStrcmp(bdyLabelName, "boundary", &flag);CHKERRQ(ierr);
     if (flag) {
@@ -90,7 +101,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     }
     ierr = DMGetLabel(dm, bdyLabelName, &bdTags);CHKERRQ(ierr);
   }
-  /* TODO a way to use only bdyLabelName would be to loop over its strata, if I can't get all the strata at once ? */
+  /* TODO To avoid marking bdy facets again if bdyLabelName exists, could/should we loop over bdyLabelName stratas ? */
   ierr = DMLabelCreate("boundary", &bd);CHKERRQ(ierr);
   ierr = DMPlexMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);        
   ierr = DMLabelGetStratumIS(bd, 1, &bdIS);CHKERRQ(ierr);
@@ -127,9 +138,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   ierr = DMLabelDestroy(&bd);CHKERRQ(ierr);
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
   pragmatic_set_metric(met);
-  printf("DEBUG  PETSc  start pragmatic adapt\n");
   pragmatic_adapt();
-  printf("DEBUG  PETSc  end pragmatic adapt\n");
   ierr = PetscFree5(x, y, z, cells, met);CHKERRQ(ierr);
   ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
   ierr = PetscFree(coords);CHKERRQ(ierr);
@@ -158,7 +167,6 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   ierr = DMPlexCreate(comm, dmAdapted);CHKERRQ(ierr);
   ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCellsAdp, numVerticesAdp, numCornersAdp, PETSC_TRUE, cellsAdp, dim, coordsAdp, dmAdapted);CHKERRQ(ierr);
   /* Read out boundary tags */
-  printf("DEBUG  PETSc  boundary tags reconstruction\n");
   pragmatic_get_boundaryTags(&boundaryTags);
   if (!bdyLabelName) bdyLabelName = "boundary";
   ierr = DMCreateLabel(*dmAdapted, bdyLabelName);CHKERRQ(ierr);
@@ -173,24 +181,24 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     const PetscInt *facetList;
     PetscInt        facetListSize, f;
     
-    cellOff = (c-cStart)*(dim+1);  // gives the offset corresponding to the cell in pragmatic boundary arrays. Simplicial mesh assumed
+    cellOff = (c-cStart)*(dim+1);  // gives the offset corresponding to the cell in pragmatic boundary arrays. Only for simplicial meshes
     hasBdyFacet = 0;
-    for (i=0; i<(dim+1); ++i) {
-      if (boundaryTags[cellOff + i]) {
+    for (i = 0; i < dim+1; ++i) {   // only for simplicial meshes
+      if (boundaryTags[cellOff+i]) {
         hasBdyFacet = 1;
         break;
       }
     }
-    if (!hasBdyFacet) continue; // The cell has no boundary facet => no boundary tagging
+    if (!hasBdyFacet) continue; // The cell has no boundary edge/facet => no boundary tagging
     
-    cell = &cellsAdp[cellOff]; // pointing to the current cell in the ccell table
+    cell = &cellsAdp[cellOff]; // pointing to the current cell in the cellsAdp table
     ierr = DMPlexGetTransitiveClosure(*dmAdapted, c, PETSC_TRUE, &cellClosureSize, &cellClosure);CHKERRQ(ierr);
     /* first, encode the permutation of the vertices indices betwenn the cell closure and pragmatic ordering */
     j = 0;
-    for (cl=0; cl<cellClosureSize*2; cl+=2) {
+    for (cl = 0; cl < cellClosureSize*2; cl += 2) {
       if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) continue;
       iVer = cellClosure[cl] - vStart;
-      for (i=0; i<dim+1; ++i) {
+      for (i = 0; i < dim+1; ++i) {  // only for simplicial meshes
         if (iVer == cell[i]) {
           perm[j] = i;    // the cl-th element of the closure is the i-th vertex of the cell
           break;
@@ -200,16 +208,17 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     }
     ierr = DMPlexGetCone(*dmAdapted, c, &facetList);CHKERRQ(ierr);     // list of edges/facets of the cell
     ierr = DMPlexGetConeSize(*dmAdapted, c, &facetListSize);CHKERRQ(ierr);
-    /* then, for each edge/facet of the cell, find the opposite vertex (ie the one not in the closure of the facet/edge) */
-    for (f=0; f<facetListSize; ++f){
+    /* then, for each edge/facet of the cell, find the opposite vertex (ie the one in the closure of the cell and not in the closure of the facet/edge) */
+    for (f = 0; f < facetListSize; ++f){
       facet = facetList[f];
       ierr = DMPlexGetTransitiveClosure(*dmAdapted, facet, PETSC_TRUE, &facetClosureSize, &facetClosure);CHKERRQ(ierr);
       /* loop over the vertices of the cell closure, and check if each vertex belongs to the edge/facet closure */
+      /* TODO should we use bitmaps to mark vertices instead of a static array ? */
       PetscMemzero(isInFacetClosure, sizeof(isInFacetClosure));
       j = 0;
-      for (cl=0; cl<cellClosureSize*2; cl+=2) {
-        if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) continue; //isInFacetClosure[cl] = 1;
-        for (cl2=0; cl2<facetClosureSize*2; cl2+=2){
+      for (cl = 0; cl < cellClosureSize*2; cl += 2) {
+        if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) continue;
+        for (cl2 = 0; cl2 < facetClosureSize*2; cl2 += 2){
           if ((facetClosure[cl2] < vStart) || (facetClosure[cl2] >= vEnd)) continue;
           if (cellClosure[cl] == facetClosure[cl2]) {
             isInFacetClosure[j] = 1;
@@ -219,7 +228,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
       }
       /* the vertex that was not marked is the vertex opposite to the edge/facet, ie the one giving the edge/facet boundary tag in pragmatic */
       j = 0;
-      for (cl=0; cl<cellClosureSize*2; cl+=2) {
+      for (cl = 0; cl < cellClosureSize*2; cl += 2) {
         if ((cellClosure[cl] < vStart) || (cellClosure[cl] >= vEnd)) continue;
         if (!isInFacetClosure[j]) {
           idx = cellOff + perm[j];
@@ -237,6 +246,5 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   pragmatic_finalize();
   ierr = PetscFree5(xAdp, yAdp, zAdp, cellsAdp, coordsAdp);CHKERRQ(ierr);
 #endif
-  printf("DEBUG  PETSc  ======= DMPlexAdapt end\n");
   PetscFunctionReturn(0);
 }
