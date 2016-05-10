@@ -165,7 +165,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMGetLocalVector(plex, &locF);CHKERRQ(ierr);
   ierr = VecZeroEntries(locF);CHKERRQ(ierr);
-  ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, time, locX, NULL, locF, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, time, locX, NULL, time, locF, user);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(plex, locF, INSERT_VALUES, F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(plex, locF, INSERT_VALUES, F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(plex, &locF);CHKERRQ(ierr);
@@ -249,7 +249,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, time, locX, locX_t, locF, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, time, locX, locX_t, time, locF, user);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
