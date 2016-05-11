@@ -842,9 +842,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   agmres->lambdaN     = 0.0;
   agmres->smv         = SMV;
   agmres->bgv         = 1;
-  agmres->force       = 0;
+  agmres->force       = PETSC_FALSE;
   agmres->matvecs     = 0;
-  agmres->improve     = 0;
+  agmres->improve     = PETSC_FALSE;
   agmres->HasShifts   = PETSC_FALSE;
   agmres->r           = 0;
   agmres->HasSchur    = PETSC_FALSE;
