@@ -4021,9 +4021,15 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(fine,&globalFine);CHKERRQ(ierr);
   { /* winnow fine points that don't have global dofs out of the sf */
-    PetscInt dof, cdof, numPointsWithDofs, offset, *pointsWithDofs;
+    PetscInt       nleaves, l;
+    const PetscInt *leaves;
+    PetscInt       dof, cdof, numPointsWithDofs, offset, *pointsWithDofs;
 
-    for (p = pStartF, numPointsWithDofs = 0; p < pEndF; p++) {
+    ierr = PetscSFGetGraph(coarseToFine,NULL,&nleaves,&leaves,NULL);CHKERRQ(ierr);
+
+    for (l = 0, numPointsWithDofs = 0; l < nleaves; l++) {
+      PetscInt p = leaves ? leaves[l] : l;
+
       ierr = PetscSectionGetDof(globalFine,p,&dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(globalFine,p,&cdof);CHKERRQ(ierr);
       if ((dof - cdof) > 0) {
@@ -4031,11 +4037,13 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
       }
     }
     ierr = PetscMalloc1(numPointsWithDofs,&pointsWithDofs);CHKERRQ(ierr);
-    for (p = pStartF, offset = 0; p < pEndF; p++) {
+    for (l = 0, numPointsWithDofs = 0; l < nleaves; l++) {
+      PetscInt p = leaves ? leaves[l] : l;
+
       ierr = PetscSectionGetDof(globalFine,p,&dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(globalFine,p,&cdof);CHKERRQ(ierr);
       if ((dof - cdof) > 0) {
-        pointsWithDofs[offset++] = p - pStartF;
+        pointsWithDofs[offset++] = l;
       }
     }
     ierr = PetscSFCreateEmbeddedLeafSF(coarseToFine, numPointsWithDofs, pointsWithDofs, &coarseToFineEmbedded);CHKERRQ(ierr);
