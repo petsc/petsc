@@ -4044,7 +4044,7 @@ static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, 
 {
   DM                        adapt, plexIn, plexOut;
   DM_Forest                 *forestIn, *forestAdapt;
-  PetscInt                  dofPerDim[4] = {1};
+  PetscInt                  dofPerDim[] = {1, 1, 1, 1};
   PetscSF                   inSF = NULL, outSF = NULL;
   PetscInt                  *inCids = NULL, *outCids = NULL;
   DMForestAdaptivityPurpose purpose;
