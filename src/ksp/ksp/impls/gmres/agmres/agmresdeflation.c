@@ -112,7 +112,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   PetscInt       i,j, info;
   PetscErrorCode ierr;
   PetscInt       *iwork = agmres->iwork;
-  PetscBLASInt   N;
+  PetscBLASInt   N = MAXKSPSIZE;
   PetscBLASInt   lwork,liwork;
   PetscBLASInt   ilo,ihi;
   PetscBLASInt   ijob,wantQ,wantZ;
@@ -126,7 +126,6 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   ierr  = PetscBLASIntCast(2*N*neig,&liwork);CHKERRQ(ierr);
   ilo   = 1;
   ierr  = PetscBLASIntCast(KspSize,&ihi);CHKERRQ(ierr);
-  N     = MAXKSPSIZE;
 
   /* Compute the Schur form */
   if (IsReduced) {                /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
@@ -255,7 +254,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
 
   if (agmres->DeflPrecond) { /* Switch to DGMRES to improve the basis of the invariant subspace associated to the deflation */
     agmres->HasSchur = PETSC_TRUE;
-    ierr             = KSPDGMRESComputeDeflationData_DGMRES(ksp, &CurNeig);CHKERRQ(ierr);
+    ierr             = KSPDGMRESComputeDeflationData(ksp, &CurNeig);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   /* Form the Schur vectors in the entire subspace: U = W * Sr where W = [VEC_V(1:max_k); U]*/

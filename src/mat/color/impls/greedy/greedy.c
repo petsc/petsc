@@ -98,7 +98,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
   while (nd_global < n_global) {
     nd=n;
     /* assign lowest possible color to each local vertex */
-    ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
       idx=lperm[i];
       if (lcolors[idx] == maxcolors) {
@@ -156,10 +156,10 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
         lcolors[idx]=pcol;
       }
     }
-    ierr = PetscLogEventEnd(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
     if (mo) {
       /* transfer neighbor colors */
-      ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(sf,MPIU_INT,lcolors,ocolors);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(sf,MPIU_INT,lcolors,ocolors);CHKERRQ(ierr);
       /* check for conflicts -- this is merely checking if any adjacent off-processor rows have the same color and marking the ones that are lower weight locally for changing */
@@ -300,7 +300,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
     nd=n;
     /* assign lowest possible color to each local vertex */
     mcol_global=0;
-    ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
       idx=lperm[i];
       if (dcolors[idx] == maxcolors) {
@@ -435,7 +435,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
         if (pcol>mcol) mcol=pcol;
       }
     }
-    ierr = PetscLogEventEnd(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
     if (mo) {
       /* transfer neighbor colors */
       ierr = PetscSFBcastBegin(sf,MPIU_INT,dcolors,ocolors);CHKERRQ(ierr);
@@ -504,10 +504,10 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
       }
       nd_global=0;
       ierr = PetscFree(colorweights);CHKERRQ(ierr);
-      ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(sf,MPIU_INT,oconf,conf,MPIU_SUM);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(sf,MPIU_INT,oconf,conf,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
       /* go through and unset local colors that have conflicts */
       for (i=0;i<n;i++) {
         if (conf[i]>0) {
@@ -585,9 +585,9 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscolor
   }
   finalcolor_global=0;
   ierr = MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATCOLORING_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATCOLORING_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   if (!mc->user_weights) {
     ierr = PetscFree(wts);CHKERRQ(ierr);
     ierr = PetscFree(lperm);CHKERRQ(ierr);

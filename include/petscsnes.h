@@ -506,7 +506,6 @@ typedef const char* SNESLineSearchType;
 PETSC_EXTERN PetscFunctionList SNESList;
 PETSC_EXTERN PetscClassId      SNESLINESEARCH_CLASSID;
 PETSC_EXTERN PetscFunctionList SNESLineSearchList;
-PETSC_EXTERN PetscLogEvent     SNESLineSearch_Apply;
 
 #define SNES_LINESEARCH_ORDER_LINEAR    1
 #define SNES_LINESEARCH_ORDER_QUADRATIC 2

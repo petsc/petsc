@@ -2,9 +2,6 @@
 #include <../src/tao/unconstrained/impls/ntr/ntr.h>
 
 #include <petscksp.h>
-#include <petscpc.h>
-#include <petsc/private/kspimpl.h>
-#include <petsc/private/pcimpl.h>
 
 #define NTR_KSP_NASH    0
 #define NTR_KSP_STCG    1

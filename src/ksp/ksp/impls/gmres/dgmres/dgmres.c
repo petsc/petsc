@@ -65,12 +65,12 @@ PetscErrorCode  KSPDGMRESComputeSchurForm(KSP ksp,PetscInt *neig)
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESComputeDeflationData"
-PetscErrorCode  KSPDGMRESComputeDeflationData(KSP ksp)
+PetscErrorCode  KSPDGMRESComputeDeflationData(KSP ksp,PetscInt *curneigh)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP),(ksp));CHKERRQ(ierr);
+  ierr = PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP,PetscInt*),(ksp,curneigh));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -268,7 +268,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     test = max_k *PetscLogReal(ksp->rtol/res) /PetscLogReal(res/res_old);
     /* Compute data for the deflation if the residual rtol will not be reached in the remaining number of steps allowed  */
     if ((test > dgmres->smv*(ksp->max_it-ksp->its)) || dgmres->force) {
-      ierr =  KSPDGMRESComputeDeflationData(ksp);CHKERRQ(ierr);
+      ierr =  KSPDGMRESComputeDeflationData(ksp,NULL);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

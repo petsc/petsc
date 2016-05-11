@@ -62,15 +62,15 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat, PetscInt, PetscReal[],PetscInt*, Pet
 #define PETSC_GAMG_USE_LOG
 enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};
 #if defined PETSC_GAMG_USE_LOG
-PETSC_INTERN PetscLogEvent petsc_gamg_setup_events[NUM_SET];
+PETSC_EXTERN PetscLogEvent petsc_gamg_setup_events[NUM_SET];
 #endif
-PETSC_INTERN PetscLogEvent PC_GAMGGraph_AGG;
-PETSC_INTERN PetscLogEvent PC_GAMGGraph_GEO;
-PETSC_INTERN PetscLogEvent PC_GAMGCoarsen_AGG;
-PETSC_INTERN PetscLogEvent PC_GAMGCoarsen_GEO;
-PETSC_INTERN PetscLogEvent PC_GAMGProlongator_AGG;
-PETSC_INTERN PetscLogEvent PC_GAMGProlongator_GEO;
-PETSC_INTERN PetscLogEvent PC_GAMGOptProlongator_AGG;
+PETSC_EXTERN PetscLogEvent PC_GAMGGraph_AGG;
+PETSC_EXTERN PetscLogEvent PC_GAMGGraph_GEO;
+PETSC_EXTERN PetscLogEvent PC_GAMGCoarsen_AGG;
+PETSC_EXTERN PetscLogEvent PC_GAMGCoarsen_GEO;
+PETSC_EXTERN PetscLogEvent PC_GAMGProlongator_AGG;
+PETSC_EXTERN PetscLogEvent PC_GAMGProlongator_GEO;
+PETSC_EXTERN PetscLogEvent PC_GAMGOptProlongator_AGG;
 #endif
 
 typedef struct _PCGAMGHashTable {

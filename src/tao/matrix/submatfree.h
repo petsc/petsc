@@ -1,5 +1,3 @@
-#include <petsc/private/matimpl.h>
-#include <petsc/private/vecimpl.h>
 
 typedef struct{
 

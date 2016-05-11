@@ -692,7 +692,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType fty
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
 
   B->ops->iccfactorsymbolic      = MatICCFactorSymbolic_sbstrm;
