@@ -882,7 +882,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           }
         }
         flt = apforest->forest->first_local_tree;
-        llt = apforest->forest->first_local_tree;
+        llt = apforest->forest->last_local_tree;
 
         cLocalStart = apforest->cLocalStart;
         for (t = flt, count = cLocalStart; t <= llt; t++) {
