@@ -2469,7 +2469,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       PetscInt child;
 
       ierr = PetscMalloc1(pEndF-pStartF,&cids);CHKERRQ(ierr);
-      for (p = pStartF; p < pEndF; p++) cids[p - pStartF] = -1;
+      for (p = pStartF; p < pEndF; p++) cids[p - pStartF] = -2;
       ierr = DMPlexGetReferenceTree(plexF,&refTree);CHKERRQ(ierr);
       ierr = DMPlexGetTransitiveClosure(refTree,0,PETSC_TRUE,NULL,&rootClosure);CHKERRQ(ierr);
       for (child = 0; child < P4EST_CHILDREN; child++) { /* get the closures of the child cells in the reference tree */
@@ -2493,15 +2493,44 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         PetscInt         c     = i + offset;
         p4est_quadrant_t *quad = &fineQuads[i];
         p4est_quadrant_t *quadCoarse;
-        ssize_t          overlap = -1;
+        ssize_t          disjoint = -1;
 
-        while (overlap < 0 && coarseCount < numCoarseQuads) {
+        while (disjoint < 0 && coarseCount < numCoarseQuads) {
           quadCoarse = &coarseQuads[coarseCount];
-          PetscStackCallP4estReturn(overlap,p4est_quadrant_disjoint,(quadCoarse,quad));
-          if (overlap < 0) coarseCount++;
+          PetscStackCallP4estReturn(disjoint,p4est_quadrant_disjoint,(quadCoarse,quad));
+          if (disjoint < 0) coarseCount++;
         }
-        if (overlap != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"did not find overlapping coarse quad");
+        if (disjoint != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"did not find overlapping coarse quad");
         if (quadCoarse->level > quad->level || (quadCoarse->level == quad->level && !transferIdent)) { /* the "coarse" mesh is finer than the fine mesh at the point: continue */
+          if (transferIdent) { /* find corners */
+            PetscInt j = 0;
+
+            do {
+              if (j < P4EST_CHILDREN) {
+                p4est_quadrant_t cornerQuad;
+                int              equal;
+
+                PetscStackCallP4est(p4est_quadrant_corner_descendant,(quad,&cornerQuad,j,quadCoarse->level));
+                PetscStackCallP4estReturn(equal,p4est_quadrant_is_equal,(&cornerQuad,quadCoarse));
+                if (equal) {
+                  PetscInt    petscJ = P4estVertToPetscVert[j];
+                  PetscInt    p      = closurePointsF[numClosureIndices * c + (P4EST_INSUL - P4EST_CHILDREN) + petscJ].index;
+                  PetscSFNode q      = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + (P4EST_INSUL - P4EST_CHILDREN) + petscJ];
+
+                  roots[p-pStartF]    = q;
+                  rootType[p-pStartF] = PETSC_MAX_INT;
+                  cids[p-pStartF]     = -1;
+                  j++;
+                }
+              }
+              coarseCount++;
+              disjoint = 1;
+              if (coarseCount < numCoarseQuads) {
+                quadCoarse = &coarseQuads[coarseCount];
+                PetscStackCallP4estReturn(disjoint,p4est_quadrant_disjoint,(quadCoarse,quad));
+              }
+            } while (!disjoint);
+          }
           continue;
         }
         if (quadCoarse->level == quad->level) { /* same quad present in coarse and fine mesh */
