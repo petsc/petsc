@@ -406,6 +406,8 @@ cdef extern from * nogil:
 
     int MatSetNullSpace(PetscMat,PetscNullSpace)
     int MatGetNullSpace(PetscMat,PetscNullSpace*)
+    int MatSetTransposeNullSpace(PetscMat,PetscNullSpace)
+    int MatGetTransposeNullSpace(PetscMat,PetscNullSpace*)
     int MatSetNearNullSpace(PetscMat,PetscNullSpace)
     int MatGetNearNullSpace(PetscMat,PetscNullSpace*)
 
