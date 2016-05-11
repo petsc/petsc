@@ -3528,9 +3528,12 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
   ierr = PetscSectionSetChart(leafIndicesSec,pStartF, pEndF);CHKERRQ(ierr);
   ierr = PetscSectionGetMaxDof(localFine,&maxDof);CHKERRQ(ierr);
   { /* winnow fine points that don't have global dofs out of the sf */
-    PetscInt dof, cdof, numPointsWithDofs, offset, *pointsWithDofs, numIndices;
+    PetscInt l, nleaves, dof, cdof, numPointsWithDofs, offset, *pointsWithDofs, numIndices;
+    const PetscInt *leaves;
 
-    for (p = pStartF, numPointsWithDofs = 0; p < pEndF; p++) {
+    ierr = PetscSFGetGraph(coarseToFine,NULL,&nleaves,&leaves,NULL);CHKERRQ(ierr);
+    for (l = 0, numPointsWithDofs = 0; l < nleaves; l++) {
+      p    = leaves ? leaves[l] : l;
       ierr = PetscSectionGetDof(globalFine,p,&dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(globalFine,p,&cdof);CHKERRQ(ierr);
       if ((dof - cdof) > 0) {
@@ -3545,7 +3548,8 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
     ierr = PetscSectionGetStorageSize(leafIndicesSec,&numIndices);CHKERRQ(ierr);
     ierr = PetscMalloc1(gatheredIndices ? numIndices : (maxDof + 1),&leafInds);CHKERRQ(ierr);
     if (gatheredValues)  {ierr = PetscMalloc1(numIndices,&leafVals);CHKERRQ(ierr);}
-    for (p = pStartF, offset = 0; p < pEndF; p++) {
+    for (l = 0, offset = 0; l < nleaves; l++) {
+      p    = leaves ? leaves[l] : l;
       ierr = PetscSectionGetDof(globalFine,p,&dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(globalFine,p,&cdof);CHKERRQ(ierr);
       if ((dof - cdof) > 0) {
@@ -3553,7 +3557,7 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
         PetscInt    *pInd;
         PetscScalar *pVal = NULL;
 
-        pointsWithDofs[offset++] = p - pStartF;
+        pointsWithDofs[offset++] = l;
 
         ierr = PetscSectionGetOffset(leafIndicesSec,p,&off);CHKERRQ(ierr);
 
@@ -4165,7 +4169,6 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     ierr = PetscFree(rootValues);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&rootValuesSec);CHKERRQ(ierr);
   }
-  /* count to preallocate */
   ierr = DMGetDefaultSection(fine,&localFine);CHKERRQ(ierr);
   {
     PetscInt    maxDof;
@@ -4177,14 +4180,6 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     PetscInt     pRefStart,pRefEnd;
     PetscScalar  *pointWork;
 
-#if 0
-    ierr = PetscSectionGetConstrainedStorageSize(globalFine,&nGlobal);CHKERRQ(ierr);
-    ierr = MatGetLayouts(mat,&rowMap,&colMap);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(rowMap);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(colMap);CHKERRQ(ierr);
-    ierr = PetscLayoutGetRange(rowMap,&rowStart,&rowEnd);CHKERRQ(ierr);
-    ierr = PetscLayoutGetRange(colMap,&colStart,&colEnd);CHKERRQ(ierr);
-#endif
     ierr = PetscSectionGetMaxDof(globalFine,&maxDof);CHKERRQ(ierr);
     ierr = DMGetWorkArray(fine,maxDof,PETSC_INT,&rowIndices);CHKERRQ(ierr);
     ierr = DMGetWorkArray(fine,maxDof,PETSC_SCALAR,&pointWork);CHKERRQ(ierr);
