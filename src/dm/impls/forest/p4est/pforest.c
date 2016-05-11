@@ -2695,11 +2695,14 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             }
             q = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + l];
             if (l > rootType[p-pStartF]) {
-              roots[p-pStartF] = q;
               if (l >= P4EST_INSUL - P4EST_CHILDREN) { /* vertex on vertex: unconditional acceptance */
-                rootType[p-pStartF] = PETSC_MAX_INT;
-                if (formCids) cids[p-pStartF] = -1;
+                if (transferIdent) {
+                  roots[p-pStartF] = q;
+                  rootType[p-pStartF] = PETSC_MAX_INT;
+                  if (formCids) cids[p-pStartF] = -1;
+                }
               } else {
+                roots[p-pStartF] = q;
                 rootType[p-pStartF] = l;
               }
             }
