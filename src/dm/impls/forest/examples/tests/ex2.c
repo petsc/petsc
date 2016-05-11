@@ -74,21 +74,20 @@ int main(int argc, char **argv)
   /* the base mesh */
   ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &base);CHKERRQ(ierr);
   ierr = AddIdentityLabel(base);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(base,dim,1,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-  ierr = DMSetField(base,0,(PetscObject)fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = DMViewFromOptions(base,NULL,"-dm_base_view");CHKERRQ(ierr);
 
   /* the pre adaptivity forest */
   ierr = DMCreate(comm,&preForest);CHKERRQ(ierr);
   ierr = DMSetType(preForest,(dim == 2) ? DMP4EST : DMP8EST);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(preForest,base);CHKERRQ(ierr);
-  ierr = DMDestroy(&base);CHKERRQ(ierr);
   ierr = DMForestSetInitialRefinement(preForest,1);CHKERRQ(ierr);
   ierr = DMSetUp(preForest);CHKERRQ(ierr);
   ierr = DMViewFromOptions(preForest,NULL,"-dm_pre_view");CHKERRQ(ierr);
 
   /* the pre adaptivity field */
+  ierr = PetscFECreateDefault(preForest,dim,1,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+  ierr = DMSetField(preForest,0,(PetscObject)fe);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(preForest,&preVec);CHKERRQ(ierr);
   ierr = DMProjectFunction(preForest,0.,funcs,ctxs,INSERT_VALUES,preVec);CHKERRQ(ierr);
   ierr = VecViewFromOptions(preVec,NULL,"-vec_pre_view");CHKERRQ(ierr);
@@ -103,8 +102,6 @@ int main(int argc, char **argv)
   /* transfer */
   ierr = DMCreateGlobalVector(postForest,&postVecTransfer);CHKERRQ(ierr);
   ierr = DMForestTransferVec(preForest,preVec,postForest,postVecTransfer);CHKERRQ(ierr);
-  ierr = VecDestroy(&preVec);CHKERRQ(ierr);
-  ierr = DMDestroy(&preForest);CHKERRQ(ierr);
   ierr = VecViewFromOptions(postVecTransfer,NULL,"-vec_post_transfer_view");CHKERRQ(ierr);
 
   /* the exact post adaptivity field */
@@ -114,19 +111,23 @@ int main(int argc, char **argv)
 
   /* compare */
   ierr = VecAXPY(postVecTransfer,-1.,postVecExact);CHKERRQ(ierr);
-  ierr = VecDestroy(&postVecExact);CHKERRQ(ierr);
   ierr = VecViewFromOptions(postVecTransfer,NULL,"-vec_diff");CHKERRQ(ierr);
   ierr = VecNorm(postVecTransfer,NORM_2,&diff);CHKERRQ(ierr);
 
+  /* output */
   if (diff < tol) {
     ierr = PetscPrintf(comm,"DMForestTransfer() passes.\n");CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(comm,"DMForestTransfer() fails with error %g and tolerange %g\n",diff,tol);CHKERRQ(ierr);
   }
 
+  /* cleanup */
+  ierr = VecDestroy(&postVecExact);CHKERRQ(ierr);
   ierr = VecDestroy(&postVecTransfer);CHKERRQ(ierr);
   ierr = DMDestroy(&postForest);CHKERRQ(ierr);
-
+  ierr = VecDestroy(&preVec);CHKERRQ(ierr);
+  ierr = DMDestroy(&preForest);CHKERRQ(ierr);
+  ierr = DMDestroy(&base);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
