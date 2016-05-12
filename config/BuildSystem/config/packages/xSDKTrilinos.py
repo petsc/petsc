@@ -107,8 +107,10 @@ class Configure(config.package.CMakePackage):
     else:
       self.logClear()
       self.logPrintDivider( debugSection = 'screen')
-      self.logPrint('Since this is a batch system xSDKTrilinos cannot run tests directly', debugSection = 'screen')
-      self.logPrint('Submit the following program(s) to your batch system with four MPI processes', debugSection = 'screen')
+      self.logPrint('Since this is a batch system xSDKTrilinos cannot run tests directly. To run a short test suite.', debugSection = 'screen')
+      self.logPrint('   Obtain an interactive session with your batch system', debugSection = 'screen')
+      self.logPrint('   cd to installxSDK/xsdk/petsc/arch-linux2-c-debug/externalpackages/git.xsdktrilinos/build', debugSection = 'screen')
+      self.logPrint('   ctest', debugSection = 'screen')
       linewidth = self.linewidth
       self.linewidth = -1
       if self.hypre.found:

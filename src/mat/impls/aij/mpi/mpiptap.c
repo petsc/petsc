@@ -43,6 +43,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
     ierr = MatDestroy(&ptap->C_loc);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->C_oth);CHKERRQ(ierr);
     if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
+
     if (merge) { /* used by alg_ptap */
       ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
       ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
@@ -57,11 +58,10 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
       ierr = PetscFree(merge->coj);CHKERRQ(ierr);
       ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
       ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
-      ierr = merge->destroy(A);CHKERRQ(ierr);
       ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
-    } else {
-      ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
-    }
+    } 
+    
+    ierr = ptap->destroy(A);CHKERRQ(ierr);
     ierr = PetscFree(ptap);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
