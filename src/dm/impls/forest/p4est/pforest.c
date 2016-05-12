@@ -895,6 +895,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
             q->p.user_int = cellFlags[count++];
           }
         }
+        ierr = PetscFree(cellFlags);CHKERRQ(ierr);
 
         if (adaptAny) {
           PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_keep));
@@ -4109,6 +4110,10 @@ static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, 
   ierr = DMPforestGetPlex(dmOut,&plexOut);CHKERRQ(ierr);
 
   ierr = DMPlexTransferVecTree(plexIn,vecIn,plexOut,vecOut,inSF,outSF,inCids,outCids);CHKERRQ(ierr);
+  ierr = PetscFree(inCids);CHKERRQ(ierr);
+  ierr = PetscFree(outCids);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&inSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&outSF);CHKERRQ(ierr);
   ierr = PetscFree(inCids);CHKERRQ(ierr);
   ierr = PetscFree(outCids);CHKERRQ(ierr);
   PetscFunctionReturn(0);

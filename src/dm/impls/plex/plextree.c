@@ -4260,6 +4260,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     ierr = DMRestoreWorkArray(fine,maxDof,PETSC_INT,&rowIndices);CHKERRQ(ierr);
     ierr = DMRestoreWorkArray(fine,maxDof,PETSC_SCALAR,&pointWork);CHKERRQ(ierr);
   }
+  ierr = PetscFree(leafValues);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafValuesSec);CHKERRQ(ierr);
   ierr = PetscFree7(offsets,offsetsCopy,newOffsets,newOffsetsCopy,rowOffsets,numD,numO);CHKERRQ(ierr);
   ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);
