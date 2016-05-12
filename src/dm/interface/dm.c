@@ -948,9 +948,12 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
         ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
-        bdof = cdof ? 1 : dof;
-        if (bs < 0)          {bs = bdof;}
-        else if (bs != bdof) {bs = 1;}
+        /* If you have dofs, and constraints, and they are unequal, we set the blocksize to 1 */
+        bdof = cdof && (dof-cdof) ? 1 : dof;
+        if (dof) {
+          if (bs < 0)          {bs = bdof;}
+          else if (bs != bdof) {bs = 1;}
+        }
         for (c = 0; c < dof; ++c, ++l) {
           ltog[l] = off+c;
         }
