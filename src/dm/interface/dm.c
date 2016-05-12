@@ -2149,9 +2149,11 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   switch (mode) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
+  case INSERT_BC_VALUES:
     isInsert = PETSC_TRUE; break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
+  case ADD_BC_VALUES:
     isInsert = PETSC_FALSE; break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);

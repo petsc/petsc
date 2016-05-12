@@ -3685,6 +3685,12 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
           const PetscInt o     = points[p+1];
           updatePointFields_private(section, point, o, f, fcomp, add, PETSC_TRUE, values, &offset, array);
         } break;
+      case ADD_BC_VALUES:
+        for (p = 0; p < numPoints*2; p += 2) {
+          const PetscInt point = points[p];
+          const PetscInt o     = points[p+1];
+          updatePointFieldsBC_private(section, point, o, f, fcomp, add, values, &offset, array);
+        } break;
       default:
         SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
       }
@@ -3722,6 +3728,12 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
         PetscInt o = points[p+1];
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
         updatePoint_private(section, points[p], dof, add,    PETSC_TRUE,  o, &values[off], array);
+      } break;
+    case ADD_BC_VALUES:
+      for (p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
+        PetscInt o = points[p+1];
+        ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
+        updatePointBC_private(section, points[p], dof, add,  o, &values[off], array);
       } break;
     default:
       SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
