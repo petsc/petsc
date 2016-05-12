@@ -7,6 +7,7 @@ typedef struct {
   PetscReal reject_safety;      /* extra safety factor if the last step was rejected */
   Vec       X;
   Vec       Y;
+  Vec       E;
 } TSAdapt_GLEE;
 
 #undef __FUNCT__
@@ -16,7 +17,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   TSAdapt_GLEE  *glee = (TSAdapt_GLEE*)adapt->data;
   TSType         time_scheme;      /* Type of time-integration scheme        */
   PetscErrorCode ierr;
-  Vec            X,Y,Z;
+  Vec            X,Y,E;
   PetscReal      enorm,enorma,enormr,hfac_lte,h_lte,safety;
   PetscInt       order,order_add,stepno;
 
@@ -27,17 +28,15 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
   if (!strcmp(time_scheme,TSGLEE)){
     /* the method is of GLEE type */
-    order_add=1; /* typically same order estimates */
-    if (!glee->X) {
-      ierr = TSGetSolution(ts,&Z);CHKERRQ(ierr);
-      ierr = VecDuplicate(Z,&glee->X);CHKERRQ(ierr);
-    }
-    X    = glee->X;
-    if (!glee->Y) {ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);}
-    Y    = glee->Y;
-    ierr = TSGetTimeError(ts,-1,&X);CHKERRQ(ierr);
-    ierr = TSGetTimeError(ts, 0,&Y);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+    order_add=0; /* typically same order estimates */
+    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
+    /* ierr = TSGetPreviousSolution(ts,&Y);CHKERRQ(ierr);
+     */
+    if (!glee->E) {ierr = VecDuplicate(X,&glee->E);CHKERRQ(ierr);}
+    E     = glee->E;
+    ierr = TSGetTimeError(ts,0,&E);CHKERRQ(ierr);
+    /* this should be called with Y */
+    ierr = TSErrorWeightedENorm(ts,E,X,X,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   } else {
     /* the method is NOT of GLEE type */
     order_add=0; /* typically lower order estimates */
@@ -166,7 +165,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt adapt)
 
   a->clip[0]       = 0.1;
   a->clip[1]       = 10.;
-  a->safety        = 0.9;
+  a->safety        = 0.99;
   a->reject_safety = 0.5;
   a->always_accept = PETSC_FALSE;
   PetscFunctionReturn(0);

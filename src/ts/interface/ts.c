@@ -6051,6 +6051,8 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
   PetscValidType(Y,3);
   PetscCheckSameComm(U,2,Y,3);
   PetscValidPointer(norm,4);
+  PetscValidPointer(norma,5);
+  PetscValidPointer(normr,6);
   if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
@@ -6219,6 +6221,8 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
   PetscValidType(Y,3);
   PetscCheckSameComm(U,2,Y,3);
   PetscValidPointer(norm,4);
+  PetscValidPointer(norma,5);
+  PetscValidPointer(normr,6);
   if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
@@ -6332,7 +6336,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
 #undef __FUNCT__
 #define __FUNCT__ "TSErrorWeightedNorm"
 /*@
-   TSErrorWeightedNorm - compute a weighted norm of the difference between two state vectors
+   TSErrorWeightedNorm - compute a weighted norm of the difference between two state vectors based on supplied absolute and relative tolerances
 
    Collective on TS
 
@@ -6343,15 +6347,16 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
 -  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
    Output Arguments:
-.  norm - weighted norm, a value of 1.0 is considered small
-
+.  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
+.  norma - weighted norm, a value of 1.0 means that the error meets the absolute tolerance set by the user
+.  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
 
    Options Database Keys:
 .  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
 
    Level: developer
 
-.seealso: TSErrorWeightedNormInfinity(), TSErrorWeightedNorm2()
+.seealso: TSErrorWeightedNormInfinity(), TSErrorWeightedNorm2(), TSErrorWeightedENorm
 @*/
 PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscReal *norm,PetscReal *norma,PetscReal *normr)
 {
@@ -6365,6 +6370,378 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscRea
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSErrorWeightedENorm2"
+/*@
+   TSErrorWeightedENorm2 - compute a weighted 2 error norm based on supplied absolute and relative tolerances
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  E - error vector
+.  U - state vector, usually ts->vec_sol
+-  Y - state vector, previous time step
+
+   Output Arguments:
+.  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
+.  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
+.  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
+
+   Level: developer
+
+.seealso: TSErrorWeightedENorm(), TSErrorWeightedENormInfinity()
+@*/
+PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,PetscReal *norma,PetscReal *normr)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n,N,rstart;
+  PetscInt          n_loc,na_loc,nr_loc;
+  PetscReal         n_glb,na_glb,nr_glb;
+  const PetscScalar *e,*u,*y;
+  PetscReal         err,sum,suma,sumr,gsum,gsuma,gsumr;
+  PetscReal         tol,tola,tolr;
+  PetscReal         err_loc[6],err_glb[6];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(E,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,4);
+  PetscValidType(E,2);
+  PetscValidType(U,3);
+  PetscValidType(Y,4);
+  PetscCheckSameComm(E,2,U,3);
+  PetscCheckSameComm(U,2,Y,3);
+  PetscValidPointer(norm,5);
+  PetscValidPointer(norma,6);
+  PetscValidPointer(normr,7);
+
+  ierr = VecGetSize(E,&N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(E,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(E,&rstart,NULL);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(E,&e);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  sum  = 0.; n_loc  = 0;
+  suma = 0.; na_loc = 0;
+  sumr = 0.; nr_loc = 0;
+  if (ts->vatol && ts->vrtol) {
+    const PetscScalar *atol,*rtol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      err = PetscAbsScalar(e[i]);
+      tola = PetscRealPart(atol[i]);
+      if(tola>0.){
+        suma  += PetscSqr(err/tola);
+        na_loc++;
+      }
+      tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      if(tolr>0.){
+        sumr  += PetscSqr(err/tolr);
+        nr_loc++;
+      }
+      tol=tola+tolr;
+      if(tol>0.){
+        sum  += PetscSqr(err/tol);
+        n_loc++;
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else if (ts->vatol) {       /* vector atol, scalar rtol */
+    const PetscScalar *atol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      err = PetscAbsScalar(e[i]);
+      tola = PetscRealPart(atol[i]);
+      if(tola>0.){
+        suma  += PetscSqr(err/tola);
+        na_loc++;
+      }
+      tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      if(tolr>0.){
+        sumr  += PetscSqr(err/tolr);
+        nr_loc++;
+      }
+      tol=tola+tolr;
+      if(tol>0.){
+        sum  += PetscSqr(err/tol);
+        n_loc++;
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+  } else if (ts->vrtol) {       /* scalar atol, vector rtol */
+    const PetscScalar *rtol;
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      err = PetscAbsScalar(e[i]);
+      tola = ts->atol;
+      if(tola>0.){
+        suma  += PetscSqr(err/tola);
+        na_loc++;
+      }
+      tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      if(tolr>0.){
+        sumr  += PetscSqr(err/tolr);
+        nr_loc++;
+      }
+      tol=tola+tolr;
+      if(tol>0.){
+        sum  += PetscSqr(err/tol);
+        n_loc++;
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else {                      /* scalar atol, scalar rtol */
+    for (i=0; i<n; i++) {
+      err = PetscAbsScalar(e[i]);
+     tola = ts->atol;
+      if(tola>0.){
+        suma  += PetscSqr(err/tola);
+        na_loc++;
+      }
+      tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      if(tolr>0.){
+        sumr  += PetscSqr(err/tolr);
+        nr_loc++;
+      }
+      tol=tola+tolr;
+      if(tol>0.){
+        sum  += PetscSqr(err/tol);
+        n_loc++;
+      }
+    }
+  }
+  ierr = VecRestoreArrayRead(E,&e);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+
+  err_loc[0] = sum;
+  err_loc[1] = suma;
+  err_loc[2] = sumr;
+  err_loc[3] = (PetscReal)n_loc;
+  err_loc[4] = (PetscReal)na_loc;
+  err_loc[5] = (PetscReal)nr_loc;
+
+  ierr = MPIU_Allreduce(&err_loc,&err_glb,6,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+
+  gsum   = err_glb[0];
+  gsuma  = err_glb[1];
+  gsumr  = err_glb[2];
+  n_glb  = err_glb[3];
+  na_glb = err_glb[4];
+  nr_glb = err_glb[5];
+  
+  *norm  = 0.;
+  if(n_glb>0. ){*norm  = PetscSqrtReal(gsum  / n_glb );}
+  *norma = 0.;
+  if(na_glb>0.){*norma = PetscSqrtReal(gsuma / na_glb);}
+  *normr = 0.;
+  if(nr_glb>0.){*normr = PetscSqrtReal(gsumr / nr_glb);}
+
+  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
+  if (PetscIsInfOrNanScalar(*normr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSErrorWeightedENormInfinity"
+/*@
+   TSErrorWeightedENormInfinity - compute a weighted infinity error norm based on supplied absolute and relative tolerances
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  E - error vector
+.  U - state vector, usually ts->vec_sol
+-  Y - state vector, previous time step
+
+   Output Arguments:
+.  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
+.  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
+.  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
+
+   Level: developer
+
+.seealso: TSErrorWeightedENorm(), TSErrorWeightedENorm2()
+@*/
+PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,PetscReal *norma,PetscReal *normr)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n,N,rstart;
+  const PetscScalar *e,*u,*y;
+  PetscReal         err,max,gmax,maxa,gmaxa,maxr,gmaxr;
+  PetscReal         tol,tola,tolr;
+  PetscReal         err_loc[3],err_glb[3];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(E,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,4);
+  PetscValidType(E,2);
+  PetscValidType(U,3);
+  PetscValidType(Y,4);
+  PetscCheckSameComm(E,2,U,3);
+  PetscCheckSameComm(U,2,Y,3);
+  PetscValidPointer(norm,5);
+  PetscValidPointer(norma,6);
+  PetscValidPointer(normr,7);
+
+  ierr = VecGetSize(E,&N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(E,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(E,&rstart,NULL);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(E,&e);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+
+  max=0.;
+  maxa=0.;
+  maxr=0.;
+
+  if (ts->vatol && ts->vrtol) {     /* vector atol, vector rtol */
+    const PetscScalar *atol,*rtol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+
+    for (i=0; i<n; i++) {
+      err = PetscAbsScalar(e[i]);
+      tola = PetscRealPart(atol[i]);
+      tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      tol  = tola+tolr;
+      if(tola>0.){
+        maxa = PetscMax(maxa,err / tola);
+      }
+      if(tolr>0.){
+        maxr = PetscMax(maxr,err / tolr);
+      }
+      if(tol>0.){
+        max = PetscMax(max,err / tol);
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else if (ts->vatol) {       /* vector atol, scalar rtol */
+    const PetscScalar *atol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      err = PetscAbsScalar(e[i]);
+      tola = PetscRealPart(atol[i]);
+      tolr = ts->rtol  * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      tol  = tola+tolr;
+      if(tola>0.){
+        maxa = PetscMax(maxa,err / tola);
+      }
+      if(tolr>0.){
+        maxr = PetscMax(maxr,err / tolr);
+      }
+      if(tol>0.){
+        max = PetscMax(max,err / tol);
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+  } else if (ts->vrtol) {       /* scalar atol, vector rtol */
+    const PetscScalar *rtol;
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+
+    for (i=0; i<n; i++) {
+      err = PetscAbsScalar(e[i]);
+      tola = ts->atol;
+      tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      tol  = tola+tolr;
+      if(tola>0.){
+        maxa = PetscMax(maxa,err / tola);
+      }
+      if(tolr>0.){
+        maxr = PetscMax(maxr,err / tolr);
+      }
+      if(tol>0.){
+        max = PetscMax(max,err / tol);
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else {                      /* scalar atol, scalar rtol */
+
+    for (i=0; i<n; i++) {
+      err = PetscAbsScalar(e[i]);
+      tola = ts->atol;
+      tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      tol  = tola+tolr;
+      if(tola>0.){
+        maxa = PetscMax(maxa,err / tola);
+      }
+      if(tolr>0.){
+        maxr = PetscMax(maxr,err / tolr);
+      }
+      if(tol>0.){
+        max = PetscMax(max,err / tol);
+      }
+    }
+  }
+  ierr = VecRestoreArrayRead(E,&e);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+  err_loc[0] = max;
+  err_loc[1] = maxa;
+  err_loc[2] = maxr;
+  ierr  = MPIU_Allreduce(&err_loc,&err_glb,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  gmax   = err_glb[0];
+  gmaxa  = err_glb[1];
+  gmaxr  = err_glb[2];
+
+  *norm = gmax;
+  *norma = gmaxa;
+  *normr = gmaxr;
+  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
+    if (PetscIsInfOrNanScalar(*normr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSErrorWeightedENorm"
+/*@
+   TSErrorWeightedENorm - compute a weighted error norm based on supplied absolute and relative tolerances
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  E - error vector
+.  U - state vector, usually ts->vec_sol
+.  Y - state vector, previous time step
+-  wnormtype - norm type, either NORM_2 or NORM_INFINITY
+
+   Output Arguments:
+.  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
+.  norma - weighted norm, a value of 1.0 means that the error meets the absolute tolerance set by the user
+.  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
+
+   Options Database Keys:
+.  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
+
+   Level: developer
+
+.seealso: TSErrorWeightedENormInfinity(), TSErrorWeightedENorm2(), TSErrorWeightedNormInfinity(), TSErrorWeightedNorm2()
+@*/
+PetscErrorCode TSErrorWeightedENorm(TS ts,Vec E,Vec U,Vec Y,NormType wnormtype,PetscReal *norm,PetscReal *norma,PetscReal *normr)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (wnormtype == NORM_2) {
+    ierr = TSErrorWeightedENorm2(ts,E,U,Y,norm,norma,normr);CHKERRQ(ierr);
+  } else if(wnormtype == NORM_INFINITY) {
+    ierr = TSErrorWeightedENormInfinity(ts,E,U,Y,norm,norma,normr);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetCFLTimeLocal"
