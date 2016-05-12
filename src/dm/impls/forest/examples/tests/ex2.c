@@ -111,14 +111,14 @@ int main(int argc, char **argv)
 
   /* compare */
   ierr = VecAXPY(postVecTransfer,-1.,postVecExact);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(postVecTransfer,NULL,"-vec_diff");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(postVecTransfer,NULL,"-vec_diff_view");CHKERRQ(ierr);
   ierr = VecNorm(postVecTransfer,NORM_2,&diff);CHKERRQ(ierr);
 
   /* output */
   if (diff < tol) {
     ierr = PetscPrintf(comm,"DMForestTransfer() passes.\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm,"DMForestTransfer() fails with error %g and tolerange %g\n",diff,tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"DMForestTransfer() fails with error %g and tolerance %g\n",diff,tol);CHKERRQ(ierr);
   }
 
   /* cleanup */
