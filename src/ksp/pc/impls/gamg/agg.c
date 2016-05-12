@@ -4,6 +4,7 @@
 
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
 #include <petsc/private/kspimpl.h>
+#include <petsc/private/dmimpl.h>
 
 #include <petscblaslapack.h>
 
@@ -636,9 +637,25 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   MatNullSpace   mnull;
-
   PetscFunctionBegin;
+
   ierr = MatGetNearNullSpace(a_A, &mnull);CHKERRQ(ierr);
+  if (!mnull) {
+    DM dm;
+    ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
+    if (!dm) {
+      ierr = MatGetDM(a_A, &dm);CHKERRQ(ierr);
+    }
+    if (dm) {
+      PetscObject  deformation;
+      ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
+      ierr = PetscObjectQuery((PetscObject)deformation,"nearnullspace",(PetscObject*)&mnull);CHKERRQ(ierr);
+      if (!mnull) {
+        ierr = PetscObjectQuery((PetscObject)deformation,"nullspace",(PetscObject*)&mnull);CHKERRQ(ierr);
+      }
+    }
+  }
+
   if (!mnull) {
     PetscInt bs,NN,MM;
     ierr = MatGetBlockSize(a_A, &bs);CHKERRQ(ierr);
