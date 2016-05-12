@@ -800,6 +800,32 @@ PetscErrorCode RHSFunction_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec F, void *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "RHSJacobian_Kulikov2013I"
+PetscErrorCode RHSJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Mat A, Mat B, void *s)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *y;
+  PetscInt          row[4] = {0,1,2,3};
+  PetscScalar       value[4][4];
+  PetscReal         m1,m2;
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  m1=(2.*t*y[3])/(5.*PetscPowScalar(y[1],4./5.));
+  m2=2.*t*PetscPowScalar(y[1],1./5.);
+  value[0][0] = 0. ;        value[0][1] = m1; value[0][2] = 0.;  value[0][3] = m2;
+  m1=50.*t*y[3]*PetscExpReal(5.0*(y[2]-1.));
+  m2=10.*t*PetscExpReal(5.0*(y[2]-1.));
+  value[1][0] = 0.;        value[1][1] = 0. ; value[1][2] = m1; value[1][3] = m2;
+  value[2][0] = 0.;        value[2][1] = 0.;  value[2][2] = 0.; value[2][3] = 2*t;
+  value[3][0] = -2.*t/y[0];value[3][1] = 0.;  value[3][2] = 0.; value[3][3] = 0.;
+  ierr = MatSetValues(A,4,&row[0],4,&row[0],&value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "IFunction_Kulikov2013I"
 PetscErrorCode IFunction_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
@@ -840,7 +866,7 @@ PetscErrorCode IJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec Ydot, Petsc
   m2=10.*t*PetscExpReal(5.0*(y[2]-1.));
   value[1][0] = 0.;        value[1][1] = a ;  value[1][2] = m1; value[1][3] = m2;
   value[2][0] = 0.;        value[2][1] = 0.;  value[2][2] = a;  value[2][3] = 2*t;
-  value[3][0] = -2.*t/y[0];value[3][1] = 0.;  value[3][2] = 0.;value[3][3] = a;
+  value[3][0] = -2.*t/y[0];value[3][1] = 0.;  value[3][2] = 0.; value[3][3] = a;
   ierr = MatSetValues(A,4,&row[0],4,&row[0],&value[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1183,6 +1209,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
     y[2] = PetscSinScalar(t0*t0)+1.0;
     y[3] = PetscCosScalar(t0*t0);
     RHSFunction = RHSFunction_Kulikov2013I;
+    RHSJacobian = RHSJacobian_Kulikov2013I;
     IFunction   = IFunction_Kulikov2013I;
     IJacobian   = IJacobian_Kulikov2013I;
   } else if (!strcmp(p,"hull1972c1")) {
@@ -1267,7 +1294,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   Mat             Jac = NULL;       /* Jacobian matrix                        */
   Vec             Yerr;             /* Auxiliary solution vector              */
   PetscReal       err_norm;         /* Estimated error norm                   */
- 
+
   PetscFunctionBegin;
   N = GetSize((const char *)&ptype[0]);
   if (N < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Illegal problem specification.\n");
@@ -1292,6 +1319,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = TSSetSolution(ts,Y);CHKERRQ(ierr);
   /* Specify left/right-hand side functions                               */
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
+
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP) || (!strcmp(time_scheme,TSGLEE)))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
