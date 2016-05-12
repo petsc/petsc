@@ -4221,7 +4221,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
           offsets[f + 1]        = offsets[f] + rowDof;
           offsetsCopy[f + 1]    = offsets[f + 1];
           /* TODO: closure indices */
-          newOffsets[f + 1]     = newOffsets[f] + (childId == -1) ? rowDof : refPointFieldN[childId - pRefStart][f];
+          newOffsets[f + 1]     = newOffsets[f] + ((childId == -1) ? rowDof : refPointFieldN[childId - pRefStart][f]);
         }
         ierr = indicesPointFields_private(localFine,p,gOff,offsetsCopy,PETSC_FALSE,0,rowIndices);CHKERRQ(ierr);
       }
