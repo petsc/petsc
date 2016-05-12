@@ -205,6 +205,7 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   PetscInt       max_k   = agmres->max_k; /* size of the (non augmented) Krylov subspace */
   PetscInt       Neig    = 0;
   PetscInt       max_it  = ksp->max_it;
+  PetscBool      flg;
 
   /* Perform one cycle of dgmres to find the eigenvalues and compute the first approximations of the eigenvectors */
 
@@ -229,7 +230,6 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   }
 
   /* It may happen that the Ritz values from one cycle of GMRES are not accurate enough to provide a good stability. In this case, another cycle of GMRES is performed.  The two sets of values thus generated are sorted and the most accurate are kept as shifts */
-  PetscBool flg;
   ierr = PetscOptionsHasName(NULL,NULL, "-ksp_agmres_ImproveShifts", &flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = KSPAGMRESLejaOrdering(agmres->wr, agmres->wi, agmres->Rshift, agmres->Ishift, max_k);CHKERRQ(ierr);
@@ -818,7 +818,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeDeflationData_C",KSPDGMRESComputeDeflationData_DGMRES);CHKERRQ(ierr);
   ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
 
-  PetscInt KSP_CLASSID = 1;
   ierr = PetscLogEventRegister("AGMRESComputeDefl", KSP_CLASSID, &KSP_AGMRESComputeDeflationData);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AGMRESBuildBasis", KSP_CLASSID, &KSP_AGMRESBuildBasis);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AGMRESCompShifts", KSP_CLASSID, &KSP_AGMRESComputeShifts);CHKERRQ(ierr);

@@ -131,8 +131,8 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   PetscMPIInt    rank     = agmres->rank;
   PetscMPIInt    First    = agmres->First;
   PetscMPIInt    Last     = agmres->Last;
-  PetscBLASInt   nloc,pas,len;
-  PetscInt       d, i, j, k;
+  PetscBLASInt   pas,len;
+  PetscInt       nloc,d, i, j, k;
   PetscInt       pos,tag;
   PetscReal      c, s, rho, Ajj, val, tt, old;
   PetscScalar    *col;
