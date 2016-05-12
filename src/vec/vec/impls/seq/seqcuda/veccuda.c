@@ -6,7 +6,6 @@
  must be compiled with nvcc or a C++ compiler.
  */
 
-#define PETSC_SKIP_COMPLEX
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>

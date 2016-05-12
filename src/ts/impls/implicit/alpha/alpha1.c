@@ -103,8 +103,8 @@ static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
   - If using adaptivity, estimate the LTE of the initial step.
 */
 #undef __FUNCT__
-#define __FUNCT__ "TSAlpha_ResetStep"
-static PetscErrorCode TSAlpha_ResetStep(TS ts,PetscBool *initok)
+#define __FUNCT__ "TSAlpha_Restart"
+static PetscErrorCode TSAlpha_Restart(TS ts,PetscBool *initok)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscReal      time_step;
@@ -153,10 +153,10 @@ static PetscErrorCode TSAlpha_ResetStep(TS ts,PetscBool *initok)
 
   /* Rough, lower-order estimate LTE of the initial step */
   if (th->adapt) {
-    ierr = VecZeroEntries(th->vec_sol_prev);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_sol_prev,+2,X2);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_sol_prev,-4,X1);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_sol_prev,+2,X0);CHKERRQ(ierr);
+    ierr = VecZeroEntries(th->vec_lte_work);CHKERRQ(ierr);
+    ierr = VecAXPY(th->vec_lte_work,+2,X2);CHKERRQ(ierr);
+    ierr = VecAXPY(th->vec_lte_work,-4,X1);CHKERRQ(ierr);
+    ierr = VecAXPY(th->vec_lte_work,+2,X0);CHKERRQ(ierr);
   }
 
  finally:
@@ -169,8 +169,6 @@ static PetscErrorCode TSAlpha_ResetStep(TS ts,PetscBool *initok)
   ierr = VecDestroy(&X1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#define TSEvent_Status(ts) (ts->event ? ts->event->status : TSEVENT_NONE)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSStep_Alpha"
@@ -194,9 +192,9 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   th->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && th->status != TS_STEP_COMPLETE) {
 
-    if (!ts->steps || TSEvent_Status(ts) == TSEVENT_RESET_NEXTSTEP) {
-      ierr = TSAlpha_ResetStep(ts,&stageok);CHKERRQ(ierr);
-      if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
+    if (ts->steprestart) {
+      ierr = TSAlpha_Restart(ts,&stageok);CHKERRQ(ierr);
+      if (!stageok) goto reject_step;
     }
 
     ierr = TSAlpha_StageTime(ts);CHKERRQ(ierr);
@@ -205,7 +203,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     ierr = TS_SNESSolve(ts,NULL,th->X1);CHKERRQ(ierr);
     ierr = TSPostStage(ts,th->stage_time,0,&th->Xa);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->Xa,&stageok);CHKERRQ(ierr);
-    if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
+    if (!stageok) goto reject_step;
 
     th->status = TS_STEP_PENDING;
     ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
@@ -222,7 +220,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     break;
 
   reject_step:
-    ts->reject++;
+    ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
       ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
@@ -242,9 +240,9 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ts->steps || TSEvent_Status(ts) == TSEVENT_RESET_NEXTSTEP) {
-    /* th->vec_sol_prev is set to the LTE in TSAlpha_ResetStep() */
-    ierr = VecWAXPY(Y,1.0,th->vec_sol_prev,X);CHKERRQ(ierr);
+  if (ts->steprestart) {
+    /* th->vec_lte_work is set to the LTE in TSAlpha_Restart() */
+    ierr = VecAXPY(Y,1,X);CHKERRQ(ierr);
   } else {
     /* Compute LTE using backward differences with non-constant time step */
     PetscReal   h = ts->time_step, h_prev = ts->ptime - ts->ptime_prev;

@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'origin/trilinos-release-12-6-branch'
-    self.download         = ['git://https://github.com/trilinos/trilinos']
+    self.gitcommit        = 'trilinos-release-12-6-2'
+    self.download         = ['http://trilinos.csbsju.edu/download/files/trilinos-12.6.2-Source.tar.gz','git://https://github.com/trilinos/trilinos']
     self.downloaddirname  = 'trilinos'
     self.includes         = ['Trilinos_version.h']
     self.functions        = ['Zoltan_Create']   # one of the very few C routines in Trilinos
@@ -32,9 +32,12 @@ class Configure(config.package.CMakePackage):
     self.netcdf          = framework.require('config.packages.netcdf',self)
     self.scalapack       = framework.require('config.packages.scalapack',self)
     self.mumps           = framework.require('config.packages.MUMPS',self)
+    self.zoltan          = framework.require('config.packages.Zoltan',self)
+    self.ml              = framework.require('config.packages.ml',self)
+    self.exodusii        = framework.require('config.packages.exodusii',self)
     self.boost           = framework.require('config.packages.boost',self)
-    self.deps            = [self.mpi,self.blasLapack]
-    self.odeps           = [self.hwloc,self.hypre,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.netcdf,self.hdf5,self.boost]
+    self.deps            = [self.mpi,self.blasLapack,self.netcdf,self.hdf5]
+    self.odeps           = [self.hwloc,self.hypre,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.boost]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -42,13 +45,23 @@ class Configure(config.package.CMakePackage):
   def Install(self):
     config.package.CMakePackage.Install(self)
     self.addDefine('HAVE_ML',1)
-    self.addDefine('HAVE_ML_ZOLTAN',1)
+    self.addDefine('HAVE_ZOLTAN',1)
+    self.addDefine('HAVE_EXODUSII',1)
     return self.installDir
 
   def formCMakeConfigureArgs(self):
+    if self.zoltan.found:
+      raise RuntimeError('Trilinos contains Zoltan, therefor do not provide/build a Zoltan if you are providing/building Trilinos')
+
+    if self.ml.found:
+      raise RuntimeError('Trilinos contains ml, therefor do not provide/build a ml if you are providing/building Trilinos')
+
+    if self.exodusii.found:
+      raise RuntimeError('Trilinos contains Exudusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')
+
     # Check for 64bit pointers
     if self.types.sizes['known-sizeof-void-p'] != 8:
-      raise RuntimeError('Trilinos requires 64bit compilers!')
+      raise RuntimeError('Trilinos requires 64bit compilers, your compiler is using 32 bit pointers!')
 
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DUSE_XSDK_DEFAULTS=YES')
@@ -87,10 +100,15 @@ class Configure(config.package.CMakePackage):
 
     args.append('-DTPL_ENABLE_MPI=ON')
     #  Below is the set of packages recommended by Mike H.
-    for p in ['Epetra','AztecOO','Ifpack','Amesos2','Tpetra','Sacado','Zoltan','Stratimikos','Thyra','Isorropia','ML','Belos','Anasazi','Zoltan2','Ifpack2','ShyLU','NOX','MueLu','Stokhos','ROL','Piro','Pike','TrilinosCouplings','Panzer']:
+    for p in ['Epetra','AztecOO','Ifpack','Amesos2','Tpetra','Sacado','Zoltan','Stratimikos','Thyra','Isorropia','ML','Belos','Anasazi','Zoltan2','Ifpack2','ShyLU','NOX','MueLu','Stokhos','ROL','Piro','Pike','TrilinosCouplings','Panzer','SEACAS']:
       args.append('-DTrilinos_ENABLE_'+p+'=ON')
 
+    # SEACAS which contains Exodusii needs to have the following turned off
+    args.append('-DTPL_ENABLE_Matio=OFF')
     args.append('-DTPL_ENABLE_GLM=OFF')
+
+    # SEACAS finds an X11 to use but this can fail on some machines like the Cray
+    args.append('-DTPL_ENABLE_X11=OFF')
 
     # FEI include files cause crashes on Apple with clang compilers
     # args.append('-DTrilinos_ENABLE_fei=OFF')
@@ -187,7 +205,7 @@ class Configure(config.package.CMakePackage):
     if self.netcdf.found:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
       args.append('-DTPL_Netcdf_INCLUDE_DIRS="'+';'.join(self.netcdf.include)+'"')
-      args.append('-DTPL_Netcdf_LIBRARIES="'+self.libraries.toStringNoDupes(self.netcdf.lib)+'"')
+      args.append('-DTPL_Netcdf_LIBRARIES="'+self.libraries.toStringNoDupes(self.netcdf.lib+self.hdf5.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=OFF')
 

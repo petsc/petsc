@@ -103,10 +103,8 @@
       PetscScalar, dimension(0:(n*n-1)) :: x, b
       real(8) :: err(NCASES)
 
-       integer :: t1,t2,count_rate
-       real :: ttime
-
-
+      integer :: t1,t2,count_rate
+      real :: ttime
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call assert(ierr.eq.0,'PetscInitialize return ',ierr)

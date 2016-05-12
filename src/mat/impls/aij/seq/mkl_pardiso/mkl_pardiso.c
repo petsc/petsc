@@ -1077,6 +1077,21 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,const Ma
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_USE_COMPLEX)
+#undef __FUNCT__
+#define __FUNCT__ "MatGetInertia_MKL_PARDISO"
+PetscErrorCode MatGetInertia_MKL_PARDISO(Mat F,int *nneg,int *nzero,int *npos)
+{
+  Mat_MKL_PARDISO   *mat_mkl_pardiso=(Mat_MKL_PARDISO*)F->spptr;
+
+  PetscFunctionBegin;
+  if (nneg) *nneg = mat_mkl_pardiso->iparm[22];
+  if (npos) *npos = mat_mkl_pardiso->iparm[21];
+  if (nzero) *nzero = F->rmap->N -(mat_mkl_pardiso->iparm[22] + mat_mkl_pardiso->iparm[21]);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_AIJMKL_PARDISO"
 PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,const MatFactorInfo *info)
@@ -1085,6 +1100,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,const M
 
   PetscFunctionBegin;
   ierr = MatFactorSymbolic_AIJMKL_PARDISO_Private(F, A, info);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  F->ops->getinertia = NULL;
+#else
+  F->ops->getinertia = MatGetInertia_MKL_PARDISO;
+#endif
   PetscFunctionReturn(0);
 }
 

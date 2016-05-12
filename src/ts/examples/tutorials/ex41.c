@@ -40,14 +40,13 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (nevents) {
-    ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %6.3f seconds\n",rank,(double)t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %5.2f seconds\n",rank,(double)t);CHKERRQ(ierr);
     /* Set new initial conditions with .9 attenuation */
-    u[0] = 1.0*rank;
+    ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+    u[0] =  1.0*rank;
     u[1] = -0.9*u[1];
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   }
-  ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +130,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -195,5 +194,5 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }

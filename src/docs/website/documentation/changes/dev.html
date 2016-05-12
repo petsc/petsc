@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="37.html">3.7</a></li>
                 <li><a href="36.html">3.6</a></li>
                 <li><a href="35.html">3.5</a></li>
                 <li><a href="34.html">3.4</a></li>
@@ -97,118 +98,23 @@
       </div>
 
       <h4>General:</h4>
-      <ul>
-       <li>-log_summary is deprecated, you should use -log_view</li>
-      <li>PetscViewerSetFormat() is deprecated, you should use PetscViewerPushFormat() followed after the viewing with PetscViewerPopFormat()</li>
-      <li>PetscMemoryShowUsage() and -memory_info changed to PetscMemoryView() and -memory_view</li>
-      <li>PetscOptionsSetValue() may now be called BEFORE PetscInitialize() and any options set then will be used in the initialization process. These options are overwritten by command line options.</li>
-
-      <li>The following routines now take an optional <em>PetscOptions</em> object as the first argument, use NULL to get the previous behavior.
-
-<pre>
-PetscOptionsHasName(PetscOptions,const char[],const char[],PetscBool *);
-PetscOptionsGetInt(PetscOptions,const char[],const char [],PetscInt *,PetscBool *);
-PetscOptionsGetBool(PetscOptions,const char[],const char [],PetscBool  *,PetscBool *);
-PetscOptionsGetReal(PetscOptions,const char[],const char[],PetscReal *,PetscBool *);
-PetscOptionsGetScalar(PetscOptions,const char[],const char[],PetscScalar *,PetscBool *);
-PetscOptionsGetIntArray(PetscOptions,const char[],const char[],PetscInt[],PetscInt *,PetscBool *);
-PetscOptionsGetRealArray(PetscOptions,const char[],const char[],PetscReal[],PetscInt *,PetscBool *);
-PetscOptionsGetScalarArray(PetscOptions,const char[],const char[],PetscScalar[],PetscInt *,PetscBool *);
-PetscOptionsGetBoolArray(PetscOptions,const char[],const char[],PetscBool [],PetscInt *,PetscBool *);
-PetscOptionsGetString(PetscOptions,const char[],const char[],char[],size_t,PetscBool *);
-PetscOptionsGetStringArray(PetscOptions,const char[],const char[],char*[],PetscInt*,PetscBool *);
-PetscOptionsGetEList(PetscOptions,const char[],const char[],const char*const*,PetscInt,PetscInt*,PetscBool *);
-PetscOptionsGetEnum(PetscOptions,const char[],const char[],const char*const*,PetscEnum*,PetscBool *);
-PetscOptionsGetEnumArray(PetscOptions,const char[],const char[],const char*const*,PetscEnum*,PetscInt *,PetscBool *);
-PetscOptionsSetAlias(PetscOptions,const char[],const char[]);
-PetscOptionsSetValue(PetscOptions,const char[],const char[]);
-PetscOptionsClearValue(PetscOptions,const char[]);
-PetscOptionsAllUsed(PetscOptions,PetscInt*);
-PetscOptionsUsed(PetscOptions,const char *,PetscBool*);
-PetscOptionsView(PetscOptions,PetscViewer);
-PetscOptionsInsert(PetscOptions,int*,char ***,const char[]);
-PetscOptionsInsertFile(MPI_Comm,PetscOptions,const char[],PetscBool );
-PetscOptionsInsertString(PetscOptions,const char[]);
-PetscOptionsPrefixPush(PetscOptions,const char[]);
-PetscOptionsReject(PetscOptions,const char[],const char[]);
-PetscOptionsGetAll(PetscOptions,char*[]);
-</pre></li>
-      </ul>
-
       <h4>Configure/Build:</h4>
-      <ul>
-        <li>Added --download-packages-dir=directory to support easy use of --download-xxx behind firewalls</li>
-        <li>--download-package for externalpackage with a gitrepo will never be stale. Each time configure is invoked - it will do a 'git fetch' and 'git checkout commit-id'. And if the commit-id changes from the previous build - the package will be rebuilt. To prevent this sync [and use previous snapshot] - one can use --download-package-commit=HEAD</li>
-        <li>Added --with-libpng/--with-giflib/--with-libjpeg to support PNG/GIF/JPEG image generation</li>
-        <li>Removed support for AfterImage in favor of libpng/GIFLIB/libjpeg</li>
-      </ul>
-
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
-      <ul>
-        <li>Added option -draw_cmap to use a named colormap (e.g., hue (default), jet, coolwarm, parula, viridis) in the drawing of contour plots.</li>
-        <li>Support for saving images and movies was improved. Support for generating binary PPM images is built-in, but the format is uncompressed and images are large (640x480 pixels ~ 900 KiB). PETSc can optionally generate PNG/GIF/JPEG images using the libpng/GIFLIB/libjpeg packages (configure --with-package/--download-package). These libraries are popular, well maintained, and available through most packages managers (dnf/yum, apt, brew). For most users, PNG images should be enough.</li>
-        <li>Added routine PetscDrawSave(), users should explicitly call it to save images after configuring with PetscDrawSetSave().</li>
-        <li>The PetscDrawSynchronizedXXX() routines were removed, the corresponding PetscDrawXXX() are now collective.</li>
-      </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>
-      <ul>
-        <li>For complex numbers VecNorm(v,NORM_1,) will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1 norm of the absolutely values of the complex entries. Previously it returned the 1 norm of the 1 norm of the complex entries (what is returned by the BLAS routine asum()). Both are valid norms but most people expect the former.</li>
-      </ul>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <h4>PC:</h4>
-      <ul>
-        <li>If the DM has a CreateRestriction() function the PCMG automatically uses that to create the restriction operator instead of defaulting to using the transpose of the interpolation</li>
-        <li>Added -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())</li>
-        <li>Added -pc_hypre_boomeramg_vec_interp_variant <v> where v is from 1 to 4 (see HYPRE_BoomerAMGSetInterpVecVariant())</li>
-        <li>see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for hypre BoomerAMG</li>
-        <li>Added PCTelescope which supports running solvers on sub-communicators. This PC allows re-partitioning of coarse levels solves within PCMG when using Galerkin coarse level operators.</li>
-      </ul>
       <h4>KSP:</h4>
-      <ul>
-        <li>KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
-        <li>-ksp_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
-      </ul>
       <h4>SNES:</h4>
-      <ul>
-        <li>SNESSetMonitor(SNESMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
-        <li>-snes_monitor_solution/residual/solution_update now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
-      </ul>
       <h4>SNESLineSearch:</h4>
-      <ul>
-        <li>-snes_linesearch_monitor now takes an optional [:filename] arguement, changed SNESLineSearchSet/GetMonitor to SNESLineSearchSet/GetDefaultMonitor</li>
-        <li>Added SNESLineSearchMonitorSet()</li>
-        <li>Partial support for -snes_linesearch_monitor_solution_update</li>
-      </ul>
       <h4>TS:</h4>
-      <ul>
-        <li>You must call TSSetExactFinalTime() or use the option -ts_exact_final_time before calling TSSolve()</li>
-        <li>TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
-        <li>-ts_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
-        <li>-ts_monitor_binary_solution filename should now be written as -ts_monitor_solution binary:filename</li>
-        <li>Renamed TSSetEventMonitor() to TSSetEventHandler()</li>
-        <li>Updated TSALPHA implementation. Removed TSAlphaSetAdapt() and TSAlphaAdaptDefault(), use TSAlphaUseAdapt() instead.</li>
-      </ul>
       <h4>DM/DA:</h4>
-      <ul>
-        <li>Added DMShellSetCreateRestriction</li>
-        <li>Added the generic option prefix interfaces: DMGetOptionsPrefix(), DMAppendOptionsPrefix()</li>        
-        <li>DMLabel labels are now available to all DM objects, not just DMPlex object</li>
-        <li>DMClone() now handles copying the coordinates, so that DMCopyCoordinates() is no longer necessary</li>
-      </ul>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
-      <ul>
-        <li>Replaced PetscViewerASCIISynchronizedAllow() with PetscViewerASCIIPushSynchronized() PetscViewerASCIIPopSynchronized()</li>
-      </ul>
       <h4>SYS:</h4>
-      <h4>Tao:</h4>
-      <ul>
-        <li>Removed convergence tolerances -tao_fatol and tao_frtol also remove these two parameters from TAOSetTolerance() and TaoGetTolerance()</li>
-      </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>

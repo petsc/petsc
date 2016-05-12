@@ -36,6 +36,11 @@ class Configure(config.package.GNUPackage):
     args.append('--with-hwloc=internal')
     return args
 
+  def checkDownload(self):
+    if self.argDB['download-'+self.downloadname.lower()]:
+      return self.getInstallDir()
+    return ''
+
   def Install(self):
     '''After downloading and installing OpenMPI we need to reset the compilers to use those defined by the OpenMPI install'''
     installDir = config.package.GNUPackage.Install(self)

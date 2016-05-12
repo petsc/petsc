@@ -100,7 +100,7 @@
       <ul>
         <li>Please <a href="../download/index.html">download</a> the <b>latest</b> patched tarball
         <li>For most users we recommend installing PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
-        <li>To extract the sources use: <code>gunzip -c petsc-3.6.0.tar.gz | tar -xof -</code></li>
+        <li>To extract the sources use: <code>gunzip -c petsc-3.7.0.tar.gz | tar -xof -</code></li>
         <li>Please check: <code>./configure --help</code></li>
         <li>Please check <a href="#exampleusage">example usages</a></li>
         <li>To install in <a href="#root">system directories</a> and for <a href="#packagemanagers">package managers.</a></li> 
@@ -196,7 +196,7 @@
           <li>
             specify enviornment variable for csh/tcsh [can be specified in ~/.cshrc]
             <ul>
-              <li>setenv PETSC_DIR /home/balay/petsc-3.6.0</li>
+              <li>setenv PETSC_DIR /home/balay/petsc-3.7.0</li>
               <li>setenv PETSC_ARCH linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -204,7 +204,7 @@
           <li>
             specify enviornment variable for bash [can be specified in ~/.bashrc]
             <ul>
-              <li>export PETSC_DIR=/home/balay/petsc-3.6.0</li>
+              <li>export PETSC_DIR=/home/balay/petsc-3.7.0</li>
               <li>export PETSC_ARCH=linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -212,14 +212,14 @@
           <li>
             specify variable on commandline to configure
             <ul>
-              <li>./configure PETSC_DIR=/home/balay/petsc-3.6.0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
+              <li>./configure PETSC_DIR=/home/balay/petsc-3.7.0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
             </ul>
           </li>
 
           <li>
             specify variables on command line to make
             <ul>
-              <li>make PETSC_DIR=/home/balay/petsc-3.6.0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
+              <li>make PETSC_DIR=/home/balay/petsc-3.7.0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
             </ul>
           </li>
         </ul>
@@ -355,7 +355,7 @@
         <p>
           PETSc provides interfaces to various <a href="../miscellaneous/external.html">external packages</a>.
           Blas/Lapack is a required package, MPI is not required if running sequentially. One can optionally use
-          <a href="linearsolvertable.html">external solvers</a> like Hypre, MUMPS, etc. from within PETSc aplications.
+          <a href="linearsolvertable.html">external solvers</a> like Hypre, MUMPS, etc. from within PETSc applications.
         </p>
 
         <p>
@@ -878,8 +878,8 @@
           <li>sudo mkdir /opt/petsc</li>
           <li>sudo chown user:group /opt/petsc</li>
           <li>cd /opt/petsc</li>
-          <li>tar -xzf petsc-3.6.0.tar.gz</li>
-          <li>cd petsc-3.6.0</li>
+          <li>tar -xzf petsc-3.7.0.tar.gz</li>
+          <li>cd petsc-3.7.0</li>
           <li>./configure</li>
           <li>make</li>
         </ul>
@@ -888,14 +888,14 @@
         <p>One can also use the GNU <b>--prefix</b> install mode.</p>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.6.0  [other configure options]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.7.0  [other configure options]</li>
           <li>make</li>
           <li>[sudo] make install</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.6.0 ex1</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.7.0 ex1</li>
         </ul>
 
         <p>
-          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.6.0</code> after
+          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.7.0</code> after
           install is done - and <b>NOT</b> use PETSC_ARCH anymore.
         </p>
 
@@ -907,11 +907,11 @@
         </p>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.6.0</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.7.0</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.6.0]</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.6.0 ex1</li>
+          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.7.0]</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.7.0 ex1</li>
         </ul>
 
         <h4>Multiple installs using --prefix and DESTDIR:</h4>
@@ -920,11 +920,11 @@
 
         <ul class="code">
           <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.6.0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.7.0-mpich --with-mpi-dir=/opt/mpich</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
           <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.6.0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.7.0-openmpi --with-mpi-dir=/opt/openmpi</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
         </ul>

@@ -72,6 +72,7 @@ struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
   PetscInt setupcalled;             /* true if setup has been called */
   PetscInt recomps;                 /* counter for recomputations in the adjoint run */
+  PetscInt diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
   void *data;
 };
 
@@ -80,10 +81,11 @@ struct _p_TS {
   TSProblemType  problem_type;
   TSEquationType equation_type;
 
-  DM            dm;
-  Vec           vec_sol;
-  TSAdapt       adapt;
-  TSEvent       event;
+  DM             dm;
+  Vec            vec_sol; /* solution vector in first and second order equations */
+  Vec            vec_dot; /* time derivative vector in second order equations */
+  TSAdapt        adapt;
+  TSEvent        event;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*);
@@ -166,6 +168,7 @@ struct _p_TS {
   /* --------------------------------------------------------------------- */
 
   PetscBool steprollback;           /* flag to indicate that the step was rolled back */
+  PetscBool steprestart;            /* flag to indicate that the timestepper has to discard any history and restart */
   PetscInt  steps;                  /* steps taken so far in latest call to TSSolve() */
   PetscInt  total_steps;            /* steps taken in all calls to TSSolve() since the TS was created or since TSSetUp() was called */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
@@ -230,6 +233,9 @@ struct _DMTSOps {
   PetscErrorCode (*ijacobianview)(void*,PetscViewer);
   PetscErrorCode (*ijacobianload)(void**,PetscViewer);
 
+  TSI2Function i2function;
+  TSI2Jacobian i2jacobian;
+
   TSSolutionFunction solution;
   TSForcingFunction  forcing;
 
@@ -244,6 +250,9 @@ struct _p_DMTS {
 
   void *ifunctionctx;
   void *ijacobianctx;
+
+  void *i2functionctx;
+  void *i2jacobianctx;
 
   void *solutionctx;
   void *forcingctx;
@@ -278,6 +287,7 @@ struct _n_TSEvent {
   PetscScalar    *fvalue_right;    /* value of event function at the right end-point of the event interval */
   PetscInt       *side;            /* Used for detecting repetition of end-point, -1 => left, +1 => right */
   PetscReal       timestep_prev;   /* previous time step */
+  PetscReal       timestep_orig;   /* initial time step */
   PetscBool      *zerocrossing;    /* Flag to signal zero crossing detection */
   PetscErrorCode  (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event handler function */
   PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*); /* User post event function */
@@ -332,6 +342,6 @@ struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
 
-PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, Disk_Write, Disk_Read;
+PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 
 #endif

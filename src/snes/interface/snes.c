@@ -1494,7 +1494,11 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 #else
   snes->abstol            = 1.e-50;
 #endif
+#if defined(PETSC_USE_REAL_SINGLE)
+  snes->stol              = 1.e-5;
+#else
   snes->stol              = 1.e-8;
+#endif
 #if defined(PETSC_USE_REAL_SINGLE)
   snes->deltatol          = 1.e-6;
 #else

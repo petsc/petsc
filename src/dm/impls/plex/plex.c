@@ -791,12 +791,15 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 
         ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
         for (p = pStart; p < pEnd; ++p) {
+          PetscInt bdof;
+
           ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
           ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
-          if (dof-cdof) {
+          bdof = PetscAbs(dof) - cdof;
+          if (bdof) {
             if (bs < 0) {
-              bs = dof-cdof;
-            } else if (bs != dof-cdof) {
+              bs = bdof;
+            } else if (bs != bdof) {
               /* Layout does not admit a pointwise block size */
               bs = 1;
               break;
@@ -1608,7 +1611,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
     if (ornt < 0) {
       PetscInt childSize, coff;
       ierr = DMPlexGetConeSize(dm, cp, &childSize);CHKERRQ(ierr);
-      coff = tmpO[i] < 0 ? -(tmpO[i]+1) : tmpO[i];
+      coff = co < 0 ? -(tmpO[i]+1) : tmpO[i];
       co   = childSize ? -(((coff+childSize-1)%childSize)+1) : 0;
     }
     closure[closureSize]   = cp;

@@ -94,7 +94,7 @@ int main(int argc,char **args)
   PetscInt          i;
   PetscErrorCode    ierr;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
@@ -141,5 +141,5 @@ int main(int argc,char **args)
   ierr = VecDestroy(&Z);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -104,8 +104,7 @@ int main(int argc,char *argv[])
   Mat            A,S = NULL,Sexplicit = NULL;
   IS             is0,is1;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  PetscFunctionBeginUser;
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
 
   /* Test the Schur complement one way */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
@@ -144,5 +143,5 @@ int main(int argc,char *argv[])
   ierr = MatDestroy(&S);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -116,6 +116,10 @@ typedef __float128 PetscReal;
 #if defined(PETSC_HAVE_CUSP)
 #define complexlib cusp
 #include <cusp/complex.h>
+#elif defined(PETSC_HAVE_VECCUDA) && __CUDACC_VER_MAJOR__ > 6
+/* complex headers in thrust only available in CUDA 7.0 and above */
+#define complexlib thrust
+#include <thrust/complex.h>
 #else
 #define complexlib std
 #include <complex>
@@ -334,6 +338,7 @@ PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a
 #endif /* PETSC_USE_COMPLEX */
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
+#define PetscSignReal(a) (((a) >= 0.0) ? ((a) == 0.0 ? 0.0 : 1.0) : -1.0)
 #define PetscAbs(a)  (((a) >= 0) ? (a) : -(a))
 
 /* --------------------------------------------------------------------------*/

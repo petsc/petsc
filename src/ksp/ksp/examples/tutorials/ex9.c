@@ -47,7 +47,7 @@ int main(int argc,char **args)
   PetscLogStage stages[3];
 #endif
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-t",&ntimes,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -347,7 +347,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 #undef __FUNCT__
 #define __FUNCT__ "CheckError"

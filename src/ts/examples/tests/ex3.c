@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   Vec            init_sol; /* ts solution vector */
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
@@ -141,7 +141,7 @@ int main(int argc,char **argv)
      * places.
      */
     ierr = TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);
+    ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);CHKERRQ(ierr);
   }
 
   /* use petsc to compute the jacobian by finite differences */
@@ -166,7 +166,7 @@ int main(int argc,char **argv)
   stepsz[0] = 1.0/(2.0*(nz-1)*(nz-1)); /* (mesh_size)^2/2.0 */
   ftime     = 0.0;
   for (k=0; k<nphase; k++) {
-    if (nphase > 1) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Phase %D initial time %g, stepsz %g, duration: %g\n",k,(double)ftime,(double)stepsz[k],(double)((k+1)*T));}
+    if (nphase > 1) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Phase %D initial time %g, stepsz %g, duration: %g\n",k,(double)ftime,(double)stepsz[k],(double)((k+1)*T));CHKERRQ(ierr);}
     ierr = TSSetInitialTimeStep(ts,ftime,stepsz[k]);CHKERRQ(ierr);
     ierr = TSSetDuration(ts,max_steps,(k+1)*T);CHKERRQ(ierr);
     ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
@@ -189,9 +189,9 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&appctx.solution);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
-  }
+  ierr = PetscFinalize();
+  return ierr;
+}
 
 /*------------------------------------------------------------------------
   Set exact solution

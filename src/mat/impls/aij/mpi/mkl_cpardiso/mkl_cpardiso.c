@@ -213,6 +213,7 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
 {
   Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->spptr;
   PetscErrorCode   ierr;
+   PetscBool        flg;
 
   PetscFunctionBegin;
   /* Terminate instance, deallocate memories */
@@ -238,8 +239,16 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
       &mat_mkl_cpardiso->err);
   }
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFree(mat_mkl_cpardiso->ia);CHKERRQ(ierr);
+    ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  }
   ierr = MPI_Comm_free(&(mat_mkl_cpardiso->comm_mkl_cpardiso));CHKERRQ(ierr);
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* clear composed functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);

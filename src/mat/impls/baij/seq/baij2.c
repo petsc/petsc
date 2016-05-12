@@ -86,7 +86,6 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   PetscBool      flag;
 
   PetscFunctionBegin;
-
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
@@ -141,7 +140,6 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   /* sort */
   {
     MatScalar *work;
-
     ierr = PetscMalloc1(bs2,&work);CHKERRQ(ierr);
     for (i=0; i<nrows; i++) {
       PetscInt ilen;
@@ -1906,6 +1904,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
     }
     *norm = PetscSqrtReal(sum);
+    ierr = PetscLogFlops(2*bs2*nz);CHKERRQ(ierr);
   } else if (type == NORM_1) { /* maximum column sum */
     PetscReal *tmp;
     PetscInt  *bcol = a->j;
@@ -1924,6 +1923,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
       if (tmp[j] > *norm) *norm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
+    ierr = PetscLogFlops(PetscMax(bs2*nz-1,0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) { /* maximum row sum */
     *norm = 0.0;
     for (k=0; k<bs; k++) {
@@ -1939,6 +1939,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
         if (sum > *norm) *norm = sum;
       }
     }
+    ierr = PetscLogFlops(PetscMax(bs2*nz-1,0));CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this norm yet");
   PetscFunctionReturn(0);
 }

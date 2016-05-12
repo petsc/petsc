@@ -10,7 +10,7 @@ class Configure(config.package.Package):
                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
-    self.complex          = 0   # Currently CUDA with complex numbers is not supported
+    self.complex          = 1
     self.cudaArch         = ''
     self.CUDAVersion      = '4200' # Minimal cuda version is 4.2
     self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)
@@ -120,6 +120,21 @@ class Configure(config.package.Package):
       self.popLanguage()
     else:
       raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-version')
+    if self.defaultScalarType.lower() == 'complex':
+      CUDAVersionComplex    = '7000' # Minimal cuda version for complex is 7.0
+      CUDAVersionComplexStr = str(int(CUDAVersionComplex)/1000) + '.' + str(int(CUDAVersionComplex)/100%10)
+      if 'known-cuda-version' in self.argDB:
+        if self.argDB['known-cuda-version'] < CUDAVersionComplex:
+          raise RuntimeError('CUDA version error '+self.argDB['known-cuda-version']+' < '+CUDAVersionComplex+': PETSC currently requires CUDA version '+CUDAVersionComplexStr+' or higher when compiling with CUDA')
+      elif not self.argDB['with-batch']:
+        self.pushLanguage('CUDA')
+        oldFlags = self.compilers.CUDAPPFLAGS
+        if not self.checkRun('#include <cuda.h>\n#include <stdio.h>', 'if (CUDA_VERSION < ' + CUDAVersionComplex +') {printf("Invalid version %d\\n", CUDA_VERSION); return 1;}'):
+          raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+CUDAVersionComplexStr+' or higher - when compiling with CUDA and complex scalars')
+        self.compilers.CUDAPPFLAGS = oldFlags
+        self.popLanguage()
+      else:
+        raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-version')
     return
 
   def checkNVCCDoubleAlign(self):

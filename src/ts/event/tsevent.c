@@ -278,26 +278,27 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   PetscErrorCode ierr;
   TSEvent        event = ts->event;
   PetscBool      terminate = PETSC_FALSE;
+  PetscBool      restart = PETSC_FALSE;
   PetscInt       i,ctr,stepnum;
-  PetscBool      ts_terminate;
+  PetscBool      ts_terminate,ts_restart;
   PetscBool      forwardsolve = PETSC_TRUE; /* Flag indicating that TS is doing a forward solve */
 
   PetscFunctionBegin;
   if (event->postevent) {
+    PetscObjectState state_prev,state_post;
+    ierr = PetscObjectStateGet((PetscObject)U,&state_prev);CHKERRQ(ierr);
     ierr = (*event->postevent)(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve,event->ctx);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)U,&state_post);CHKERRQ(ierr);
+    if (state_prev != state_post) restart = PETSC_TRUE;
   }
 
-  /* Handle termination events */
-  for (i=0; i < event->nevents_zero; i++) {
-    terminate = (PetscBool)(terminate || event->terminate[event->events_zero[i]]);
-  }
+  /* Handle termination events and step restart */
+  for (i=0; i<event->nevents_zero; i++) if (event->terminate[event->events_zero[i]]) terminate = PETSC_TRUE;
   ierr = MPIU_Allreduce(&terminate,&ts_terminate,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  if (ts_terminate) {
-    ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);
-    event->status = TSEVENT_NONE;
-  } else {
-    event->status = TSEVENT_RESET_NEXTSTEP;
-  }
+  if (ts_terminate) {ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);}
+  event->status = ts_terminate ? TSEVENT_NONE : TSEVENT_RESET_NEXTSTEP;
+  ierr = MPIU_Allreduce(&restart,&ts_restart,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  if (ts_restart) ts->steprestart = PETSC_TRUE;
 
   event->ptime_prev = t;
   /* Reset event residual functions as states might get changed by the postevent callback */
@@ -314,7 +315,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   event->recorder.time[ctr] = t;
   event->recorder.stepnum[ctr] = stepnum;
   event->recorder.nevents[ctr] = event->nevents_zero;
-  for (i=0; i < event->nevents_zero; i++) event->recorder.eventidx[ctr][i] = event->events_zero[i];
+  for (i=0; i<event->nevents_zero; i++) event->recorder.eventidx[ctr][i] = event->events_zero[i];
   event->recorder.ctr++;
   PetscFunctionReturn(0);
 }
@@ -363,12 +364,14 @@ PetscErrorCode TSEventHandler(TS ts)
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
 
   if (event->status == TSEVENT_NONE) {
+    if (ts->steps == 1) /* After first successful step */
+      event->timestep_orig = ts->ptime - ts->ptime_prev;
     event->timestep_prev = dt;
   }
 
   if (event->status == TSEVENT_RESET_NEXTSTEP) {
-    /* Restore previous time step */
-    dt = event->timestep_prev;
+    /* Restore time step */
+    dt = PetscMin(event->timestep_orig,event->timestep_prev);
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     event->status = TSEVENT_NONE;
   }
@@ -463,7 +466,7 @@ PetscErrorCode TSEventHandler(TS ts)
     ierr = TSPostEvent(ts,t,U);CHKERRQ(ierr);
 
     dt = event->ptime_end - t;
-    if (PetscAbsReal(dt) < PETSC_SMALL) dt += event->timestep_prev; /* XXX Should be done better */
+    if (PetscAbsReal(dt) < PETSC_SMALL) dt += PetscMin(event->timestep_orig,event->timestep_prev); /* XXX Should be done better */
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
     event->iterctr = 0;
     PetscFunctionReturn(0);

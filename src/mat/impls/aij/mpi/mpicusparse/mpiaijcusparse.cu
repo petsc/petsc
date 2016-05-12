@@ -1,4 +1,3 @@
-#define PETSC_SKIP_COMPLEX
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>

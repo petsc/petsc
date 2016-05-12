@@ -16,8 +16,8 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,NULL,NULL);
   ierr = PetscBoxAuthorize(PETSC_COMM_WORLD,access_token,refresh_token,sizeof(access_token));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Your one time refresh token is %s\n",refresh_token);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 

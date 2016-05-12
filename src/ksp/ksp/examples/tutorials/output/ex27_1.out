@@ -1,0 +1,117 @@
+  0 KSP Residual norm 52.914 
+  1 KSP Residual norm 7.38918 
+  2 KSP Residual norm 4.1254 
+  3 KSP Residual norm 1.94391 
+  4 KSP Residual norm 1.57605 
+  5 KSP Residual norm 1.54807 
+  6 KSP Residual norm 1.52184 
+  7 KSP Residual norm 1.51148 
+  8 KSP Residual norm 1.29403 
+  9 KSP Residual norm 1.25269 
+ 10 KSP Residual norm 1.24201 
+ 11 KSP Residual norm 1.21412 
+ 12 KSP Residual norm 0.954056 
+ 13 KSP Residual norm 0.830623 
+ 14 KSP Residual norm 0.808925 
+ 15 KSP Residual norm 0.784646 
+ 16 KSP Residual norm 0.746804 
+ 17 KSP Residual norm 0.469756 
+ 18 KSP Residual norm 0.42111 
+ 19 KSP Residual norm 0.412559 
+ 20 KSP Residual norm 0.274198 
+ 21 KSP Residual norm 0.267731 
+ 22 KSP Residual norm 0.159335 
+ 23 KSP Residual norm 0.148343 
+ 24 KSP Residual norm 0.124607 
+ 25 KSP Residual norm 0.117912 
+ 26 KSP Residual norm 0.114873 
+ 27 KSP Residual norm 0.108987 
+ 28 KSP Residual norm 0.0905197 
+ 29 KSP Residual norm 0.0889974 
+ 30 KSP Residual norm 0.082946 
+ 31 KSP Residual norm 0.0790337 
+ 32 KSP Residual norm 0.0765704 
+ 33 KSP Residual norm 0.0743949 
+ 34 KSP Residual norm 0.0696427 
+ 35 KSP Residual norm 0.0687988 
+ 36 KSP Residual norm 0.0640476 
+ 37 KSP Residual norm 0.0594707 
+ 38 KSP Residual norm 0.0591834 
+ 39 KSP Residual norm 0.0560064 
+ 40 KSP Residual norm 0.0532278 
+ 41 KSP Residual norm 0.0530647 
+ 42 KSP Residual norm 0.0520683 
+ 43 KSP Residual norm 0.0438584 
+ 44 KSP Residual norm 0.042655 
+ 45 KSP Residual norm 0.0420266 
+ 46 KSP Residual norm 0.0408965 
+ 47 KSP Residual norm 0.037564 
+ 48 KSP Residual norm 0.034776 
+ 49 KSP Residual norm 0.034583 
+ 50 KSP Residual norm 0.0273294 
+ 51 KSP Residual norm 0.0258749 
+ 52 KSP Residual norm 0.0254392 
+ 53 KSP Residual norm 0.0253295 
+ 54 KSP Residual norm 0.0246311 
+ 55 KSP Residual norm 0.0244125 
+ 56 KSP Residual norm 0.024207 
+ 57 KSP Residual norm 0.024192 
+ 58 KSP Residual norm 0.0233634 
+ 59 KSP Residual norm 0.0225737 
+ 60 KSP Residual norm 0.0221742 
+ 61 KSP Residual norm 0.0219327 
+ 62 KSP Residual norm 0.0218228 
+ 63 KSP Residual norm 0.0212435 
+ 64 KSP Residual norm 0.0212302 
+ 65 KSP Residual norm 0.0209265 
+ 66 KSP Residual norm 0.0207774 
+ 67 KSP Residual norm 0.0206145 
+ 68 KSP Residual norm 0.0205876 
+ 69 KSP Residual norm 0.0203546 
+ 70 KSP Residual norm 0.0199997 
+ 71 KSP Residual norm 0.0197248 
+ 72 KSP Residual norm 0.0197006 
+ 73 KSP Residual norm 0.0191223 
+ 74 KSP Residual norm 0.0180437 
+ 75 KSP Residual norm 0.0179289 
+ 76 KSP Residual norm 0.0177691 
+ 77 KSP Residual norm 0.0172734 
+ 78 KSP Residual norm 0.0160418 
+ 79 KSP Residual norm 0.0159807 
+ 80 KSP Residual norm 0.0159102 
+ 81 KSP Residual norm 0.0150642 
+ 82 KSP Residual norm 0.0149119 
+ 83 KSP Residual norm 0.0148822 
+ 84 KSP Residual norm 0.0142899 
+ 85 KSP Residual norm 0.0142007 
+ 86 KSP Residual norm 0.0141026 
+ 87 KSP Residual norm 0.0131622 
+ 88 KSP Residual norm 0.0131382 
+ 89 KSP Residual norm 0.0127833 
+ 90 KSP Residual norm 0.0114981 
+ 91 KSP Residual norm 0.0109107 
+ 92 KSP Residual norm 0.0106018 
+ 93 KSP Residual norm 0.0105645 
+ 94 KSP Residual norm 0.0101703 
+ 95 KSP Residual norm 0.0101572 
+ 96 KSP Residual norm 0.00995659 
+ 97 KSP Residual norm 0.00970054 
+ 98 KSP Residual norm 0.00968839 
+ 99 KSP Residual norm 0.00948532 
+100 KSP Residual norm 0.00920493 
+KSP Object: 1 MPI processes
+  type: gmres
+    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=100, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object:   1 MPI processes
+    type: normal
+    rows=181, cols=181
+Number of iterations = 100
+Residual norm 0.0520343

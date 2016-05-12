@@ -26,8 +26,7 @@ int main(int argc,char **argv)
   PetscViewer        fd;
   PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   /* Load the data from a file */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
@@ -71,5 +70,5 @@ int main(int argc,char **argv)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   PetscFinalize();
-  return 0;
+  return ierr;
 }

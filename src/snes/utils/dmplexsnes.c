@@ -2495,6 +2495,8 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
 . boundaryctx - the user context that will be passed to pointwise evaluation of boundary values (see DMAddBoundary())
 . residualctx - the user context that will be passed to pointwise evaluation of finite element residual computations (see PetscDSSetResidual())
 - jacobianctx - the user context that will be passed to pointwise evaluation of finite element Jacobian construction (see PetscDSSetJacobian())
+
+  Level: developer
 @*/
 PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx, void *jacobianctx)
 {

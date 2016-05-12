@@ -477,6 +477,6 @@ int main(int argc, char *argv[])
   ierr = DMDestroy(&dak);CHKERRQ(ierr);
   ierr = DMDestroy(&pack);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

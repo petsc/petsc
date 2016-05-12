@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscReal      norm;
   PetscMPIInt    size,rank;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -64,9 +64,9 @@ int main(int argc,char **argv)
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);      /* B = A */
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B^T*A*B */
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(D,NORM_FROBENIUS,&norm);
+  ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   if (norm > 1.e-15 && !rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP: %g\n",norm);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP: %g\n",norm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   if (norm > 1.e-15) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in symbolic/numeric MatPtAP: %g\n",norm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in symbolic/numeric MatPtAP: %g\n",norm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -115,8 +115,8 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */

@@ -193,7 +193,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscFunctionReturn(0);
 }
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_ESSL)
 #undef __FUNCT__
 #define __FUNCT__ "KSPComputeRitz_GMRES"
 PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal *tetar,PetscReal *tetai)

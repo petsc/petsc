@@ -232,7 +232,7 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&ic);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscFinalize();
   PetscFunctionReturn(0);
 }
 
@@ -313,7 +313,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
-  ierr = VecCopy(user->lambda[0],G);
+  ierr = VecCopy(user->lambda[0],G);CHKERRQ(ierr);
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -74,7 +74,8 @@ typedef struct {
 } PetscDualSpace_Lag;
 
 typedef struct {
-  PetscInt dim;
+  PetscInt  dim;
+  PetscInt *numDof;
 } PetscDualSpace_Simple;
 
 typedef struct _PetscFEOps *PetscFEOps;

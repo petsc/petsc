@@ -2,6 +2,8 @@
 
 configure_options = [
   '--with-debugging=0',
+  '--download-hdf5',
+  '--download-netcdf',
   '--download-hypre=1',
   '--download-metis=1',
   '--download-parmetis=1',
@@ -13,6 +15,7 @@ configure_options = [
   '--with-cxx-dialect=C++11',
   '--download-sowing=1',
   '--with-boost-dir=/usr/local',
+  '--with-shared-libraries=0',
   '--download-cmake=1'
   ]
 

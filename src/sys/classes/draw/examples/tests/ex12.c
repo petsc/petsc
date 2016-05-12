@@ -44,6 +44,6 @@ int main(int argc,char **argv)
   ierr = PetscDrawBarDestroy(&bar);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

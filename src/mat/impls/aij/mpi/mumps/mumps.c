@@ -1110,10 +1110,9 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
    F:        numeric factor
   output:
    nneg:     total number of negative pivots
-   nzero:    0
-   npos:     (global dimension of F) - nneg
+   nzero:    total number of zero pivots
+   npos:     (global dimension of F) - nneg - nzero
 */
-
 #undef __FUNCT__
 #define __FUNCT__ "MatGetInertia_SBAIJMUMPS"
 PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
@@ -1135,7 +1134,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
   }
   PetscFunctionReturn(0);
 }
-#endif /* !defined(PETSC_USE_COMPLEX) */
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorNumeric_MUMPS"
@@ -1577,7 +1576,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   }
   PetscMUMPS_c(&mumps->id);
   ierr = MatFactorSymbolic_MUMPS_ReportIfError(F,A,info,mumps);CHKERRQ(ierr);
-
 
   F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve                 = MatSolve_MUMPS;

@@ -1128,5 +1128,5 @@ int main(int argc, char *argv[])
   ierr = RDDestroy(&rd);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -99,6 +99,7 @@ class Package(config.base.Configure):
     self.sourceControl   = framework.require('config.sourceControl',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.petscdir        = framework.require('PETSc.options.petscdir', self.setCompilers)
+    self.petscclone      = framework.require('PETSc.options.petscclone',self.setCompilers)
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
     if not self.isMPI and not self.package == 'make':
@@ -447,6 +448,8 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
+    if self.framework.batchBodies:
+      return
     if self.argDB['download-'+self.downloadname.lower()]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
@@ -584,20 +587,28 @@ class Package(config.base.Configure):
     self.logPrint('Downloading '+self.name)
     # check if its http://ftp.mcs - and add ftp://ftp.mcs as fallback
     download_urls = []
+    git_urls      = []
     for url in self.download:
-      download_urls.append(url)
+      if url.startswith("git://"):
+        git_urls.append(url)
+      else:
+        download_urls.append(url)
       if url.find('http://ftp.mcs.anl.gov') >=0:
         download_urls.append(url.replace('http://','ftp://'))
+      # prefer giturl from a petsc gitclone, and tarball urls from a petsc tarball.
+      if git_urls:
+        if not hasattr(self.sourceControl, 'git'):
+          self.logPrint('Git not found - skipping giturls: '+str(git_urls)+'\n')
+        elif (self.petscclone.isClone) or self.framework.clArgDB.has_key('with-git'):
+          download_urls = git_urls+download_urls
+        else:
+          download_urls = download_urls+git_urls
     # now attempt to download each url until any one succeeds.
     err =''
     for url in download_urls:
       if url.startswith('git://'):
         if not self.gitcommit: raise RuntimeError(self.PACKAGE+': giturl specified but gitcommit not set')
-        if not hasattr(self.sourceControl, 'git'):
-          self.logPrint('Git not found - required for url: '+url+'\n')
-          err += 'Git not found - required for url: '+url+'\n'
-          continue
-        elif not self.gitPreReqCheck():
+        if not self.gitPreReqCheck():
           err += 'Git prerequisite check failed for url: '+url+'\n'
           self.logPrint('Git prerequisite check failed - required for url: '+url+'\n')
           continue
@@ -751,7 +762,7 @@ class Package(config.base.Configure):
     return
 
   def configure(self):
-    if self.download and self.argDB['download-'+self.downloadname.lower()]:
+    if self.download and self.argDB['download-'+self.downloadname.lower()] and not self.framework.batchBodies:
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
       if isinstance(downloadPackageVal, str):

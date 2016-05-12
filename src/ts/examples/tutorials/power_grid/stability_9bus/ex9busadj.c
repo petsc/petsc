@@ -344,7 +344,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = ResidualFunction(snes,X,F,user);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
     f[9*i]   += xdot[9*i];
@@ -355,7 +355,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
     f[9*i+7] += xdot[9*i+7];
     f[9*i+8] += xdot[9*i+8];
   }
-  ierr = VecRestoreArray(F,&f);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -745,7 +745,6 @@ int main(int argc,char **argv)
   /* sensitivity context */
   PetscScalar    *y_ptr;
   Vec            lambda[1];
-  PetscInt       steps, total_steps = 0;
   PetscInt       *idx2;
   Vec            Xdot;
   Vec            F_alg;
@@ -855,8 +854,6 @@ int main(int argc,char **argv)
   user.alg_flg = PETSC_FALSE;
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  total_steps += steps;
 
   /* Create the nonlinear solver for solving the algebraic system */
   /* Note that although the algebraic system needs to be solved only for
@@ -898,8 +895,7 @@ int main(int argc,char **argv)
   user.alg_flg = PETSC_FALSE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  total_steps += steps;
+
   /* Remove the fault */
   row_loc = 2*user.faultbus; col_loc = 2*user.faultbus+1;
   val     = -1/user.Rfault;
@@ -926,8 +922,6 @@ int main(int argc,char **argv)
   user.alg_flg = PETSC_TRUE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  total_steps += steps;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
@@ -960,5 +954,5 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&user.is_alg);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }

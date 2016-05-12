@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
   PetscMPIInt    rank,size;
   PetscInt       i,j;
 
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -127,6 +127,6 @@ int main(int argc, char *argv[])
   ierr = ISDestroy(&isl0b);CHKERRQ(ierr);
   ierr = ISDestroy(&isl0);CHKERRQ(ierr);
   ierr = ISDestroy(&isl1);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

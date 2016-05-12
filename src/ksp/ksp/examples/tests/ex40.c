@@ -38,7 +38,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   PetscMPIInt    rank;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -200,5 +200,5 @@ int main(int argc,char **args)
          options are chosen (e.g., -log_summary).
   */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

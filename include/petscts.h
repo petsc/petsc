@@ -34,12 +34,15 @@ typedef const char* TSType;
 #define TSPYTHON          "python"
 #define TSTHETA           "theta"
 #define TSALPHA           "alpha"
+#define TSALPHA2          "alpha2"
 #define TSGL              "gl"
 #define TSSSP             "ssp"
 #define TSARKIMEX         "arkimex"
 #define TSROSW            "rosw"
 #define TSEIMEX           "eimex"
 #define TSMIMEX           "mimex"
+#define TSBDF             "bdf"
+
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 
@@ -238,6 +241,9 @@ PETSC_EXTERN PetscErrorCode TSReset(TS);
 PETSC_EXTERN PetscErrorCode TSSetSolution(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
+PETSC_EXTERN PetscErrorCode TS2SetSolution(TS,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TS2GetSolution(TS,Vec*,Vec*);
+
 /*S
      TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step and stage)
 
@@ -366,6 +372,13 @@ PETSC_EXTERN PetscErrorCode TSGetIFunction(TS,Vec*,TSIFunction*,void**);
 PETSC_EXTERN PetscErrorCode TSSetIJacobian(TS,Mat,Mat,TSIJacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetIJacobian(TS,Mat*,Mat*,TSIJacobian*,void**);
 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Function)(TS,PetscReal,Vec,Vec,Vec,Vec,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSI2Jacobian)(TS,PetscReal,Vec,Vec,Vec,PetscReal,PetscReal,Mat,Mat,void*);
+PETSC_EXTERN PetscErrorCode TSSetI2Function(TS,Vec,TSI2Function,void*);
+PETSC_EXTERN PetscErrorCode TSGetI2Function(TS,Vec*,TSI2Function*,void**);
+PETSC_EXTERN PetscErrorCode TSSetI2Jacobian(TS,Mat,Mat,TSI2Jacobian,void*);
+PETSC_EXTERN PetscErrorCode TSGetI2Jacobian(TS,Mat*,Mat*,TSI2Jacobian*,void**);
+
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,void*);
@@ -409,6 +422,8 @@ PETSC_EXTERN PetscErrorCode TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobian(TS,PetscReal,Vec,Mat,Mat);
 PETSC_EXTERN PetscErrorCode TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBool);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode TSComputeI2Function(TS,PetscReal,Vec,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSComputeI2Jacobian(TS,PetscReal,Vec,Vec,Vec,PetscReal,PetscReal,Mat,Mat);
 PETSC_EXTERN PetscErrorCode TSComputeLinearStability(TS,PetscReal,PetscReal,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TSVISetVariableBounds(TS,Vec,Vec);
@@ -422,6 +437,11 @@ PETSC_EXTERN PetscErrorCode DMTSSetIFunction(DM,TSIFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetIFunction(DM,TSIFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM,TSIJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM,TSIJacobian*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetI2Function(DM,TSI2Function,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetI2Function(DM,TSI2Function*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetI2Jacobian(DM,TSI2Jacobian,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetI2Jacobian(DM,TSI2Jacobian*,void**);
+
 PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,TSForcingFunction,void*);
@@ -738,6 +758,10 @@ PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
 
+PETSC_EXTERN PetscErrorCode TSBDFSetOrder(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSBDFUseAdapt(TS,PetscBool);
+
 /*
        PETSc interface to Sundials
 */
@@ -769,6 +793,11 @@ PETSC_EXTERN PetscErrorCode TSAlphaUseAdapt(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAlphaSetRadius(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaSetParams(TS,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaGetParams(TS,PetscReal*,PetscReal*,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode TSAlpha2UseAdapt(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAlpha2SetRadius(TS,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAlpha2SetParams(TS,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAlpha2GetParams(TS,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TSSetDM(TS,DM);
 PETSC_EXTERN PetscErrorCode TSGetDM(TS,DM*);

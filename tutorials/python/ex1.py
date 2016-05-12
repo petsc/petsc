@@ -26,7 +26,7 @@ def RunTest():
     pc.setType(PETSc.PC.Type.PYTHON)
     pc.setPythonContext(example1.Jacobi())
 
-    ksp.setOperators(A, A, True)
+    ksp.setOperators(A, A)
     ksp.setFromOptions()
     ksp.solve(b, x)
 

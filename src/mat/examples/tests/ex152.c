@@ -37,11 +37,11 @@ int main(int argc, char *argv[])
   FILE           *fp;
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
 
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 #if defined(PETSC_USE_64BIT_INDICES)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n");
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 #endif
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
@@ -99,6 +99,6 @@ int main(int argc, char *argv[])
   ierr = PetscFree(xadj);CHKERRQ(ierr);
   ierr = PetscFree(adjncy);CHKERRQ(ierr);
   ierr = PetscFree3(xyz,part,tpwgts);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

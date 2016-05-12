@@ -2,7 +2,6 @@
    Implements the various scatter operations on cuda vectors
 */
 
-#define PETSC_SKIP_COMPLEX
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
@@ -174,9 +173,7 @@ class Add {
 class Max {
   public:
     __device__ PetscScalar operator() (PetscScalar a,PetscScalar b) const {
-#if !defined(PETSC_USE_COMPLEX)
-      return PetscMax(a,b);
-#endif
+      return PetscMax(PetscRealPart(a),PetscRealPart(b));
     }
 };
 
@@ -275,10 +272,8 @@ PetscErrorCode VecScatterCUDA_StoS(Vec x,Vec y,PetscCUDAIndices ci,InsertMode ad
       VecScatterCUDA_StoS_Dispatcher(xarray,yarray,ci,mode,Insert());
     else if (addv == ADD_VALUES)
       VecScatterCUDA_StoS_Dispatcher(xarray,yarray,ci,mode,Add());
-#if !defined(PETSC_USE_COMPLEX)
     else if (addv == MAX_VALUES)
       VecScatterCUDA_StoS_Dispatcher(xarray,yarray,ci,mode,Max());
-#endif
     else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
     err = cudaGetLastError();CHKERRCUDA(err);
     err = cudaStreamSynchronize(stos_scatter->stream);CHKERRCUDA(err);

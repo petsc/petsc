@@ -4,6 +4,10 @@ static char help[] = "Introductory example that illustrates running PETSc on a s
    Concepts: introduction to PETSc;
    Concepts: process^subset set PETSC_COMM_WORLD
    Processors: 2
+
+   Note that this example is not checking the error codes from the MPI calls before and after PETSc is initialized.
+   This is because the PETSc macro CHKERRQ() will not work in those circumstances. You should also check the 
+   MPI codes in this situation with your own code.
 T*/
  #include <petscsys.h>
 
@@ -13,11 +17,11 @@ int main(int argc, char *argv[])
   PetscMPIInt    rank, size;
 
   /* We must call MPI_Init() first, making us, not PETSc, responsible for MPI */
-  ierr = MPI_Init(&argc, &argv);
+  ierr = MPI_Init(&argc, &argv);if (ierr) return ierr;
 
   /* We can now change the communicator universe for PETSc */
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  ierr = MPI_Comm_split(MPI_COMM_WORLD, rank%2, 0, &PETSC_COMM_WORLD);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);if (ierr) return ierr;
+  ierr = MPI_Comm_split(MPI_COMM_WORLD, rank%2, 0, &PETSC_COMM_WORLD);if (ierr) return ierr;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -28,7 +32,7 @@ int main(int argc, char *argv[])
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
 
   /*
      The following MPI calls return the number of processes
@@ -52,10 +56,10 @@ int main(int argc, char *argv[])
          options are chosen (e.g., -log_summary).  See PetscFinalize()
      manpage for more information.
   */
-  ierr = PetscFinalize();
+  ierr = PetscFinalize();if (ierr) return ierr;
 
-  ierr = MPI_Comm_free(&PETSC_COMM_WORLD);
+  ierr = MPI_Comm_free(&PETSC_COMM_WORLD);if (ierr) return ierr;
   /* Since we initialized MPI, we must call MPI_Finalize() */
   ierr = MPI_Finalize();
-  return 0;
+  return ierr;
 }

@@ -110,8 +110,8 @@ int main(int argc,char **argv)
   } else {
     TaskWorker(&user);
   }
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /*--------------------------------------------------------------------*/

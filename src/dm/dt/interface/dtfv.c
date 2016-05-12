@@ -1668,11 +1668,11 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
     ierr = PetscFVGetQuadrature(fvm, &q);CHKERRQ(ierr);
     ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fvm), &fvm->dualSpace);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, 1);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, 0, q);CHKERRQ(ierr);
     ierr = PetscDualSpaceCreateReferenceCell(fvm->dualSpace, dim, PETSC_FALSE, &K);CHKERRQ(ierr); /* TODO: The reference cell type should be held by the discretization object */
     ierr = PetscDualSpaceSetDM(fvm->dualSpace, K);CHKERRQ(ierr);
     ierr = DMDestroy(&K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, 1);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, 0, q);CHKERRQ(ierr);
   }
   *sp = fvm->dualSpace;
   PetscFunctionReturn(0);

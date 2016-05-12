@@ -24,8 +24,7 @@ int main(int argc,char **args)
   FILE           *file;
   PetscViewer    view;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Read in matrix and RHS */
   ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,256,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate file for reading");

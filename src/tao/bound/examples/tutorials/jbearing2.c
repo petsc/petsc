@@ -77,7 +77,7 @@ int main( int argc, char **argv )
   PetscReal          zero=0.0;           /* lower bound on all variables */
 
   /* Initialize PETSC and TAO */
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
 
   /* Set the default values for the problem parameters */
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
@@ -100,9 +100,7 @@ int main( int argc, char **argv )
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                      user.nx,user.ny,Nx,Ny,1,1,NULL,NULL,
-                      &user.dm);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.nx,user.ny,Nx,Ny,1,1,NULL,NULL,&user.dm);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DM; the vector user.B is
@@ -156,7 +154,7 @@ int main( int argc, char **argv )
   if (flg) {
     ierr = TaoSetMonitor(tao,Monitor,&user,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(NULL,NULL,"-testconvergence",&flg);
+  ierr = PetscOptionsHasName(NULL,NULL,"-testconvergence",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TaoSetConvergenceTest(tao,ConvergenceTest,&user);CHKERRQ(ierr);
   }
@@ -173,14 +171,12 @@ int main( int argc, char **argv )
   ierr = VecDestroy(&xu);CHKERRQ(ierr);
   ierr = MatDestroy(&user.A);CHKERRQ(ierr);
   ierr = VecDestroy(&user.B);CHKERRQ(ierr);
+
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
-
-  PetscFinalize();
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 

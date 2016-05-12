@@ -288,6 +288,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&mu[1]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();
+  PetscFinalize();
   PetscFunctionReturn(0);
 }

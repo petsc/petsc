@@ -5183,6 +5183,90 @@ where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$
 \end{itemize}
 
 \subsection{Error control via variable time-stepping}
+\newcommand{\SErr}{\rm wlte}
+\newcommand{\TolA}{{\rm Tol}_{\rm A}}
+\newcommand{\TolR}{{\rm Tol}_{\rm R}}
+Most of the time stepping methods avaialable in PETSc have an error
+estimation and error control mechanism. This mechanism is implemented by changing the
+step size in order to maintain user specified absolute and relative
+tolerances. The PETSc object responsible with error control is
+TSAdapt. The avaialble TSAdapt types are listed in Table \ref{tab:adaptors}.
+%
+\begin{table}[tb]
+\centering
+\caption{TSAdapt: available adaptors.\label{tab:adaptors}}
+\begin{tabular}{|l|c|l|}
+\hline
+ID & Name & Notes\\
+\hline
+TSADAPTBASIC& "basic"   & the default
+adaptor \\
+\hline
+TSADAPTNONE & "none"    & no adaptivity\\
+%\hline
+%TSADAPTCFL  & "cfl"&\\
+\hline
+\end{tabular}
+\end{table}
+%
+%\bigskip
+
+\noindent\textbf{\trl{TSAdapt} basic.} %\label{sec:ts:adapt:basic}
+The user typically provides a
+desired absolute $\TolA$ or a relative $\TolR$ error
+tolerance by invoking TSSetTolerances or at the command line with
+options \trl{-ts_atol} and \trl{-ts_rtol}. The error estimate is based on the local truncation error, so for
+every step the algorithm verifies that the estimated local truncation
+error satisfies the tolerances provided by the user and computes a new
+step size to be taken. For multistage methods, the local truncation is
+obtained by comparing the solution $y$ to a lower order
+$\widehat{p}=p-1$ approximation, $\widehat{y}$, where $p$ 
+is the order of the method and $\widehat{p}$ the order of $\widehat{y}$.
+
+The adaptive controller at step $n$ computes a tolerance level
+%%%
+\begin{eqnarray*}
+Tol_n(i)&=&\TolA(i) +  \max(y_n(i),\widehat{y}_n(i)) \TolR(i)\,,
+\end{eqnarray*}
+%%%
+and forms the acceptable error level 
+%%%
+\begin{eqnarray*}
+\SErr_n&=& \frac{1}{m} \sum_{i=1}^{m}\sqrt{\frac{\left\|y_n(i)
+  -\widehat{y}_n(i)\right\|}{Tol(i)}}\,,
+\end{eqnarray*}
+%%%
+where the errors are computed componentwise, $m$ is the dimension of
+$y$ and \trl{-ts_adapt_wnormtype} is 2 (default).
+If \trl{-ts_adapt_wnormtype} is $\infty$ (max norm), then
+%%%
+\begin{eqnarray*}
+\SErr_n&=& \max_{1\dots m}\frac{\left\|y_n(i)
+  -\widehat{y}_n(i)\right\|}{Tol(i)}\,.
+\end{eqnarray*}
+%%%
+The error tolerances are satisfied when $\SErr \le 1.0$. 
+
+The next step size is based on this error estimate, and determined by
+%%%
+\begin{eqnarray}
+  \label{eq:hnew}
+ \Delta t_{\rm new}(t)&=&\Delta t_{\rm{old}} \min(\alpha_{\max},
+ \max(\alpha_{\min}, \beta (1/\SErr)^\frac{1}{\widehat{p}+1}))\,,
+\end{eqnarray}
+%%%
+where $\alpha_{\min}=$\trl{-ts_adapt_basic_clip}[0] and
+$\alpha_{\max}$=\trl{-ts_adapt_basic_clip}[1] keep the change in
+$\Delta t$
+to within a certain factor, and $\beta<1$ is chosen
+through \trl{-ts_adapt_basic_safety} so that there is 
+some margin to which the tolerances are satisfied and so that the
+probability of rejection is decreased.
+
+This adaptive controller works in the following way. After completing
+step $k$, if $\SErr_{k+1} \le 1.0$, then the step is accepted and the
+next step is modified according to (\ref{eq:hnew}); otherwise, the step
+is rejected and retaken with the step length computed in (\ref{eq:hnew}).
 
 \subsection{Handling of discontinuities}
 
@@ -8553,7 +8637,7 @@ which can also be represented as the DAG
   \draw[sec] (e0)  -- (f0);
   \draw[sec] (e1)  -- (f0);
   \draw[sec] (e2)  -- (f0);
-  \draw[sec] (e2)  -- (f1);
+  \draw[sec] (e1)  -- (f1);
   \draw[sec] (e3)  -- (f1);
   \draw[sec] (e4)  -- (f1);
 \end{tikzpicture}
@@ -8581,7 +8665,7 @@ to preallocate correctly, we first setup sizes,
 and then point values,
 \begin{tabbing}
   DMPlexSetCone(dm, 0, [6, 7, 8]);\\
-  DMPlexSetCone(dm, 1, [8, 9, 10]);\\
+  DMPlexSetCone(dm, 1, [7, 9, 10]);\\
   DMPlexSetCone(dm, 6, [2, 3]);\\
   DMPlexSetCone(dm, 7, [3, 4]);\\
   DMPlexSetCone(dm, 8, [4, 2]);\\

@@ -445,6 +445,11 @@ runex2f_2:
 	   if (${DIFF} output/ex2f_2.out ex2f_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2f_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2f_2.tmp
+runex4:
+	-@${MPIEXEC} -n 1 ./ex4 -pc_type none > ex4_1.tmp 2>&1; \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex4_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex4_1.tmp
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -1028,6 +1033,12 @@ runex25_2:
 	   else printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex25_2.tmp
 
+runex27:
+	-@${MPIEXEC} -n 1 ./ex27 -f ${DATAFILESPATH}/matrices/medium  -ksp_view  -ksp_monitor_short -ksp_max_it 100  > ex27_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex27_1.out ex27_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex27_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex27_1.tmp
+
 runex28:
 	-@${MPIEXEC} -n 1 ./ex28 -ksp_monitor_short -pc_type mg -pc_mg_type full -ksp_type fgmres -da_refine 2 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type ilu > ex28_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex28_1.out ex28_1.tmp) then true; \
@@ -1505,7 +1516,7 @@ runex65:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3  \
                                  runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
-                                 ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
+                                 ex4.PETSc ex4.rm ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
                                  ex6.PETSc runex6 runex6_1 runex6_2 ex6.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
@@ -1543,7 +1554,8 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PET
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
                                  runex10_9 runex10_10 runex10_19  runex10_ILU runex10_ILUBAIJ runex10_cg \
-                                 runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm
+                                 runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm \
+                                 ex27.PETSc runex27 ex27.rm
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
@@ -1575,7 +1587,7 @@ TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
 TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
 TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
 TESTEXAMPLES_CUDA_DATAFILESPATH         = ex10.PETSc runex10_aijcusparse ex10.rm
-TESTEXAMPLES_CUDA                       = ex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+TESTEXAMPLES_CUDA                       = ex4.PETSc runex4 ex4.rm ex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
                                           ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
 TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm

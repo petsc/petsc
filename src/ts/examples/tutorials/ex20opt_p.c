@@ -270,7 +270,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user.mup[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
-  ierr = PetscFinalize();
+  PetscFinalize();
   PetscFunctionReturn(0);
 }
 
@@ -352,7 +352,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetCostGradients(ts,1,user_ptr->lambda,user_ptr->mup);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-  ierr = VecCopy(user_ptr->mup[0],G);
+  ierr = VecCopy(user_ptr->mup[0],G);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

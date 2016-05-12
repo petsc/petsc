@@ -218,6 +218,13 @@ ex42: ex42.o chkopts
 	-${CLINKER} -o ex42 ex42.o ${PETSC_TS_LIB}
 	${RM} ex42.o
 
+ex43: ex43.o chkopts
+	-${CLINKER} -o ex43 ex43.o ${PETSC_TS_LIB}
+	${RM} ex43.o
+
+ex44: ex44.o chkopts
+	-${CLINKER} -o ex44 ex44.o ${PETSC_TS_LIB}
+	${RM} ex44.o
 
 #---------------------------------------------------------------------------------
 runex1:
@@ -230,7 +237,7 @@ runex1_2:
 	   ${RM} -f ex1_2.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 -ts_pseudo_frtol 1.e-5  > ex1f_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 -ts_pseudo_frtol 1.e-5  -snes_stol 1e-5 > ex1f_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || printf "${PWD}\nPossible problem with ex1f_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1f_1.tmp
 
@@ -532,12 +539,12 @@ runex20adj_10:
 	  ${RM} -f ex20adj.tmp
 
 runex20adj_11:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 2 -ts_trajectory_solution_only | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_solution_only | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_11, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_12:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 2 -ts_trajectory_solution_only 0 | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_solution_only 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_12, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj.tmp SA-data/*
 
@@ -562,22 +569,22 @@ runex20adj_16:
 	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_17:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 2 -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_13, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_18:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 2 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_14, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_19:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 2 -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_13, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj.tmp SA-data/*
 
 runex20adj_20:
-	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 2 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex20adj -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack 0 | tail -n 22 > ex20adj.tmp 2>&1; \
 	  ${DIFF} output/ex20adj_2.out ex20adj.tmp || printf "${PWD}\nPossible problem with ex20adj_14, diffs above\n=========================================\n"; \
 	  ${RM} -f ex20adj.tmp SA-data/*
 
@@ -672,56 +679,56 @@ runex31:
 	   ${RM} -f ex31_1.tmp
 
 runex35:
-	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor > ex35_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor -ts_adapt_basic_reject_safety 1 > ex35_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_1.out ex35_1.tmp || printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_1.tmp
 
 runex35_2:
-	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 > ex35_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 -ts_adapt_basic_reject_safety 1 > ex35_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 
 runex40: runex40_a runex40_b runex40_c runex40_d
 
 runex40_a:
-	-@${MPIEXEC} -n 1 ./ex40 > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -snes_stol 1e-4 > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_a, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
 runex40_b:
-	-@${MPIEXEC} -n 1 ./ex40 -ts_type arkimex > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type arkimex -snes_stol 1e-4 > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_b, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
 runex40_c:
-	-@${MPIEXEC} -n 1 ./ex40 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_c, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
 runex40_d:
-	-@${MPIEXEC} -n 1 ./ex40 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
 runex41: runex41_a runex41_b runex41_c runex41_d
 
 runex41_a:
-	-@${MPIEXEC} -n 2 ./ex41 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_a, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex41_b:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type arkimex > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type arkimex -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_b, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex41_c:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_c, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex41_d:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
@@ -729,6 +736,33 @@ runex42:
 	-@${MPIEXEC} -n 1 ./ex42 -ts_max_steps 8  > ex42.tmp 2>&1;	  \
 	   ${DIFF} output/ex42.out ex42.tmp || printf "${PWD}\nPossible problem with ex42, diffs above\n=========================================\n"; \
 	   ${RM} -f ex42.tmp
+
+runex43_a:
+	-@${MPIEXEC} -n 1 ./ex43 -ts_max_steps 10 -ts_view > ex43_a.tmp 2>&1; \
+	   ${DIFF} output/ex43_a.out ex43_a.tmp || printf "${PWD}\nPossible problem with ex43_a, diffs above\n=========================================\n"; \
+	   ${RM} -f ex43_a.tmp
+
+runex43_b:
+	-@${MPIEXEC} -n 1 ./ex43 -ts_max_steps 10 -ts_rtol 0 -ts_atol 1e-5 -ts_alpha_adapt -ts_adapt_monitor > ex43_b.tmp 2>&1; \
+	   ${DIFF} output/ex43_b.out ex43_b.tmp || printf "${PWD}\nPossible problem with ex43_b, diffs above\n=========================================\n"; \
+	   ${RM} -f ex43_b.tmp
+
+runex44: runex44_a runex44_b runex44_2
+
+runex44_a:
+	-@${MPIEXEC} -n 1 ./ex44 > ex44_a.tmp 2>&1; \
+	   ${DIFF} output/ex44.out ex44_a.tmp || printf "${PWD}\nPossible problem with ex44_a, diffs above\n=========================================\n"; \
+	   ${RM} -f ex44_a.tmp
+
+runex44_b:
+	-@${MPIEXEC} -n 1 ./ex44 -ts_rtol 0 -ts_atol 1e-1 -ts_alpha_adapt > ex44_b.tmp 2>&1; \
+	   ${DIFF} output/ex44.out ex44_b.tmp || printf "${PWD}\nPossible problem with ex44_b, diffs above\n=========================================\n"; \
+	   ${RM} -f ex44_b.tmp
+
+runex44_2:
+	-@${MPIEXEC} -n 2 ./ex44 > ex44_2.tmp 2>&1; \
+	   ${DIFF} output/ex44_2.out ex44_2.tmp || printf "${PWD}\nPossible problem with ex44_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex44_2.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\
@@ -743,10 +777,13 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 e
                             ex25.PETSc runex25 ex25.rm \
                             ex31.PETSc ex31.rm \
                             ex40.PETSc runex40 ex40.rm \
-                            ex41.PETSc runex41 ex41.rm
+                            ex41.PETSc runex41 ex41.rm \
+                            ex43.PETSc ex43.rm \
+                            ex44.PETSc runex44 ex44.rm
 TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc runex12 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm \
-                            ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm
+                            ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm \
+                            ex43.PETSc runex43_a runex43_b ex43.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
                             ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
@@ -755,7 +792,8 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm 
 TESTEXAMPLES_C_X	  = ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE =  ex22f.PETSc runex22f ex22f.rm ex22f_mf.PETSc runex22f_mf ex22f_mf.rm
-TESTEXAMPLES_C_X_MPIUNI =
+TESTEXAMPLES_C_X_MPIUNI   = ex43.PETSc runex43_a runex43_b ex43.rm \
+                            ex44.PETSc runex44_a runex44_b ex44.rm
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
 TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
@@ -764,5 +802,5 @@ TESTEXAMPLES_MOAB_HDF5    = ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TCHEM        = extchem.PETSc runextchem extchem.rm
 
 TESTEXAMPLES_REVOLVE      = ex20adj.PETSc runex20adj_7 runex20adj_8 runex20adj_9 runex20adj_10 runex20adj_11 runex20adj_12 runex20adj_13 runex20adj_14 runex20adj_15 runex20adj_16 runex20adj_17 runex20adj_18 runex20adj_19 runex20adj_20 ex20adj.rm
- 
+
 include ${PETSC_DIR}/lib/petsc/conf/test

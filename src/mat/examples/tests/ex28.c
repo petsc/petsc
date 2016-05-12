@@ -14,8 +14,7 @@ int main(int argc,char **args)
   PetscScalar    values[4];
   IS             rowperm,colperm;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,4,4,2,nnz,&A);CHKERRQ(ierr);
 
   /* build test matrix */
@@ -67,7 +66,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

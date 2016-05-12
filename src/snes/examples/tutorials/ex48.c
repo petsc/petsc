@@ -1587,5 +1587,5 @@ int main(int argc,char *argv[])
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = THIDestroy(&thi);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -65,9 +65,9 @@
 #define PETSC_ERR_FLOP_COUNT       90
 #define PETSC_ERR_NOT_CONVERGED    91  /* solver did not converge */
 #define PETSC_ERR_MISSING_FACTOR   92  /* MatGetFactor() failed */
-#define PETSC_ERR_MAX_VALUE        93  /* this is always the one more than the largest error code */
+#define PETSC_ERR_OPT_OVERWRITE    93  /* attempted to over wrote options which should not be changed */
 
-#define PETSC_ERR_OPT_OVERWRITE    94  /* overwrote options which should not be changed */
+#define PETSC_ERR_MAX_VALUE        94  /* this is always the one more than the largest error code */
 
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)

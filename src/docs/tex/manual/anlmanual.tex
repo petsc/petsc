@@ -1,0 +1,196 @@
+%
+%
+\documentclass[twoside,11pt]{../sty/report_petsc}
+
+\usepackage{makeidx,xspace}
+\usepackage[bookmarksopen,colorlinks]{hyperref}
+\usepackage[all]{hypcap}
+\usepackage{color}
+\input pdfcolor.tex
+
+\usepackage[pdftex]{graphicx}
+
+
+\usepackage{times}
+\usepackage{listings}
+\usepackage{tikz}
+%\usepackage{psfig}
+\usepackage{../sty/verbatim}
+\usepackage{../sty/tpage}
+\usepackage{../sty/here}
+\usepackage{../sty/anlhelper}
+\usepackage[hyphens,spaces,obeyspaces]{../sty/trl}
+
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textheight}{9.2in}
+\setlength{\topmargin}{-.8in}
+
+\newcommand{\findex}[1]{\index{#1}}
+\newcommand{\sindex}[1]{\index{#1}}
+\newcommand{\A}{\mbox{\boldmath \(A\)}}
+\newcommand{\F}{\mbox{\boldmath \(F\)}}
+\newcommand{\J}{\mbox{\boldmath \(J\)}}
+\newcommand{\x}{\mbox{\boldmath \(x\)}}
+\newcommand{\bb}{\mbox{\boldmath \(b\)}}
+\newcommand{\rr}{\mbox{\boldmath \(r\)}}
+hyperbaseurl
+
+\makeindex
+
+% Defines the environment where design issues are discussed. In the manual
+% version of this report, these regions are ignored.
+\def\design{\medskip \noindent Design Issue:\begin{em}}
+\def\enddesign{\end{em} \medskip}
+% Manual version:
+% \def\design{\comment}
+% \def\enddesign{\endcomment}
+
+% Print DRAFT in large letters across every page
+%\special{!userdict begin /bop-hook{gsave 200 70 translate
+%65 rotate /Times-Roman findfont 216 scalefont setfont
+%0 0 moveto 0.95 setgray (DRAFT) show grestore}def end}
+
+% Defines that we're doing the whole manual, not the short intro part,
+% used in part1.tex.
+\def\shortintro{false}
+
+\usepackage{fancyhdr,lastpage}
+\pagestyle{fancy}
+\rhead{PETSc 3.7 \today}
+
+\begin{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pagestyle{empty}
+\hspace{-.65in}\includegraphics{ArgonneLogo}
+\hfill  {\large {\bf ANL-95/11 Rev 3.7}}
+
+\vspace*{3in}
+\noindent {\huge{\bf PETSc Users Manual}}
+\vspace*{8pt}
+\hrule
+\vspace*{8pt}
+\noindent {\Large{\it Revision 3.7}}
+
+\vspace*{1in}
+\noindent \\
+{\Large {\bf Mathematics and Computer Science Division}}
+
+\vspace*{10pt}
+
+
+\vspace*{20pt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\centerline{\includegraphics{ArgonneReportTemplatePage2}}
+\newpage
+
+\hfill {\large {\bf ANL-95/11 Rev 3.7}}
+
+\vspace*{2in}
+\noindent {\LARGE{\bf PETSc Users Manual}}
+\vspace*{8pt}
+\hrule
+\vspace*{8pt}
+\noindent {\Large{\it Revision 3.7}}
+
+\vspace*{.2in}
+\noindent Prepared by \\
+S. Balay, P. Brune, K. Buschelman, W. Gropp, D. Karpeyev, D. Kaushik, M. Knepley, L. Curfman McInnes, K. Rupp, B. Smith, H. Zhang \\
+Mathematics and Computer Science Division\\
+Argonne National Laboratory \\
+\\
+S. Abhyankar\\
+Energy Systems Division\\
+Argonne National Laboratory \\
+\\
+M. Adams\\
+Computational Research \\
+Lawrence Berkeley National Laboratory \\
+\\
+L. Dalcin, S. Zampini \\
+Extreme Computing Research Center \\
+King Abdullah University of Science and Technology\\
+\\
+H. Zhang\\
+Computer Science Department \\
+Illinois Institute of Technology
+
+\vspace*{30pt}
+\noindent April 2016
+
+\vspace*{20pt}
+\noindent This work was supported by the Office of Advanced Scientific Computing Research, \\
+Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
+
+
+\cleardoublepage
+%\pagestyle{plain}
+\pagestyle{fancy}
+\vspace{1in}
+\date{\today}
+
+% Abstract for users manual
+\addcontentsline{toc}{chapter}{Abstract}
+\input{abstract.tex}
+
+\cleardoublepage
+
+\input{gettinginfo.tex}
+
+\medskip \medskip
+
+\cleardoublepage
+
+% Acknowledgements for users manual
+\input{acknowl.tex}
+
+% Blank page makes double sided printout look bettter.
+
+\cleardoublepage
+
+\tableofcontents
+
+% --------------------------------------------------------------------
+%                            PART 1
+% --------------------------------------------------------------------
+\cleardoublepage
+\part{Introduction to PETSc}
+\label{part_intro}
+\cleardoublepage
+\chapter{Getting Started}
+\input{part1tmp.tex}
+
+% --------------------------------------------------------------------
+%                            PART 2
+% --------------------------------------------------------------------
+\cleardoublepage
+\part{Programming with PETSc}
+\label{part_usage}
+\input{part2tmp.tex}
+
+
+%------------------------------------------------------------------
+
+
+\cleardoublepage
+\bibliographystyle{plain}
+\addtocounter{chapter}{1}
+\addcontentsline{toc}{chapter}{Bibliography}
+\label{sec:bib}
+\bibliography{../petsc,../petscapp}
+
+\pagestyle{empty}
+\begin{figure*}[hbt]
+\centerline{\includegraphics{ArgonneReportTemplateLastPage.pdf}}
+\caption{}
+\end{figure*}
+
+\end{document}
