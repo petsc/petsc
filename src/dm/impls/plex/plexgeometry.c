@@ -1082,6 +1082,7 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
   if (numCoords != pdim*cdim) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
   if (v0) {for (d = 0; d < cdim; d++) v0[d] = PetscRealPart(coords[d]);}
   if (J) {
+    ierr = PetscMemzero(J, Nq*cdim*dim*sizeof(PetscReal));CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       PetscInt i, j, k, c, r;
 
