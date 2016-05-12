@@ -1059,6 +1059,15 @@ cdef class Mat(Object):
         PetscINCREF(nsp.obj)
         return nsp
 
+    def setTransposeNullSpace(self, NullSpace nsp not None):
+        CHKERR( MatSetTransposeNullSpace(self.mat, nsp.nsp) )
+
+    def getTransposeNullSpace(self):
+        cdef NullSpace nsp = NullSpace()
+        CHKERR( MatGetTransposeNullSpace(self.mat, &nsp.nsp) )
+        PetscINCREF(nsp.obj)
+        return nsp
+
     def setNearNullSpace(self, NullSpace nsp not None):
         CHKERR( MatSetNearNullSpace(self.mat, nsp.nsp) )
 
