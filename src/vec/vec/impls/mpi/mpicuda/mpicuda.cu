@@ -319,8 +319,5 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
     veccuda = (Vec_CUDA*)vv->spptr;
     veccuda->GPUarray = (PetscScalar*)array;
   }
-  if (!vv->ops->destroy) {
-    vv->ops->destroy = VecDestroy_SeqCUDA;
-  }
   PetscFunctionReturn(0);
 }

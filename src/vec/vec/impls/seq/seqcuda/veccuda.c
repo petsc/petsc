@@ -398,9 +398,5 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
     veccuda = (Vec_CUDA*)V->spptr;
     veccuda->GPUarray = (PetscScalar *)array;
   }
-
-  if (!V->ops->destroy) {
-    V->ops->destroy = VecDestroy_SeqCUDA;
-  }
   PetscFunctionReturn(0);
 }
