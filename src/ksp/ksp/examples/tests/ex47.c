@@ -14,10 +14,8 @@ int main(int argc, char **argv)
   Vec            x, b;
   MPI_Comm       comm;
 
-  PetscInitialize(&argc, &argv, NULL, NULL);
-
+  ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-
   ierr = MatCreate(comm, &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, 4, 4, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
@@ -37,8 +35,8 @@ int main(int argc, char **argv)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc, "0", zero);
-  ierr = PCFieldSplitSetIS(pc, "1", one);
+  ierr = PCFieldSplitSetIS(pc, "0", zero);CHKERRQ(ierr);
+  ierr = PCFieldSplitSetIS(pc, "1", one);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
@@ -48,6 +46,6 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

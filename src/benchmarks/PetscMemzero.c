@@ -8,9 +8,9 @@ int main(int argc,char **argv)
 {
   PetscLogDouble x,y,z;
   PetscScalar    A[10000];
-  int            ierr;
+  PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,0,0);
+  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   /* To take care of paging effects */
   ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
   ierr = PetscTime(&x);CHKERRQ(ierr);
@@ -44,5 +44,5 @@ int main(int argc,char **argv)
   fprintf(stdout,"    %-15s : %e sec\n","Per PetscScalar",(2*y-x-z)/100000.0);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }

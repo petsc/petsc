@@ -20,8 +20,7 @@ int main(int argc,char **args)
   PetscInt       i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsHasName(NULL,NULL,"-baij",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,0,rowlens,&A);CHKERRQ(ierr);
@@ -52,5 +51,5 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

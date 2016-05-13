@@ -197,32 +197,28 @@ class Configure(config.package.Package):
       self.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
       self.log.write('Files and directorys in that directory:\n'+str(os.listdir(dir))+'\n')
 
-      # Look for Multi-Threaded MKL for MKL_Pardiso
-      if self.argDB['with-mkl_pardiso'] or 'with-mkl_pardiso-dir' in self.argDB or 'with-mkl_pardiso-lib' in self.argDB:
-        self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for Pardiso')
-        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
-                       os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
-          if not os.path.exists(os.path.join(dir,libdir)):
-            self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
-          else:
-            yield ('User specified MKL-Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
-            yield ('User specified MKL-Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
-            yield ('User specified MKL-Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
-            yield ('User specified MKL-Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
-        return
-
-      # Look for Multi-Threaded MKL for MKL_CPardiso
+      # Look for Multi-Threaded MKL for MKL_C/Pardiso
+      useCPardiso=0
+      usePardiso=0
       if self.argDB['with-mkl_cpardiso'] or 'with-mkl_cpardiso-dir' in self.argDB or 'with-mkl_cpardiso-lib' in self.argDB:
-        self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for CPardiso')
+        useCPardiso=1
+        mkl_blacs_64=['mkl_blacs_intelmpi_lp64']
+        mkl_blacs_32=['mkl_blacs_intelmpi']
+      elif self.argDB['with-mkl_pardiso'] or 'with-mkl_pardiso-dir' in self.argDB or 'with-mkl_pardiso-lib' in self.argDB:
+        usePardiso=1
+        mkl_blacs_64=[]
+        mkl_blacs_32=[]
+      if useCPardiso or usePardiso:
+        self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for C/Pardiso')
         for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
                        os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
           if not os.path.exists(os.path.join(dir,libdir)):
             self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
-            yield ('User specified MKL-CPardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
-            yield ('User specified MKL-CPardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
-            yield ('User specified MKL-CPardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
-            yield ('User specified MKL-CPardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+            yield ('User specified MKL-C/Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_64+['iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-C/Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_64+['gomp','dl','pthread','m'],1)
+            yield ('User specified MKL-C/Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_32+['iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-C/Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_32+['gomp','dl','pthread','m'],1)
         return
 
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)

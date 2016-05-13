@@ -27,7 +27,7 @@ int main(int argc,char **args)
   MatPartitioning part;
   IS              is,isn;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 4) SETERRQ(PETSC_COMM_WORLD,1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -79,6 +79,6 @@ int main(int argc,char **args)
 
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

@@ -43,6 +43,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
     ierr = MatDestroy(&ptap->C_loc);CHKERRQ(ierr);
     ierr = MatDestroy(&ptap->C_oth);CHKERRQ(ierr);
     if (ptap->apa) {ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
+
     if (merge) { /* used by alg_ptap */
       ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
       ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
@@ -57,11 +58,10 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
       ierr = PetscFree(merge->coj);CHKERRQ(ierr);
       ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
       ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
-      ierr = merge->destroy(A);CHKERRQ(ierr);
       ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
-    } else {
-      ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
-    }
+    } 
+    
+    ierr = ptap->destroy(A);CHKERRQ(ierr);
     ierr = PetscFree(ptap);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -179,9 +179,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
 
   /* create and initialize a linked list */
-  Crmax = 5*(p_loc->rmax+p_oth->rmax + (PetscInt)(1.e-2*pN)); /* expected Crmax */
-  if (Crmax > pN) Crmax=pN;
-  ierr = PetscTableCreate(Crmax,pN,&ta);CHKERRQ(ierr); /* for compute AP_loc and Cmpi */
+  ierr = PetscTableCreate(pN,pN,&ta);CHKERRQ(ierr); /* for compute AP_loc and Cmpi */
   MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
   MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr); /* Crmax = nnz(sum of Prows) */

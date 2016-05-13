@@ -3508,6 +3508,13 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
     if (!rank) {
+      PetscBool skipHeader;
+      PetscInt  classid = REAL_FILE_CLASSID;
+
+      ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+      if (!skipHeader) {
+         ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+       }
       ierr = PetscRealView(1,&ptime,viewer);CHKERRQ(ierr);
     } else {
       ierr = PetscRealView(0,&ptime,viewer);CHKERRQ(ierr);

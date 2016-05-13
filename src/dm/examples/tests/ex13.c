@@ -17,9 +17,7 @@ int main(int argc,char **argv)
   Vec            global;
   PetscViewer    bviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
-  /* Read options */
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
 
@@ -31,14 +29,12 @@ int main(int argc,char **argv)
   ierr = VecLoad(global,bviewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&bviewer);CHKERRQ(ierr);
 
-
   ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-
 
   /* Free memory */
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

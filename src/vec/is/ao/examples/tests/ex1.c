@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   AO             ao;
   const PetscInt *app;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   /* test MemoryScalable ao: ispetsc = NULL */
   /*-----------------------------------------------*/
   if (!rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\nTest AOCreateMemoryScalable with ispetsc=NULL:\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\nTest AOCreateMemoryScalable with ispetsc=NULL:\n");CHKERRQ(ierr);
   }
   ierr = AOCreateMemoryScalableIS(isapp,NULL,&ao);CHKERRQ(ierr);CHKERRQ(ierr);
 
@@ -136,7 +136,7 @@ int main(int argc,char **argv)
 
   ierr = AODestroy(&ao);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

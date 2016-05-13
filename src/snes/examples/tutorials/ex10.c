@@ -7,6 +7,6 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

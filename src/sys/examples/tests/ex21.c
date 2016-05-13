@@ -43,5 +43,5 @@ int main(int argc,char **argv)
   ierr = PetscFree(Idbylevel);CHKERRQ(ierr);
   ierr = PetscFree(Column);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -1,0 +1,8 @@
+
+create C1 = 2.0*C1 + C, C1 has less non-zeros than C 
+ MatAXPY(C1,2.0,C,DIFFERENT_NONZERO_PATTERN)...
+ C1: nz_allocated = 20.; nz_used = 20.; nz_unneeded = 0.
+
+create C2 = 2.0*C2 + C, C2 has non-zero pattern of C2 + C 
+ MatAXPY(C2,2.0,C,SUBSET_NONZERO_PATTERN)...
+ C2: nz_allocated = 20.; nz_used = 20.; nz_unneeded = 0.

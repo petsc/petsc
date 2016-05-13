@@ -180,7 +180,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       ### Start table row
       if match.group(1).find('linux-analyzer') >= 0:
         outfile.write("<tr><td>" + match.group(1) +
-                      " <a href=\"analyzer-build_" + sys.argv[1] + ".log/index.html\"><FONT style=\"BACKGROUND-COLOR: orange\">[B]</FONT></a>" +
+                      " <a href=\"analyzer-src_" + sys.argv[1] + ".log/index.html\"><FONT style=\"BACKGROUND-COLOR: orange\">[S]</FONT></a>" +
                       " <a href=\"analyzer-ex_" + sys.argv[1] + ".log/index.html\"><FONT style=\"BACKGROUND-COLOR: orange\">[E]</FONT></a>" +
                       "</td>")
       else:

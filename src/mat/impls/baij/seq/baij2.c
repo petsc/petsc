@@ -86,7 +86,6 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   PetscBool      flag;
 
   PetscFunctionBegin;
-
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
@@ -141,7 +140,6 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   /* sort */
   {
     MatScalar *work;
-
     ierr = PetscMalloc1(bs2,&work);CHKERRQ(ierr);
     for (i=0; i<nrows; i++) {
       PetscInt ilen;

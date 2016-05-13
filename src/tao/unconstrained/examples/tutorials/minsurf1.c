@@ -119,8 +119,8 @@ int main( int argc, char **argv )
   ierr = PetscFree(user.left);CHKERRQ(ierr);
   ierr = PetscFree(user.right);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /* -------------------------------------------------------------------- */

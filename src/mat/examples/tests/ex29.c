@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscHeap      h;
   PetscInt       id,val,cnt,*values;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscHeapCreate(9,&h);CHKERRQ(ierr);
   ierr = PetscHeapAdd(h,0,100);CHKERRQ(ierr);
   ierr = PetscHeapAdd(h,1,19);CHKERRQ(ierr);
@@ -47,8 +47,8 @@ int main(int argc,char **args)
   ierr = PetscIntView(cnt,values,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscHeapDestroy(&h);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 

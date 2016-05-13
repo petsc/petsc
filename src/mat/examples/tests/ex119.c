@@ -13,7 +13,7 @@ int main(int argc,char **args)
   char           inputfile[256],outputfile[256];
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-inputfile",inputfile,256,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-outputfile",outputfile,256,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,inputfile,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -25,5 +25,5 @@ int main(int argc,char **args)
   ierr = MatView(A,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }

@@ -37,15 +37,13 @@ int main(int argc,char **argv)
   DM             da;
   PetscReal      norm;
   PetscErrorCode ierr;
+  PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
+  PetscScalar    Hx,Hy,Hz;
+  PetscScalar    ***array;
+  Vec            x,b,r;
+  Mat            J;
 
-  PetscInt    i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
-  PetscScalar Hx,Hy,Hz;
-  PetscScalar ***array;
-  Vec         x,b,r;
-  Mat         J;
-
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-12,-12,-12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASetInterpolationType(da, DMDA_Q0);CHKERRQ(ierr);
@@ -98,7 +96,7 @@ int main(int argc,char **argv)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

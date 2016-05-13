@@ -241,7 +241,7 @@ PetscErrorCode test_axpy_dot_max(void)
 
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "VecAXPY \n");CHKERRQ(ierr);
-  ierr = VecAXPY(Y, 1.0, X); /* Y <- a X + Y */
+  ierr = VecAXPY(Y, 1.0, X);CHKERRQ(ierr); /* Y <- a X + Y */
   ierr = VecNestGetSubVec(Y, 0, &y1);CHKERRQ(ierr);
   ierr = VecNestGetSubVec(Y, 1, &y2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "(1) y1 = \n");CHKERRQ(ierr);
@@ -283,11 +283,11 @@ PetscErrorCode test_axpy_dot_max(void)
 
 int main(int argc, char **args)
 {
-  PetscInitialize(&argc, &args,(char*)0, help);
+  PetscErrorCode ierr;
 
+  PetscInitialize(&argc, &args,(char*)0, help);
   test_view();
   test_axpy_dot_max();
-
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

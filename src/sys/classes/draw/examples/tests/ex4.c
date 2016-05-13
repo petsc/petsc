@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawZoom(draw,zoomfunction,NULL);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

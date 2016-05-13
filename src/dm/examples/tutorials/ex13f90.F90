@@ -18,7 +18,7 @@ program main
 !
 !     See:     http://dx.doi.org/10.6084/m9.figshare.1368581
 !
-!     Contributed by Åsmund Ervik (asmunder at pvv.org)
+!     Contributed by Aasmund Ervik (asmunder at pvv.org)
 !
   use ex13f90aux
   implicit none

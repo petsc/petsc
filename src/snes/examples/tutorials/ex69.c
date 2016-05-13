@@ -3356,24 +3356,24 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNu
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  SNES             snes;                 /* nonlinear solver */
-  DM               dm;                   /* problem definition */
-  Vec              u,r;                  /* solution, residual vectors */
-  Mat              J;                    /* Jacobian matrix */
+  SNES            snes;                 /* nonlinear solver */
+  DM              dm;                   /* problem definition */
+  Vec             u,r;                  /* solution, residual vectors */
+  Mat             J;                    /* Jacobian matrix */
 #if 1
-  MatNullSpace     nullSpace;            /* May be necessary for pressure */
-  Vec              nullVec;
-  PetscReal        pint;
+  MatNullSpace    nullSpace;            /* May be necessary for pressure */
+  Vec             nullVec;
+  PetscReal       pint;
 #endif
-  AppCtx           user;                 /* user-defined work context */
-  PetscInt         its;                  /* iterations for convergence */
-  PetscReal        error = 0.0;          /* L_2 error in the solution */
-  PetscReal        ferrors[2];
-  PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
+  AppCtx          user;                 /* user-defined work context */
+  PetscInt        its;                  /* iterations for convergence */
+  PetscReal       error = 0.0;          /* L_2 error in the solution */
+  PetscReal       ferrors[2];
+  PetscErrorCode  (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
   void            *ctxs[2];
-  PetscErrorCode   ierr;
+  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
@@ -3446,5 +3446,5 @@ int main(int argc, char **argv)
   ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

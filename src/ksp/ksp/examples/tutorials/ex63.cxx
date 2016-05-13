@@ -197,8 +197,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  PetscInitialize(&argc,&argv,NULL,NULL);
-  PetscErrorCode ierr = PetscOptionsSetValue(NULL,"-options_left","false");CHKERRQ(ierr);
+  PetscErrorCode ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  ierr = PetscOptionsSetValue(NULL,"-options_left","false");CHKERRQ(ierr);
   KSP ksp;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   Mat Apetsc;
@@ -216,6 +216,6 @@ int main(int argc, char *argv[]) {
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&Apetsc);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  PetscFinalize();
-  return EXIT_SUCCESS;
+  ierr = PetscFinalize();
+  return ierr;
 }

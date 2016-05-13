@@ -148,7 +148,7 @@ int main(int argc, char **argv)
   PetscInt       problem = 1, N = 10;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsGetInt(NULL,NULL, "-problem", &problem, NULL);CHKERRQ(ierr);
   ierr = VecCreate(comm, &u);CHKERRQ(ierr);
@@ -202,5 +202,5 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

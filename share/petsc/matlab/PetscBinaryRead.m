@@ -149,6 +149,15 @@ for l=1:narg
       varargout(l) = {v};
     end
 
+  elseif  header == 1211213 % single real number
+    v = read(fd,1,precision);
+
+    if arecell
+      result{l} = v;
+    else 
+      varargout(l) = {v};
+    end
+
   elseif  header == 1211218 % Petsc IS Object
     m = double(read(fd,1,indices));
     v = read(fd,m,'int') + 1; % Indexing in Matlab starts at 1, 0 in PETSc

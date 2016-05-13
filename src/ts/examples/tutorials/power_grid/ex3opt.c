@@ -300,7 +300,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* ------------------------------------------------------------------ */

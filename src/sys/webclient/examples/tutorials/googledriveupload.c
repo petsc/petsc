@@ -14,8 +14,8 @@ int main(int argc,char **argv)
 
   ierr = PetscGoogleDriveRefresh(PETSC_COMM_WORLD,NULL,access_token,sizeof(access_token));CHKERRQ(ierr);
   ierr = PetscGoogleDriveUpload(PETSC_COMM_WORLD,access_token,"googledriveupload.c");CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 

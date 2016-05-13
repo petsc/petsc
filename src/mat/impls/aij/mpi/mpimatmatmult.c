@@ -217,9 +217,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  Crmax = 6*(p_loc->rmax + (PetscInt)(1.e-2*pN));
-  if (Crmax > pN) Crmax = pN;
-  ierr = PetscTableCreate(Crmax,pN,&ta);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(pN,pN,&ta);CHKERRQ(ierr); 
   MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
   MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
@@ -1412,12 +1410,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   merge->buf_ri    = buf_ri;
   merge->buf_rj    = buf_rj;
   merge->owners_co = owners_co;
-  merge->destroy   = Cmpi->ops->destroy;
-  merge->duplicate = Cmpi->ops->duplicate;
-
-  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
-  Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c           = (Mat_MPIAIJ*)Cmpi->data;
@@ -1425,6 +1417,12 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ptap->api   = NULL;
   ptap->apj   = NULL;
   ptap->merge = merge;
+  ptap->destroy   = Cmpi->ops->destroy;
+  ptap->duplicate = Cmpi->ops->duplicate;
+
+  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
+  Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
+  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)
@@ -1675,7 +1673,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   current_space = free_space;
 
   /* create and initialize a linked list */
-  ierr = PetscTableCreate(2*a_loc->rmax,aN,&ta);CHKERRQ(ierr);
+  ierr = PetscTableCreate(aN,aN,&ta);CHKERRQ(ierr);
   MatRowMergeMax_SeqAIJ(a_loc,am,ta);
   ierr = PetscTableGetCount(ta,&Armax);CHKERRQ(ierr);
   ierr = PetscLLCondensedCreate_Scalable(Armax,&lnk);CHKERRQ(ierr);
@@ -1931,12 +1929,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   merge->buf_ri    = buf_ri;
   merge->buf_rj    = buf_rj;
   merge->owners_co = owners_co;
-  merge->destroy   = Cmpi->ops->destroy;
-  merge->duplicate = Cmpi->ops->duplicate;
-
-  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
-  Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
-  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
   c = (Mat_MPIAIJ*)Cmpi->data;
@@ -1946,6 +1938,12 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   ptap->apj   = NULL;
   ptap->merge = merge;
   ptap->apa   = NULL;
+  ptap->destroy   = Cmpi->ops->destroy;
+  ptap->duplicate = Cmpi->ops->duplicate;
+
+  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
+  Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
+  Cmpi->ops->duplicate               = MatDuplicate_MPIAIJ_MatPtAP;
 
   *C = Cmpi;
 #if defined(PETSC_USE_INFO)

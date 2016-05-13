@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   PetscScalar       *xx;
 
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-second_order",&second_order,NULL);CHKERRQ(ierr);
   h    = 1.0/(n-1);

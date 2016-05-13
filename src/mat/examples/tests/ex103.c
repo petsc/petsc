@@ -23,7 +23,7 @@ int main(int argc, char** argv)
   MatType        type;
   PetscBool      isDense,isAIJ,flg;
 
-  PetscInitialize(&argc, &argv, (char*)0, help);
+  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
 #if !defined(PETSC_HAVE_ELEMENTAL)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires ELEMENTAL");
 #endif
@@ -93,6 +93,6 @@ int main(int argc, char** argv)
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

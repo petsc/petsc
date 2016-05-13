@@ -148,6 +148,6 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must pass in filename with -f option");
   ierr = Mat_Parallel_Load(PETSC_COMM_WORLD,name,&A);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

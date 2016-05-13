@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscScalar    v;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   if (n < 5) n = 5;
 
@@ -39,6 +39,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&y);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
