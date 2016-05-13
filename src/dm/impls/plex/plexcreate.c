@@ -1576,7 +1576,7 @@ static PetscErrorCode DMPlexBuildCoordinates_Parallel_Private(DM dm, PetscInt sp
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords;
-  PetscInt       numVertices, numVerticesAdj, coordSize, v, d;
+  PetscInt       numVertices, numVerticesAdj, coordSize, v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
