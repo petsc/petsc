@@ -792,10 +792,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   ierr      = PetscNewLog(ksp,&agmres);CHKERRQ(ierr);
   ksp->data = (void*)agmres;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);
-  CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);
-  CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
   ksp->ops->buildsolution                = KSPBuildSolution_AGMRES;
   ksp->ops->setup                        = KSPSetUp_AGMRES;
   ksp->ops->solve                        = KSPSolve_AGMRES;
@@ -848,5 +846,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   agmres->r           = 0;
   agmres->HasSchur    = PETSC_FALSE;
   agmres->DeflPrecond = PETSC_FALSE;
+  ierr = PetscObjectGetNewTag((PetscObject)ksp,&agmres->tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
