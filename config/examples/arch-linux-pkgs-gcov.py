@@ -27,6 +27,8 @@ configure_options = [
   '--download-exodusii',
   '--download-party',
   '--download-yaml',
+  '--download-ml',
+  '--download-sundials',
   ]
 
 if __name__ == '__main__':
