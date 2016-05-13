@@ -310,7 +310,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 /* This interpolates the PointSF in parallel following local interpolation */
 static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt depth)
 {
-  PetscMPIInt        rank;
+  PetscMPIInt        numProcs, rank;
   PetscInt           p, c, d, dof, offset;
   PetscInt           numLeaves, numRoots, candidatesSize, candidatesRemoteSize, numLeavesInverse;
   const PetscInt    *localPoints;
@@ -323,8 +323,10 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+  if (numProcs < 2 || numRoots < 0) PetscFunctionReturn(0);
   /* Build hashes of points in the SF for efficient lookup */
   PetscHashICreate(leafhash);
   PetscHashIJCreate(&roothash);
