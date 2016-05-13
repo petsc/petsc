@@ -4220,14 +4220,14 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
           /* TODO: closure indices */
           newOffsets[f + 1]     = newOffsets[f] + ((childId == -1) ? rowDof : refPointFieldN[childId - pRefStart][f]);
         }
-        ierr = indicesPointFields_private(localFine,p,gOff,offsetsCopy,PETSC_FALSE,0,rowIndices);CHKERRQ(ierr);
+        ierr = DMPlexGetIndicesPointFields_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,0,rowIndices);CHKERRQ(ierr);
       }
       else {
         offsets[0]    = 0;
         offsets[1]    = lDof;
         newOffsets[0] = 0;
         newOffsets[1] = (childId == -1) ? lDof : refPointFieldN[childId - pRefStart][0];
-        ierr = indicesPoint_private(localFine,p,gOff,offsetsCopy,PETSC_FALSE,0,rowIndices);CHKERRQ(ierr);
+        ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,0,rowIndices);CHKERRQ(ierr);
       }
       if (childId == -1) { /* no child interpolation: one nnz per */
         ierr = VecSetValues(vecFine,numValues,rowIndices,pVal,ADD_VALUES);CHKERRQ(ierr);
@@ -4339,10 +4339,10 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
         ierr = PetscSectionGetFieldDof(localCoarse,p,f,&fDof);CHKERRQ(ierr);
         rowOffsets[f + 1] = offsetsCopy[f + 1] = fDof + rowOffsets[f];
       }
-      indicesPointFields_private(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,0,parentIndices);CHKERRQ(ierr);
+      DMPlexGetIndicesPointFields_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,0,parentIndices);CHKERRQ(ierr);
     }
     else {
-      indicesPoint_private(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,0,parentIndices);CHKERRQ(ierr);
+      DMPlexGetIndicesPoint_Internal(localCoarse,p,gOff < 0 ? -(gOff + 1) : gOff,offsetsCopy,PETSC_FALSE,0,parentIndices);CHKERRQ(ierr);
       rowOffsets[1] = offsetsCopy[0];
     }
 
