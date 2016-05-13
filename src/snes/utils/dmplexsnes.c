@@ -2455,7 +2455,6 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
   DM_Plex          *mesh  = (DM_Plex *) dm->data;
   const char       *name  = "Jacobian";
   DM                dmAux, plex;
-  DMLabel           depth;
   Vec               A, cellgeom;
   PetscDS           prob, probAux = NULL;
   PetscQuadrature   quad;
@@ -2463,9 +2462,9 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
   PetscFECellGeom  *cgeom = NULL;
   PetscScalar      *cgeomScal;
   PetscScalar      *elemMat, *elemMatD, *u, *u_t, *a = NULL, *y, *z;
-  PetscInt          dim, Nf, f, fieldI, fieldJ, numCells, c;
-  PetscInt          totDim, totDimBd, totDimAux, numBd, bd;
-  PetscBool         isShell, hasDyn;
+  PetscInt          dim, Nf, fieldI, fieldJ, numCells, c;
+  PetscInt          totDim, totDimBd, totDimAux;
+  PetscBool         hasDyn;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
