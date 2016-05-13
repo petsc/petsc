@@ -13,7 +13,7 @@
   Input Parameters:
 + dm - The DM object
 . metric - The metric to which the mesh is adapted, defined vertex-wise.
-- bdyLabelName - Label name for boundary tags. These will be preserved in the output mesh. bdyLabelName should be different from "boundary".
+- bdyLabelName - Label name for boundary tags. These will be preserved in the output mesh. bdyLabelName should be "" (empty string) if there is no such label, and should be different from "boundary".
 
   Output Parameter:
 . dmAdapted  - Pointer to the DM object containing the adapted mesh
@@ -43,7 +43,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   PetscInt             numBdFaces, f, maxConeSize, bdSize, coff;
   PetscInt            *cell, iVer, cellOff, i, j, idx, facet; 
   PetscInt             perm[4], isInFacetClosure[4]; // 4 = max number of facets for an element in 2D & 3D. Only for simplicial meshes
-  PetscBool            flag, hasBdyFacet;
+  PetscBool            flag, bdyLabelExt, hasBdyFacet;
 #endif
   PetscErrorCode       ierr;
   MPI_Comm             comm;
@@ -94,12 +94,22 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
   /* Create boundary mesh */
-  if (bdyLabelName) {
+  if (!bdyLabelName) {
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_NULL, "Argument bdyLabelName cannot be NULL", dim);
+  } else {
+    ierr = PetscStrcmp(bdyLabelName, "", &flag);CHKERRQ(ierr);
+    if (flag) bdyLabelExt = PETSC_FALSE;
+    else bdyLabelExt = PETSC_TRUE;
+  }
+  if (bdyLabelExt) {
     ierr = PetscStrcmp(bdyLabelName, "boundary", &flag);CHKERRQ(ierr);
     if (flag) {
       SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdyLabelName);
     }
     ierr = DMGetLabel(dm, bdyLabelName, &bdTags);CHKERRQ(ierr);
+    if (!bdTags) {
+      SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Label %s does not exist in DM", bdyLabelName);
+    }
   }
   /* TODO To avoid marking bdy facets again if bdyLabelName exists, could/should we loop over bdyLabelName stratas ? */
   ierr = DMLabelCreate("boundary", &bd);CHKERRQ(ierr);
@@ -127,7 +137,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     for (cl = 0; cl < closureSize*2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart;
     }
-    if (bdyLabelName) {
+    if (bdyLabelExt) {
       ierr = DMLabelGetValue(bdTags, faces[f], &bdFaceIds[f]);CHKERRQ(ierr);
     } else {
       bdFaceIds[f] = 1;
@@ -168,7 +178,7 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCellsAdp, numVerticesAdp, numCornersAdp, PETSC_TRUE, cellsAdp, dim, coordsAdp, dmAdapted);CHKERRQ(ierr);
   /* Read out boundary tags */
   pragmatic_get_boundaryTags(&boundaryTags);
-  if (!bdyLabelName) bdyLabelName = "boundary";
+  if (!bdyLabelExt) bdyLabelName = "boundary";
   ierr = DMCreateLabel(*dmAdapted, bdyLabelName);CHKERRQ(ierr);
   ierr = DMGetLabel(*dmAdapted, bdyLabelName, &bdTagsAdp);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(*dmAdapted, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -182,10 +192,10 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
     PetscInt        facetListSize, f;
     
     cellOff = (c-cStart)*(dim+1);  // gives the offset corresponding to the cell in pragmatic boundary arrays. Only for simplicial meshes
-    hasBdyFacet = 0;
+    hasBdyFacet = PETSC_FALSE;
     for (i = 0; i < dim+1; ++i) {   // only for simplicial meshes
       if (boundaryTags[cellOff+i]) {
-        hasBdyFacet = 1;
+        hasBdyFacet = PETSC_TRUE;
         break;
       }
     }
