@@ -123,7 +123,7 @@ Vec Object: 1 MPI processes
         3.
         3.
         3.
-X.X = 120.000000 
+X.X = 120. 
 X = [b a] 
 Vec Object: 1 MPI processes
   type: nest
@@ -168,7 +168,7 @@ Vec Object: 1 MPI processes
         1.
         1.
         1.
-X.X = 120.000000 
+X.X = 120. 
 X = [g h] 
 Vec Object: 1 MPI processes
   type: nest
@@ -195,7 +195,7 @@ Vec Object: 1 MPI processes
     5.
     5.
     5.
-X.X = 438.000000 
+X.X = 438. 
 Y = X 
 Vec Object: 1 MPI processes
   type: nest
@@ -222,7 +222,7 @@ Vec Object: 1 MPI processes
     5.
     5.
     5.
-Y.Y = 438.000000 
+Y.Y = 438. 
 Y = [a b] 
 Vec Object: 1 MPI processes
   type: nest

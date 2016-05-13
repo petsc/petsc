@@ -79,7 +79,7 @@ PetscErrorCode test_vec_ops(void)
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X);CHKERRQ(ierr);
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(X,X, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %g \n", (double)PetscRealPart(val));CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "X = [b a] \n");CHKERRQ(ierr);
   /* re-order components of X */
@@ -89,7 +89,7 @@ PetscErrorCode test_vec_ops(void)
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(X,X,&val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %g \n", (double)PetscRealPart(val));CHKERRQ(ierr);
 
   /* re-assemble X */
   ierr = PetscPrintf(PETSC_COMM_WORLD, "X = [g h] \n");CHKERRQ(ierr);
@@ -99,14 +99,14 @@ PetscErrorCode test_vec_ops(void)
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(X,X,&val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %g \n", (double)PetscRealPart(val));CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Y = X \n");CHKERRQ(ierr);
   ierr = VecDuplicate(X, &Y);CHKERRQ(ierr);
   ierr = VecCopy(X,Y);CHKERRQ(ierr);
   ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(Y,Y,&val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Y.Y = %f \n", val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Y.Y = %g \n", (double)PetscRealPart(val));CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Y = [a b] \n");CHKERRQ(ierr);
   tmp_buf[0] = a; tmp_buf[1] = b;
