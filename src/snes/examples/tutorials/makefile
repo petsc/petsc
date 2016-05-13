@@ -629,6 +629,16 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_tfqmr:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 1 -ksp_monitor_short -ksp_type tfqmr > ex19_tfqmr.tmp 2>&1; \
+	   if (${DIFF} output/ex19_tfqmr.out ex19_tfqmr.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_tfqmr.tmp
+runex19_tcqmr:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 1 -ksp_monitor_short -ksp_type tcqmr > ex19_tcqmr.tmp 2>&1; \
+	   if (${DIFF} output/ex19_tcqmr.out ex19_tcqmr.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_tcqmr.tmp
 runex19_kaczmarz:
 	-@${MPIEXEC} -n 2 ./ex19 -pc_type kaczmarz -ksp_monitor_short -snes_monitor_short -snes_view > ex19_kaczmarz.tmp 2>&1; \
 	   if (${DIFF} output/ex19_kaczmarz.out ex19_kaczmarz.tmp) then true; \
