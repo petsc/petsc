@@ -531,12 +531,12 @@ runex28_3:
 	   else printf "${PWD}\nPossible problem with ex28_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex28.tmp
 runex29:
-	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short -mat_no_inode > ex29.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex29 -mat_no_inode > ex29.tmp 2>&1; \
 	if (${DIFF} output/ex29.out ex29.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex29, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29.tmp
 runex29_2:
-	-@${MPIEXEC} -n 3 ./ex29 -ksp_monitor_short > ex29_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex29  > ex29_2.tmp 2>&1; \
 	if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex29_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29_2.tmp
