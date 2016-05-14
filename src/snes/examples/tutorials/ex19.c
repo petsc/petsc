@@ -117,8 +117,7 @@ int main(int argc,char **argv)
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
   ierr = SNESSetNGS(snes, NonlinearGS, (void*)&user);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
