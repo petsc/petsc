@@ -116,7 +116,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
     /* Bring up the inner solver */
     if (!rank) {
-      ierr = ensure_df_space(tao->niter+1, &df); CHKERRQ(ierr);
+      ierr = ensure_df_space(tao->niter+1, &df);CHKERRQ(ierr);
       ierr = make_grad_node(bmrm->local_w, &pgrad);CHKERRQ(ierr);
       tail_glist->next = pgrad;
       tail_glist = pgrad;
@@ -129,6 +129,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
       /* set up the Q */
       pgrad = grad_list.next;
       for (i=0; i<=tao->niter; i++) {
+        if (!pgrad) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Assert that there are at least tao->niter+1 pgrad available");
         ierr = VecDot(pgrad->V, bmrm->local_w, &reg);CHKERRQ(ierr);
         df.Q[i][tao->niter] = df.Q[tao->niter][i] = reg / lambda;
         pgrad = pgrad->next;
@@ -136,21 +137,21 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
       if (tao->niter > 0) {
         df.x[tao->niter] = 0.0;
-        ierr = solve(&df); CHKERRQ(ierr);
+        ierr = solve(&df);CHKERRQ(ierr);
       } else
         df.x[0] = 1.0;
 
       /* now computing Jt*(alpha_t) which should be = Jt(wt) to check convergence */
       jtwt = 0.0;
-      ierr = VecSet(bmrm->local_w, 0.0); CHKERRQ(ierr);
+      ierr = VecSet(bmrm->local_w, 0.0);CHKERRQ(ierr);
       pgrad = grad_list.next;
       for (i=0; i<=tao->niter; i++) {
         jtwt -= df.x[i] * df.f[i];
-        ierr = VecAXPY(bmrm->local_w, -df.x[i] / lambda, pgrad->V); CHKERRQ(ierr);
+        ierr = VecAXPY(bmrm->local_w, -df.x[i] / lambda, pgrad->V);CHKERRQ(ierr);
         pgrad = pgrad->next;
       }
 
-      ierr = VecNorm(bmrm->local_w, NORM_2, &reg); CHKERRQ(ierr);
+      ierr = VecNorm(bmrm->local_w, NORM_2, &reg);CHKERRQ(ierr);
       reg = 0.5*lambda*reg*reg;
       jtwt -= reg;
     } /* end if rank == 0 */
@@ -201,7 +202,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetup_BMRM"
-static PetscErrorCode TaoSetup_BMRM(Tao tao) 
+static PetscErrorCode TaoSetup_BMRM(Tao tao)
 {
 
   PetscErrorCode ierr;
@@ -209,7 +210,7 @@ static PetscErrorCode TaoSetup_BMRM(Tao tao)
   PetscFunctionBegin;
   /* Allocate some arrays */
   if (!tao->gradient) {
-    ierr = VecDuplicate(tao->solution, &tao->gradient);   CHKERRQ(ierr);
+    ierr = VecDuplicate(tao->solution, &tao->gradient);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -235,7 +236,7 @@ static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"BMRM for regularized risk minimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,NULL); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -309,31 +310,31 @@ PetscErrorCode init_df_solver(TAO_DF *df)
 
   /* memory space required by Dai-Fletcher */
   df->cur_num_cp = n;
-  ierr = PetscMalloc1(n, &df->f); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->a); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->l); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->u); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->x); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->Q); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->f);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->l);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->u);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->Q);CHKERRQ(ierr);
 
   for (i = 0; i < n; i ++) {
-    ierr = PetscMalloc1(n, &df->Q[i]); CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &df->Q[i]);CHKERRQ(ierr);
   }
 
-  ierr = PetscMalloc1(n, &df->g); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->y); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->tempv); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->d); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->Qd); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->t); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->xplus); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->tplus); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->sk); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->yk); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->g);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->y);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->tempv);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->d);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->Qd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->xplus);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->tplus);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->sk);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->yk);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(n, &df->ipt); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->ipt2); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->uv); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->ipt);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->ipt2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->uv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -354,81 +355,81 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
   n = df->cur_num_cp;
 
   /* memory space required by dai-fletcher */
-  ierr = PetscMalloc1(n, &tmp); CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->f, sizeof(PetscReal)*old_n); CHKERRQ(ierr);
-  ierr = PetscFree(df->f); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(tmp, df->f, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscFree(df->f);CHKERRQ(ierr);
   df->f = tmp;
 
-  ierr = PetscMalloc1(n, &tmp); CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->a, sizeof(PetscReal)*old_n); CHKERRQ(ierr);
-  ierr = PetscFree(df->a); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(tmp, df->a, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscFree(df->a);CHKERRQ(ierr);
   df->a = tmp;
 
-  ierr = PetscMalloc1(n, &tmp); CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->l, sizeof(PetscReal)*old_n); CHKERRQ(ierr);
-  ierr = PetscFree(df->l); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(tmp, df->l, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscFree(df->l);CHKERRQ(ierr);
   df->l = tmp;
 
-  ierr = PetscMalloc1(n, &tmp); CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->u, sizeof(PetscReal)*old_n); CHKERRQ(ierr);
-  ierr = PetscFree(df->u); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(tmp, df->u, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscFree(df->u);CHKERRQ(ierr);
   df->u = tmp;
 
-  ierr = PetscMalloc1(n, &tmp); CHKERRQ(ierr);
-  ierr = PetscMemcpy(tmp, df->x, sizeof(PetscReal)*old_n); CHKERRQ(ierr);
-  ierr = PetscFree(df->x); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &tmp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(tmp, df->x, sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+  ierr = PetscFree(df->x);CHKERRQ(ierr);
   df->x = tmp;
 
-  ierr = PetscMalloc1(n, &tmp_Q); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &tmp_Q);CHKERRQ(ierr);
   for (i = 0; i < n; i ++) {
-    ierr = PetscMalloc1(n, &tmp_Q[i]); CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &tmp_Q[i]);CHKERRQ(ierr);
     if (i < old_n) {
-      ierr = PetscMemcpy(tmp_Q[i], df->Q[i], sizeof(PetscReal)*old_n); CHKERRQ(ierr);
-      ierr = PetscFree(df->Q[i]); CHKERRQ(ierr);
+      ierr = PetscMemcpy(tmp_Q[i], df->Q[i], sizeof(PetscReal)*old_n);CHKERRQ(ierr);
+      ierr = PetscFree(df->Q[i]);CHKERRQ(ierr);
     }
   }
 
-  ierr = PetscFree(df->Q); CHKERRQ(ierr);
+  ierr = PetscFree(df->Q);CHKERRQ(ierr);
   df->Q = tmp_Q;
 
-  ierr = PetscFree(df->g); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->g); CHKERRQ(ierr);
+  ierr = PetscFree(df->g);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->g);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->y); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->y); CHKERRQ(ierr);
+  ierr = PetscFree(df->y);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->y);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->tempv); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->tempv); CHKERRQ(ierr);
+  ierr = PetscFree(df->tempv);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->tempv);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->d); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->d); CHKERRQ(ierr);
+  ierr = PetscFree(df->d);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->d);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->Qd); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->Qd); CHKERRQ(ierr);
+  ierr = PetscFree(df->Qd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->Qd);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->t); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->t); CHKERRQ(ierr);
+  ierr = PetscFree(df->t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->t);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->xplus); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->xplus); CHKERRQ(ierr);
+  ierr = PetscFree(df->xplus);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->xplus);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->tplus); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->tplus); CHKERRQ(ierr);
+  ierr = PetscFree(df->tplus);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->tplus);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->sk); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->sk); CHKERRQ(ierr);
+  ierr = PetscFree(df->sk);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->sk);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->yk); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->yk); CHKERRQ(ierr);
+  ierr = PetscFree(df->yk);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->yk);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->ipt); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->ipt); CHKERRQ(ierr);
+  ierr = PetscFree(df->ipt);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->ipt);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->ipt2); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->ipt2); CHKERRQ(ierr);
+  ierr = PetscFree(df->ipt2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->ipt2);CHKERRQ(ierr);
 
-  ierr = PetscFree(df->uv); CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, &df->uv); CHKERRQ(ierr);
+  ierr = PetscFree(df->uv);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->uv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -440,29 +441,29 @@ PetscErrorCode destroy_df_solver(TAO_DF *df)
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = PetscFree(df->f); CHKERRQ(ierr);
-  ierr = PetscFree(df->a); CHKERRQ(ierr);
-  ierr = PetscFree(df->l); CHKERRQ(ierr);
-  ierr = PetscFree(df->u); CHKERRQ(ierr);
-  ierr = PetscFree(df->x); CHKERRQ(ierr);
+  ierr = PetscFree(df->f);CHKERRQ(ierr);
+  ierr = PetscFree(df->a);CHKERRQ(ierr);
+  ierr = PetscFree(df->l);CHKERRQ(ierr);
+  ierr = PetscFree(df->u);CHKERRQ(ierr);
+  ierr = PetscFree(df->x);CHKERRQ(ierr);
 
   for (i = 0; i < df->cur_num_cp; i ++) {
-    ierr = PetscFree(df->Q[i]); CHKERRQ(ierr);
+    ierr = PetscFree(df->Q[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(df->Q); CHKERRQ(ierr);
-  ierr = PetscFree(df->ipt); CHKERRQ(ierr);
-  ierr = PetscFree(df->ipt2); CHKERRQ(ierr);
-  ierr = PetscFree(df->uv); CHKERRQ(ierr);
-  ierr = PetscFree(df->g); CHKERRQ(ierr);
-  ierr = PetscFree(df->y); CHKERRQ(ierr);
-  ierr = PetscFree(df->tempv); CHKERRQ(ierr);
-  ierr = PetscFree(df->d); CHKERRQ(ierr);
-  ierr = PetscFree(df->Qd); CHKERRQ(ierr);
-  ierr = PetscFree(df->t); CHKERRQ(ierr);
-  ierr = PetscFree(df->xplus); CHKERRQ(ierr);
-  ierr = PetscFree(df->tplus); CHKERRQ(ierr);
-  ierr = PetscFree(df->sk); CHKERRQ(ierr);
-  ierr = PetscFree(df->yk); CHKERRQ(ierr);
+  ierr = PetscFree(df->Q);CHKERRQ(ierr);
+  ierr = PetscFree(df->ipt);CHKERRQ(ierr);
+  ierr = PetscFree(df->ipt2);CHKERRQ(ierr);
+  ierr = PetscFree(df->uv);CHKERRQ(ierr);
+  ierr = PetscFree(df->g);CHKERRQ(ierr);
+  ierr = PetscFree(df->y);CHKERRQ(ierr);
+  ierr = PetscFree(df->tempv);CHKERRQ(ierr);
+  ierr = PetscFree(df->d);CHKERRQ(ierr);
+  ierr = PetscFree(df->Qd);CHKERRQ(ierr);
+  ierr = PetscFree(df->t);CHKERRQ(ierr);
+  ierr = PetscFree(df->xplus);CHKERRQ(ierr);
+  ierr = PetscFree(df->tplus);CHKERRQ(ierr);
+  ierr = PetscFree(df->sk);CHKERRQ(ierr);
+  ierr = PetscFree(df->yk);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -666,7 +667,7 @@ PetscErrorCode solve(TAO_DF *df)
     if (fabs(x[i]) > ProdDELTAsv) ipt[it++] = i;
   }
 
-  ierr = PetscMemzero(t, dim*sizeof(PetscReal)); CHKERRQ(ierr);
+  ierr = PetscMemzero(t, dim*sizeof(PetscReal));CHKERRQ(ierr);
   for (i = 0; i < it; i++){
     tempQ = Q[ipt[i]];
     for (j = 0; j < dim; j++) t[j] += (tempQ[j]*x[ipt[i]]);
@@ -740,7 +741,7 @@ PetscErrorCode solve(TAO_DF *df)
       if (fabs(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
     }
 
-    ierr = PetscMemzero(Qd, dim*sizeof(PetscReal)); CHKERRQ(ierr);
+    ierr = PetscMemzero(Qd, dim*sizeof(PetscReal));CHKERRQ(ierr);
     /* compute Qd = Q*d */
     if (it < it2){
       for (i = 0; i < it; i++){

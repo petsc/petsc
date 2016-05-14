@@ -332,11 +332,9 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes,PCASMType type)
 PetscErrorCode SNESNASMGetType(SNES snes,PCASMType *type)
 {
   PetscErrorCode ierr;
-  PetscErrorCode (*f)(SNES,PCASMType*);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMGetType_C",&f);CHKERRQ(ierr);
-  if (f) {ierr = (f)(snes,type);CHKERRQ(ierr);}
+  ierr = PetscUseMethod(snes,"SNESNASMGetType_C",(SNES,PCASMType*),(snes,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -638,12 +636,10 @@ static PetscErrorCode SNESNASMSetDamping_NASM(SNES snes,PetscReal dmp)
 @*/
 PetscErrorCode SNESNASMGetDamping(SNES snes,PetscReal *dmp)
 {
-  PetscErrorCode (*f)(SNES,PetscReal*);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMGetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {ierr = (f)(snes,dmp);CHKERRQ(ierr);}
+  ierr = PetscUseMethod(snes,"SNESNASMGetDamping_C",(SNES,PetscReal*),(snes,dmp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
