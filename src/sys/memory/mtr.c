@@ -212,6 +212,8 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
     ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
     /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
     head->stack.line[head->stack.currentsize-2] = lineno;
+  } else {
+    head->stack.currentsize = 0;
   }
 #endif
 

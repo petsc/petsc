@@ -1200,13 +1200,14 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   char              *filenameStrip = NULL;
   PetscBool         hasExt;
   size_t            len;
-  p4est_geometry_t  *geom = pforest->topo->geom;
+  p4est_geometry_t  *geom;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
+  geom = pforest->topo->geom;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
   if (!isvtk) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {

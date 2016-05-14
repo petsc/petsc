@@ -28,7 +28,7 @@ int main(int argc,char **args)
   ierr = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
   ierr = PetscHeapStash(h,id,val+10);CHKERRQ(ierr);
   ierr = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
-  ierr = PetscHeapStash(h,id,val+10);
+  ierr = PetscHeapStash(h,id,val+10);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Pop two items, increment, and place in stash:\n");CHKERRQ(ierr);
   ierr = PetscHeapView(h,NULL);CHKERRQ(ierr);
 

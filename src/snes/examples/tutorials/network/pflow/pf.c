@@ -430,7 +430,7 @@ int main(int argc,char ** argv)
   Mat            J;
   SNES           snes;
 
-  PetscInitialize(&argc,&argv,"pfoptions",help);
+  ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Create an empty network object */
@@ -472,29 +472,32 @@ int main(int argc,char ** argv)
   if (!rank) {
     ierr = PetscFree(edges);CHKERRQ(ierr);
   }
-  /* Add network components */
-  
-  genj=0; loadj=0;
-  ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
-  for (i = eStart; i < eEnd; i++) {
-    ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&pfdata->branch[i-eStart]);CHKERRQ(ierr);
-  }
-  ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
-  for (i = vStart; i < vEnd; i++) {
-    ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&pfdata->bus[i-vStart]);CHKERRQ(ierr);
-    if (pfdata->bus[i-vStart].ngen) {
-      for (j = 0; j < pfdata->bus[i-vStart].ngen; j++) {
-	ierr = DMNetworkAddComponent(networkdm,i,componentkey[2],&pfdata->gen[genj++]);CHKERRQ(ierr);
-      }
+
+  /* Add network components only process 0 has any data to add*/
+  if (!rank) {
+    genj=0; loadj=0;
+    ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
+    for (i = eStart; i < eEnd; i++) {
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&pfdata->branch[i-eStart]);CHKERRQ(ierr);
     }
-    if (pfdata->bus[i-vStart].nload) {
-      for (j=0; j < pfdata->bus[i-vStart].nload; j++) {
-	ierr = DMNetworkAddComponent(networkdm,i,componentkey[3],&pfdata->load[loadj++]);CHKERRQ(ierr);
+    ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
+    for (i = vStart; i < vEnd; i++) {
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&pfdata->bus[i-vStart]);CHKERRQ(ierr);
+      if (pfdata->bus[i-vStart].ngen) {
+        for (j = 0; j < pfdata->bus[i-vStart].ngen; j++) {
+          ierr = DMNetworkAddComponent(networkdm,i,componentkey[2],&pfdata->gen[genj++]);CHKERRQ(ierr);
+        }
       }
+      if (pfdata->bus[i-vStart].nload) {
+        for (j=0; j < pfdata->bus[i-vStart].nload; j++) {
+          ierr = DMNetworkAddComponent(networkdm,i,componentkey[3],&pfdata->load[loadj++]);CHKERRQ(ierr);
+        }
+      }
+      /* Add number of variables */
+      ierr = DMNetworkAddNumVariables(networkdm,i,2);CHKERRQ(ierr);
     }
-    /* Add number of variables */
-    ierr = DMNetworkAddNumVariables(networkdm,i,2);CHKERRQ(ierr);
   }
+
   /* Set up DM for use */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
 
@@ -505,7 +508,6 @@ int main(int argc,char ** argv)
     ierr = PetscFree(pfdata->load);CHKERRQ(ierr);
     ierr = PetscFree(pfdata);CHKERRQ(ierr);
   }
-
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) {

@@ -67,9 +67,10 @@ int main(int argc,char **args)
 
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
-#endif
+  return ierr;
+#else
   return 0;
+#endif
 }
 

@@ -27,7 +27,7 @@
 @*/
 PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
 {
-  MPI_Comm         comm=((PetscObject)mat)->comm;
+  MPI_Comm         comm=PetscObjectComm((PetscObject)mat);
   MatSubMatFreeCtx ctx;
   PetscErrorCode   ierr;
   PetscMPIInt      size;
@@ -348,7 +348,7 @@ PetscErrorCode MatConvert_SMF(Mat mat,MatType newtype,Mat *NewMat)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
   PetscFunctionReturn(1);
 }
 

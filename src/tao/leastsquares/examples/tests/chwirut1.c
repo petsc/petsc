@@ -80,8 +80,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
   AppCtx         user;               /* user-defined work context */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-wtype",&wtype,&flg);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"wtype=%d\n",wtype);CHKERRQ(ierr);
   /* Allocate vectors */

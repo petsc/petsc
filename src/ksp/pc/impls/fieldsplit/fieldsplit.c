@@ -319,7 +319,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
-  PC_FieldSplitLink ilink              = jac->head;
+  PC_FieldSplitLink ilink = jac->head;
   PetscBool         fieldsplit_default = PETSC_FALSE,stokes = PETSC_FALSE,coupling = PETSC_FALSE;
   PetscInt          i;
 
@@ -354,13 +354,9 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = DMCreateSubDM(pc->dm, nfields, ifields, &compField, &subdm[i]);CHKERRQ(ierr);
         if (nfields == 1) {
           ierr = PCFieldSplitSetIS(pc, fieldNames[ifields[0]], compField);CHKERRQ(ierr);
-          /* ierr = PetscPrintf(PetscObjectComm((PetscObject)pc), "%s Field Indices:", fieldNames[ifields[0]]);CHKERRQ(ierr);
-             ierr = ISView(compField, NULL);CHKERRQ(ierr); */
         } else {
           ierr = PetscSNPrintf(splitname, sizeof(splitname), "%D", i);CHKERRQ(ierr);
           ierr = PCFieldSplitSetIS(pc, splitname, compField);CHKERRQ(ierr);
-          /* ierr = PetscPrintf(PetscObjectComm((PetscObject)pc), "%s Field Indices:", splitname);CHKERRQ(ierr);
-             ierr = ISView(compField, NULL);CHKERRQ(ierr); */
         }
         ierr = ISDestroy(&compField);CHKERRQ(ierr);
         for (j = 0; j < nfields; ++j) {
@@ -413,6 +409,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = MatFindZeroDiagonals(pc->mat,&zerodiags);CHKERRQ(ierr);
         ierr = ISComplement(zerodiags,nmin,nmax,&rest);CHKERRQ(ierr);
         if (jac->reset) {
+          if (!jac->head) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"At reset jac must have head from previous setup");
           jac->head->is       = rest;
           jac->head->next->is = zerodiags;
         } else {
@@ -430,6 +427,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = ISCreateStride(PetscObjectComm((PetscObject)pc->mat),nmax-nmin,nmin,1,&rest);CHKERRQ(ierr);
         ierr = ISSetIdentity(rest);CHKERRQ(ierr);
         if (jac->reset) {
+          if (!jac->head) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"At reset jac must have head from previous setup");
           jac->head->is       = rest;
           jac->head->next->is = coupling;
         } else {
@@ -469,7 +467,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
   }
-
 
   if (jac->nsplits < 2) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Unhandled case, must have at least two fields, not %d", jac->nsplits);
   PetscFunctionReturn(0);
@@ -1753,7 +1750,7 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (splitname) PetscValidCharPointer(splitname,2);
   PetscValidHeaderSpecific(is,IS_CLASSID,3);
-  ierr = PetscUseMethod(pc,"PCFieldSplitSetIS_C",(PC,const char[],IS),(pc,splitname,is));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetIS_C",(PC,const char[],IS),(pc,splitname,is));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

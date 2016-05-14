@@ -68,7 +68,7 @@ int main(int argc,char **args)
 
   } else {
     ierr = MatGetType(A,&type);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nMatrix type: %s\n",type);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nMatrix type: %s\n",type);CHKERRQ(ierr);
     /* AIJ */
     ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&doTest);CHKERRQ(ierr);
     if (doTest) {

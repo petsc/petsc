@@ -48,7 +48,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_PIPEFCG"
-PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
+static PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_PIPEFCG    *pipefcg;
@@ -84,7 +84,7 @@ PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_PIPEFCG_cycle"
-PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
+static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,idx,kdx,mi;
@@ -268,7 +268,7 @@ PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_PIPEFCG"
-PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
+static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_PIPEFCG    *pipefcg;
@@ -344,7 +344,7 @@ PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_PIPEFCG"
-PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
+static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -376,7 +376,7 @@ PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_PIPEFCG"
-PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
+static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
 {
   KSP_PIPEFCG    *pipefcg = (KSP_PIPEFCG*)ksp->data;
   PetscErrorCode ierr;
@@ -602,7 +602,7 @@ PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_PIPEFCG"
-PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_PIPEFCG    *pipefcg=(KSP_PIPEFCG*)ksp->data;

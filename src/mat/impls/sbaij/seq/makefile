@@ -11,7 +11,7 @@ SOURCEC	 = sbaij.c sbaij2.c sbaijfact.c sbaijfact2.c sro.c sbaijfact3.c \
 SOURCEF	 =
 SOURCEH	 = sbaij.h relax.h
 LIBBASE	 = libpetscmat
-DIRS     = sbstream cholmod
+DIRS     = cholmod
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/sbaij/seq/
 

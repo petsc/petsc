@@ -47,10 +47,10 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
   ierr = PetscSFSetFromOptions(*etoc);CHKERRQ(ierr);
 
   /* determine the number of entries in the column matrix */
-  ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATCOLORING_Comm,*etoc,0,0,0);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeBegin(*etoc,&coldegrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(*etoc,&coldegrees);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATCOLORING_Comm,*etoc,0,0,0);CHKERRQ(ierr);
   ncolentries=0;
   for (i=0;i<cn;i++) {
     ncolentries += coldegrees[i];
@@ -58,19 +58,19 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
   ierr = PetscMalloc1(ncolentries,&colleaf);CHKERRQ(ierr);
 
   /* create the one going the other way by building the leaf set */
-  ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATCOLORING_Comm,*etoc,0,0,0);CHKERRQ(ierr);
   ierr = PetscSFGatherBegin(*etoc,MPIU_INT,rowdata,colleaf);CHKERRQ(ierr);
   ierr = PetscSFGatherEnd(*etoc,MPIU_INT,rowdata,colleaf);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATCOLORING_Comm,*etoc,0,0,0);CHKERRQ(ierr);
 
   /* this one takes mat entries in *columns* to rows -- you never have to actually be able to order the leaf entries. */
   ierr = PetscSFSetGraphLayout(*etor,m->rmap,ncolentries,NULL,PETSC_COPY_VALUES,colleaf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(*etor);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etor,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATCOLORING_Comm,*etor,0,0,0);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeBegin(*etor,&rowdegrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(*etor,&rowdegrees);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etor,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATCOLORING_Comm,*etor,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscFree(rowdata);CHKERRQ(ierr);
   ierr = PetscFree(rowleaf);CHKERRQ(ierr);

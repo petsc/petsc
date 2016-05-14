@@ -11,7 +11,6 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     help.addArgument('MATLAB', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate Matlab'))
-    help.addArgument('MATLAB', '-with-matlab-engine=<bool>',  nargs.ArgBool(None, 0, 'Activate Matlab Engine (need --with-matlab also) '))
     help.addArgument('MATLAB', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))
     help.addArgument('MATLAB', '-with-matlab-arch=<string>',  nargs.ArgString(None, None, 'Use Matlab Architecture (default use first-found)'))
     return
@@ -31,10 +30,6 @@ class Configure(config.package.Package):
           if os.path.isfile(os.path.join('/Applications',dir,'bin','matlab')):
             yield os.path.join('/Applications',dir)
     return
-
-  def alternateConfigureLibrary(self):
-    if self.argDB['with-matlab-engine']:
-      raise RuntimeError('--with-matlab-engine flag also requires --with-matlab flag\n')
 
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''

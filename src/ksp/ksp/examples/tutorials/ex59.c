@@ -1033,7 +1033,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(exact_solution,NULL);CHKERRQ(ierr);
   ierr = VecShift(exact_solution,-0.5);CHKERRQ(ierr);
   ierr = VecScale(exact_solution,100.0);CHKERRQ(ierr);
-  ierr = VecGetSize(exact_solution,&ndofs);
+  ierr = VecGetSize(exact_solution,&ndofs);CHKERRQ(ierr);
   if (dd.pure_neumann) {
     ierr = VecSum(exact_solution,&scalar_value);CHKERRQ(ierr);
     scalar_value = -scalar_value/(PetscScalar)ndofs;
@@ -1078,7 +1078,7 @@ int main(int argc,char **args)
   }
   ierr = VecAXPY(fetidp_solution_all,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  ierr = VecGetSize(fetidp_solution,&ndofs);
+  ierr = VecGetSize(fetidp_solution,&ndofs);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n");CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);

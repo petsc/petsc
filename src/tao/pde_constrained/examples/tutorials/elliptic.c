@@ -726,7 +726,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecGetLocalSize(user->subd,&dsubnlocal);CHKERRQ(ierr);
   ierr = VecSetSizes(user->d,dsubnlocal*user->ns,user->ndata*user->ns);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->d);CHKERRQ(ierr);
-  ierr = PetscMalloc1(user->ns,&user->di_scatter);
+  ierr = PetscMalloc1(user->ns,&user->di_scatter);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(user->d,&lo2,&hi2);CHKERRQ(ierr);
   istart = 0;
@@ -1056,7 +1056,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork, 0);CHKERRQ(ierr);
-  ierr = VecAXPY(user->uwork,-1.0,user->utrue); /* Note: user->utrue */
+  ierr = VecAXPY(user->uwork,-1.0,user->utrue);CHKERRQ(ierr); /* Note: user->utrue */
   ierr = VecExp(user->uwork);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 

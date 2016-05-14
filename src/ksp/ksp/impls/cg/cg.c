@@ -53,7 +53,7 @@ extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_CG"
-PetscErrorCode KSPSetUp_CG(KSP ksp)
+static PetscErrorCode KSPSetUp_CG(KSP ksp)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
@@ -96,7 +96,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_CG"
-PetscErrorCode KSPSolve_CG(KSP ksp)
+static PetscErrorCode KSPSolve_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
@@ -492,7 +492,7 @@ PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPCGSetType_CG"
-static PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
+PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
 

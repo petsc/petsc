@@ -1,9 +1,5 @@
 
 #include <../src/snes/impls/vi/ss/vissimpl.h> /*I "petscsnes.h" I*/
-#include <../include/petsc/private/kspimpl.h>
-#include <../include/petsc/private/matimpl.h>
-#include <../include/petsc/private/dmimpl.h>
-
 
 /*
   SNESVIComputeMeritFunction - Evaluates the merit function for the mixed complementarity problem.
