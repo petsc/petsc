@@ -216,11 +216,14 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         }
         ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-      } else if (jac->psubcomm && !jac->psubcomm->color) {
-        ierr = PetscViewerASCIIGetStdout(PetscSubcommChild(mpjac->psubcomm),&sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = KSPView(*(jac->ksp),sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      } else if (mpjac && jac->ksp && mpjac->psubcomm) {
+        ierr = PetscViewerGetSubViewer(viewer,mpjac->psubcomm->child,&sviewer);CHKERRQ(ierr);
+        if (!mpjac->psubcomm->color) {
+          ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+          ierr = KSPView(*(jac->ksp),sviewer);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerRestoreSubViewer(viewer,mpjac->psubcomm->child,&sviewer);CHKERRQ(ierr);
       }
     } else {
       PetscInt n_global;
