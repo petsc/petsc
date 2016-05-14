@@ -511,7 +511,8 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
    Options Database Keys:
 +  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
 .  -ksp_plot_eigenvalues - plot the computed eigenvalues in an X-window
-.  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and useing LAPACK
+.  -ksp_plot_eigencontours - plot the computed eigenvalues in an X-window with contours
+.  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and using LAPACK
 .  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
 .  -ksp_view_mat binary - save matrix to the default binary viewer
 .  -ksp_view_pmat binary - save matrix used to build preconditioner to the default binary viewer
@@ -702,7 +703,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",NULL,NULL,&flag1);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",NULL,NULL,&flag2);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_plot_eigenontours",NULL,NULL,&flag3);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_plot_eigencontours",NULL,NULL,&flag3);CHKERRQ(ierr);
   if (flag1 || flag2 || flag3) {
     PetscInt    nits,n,i,neig;
     PetscReal   *r,*c;
