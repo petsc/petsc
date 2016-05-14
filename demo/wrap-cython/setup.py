@@ -1,26 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env pytho
 
 #$ python setup.py build_ext --inplace
 
-from numpy.distutils.command import build_src
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Build import cythonize
 
-# a bit of monkeypatching ...
-import Cython.Compiler.Main
-build_src.Pyrex = Cython
-build_src.have_pyrex = True
-def have_pyrex():
-    import sys
-    try:
-        import Cython.Compiler.Main
-        sys.modules['Pyrex'] = Cython
-        sys.modules['Pyrex.Compiler'] = Cython.Compiler
-        sys.modules['Pyrex.Compiler.Main'] = Cython.Compiler.Main
-        return True
-    except ImportError:
-        return False
-build_src.have_pyrex = have_pyrex
+import numpy
+import petsc4py
 
-def configuration(parent_package='',top_path=None):
+def configure():
     INCLUDE_DIRS = []
     LIBRARY_DIRS = []
     LIBRARIES    = []
@@ -38,27 +27,30 @@ def configuration(parent_package='',top_path=None):
         if PETSC_ARCH: pass # XXX should warn ...
         INCLUDE_DIRS += [join(PETSC_DIR, 'include')]
         LIBRARY_DIRS += [join(PETSC_DIR, 'lib')]
-    LIBRARIES += [#'petscts', 'petscsnes', 'petscksp',
-                  #'petscdm', 'petscmat',  'petscvec',
-                  'petsc']
+    LIBRARIES += ['petsc']
 
     # PETSc for Python
-    import petsc4py
     INCLUDE_DIRS += [petsc4py.get_include()]
 
-    # Configuration
-    from numpy.distutils.misc_util import Configuration
-    config = Configuration('', parent_package, top_path)
-    config.add_extension('Bratu3D',
-                         sources = ['Bratu3D.pyx',
-                                    'Bratu3Dimpl.c'],
-                         depends = ['Bratu3Dimpl.h'],
-                         include_dirs=INCLUDE_DIRS + [os.curdir],
-                         libraries=LIBRARIES,
-                         library_dirs=LIBRARY_DIRS,
-                         runtime_library_dirs=LIBRARY_DIRS)
-    return config
+    # NumPy
+    INCLUDE_DIRS += [numpy.get_include()]
 
-if __name__ == "__main__":
-    from numpy.distutils.core import setup
-    setup(**configuration(top_path='').todict())
+    return dict(
+        include_dirs=INCLUDE_DIRS + [os.curdir],
+        libraries=LIBRARIES,
+        library_dirs=LIBRARY_DIRS,
+        runtime_library_dirs=LIBRARY_DIRS,
+    )
+
+extensions = [
+    Extension('Bratu3D',
+              sources = ['Bratu3D.pyx',
+                         'Bratu3Dimpl.c'],
+              depends = ['Bratu3Dimpl.h'],
+              **configure()),
+]
+
+setup(name = "Bratu3D",
+      ext_modules = cythonize(
+          extensions, include_path=[petsc4py.get_include()]),
+)
