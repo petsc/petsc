@@ -188,17 +188,19 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat
     /* pull in vector x->xtmp */
     ierr = VecScatterBegin(sred->scatter,vecs[k],sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sred->scatter,vecs[k],sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* copy vector entires into xred */
-    ierr = VecGetArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
-    if (sub_vecs[k]) {
-      ierr = VecGetOwnershipRange(sub_vecs[k],&st,&ed);CHKERRQ(ierr);
-      ierr = VecGetArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
-      for (i=0; i<ed-st; i++) {
-        LA_sub_vec[i] = x_array[i];
+    if (sub_vecs) {
+      /* copy vector entires into xred */
+      ierr = VecGetArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
+      if (sub_vecs[k]) {
+        ierr = VecGetOwnershipRange(sub_vecs[k],&st,&ed);CHKERRQ(ierr);
+        ierr = VecGetArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
+        for (i=0; i<ed-st; i++) {
+          LA_sub_vec[i] = x_array[i];
+        }
+        ierr = VecRestoreArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
       }
-      ierr = VecRestoreArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
   }
 
   if (isActiveRank(sred->psubcomm)) {
