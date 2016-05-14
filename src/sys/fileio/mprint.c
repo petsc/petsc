@@ -125,7 +125,7 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
     oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
     ierr      = PetscMalloc1(oldLength, &newformat);CHKERRQ(ierr);
   }
-  PetscFormatConvert(format,newformat,oldLength);
+  ierr = PetscFormatConvert(format,newformat,oldLength);CHKERRQ(ierr);
   ierr = PetscStrlen(newformat, &length);CHKERRQ(ierr);
 #if 0
   if (length > len) newformat[len] = '\0';
