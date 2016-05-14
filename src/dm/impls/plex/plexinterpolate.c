@@ -312,7 +312,7 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
 {
   PetscMPIInt        numProcs, rank;
   PetscInt           p, c, d, dof, offset;
-  PetscInt           numLeaves, numRoots, candidatesSize, candidatesRemoteSize, numLeavesInverse;
+  PetscInt           numLeaves, numRoots, candidatesSize, candidatesRemoteSize;
   const PetscInt    *localPoints;
   const PetscSFNode *remotePoints;
   PetscSFNode       *candidates, *candidatesRemote, *claims;
@@ -341,7 +341,7 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &candidateSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(candidateSection, 0, numRoots);CHKERRQ(ierr);
   {
-    PetscInt leaf, root, idx, a, adjSize, *adj = NULL;
+    PetscInt leaf, root, idx, a, *adj = NULL;
     for (p = 0; p < numLeaves; ++p) {
       PetscInt adjSize = PETSC_DETERMINE;
       ierr = DMPlexGetAdjacency_Internal(dm, localPoints[p], PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, &adjSize, &adj);CHKERRQ(ierr);
@@ -426,7 +426,7 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
     PetscHashI      claimshash;
     PetscInt        size, pStart, pEnd, root, joinSize, numLocalNew;
     PetscInt       *remoteOffsets, *localPointsNew, vertices[2];
-    const PetscInt *join = NULL;;
+    const PetscInt *join = NULL;
     PetscSFNode    *remotePointsNew;
     ierr = PetscSFGetMultiSF(pointSF, &sfMulti);CHKERRQ(ierr);
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &claimSection);CHKERRQ(ierr);
