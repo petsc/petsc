@@ -96,11 +96,6 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatView() */
-  /*
-  ierr = MatView(sA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  */
-  /* Assemble MPIBAIJ matrix A */
   ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,NULL,o_nz,NULL,&A);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
@@ -161,7 +156,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatGetSize(), MatGetLocalSize() */
-  ierr = MatGetSize(sA, &i,&j); ierr = MatGetSize(A, &i2,&j2);CHKERRQ(ierr);
+  ierr = MatGetSize(sA, &i,&j); CHKERRQ(ierr);
+  ierr = MatGetSize(A, &i2,&j2);CHKERRQ(ierr);
   i   -= i2; j -= j2;
   if (i || j) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank);CHKERRQ(ierr);
@@ -291,8 +287,6 @@ int main(int argc,char **args)
       ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     }
   }
-  /* ierr = MatView(sA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
-  /* ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);  */
 
   /* Test MatDuplicate() */
   ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
@@ -311,7 +305,6 @@ int main(int argc,char **args)
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&sB);CHKERRQ(ierr);
-
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);

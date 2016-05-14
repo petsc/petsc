@@ -150,7 +150,7 @@ int main(int argc,char **args)
   }
   {
     PetscReal *coords;
-    ierr = PetscMalloc1(m,&coords);
+    ierr = PetscMalloc1(m,&coords);CHKERRQ(ierr);
     /* forms the element stiffness and coordinates */
     for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);

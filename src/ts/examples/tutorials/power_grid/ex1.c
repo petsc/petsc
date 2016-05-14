@@ -177,7 +177,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&ctx.rand);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }

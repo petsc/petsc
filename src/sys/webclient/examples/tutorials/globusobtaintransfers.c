@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   char           buff[4096];
 
-  PetscInitialize(&argc,&argv,NULL,NULL);
+  ierr = PetscInitialize(&argc,&argv,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscGlobusGetTransfers(PETSC_COMM_WORLD,NULL,buff,sizeof(buff));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Transfers are %s\n",buff);CHKERRQ(ierr);
   ierr = PetscFinalize();

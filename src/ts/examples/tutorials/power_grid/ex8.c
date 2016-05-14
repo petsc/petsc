@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   AppCtx         user; /* Application context */
   PetscViewer    viewer;
 
-  PetscInitialize(&argc,&argv,"petscopt_ex8", help);
+  ierr = PetscInitialize(&argc,&argv,"petscopt_ex8", help);if (ierr) return ierr;
 
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);

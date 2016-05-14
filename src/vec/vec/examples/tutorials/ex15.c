@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   int         i, m = 10, rank, size, low, high, ldim, iglobal;
   int         ierr;
 
-  PetscInitialize(&argc, &argv, NULL, help);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-m", &m, NULL);CHKERRQ(ierr);
@@ -75,6 +75,6 @@ int main(int argc, char *argv[])
 
   /* Free data structures */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

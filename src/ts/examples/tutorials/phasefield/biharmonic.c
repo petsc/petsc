@@ -570,6 +570,9 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) yy[2] = .5*theta*(PetscRealPart(1.0+u[i])*PetscLogReal(PetscRealPart(1.0+u[i])/2.0) + 2.0*tol*PetscLogReal(tol));
         else                                          yy[2] = .5*theta*(PetscRealPart(1.0+u[i])*PetscLogReal(PetscRealPart(1.0+u[i])/2.0) + PetscRealPart(1.0-u[i])*PetscLogReal(PetscRealPart(1.0-u[i])/2.0));
         break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"It will always be one of the values");
+        break;
       }
     }
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
@@ -642,6 +645,9 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
           else                                          yy[2] =  PetscRealPart(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
         }
         break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"It will always be one of the values");
+      break;
       }
       if (ctx->energy < 3) {
         max         = PetscMax(max,PetscAbs(yy[1]));

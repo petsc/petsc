@@ -724,7 +724,7 @@ int main(int argc,char ** argv)
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = TSMonitorSet(ts, TSDMNetworkMonitor, monitor, PETSC_NULL);
+    ierr = TSMonitorSet(ts, TSDMNetworkMonitor, monitor, PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

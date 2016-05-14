@@ -97,13 +97,13 @@ int main(int argc,char **argv)
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   if (size == 1) {
     const PetscInt *ia,*ja;
-    ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
+    ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
       for (i=0; i<ia[nrows]; i++) array[i] = one;
       ierr = MatSeqAIJRestoreArray(A,&array);CHKERRQ(ierr);
     }
-    ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
+    ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
   } else {
     Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
     Mat_SeqAIJ *a   = (Mat_SeqAIJ*)(aij->A)->data, *b=(Mat_SeqAIJ*)(aij->B)->data;
@@ -117,8 +117,7 @@ int main(int argc,char **argv)
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                        1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   }
 
   /* Create interpolation between the fine and coarse grids */
