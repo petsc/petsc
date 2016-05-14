@@ -8,7 +8,7 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_GROPPCG"
-PetscErrorCode KSPSetUp_GROPPCG(KSP ksp)
+static PetscErrorCode KSPSetUp_GROPPCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -26,7 +26,7 @@ PetscErrorCode KSPSetUp_GROPPCG(KSP ksp)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_GROPPCG"
-PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
+static PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;

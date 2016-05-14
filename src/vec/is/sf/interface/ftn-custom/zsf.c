@@ -2,12 +2,12 @@
 #include <petsc/private/sfimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define sfview_ SFVIEW
+#define sfview_ PETSCSFVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define sfview_ sfview
+#define sfview_ petscsfview
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL sfview_(PetscSF *sf, PetscViewer *vin, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscsfview_(PetscSF *sf, PetscViewer *vin, PetscErrorCode *ierr)
 {
   PetscViewer v;
 

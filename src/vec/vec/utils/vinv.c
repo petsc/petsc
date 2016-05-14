@@ -3,8 +3,8 @@
      Some useful vector utility functions.
 */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>          /*I "petscvec.h" I*/
-extern MPI_Op VecMax_Local_Op;
-extern MPI_Op VecMin_Local_Op;
+extern MPI_Op MPIU_MAXINDEX_OP;
+extern MPI_Op MPIU_MININDEX_OP;
 
 #undef __FUNCT__
 #define __FUNCT__ "VecStrideSet"
@@ -265,7 +265,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in[0] = max;
     in[1] = rstart+id+start;
-    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,MPIU_MAXINDEX_OP,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
@@ -347,7 +347,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in[0] = min;
     in[1] = rstart+id;
-    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,MPIU_MININDEX_OP,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }

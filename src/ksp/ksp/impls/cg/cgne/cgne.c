@@ -19,7 +19,6 @@ static PetscErrorCode  KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
   PetscFunctionReturn(0);
 }
 
-
 /*
      KSPSetUp_CGNE - Sets up the workspace needed by the CGNE method.
 
@@ -27,7 +26,7 @@ static PetscErrorCode  KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_CGNE"
-PetscErrorCode KSPSetUp_CGNE(KSP ksp)
+static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
@@ -63,7 +62,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_CGNE"
-PetscErrorCode  KSPSolve_CGNE(KSP ksp)
+static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
@@ -233,12 +232,6 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
            KSPCGSetType(), KSPBICG
 
 M*/
-
-extern PetscErrorCode KSPDestroy_CG(KSP);
-extern PetscErrorCode KSPReset_CG(KSP);
-extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
-extern PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP);
-PETSC_EXTERN PetscErrorCode KSPCGSetType_CG(KSP,KSPCGType);
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CGNE"

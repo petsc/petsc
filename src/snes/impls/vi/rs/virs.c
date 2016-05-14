@@ -1,7 +1,5 @@
 
 #include <../src/snes/impls/vi/rs/virsimpl.h> /*I "petscsnes.h" I*/
-#include <petsc/private/kspimpl.h>
-#include <petsc/private/matimpl.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/vecimpl.h>
 
@@ -262,8 +260,6 @@ PetscErrorCode  DMDestroyVI(DM dm)
 /* --------------------------------------------------------------------------------------------------------*/
 
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreateIndexSets_VINEWTONRSLS"
 PetscErrorCode SNESCreateIndexSets_VINEWTONRSLS(SNES snes,Vec X,Vec F,IS *ISact,IS *ISinact)
@@ -433,8 +429,9 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
       if (keptrows) {
         PetscInt       cnt,*nrows,k;
         const PetscInt *krows,*inact;
-        PetscInt       rstart=jac_inact_inact->rmap->rstart;
+        PetscInt       rstart;
 
+        ierr = MatGetOwnershipRange(jac_inact_inact,&rstart,NULL);CHKERRQ(ierr);
         ierr = MatDestroy(&jac_inact_inact);CHKERRQ(ierr);
         ierr = ISDestroy(&IS_act);CHKERRQ(ierr);
 

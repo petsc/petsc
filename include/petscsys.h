@@ -1496,7 +1496,7 @@ PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEn
 /*
    These are MPI operations for MPI_Allreduce() etc
 */
-PETSC_EXTERN MPI_Op PetscMaxSum_Op;
+PETSC_EXTERN MPI_Op MPIU_MAXSUM_OP;
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 PETSC_EXTERN MPI_Op MPIU_SUM;
 #else

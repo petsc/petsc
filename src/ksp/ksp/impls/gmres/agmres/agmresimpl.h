@@ -31,7 +31,7 @@ typedef struct {
   PetscBLASInt *select;         /* array used to select the Schur vectors to order */
   PetscScalar  *temp,*wbufptr;
   PetscScalar  *tau;            /* Scalar factors of the elementary reflectors in xgeqrf */
-
+  PetscMPIInt  tag;
 } KSP_AGMRES;
 PETSC_EXTERN PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis, KSP_AGMRESComputeShifts, KSP_AGMRESRoddec;
 /* vector names */

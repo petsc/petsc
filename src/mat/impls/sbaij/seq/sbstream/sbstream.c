@@ -144,7 +144,7 @@ PetscErrorCode MatCreateSeqSBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt 
   ierr           = MatCreate(comm,A);CHKERRQ(ierr);
   ierr           = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
   ierr           = MatSetType(*A,MATSEQSBSTRM);CHKERRQ(ierr);
-  ierr           = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*A,bs,nz,(PetscInt*)nnz);CHKERRQ(ierr);
+  ierr           = MatSeqSBAIJSetPreallocation(*A,bs,nz,(PetscInt*)nnz);CHKERRQ(ierr);
   (*A)->rmap->bs = bs;
   PetscFunctionReturn(0);
 }

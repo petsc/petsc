@@ -163,7 +163,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,nrows*bs,ncols*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(C,bs,0,lens);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(C,bs,0,lens);CHKERRQ(ierr);
   }
   c = (Mat_SeqSBAIJ*)(C->data);
   for (i=0; i<nrows; i++) {

@@ -136,7 +136,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,1,0,rowlengths);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -290,7 +290,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,M
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,browlengths);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
 
   b  = (Mat_SeqSBAIJ*)(B->data);

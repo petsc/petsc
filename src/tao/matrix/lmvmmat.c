@@ -1,6 +1,7 @@
 #include <../src/tao/matrix/lmvmmat.h>   /*I "lmvmmat.h" */
 #include <petsctao.h>  /*I "petsctao.h" */
 #include <petscksp.h>
+#include <petsc/private/petscimpl.h>
 
 /* This is a vile hack */
 #if defined(PETSC_USE_COMPLEX)

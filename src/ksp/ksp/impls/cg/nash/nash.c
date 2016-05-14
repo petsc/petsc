@@ -90,8 +90,7 @@ PetscErrorCode  KSPNASHGetObjFcn(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_NASH"
-
-PetscErrorCode KSPSolve_NASH(KSP ksp)
+static PetscErrorCode KSPSolve_NASH(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "NASH is not available for complex systems");
@@ -586,7 +585,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_NASH"
-PetscErrorCode KSPSetUp_NASH(KSP ksp)
+static PetscErrorCode KSPSetUp_NASH(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -601,7 +600,7 @@ PetscErrorCode KSPSetUp_NASH(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_NASH"
-PetscErrorCode KSPDestroy_NASH(KSP ksp)
+static PetscErrorCode KSPDestroy_NASH(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -657,7 +656,7 @@ static PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_NASH"
-PetscErrorCode KSPSetFromOptions_NASH(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_NASH(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_NASH       *cg = (KSP_NASH*)ksp->data;

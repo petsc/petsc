@@ -7,7 +7,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_MINRES"
-PetscErrorCode KSPSetUp_MINRES(KSP ksp)
+static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -21,7 +21,7 @@ PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_MINRES"
-PetscErrorCode  KSPSolve_MINRES(KSP ksp)
+static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 {
   PetscErrorCode    ierr;
   PetscInt          i;

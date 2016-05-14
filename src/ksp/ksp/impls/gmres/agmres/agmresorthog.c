@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include <agmresimpl.h>
+#include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 /*
  *  This file implements the RODDEC algorithm : its purpose is to orthogonalize a set of vectors distributed across several processes. These processes are organized in a virtual ring.
  * References : [1] Sidje, Roger B. Alternatives for parallel Krylov subspace basis computation. Numer. Linear Algebra Appl. 4 (1997), no. 4, 305-331
@@ -131,9 +131,9 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   PetscMPIInt    rank     = agmres->rank;
   PetscMPIInt    First    = agmres->First;
   PetscMPIInt    Last     = agmres->Last;
-  PetscBLASInt   nloc,pas,len;
-  PetscInt       d, i, j, k;
-  PetscInt       pos,tag;
+  PetscBLASInt   pas,len,bnloc,bpos;
+  PetscInt       nloc,d, i, j, k;
+  PetscInt       pos;
   PetscReal      c, s, rho, Ajj, val, tt, old;
   PetscScalar    *col;
   MPI_Status     status;
@@ -142,19 +142,19 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-  tag  = 0x666;
   ierr = PetscLogEventBegin(KSP_AGMRESRoddec,ksp,0,0,0);CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->Rloc, N*N*sizeof(PetscScalar));CHKERRQ(ierr);
   /* check input arguments */
   if (nvec < 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "The number of input vectors shoud be positive");
   ierr = VecGetLocalSize(VEC_V(0), &nloc);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(nloc,&bnloc);CHKERRQ(ierr);
   if (nvec > nloc) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "In QR factorization, the number of local rows should be greater or equal to the number of columns");
   pas = 1;
   k   = 0;
   /* Copy the vectors of the basis */
   for (j = 0; j < nvec; j++) {
     ierr = VecGetArray(VEC_V(j), &col);CHKERRQ(ierr);
-    PetscStackCallBLAS("BLAScopy",BLAScopy_(&nloc, col, &pas, &Qloc[j*nloc], &pas));
+    PetscStackCallBLAS("BLAScopy",BLAScopy_(&bnloc, col, &pas, &Qloc[j*nloc], &pas));
     ierr = VecRestoreArray(VEC_V(j), &col);CHKERRQ(ierr);
   }
   /* Each process performs a local QR on its own block */
@@ -181,10 +181,10 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   for (d = 0; d < nvec; d++) {
     len = nvec - d;
     if (rank == First) {
-      PetscStackCallBLAS("BLAScopy",BLAScopy_(&len, &(Qloc[d*nloc+d]), &nloc, &(wbufptr[d]), &pas));
-      ierr = MPI_Send(&(wbufptr[d]), len, MPIU_SCALAR, rank + 1, tag, comm);CHKERRQ(ierr);
+      PetscStackCallBLAS("BLAScopy",BLAScopy_(&len, &(Qloc[d*nloc+d]), &bnloc, &(wbufptr[d]), &pas));
+      ierr = MPI_Send(&(wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm);CHKERRQ(ierr);
     } else {
-      ierr = MPI_Recv(&(wbufptr[d]), len, MPIU_SCALAR, rank - 1, tag, comm, &status);CHKERRQ(ierr);
+      ierr = MPI_Recv(&(wbufptr[d]), len, MPIU_SCALAR, rank - 1, agmres->tag, comm, &status);CHKERRQ(ierr);
       /*Elimination of Rloc(1,d)*/
       c    = wbufptr[d];
       s    = Qloc[d*nloc];
@@ -197,7 +197,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
       }
       Qloc[d*nloc] = rho;
       if (rank != Last) {
-        ierr = MPI_Send(& (wbufptr[d]), len, MPIU_SCALAR, rank + 1, tag, comm);CHKERRQ(ierr);
+        ierr = MPI_Send(& (wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm);CHKERRQ(ierr);
       }
       /* zero-out the d-th diagonal of Rloc ...*/
       for (j = d + 1; j < nvec; j++) {
@@ -223,8 +223,9 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   if (rank == Last) {
     for (d = 0; d < nvec; d++) {
       pos    = nvec - d;
+      ierr = PetscBLASIntCast(pos,&bpos);CHKERRQ(ierr);
       sgn[d] = PetscSign(*RLOC(d,d));
-      PetscStackCallBLAS("BLASscal",BLASscal_(&pos, &(sgn[d]), RLOC(d,d), &N));
+      PetscStackCallBLAS("BLASscal",BLASscal_(&bpos, &(sgn[d]), RLOC(d,d), &N));
     }
   }
   /*BroadCast Rloc to all other processes
@@ -258,14 +259,15 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   PetscMPIInt    Iright   = agmres->Iright, Ileft = agmres->Ileft;
   PetscScalar    *y, *zloc;
   PetscErrorCode ierr;
-  PetscInt       nloc,tag,d, len, i, j;
-  PetscInt       dpt,pas;
+  PetscInt       nloc,d, len, i, j;
+  PetscBLASInt   bnvec,pas,blen;
+  PetscInt       dpt;
   PetscReal      c, s, rho, zp, zq, yd, tt;
   MPI_Status     status;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(nvec,&bnvec);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-  tag  = 0x666;
   pas  = 1;
   ierr = VecGetLocalSize(VEC_V(0), &nloc);CHKERRQ(ierr);
   ierr = PetscMalloc1(nvec, &y);CHKERRQ(ierr);
@@ -276,11 +278,11 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
     for (i = 0; i < nvec; i++) y[i] = sgn[i] * y[i];
   }
   for (i = 0; i < nloc; i++) zloc[i] = 0.0;
-  if (agmres->size == 1) PetscStackCallBLAS("BLAScopy",BLAScopy_(&nvec, y, &pas, &(zloc[0]), &pas));
+  if (agmres->size == 1) PetscStackCallBLAS("BLAScopy",BLAScopy_(&bnvec, y, &pas, &(zloc[0]), &pas));
   else {
     for (d = nvec - 1; d >= 0; d--) {
       if (rank == First) {
-        ierr = MPI_Recv(&(zloc[d]), 1, MPIU_SCALAR, Iright, tag, comm, &status);CHKERRQ(ierr);
+        ierr = MPI_Recv(&(zloc[d]), 1, MPIU_SCALAR, Iright, agmres->tag, comm, &status);CHKERRQ(ierr);
       } else {
         for (j = nvec - 1; j >= d + 1; j--) {
           i         = j - d;
@@ -296,14 +298,14 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
           zq      = zloc[0];
           y[d]    =      c * zp + s * zq;
           zloc[0] =   -s * zp + c * zq;
-          ierr    = MPI_Send(&(y[d]), 1, MPIU_SCALAR, Ileft, tag, comm);CHKERRQ(ierr);
+          ierr    = MPI_Send(&(y[d]), 1, MPIU_SCALAR, Ileft, agmres->tag, comm);CHKERRQ(ierr);
         } else {
-          ierr    = MPI_Recv(&yd, 1, MPIU_SCALAR, Iright, tag, comm, &status);CHKERRQ(ierr);
+          ierr    = MPI_Recv(&yd, 1, MPIU_SCALAR, Iright, agmres->tag, comm, &status);CHKERRQ(ierr);
           zp      = yd;
           zq      = zloc[0];
           yd      =      c * zp + s * zq;
           zloc[0] =   -s * zp + c * zq;
-          ierr    = MPI_Send(&yd, 1, MPIU_SCALAR, Ileft, tag, comm);CHKERRQ(ierr);
+          ierr    = MPI_Send(&yd, 1, MPIU_SCALAR, Ileft, agmres->tag, comm);CHKERRQ(ierr);
         }
       }
     }
@@ -312,10 +314,11 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
     dpt = j * nloc + j;
     if (tloc[j] != 0.0) {
       len       = nloc - j;
+      ierr      = PetscBLASIntCast(len,&blen);CHKERRQ(ierr); 
       rho       = Qloc[dpt];
       Qloc[dpt] = 1.0;
-      tt        = tloc[j] * (BLASdot_(&len, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));
-      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&len, &tt, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));
+      tt        = tloc[j] * (BLASdot_(&blen, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));
+      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blen, &tt, &(Qloc[dpt]), &pas, &(zloc[j]), &pas));
       Qloc[dpt] = rho;
     }
   }
