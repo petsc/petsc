@@ -17,9 +17,9 @@ run: build
 	${MPIEXEC} ${PYTHON} ${SCRIPT}.py
 
 ${MODULE}.so: ${MODULE}.pyx ${MODULE}impl.h ${MODULE}impl.c
-	CC=${CC} F90=${FC} LDSHARED='${CLINKER} -shared' \
+	CC=${CC} F90=${FC} \
 	${PYTHON} setup.py -q build_ext --inplace
-	${RM} -r build ${MODULE}_wrap.c
+	${RM} -r build ${MODULE}.c
 
 .PHONY:clean
 clean::
