@@ -1251,6 +1251,7 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
     petsc_history = 0;
   }
+  ierr = PetscOptionsHelpPrintedDestroy(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
 
   ierr = PetscInfoAllow(PETSC_FALSE,NULL);CHKERRQ(ierr);
 

@@ -2240,7 +2240,7 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
 .    -snes_compare_explicit_draw  - Compare the computed Jacobian to the finite difference Jacobian and draw the result
 .    -snes_compare_explicit_contour  - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
 .    -snes_compare_operator  - Make the comparison options above use the operator instead of the preconditioning matrix
-.    -snes_compare_coloring - Compute the finite differece Jacobian using coloring and display norms of difference
+.    -snes_compare_coloring - Compute the finite difference Jacobian using coloring and display norms of difference
 .    -snes_compare_coloring_display - Compute the finite differece Jacobian using coloring and display verbose differences
 .    -snes_compare_coloring_threshold - Display only those matrix entries that differ by more than a given threshold
 .    -snes_compare_coloring_threshold_atol - Absolute tolerance for difference in matrix entries to be displayed by -snes_compare_coloring_threshold
