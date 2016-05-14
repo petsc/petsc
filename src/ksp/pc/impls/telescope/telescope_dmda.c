@@ -855,13 +855,15 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
 
     /* copy vector entires into xred */
     ierr = VecGetArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
-    if (sub_vecs[k]) {
-      ierr = VecGetOwnershipRange(sub_vecs[k],&st,&ed);CHKERRQ(ierr);
-      ierr = VecGetArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
-      for (i=0; i<ed-st; i++) {
-        LA_sub_vec[i] = x_array[i];
+    if (sub_vecs) {
+      if (sub_vecs[k]) {
+        ierr = VecGetOwnershipRange(sub_vecs[k],&st,&ed);CHKERRQ(ierr);
+        ierr = VecGetArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
+        for (i=0; i<ed-st; i++) {
+          LA_sub_vec[i] = x_array[i];
+        }
+        ierr = VecRestoreArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
       }
-      ierr = VecRestoreArray(sub_vecs[k],&LA_sub_vec);CHKERRQ(ierr);
     }
     ierr = VecRestoreArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
   }
