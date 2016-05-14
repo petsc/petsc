@@ -801,7 +801,7 @@ runex32_cholmod:
 runex32_cholmod_seqsbaij:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dm_mat_type sbaij -pc_factor_mat_solver_package cholmod -ksp_monitor_short -pc_type cholesky -ksp_view > ex32.tmp 2>&1;\
 	if (${DIFF} output/ex32_cholmod_sbaij.out ex32.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex32_cholmod, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex32_cholmod_seqsbai, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; 
 runex33:
 	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 > ex33.tmp 2>&1; \

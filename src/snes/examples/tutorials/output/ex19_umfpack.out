@@ -36,12 +36,11 @@ SNES Object: 1 MPI processes
       factor fill ratio given 0., needed 0.
         Factored matrix follows:
           Mat Object:           1 MPI processes
-            type: seqaij
+            type: umfpack
             rows=676, cols=676
             package used to perform factorization: umfpack
             total: nonzeros=0, allocated nonzeros=0
             total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
               UMFPACK run parameters:
                 Control[UMFPACK_PRL]: 1.
                 Control[UMFPACK_STRATEGY]: 0.

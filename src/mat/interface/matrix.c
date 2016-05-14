@@ -738,6 +738,12 @@ PetscErrorCode MatSetUp(Mat A)
     ierr = PetscInfo(A,"Warning not preallocating matrix storage\n");CHKERRQ(ierr);
     ierr = (*A->ops->setup)(A);CHKERRQ(ierr);
   }
+  if (A->rmap->n < 0 || A->rmap->N < 0) {
+    ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  }
+  if (A->cmap->n < 0 || A->cmap->N < 0) {
+    ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  }
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -2761,6 +2767,21 @@ PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
   if (!mat->ops->getinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
   ierr = (*mat->ops->getinfo)(mat,flag,info);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetInfo_External"
+/*
+   This is used by external packages where it is not easy to get the info from the actual 
+   matrix factorization.
+*/
+PetscErrorCode MatGetInfo_External(Mat A,MatInfoType flag,MatInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(info,sizeof(MatInfo));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
