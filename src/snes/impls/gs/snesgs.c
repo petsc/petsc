@@ -147,7 +147,11 @@ PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt * sweeps)
 #define __FUNCT__ "SNESReset_NGS"
 PetscErrorCode SNESReset_NGS(SNES snes)
 {
+  SNES_NGS       *gs = (SNES_NGS*)snes->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = ISColoringDestroy(&gs->coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
