@@ -10,14 +10,14 @@ SNES Object: 1 MPI processes
   total number of linear solver iterations=10
   total number of function evaluations=4
   norm schedule ALWAYS
-  SNESLineSearch Object:   1 MPI processes
+  SNESLineSearch Object: 1 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
-  KSP Object:   1 MPI processes
+  KSP Object: 1 MPI processes
     type: gmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
       GMRES: happy breakdown tolerance 1e-30
@@ -25,10 +25,10 @@ SNES Object: 1 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object:   1 MPI processes
+  PC Object: 1 MPI processes
     type: jacobi
     linear system matrix = precond matrix:
-    Mat Object:     1 MPI processes
+    Mat Object: 1 MPI processes
       type: seqaij
       rows=5, cols=5
       total: nonzeros=11, allocated nonzeros=15

@@ -20,7 +20,7 @@ Tao Object: 3 MPI processes
       CG Type: fr
       Gradient steps: 0
       Reset steps: 0
-  TaoLineSearch Object:   3 MPI processes
+  TaoLineSearch Object: 3 MPI processes
     type: more-thuente
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
   Residual in Function/Gradient:=0.00149195

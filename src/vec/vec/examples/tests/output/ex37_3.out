@@ -9,11 +9,11 @@ Vec Object: 2 MPI processes
   type: nest
   VecNest, rows=2,  structure: 
   (0) : type=nest, rows=6 
-    Vec Object:     2 MPI processes
+    Vec Object: 2 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=mpi, rows=3 
-        Vec Object:         2 MPI processes
+        Vec Object: 2 MPI processes
           type: mpi
         Process [0]
         1.
@@ -21,7 +21,7 @@ Vec Object: 2 MPI processes
         Process [1]
         1.
       (1) : type=mpi, rows=3 
-        Vec Object:         2 MPI processes
+        Vec Object: 2 MPI processes
           type: mpi
         Process [0]
         2.
@@ -29,11 +29,11 @@ Vec Object: 2 MPI processes
         Process [1]
         2.
   (1) : type=nest, rows=6 
-    Vec Object:     2 MPI processes
+    Vec Object: 2 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=mpi, rows=3 
-        Vec Object:         2 MPI processes
+        Vec Object: 2 MPI processes
           type: mpi
         Process [0]
         3.
@@ -41,7 +41,7 @@ Vec Object: 2 MPI processes
         Process [1]
         3.
       (1) : type=mpi, rows=3 
-        Vec Object:         2 MPI processes
+        Vec Object: 2 MPI processes
           type: mpi
         Process [0]
         7.20032

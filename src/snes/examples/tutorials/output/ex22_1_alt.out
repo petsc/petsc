@@ -15,14 +15,14 @@ SNES Object: 2 MPI processes
   total number of function evaluations=774
   norm schedule ALWAYS
   total number of grid sequence refinements=2
-  SNESLineSearch Object:   2 MPI processes
+  SNESLineSearch Object: 2 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
-  KSP Object:   2 MPI processes
+  KSP Object: 2 MPI processes
     type: fgmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
@@ -30,12 +30,12 @@ SNES Object: 2 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object:   2 MPI processes
+  PC Object: 2 MPI processes
     type: mg
       MG: type is FULL, levels=3 cycles=v
         Not using Galerkin computed coarse grid matrices
     Coarse grid solver -- level -------------------------------
-      KSP Object:      (mg_coarse_)       2 MPI processes
+      KSP Object: (mg_coarse_) 2 MPI processes
         type: gmres
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
@@ -43,10 +43,10 @@ SNES Object: 2 MPI processes
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object:      (mg_coarse_)       2 MPI processes
+      PC Object: (mg_coarse_) 2 MPI processes
         type: none
         linear system matrix = precond matrix:
-        Mat Object:         2 MPI processes
+        Mat Object: 2 MPI processes
           type: mffd
           rows=21, cols=21
             Matrix-free approximation:
@@ -54,7 +54,7 @@ SNES Object: 2 MPI processes
               Using wp compute h routine
                   Does not compute normU
     Down solver (pre-smoother) on level 1 -------------------------------
-      KSP Object:      (mg_levels_1_)       2 MPI processes
+      KSP Object: (mg_levels_1_) 2 MPI processes
         type: gmres
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
@@ -63,10 +63,10 @@ SNES Object: 2 MPI processes
         left preconditioning
         using nonzero initial guess
         using NONE norm type for convergence test
-      PC Object:      (mg_levels_1_)       2 MPI processes
+      PC Object: (mg_levels_1_) 2 MPI processes
         type: none
         linear system matrix = precond matrix:
-        Mat Object:         2 MPI processes
+        Mat Object: 2 MPI processes
           type: mffd
           rows=39, cols=39
             Matrix-free approximation:
@@ -75,7 +75,7 @@ SNES Object: 2 MPI processes
                   Does not compute normU
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
-      KSP Object:      (mg_levels_2_)       2 MPI processes
+      KSP Object: (mg_levels_2_) 2 MPI processes
         type: gmres
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
@@ -84,10 +84,10 @@ SNES Object: 2 MPI processes
         left preconditioning
         using nonzero initial guess
         using NONE norm type for convergence test
-      PC Object:      (mg_levels_2_)       2 MPI processes
+      PC Object: (mg_levels_2_) 2 MPI processes
         type: none
         linear system matrix = precond matrix:
-        Mat Object:         2 MPI processes
+        Mat Object: 2 MPI processes
           type: mffd
           rows=75, cols=75
             Matrix-free approximation:
@@ -96,7 +96,7 @@ SNES Object: 2 MPI processes
                   Does not compute normU
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
-    Mat Object:     2 MPI processes
+    Mat Object: 2 MPI processes
       type: mffd
       rows=75, cols=75
         Matrix-free approximation:

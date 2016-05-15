@@ -1,4 +1,4 @@
-DM Object:Simplicial Mesh 4 MPI processes
+DM Object: Simplicial Mesh 4 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
 orientation is missing
@@ -344,7 +344,7 @@ PetscSF Object: 4 MPI processes
   [2]    23 <- 15
   [3] Roots referenced by my leaves, by rank
 Symmetric gradient null space: PASS
-Mat Object:Reference Tree Injector 1 MPI processes
+Mat Object: Reference Tree Injector 1 MPI processes
   type: seqaij
 row 0: (0, 1.11022e-16)  (2, 0.)  (10, 1.) 
 row 1: (1, 1.11022e-16)  (3, 0.)  (11, 1.) 

@@ -9,7 +9,7 @@ SNES Object: 1 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=1
   total number of function evaluations=2
-  KSP Object:   1 MPI processes
+  KSP Object: 1 MPI processes
     type: fgmres
       GMRES: restart=100, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
@@ -17,12 +17,12 @@ SNES Object: 1 MPI processes
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object:   1 MPI processes
+  PC Object: 1 MPI processes
     type: fieldsplit
       FieldSplit with ADDITIVE composition: total splits = 2
       Solver info for each split is in the following KSP objects:
       Split number 0 Defined by IS
-      KSP Object:      (fieldsplit_0_)       1 MPI processes
+      KSP Object: (fieldsplit_0_) 1 MPI processes
         type: fgmres
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
@@ -31,7 +31,7 @@ SNES Object: 1 MPI processes
         right preconditioning
         has attached null space
         using UNPRECONDITIONED norm type for convergence test
-      PC Object:      (fieldsplit_0_)       1 MPI processes
+      PC Object: (fieldsplit_0_) 1 MPI processes
         type: fieldsplit
           FieldSplit with Schur preconditioner, factorization FULL
           Preconditioner for the Schur complement formed from the block diagonal part of A11
@@ -39,20 +39,20 @@ SNES Object: 1 MPI processes
           Split number 0 Defined by IS
           Split number 1 Defined by IS
           KSP solver for A00 block 
-            KSP Object:            (fieldsplit_0_fieldsplit_velocity_)             1 MPI processes
+            KSP Object: (fieldsplit_0_fieldsplit_velocity_) 1 MPI processes
               type: preonly
               maximum iterations=10000, initial guess is zero
               tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
-            PC Object:            (fieldsplit_0_fieldsplit_velocity_)             1 MPI processes
+            PC Object: (fieldsplit_0_fieldsplit_velocity_) 1 MPI processes
               type: lu
                 LU: out-of-place factorization
                 tolerance for zero pivot 2.22045e-14
                 matrix ordering: nd
                 factor fill ratio given 5., needed 1.17778
                   Factored matrix follows:
-                    Mat Object:                     1 MPI processes
+                    Mat Object: 1 MPI processes
                       type: seqaij
                       rows=18, cols=18
                       package used to perform factorization: petsc
@@ -60,14 +60,14 @@ SNES Object: 1 MPI processes
                       total number of mallocs used during MatSetValues calls =0
                         using I-node routines: found 8 nodes, limit used is 5
               linear system matrix = precond matrix:
-              Mat Object:               1 MPI processes
+              Mat Object: 1 MPI processes
                 type: seqaij
                 rows=18, cols=18
                 total: nonzeros=180, allocated nonzeros=180
                 total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 9 nodes, limit used is 5
           KSP solver for S = A11 - A10 inv(A00) A01 
-            KSP Object:            (fieldsplit_0_fieldsplit_pressure_)             1 MPI processes
+            KSP Object: (fieldsplit_0_fieldsplit_pressure_) 1 MPI processes
               type: gmres
                 GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
                 GMRES: happy breakdown tolerance 1e-30
@@ -76,42 +76,42 @@ SNES Object: 1 MPI processes
               left preconditioning
               has attached null space
               using PRECONDITIONED norm type for convergence test
-            PC Object:            (fieldsplit_0_fieldsplit_pressure_)             1 MPI processes
+            PC Object: (fieldsplit_0_fieldsplit_pressure_) 1 MPI processes
               type: jacobi
               linear system matrix followed by preconditioner matrix:
-              Mat Object:               1 MPI processes
+              Mat Object: 1 MPI processes
                 type: schurcomplement
                 rows=9, cols=9
                   Schur complement A11 - A10 inv(A00) A01
                   A11
-                    Mat Object:                     1 MPI processes
+                    Mat Object: 1 MPI processes
                       type: seqaij
                       rows=9, cols=9
                       total: nonzeros=41, allocated nonzeros=41
                       total number of mallocs used during MatSetValues calls =0
                         not using I-node routines
                   A10
-                    Mat Object:                     1 MPI processes
+                    Mat Object: 1 MPI processes
                       type: seqaij
                       rows=9, cols=18
                       total: nonzeros=78, allocated nonzeros=78
                       total number of mallocs used during MatSetValues calls =0
                         not using I-node routines
                   KSP of A00
-                    KSP Object:                    (fieldsplit_0_fieldsplit_velocity_)                     1 MPI processes
+                    KSP Object: (fieldsplit_0_fieldsplit_velocity_) 1 MPI processes
                       type: preonly
                       maximum iterations=10000, initial guess is zero
                       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                       left preconditioning
                       using NONE norm type for convergence test
-                    PC Object:                    (fieldsplit_0_fieldsplit_velocity_)                     1 MPI processes
+                    PC Object: (fieldsplit_0_fieldsplit_velocity_) 1 MPI processes
                       type: lu
                         LU: out-of-place factorization
                         tolerance for zero pivot 2.22045e-14
                         matrix ordering: nd
                         factor fill ratio given 5., needed 1.17778
                           Factored matrix follows:
-                            Mat Object:                             1 MPI processes
+                            Mat Object: 1 MPI processes
                               type: seqaij
                               rows=18, cols=18
                               package used to perform factorization: petsc
@@ -119,47 +119,47 @@ SNES Object: 1 MPI processes
                               total number of mallocs used during MatSetValues calls =0
                                 using I-node routines: found 8 nodes, limit used is 5
                       linear system matrix = precond matrix:
-                      Mat Object:                       1 MPI processes
+                      Mat Object: 1 MPI processes
                         type: seqaij
                         rows=18, cols=18
                         total: nonzeros=180, allocated nonzeros=180
                         total number of mallocs used during MatSetValues calls =0
                           using I-node routines: found 9 nodes, limit used is 5
                   A01
-                    Mat Object:                     1 MPI processes
+                    Mat Object: 1 MPI processes
                       type: seqaij
                       rows=18, cols=9
                       total: nonzeros=78, allocated nonzeros=78
                       total number of mallocs used during MatSetValues calls =0
                         using I-node routines: found 9 nodes, limit used is 5
-              Mat Object:               1 MPI processes
+              Mat Object: 1 MPI processes
                 type: seqaij
                 rows=9, cols=9
                 total: nonzeros=41, allocated nonzeros=41
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object:         1 MPI processes
+        Mat Object: 1 MPI processes
           type: seqaij
           rows=27, cols=27
           total: nonzeros=377, allocated nonzeros=377
           total number of mallocs used during MatSetValues calls =0
             using I-node routines: found 17 nodes, limit used is 5
       Split number 1 Defined by IS
-      KSP Object:      (fieldsplit_temperature_)       1 MPI processes
+      KSP Object: (fieldsplit_temperature_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
-      PC Object:      (fieldsplit_temperature_)       1 MPI processes
+      PC Object: (fieldsplit_temperature_) 1 MPI processes
         type: lu
           LU: out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 1.
             Factored matrix follows:
-              Mat Object:               1 MPI processes
+              Mat Object: 1 MPI processes
                 type: seqaij
                 rows=1, cols=1
                 package used to perform factorization: petsc
@@ -167,20 +167,20 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Mat Object:         1 MPI processes
+        Mat Object: 1 MPI processes
           type: seqaij
           rows=1, cols=1
           total: nonzeros=1, allocated nonzeros=1
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     linear system matrix = precond matrix:
-    Mat Object:     1 MPI processes
+    Mat Object: 1 MPI processes
       type: seqaij
       rows=28, cols=28
       total: nonzeros=428, allocated nonzeros=428
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 17 nodes, limit used is 5
-  SNESLineSearch Object:   1 MPI processes
+  SNESLineSearch Object: 1 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
