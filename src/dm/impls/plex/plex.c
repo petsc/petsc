@@ -793,15 +793,11 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 
       ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
-      bdof = PetscAbs(dof) - cdof;
-      if (bdof) {
-        if (bs < 0) {
-          bs = bdof;
-        } else if (bs != bdof) {
-          /* Layout does not admit a pointwise block size */
-          bs = 1;
-          break;
-        }
+      dof  = dof < 0 ? -(dof+1) : dof;
+      bdof = cdof && (dof-cdof) ? 1 : dof;
+      if (dof) {
+        if (bs < 0)          {bs = bdof;}
+        else if (bs != bdof) {bs = 1; break;}
       }
     }
     /* Must have same blocksize on all procs (some might have no points) */
