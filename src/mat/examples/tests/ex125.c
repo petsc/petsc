@@ -1,4 +1,4 @@
-
+ 
 static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist, mumps and mkl_pardiso).\n\
 Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
@@ -134,6 +134,19 @@ int main(int argc,char **args)
   for (nfact = 0; nfact < 2; nfact++) {
     if (!rank) printf(" %d-the LU numfactorization \n",nfact);
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_SUPERLU_DIST)
+    { /* Test MatSuperluDistGetDiagU() 
+       -- input: matrix factor F; output: main diagonal of matrix U on all processes */
+    PetscInt    M;
+    PetscScalar *diag;
+
+    ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc1(M,&diag);CHKERRQ(ierr);
+    ierr = MatSuperluDistGetDiagU(F,diag);CHKERRQ(ierr);
+    ierr = PetscFree(diag);CHKERRQ(ierr);
+    }
+#endif
 
     /* Test MatMatSolve() */
     if (testMatMatSolve) { 
