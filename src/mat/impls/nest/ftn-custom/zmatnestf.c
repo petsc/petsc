@@ -27,12 +27,26 @@ PETSC_EXTERN void PETSC_STDCALL  matnestgetiss_(Mat *A,IS rows[],IS cols[], int 
 
 PETSC_EXTERN void PETSC_STDCALL matnestgetsubmats_(Mat *A,PetscInt *M,PetscInt *N,Mat *sub,int *ierr)
 {
+  PetscInt i,j,m,n;
   Mat **mat;
-  PetscInt i,j;
-  *ierr = MatNestGetSubMats(*A,M,N,&mat);
-  for (i=0; i<(*M);i++){
-    for (j=0;j<(*N);j++){
-      sub[j + (*N) * i] = mat[i][j];
+
+  CHKFORTRANNULLINTEGER(M);
+  CHKFORTRANNULLINTEGER(N);
+  CHKFORTRANNULLOBJECT(sub);
+
+  *ierr = MatNestGetSubMats(*A,&m,&n,&mat);
+
+  if (M) {
+    *M = m;
+  }
+  if (N) {
+    *N = n;
+  }
+  if (sub) {
+    for (i=0; i<m; i++) {
+      for (j=0; j<n; j++) {
+        sub[j + n * i] = mat[i][j];
+      }
     }
   }
 }
