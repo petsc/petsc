@@ -970,6 +970,11 @@ runex15:
 	   if (${DIFF} output/ex15_1.out ex15_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex15_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex15_1.tmp
+runex15_tsirm:
+	-@${MPIEXEC} -n 1 ./ex15 -m 600 -n 600 -ksp_type tsirm -pc_type ksp -ksp_monitor_short -ksp_ksp_type fgmres -ksp_ksp_rtol 1e-10  -ksp_pc_type mg -ksp_ksp_max_it 30  > ex15_tsirm.tmp 2>&1; \
+	   if (${DIFF} output/ex15_tsirm.out ex15_tsirm.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex15_tsirm, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex15_tsirm.tmp
 runex15f:
 	-@${MPIEXEC} -n 2 ./ex15f -ksp_view -user_defined_pc -ksp_gmres_cgs_refinement_type refine_always > ex15f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex15f_1.out ex15f_1.tmp) then true; \
@@ -1534,7 +1539,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
                                  ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm ex65.PETSc runex65 ex65.rm
-TESTEXAMPLES_C_NOTSINGLE       = ex43.PETSc runex43_3 ex43.rm
+TESTEXAMPLES_C_NOTSINGLE       = ex43.PETSc runex43_3 ex43.rm ex15.PETSc runex15_tsirm ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm \
                                  ex34.PETSc runex34 runex34_2 ex34.rm \
