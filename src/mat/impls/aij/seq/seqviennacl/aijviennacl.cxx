@@ -280,9 +280,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-  A->ops->mult    = MatMult_SeqAIJViennaCL;
-  A->ops->multadd = MatMultAdd_SeqAIJViennaCL;
   PetscFunctionReturn(0);
 }
 
