@@ -1982,6 +1982,18 @@ runex125_mkl_pardiso:
 	   else printf "${PWD}\nPossible problem with ex125_mkl_pardiso, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
 
+runex125_superlu_dist:
+	-@${MPIEXEC} -n 1 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 1 > ex125.tmp 2>&1; \
+	   if (${DIFF} output/ex125_superlu_dist.out ex125.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex125_superlu_dist, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex125.tmp
+
+runex125_superlu_dist_2:
+	-@${MPIEXEC} -n 3 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 1 > ex125.tmp 2>&1; \
+	   if (${DIFF} output/ex125_superlu_dist.out ex125.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex125_superlu_dist_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex125.tmp
+
 runex126f:
 	-@${MPIEXEC} -n 1 ./ex126f  > ex126_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex126_1.out ex126_1.tmp) then true; \
@@ -2583,10 +2595,11 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex145.PETSc runex145 runex145_2 ex145.rm \
                                  ex174.PETSc runex174 runex174_dense runex174_elemental runex174_sbaij \
                                  runex174_2 runex174_2_dense runex174_2_elemental runex174_2_sbaij ex174.rm
-TESTEXAMPLES_MUMPS             = ex125.PETSc runex125_mumps runex125_mumps_2 ex125.rm \
+TESTEXAMPLES_MUMPS_DATAFILESPATH = ex125.PETSc runex125_mumps runex125_mumps_2 ex125.rm \
                                  ex192.PETSc runex192_mumps ex192.rm
 TESTEXAMPLES_MKL_PARDISO       = ex125.PETSc runex125_mkl_pardiso ex125.rm \
                                  ex192.PETSc runex192_mkl_pardiso ex192.rm
+TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex125.PETSc runex125_superlu_dist runex125_superlu_dist_2 ex125.rm
 TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

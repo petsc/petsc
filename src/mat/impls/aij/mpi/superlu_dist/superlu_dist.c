@@ -58,7 +58,11 @@ PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
   Mat_SuperLU_DIST  *lu= (Mat_SuperLU_DIST*)F->spptr;
 
   PetscFunctionBegin;
-  PetscStackCall("SuperLU_DIST:GetDiagU",GetDiagU(F->rmap->N,&lu->LUstruct,&lu->grid,diagU));
+#if defined(PETSC_USE_COMPLEX)
+  PetscStackCall("SuperLU_DIST:pzGetDiagU",pdGetDiagU(F->rmap->N,&lu->LUstruct,&lu->grid,diagU));
+#else
+  PetscStackCall("SuperLU_DIST:pdGetDiagU",pdGetDiagU(F->rmap->N,&lu->LUstruct,&lu->grid,diagU));
+#endif
   PetscFunctionReturn(0);
 }
 
