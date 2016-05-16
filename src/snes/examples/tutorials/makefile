@@ -334,7 +334,11 @@ runex5_5_ngmres:
 	   if (${DIFF} output/ex5_5_ngmres.out ex5_5_ngmres.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_5_ngmres, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_ngmres.tmp
-
+runex5_5_anderson:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type anderson > ex5_5_anderson.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_anderson.out ex5_5_anderson.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex5_5_anderson, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5_5_anderson.tmp
 runex5_5_nasm:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
         -snes_type nasm -snes_nasm_type restrict -snes_max_it 10 > ex5_5_nasm.tmp 2>&1; \
@@ -1181,7 +1185,7 @@ runex73f90t:
 # This is way too slow  ex30.PETSc runex30 ex30.rm
 TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm  ex5.PETSc runex5  \
-                                 runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
+                                 runex5_5_ngmres runex5_5_anderson runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden \
                                  runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_5_nasm  \
