@@ -3487,7 +3487,7 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field,
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateResidual_Basic"
 PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
-                                              const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemVec[])
+                                              const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   const PetscInt  debug = 0;
   PetscPointFunc  f0_func;
@@ -3544,8 +3544,8 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
       ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &f0[q*Nc]);
-      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, refSpaceDer);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, &f0[q*Nc]);
+      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, refSpaceDer);
       TransformF(dim, dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
     UpdateElementVec(dim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
@@ -3558,7 +3558,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateBdResidual_Basic"
 PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
-                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemVec[])
+                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   const PetscInt  debug = 0;
   PetscBdPointFunc f0_func;
@@ -3618,8 +3618,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
       CoordinatesRefToReal(dim, bdim, v0, J, &quadPoints[q*bdim], x);
       ierr = EvaluateFieldJets(prob,    PETSC_TRUE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, &f0[q*Nc]);
-      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, refSpaceDer);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, &f0[q*Nc]);
+      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, refSpaceDer);
       TransformF(dim, bdim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
     UpdateElementVec(bdim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
@@ -3632,7 +3632,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateJacobian_Basic"
 PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
-                                              const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemMat[])
+                                              const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   const PetscInt  debug      = 0;
   PetscPointJac   g0_func;
@@ -3712,13 +3712,13 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
       ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
-        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, g0);
+        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, g0);
         for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
       }
       if (g1_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, refSpaceDer);
+        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
@@ -3732,7 +3732,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
       if (g2_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, refSpaceDer);
+        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
@@ -3746,7 +3746,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
       if (g3_func) {
         PetscInt d, d2, dp, d3;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, refSpaceDer);
+        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
@@ -3815,7 +3815,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateBdJacobian_Basic"
 PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
-                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemMat[])
+                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   const PetscInt  debug      = 0;
   PetscBdPointJac g0_func;
@@ -3894,13 +3894,13 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
-        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, n, g0);
+        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, g0);
         for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
       }
       if (g1_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, n, refSpaceDer);
+        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < bdim; ++d) {
@@ -3914,7 +3914,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       if (g2_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, n, refSpaceDer);
+        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < bdim; ++d) {
@@ -3928,7 +3928,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       if (g3_func) {
         PetscInt d, d2, dp, d3;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, n, g3);
+        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, g3);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < bdim; ++d) {
@@ -4053,7 +4053,7 @@ PetscErrorCode PetscFEDestroy_Nonaffine(PetscFE fem)
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateResidual_Nonaffine"
 PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
-                                                  const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemVec[])
+                                                  const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   const PetscInt  debug = 0;
   PetscPointFunc  f0_func;
@@ -4105,8 +4105,8 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, Pet
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
       ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &f0[q*Nc]);
-      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, refSpaceDer);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, &f0[q*Nc]);
+      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, refSpaceDer);
       TransformF(dim, dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
     UpdateElementVec(dim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
@@ -4119,7 +4119,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, Pet
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateBdResidual_Nonaffine"
 PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
-                                                    const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemVec[])
+                                                    const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   const PetscInt   debug = 0;
   PetscBdPointFunc f0_func;
@@ -4174,8 +4174,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, P
       CoordinatesRefToReal(dim, bdim, v0, J, &quadPoints[q*bdim], x);
       ierr = EvaluateFieldJets(prob,    PETSC_TRUE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, &f0[q*Nc]);
-      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, n, refSpaceDer);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, &f0[q*Nc]);
+      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, refSpaceDer);
       TransformF(dim, bdim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
     UpdateElementVec(bdim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
@@ -4188,7 +4188,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, P
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateJacobian_Nonaffine"
 PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
-                                                  const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemMat[])
+                                                  const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   const PetscInt  debug      = 0;
   PetscPointJac   g0_func;
@@ -4268,13 +4268,13 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
-        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, g0);
+        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, g0);
         for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
       }
       if (g1_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, refSpaceDer);
+        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
@@ -4288,7 +4288,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       if (g2_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, refSpaceDer);
+        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
@@ -4302,7 +4302,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       if (g3_func) {
         PetscInt d, d2, dp, d3;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, 0.0, x, refSpaceDer);
+        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
@@ -4932,7 +4932,7 @@ PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscL
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateResidual_OpenCL"
 PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
-                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemVec[])
+                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   /* Nbc = batchSize */
   PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *) fem->data;
@@ -4986,7 +4986,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
   /* Calculate layout */
   if (Ne % (N_cb*N_bc)) { /* Remainder cells */
-    ierr = PetscFEIntegrateResidual_Basic(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, elemVec);CHKERRQ(ierr);
+    ierr = PetscFEIntegrateResidual_Basic(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscFEOpenCLCalculateGrid(fem, Ne, N_cb*N_bc, &x, &y, &z);CHKERRQ(ierr);
@@ -5728,7 +5728,8 @@ PetscErrorCode PetscFEIntegrate(PetscFE fem, PetscDS prob, PetscInt field, Petsc
 . coefficients - The array of FEM basis coefficients for the elements
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
-- coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+. coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+- t            - The time
 
   Output Parameter
 . elemVec      - the element residual vectors from each element
@@ -5746,14 +5747,14 @@ $     elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \
 .seealso: PetscFEIntegrateResidual()
 @*/
 PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
-                                        const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemVec[])
+                                        const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 2);
-  if (fem->ops->integrateresidual) {ierr = (*fem->ops->integrateresidual)(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, elemVec);CHKERRQ(ierr);}
+  if (fem->ops->integrateresidual) {ierr = (*fem->ops->integrateresidual)(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -5773,7 +5774,8 @@ PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt fiel
 . coefficients - The array of FEM basis coefficients for the elements
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
-- coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+. coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+- t            - The time
 
   Output Parameter
 . elemVec      - the element residual vectors from each element
@@ -5783,13 +5785,13 @@ PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt fiel
 .seealso: PetscFEIntegrateResidual()
 @*/
 PetscErrorCode PetscFEIntegrateBdResidual(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
-                                          const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemVec[])
+                                          const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (fem->ops->integratebdresidual) {ierr = (*fem->ops->integratebdresidual)(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, elemVec);CHKERRQ(ierr);}
+  if (fem->ops->integratebdresidual) {ierr = (*fem->ops->integratebdresidual)(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -5811,7 +5813,9 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscFE fem, PetscDS prob, PetscInt fi
 . coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
-- coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+. coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+. t            - The time
+- u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
 
   Output Parameter
 . elemMat      - the element matrices for the Jacobian from each element
@@ -5827,13 +5831,13 @@ $                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \
 $                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
 */
 PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
-                                        const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemMat[])
+                                        const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (fem->ops->integratejacobian) {ierr = (*fem->ops->integratejacobian)(fem, prob, jtype, fieldI, fieldJ, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, elemMat);CHKERRQ(ierr);}
+  if (fem->ops->integratejacobian) {ierr = (*fem->ops->integratejacobian)(fem, prob, jtype, fieldI, fieldJ, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -5854,7 +5858,9 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscDS prob, PetscFEJacobi
 . coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
-- coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+. coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+. t            - The time
+- u_tShift     - A multiplier for the dF/du_t term (as opposed to the dF/du term)
 
   Output Parameter
 . elemMat              - the element matrices for the Jacobian from each element
@@ -5870,13 +5876,13 @@ $                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \
 $                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
 */
 PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE fem, PetscDS prob, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
-                                          const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar elemMat[])
+                                          const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (fem->ops->integratebdjacobian) {ierr = (*fem->ops->integratebdjacobian)(fem, prob, fieldI, fieldJ, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, elemMat);CHKERRQ(ierr);}
+  if (fem->ops->integratebdjacobian) {ierr = (*fem->ops->integratebdjacobian)(fem, prob, fieldI, fieldJ, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
