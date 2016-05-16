@@ -21,7 +21,7 @@ PetscErrorCode test_vec_ops(void)
   Vec            tmp_buf[2];
 
   PetscFunctionBegin;
-  PetscPrintf(PETSC_COMM_WORLD, "============== %s ==============\n",PETSC_FUNCTION_NAME);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "============== %s ==============\n",PETSC_FUNCTION_NAME);CHKERRQ(ierr);
 
   /* create 4 slave vectors */
   ierr = VecCreate(PETSC_COMM_WORLD, &c);CHKERRQ(ierr);
@@ -48,72 +48,72 @@ PetscErrorCode test_vec_ops(void)
   ierr = VecSet(h, 6.0);CHKERRQ(ierr);
 
   /* assemble a */
-  PetscPrintf(PETSC_COMM_WORLD, "a = [c d] \n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "a = [c d] \n");CHKERRQ(ierr);
   tmp_buf[0] = c; tmp_buf[1] = d;
 
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&a);CHKERRQ(ierr);
-  ierr = VecView(a,PETSC_VIEWER_STDOUT_WORLD);
-  PetscPrintf(PETSC_COMM_WORLD, "a = [d c] \n");
+  ierr = VecView(a,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "a = [d c] \n");CHKERRQ(ierr);
   ierr = VecNestSetSubVec(a, 1, c);CHKERRQ(ierr);
   ierr = VecNestSetSubVec(a, 0, d);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(a);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(a);CHKERRQ(ierr);
-  ierr = VecView(a,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = VecView(a,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* assemble b */
-  PetscPrintf(PETSC_COMM_WORLD, "b = [e f] \n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "b = [e f] \n");CHKERRQ(ierr);
   tmp_buf[0] = e; tmp_buf[1] = f;
 
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&b);CHKERRQ(ierr);
-  ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);
-  PetscPrintf(PETSC_COMM_WORLD, "b = [f e] \n");
+  ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "b = [f e] \n");CHKERRQ(ierr);
   ierr = VecNestSetSubVec(b, 1, e);CHKERRQ(ierr);
   ierr = VecNestSetSubVec(b, 0, f);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-  ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD, "X = [a b] \n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X = [a b] \n");CHKERRQ(ierr);
   tmp_buf[0] = a; tmp_buf[1] = b;
 
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X);CHKERRQ(ierr);
-  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(X,X, &val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %g \n", (double)PetscRealPart(val));CHKERRQ(ierr);
 
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X = [b a] \n");CHKERRQ(ierr);
   /* re-order components of X */
-  PetscPrintf(PETSC_COMM_WORLD, "X = [b a] \n");
   ierr = VecNestSetSubVec(X,1,a);CHKERRQ(ierr);
   ierr = VecNestSetSubVec(X,0,b);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(X,X,&val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %g \n", (double)PetscRealPart(val));CHKERRQ(ierr);
 
   /* re-assemble X */
-  PetscPrintf(PETSC_COMM_WORLD, "X = [g h] \n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X = [g h] \n");CHKERRQ(ierr);
   ierr = VecNestSetSubVec(X,1,g);CHKERRQ(ierr);
   ierr = VecNestSetSubVec(X,0,h);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(X,X,&val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %g \n", (double)PetscRealPart(val));CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD, "Y = X \n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Y = X \n");CHKERRQ(ierr);
   ierr = VecDuplicate(X, &Y);CHKERRQ(ierr);
   ierr = VecCopy(X,Y);CHKERRQ(ierr);
-  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(Y,Y,&val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "Y.Y = %f \n", val);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Y.Y = %g \n", (double)PetscRealPart(val));CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD, "Y = [a b] \n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Y = [a b] \n");CHKERRQ(ierr);
   tmp_buf[0] = a; tmp_buf[1] = b;
   tmp_ind[0] = 0; tmp_ind[1] = 1;
 
   ierr = VecNestSetSubVecs(Y,2,tmp_ind,tmp_buf);CHKERRQ(ierr);
-  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecDestroy(&c);CHKERRQ(ierr);
   ierr = VecDestroy(&d);CHKERRQ(ierr);
@@ -130,10 +130,10 @@ PetscErrorCode test_vec_ops(void)
 
 int main(int argc, char **args)
 {
-  PetscInitialize(&argc, &args,(char*)0, help);
-
-  test_vec_ops();
-
+  PetscErrorCode ierr;
+  
+  ierr = PetscInitialize(&argc, &args,(char*)0, help);if (ierr) return ierr;
+  ierr = test_vec_ops();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

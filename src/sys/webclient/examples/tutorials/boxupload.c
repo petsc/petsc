@@ -13,8 +13,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   char           access_token[512],new_refresh_token[512];
 
-  PetscInitialize(&argc,&argv,NULL,NULL);
-
+  ierr = PetscInitialize(&argc,&argv,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscBoxRefresh(PETSC_COMM_WORLD,NULL,access_token,new_refresh_token,sizeof(access_token));CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

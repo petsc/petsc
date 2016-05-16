@@ -413,11 +413,8 @@ static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs)
     /* ok find intersection */
     map    = gs->companion;
     reduce = gs->local_reduce;
-    for (i=0, t1=0; i<gs->num_local; i++, reduce++)
-    {
-      if ((PCTFS_ivec_binary_search(**reduce,gs->pw_elm_list,gs->len_pw_list)>=0)
-          ||
-          PCTFS_ivec_binary_search(**reduce,gs->tree_map_in,gs->tree_map_sz)>=0) {
+    for (i=0, t1=0; i<gs->num_local; i++, reduce++) {
+      if ((PCTFS_ivec_binary_search(**reduce,gs->pw_elm_list,gs->len_pw_list)>=0) || PCTFS_ivec_binary_search(**reduce,gs->tree_map_in,gs->tree_map_sz)>=0) {
         t1++;
         if (gs->num_local_reduce[i]<=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nobody in list?");
         gs->num_local_reduce[i] *= -1;
@@ -950,7 +947,6 @@ PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs)
 
   /* local info */
   if (gs->num_local_total>=0) {
-    /*      for (i=0;i<gs->num_local_total;i++) */
     for (i=0;i<gs->num_local_total+1;i++) {
       if (gs->num_gop_local_reduce[i]) free((void*) gs->gop_local_reduce[i]);
     }

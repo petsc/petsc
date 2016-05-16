@@ -3198,7 +3198,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocationCSR_C",MatMPIBAIJSetPreallocationCSR_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C",MatDiagonalScaleLocal_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetHashTableFactor_C",MatSetHashTableFactor_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_mpibstrm_C",MatConvert_MPIBAIJ_MPIBSTRM);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIBAIJ);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),NULL,"Options for loading MPIBAIJ matrix 1","Mat");CHKERRQ(ierr);

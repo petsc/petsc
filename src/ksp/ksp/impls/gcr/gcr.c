@@ -17,7 +17,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_GCR_cycle"
-PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
+static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
@@ -25,10 +25,12 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
   Mat            A, B;
   PC             pc;
   Vec            s,v,r;
-  PetscReal      norm_r,nrm;
+  /*
+     The residual norm will not be computed when ksp->its > ksp->chknorm hence need to initialize norm_r with some dummy value
+  */
+  PetscReal      norm_r = 0.0,nrm;
   PetscInt       k, i, restart;
   Vec            x;
-  PetscReal      res;
 
   PetscFunctionBegin;
   restart = ctx->restart;
@@ -65,14 +67,13 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
     }
     /* update the local counter and the global counter */
     ksp->its++;
-    res        = norm_r;
-    ksp->rnorm = res;
+    ksp->rnorm = norm_r;
 
-    ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,norm_r);CHKERRQ(ierr);
+    ierr = KSPMonitor(ksp,ksp->its,norm_r);CHKERRQ(ierr);
 
     if (ksp->its > ksp->chknorm) {
-      ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      ierr = (*ksp->converged)(ksp,ksp->its,norm_r,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
     }
 
@@ -87,7 +88,7 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_GCR"
-PetscErrorCode KSPSolve_GCR(KSP ksp)
+static PetscErrorCode KSPSolve_GCR(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
@@ -125,7 +126,7 @@ PetscErrorCode KSPSolve_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_GCR"
-PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
+static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
@@ -143,7 +144,7 @@ PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_GCR"
-PetscErrorCode KSPSetUp_GCR(KSP ksp)
+static PetscErrorCode KSPSetUp_GCR(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
@@ -165,7 +166,7 @@ PetscErrorCode KSPSetUp_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPReset_GCR"
-PetscErrorCode KSPReset_GCR(KSP ksp)
+static PetscErrorCode KSPReset_GCR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -183,7 +184,7 @@ PetscErrorCode KSPReset_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_GCR"
-PetscErrorCode KSPDestroy_GCR(KSP ksp)
+static PetscErrorCode KSPDestroy_GCR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -195,7 +196,7 @@ PetscErrorCode KSPDestroy_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GCR"
-PetscErrorCode KSPSetFromOptions_GCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_GCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -291,7 +292,7 @@ PetscErrorCode  KSPGCRSetRestart(KSP ksp, PetscInt restart)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPBuildSolution_GCR"
-PetscErrorCode  KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
+static PetscErrorCode  KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -309,7 +310,7 @@ PetscErrorCode  KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPBuildResidual_GCR"
-PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
+static PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx;
@@ -336,14 +337,19 @@ PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
     Notes: The GCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
            which may vary from one iteration to the next. Users can can define a method to vary the
            preconditioner between iterates via KSPGCRSetModifyPC().
+
            Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
            solution is given by the current estimate for x which was obtained by the last restart
            iterations of the GCR algorithm.
+
            Unlike GMRES and FGMRES, when using GCR, the solution and residual vector can be directly accessed at any iterate,
            with zero computational cost, via a call to KSPBuildSolution() and KSPBuildResidual() respectively.
+
            This implementation of GCR will only apply the stopping condition test whenever ksp->its > ksp->chknorm,
            where ksp->chknorm is specified via the command line argument -ksp_check_norm_iteration or via
-           the function KSPSetCheckNormIteration().
+           the function KSPSetCheckNormIteration(). Hence the residual norm reported by the monitor and stored
+           in the residual history will be listed as 0.0 before this iteration. It is actually not 0.0; just not calculated.
+
            The method implemented requires the storage of 2 x restart + 1 vectors, twice as much as GMRES.
            Support only for right preconditioning.
 

@@ -56,7 +56,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_PIPEGCR_cycle"
-PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
+static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
   PetscErrorCode ierr;
@@ -263,7 +263,7 @@ PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_PIPEGCR"
-PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
+static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
   PetscErrorCode ierr;
@@ -341,7 +341,7 @@ PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_PIPEGCR"
-PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
+static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
   PetscErrorCode ierr;
@@ -374,7 +374,7 @@ PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_PIPEGCR"
-PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
+static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 {
   KSP_PIPEGCR   *pipegcr = (KSP_PIPEGCR*)ksp->data;
   PetscErrorCode ierr;
@@ -422,7 +422,7 @@ PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPReset_PIPEGCR"
-PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
+static PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -436,7 +436,7 @@ PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_PIPEGCR"
-PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
+static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -726,7 +726,7 @@ PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_PIPEGCR"
-PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;

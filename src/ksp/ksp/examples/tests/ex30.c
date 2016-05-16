@@ -126,7 +126,7 @@ int main(int argc,char **args)
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
     ierr = MatEqual(A,B,&flg);CHKERRQ(ierr);
     if (!flg) {
-      PetscPrintf(PETSC_COMM_WORLD,"  A != B \n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  A != B \n");CHKERRQ(ierr);
     }
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
@@ -160,7 +160,7 @@ int main(int argc,char **args)
     PetscScalar       *zeros;
     row  = 0;
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    ierr = PetscCalloc1(ncols+1,&zeros);
+    ierr = PetscCalloc1(ncols+1,&zeros);CHKERRQ(ierr);
     flg1 = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
     if (flg1) {   /* set entire row as zero */
@@ -177,12 +177,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL, "-check_symmetry", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Mat Atrans;
-    ierr = MatTranspose(A, MAT_INITIAL_MATRIX,&Atrans);
-    ierr = MatEqual(A, Atrans, &isSymmetric);
+    ierr = MatTranspose(A, MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
+    ierr = MatEqual(A, Atrans, &isSymmetric);CHKERRQ(ierr);
     if (isSymmetric) {
-      PetscPrintf(PETSC_COMM_WORLD,"A is symmetric \n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"A is symmetric \n");CHKERRQ(ierr);
     } else {
-      PetscPrintf(PETSC_COMM_WORLD,"A is non-symmetric \n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"A is non-symmetric \n");CHKERRQ(ierr);
     }
     ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
   }
@@ -368,7 +368,7 @@ int main(int argc,char **args)
     if (flg) {
       KSPConvergedReason reason;
       ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);CHKERRQ(ierr);
     }
 
   }   /* while (num_numfac--) */

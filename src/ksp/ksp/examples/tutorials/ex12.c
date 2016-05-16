@@ -151,7 +151,7 @@ int main(int argc,char **args)
      Set the PC type to be the new method
   */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,"ourjacobi");
+  ierr = PCSetType(pc,"ourjacobi");CHKERRQ(ierr);
 
   /*
     Set runtime options, e.g.,

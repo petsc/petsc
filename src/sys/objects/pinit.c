@@ -178,11 +178,11 @@ extern PetscErrorCode PetscOptionsCheckInitial_Private(void);
        This function is the MPI reduction operation used to compute the sum of the
    first half of the datatype and the max of the second half.
 */
-MPI_Op PetscMaxSum_Op = 0;
+MPI_Op MPIU_MAXSUM_OP = 0;
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscMaxSum_Local"
-PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+#define __FUNCT__ "MPIU_MaxSum_Local"
+PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
 
@@ -204,7 +204,7 @@ PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datat
 sum of the second entry.
 
     The reason sizes[2*i] contains lengths sizes[2*i+1] contains flag of 1 if length is nonzero
-is so that the PetscMaxSum_Op() can set TWO values, if we passed in only sizes[i] with lengths
+is so that the MPIU_MAXSUM_OP() can set TWO values, if we passed in only sizes[i] with lengths
 there would be no place to store the both needed results.
 */
 #undef __FUNCT__
@@ -217,7 +217,7 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
 #if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
   {
     struct {PetscInt max,sum;} work;
-    ierr = MPI_Reduce_scatter_block((void*)sizes,&work,1,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce_scatter_block((void*)sizes,&work,1,MPIU_2INT,MPIU_MAXSUM_OP,comm);CHKERRQ(ierr);
     *max = work.max;
     *sum = work.sum;
   }
@@ -228,7 +228,7 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce((void*)sizes,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce((void*)sizes,work,size,MPIU_2INT,MPIU_MAXSUM_OP,comm);CHKERRQ(ierr);
     *max = work[rank].max;
     *sum = work[rank].sum;
     ierr = PetscFree(work);CHKERRQ(ierr);
@@ -825,7 +825,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
      Create the PETSc MPI reduction operator that sums of the first
      half of the entries and maxes the second half.
   */
-  ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_create(MPIU_MaxSum_Local,1,&MPIU_MAXSUM_OP);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU___FLOAT128);CHKERRQ(ierr);
@@ -1251,6 +1251,7 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
     petsc_history = 0;
   }
+  ierr = PetscOptionsHelpPrintedDestroy(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
 
   ierr = PetscInfoAllow(PETSC_FALSE,NULL);CHKERRQ(ierr);
 
@@ -1366,7 +1367,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MAXSUM_OP);CHKERRQ(ierr);
 
   /*
      Destroy any known inner MPI_Comm's and attributes pointing to them

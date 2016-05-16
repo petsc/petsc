@@ -90,7 +90,7 @@ PetscErrorCode  KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_STCG"
-PetscErrorCode KSPSolve_STCG(KSP ksp)
+static PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "STCG is not available for complex systems");
@@ -605,7 +605,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_STCG"
-PetscErrorCode KSPSetUp_STCG(KSP ksp)
+static PetscErrorCode KSPSetUp_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -620,7 +620,7 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_STCG"
-PetscErrorCode KSPDestroy_STCG(KSP ksp)
+static PetscErrorCode KSPDestroy_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -676,7 +676,7 @@ static PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_STCG"
-PetscErrorCode KSPSetFromOptions_STCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_STCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_STCG       *cg = (KSP_STCG*)ksp->data;

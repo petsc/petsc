@@ -92,7 +92,7 @@ PETSC_EXTERN void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,PetscInt *n,IS *
     for (i=0; i<nloc; i++) is[i] = tis[i];
   }
   if (is_local && tis_local) {
-    for (i=0; i<nloc; i++) is[i] = tis_local[i];
+    for (i=0; i<nloc; i++) is_local[i] = tis_local[i];
   }
 }
 

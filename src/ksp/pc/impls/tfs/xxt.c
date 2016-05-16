@@ -598,7 +598,6 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
         if (id< mask) {                
           if (lhs[i]!=0.0) lhs[i]=1.0;
         }
-        
         if (id>=mask) {                
           if (rhs[i]!=0.0) rhs[i]=1.0;
         }
@@ -610,7 +609,6 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
       /* count number of dofs I own that have signal and not in sep set */
       PCTFS_rvec_zero(rsum,4);
       for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++) {
-        
         if (!used[i]) {
           /* number of unmarked dofs on node */
           ct++;

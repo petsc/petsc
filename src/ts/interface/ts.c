@@ -4862,13 +4862,13 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
 #undef __FUNCT__
 #define __FUNCT__ "TSSetDM"
 /*@
-   TSSetDM - Sets the DM that may be used by some preconditioners
+   TSSetDM - Sets the DM that may be used by some nonlinear solvers or preconditioners under the TS
 
    Logically Collective on TS and DM
 
    Input Parameters:
-+  ts - the preconditioner context
--  dm - the dm
++  ts - the ODE integrator object
+-  dm - the dm, cannot be NULL
 
    Level: intermediate
 
@@ -4883,6 +4883,7 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (ts->dm) {               /* Move the DMTS context over to the new DM unless the new DM already has one */
     if (ts->dm->dmts && !dm->dmts) {

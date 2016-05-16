@@ -69,7 +69,7 @@ int main( int argc, char **argv )
   MatFDColoring      matfdcoloring;
 
   /* Initialize TAO */
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
 
   /* Specify dimension of the problem */
   user.mx = 10; user.my = 10;
@@ -154,7 +154,7 @@ int main( int argc, char **argv )
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);

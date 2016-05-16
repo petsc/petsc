@@ -62,7 +62,6 @@ PetscInt PCTFS_ct_bits(char *ptr, PetscInt n)
 {
   PetscInt i, tmp=0;
 
-  PetscFunctionBegin;
   for (i=0;i<n;i++) {
     if (*ptr&128) tmp++;
     if (*ptr&64)  tmp++;
@@ -74,7 +73,6 @@ PetscInt PCTFS_ct_bits(char *ptr, PetscInt n)
     if (*ptr&1)   tmp++;
     ptr++;
   }
-
   return(tmp);
 }
 
@@ -113,6 +111,7 @@ PetscErrorCode PCTFS_set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val)
   char     mask = 1;
   char     *cptr;
 
+   PetscFunctionBegin;
   if (PCTFS_len_bit_mask(val)>len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");
 
   cptr = (char*) bm;
@@ -138,7 +137,6 @@ PetscInt PCTFS_len_buf(PetscInt item_size, PetscInt num_items)
 {
   PetscInt rt_val, tmp;
 
-  PetscFunctionBegin;
   rt_val = item_size * num_items;
 
   /*  double precision align for now ... consider page later */

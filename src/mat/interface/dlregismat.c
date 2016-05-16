@@ -121,8 +121,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
-PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat,MatFactorType,Mat*);
-PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat,MatFactorType,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInitializePackage"
@@ -262,12 +260,12 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatSetValBatch3",MAT_CLASSID,&MAT_SetValuesBatchIII);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch4",MAT_CLASSID,&MAT_SetValuesBatchIV);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&Mat_Coloring_Apply);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringComm",MAT_COLORING_CLASSID,&Mat_Coloring_Comm);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringLocal",MAT_COLORING_CLASSID,&Mat_Coloring_Local);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringIS",MAT_COLORING_CLASSID,&Mat_Coloring_ISCreate);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&Mat_Coloring_SetUp);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringWeights",MAT_COLORING_CLASSID,&Mat_Coloring_Weights);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&MATCOLORING_Apply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringComm",MAT_COLORING_CLASSID,&MATCOLORING_Comm);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringLocal",MAT_COLORING_CLASSID,&MATCOLORING_Local);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringIS",MAT_COLORING_CLASSID,&MATCOLORING_ISCreate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&MATCOLORING_SetUp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringWeights",MAT_COLORING_CLASSID,&MATCOLORING_Weights);CHKERRQ(ierr);
 
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
@@ -316,10 +314,6 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
 
   ierr = MatSolverPackageRegister(MATSOLVERBAS,   MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_bas);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERBSTRM, MATSEQBAIJ,       MAT_FACTOR_LU,MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERBSTRM, MATSEQBAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSBSTRM,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSBSTRM,MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
 
   /*
      Register the external package factorization based solvers

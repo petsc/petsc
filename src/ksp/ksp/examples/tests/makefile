@@ -500,12 +500,12 @@ runex26_ml:
            else printf "${PWD}\nPossible problem with ex26_ml_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex26_1.tmp
 runex26_ml_2:
-	-@${MPIEXEC} -n 3 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode > ex26_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode -ksp_max_it 3 > ex26_2.tmp 2>&1; \
 	if (${DIFF} output/ex26_ml_2.out ex26_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex26_ml_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex26_2.tmp
 runex26_ml_3:
-	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode -pc_mg_type ADDITIVE > ex26_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode -pc_mg_type ADDITIVE -ksp_max_it 7 > ex26_2.tmp 2>&1; \
 	if (${DIFF} output/ex26_ml_3.out ex26_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex26_ml_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex26_2.tmp
@@ -531,12 +531,12 @@ runex28_3:
 	   else printf "${PWD}\nPossible problem with ex28_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex28.tmp
 runex29:
-	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short -mat_no_inode > ex29.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex29 -mat_no_inode > ex29.tmp 2>&1; \
 	if (${DIFF} output/ex29.out ex29.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex29, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29.tmp
 runex29_2:
-	-@${MPIEXEC} -n 3 ./ex29 -ksp_monitor_short > ex29_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex29  > ex29_2.tmp 2>&1; \
 	if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex29_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29_2.tmp
@@ -801,7 +801,7 @@ runex32_cholmod:
 runex32_cholmod_seqsbaij:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dm_mat_type sbaij -pc_factor_mat_solver_package cholmod -ksp_monitor_short -pc_type cholesky -ksp_view > ex32.tmp 2>&1;\
 	if (${DIFF} output/ex32_cholmod_sbaij.out ex32.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex32_cholmod, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex32_cholmod_seqsbai, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; 
 runex33:
 	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 > ex33.tmp 2>&1; \

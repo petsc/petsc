@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-mpi=0'
+  '--with-gcov=1',
+  '--with-mpi=0',
   ]
 
 if __name__ == '__main__':
