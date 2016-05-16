@@ -8085,7 +8085,7 @@ PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetTransposeNullSpace"
 /*@
-   MatGetTransposeNullSpace - retrieves the null space to a matrix.
+   MatGetTransposeNullSpace - retrieves the null space of the transpose of a matrix.
 
    Logically Collective on Mat and MatNullSpace
 
@@ -8095,12 +8095,9 @@ PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 
    Level: developer
 
-   Notes:
-      This null space is used by solvers. Overwrites any previous null space that may have been attached
-
    Concepts: null space^attaching to matrix
 
-.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatSetTransposeNullSpace(), MatSetNullSpace(), MatGetNullSpace()
 @*/
 PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
 {
@@ -8140,7 +8137,7 @@ PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
 
    Concepts: null space^attaching to matrix
 
-.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetNullSpace(), MatGetNullSpace(), MatNullSpaceRemove()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove()
 @*/
 PetscErrorCode MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
 {
@@ -8178,7 +8175,7 @@ PetscErrorCode MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
 
    Concepts: null space^attaching to matrix
 
-.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNullSpace(), MatNullSpaceCreateRigidBody()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNullSpace(), MatNullSpaceCreateRigidBody(), MatGetNearNullSpace()
 @*/
 PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
 {
@@ -8212,7 +8209,7 @@ PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
 
    Concepts: null space^attaching to matrix
 
-.seealso: MatSetNearNullSpace(), MatGetNullSpace()
+.seealso: MatSetNearNullSpace(), MatGetNullSpace(), MatNullSpaceCreate()
 @*/
 PetscErrorCode MatGetNearNullSpace(Mat mat,MatNullSpace *nullsp)
 {
