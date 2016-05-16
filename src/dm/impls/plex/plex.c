@@ -774,6 +774,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   ierr = MatSetSizes(*J, localSize, localSize, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(*J, &bs);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
@@ -784,41 +785,30 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   if (!isShell) {
     PetscBool fillMatrix = (PetscBool) !dm->prealloc_only;
     PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal, bsMax, bsMin;
+    PetscInt  pStart, pEnd, p, dof, cdof;
 
-    if (bs < 0) {
-      if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
-        PetscInt pStart, pEnd, p, dof, cdof;
+    ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt bdof;
 
-        ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-        for (p = pStart; p < pEnd; ++p) {
-          PetscInt bdof;
-
-          ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
-          ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
-          bdof = PetscAbs(dof) - cdof;
-          if (bdof) {
-            if (bs < 0) {
-              bs = bdof;
-            } else if (bs != bdof) {
-              /* Layout does not admit a pointwise block size */
-              bs = 1;
-              break;
-            }
-          }
-        }
-        /* Must have same blocksize on all procs (some might have no points) */
-        bsLocal = bs;
-        ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-        bsLocal = bs < 0 ? bsMax : bs;
-        ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-        if (bsMin != bsMax) {
-          bs = 1;
-        } else {
-          bs = bsMax;
-        }
-      } else {
-        bs = 1;
+      ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
+      dof  = dof < 0 ? -(dof+1) : dof;
+      bdof = cdof && (dof-cdof) ? 1 : dof;
+      if (dof) {
+        if (bs < 0)          {bs = bdof;}
+        else if (bs != bdof) {bs = 1; break;}
       }
+    }
+    /* Must have same blocksize on all procs (some might have no points) */
+    bsLocal = bs;
+    ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    bsLocal = bs < 0 ? bsMax : bs;
+    ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    if (bsMin != bsMax) {
+      bs = 1;
+    } else {
+      bs = bsMax;
     }
     ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
     ierr = DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
@@ -3691,6 +3681,12 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
           const PetscInt o     = points[p+1];
           updatePointFields_private(section, point, o, f, fcomp, add, PETSC_TRUE, values, &offset, array);
         } break;
+      case ADD_BC_VALUES:
+        for (p = 0; p < numPoints*2; p += 2) {
+          const PetscInt point = points[p];
+          const PetscInt o     = points[p+1];
+          updatePointFieldsBC_private(section, point, o, f, fcomp, add, values, &offset, array);
+        } break;
       default:
         SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);
       }
@@ -3728,6 +3724,12 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
         PetscInt o = points[p+1];
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
         updatePoint_private(section, points[p], dof, add,    PETSC_TRUE,  o, &values[off], array);
+      } break;
+    case ADD_BC_VALUES:
+      for (p = 0, off = 0; p < numPoints*2; p += 2, off += dof) {
+        PetscInt o = points[p+1];
+        ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
+        updatePointBC_private(section, points[p], dof, add,  o, &values[off], array);
       } break;
     default:
       SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %d", mode);

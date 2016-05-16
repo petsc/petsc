@@ -1287,6 +1287,7 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
 {
 #if defined(PETSC_HAVE_PARMETIS)
   MPI_Comm       comm;
+  PetscSection   section;
   PetscInt       nvtxs      = numVertices; /* The number of vertices in full graph */
   PetscInt      *vtxdist;                  /* Distribution of vertices across processes */
   PetscInt      *xadj       = start;       /* Start of edge list for each vertex */
@@ -1304,8 +1305,6 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
   PetscInt      *assignment, *points;
   PetscMPIInt    rank, p, v, i;
   PetscErrorCode ierr;
-  PetscInt       cstart, cend, dof;
-  PetscSection   dfsection;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
@@ -1323,12 +1322,18 @@ PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, DM dm, 
     tpwgts[p] = 1.0/nparts;
   }
   ubvec[0] = 1.05;
+  /* Weight cells by dofs on cell by default */
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (section) {
+    PetscInt cStart, cEnd, dof;
 
-  ierr = DMPlexGetHeightStratum(dm,0,&cstart,&cend);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm,&dfsection);CHKERRQ(ierr);
-  for(i= cstart; i < cend; i++) {
-    ierr = PetscSectionGetDof(dfsection,i,&dof);CHKERRQ(ierr);
-    vwgt[i-cstart] = (dof == 0) ? 1 : dof;
+    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    for (v = cStart; v < cEnd; ++v) {
+      ierr = PetscSectionGetDof(section, v, &dof);CHKERRQ(ierr);
+      vwgt[v-cStart] = PetscMax(dof, 1);
+    }
+  } else {
+    for (v = 0; v < nvtxs; ++v) vwgt[v] = 1;
   }
 
   if (nparts == 1) {
