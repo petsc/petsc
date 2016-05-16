@@ -835,6 +835,10 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
 
  The user should not free the array mat.
 
+ In Fortran, this routine has a calling sequence
+$   call MatNestGetSubMats(A, M, N, mat, ierr)
+ where the space allocated for the optional argument mat is assumed large enough (if provided).
+
  Level: developer
 
 .seealso: MatNestGetSize(), MatNestGetSubMat()
