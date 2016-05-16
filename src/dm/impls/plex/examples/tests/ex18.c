@@ -33,7 +33,7 @@ Four triangles partitioned across 3 ranks
    | /     \ |
    5 ------- 8
 
-Partition: {0: [0], 1: [1], 2: [2, 3]}
+Partition: {0: [0,  4, 5], 1: [1,  6, 7], 2: [2, 3,  8]}
 
 Tetrahedron
 -----------
@@ -432,7 +432,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     } else {
       const PetscInt cells[3] = {2, 2, 2};
 
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
     }
   } else {
     switch (dim) {
