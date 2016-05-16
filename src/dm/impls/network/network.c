@@ -988,47 +988,47 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   if (vEnd - vStart) {
     if (!network->Jv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"User must provide Jv");
     if (!(vptr = network->Jvptr)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"User must provide vptr");
-  }
 
-  for (v=vStart; v<vEnd; v++) {
-    /* Get row indices */
-    ierr = DMNetworkGetVariableGlobalOffset(dm,v,&rstart);CHKERRQ(ierr);
-    ierr = DMNetworkGetNumVariables(dm,v,&nrows);CHKERRQ(ierr);
-    if (!nrows) continue;
+    for (v=vStart; v<vEnd; v++) {
+      /* Get row indices */
+      ierr = DMNetworkGetVariableGlobalOffset(dm,v,&rstart);CHKERRQ(ierr);
+      ierr = DMNetworkGetNumVariables(dm,v,&nrows);CHKERRQ(ierr);
+      if (!nrows) continue;
+      
+      ierr = PetscMalloc1(nrows,&rows);CHKERRQ(ierr);
+      for (j=0; j<nrows; j++) rows[j] = j + rstart;
 
-    ierr = PetscMalloc1(nrows,&rows);CHKERRQ(ierr);
-    for (j=0; j<nrows; j++) rows[j] = j + rstart;
-
-    /* Get supporting edges and connected vertices */
-    ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
+      /* Get supporting edges and connected vertices */
+      ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
    
-    for (e=0; e<nedges; e++) {
-      /* Supporting edges */
-      ierr = DMNetworkGetVariableGlobalOffset(dm,edges[e],&cstart);CHKERRQ(ierr);
-      ierr = DMNetworkGetNumVariables(dm,edges[e],&ncols);CHKERRQ(ierr); 
+      for (e=0; e<nedges; e++) {
+        /* Supporting edges */
+        ierr = DMNetworkGetVariableGlobalOffset(dm,edges[e],&cstart);CHKERRQ(ierr);
+        ierr = DMNetworkGetNumVariables(dm,edges[e],&ncols);CHKERRQ(ierr); 
+        
+        Juser = network->Jv[vptr[v-vStart]+2*e+1]; /* Jacobian(v,e) */
+        ierr = MatSetblock_private(Juser,nrows,rows,ncols,cstart,J);CHKERRQ(ierr);
 
-      Juser = network->Jv[vptr[v-vStart]+2*e+1]; /* Jacobian(v,e) */
-      ierr = MatSetblock_private(Juser,nrows,rows,ncols,cstart,J);CHKERRQ(ierr);
-
-      /* Connected vertices */
-      ierr = DMNetworkGetConnectedNodes(dm,edges[e],&cone);CHKERRQ(ierr);
-      vc = (v == cone[0]) ? cone[1]:cone[0];
+        /* Connected vertices */
+        ierr = DMNetworkGetConnectedNodes(dm,edges[e],&cone);CHKERRQ(ierr);
+        vc = (v == cone[0]) ? cone[1]:cone[0];
    
-      ierr = DMNetworkGetVariableGlobalOffset(dm,vc,&cstart);CHKERRQ(ierr);
-      ierr = DMNetworkGetNumVariables(dm,vc,&ncols);CHKERRQ(ierr);
+        ierr = DMNetworkGetVariableGlobalOffset(dm,vc,&cstart);CHKERRQ(ierr);
+        ierr = DMNetworkGetNumVariables(dm,vc,&ncols);CHKERRQ(ierr);
 
-      Juser = network->Jv[vptr[v-vStart]+2*e+2]; /* Jacobian(v,vc) */
-      ierr = MatSetblock_private(Juser,nrows,rows,nrows,cstart,J);CHKERRQ(ierr);
-    }
+        Juser = network->Jv[vptr[v-vStart]+2*e+2]; /* Jacobian(v,vc) */
+        ierr = MatSetblock_private(Juser,nrows,rows,nrows,cstart,J);CHKERRQ(ierr);
+      }
 
-    /* Set matrix entries for vertex self */
-    ierr = DMNetworkIsGhostVertex(dm,v,&ghost);CHKERRQ(ierr);
-    if (!ghost) {
-      ierr = DMNetworkGetVariableGlobalOffset(dm,v,&cstart);CHKERRQ(ierr);
-      Juser = network->Jv[vptr[v-vStart]]; /* Jacobian(v,v) */
-      ierr = MatSetblock_private(Juser,nrows,rows,nrows,cstart,J);CHKERRQ(ierr);
+      /* Set matrix entries for vertex self */
+      ierr = DMNetworkIsGhostVertex(dm,v,&ghost);CHKERRQ(ierr);
+      if (!ghost) {
+        ierr = DMNetworkGetVariableGlobalOffset(dm,v,&cstart);CHKERRQ(ierr);
+        Juser = network->Jv[vptr[v-vStart]]; /* Jacobian(v,v) */
+        ierr = MatSetblock_private(Juser,nrows,rows,nrows,cstart,J);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(rows);CHKERRQ(ierr);
     }
-    ierr = PetscFree(rows);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
