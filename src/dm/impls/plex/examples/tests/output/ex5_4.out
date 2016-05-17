@@ -20,7 +20,7 @@ Label 'subpoint_map':
 [0]: 20 (-101)
 [0]: 21 (-101)
 [0]: 22 (-101)
-DM Object:Hybrid Mesh 1 MPI processes
+DM Object: Hybrid Mesh 1 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
 orientation is missing

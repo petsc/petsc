@@ -52,6 +52,13 @@ PetscBool PetscPreLoadingOn   = PETSC_FALSE;
 
 PetscInt PetscHotRegionDepth;
 
+#if defined(PETSC_HAVE_THREADSAFETY)
+PetscSpinlock PetscViewerASCIISpinLockOpen;
+PetscSpinlock PetscViewerASCIISpinLockStdout;
+PetscSpinlock PetscViewerASCIISpinLockStderr;
+PetscSpinlock PetscCommSpinLock;
+#endif
+
 /*
        Checks the options database for initializations related to the
     PETSc components

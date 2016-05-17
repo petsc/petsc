@@ -16,9 +16,9 @@ Tao Object: 3 MPI processes
       total number of function/gradient evaluations=1
       using variable bounds
       Termination reason: 1
-  TaoLineSearch Object:   3 MPI processes
+  TaoLineSearch Object: 3 MPI processes
     type: gpcg
-  KSP Object:   3 MPI processes
+  KSP Object: 3 MPI processes
     type: nash
   total KSP iterations: 64
   Active Set subset type: matrixfree

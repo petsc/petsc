@@ -9,7 +9,7 @@ iter =   7, Function value: -1.00699,  Residual: 0.00844282
 Tao Object: 1 MPI processes
   type: blmvm
       Gradient steps: 0
-  TaoLineSearch Object:   1 MPI processes
+  TaoLineSearch Object: 1 MPI processes
     type: more-thuente
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-15,   steptol=0.,   gttol=1e-15
