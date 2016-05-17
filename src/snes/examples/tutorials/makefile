@@ -9,7 +9,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
-EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c ex7.c \
+EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                 ex25.c ex28.c ex30.c ex33.c \
                 ex35.c ex42.c ex46.c ex48.c \
@@ -71,9 +71,6 @@ ex5f90t: ex5f90t.o  chkopts
 ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o ${PETSC_SNES_LIB}
 	${RM} ex6.o
-ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o ${PETSC_SNES_LIB}
-	${RM} ex7.o
 ex8: ex8.o chkopts
 	-${CLINKER} -o ex8 ex8.o  ${PETSC_SNES_LIB}
 	${RM} ex8.o
@@ -1185,7 +1182,7 @@ TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden \
                                  runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_5_nasm  \
-                                 ex5.rm ex7.PETSc runex7 ex7.rm\
+                                 ex5.rm \
                                  ex14.PETSc runex14 runex14_2 runex14_3 ex14.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
