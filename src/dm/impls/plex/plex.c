@@ -757,7 +757,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
 PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 {
   PetscSection   sectionGlobal;
-  PetscInt       bs = -1;
+  PetscInt       bs = -1, mbs;
   PetscInt       localSize;
   PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode ierr;
@@ -774,7 +774,8 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   ierr = MatSetSizes(*J, localSize, localSize, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(*J, &bs);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(*J, &mbs);CHKERRQ(ierr);
+  if (mbs > 1) bs = mbs;
   ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
