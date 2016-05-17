@@ -3816,6 +3816,27 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
     ierr  = DMSetDimension(newPlex,P4EST_DIM);CHKERRQ(ierr);
     ierr  = DMSetCoordinateDim(newPlex,coordDim);CHKERRQ(ierr);
+    if (dm->maxCell) {
+      const PetscReal      *maxCell, *L;
+      const DMBoundaryType *bd;
+      PetscScalar          *coordArray = (PetscScalar *) coords->array;
+      PetscInt             numCoords   = (PetscInt) coords->elem_count, i, j;
+
+      ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
+      for (i = 0; i < numCoords; i++) {
+        for (j = 0; j < coordDim; j++) {
+          if (bd[j] == DM_BOUNDARY_PERIODIC || bd[j] == DM_BOUNDARY_TWIST) {
+            PetscReal val    = PetscRealPart(coordArray[coordDim * i + j]);
+            PetscReal length = PetscAbsReal(L[j]);
+
+            while (val < 0.)      {val += length;}
+            while (val >= length) {val -= length;}
+
+            coordArray[coordDim * i + j] = val;
+          }
+        }
+      }
+    }
     ierr  = DMPlexCreateFromDAG(newPlex,P4EST_DIM,(PetscInt*)points_per_dim->array,(PetscInt*)cone_sizes->array,(PetscInt*)cones->array,(PetscInt*)cone_orientations->array,(PetscScalar*)coords->array);CHKERRQ(ierr);
     ierr  = PetscSFCreate(comm,&pointSF);CHKERRQ(ierr);
     ierr  = DMCreateReferenceTree_pforest(comm,&refTree);CHKERRQ(ierr);
