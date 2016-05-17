@@ -104,6 +104,7 @@ PETSC_EXTERN PetscErrorCode PetscDSSetResidual(PetscDS, PetscInt,
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         PetscReal, const PetscReal[], PetscScalar[]));
+PETSC_EXTERN PetscErrorCode PetscDSHasJacobian(PetscDS, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDSGetJacobian(PetscDS, PetscInt, PetscInt,
                                                void (**)(PetscInt, PetscInt, PetscInt,
                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],

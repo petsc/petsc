@@ -1086,6 +1086,40 @@ PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDSHasJacobian"
+/*@C
+  PetscDSHasJacobian - Signals that Jacobian functions have been set
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS
+
+  Output Parameter:
+. hasJac - flag that pointwise function for the Jacobian has been set
+
+  Level: intermediate
+
+.seealso: PetscDSGetJacobianPreconditioner(), PetscDSSetJacobianPreconditioner(), PetscDSGetJacobian()
+@*/
+PetscErrorCode PetscDSHasJacobian(PetscDS prob, PetscBool *hasJac)
+{
+  PetscInt f, g, h;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  *hasJac = PETSC_FALSE;
+  for (f = 0; f < prob->Nf; ++f) {
+    for (g = 0; g < prob->Nf; ++g) {
+      for (h = 0; h < 4; ++h) {
+        if (prob->g[(f*prob->Nf + g)*4+h]) *hasJac = PETSC_TRUE;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDSGetJacobian"
 /*@C
   PetscDSGetJacobian - Get the pointwise Jacobian function for given test and basis field
