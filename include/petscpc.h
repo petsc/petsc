@@ -274,7 +274,6 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);

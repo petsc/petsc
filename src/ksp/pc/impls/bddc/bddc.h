@@ -62,7 +62,7 @@ typedef struct {
   PCBDDCGraph         mat_graph;
   MatNullSpace        onearnullspace;
   PetscObjectState    *onearnullvecs_state;
-  MatNullSpace        NullSpace;
+  PetscBool           NullSpace_corr[4];
   IS                  user_primal_vertices;
   PetscBool           use_nnsp_true;
   PetscBool           use_qr_single;
