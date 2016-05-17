@@ -356,11 +356,6 @@ PetscErrorCode PCBDDCSetUpSolvers(PC pc)
   /* PCBDDCSetUpLocalScatters should be called first! */
   ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
 
-  /* Change global null space passed in by the user if change of basis has been requested */
-  if (pcbddc->NullSpace && pcbddc->ChangeOfBasisMatrix) {
-    ierr = PCBDDCNullSpaceAdaptGlobal(pc);CHKERRQ(ierr);
-  }
-
   /*
      Setup local correction and local part of coarse basis.
      Gives back the dense local part of the coarse matrix in column major ordering
@@ -2012,26 +2007,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
       n_ISForFaces = 0;
     }
-
-#if defined(PETSC_USE_DEBUG)
-    /* HACK: when solving singular problems not using vertices, a change of basis is mandatory.
-       Also use_change_of_basis should be consistent among processors */
-    if (pcbddc->NullSpace) {
-      PetscBool tbool[2],gbool[2];
-
-      if (!ISForVertices && !pcbddc->user_ChangeOfBasisMatrix) {
-        pcbddc->use_change_of_basis = PETSC_TRUE;
-        if (!ISForEdges) {
-          pcbddc->use_change_on_faces = PETSC_TRUE;
-        }
-      }
-      tbool[0] = pcbddc->use_change_of_basis;
-      tbool[1] = pcbddc->use_change_on_faces;
-      ierr = MPIU_Allreduce(tbool,gbool,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-      pcbddc->use_change_of_basis = gbool[0];
-      pcbddc->use_change_on_faces = gbool[1];
-    }
-#endif
 
     /* check if near null space is attached to global mat */
     ierr = MatGetNearNullSpace(pc->pmat,&nearnullsp);CHKERRQ(ierr);
@@ -4440,13 +4415,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = MatView(coarse_mat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-#endif
-
-  /* Compute coarse null space (special handling by BDDC only) */
-#if 0
-  if (pcbddc->NullSpace) {
-    ierr = PCBDDCNullSpaceAssembleCoarse(pc,coarse_mat,&CoarseNullSpace);CHKERRQ(ierr);
   }
 #endif
 
