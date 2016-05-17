@@ -1,6 +1,6 @@
 
 /*
-        Provides an interface to the SuperLU_DIST_2.2 sparse solver
+        Provides an interface to the SuperLU_DIST sparse solver
 */
 
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -55,7 +55,7 @@ typedef struct {
 #define __FUNCT__ "MatSuperluDistGetDiagU_SuperLU_DIST"
 PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
 {
-  Mat_SuperLU_DIST  *lu= (Mat_SuperLU_DIST*)F->spptr;
+  Mat_SuperLU_DIST  *lu= (Mat_SuperLU_DIST*)F->data;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -75,6 +75,9 @@ PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   ierr = PetscTryMethod(F,"MatSuperluDistGetDiagU_C",(Mat,PetscScalar*),(F,diagU));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SuperLU_DIST"
 static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
