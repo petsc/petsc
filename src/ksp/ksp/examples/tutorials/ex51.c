@@ -59,6 +59,7 @@ int main(int argc,char **args)
   ierr  = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr  = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr  = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr  = MatSetUp(A);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
@@ -66,6 +67,7 @@ int main(int argc,char **args)
   ierr  = MatCreate(PETSC_COMM_WORLD,&Mass);CHKERRQ(ierr);
   ierr  = MatSetSizes(Mass,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr  = MatSetFromOptions(Mass);CHKERRQ(ierr);
+  ierr  = MatSetUp(Mass);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
@@ -472,7 +474,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
 
 
 /******************************************************************************/
-static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp, PetscReal *Ln)
+static void qAndLEvaluation(int n, PetscReal x, PetscReal *q, PetscReal *qp, PetscReal *Ln)
 /*******************************************************************************
 Compute the polynomial qn(x) = L_{N+1}(x) - L_{n-1}(x) and its derivative in
 addition to L_N(x) as these are needed for the GLL points.  See the book titled
