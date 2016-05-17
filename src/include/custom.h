@@ -28,6 +28,10 @@ typedef PetscErrorCode (*PetscErrorHandlerFunction)
 
 /* ---------------------------------------------------------------- */
 
+#if !defined(PETSC_USE_LOG)
+static PetscStageLog petsc_stageLog = NULL;
+#endif
+
 #define PetscCLASSID(stageLog,index) \
         ((stageLog)->classLog->classInfo[(index)].classid)
 
@@ -152,6 +156,21 @@ PetscLogEventFindName(PetscLogEvent eventid,
   }
   PetscFunctionReturn(0);
 }
+
+#if !defined(PETSC_USE_LOG)
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogEventGetPerfInfo"
+static PetscErrorCode
+PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(info,3);
+  (void)stage; (void)event; /* unused */
+  ierr = PetscMemzero(info,sizeof(PetscEventPerfInfo));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
 
 /* ---------------------------------------------------------------- */
 
