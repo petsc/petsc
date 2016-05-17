@@ -35,7 +35,7 @@ PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
 PetscLogEvent MAT_Merge,MAT_Residual;
-PetscLogEvent Mat_Coloring_Apply,Mat_Coloring_Comm,Mat_Coloring_Local,Mat_Coloring_ISCreate,Mat_Coloring_SetUp,Mat_Coloring_Weights;
+PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
@@ -737,6 +737,12 @@ PetscErrorCode MatSetUp(Mat A)
   if (!A->preallocated && A->ops->setup) {
     ierr = PetscInfo(A,"Warning not preallocating matrix storage\n");CHKERRQ(ierr);
     ierr = (*A->ops->setup)(A);CHKERRQ(ierr);
+  }
+  if (A->rmap->n < 0 || A->rmap->N < 0) {
+    ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  }
+  if (A->cmap->n < 0 || A->cmap->N < 0) {
+    ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   }
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -2764,6 +2770,21 @@ PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetInfo_External"
+/*
+   This is used by external packages where it is not easy to get the info from the actual 
+   matrix factorization.
+*/
+PetscErrorCode MatGetInfo_External(Mat A,MatInfoType flag,MatInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(info,sizeof(MatInfo));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------*/
 
 #undef __FUNCT__
@@ -4079,6 +4100,7 @@ PetscErrorCode MatSolverPackageRegister(const MatSolverPackage package,const Mat
   while (next) {
     ierr = PetscStrcasecmp(package,next->name,&flg);CHKERRQ(ierr);
     if (flg) {
+      if (!next->handlers) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatSolverPackageHolder is missing handlers");
       inext = next->handlers;
       while (inext) {
         ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
@@ -8388,7 +8410,7 @@ PetscErrorCode MatGetInertia(Mat mat,PetscInt *nneg,PetscInt *nzero,PetscInt *np
   PetscValidType(mat,1);
   if (!mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Numeric factor mat is not assembled");
-  if (!mat->ops->getinertia) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->getinertia) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->getinertia)(mat,nneg,nzero,npos);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

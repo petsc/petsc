@@ -43,8 +43,7 @@ int main(int argc,char **argv)
   PetscReal      litspit;
   DM             da;
 
-  PetscInitialize(&argc,&argv,NULL,help);
-
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   /*
       Set the DMDA (grid structure) for the grids.
   */
@@ -66,8 +65,7 @@ int main(int argc,char **argv)
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

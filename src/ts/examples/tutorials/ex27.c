@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = SetFromOptions(&ctx);CHKERRQ(ierr);
   ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);

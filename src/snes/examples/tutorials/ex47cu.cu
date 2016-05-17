@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   char           *tmp,typeName[256];
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrstr(typeName,"cusp",&tmp);CHKERRQ(ierr);
@@ -51,8 +51,8 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 struct ApplyStencil

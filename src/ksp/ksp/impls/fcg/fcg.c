@@ -43,7 +43,7 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_FCG"
-PetscErrorCode    KSPSetUp_FCG(KSP ksp)
+static PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
@@ -85,7 +85,7 @@ PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_FCG"
-PetscErrorCode KSPSolve_FCG(KSP ksp)
+static PetscErrorCode KSPSolve_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,k,idx,mi;
@@ -268,7 +268,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_FCG"
-PetscErrorCode KSPDestroy_FCG(KSP ksp)
+static PetscErrorCode KSPDestroy_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -297,7 +297,7 @@ PetscErrorCode KSPDestroy_FCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_FCG"
-PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
+static PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
 {
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
   PetscErrorCode ierr;
@@ -512,7 +512,7 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FCG"
-PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;

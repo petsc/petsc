@@ -70,7 +70,7 @@ Vec Object: 1 MPI processes
 1.0625
 -0.375
 Initial guess
-Vec Object:solution 1 MPI processes
+Vec Object: solution 1 MPI processes
   type: seq
 -1
 -0.5

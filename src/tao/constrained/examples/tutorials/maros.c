@@ -78,7 +78,7 @@ PetscErrorCode main(int argc,char **argv)
   AppCtx             user;                /* application context */
 
   /* Initialize TAO,PETSc */
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   /* Specify default parameters for the problem, check for command-line overrides */
   ierr = PetscStrncpy(user.name,"HS21",8);CHKERRQ(ierr);
@@ -127,8 +127,8 @@ PetscErrorCode main(int argc,char **argv)
   ierr = VecDestroy(&cin);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 #undef __FUNCT__

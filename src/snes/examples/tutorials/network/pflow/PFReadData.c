@@ -81,9 +81,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
       double gl,bl,vm,va,basekV;
       int    bus_i,ide,area;
       /* Bus data */
-      sscanf(line,"%d %d %lf %lf %lf %lf %d %lf %lf %lf",		\
-	     &bus_i,&ide,&Pd,&Qd,&gl,	\
-	     &bl,&area,&vm,&va,&basekV);
+      sscanf(line,"%d %d %lf %lf %lf %lf %d %lf %lf %lf",&bus_i,&ide,&Pd,&Qd,&gl,&bl,&area,&vm,&va,&basekV);
       Bus[busi].bus_i = bus_i; Bus[busi].ide = ide; Bus[busi].area = area;
       Bus[busi].gl = gl; Bus[busi].bl = bl;
       Bus[busi].vm = vm; Bus[busi].va = va; Bus[busi].basekV = basekV;
@@ -98,8 +96,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 	Load[loadi].area = Bus[busi].area;
 	Load[loadi].internal_i = busi;
 	Bus[busi].lidx[Bus[busi].nload++] = loadi;
-	if (Bus[busi].nload > NLOAD_AT_BUS_MAX)
-	  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exceeded maximum number of loads allowed at bus");
+	if (Bus[busi].nload > NLOAD_AT_BUS_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exceeded maximum number of loads allowed at bus");
 	loadi++;
       }
       busi++;
@@ -109,9 +106,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
     if (i >= gen_start_line && i < gen_end_line) {
       double pg,qg,qt,qb,vs,mbase,pt,pb;
       int    bus_i,status;
-      sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d %lf %lf",&bus_i, \
-	     &pg,&qg,&qt,&qb, \
-	     &vs,&mbase,&status,&pt,&pb);
+      sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d %lf %lf",&bus_i,&pg,&qg,&qt,&qb,&vs,&mbase,&status,&pt,&pb);
       Gen[geni].bus_i = bus_i; Gen[geni].status = status;
       Gen[geni].pg = pg; Gen[geni].qg = qg; Gen[geni].qt = qt; Gen[geni].qb = qb;
       Gen[geni].vs = vs; Gen[geni].mbase = mbase; Gen[geni].pt = pt; Gen[geni].pb = pb;
@@ -125,14 +120,12 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
       if (Bus[intbusnum].ngen > NGEN_AT_BUS_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exceeded maximum number of generators allowed at bus");
       geni++;
     }
-    
+
     if (i >= br_start_line && i < br_end_line) {
       PetscScalar R,X,Bc,B,G,Zm,tap,shift,tap2,tapr,tapi;
       double      r,x,b,rateA,rateB,rateC,tapratio,phaseshift;
       int         fbus,tbus,status;
-      sscanf(line,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %d",&fbus,&tbus, \
-	     &r,&x,&b,&rateA,&rateB,&rateC, \
-	     &tapratio,&phaseshift,&status);
+      sscanf(line,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %d",&fbus,&tbus,&r,&x,&b,&rateA,&rateB,&rateC,&tapratio,&phaseshift,&status);
       Branch[bri].fbus = fbus; Branch[bri].tbus = tbus; Branch[bri].status = status;
       Branch[bri].r = r; Branch[bri].x = x; Branch[bri].b = b;
       Branch[bri].rateA = rateA; Branch[bri].rateB = rateB; Branch[bri].rateC = rateC;
@@ -185,10 +178,10 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   ierr = PetscMalloc(pf->nload*sizeof(struct _p_LOAD),&newload);CHKERRQ(ierr);
   for (i = 0; i < pf->nbus; i++) {
     for (j = 0; j < pf->bus[i].ngen; j++) {
-      ierr = PetscMemcpy(&newgen[genj++],&pf->gen[pf->bus[i].gidx[j]],sizeof(struct _p_GEN));
+      ierr = PetscMemcpy(&newgen[genj++],&pf->gen[pf->bus[i].gidx[j]],sizeof(struct _p_GEN));CHKERRQ(ierr);
     }
     for (j = 0; j < pf->bus[i].nload; j++) {
-      ierr = PetscMemcpy(&newload[loadj++],&pf->load[pf->bus[i].lidx[j]],sizeof(struct _p_LOAD));
+      ierr = PetscMemcpy(&newload[loadj++],&pf->load[pf->bus[i].lidx[j]],sizeof(struct _p_LOAD));CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(pf->gen);CHKERRQ(ierr);

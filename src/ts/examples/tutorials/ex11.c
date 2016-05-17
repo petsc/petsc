@@ -1703,7 +1703,7 @@ int main(int argc, char **argv)
   ierr = PetscFVDestroy(&fvm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }
 
 /* Godunov fluxs */

@@ -137,7 +137,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   DM             da;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   PetscOptionsSetValue(NULL,"-file","ex30_output");
   PetscOptionsSetValue(NULL,"-snes_monitor_short",NULL);
   PetscOptionsSetValue(NULL,"-snes_max_it","20");
@@ -205,7 +205,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /*=====================================================================
@@ -220,7 +220,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 {
   KSP                 ksp;
   PC                  pc;
-  SNESConvergedReason reason;
+  SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
   Parameter           *param   = user->param;
   PetscReal           cont_incr=0.3;
   PetscInt            its;
@@ -284,8 +284,8 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
     }
   }
 done:
-  if (param->stop_solve && !q) PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: stopping solve.\n");
-  if (reason<0 && !q) PetscPrintf(PETSC_COMM_WORLD,"FAILED TO CONVERGE: stopping solve.\n");
+  if (param->stop_solve && !q) {ierr = PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: stopping solve.\n");CHKERRQ(ierr);}
+  if (reason<0 && !q) {ierr = PetscPrintf(PETSC_COMM_WORLD,"FAILED TO CONVERGE: stopping solve.\n");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -899,7 +899,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 
   ierr = PetscOptionsHasName(NULL,NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-test",&(param->param_test));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));
+  ierr = PetscOptionsGetString(NULL,NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));CHKERRQ(ierr);
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */
@@ -957,20 +957,20 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
   ierr = PetscGetDate(date,30);CHKERRQ(ierr);
 
   if (!(param->quiet)) {
-    PetscPrintf(PETSC_COMM_WORLD,"---------------------BEGIN ex30 PARAM REPORT-------------------\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"---------------------BEGIN ex30 PARAM REPORT-------------------\n");CHKERRQ(ierr);
     /* PetscPrintf(PETSC_COMM_WORLD,"                   %s\n",&(date[0]));*/
 
-    PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",(double)param->width,(double)param->depth);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",(double)(param->slab_dip*180.0/PETSC_PI),(double)param->slab_velocity);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",param->lid_depth*param->L,param->fault_depth*param->L);CHKERRQ(ierr);
 
-    PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,(double)grid->dx*param->L,(double)(grid->dz*param->L));CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  jlid = %3D              jfault = %3D \n",grid->jlid,grid->jfault);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %g\n",(double)param->peclet);CHKERRQ(ierr);
 
-    PetscPrintf(PETSC_COMM_WORLD,"\nRheology:");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nRheology:");CHKERRQ(ierr);
     if (param->ivisc==VISC_CONST) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Isoviscous \n");CHKERRQ(ierr);
       if (param->pv_analytic) {
@@ -990,7 +990,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       ierr_out = 1;
     }
 
-    PetscPrintf(PETSC_COMM_WORLD,"Boundary condition:");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Boundary condition:");CHKERRQ(ierr);
     if (param->ibound==BC_ANALYTIC) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"       Isoviscous Analytic Dirichlet \n");CHKERRQ(ierr);
     } else if (param->ibound==BC_NOSTRESS) {
@@ -1004,12 +1004,12 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 
     if (param->output_to_file)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-      PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Mat file \"%s\"\n",param->filename);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Mat file \"%s\"\n",param->filename);CHKERRQ(ierr);
 #else
-      PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);CHKERRQ(ierr);
 #endif
     if (param->output_ivisc != param->ivisc) {
-      PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc);CHKERRQ(ierr);
     }
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"---------------------END ex30 PARAM REPORT---------------------\n");CHKERRQ(ierr);
@@ -1105,23 +1105,23 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
     if (!rank) { /* on processor 0 */
       ierr = VecSetSizes(pars, 20, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
-      ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);
-      ierr = VecSetValue(pars,1, (PetscScalar)(grid->nj),INSERT_VALUES);
-      ierr = VecSetValue(pars,2, (PetscScalar)(grid->dx),INSERT_VALUES);
-      ierr = VecSetValue(pars,3, (PetscScalar)(grid->dz),INSERT_VALUES);
-      ierr = VecSetValue(pars,4, (PetscScalar)(param->L),INSERT_VALUES);
-      ierr = VecSetValue(pars,5, (PetscScalar)(param->V),INSERT_VALUES);
+      ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,1, (PetscScalar)(grid->nj),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,2, (PetscScalar)(grid->dx),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,3, (PetscScalar)(grid->dz),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,4, (PetscScalar)(param->L),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,5, (PetscScalar)(param->V),INSERT_VALUES);CHKERRQ(ierr);
       /* skipped 6 intentionally */
-      ierr = VecSetValue(pars,7, (PetscScalar)(param->slab_dip),INSERT_VALUES);
-      ierr = VecSetValue(pars,8, (PetscScalar)(grid->jlid),INSERT_VALUES);
-      ierr = VecSetValue(pars,9, (PetscScalar)(param->lid_depth),INSERT_VALUES);
-      ierr = VecSetValue(pars,10,(PetscScalar)(grid->jfault),INSERT_VALUES);
-      ierr = VecSetValue(pars,11,(PetscScalar)(param->fault_depth),INSERT_VALUES);
-      ierr = VecSetValue(pars,12,(PetscScalar)(param->potentialT),INSERT_VALUES);
-      ierr = VecSetValue(pars,13,(PetscScalar)(param->ivisc),INSERT_VALUES);
-      ierr = VecSetValue(pars,14,(PetscScalar)(param->visc_cutoff),INSERT_VALUES);
-      ierr = VecSetValue(pars,15,(PetscScalar)(param->ibound),INSERT_VALUES);
-      ierr = VecSetValue(pars,16,(PetscScalar)(its),INSERT_VALUES);
+      ierr = VecSetValue(pars,7, (PetscScalar)(param->slab_dip),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,8, (PetscScalar)(grid->jlid),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,9, (PetscScalar)(param->lid_depth),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,10,(PetscScalar)(grid->jfault),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,11,(PetscScalar)(param->fault_depth),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,12,(PetscScalar)(param->potentialT),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,13,(PetscScalar)(param->ivisc),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,14,(PetscScalar)(param->visc_cutoff),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,15,(PetscScalar)(param->ibound),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pars,16,(PetscScalar)(its),INSERT_VALUES);CHKERRQ(ierr);
     } else { /* on some other processor */
       ierr = VecSetSizes(pars, 0, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
@@ -1336,7 +1336,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
   PetscFunctionBeginUser;
   if (param->interrupted) {
     param->interrupted = PETSC_FALSE;
-    PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: exiting SNES solve. \n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: exiting SNES solve. \n");CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
     PetscFunctionReturn(0);
   } else if (param->toggle_kspmon) {
@@ -1348,14 +1348,14 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
       ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
 
       param->kspmon = PETSC_FALSE;
-      PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n");CHKERRQ(ierr);
     } else {
       PetscViewerAndFormat *vf;
       ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorSingularValue,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
 
       param->kspmon = PETSC_TRUE;
-      PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(SNESConvergedDefault(snes,it,xnorm,snorm,fnorm,reason,ctx));

@@ -34,7 +34,7 @@ int main(int argc,char **args)
   Vec            u,ustar,b;
   KSP            ksp;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
@@ -47,8 +47,6 @@ int main(int argc,char **args)
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
-    /* location of lower left corner of element */
-    x = h*(i % m); y = h*(i/m);
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -90,8 +88,7 @@ int main(int argc,char **args)
   for (i=2*m+1; i<m*(m+1); i+= m+1) rows[count++] = i;
 
   for (i=0; i<4*m; i++) {
-    x    = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
-    val  = y;
+    val = h*(rows[i]/(m+1));
     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -112,8 +109,7 @@ int main(int argc,char **args)
 
   /* check error */
   for (i=0; i<N; i++) {
-    x    = h*(i % (m+1)); y = h*(i/(m+1));
-    val  = y;
+    val  = h*(i/(m+1));
     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
@@ -130,5 +126,5 @@ int main(int argc,char **args)
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

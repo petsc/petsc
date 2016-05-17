@@ -29,7 +29,7 @@ int main(int argc,char **args)
   IS              coarseparts,fineparts;
   MPI_Comm        comm;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size != 4) SETERRQ(comm,1,"Must run with 4 processors");
@@ -92,5 +92,5 @@ int main(int argc,char **args)
   */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

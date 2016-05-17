@@ -44,7 +44,7 @@ iter =  39, Function value 1.49406, Residual: 2.9402e-06
 Tao Object: 3 MPI processes
   type: blmvm
       Gradient steps: 0
-  TaoLineSearch Object:   3 MPI processes
+  TaoLineSearch Object: 3 MPI processes
     type: more-thuente
   Active Set subset type: matrixfree
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=1e-05

@@ -73,8 +73,7 @@ int main(int argc,char **argv)
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
   /* Allocate vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f);CHKERRQ(ierr);
@@ -113,8 +112,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&f);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /*--------------------------------------------------------------------*/

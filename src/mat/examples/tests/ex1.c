@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscRandom    rand;
   PetscScalar    *array,rval;
 
-  PetscInitialize(&argc,&argv,(char*) 0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -154,6 +154,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = VecDestroy(&ytmp);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

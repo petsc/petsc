@@ -102,9 +102,9 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     }
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
     ierr   = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
-    if(pmetis->repartition){
+    if (pmetis->repartition){
       PetscStackCallParmetis(ParMETIS_V3_AdaptiveRepart,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,&itr,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
-    }else{
+    } else{
       PetscStackCallParmetis(ParMETIS_V3_PartKway,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
     }
     ierr   = MPI_Comm_free(&comm);CHKERRQ(ierr);
@@ -112,20 +112,22 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     ierr = PetscFree(tpwgts);CHKERRQ(ierr);
     ierr = PetscFree(ubvec);CHKERRQ(ierr);
     if (PetscLogPrintInfo) pmetis->printout = itmp;
-  }
 
-  if (bs > 1) {
-    PetscInt i,j,*newlocals;
-    ierr = PetscMalloc1(bs*amat->rmap->n,&newlocals);CHKERRQ(ierr);
-    for (i=0; i<amat->rmap->n; i++) {
-      for (j=0; j<bs; j++) {
-        newlocals[bs*i + j] = locals[i];
+    if (bs > 1) {
+      PetscInt i,j,*newlocals;
+      ierr = PetscMalloc1(bs*amat->rmap->n,&newlocals);CHKERRQ(ierr);
+      for (i=0; i<amat->rmap->n; i++) {
+        for (j=0; j<bs; j++) {
+          newlocals[bs*i + j] = locals[i];
+        }
       }
+      ierr = PetscFree(locals);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),bs*amat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+    } else {
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),amat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
     }
-    ierr = PetscFree(locals);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),bs*amat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),amat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),0,NULL,PETSC_COPY_VALUES,partitioning);CHKERRQ(ierr);
   }
 
   ierr = MatDestroy(&pmat);CHKERRQ(ierr);

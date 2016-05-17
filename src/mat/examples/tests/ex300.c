@@ -23,15 +23,11 @@ int main(int argc,char **args)
   PetscInt          d_nnz[3] = {0,0,0};
   PetscInt          o_nnz[3] = {0,0,0};
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  if (2 != size) {
-     printf("**** Relevant with 2 processes only.*****\n");
-     ierr = PetscFinalize();
-     return 1;
-  }
+  if (2 != size) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Relevant with 2 processes only");
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
 
 #ifdef SET_2nd_PROC_TO_HAVE_NO_LOCAL_LINES
@@ -65,17 +61,16 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);
+  ierr = MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(C, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatConvert(C,MATSAME, MAT_INITIAL_MATRIX, &lMatA);CHKERRQ(ierr);
   ierr = MatView(lMatA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  v = -1.0;
-  ierr = MatShift(lMatA,v);
+  ierr = MatShift(lMatA,-1.0);CHKERRQ(ierr);
 
   ierr = MatDestroy(&lMatA);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   Vec            x,y,z,y_t;
   VecScatter     toall,tozero;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = VecGetLocalSize(y,&len);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,len,PETSC_DECIDE,yy,&y_t);CHKERRQ(ierr);
   ierr = VecView(y_t,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&y_t);
+  ierr = VecDestroy(&y_t);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
 
   ierr = VecScatterCreateToAll(x,&tozero,&z);CHKERRQ(ierr);
@@ -65,6 +65,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&y);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

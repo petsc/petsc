@@ -155,9 +155,6 @@ PetscErrorCode test_vec_ops(void)
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  /*PetscPrintf(PETSC_COMM_WORLD, "X \n");*/
-  /*VecView(X, PETSC_VIEWER_STDOUT_WORLD);*/
-
   ierr = VecDot(X,X, &val);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n",(double) val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -239,9 +236,8 @@ PetscErrorCode test_axpy_dot_max(void)
   ierr       = VecDestroy(&y1);CHKERRQ(ierr);
   ierr       = VecDestroy(&y2);CHKERRQ(ierr);
 
-
   ierr = PetscPrintf(PETSC_COMM_WORLD, "VecAXPY \n");CHKERRQ(ierr);
-  ierr = VecAXPY(Y, 1.0, X); /* Y <- a X + Y */
+  ierr = VecAXPY(Y, 1.0, X);CHKERRQ(ierr); /* Y <- a X + Y */
   ierr = VecNestGetSubVec(Y, 0, &y1);CHKERRQ(ierr);
   ierr = VecNestGetSubVec(Y, 1, &y2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "(1) y1 = \n");CHKERRQ(ierr);
@@ -256,7 +252,7 @@ PetscErrorCode test_axpy_dot_max(void)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar), (double)real2);CHKERRQ(ierr);
 
 
-  ierr = VecAXPY(Y, 1.0, X); /* Y <- a X + Y */
+  ierr = VecAXPY(Y, 1.0, X);CHKERRQ(ierr); /* Y <- a X + Y */
   ierr = VecNestGetSubVec(Y, 0, &y1);CHKERRQ(ierr);
   ierr = VecNestGetSubVec(Y, 1, &y2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "(2) y1 = \n");CHKERRQ(ierr);
@@ -283,11 +279,11 @@ PetscErrorCode test_axpy_dot_max(void)
 
 int main(int argc, char **args)
 {
-  PetscInitialize(&argc, &args,(char*)0, help);
+  PetscErrorCode ierr;
 
-  test_view();
-  test_axpy_dot_max();
-
-  PetscFinalize();
-  return 0;
+  ierr = PetscInitialize(&argc, &args,(char*)0, help);if (ierr) return ierr;
+  ierr = test_view();CHKERRQ(ierr);
+  ierr = test_axpy_dot_max();CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  return ierr;
 }

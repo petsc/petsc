@@ -8,11 +8,11 @@ int main(int argc,char **argv)
 {
   PetscLogDouble x,y,z;
   PetscScalar    A[10000],B[10000];
-  int            i,ierr;
+  PetscInt       i;
+  PetscErrorCode ierr;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,0,0);
-
+  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   for (i=0; i<10000; i++) {
     A[i] = i%61897;
     B[i] = i%61897;
@@ -50,5 +50,5 @@ int main(int argc,char **argv)
   fprintf(stdout,"    %-15s : %e sec\n","Per PetscScalar",(2*y-x-z)/100000);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }

@@ -24,8 +24,7 @@ int main(int argc,char **args)
   PetscViewer    view;
   PetscBool      opt;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Read in matrix and RHS */
   ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&opt);CHKERRQ(ierr);
   if (!opt) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "No filename was specified for this test");
@@ -97,7 +96,9 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-#endif
+  return ierr;
+#else
   return 0;
+#endif
 }
 

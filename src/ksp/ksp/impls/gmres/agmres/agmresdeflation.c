@@ -106,13 +106,14 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   PetscScalar    *Q      = agmres->Q;
   PetscScalar    *Z      = agmres->Z;
   PetscScalar    *work   = agmres->work;
-  PetscInt       *select = agmres->select;
+  PetscBLASInt   *select = agmres->select;
   PetscInt       *perm   = agmres->perm;
-  PetscInt       sdim    = 0;
-  PetscInt       i,j, info;
+  PetscBLASInt   sdim    = 0;
+  PetscInt       i,j;
+  PetscBLASInt   info;
   PetscErrorCode ierr;
-  PetscInt       *iwork = agmres->iwork;
-  PetscBLASInt   N;
+  PetscBLASInt   *iwork = agmres->iwork;
+  PetscBLASInt   N = MAXKSPSIZE;
   PetscBLASInt   lwork,liwork;
   PetscBLASInt   ilo,ihi;
   PetscBLASInt   ijob,wantQ,wantZ;
@@ -126,7 +127,6 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   ierr  = PetscBLASIntCast(2*N*neig,&liwork);CHKERRQ(ierr);
   ilo   = 1;
   ierr  = PetscBLASIntCast(KspSize,&ihi);CHKERRQ(ierr);
-  N     = MAXKSPSIZE;
 
   /* Compute the Schur form */
   if (IsReduced) {                /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
@@ -163,7 +163,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
     else r += 1;
   }
   /* Reorder the Schur decomposition so that the cluster of smallest/largest eigenvalues appears in the leading diagonal blocks of A (and B)*/
-  ierr = PetscMemzero(select, N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(select, N*sizeof(PetscBLASInt));CHKERRQ(ierr);
   if (!agmres->GreatestEig) {
     for (j = 0; j < r; j++) select[perm[j]] = 1;
   } else {
@@ -215,8 +215,10 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   PetscInt       max_k = agmres->max_k;     /* size of the non - augmented subspace */
   PetscInt       CurNeig;       /* CUrrent number of extracted eigenvalues */
   PetscInt       N        = MAXKSPSIZE;
+  PetscBLASInt   bN;
   PetscInt       lC       = N + 1;
   PetscInt       KspSize  = KSPSIZE;
+  PetscBLASInt   blC,bKspSize;
   PetscInt       PrevNeig = agmres->r;
 
   PetscFunctionBegin;
@@ -225,7 +227,10 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   /* Explicitly form MatEigL = H^T*H, It can also be formed as H^T+h_{N+1,N}H^-1e^T */
   alpha = 1.0;
   beta  = 0.0;
-  PetscStackCallBLAS("BLASgemm",BLASgemm_("T", "N", &KspSize, &KspSize, &lC, &alpha, agmres->hes_origin, &lC, agmres->hes_origin, &lC, &beta, MatEigL, &N));
+  ierr = PetscBLASIntCast(KspSize,&bKspSize);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(lC,&blC);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
+  PetscStackCallBLAS("BLASgemm",BLASgemm_("T", "N", &bKspSize, &bKspSize, &blC, &alpha, agmres->hes_origin, &blC, agmres->hes_origin, &blC, &beta, MatEigL, &bN));
   if (!agmres->ritz) {
     /* Form TmpU = V*H where V is the Newton basis orthogonalized  with roddec*/
     for (j = 0; j < KspSize; j++) {
@@ -255,7 +260,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
 
   if (agmres->DeflPrecond) { /* Switch to DGMRES to improve the basis of the invariant subspace associated to the deflation */
     agmres->HasSchur = PETSC_TRUE;
-    ierr             = KSPDGMRESComputeDeflationData_DGMRES(ksp, &CurNeig);CHKERRQ(ierr);
+    ierr             = KSPDGMRESComputeDeflationData(ksp, &CurNeig);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   /* Form the Schur vectors in the entire subspace: U = W * Sr where W = [VEC_V(1:max_k); U]*/

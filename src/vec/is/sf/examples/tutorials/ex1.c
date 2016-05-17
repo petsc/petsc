@@ -23,11 +23,11 @@ int main(int argc,char **argv)
   PetscMPIInt    rank,size;
   PetscSF        sf;
   PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert;
-  MPI_Op         mop;
+  MPI_Op         mop=MPI_OP_NULL; /* initialize to prevent compiler warnings with cxx_quad build */
   char           opstring[256];
   PetscBool      strflg;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -260,5 +260,5 @@ int main(int argc,char **argv)
   /* Clean storage for star forest. */
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

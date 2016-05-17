@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscBool      different=PETSC_FALSE,skip=PETSC_FALSE;
   PetscInt       m0,m1,n=128,i;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL,NULL,"-different",&different,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-skip",&skip,NULL);CHKERRQ(ierr);
   /*
@@ -54,5 +54,5 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

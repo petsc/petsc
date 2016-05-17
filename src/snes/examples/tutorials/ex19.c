@@ -117,8 +117,7 @@ int main(int argc,char **argv)
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
   ierr = SNESSetNGS(snes, NonlinearGS, (void*)&user);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
@@ -177,7 +176,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* ------------------------------------------------------------------- */
@@ -440,7 +439,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   /* Test whether we are on the bottom edge of the global array */
   if (yints == 0) {
     j     = 0;
-    yints = yints + 1;
     /* bottom edge */
     for (i=info.xs; i<info.xs+info.xm; i++) {
 
@@ -459,7 +457,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   /* Test whether we are on the top edge of the global array */
   if (yinte == info.my) {
     j     = info.my - 1;
-    yinte = yinte - 1;
     /* top edge */
     for (i=info.xs; i<info.xs+info.xm; i++) {
       if (B) {
@@ -477,7 +474,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   /* Test whether we are on the left edge of the global array */
   if (xints == 0) {
     i     = 0;
-    xints = xints + 1;
     /* left edge */
     for (j=info.ys; j<info.ys+info.ym; j++) {
       if (B) {
@@ -495,7 +491,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   /* Test whether we are on the right edge of the global array */
   if (xinte == info.mx) {
     i     = info.mx - 1;
-    xinte = xinte - 1;
     /* right edge */
     for (j=info.ys; j<info.ys+info.ym; j++) {
       if (B) {
@@ -571,8 +566,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
             u     = x[j][i].temp;
             uxx   = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
             uyy   = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-            ftemp =  uxx + uyy  + prandtl*((vxp*(u - x[j][i-1].temp) + vxm*(x[j][i+1].temp - u))*hy +
-                                           (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u))*hx) - bjitemp;
+            ftemp =  uxx + uyy  + prandtl*((vxp*(u - x[j][i-1].temp) + vxm*(x[j][i+1].temp - u))*hy + (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u))*hx) - bjitemp;
             dftdt = 2.0*(hydhx + hxdhy) + prandtl*((vxp - vxm)*hy + (vyp - vym)*hx);
             if (PetscRealPart(vx) > 0.0) dftdu = prandtl*(u - x[j][i-1].temp)*hy;
             else dftdu = prandtl*(x[j][i+1].temp - u)*hy;
@@ -589,7 +583,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
            */
             yu = fu / dfudu;
             yv = fv / dfvdv;
-            yt = ftemp / dftdt;
             yo = (fomega - (dfodu*yu + dfodv*yv)) / dfodo;
             yt = (ftemp - (dftdu*yu + dftdv*yv)) / dftdt;
 

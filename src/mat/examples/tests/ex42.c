@@ -24,7 +24,7 @@ int main(int argc,char **args)
   PetscBool      test_unsorted = PETSC_FALSE;
   PetscScalar    rand;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
@@ -128,8 +128,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();
 #endif
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

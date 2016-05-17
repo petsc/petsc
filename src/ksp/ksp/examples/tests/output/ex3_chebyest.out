@@ -1,4 +1,4 @@
-KSP Object:(esteig_) 1 MPI processes
+KSP Object: (esteig_) 1 MPI processes
   type: gmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30

@@ -15,13 +15,12 @@ PC Object: 1 MPI processes
     matrix ordering: natural
     factor fill ratio given 0., needed 0.
       Factored matrix follows:
-        Mat Object:         1 MPI processes
-          type: seqaij
+        Mat Object: 1 MPI processes
+          type: cholmod
           rows=512, cols=512
           package used to perform factorization: cholmod
           total: nonzeros=0, allocated nonzeros=0
           total number of mallocs used during MatSetValues calls =0
-              block size is -1
             CHOLMOD run parameters:
               Pack factors after symbolic factorization: TRUE
               Common.dbound            0.  (Smallest absolute value of diagonal entries of D)
@@ -56,7 +55,7 @@ PC Object: 1 MPI processes
               Common.rowfacfl          0. (number of flops in last call to cholmod_rowfac)
               Common.aatfl             0. (number of flops to compute A(:,f)*A(:,f)')
   linear system matrix = precond matrix:
-  Mat Object:   1 MPI processes
+  Mat Object: 1 MPI processes
     type: seqaij
     rows=512, cols=512
     total: nonzeros=3200, allocated nonzeros=3200

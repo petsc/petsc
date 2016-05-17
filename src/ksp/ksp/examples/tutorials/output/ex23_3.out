@@ -16,7 +16,7 @@ KSP Object: 2 MPI processes
 PC Object: 2 MPI processes
   type: jacobi
   linear system matrix = precond matrix:
-  Mat Object:   2 MPI processes
+  Mat Object: 2 MPI processes
     type: mpiaij
     rows=10, cols=10
     total: nonzeros=28, allocated nonzeros=100

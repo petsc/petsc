@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   for (i=0; i<1000; i++) {
@@ -22,6 +22,6 @@ int main(int argc,char **args)
     ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

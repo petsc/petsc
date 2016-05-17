@@ -23,11 +23,10 @@ int main(int argc,char **args)
   PetscRandom       r;
 
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
-
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
 
   /* Load the matrix as AIJ format */
@@ -83,13 +82,12 @@ int main(int argc,char **args)
   ierr  = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
   rnorm = ((norm1-norm2)*100)/norm1;
   if (rnorm<-0.1 || rnorm>0.01) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);CHKERRQ(ierr);
-    SETERRQ(PETSC_COMM_SELF,1,"MatDiagonalScale() failed");
+    SETERRQ2(PETSC_COMM_SELF,1,"MatDiagonalScale() failed Norm1 %g Norm2 %g",(double)norm1,(double)norm2);
   }
 
   /* Test MatGetRow()/ MatRestoreRow() */
   for (ct=0; ct<100; ct++) {
-    ierr = PetscRandomGetValue(r,&rval);
+    ierr = PetscRandomGetValue(r,&rval);CHKERRQ(ierr);
     row  = (int)(rval*m);
     ierr = MatGetRow(A,row,&ncols1,&cols1,&vals1);CHKERRQ(ierr);
     ierr = MatGetRow(B,row,&ncols2,&cols2,&vals2);CHKERRQ(ierr);
@@ -104,14 +102,14 @@ int main(int argc,char **args)
     ierr = MatRestoreRow(B,row,&ncols2,&cols2,&vals2);CHKERRQ(ierr);
   }
 
-  MatDestroy(&A);
-  MatDestroy(&B);
-  MatDestroy(&C);
-  VecDestroy(&x);
-  VecDestroy(&y);
-  PetscRandomDestroy(&r);
-  ierr = PetscFinalize();
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
 #endif
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

@@ -3,105 +3,11 @@
 
 const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","SNESFASType","SNES_FAS",0};
 
-extern PetscErrorCode SNESDestroy_FAS(SNES snes);
-extern PetscErrorCode SNESSetUp_FAS(SNES snes);
-extern PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes);
-extern PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer);
-extern PetscErrorCode SNESSolve_FAS(SNES snes);
-extern PetscErrorCode SNESReset_FAS(SNES snes);
-extern PetscErrorCode SNESFASGalerkinDefaultFunction(SNES, Vec, Vec, void*);
-extern PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES*);
-
-/*MC
-
-SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
-
-   The nonlinear problem is solved by correction using coarse versions
-   of the nonlinear problem.  This problem is perturbed so that a projected
-   solution of the fine problem elicits no correction from the coarse problem.
-
-Options Database:
-+   -snes_fas_levels -  The number of levels
-.   -snes_fas_cycles<1> -  The number of cycles -- 1 for V, 2 for W
-.   -snes_fas_type<additive,multiplicative,full,kaskade>  -  Additive or multiplicative cycle
-.   -snes_fas_galerkin<PETSC_FALSE> -  Form coarse problems by projection back upon the fine problem
-.   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
-.   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
-.   -snes_fas_monitor -  Monitor progress of all of the levels
-.   -snes_fas_full_downsweep<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
-.   -fas_levels_snes_ -  SNES options for all smoothers
-.   -fas_levels_cycle_snes_ -  SNES options for all cycles
-.   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
-.   -fas_levels_i_cycle_snes_ - SNES options for the cycle on level i
--   -fas_coarse_snes_ -  SNES options for the coarsest smoother
-
-Notes:
-   The organization of the FAS solver is slightly different from the organization of PCMG
-   As each level has smoother SNES instances(down and potentially up) and a cycle SNES instance.
-   The cycle SNES instance may be used for monitoring convergence on a particular level.
-
-Level: beginner
-
-   References:
-. 1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
-   SIAM Review, 57(4), 2015
-
-.seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
-M*/
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_FAS"
-PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
-{
-  SNES_FAS       *fas;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  snes->ops->destroy        = SNESDestroy_FAS;
-  snes->ops->setup          = SNESSetUp_FAS;
-  snes->ops->setfromoptions = SNESSetFromOptions_FAS;
-  snes->ops->view           = SNESView_FAS;
-  snes->ops->solve          = SNESSolve_FAS;
-  snes->ops->reset          = SNESReset_FAS;
-
-  snes->usesksp = PETSC_FALSE;
-  snes->usespc  = PETSC_FALSE;
-
-  if (!snes->tolerancesset) {
-    snes->max_funcs = 30000;
-    snes->max_its   = 10000;
-  }
-
-  ierr = PetscNewLog(snes,&fas);CHKERRQ(ierr);
-
-  snes->data                  = (void*) fas;
-  fas->level                  = 0;
-  fas->levels                 = 1;
-  fas->n_cycles               = 1;
-  fas->max_up_it              = 1;
-  fas->max_down_it            = 1;
-  fas->smoothu                = NULL;
-  fas->smoothd                = NULL;
-  fas->next                   = NULL;
-  fas->previous               = NULL;
-  fas->fine                   = snes;
-  fas->interpolate            = NULL;
-  fas->restrct                = NULL;
-  fas->inject                 = NULL;
-  fas->usedmfornumberoflevels = PETSC_FALSE;
-  fas->fastype                = SNES_FAS_MULTIPLICATIVE;
-  fas->full_downsweep         = PETSC_FALSE;
-
-  fas->eventsmoothsetup    = 0;
-  fas->eventsmoothsolve    = 0;
-  fas->eventresidual       = 0;
-  fas->eventinterprestrict = 0;
-  PetscFunctionReturn(0);
-}
+extern PetscErrorCode SNESFASGalerkinDefaultFunction(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_FAS"
-PetscErrorCode SNESReset_FAS(SNES snes)
+static PetscErrorCode SNESReset_FAS(SNES snes)
 {
   PetscErrorCode ierr  = 0;
   SNES_FAS       * fas = (SNES_FAS*)snes->data;
@@ -123,7 +29,7 @@ PetscErrorCode SNESReset_FAS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_FAS"
-PetscErrorCode SNESDestroy_FAS(SNES snes)
+static PetscErrorCode SNESDestroy_FAS(SNES snes)
 {
   SNES_FAS       * fas = (SNES_FAS*)snes->data;
   PetscErrorCode ierr  = 0;
@@ -140,7 +46,7 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_FAS"
-PetscErrorCode SNESSetUp_FAS(SNES snes)
+static PetscErrorCode SNESSetUp_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS*) snes->data;
   PetscErrorCode ierr;
@@ -311,7 +217,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_FAS"
-PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_FAS       *fas   = (SNES_FAS*) snes->data;
   PetscInt       levels = 1;
@@ -411,7 +317,7 @@ PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES 
 #include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "SNESView_FAS"
-PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
+static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
 {
   SNES_FAS       *fas = (SNES_FAS*) snes->data;
   PetscBool      isFine,iascii,isdraw;
@@ -497,7 +403,7 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
 /*
 Defines the action of the downsmoother
  */
-PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal *fnorm)
+static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal *fnorm)
 {
   PetscErrorCode      ierr = 0;
   SNESConvergedReason reason;
@@ -529,7 +435,7 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
 /*
 Defines the action of the upsmoother
  */
-PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal *fnorm)
+static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal *fnorm)
 {
   PetscErrorCode      ierr = 0;
   SNESConvergedReason reason;
@@ -706,7 +612,7 @@ x = x + nu*(xhat - x);
 With the coarse RHS (defect correction) as below.
 
  */
-PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
+static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
 {
   Vec                  F, B, Xhat;
   Vec                  X_c, Xo_c, F_c, B_c;
@@ -801,7 +707,7 @@ correction:
 x = x + I(x^c - Rx)
 
  */
-PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
+static PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
 {
 
   PetscErrorCode ierr;
@@ -823,7 +729,7 @@ PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASCycleSetupPhase_Full"
-PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
+static PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
 {
   SNES           next;
   SNES_FAS       *fas = (SNES_FAS*)snes->data;
@@ -841,7 +747,7 @@ PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASCycle_Full"
-PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
+static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
 {
   PetscErrorCode ierr;
   Vec            F,B;
@@ -891,7 +797,7 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFASCycle_Kaskade"
-PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
+static PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
 {
   PetscErrorCode ierr;
   Vec            F,B;
@@ -921,7 +827,7 @@ const char SNESCitation[] = "@techreport{pbmkbsxt2012,\n"
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve_FAS"
-PetscErrorCode SNESSolve_FAS(SNES snes)
+static PetscErrorCode SNESSolve_FAS(SNES snes)
 {
   PetscErrorCode ierr;
   PetscInt       i, maxits;
@@ -1012,5 +918,92 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
+  PetscFunctionReturn(0);
+}
+
+/*MC
+
+SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
+
+   The nonlinear problem is solved by correction using coarse versions
+   of the nonlinear problem.  This problem is perturbed so that a projected
+   solution of the fine problem elicits no correction from the coarse problem.
+
+Options Database:
++   -snes_fas_levels -  The number of levels
+.   -snes_fas_cycles<1> -  The number of cycles -- 1 for V, 2 for W
+.   -snes_fas_type<additive,multiplicative,full,kaskade>  -  Additive or multiplicative cycle
+.   -snes_fas_galerkin<PETSC_FALSE> -  Form coarse problems by projection back upon the fine problem
+.   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
+.   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
+.   -snes_fas_monitor -  Monitor progress of all of the levels
+.   -snes_fas_full_downsweep<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
+.   -fas_levels_snes_ -  SNES options for all smoothers
+.   -fas_levels_cycle_snes_ -  SNES options for all cycles
+.   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
+.   -fas_levels_i_cycle_snes_ - SNES options for the cycle on level i
+-   -fas_coarse_snes_ -  SNES options for the coarsest smoother
+
+Notes:
+   The organization of the FAS solver is slightly different from the organization of PCMG
+   As each level has smoother SNES instances(down and potentially up) and a cycle SNES instance.
+   The cycle SNES instance may be used for monitoring convergence on a particular level.
+
+Level: beginner
+
+   References:
+. 1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+   SIAM Review, 57(4), 2015
+
+.seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESCreate_FAS"
+PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
+{
+  SNES_FAS       *fas;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  snes->ops->destroy        = SNESDestroy_FAS;
+  snes->ops->setup          = SNESSetUp_FAS;
+  snes->ops->setfromoptions = SNESSetFromOptions_FAS;
+  snes->ops->view           = SNESView_FAS;
+  snes->ops->solve          = SNESSolve_FAS;
+  snes->ops->reset          = SNESReset_FAS;
+
+  snes->usesksp = PETSC_FALSE;
+  snes->usespc  = PETSC_FALSE;
+
+  if (!snes->tolerancesset) {
+    snes->max_funcs = 30000;
+    snes->max_its   = 10000;
+  }
+
+  ierr = PetscNewLog(snes,&fas);CHKERRQ(ierr);
+
+  snes->data                  = (void*) fas;
+  fas->level                  = 0;
+  fas->levels                 = 1;
+  fas->n_cycles               = 1;
+  fas->max_up_it              = 1;
+  fas->max_down_it            = 1;
+  fas->smoothu                = NULL;
+  fas->smoothd                = NULL;
+  fas->next                   = NULL;
+  fas->previous               = NULL;
+  fas->fine                   = snes;
+  fas->interpolate            = NULL;
+  fas->restrct                = NULL;
+  fas->inject                 = NULL;
+  fas->usedmfornumberoflevels = PETSC_FALSE;
+  fas->fastype                = SNES_FAS_MULTIPLICATIVE;
+  fas->full_downsweep         = PETSC_FALSE;
+
+  fas->eventsmoothsetup    = 0;
+  fas->eventsmoothsolve    = 0;
+  fas->eventresidual       = 0;
+  fas->eventinterprestrict = 0;
   PetscFunctionReturn(0);
 }

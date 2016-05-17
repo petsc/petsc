@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = PetscOptionsSetValue(NULL,"-options_left",NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
 
@@ -65,7 +65,8 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(B);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(B);CHKERRQ(ierr);
-  printf("\nThe Kershaw matrix:\n\n"); MatView(A,0);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nThe Kershaw matrix:\n\n");CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
    * A Conjugate Gradient method
@@ -101,7 +102,8 @@ int main(int argc,char **argv)
   ierr = PCFactorGetMatrix(pc,&M);CHKERRQ(ierr);
   ierr = VecDuplicate(B,&D);CHKERRQ(ierr);
   ierr = MatGetDiagonal(M,D);CHKERRQ(ierr);
-  printf("\nPivots:\n\n"); VecView(D,0);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nPivots:\n\n");CHKERRQ(ierr);
+  ierr = VecView(D,0);CHKERRQ(ierr);
 
   /*
    * Solve the system;
@@ -111,21 +113,21 @@ int main(int argc,char **argv)
   ierr = KSPSolve(ksp,B,X);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-    printf("\nDivergence because of indefinite preconditioner;\n");
-    printf("Run the executable again but with -pc_factor_shift_positive_definite option.\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nDivergence because of indefinite preconditioner;\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with -pc_factor_shift_positive_definite option.\n");CHKERRQ(ierr);
   } else if (reason<0) {
-    printf("\nOther kind of divergence: this should not happen.\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOther kind of divergence: this should not happen.\n");CHKERRQ(ierr);
   } else {
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-    printf("\nConvergence in %d iterations.\n",(int)its);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nConvergence in %d iterations.\n",(int)its);CHKERRQ(ierr);
   }
-  printf("\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&B);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&D);CHKERRQ(ierr);
-  PetscFinalize();
-  PetscFunctionReturn(0);
+  ierr = PetscFinalize();
+  return ierr;
 }

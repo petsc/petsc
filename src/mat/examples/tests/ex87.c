@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
   IS             isrow,iscol,irow[n],icol[n];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&SBAIJ);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

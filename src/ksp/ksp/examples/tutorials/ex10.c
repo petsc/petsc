@@ -54,7 +54,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
   char           initialguessfilename[PETSC_MAX_PATH_LEN];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-trans",&trans,NULL);CHKERRQ(ierr);
@@ -174,8 +174,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL, "-check_symmetry", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Mat Atrans;
-    ierr = MatTranspose(A, MAT_INITIAL_MATRIX,&Atrans);
-    ierr = MatEqual(A, Atrans, &isSymmetric);
+    ierr = MatTranspose(A, MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
+    ierr = MatEqual(A, Atrans, &isSymmetric);CHKERRQ(ierr);
     if (isSymmetric) {
       ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     } else {
@@ -441,6 +441,6 @@ int main(int argc,char **args)
      ----------------------------------------------------------- */
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

@@ -16,7 +16,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscReal      fac;
   PetscScalar    one=1,two=2,three=3;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
@@ -83,7 +83,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecDestroy(&z);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 
 }

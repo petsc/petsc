@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
 
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
@@ -102,8 +102,8 @@ int main(int argc,char **argv)
   ierr = VecScatterDestroy(&ctx.scatterU);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx.scatterV);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 #undef __FUNCT__

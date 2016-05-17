@@ -55,7 +55,7 @@ Label 'Point Partition':
 [0]: 20 (7)
 [0]: 31 (7)
 [0]: 32 (7)
-PetscSF Object:Migration SF 8 MPI processes
+PetscSF Object: Migration SF 8 MPI processes
   type not yet set
   [0] Number of roots=33, leaves=7, remote ranks=1
   [0] 0 <- (0,0)
@@ -214,7 +214,7 @@ PetscSF Object: 8 MPI processes
   [6] 3 <- (7,3)
   [6] 6 <- (7,5)
   [7] Number of roots=7, leaves=0, remote ranks=0
-DM Object:Simplicial Mesh 8 MPI processes
+DM Object: Simplicial Mesh 8 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
 orientation is missing

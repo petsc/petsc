@@ -26,7 +26,7 @@ Label 'subpoint_map':
 [0]: 39 (-101)
 [0]: 40 (-101)
 [0]: 42 (-101)
-DM Object:Parallel Mesh 2 MPI processes
+DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
 orientation is missing
@@ -401,7 +401,7 @@ PetscSF Object: 2 MPI processes
   [0]    23 <- 27
   [0]    26 <- 28
   [1] Roots referenced by my leaves, by rank
-DM Object:Hybrid Mesh 2 MPI processes
+DM Object: Hybrid Mesh 2 MPI processes
   type: plex
 Mesh 'Hybrid Mesh':
 orientation is missing

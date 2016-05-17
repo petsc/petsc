@@ -11,7 +11,7 @@ SOURCEC  = baij.c baij2.c baijfact.c baijfact2.c dgefa.c dgedi.c dgefa3.c \
 SOURCEF  =
 SOURCEH  = baij.h
 LIBBASE  = libpetscmat
-DIRS     = bstream ftn-kernels
+DIRS     = ftn-kernels
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/baij/seq/
 

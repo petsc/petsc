@@ -21,9 +21,7 @@ int main(int argc,char **argv)
   PetscBool              flg = PETSC_FALSE;
   ISLocalToGlobalMapping is;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
-  /* Create viewers */
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",280,480,600,200,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
@@ -78,7 +76,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&local);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

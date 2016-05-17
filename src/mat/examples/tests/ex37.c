@@ -15,7 +15,7 @@ int main(int argc,char **args)
   MatType        type;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
@@ -31,9 +31,9 @@ int main(int argc,char **args)
   } else {
     ierr = PetscObjectTypeCompare((PetscObject)C,MATMPIAIJ,&isAIJ);CHKERRQ(ierr);
   }
-  ierr = MatSeqAIJSetPreallocation(C,3,NULL);
+  ierr = MatSeqAIJSetPreallocation(C,3,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(C,3,NULL,3,NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(C,bs,3,NULL);
+  ierr = MatSeqBAIJSetPreallocation(C,bs,3,NULL);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(C,bs,3,NULL,3,NULL);CHKERRQ(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

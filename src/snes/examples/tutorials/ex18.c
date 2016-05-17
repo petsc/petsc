@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   PetscReal      litspit;
   DM             da;
 
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
   /* set problem parameters */
   user.tleft  = 1.0;
@@ -78,7 +78,6 @@ int main(int argc,char **argv)
   ierr        = PetscOptionsGetReal(NULL,NULL,"-beta",&user.beta,NULL);CHKERRQ(ierr);
   user.bm1    = user.beta - 1.0;
   user.coef   = user.beta/2.0;
-
 
   /*
       Create the multilevel DM data structure
@@ -111,8 +110,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 /* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__
