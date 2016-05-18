@@ -533,6 +533,7 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
         PetscFV fv = (PetscFV) obj;
 
         ierr = PetscFVGetNumComponents(fv, &Ncf[f]);CHKERRQ(ierr);
+        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
