@@ -495,7 +495,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
   *ierr = PetscFinalize();
 }
 
-void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
