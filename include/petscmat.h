@@ -1133,6 +1133,7 @@ PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringVal
 PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeightType);
 PETSC_EXTERN PetscErrorCode MatColoringSetWeights(MatColoring,PetscReal*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringCreateWeights(MatColoring,PetscReal **,PetscInt **lperm);
+PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences
