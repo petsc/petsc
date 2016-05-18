@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c
+                ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -185,6 +185,9 @@ ex48: ex48.o chkopts
 ex49: ex49.o chkopts
 	-${CLINKER} -o ex49 ex49.o ${PETSC_KSP_LIB}
 	${RM} ex49.o
+ex50: ex50.o chkopts
+	-${CLINKER} -o ex50 ex50.o ${PETSC_KSP_LIB}
+	${RM} ex50.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -1007,6 +1010,10 @@ runex49:
 	@for bs in 1 2 3 4 5 6 7 8 9 10 11 12; do \
            ${MPIEXEC} -n 1 ./ex49 -bs $$bs -pc_type cholesky  ;\
          done;
+runex50:
+	@for bs in 1 2 3 4 5 6 7 ; do \
+           ${MPIEXEC} -n 1 ./ex50 -bs $$bs -pc_type pbjacobi  ;\
+         done;
 
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
@@ -1023,7 +1030,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_noche
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm ex41.PETSc runex41 runex41_2 ex41.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
                                  ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm\
-                                 ex49.PETSc runex49 ex49.rm
+                                 ex49.PETSc runex49 ex49.rm ex50.PETSc runex50 ex50.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
