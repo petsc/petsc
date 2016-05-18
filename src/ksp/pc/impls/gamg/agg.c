@@ -647,11 +647,16 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
       ierr = MatGetDM(a_A, &dm);CHKERRQ(ierr);
     }
     if (dm) {
-      PetscObject  deformation;
-      ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
-      ierr = PetscObjectQuery((PetscObject)deformation,"nearnullspace",(PetscObject*)&mnull);CHKERRQ(ierr);
-      if (!mnull) {
-        ierr = PetscObjectQuery((PetscObject)deformation,"nullspace",(PetscObject*)&mnull);CHKERRQ(ierr);
+      PetscObject deformation;
+      PetscInt    Nf;
+
+      ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+      if (Nf) {
+        ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
+        ierr = PetscObjectQuery((PetscObject)deformation,"nearnullspace",(PetscObject*)&mnull);CHKERRQ(ierr);
+        if (!mnull) {
+          ierr = PetscObjectQuery((PetscObject)deformation,"nullspace",(PetscObject*)&mnull);CHKERRQ(ierr);
+        }
       }
     }
   }
