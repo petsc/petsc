@@ -744,13 +744,16 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords = NULL;
-  PetscInt       numCoords, d;
+  PetscInt       numCoords, d, pStart, pEnd, numSelfCoords = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection,&pStart,&pEnd);CHKERRQ(ierr);
+  if (e >= pStart && e < pEnd) {ierr = PetscSectionGetDof(coordSection,e,&numSelfCoords);CHKERRQ(ierr);}
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  numCoords = numSelfCoords ? numSelfCoords : numCoords;
   if (invJ && !J) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In order to compute invJ, J must not be NULL");
   *detJ = 0.0;
   if (numCoords == 6) {
