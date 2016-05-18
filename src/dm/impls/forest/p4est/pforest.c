@@ -3858,14 +3858,6 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMSetPointSF(newPlex,pointSF);CHKERRQ(ierr);
     ierr = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
-    if (dm->maxCell) {
-      const PetscReal      *maxCell, *L;
-      const DMBoundaryType *bd;
-
-      ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
-      ierr = DMSetPeriodicity(newPlex,maxCell,L,bd);CHKERRQ(ierr);
-      ierr = DMLocalizeCoordinates(newPlex);CHKERRQ(ierr);
-    }
     sc_array_destroy (points_per_dim);
     sc_array_destroy (cone_sizes);
     sc_array_destroy (cones);
@@ -3877,6 +3869,15 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (leaves);
     sc_array_destroy (remotes);
 
+    ierr = DMPlexSetMaxProjectionHeight(newPlex,P4EST_DIM - 1);CHKERRQ(ierr);
+    if (dm->maxCell) {
+      const PetscReal      *maxCell, *L;
+      const DMBoundaryType *bd;
+
+      ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
+      ierr = DMSetPeriodicity(newPlex,maxCell,L,bd);CHKERRQ(ierr);
+      ierr = DMLocalizeCoordinates(newPlex);CHKERRQ(ierr);
+    }
     ierr = DMPforestMapCoordinates(dm,newPlex);CHKERRQ(ierr);
 
     pforest->plex = newPlex;
@@ -3905,7 +3906,6 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
       pforest->plex = newPlex;
     }
-    ierr = DMPlexSetMaxProjectionHeight(newPlex,P4EST_DIM - 1);CHKERRQ(ierr);
     if (forest->setfromoptionscalled) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex);CHKERRQ(ierr);
