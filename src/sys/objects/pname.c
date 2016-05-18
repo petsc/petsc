@@ -70,15 +70,17 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 
   if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPrintf(viewer,"%s Object:",obj->class_name);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
   if (obj->name) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%s",obj->name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," %s",obj->name);CHKERRQ(ierr);
   }
   if (obj->prefix) {
-    ierr = PetscViewerASCIIPrintf(viewer,"(%s)",obj->prefix);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," (%s)",obj->prefix);CHKERRQ(ierr);
   }
   ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer," %d MPI processes\n",size);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
   if (obj->type_name) {
     ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",obj->type_name);CHKERRQ(ierr);

@@ -35,7 +35,7 @@ SNES Object: 1 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=25
   total number of function evaluations=2
-  KSP Object:   1 MPI processes
+  KSP Object: 1 MPI processes
     type: gmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
@@ -44,10 +44,10 @@ SNES Object: 1 MPI processes
     left preconditioning
     has attached null space
     using PRECONDITIONED norm type for convergence test
-  PC Object:   1 MPI processes
+  PC Object: 1 MPI processes
     type: jacobi
     linear system matrix = precond matrix:
-    Mat Object:     1 MPI processes
+    Mat Object: 1 MPI processes
       type: seqaij
       rows=27, cols=27
       total: nonzeros=377, allocated nonzeros=377

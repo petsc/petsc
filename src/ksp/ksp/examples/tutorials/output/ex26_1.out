@@ -1,11 +1,11 @@
-KSP Object:(esi_)
+KSP Object: (esi_)
   type: gmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
-PC Object:(esi_)
+PC Object: (esi_)
   type: ilu
     ILU: 0 levels of fill
     ILU: max fill ratio allocated 1

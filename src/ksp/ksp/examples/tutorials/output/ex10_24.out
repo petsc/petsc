@@ -79,7 +79,7 @@ PC Object: 1 MPI processes
   type: hmpi
     Size of solver nodes 2
     Parallel sub-solver given next
-  KSP Object:  (hmpi_)   2 MPI processes  
+  KSP Object: (hmpi_) 2 MPI processes  
     type: gmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
@@ -87,18 +87,18 @@ PC Object: 1 MPI processes
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object:  (hmpi_)   2 MPI processes  
+  PC Object: (hmpi_) 2 MPI processes  
     type: sor
       SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
     linear system matrix = precond matrix:
-    Mat Object:     2 MPI processes    
+    Mat Object: 2 MPI processes    
       type: mpiaij
       rows=181, cols=181
       total: nonzeros=2245, allocated nonzeros=2245
       total number of mallocs used during MatSetValues calls =0
         using I-node (on process 0) routines: found 31 nodes, limit used is 5
   linear system matrix = precond matrix:
-  Mat Object:   1 MPI processes  
+  Mat Object: 1 MPI processes  
     type: seqaij
     rows=181, cols=181
     total: nonzeros=2245, allocated nonzeros=2245

@@ -1,5 +1,5 @@
 Initial guess
-Vec Object:potential 5 MPI processes
+Vec Object: potential 5 MPI processes
   type: mpi
 Process [0]
 0.625

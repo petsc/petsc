@@ -226,10 +226,10 @@ extern PetscFPT PetscFPTData;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-PetscSpinlock PetscViewerASCIISpinLockOpen;
-PetscSpinlock PetscViewerASCIISpinLockStdout;
-PetscSpinlock PetscViewerASCIISpinLockStderr;
-PetscSpinlock PetscCommSpinLock;
+extern PetscSpinlock PetscViewerASCIISpinLockOpen;
+extern PetscSpinlock PetscViewerASCIISpinLockStdout;
+extern PetscSpinlock PetscViewerASCIISpinLockStderr;
+extern PetscSpinlock PetscCommSpinLock;
 #endif
 
 /* -----------------------------------------------------------------------------------------------*/

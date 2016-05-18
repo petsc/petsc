@@ -2994,10 +2994,13 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
 {
   PetscSection   section, s;
   Mat            m;
+  PetscInt       maxHeight;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMClone(dm, cdm);CHKERRQ(ierr);
+  ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
+  ierr = DMPlexSetMaxProjectionHeight(*cdm, maxHeight);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*cdm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
