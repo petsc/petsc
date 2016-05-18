@@ -1,7 +1,6 @@
 
 
 #include <petsc/private/kspimpl.h>	/*I "petscksp.h" I*/
-#include <petscksp.h>
 
 typedef struct {
   PetscReal tol_ls;

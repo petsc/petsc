@@ -1,5 +1,4 @@
 
-#include <petscksp.h>
 #include <petsc/private/kspimpl.h>
 
 typedef struct {

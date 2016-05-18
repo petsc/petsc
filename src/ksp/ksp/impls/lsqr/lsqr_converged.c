@@ -1,5 +1,4 @@
 #include <petsc/private/kspimpl.h>
-#include <../src/ksp/ksp/impls/lsqr/lsqr.h>
 extern PetscErrorCode  KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
 
 PetscErrorCode KSPConvergedLSQR(KSP solksp,PetscInt iter,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)

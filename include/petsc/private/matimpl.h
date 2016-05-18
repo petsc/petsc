@@ -1620,7 +1620,7 @@ PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
-PETSC_EXTERN PetscLogEvent MAT_Merge,MAT_Residual;
+PETSC_EXTERN PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;
 
 #endif

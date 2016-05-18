@@ -5,12 +5,12 @@
 #define __FUNCT__ "PCSetUp_ICC"
 static PetscErrorCode PCSetUp_ICC(PC pc)
 {
-  PC_ICC         *icc = (PC_ICC*)pc->data;
-  IS             perm,cperm;
-  PetscErrorCode ierr;
-  MatInfo        info;
-  Mat            F;
+  PC_ICC                 *icc = (PC_ICC*)pc->data;
+  IS                     perm,cperm;
+  PetscErrorCode         ierr;
+  MatInfo                info;
   const MatSolverPackage stype;
+  MatFactorError         err;
 
   PetscFunctionBegin;
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
@@ -32,20 +32,23 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   ierr = ISDestroy(&cperm);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
 
-  F = ((PC_Factor*)icc)->fact;
-  if (F->errortype) { /* FactorSymbolic() fails */
-    pc->failedreason = (PCFailedReason)F->errortype;
+  ierr = MatFactorGetError(((PC_Factor*)icc)->fact,&err);CHKERRQ(ierr);
+  if (err) { /* FactorSymbolic() fails */
+    pc->failedreason = (PCFailedReason)err;
     PetscFunctionReturn(0);
   }
  
   ierr = MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
-  if (F->errortype) { /* FactorNumeric() fails */
-    pc->failedreason = (PCFailedReason)F->errortype;
+  ierr = MatFactorGetError(((PC_Factor*)icc)->fact,&err);CHKERRQ(ierr);
+  if (err) { /* FactorNumeric() fails */
+    pc->failedreason = (PCFailedReason)err;
   }
 
   ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    ierr = PCFactorSetMatSolverPackage(pc,((PC_Factor*)icc)->fact->solvertype);CHKERRQ(ierr);
+    const MatSolverPackage solverpackage;
+    ierr = MatFactorGetSolverPackage(((PC_Factor*)icc)->fact,&solverpackage);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverPackage(pc,solverpackage);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

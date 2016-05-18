@@ -1,6 +1,5 @@
 
-#include <petsc/private/kspimpl.h>             /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/impls/cg/nash/nashimpl.h>
+#include <../src/ksp/ksp/impls/cg/nash/nashimpl.h>    /*I "petscksp.h" I*/
 
 #define NASH_PRECONDITIONED_DIRECTION   0
 #define NASH_UNPRECONDITIONED_DIRECTION 1

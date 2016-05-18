@@ -983,9 +983,13 @@ PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
     Level: beginner
 
-    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+    Developer Notes: Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+
+.seealso: MatGetFactor()
 S*/
 typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY,MAT_FACTOR_OTHER} MatFactorError;
+
+PETSC_EXTERN PetscErrorCode MatFactorGetError(Mat,MatFactorError*);
 
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization

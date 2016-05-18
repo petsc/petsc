@@ -2,6 +2,8 @@
    Private include for tcqmr package
  */
 
+#include <petsc/private/kspimpl.h>
+
 /* vector names */
 #define VEC_OFFSET 0
 #define VEC_SOLN   ksp->vec_sol

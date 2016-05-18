@@ -6,7 +6,6 @@
 #if !defined(__AGMRES)
 #define __AGMRES
 
-#include <petsc/private/kspimpl.h>        /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h>
 typedef struct {
   KSPGMRESHEADER
