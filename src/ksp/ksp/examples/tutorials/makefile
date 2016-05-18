@@ -1233,6 +1233,11 @@ runex50_3 :
 	   ${DIFF} output/ex50_3.out ex50_3.tmp || printf "${PWD}\nPossible problem with ex50_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex50_3.tmp
 
+runex51:
+	-@${MPIEXEC} -n 2 ./ex51 -ksp_monitor_short > ex51.tmp 2>&1;	  \
+	   ${DIFF} output/ex51_1.out ex51.tmp || printf "${PWD}\nPossible problem with ex51, diffs above\n=========================================\n"; \
+	   ${RM} -f ex51.tmp
+
 runex52:
 	-@${MPIEXEC} -n 1 ./ex52 -use_petsc_lu > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52, diffs above\n=========================================\n"; \
@@ -1528,6 +1533,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex43.PETSc runex43 runex43_2 runex43_bjacobi runex43_bjacobi_baij runex43_nested_gmg runex43_3 ex43.rm \
                                  ex45.PETSc runex45 runex45_2 runex45_telescope runex45_telescope_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm \
+                                 ex51.PETSc runex51 ex51.rm \
                                  ex53.PETSc runex53 ex53.rm \
                                  ex54.PETSc runex54 runex54_Classical ex54.rm ex55.PETSc runex55 runex55_Classical runex55_NC ex55.rm\
                                  ex56.PETSc runex56_nns runex56 ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm \

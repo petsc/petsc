@@ -5,8 +5,8 @@
 #define petscviewerfilesetname_                PETSCVIEWERFILESETNAME
 #define petscviewerasciiprintf_                PETSCVIEWERASCIIPRINTF
 #define petscviewerasciisynchronizedprintf_    PETSCVIEWERASCIISYNCHRONIZEDPRINTF
-#define petscviewerasciipushsynchronized_      PETSCVIEWERASCIIPUSHSYNCHRONIZE
-#define petscviewerasciipopsynchronized_       PETSCVIEWERASCIIPOPSYNCHRONIZE
+#define petscviewerasciipushsynchronized_      PETSCVIEWERASCIIPUSHSYNCHRONIZED
+#define petscviewerasciipopsynchronized_       PETSCVIEWERASCIIPOPSYNCHRONIZED
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerfilesetname_                petscviewerfilesetname
 #define petscviewerasciiprintf_                petscviewerasciiprintf
