@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscInt       i,m,n,nfact,nsolve,nrhs,ipack=0;
   PetscScalar    *array,rval;
-  PetscReal      norm,tol=1.e-12;
+  PetscReal      norm,tol=1.e-10;
   IS             perm,iperm;
   MatFactorInfo  info;
   PetscRandom    rand;
