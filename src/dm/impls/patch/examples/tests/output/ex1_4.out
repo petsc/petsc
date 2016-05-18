@@ -41,7 +41,7 @@ Processor [2] M 3 N 3 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 3
 Processor [3] M 3 N 3 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 2 3
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=4, remote ranks=1
   [0] 0 <- (0,0)
@@ -68,7 +68,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=4, remote ranks=1
   [0] 0 <- (0,0)
@@ -99,7 +99,7 @@ Processor [2] M 4 N 3 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 3
 Processor [3] M 4 N 3 m 2 n 2 w 1 s 0
 X range of indices: 2 4, Y range of indices: 2 3
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=4, remote ranks=2
   [0] 0 <- (0,1)
@@ -129,7 +129,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=2, remote ranks=1
   [0] 1 <- (1,0)
@@ -160,7 +160,7 @@ Processor [2] M 4 N 3 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 3
 Processor [3] M 4 N 3 m 2 n 2 w 1 s 0
 X range of indices: 2 4, Y range of indices: 2 3
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -190,7 +190,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -221,7 +221,7 @@ Processor [2] M 3 N 3 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 3
 Processor [3] M 3 N 3 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 2 3
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -248,7 +248,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -279,7 +279,7 @@ Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 4
 Processor [3] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 2 4
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -309,7 +309,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] 1 <- (9,0)
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -340,7 +340,7 @@ Processor [2] M 4 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 4
 Processor [3] M 4 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 4, Y range of indices: 2 4
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -374,7 +374,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] 3 <- (10,0)
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -405,7 +405,7 @@ Processor [2] M 4 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 4
 Processor [3] M 4 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 4, Y range of indices: 2 4
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -439,7 +439,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [15] 1 <- (7,2)
   [15] 2 <- (10,1)
   [15] 3 <- (11,0)
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -470,7 +470,7 @@ Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 4
 Processor [3] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 2 4
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -500,7 +500,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [15] Number of roots=64, leaves=2, remote ranks=2
   [15] 0 <- (7,3)
   [15] 1 <- (11,1)
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -531,7 +531,7 @@ Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 4
 Processor [3] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 2 4
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=4, remote ranks=2
   [0] 0 <- (4,2)
@@ -561,7 +561,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=2, remote ranks=1
   [0] 3 <- (8,0)
@@ -592,7 +592,7 @@ Processor [2] M 4 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 4
 Processor [3] M 4 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 4, Y range of indices: 2 4
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=4, remote ranks=4
   [0] 0 <- (4,3)
@@ -626,7 +626,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=1, remote ranks=1
   [0] 5 <- (9,0)
@@ -657,7 +657,7 @@ Processor [2] M 4 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 4
 Processor [3] M 4 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 4, Y range of indices: 2 4
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -691,7 +691,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -722,7 +722,7 @@ Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 4
 Processor [3] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 2 4
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -752,7 +752,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -783,7 +783,7 @@ Processor [2] M 3 N 3 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 3
 Processor [3] M 3 N 3 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 2 3
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -810,7 +810,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] 0 <- (13,2)
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -841,7 +841,7 @@ Processor [2] M 4 N 3 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 3
 Processor [3] M 4 N 3 m 2 n 2 w 1 s 0
 X range of indices: 2 4, Y range of indices: 2 3
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -871,7 +871,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [13] 1 <- (14,2)
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -902,7 +902,7 @@ Processor [2] M 4 N 3 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 3
 Processor [3] M 4 N 3 m 2 n 2 w 1 s 0
 X range of indices: 2 4, Y range of indices: 2 3
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -932,7 +932,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [15] Number of roots=64, leaves=2, remote ranks=2
   [15] 0 <- (14,3)
   [15] 1 <- (15,2)
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -963,7 +963,7 @@ Processor [2] M 3 N 3 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 2 3
 Processor [3] M 3 N 3 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 2 3
-PetscSF Object:Buffered Map 16 MPI processes
+PetscSF Object: Buffered Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0
@@ -990,7 +990,7 @@ PetscSF Object:Buffered Map 16 MPI processes
   [14] 1 <- (15,2)
   [15] Number of roots=64, leaves=1, remote ranks=1
   [15] 0 <- (15,3)
-PetscSF Object:Restricted Map 16 MPI processes
+PetscSF Object: Restricted Map 16 MPI processes
   type not yet set
   [0] Number of roots=64, leaves=0, remote ranks=0
   [1] Number of roots=64, leaves=0, remote ranks=0

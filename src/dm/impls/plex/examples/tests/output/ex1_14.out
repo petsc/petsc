@@ -1,4 +1,4 @@
-DM Object:Parallel Mesh 8 MPI processes
+DM Object: Parallel Mesh 8 MPI processes
   type: plex
 Parallel Mesh in 2 dimensions:
   0-cells: 10 13 14 13 13 10 14 13
@@ -7,7 +7,7 @@ Parallel Mesh in 2 dimensions:
 Labels:
   marker: 1 strata of sizes (13)
   depth: 3 strata of sizes (10, 18, 9)
-DM Object:Simplicial Mesh 8 MPI processes
+DM Object: Simplicial Mesh 8 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
 orientation is missing

@@ -13,9 +13,9 @@ Tao Object: 2 MPI processes
       BFGS steps: 0
       Scaled gradient steps: 0
       Gradient steps: 0
-  TaoLineSearch Object:   2 MPI processes
+  TaoLineSearch Object: 2 MPI processes
     type: more-thuente
-  KSP Object:   2 MPI processes
+  KSP Object: 2 MPI processes
     type: stcg
   total KSP iterations: 30
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01

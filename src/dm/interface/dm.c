@@ -921,9 +921,9 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 
 .seealso: DMCreateLocalVector()
 @*/
-PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
+PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
-  PetscInt       bs = -1;
+  PetscInt       bs = -1, bsLocal, bsMin, bsMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -958,6 +958,13 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
           ltog[l] = off+c;
         }
       }
+      /* Must have same blocksize on all procs (some might have no points) */
+      bsLocal = bs;
+      ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+      bsLocal = bs < 0 ? bsMax : bs;
+      ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+      if (bsMin != bsMax) {bs = 1;}
+      else                {bs = bsMax;}
       ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, bs < 0 ? 1 : bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {

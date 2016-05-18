@@ -1,4 +1,4 @@
-DM Object:Simplicial Mesh 1 MPI processes
+DM Object: Simplicial Mesh 1 MPI processes
   type: plex
 Simplicial Mesh in 2 dimensions:
   0-cells: 92

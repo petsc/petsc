@@ -1,4 +1,4 @@
-DM Object:Parallel Mesh 2 MPI processes
+DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Mesh 'Parallel Mesh':
 orientation is missing
@@ -152,7 +152,7 @@ PetscSF Object: 2 MPI processes
   [0]    13 <- 10
   [0]    14 <- 11
   [1] Roots referenced by my leaves, by rank
-DM Object:Interpolated Mesh 2 MPI processes
+DM Object: Interpolated Mesh 2 MPI processes
   type: plex
 Mesh 'Interpolated Mesh':
 orientation is missing
