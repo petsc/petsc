@@ -12,6 +12,7 @@ typedef struct {
   PetscBool     noBdyTags;                    /* Do not write boundary tags on generated unit square/cube */
   char          bdyLabel[PETSC_MAX_PATH_LEN]; /* Name of the label marking boundary facets */
   PetscInt      metOpt;                       /* Different choices of metric */
+  PetscReal     hmax, hmin;                   /* Max and min sizes prescribed by the metric */
   PetscBool     vtkView;                      /* Write adapted mesh to vtk file */
 } AppCtx;    
 
@@ -30,16 +31,20 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->noBdyTags  = PETSC_FALSE;
   ierr = PetscStrcpy(options->bdyLabel, "");CHKERRQ(ierr);
   options->metOpt     = 1;
+  options->hmin       = 0.01;
+  options->hmax       = 0.5;
   options->vtkView    = PETSC_FALSE;
   
   ierr = PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex19.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-msh", "", "ex19.c", options->mshNam, options->mshNam, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-nbrVerEdge", "", "ex19.c", options->nbrVerEdge, &options->nbrVerEdge, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-noBdyTags", "", "ex19.c", options->noBdyTags, &options->noBdyTags, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-bdyLabel", "", "ex19.c", options->bdyLabel, options->bdyLabel, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-met", "", "ex19.c", options->metOpt, &options->metOpt, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-vtkView", "", "ex19.c", options->vtkView, &options->vtkView, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-msh", "Name of the mesh filename if any", "ex19.c", options->mshNam, options->mshNam, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-nbrVerEdge", "Number of vertices per edge if unit square/cube generated", "ex19.c", options->nbrVerEdge, &options->nbrVerEdge, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-noBdyTags", "Do not write boundary tags on generated unit square", "ex19.c", options->noBdyTags, &options->noBdyTags, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-bdyLabel", "Name of the label marking boundary facets", "ex19.c", options->bdyLabel, options->bdyLabel, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-met", "Different choices of metric", "ex19.c", options->metOpt, &options->metOpt, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-hmax", "Max size prescribed by the metric", "ex19.c", options->hmax, &options->hmax, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-vtkView", "Write adapted mesh to vtk file", "ex19.c", options->vtkView, &options->vtkView, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   
   PetscFunctionReturn(0);
@@ -61,18 +66,20 @@ PetscErrorCode createBoxMesh(MPI_Comm comm, AppCtx *user)  //PetscInt dim, Petsc
   PetscValidLogicalCollectiveInt(boundary, user->dim,2);
   ierr = DMSetType(boundary, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(boundary, user->dim-1);CHKERRQ(ierr);
-  if (user->noBdyTags) {
-    ierr = PetscOptionsSetValue(((PetscObject)(&user->dm))->options, "-dm_plex_separate_marker", "0");CHKERRQ(ierr);  
-  } else {
-    ierr = PetscOptionsSetValue(((PetscObject)(&user->dm))->options, "-dm_plex_separate_marker", "1");CHKERRQ(ierr);
-  }
+
   
   switch (user->dim) {
   case 2:
   {
+    if (user->noBdyTags) {
+      ierr = PetscOptionsSetValue(((PetscObject)(&user->dm))->options, "-dm_plex_separate_marker", "0");CHKERRQ(ierr);  
+    } else {
+      ierr = PetscOptionsSetValue(((PetscObject)(&user->dm))->options, "-dm_plex_separate_marker", "1");CHKERRQ(ierr);
+    }
+    
     PetscReal lower[2] = {0.0, 0.0};
     PetscReal upper[2] = {1.0, 1.0};
-    PetscInt  edges[2] = {user->nbrVerEdge, user->nbrVerEdge};
+    PetscInt  edges[2] = {user->nbrVerEdge-1, user->nbrVerEdge-1};
 
     ierr = DMPlexCreateSquareBoundary(boundary, lower, upper, edges);CHKERRQ(ierr);
     break;
@@ -81,7 +88,7 @@ PetscErrorCode createBoxMesh(MPI_Comm comm, AppCtx *user)  //PetscInt dim, Petsc
   {
     PetscReal lower[3] = {0.0, 0.0, 0.0};
     PetscReal upper[3] = {1.0, 1.0, 1.0};
-    PetscInt  faces[3] = {user->nbrVerEdge, user->nbrVerEdge, user->nbrVerEdge};
+    PetscInt  faces[3] = {user->nbrVerEdge-1, user->nbrVerEdge-1, user->nbrVerEdge-1};
 
     ierr = DMPlexCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);
     break;
@@ -109,6 +116,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
     ierr = createBoxMesh(comm, user);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, user->mshNam, PETSC_TRUE, &user->dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(user->dm, &user->dim);;CHKERRQ(ierr); 
   }  
   PetscFunctionReturn(0);
 }
@@ -121,7 +129,7 @@ PetscErrorCode WriteMetric(MPI_Comm comm, AppCtx *user, Vec * metric)
 {  
 	Vec               coordinates, met;
 	const PetscScalar *coords;
-	PetscReal         h, lambda1, lambda2, lambda3, hmax, lbd, lmax;
+	PetscReal         h, lambda1, lambda2, lambda3, lbd, lmax;
 	PetscInt          dim, vStart, vEnd, numVertices, i;
   PetscErrorCode ierr;
   
@@ -139,24 +147,21 @@ PetscErrorCode WriteMetric(MPI_Comm comm, AppCtx *user, Vec * metric)
 	for (i=0; i<numVertices; ++i) {
 	  switch (user->metOpt) {
 	  case 0:
-      h = 0.1;
-      lbd = 1/(h*h);
+      lbd = 1/(user->hmax*user->hmax);
       lambda1 = lambda2 = lambda3 = lbd;
       break;
 	  case 1:
-      h = 0.1 - (0.1-0.01)*coords[dim*i];
-      if (dim == 3)
-      	h *= 3;
+      h = user->hmax - (user->hmax-user->hmin)*coords[dim*i];
       h = h*h;
+      lmax = 1/(user->hmax*user->hmax);
       lambda1 = 1/h;
-      lambda2 = 4;
-      lambda3 = 4;
+      lambda2 = lmax;
+      lambda3 = lmax;
       break;
 	  case 2:
-      hmax = (dim==2?0.02:0.2);
-      h = hmax*fabs(1-exp(-fabs(coords[dim*i]-0.5))) + 0.003;
+      h = user->hmax*fabs(1-exp(-fabs(coords[dim*i]-0.5))) + user->hmin;
       lbd = 1/(h*h);
-      lmax = 1/(hmax*hmax);
+      lmax = 1/(user->hmax*user->hmax);
       lambda1 = lbd;
       lambda2 = lmax;
       lambda3 = lmax;
@@ -186,7 +191,6 @@ PetscErrorCode WriteMetric(MPI_Comm comm, AppCtx *user, Vec * metric)
   ierr = VecAssemblyBegin(met);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(met); CHKERRQ(ierr); 
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
-//  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   *metric = met;
   PetscFunctionReturn(0);
 }
@@ -215,7 +219,7 @@ int main (int argc, char * argv[]) {
   ierr = DMPlexAdapt(user.dm, metric, user.bdyLabel, &dma); CHKERRQ(ierr);
 	
 	ierr = DMView(dma,0);CHKERRQ(ierr);
-	if (user->vtkView){
+	if (user.vtkView){
 	  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
   	ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -225,7 +229,6 @@ int main (int argc, char * argv[]) {
   	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
  	
-	
 	ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
 	ierr = DMDestroy(&dma);CHKERRQ(ierr);
   ierr = VecDestroy(&metric);CHKERRQ(ierr);
