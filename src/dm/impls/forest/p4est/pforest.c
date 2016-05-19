@@ -819,7 +819,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     const char        *adaptName;
     DMLabel           adaptLabel;
     PetscInt          defaultValue;
-    PetscInt          numValues;
+    PetscInt          numValues, numValuesGlobal;
     DM_Forest         *aforest  = (DM_Forest*) adaptFrom->data;
     DM_Forest_pforest *apforest = (DM_Forest_pforest*) aforest->data;
     PetscBool         computeAdaptSF;
@@ -832,8 +832,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       if (!adaptLabel) SETERRQ(PetscObjectComm((PetscObject)adaptFrom),PETSC_ERR_USER,"No adaptivity label found in pre-adaptation forest");
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
       ierr = DMLabelGetNumValues(adaptLabel,&numValues);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&numValues,&numValuesGlobal,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)adaptFrom));CHKERRQ(ierr);
       ierr = DMLabelGetDefaultValue(adaptLabel,&defaultValue);CHKERRQ(ierr);
-      if (!numValues && defaultValue == DM_FOREST_COARSEN) { /* uniform coarsen */
+      if (!numValuesGlobal && defaultValue == DM_FOREST_COARSEN) { /* uniform coarsen */
         PetscInt minLevel;
 
         ierr                          = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
@@ -845,7 +846,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         if (computeAdaptSF) {
           ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),pforest->forest,0,apforest->forest,apforest->cLocalStart,&coarseToPreFine,NULL);CHKERRQ(ierr);
         }
-      } else if (!numValues && defaultValue == DM_FOREST_REFINE) { /* uniform refine */
+      } else if (!numValuesGlobal && defaultValue == DM_FOREST_REFINE) { /* uniform refine */
         PetscInt maxLevel;
 
         ierr                          = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
@@ -857,7 +858,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         if (computeAdaptSF) {
           ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),apforest->forest,apforest->cLocalStart,pforest->forest,0,&preCoarseToFine,NULL);CHKERRQ(ierr);
         }
-      } else if (numValues) {
+      } else if (numValuesGlobal) {
         p4est_t                    *p4est = pforest->forest;
         PetscInt                   *cellFlags;
         DMForestAdaptivityStrategy strategy;
