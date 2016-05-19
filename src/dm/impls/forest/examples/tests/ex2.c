@@ -42,6 +42,15 @@ static PetscErrorCode AddAdaptivityLabel(DM forest,const char name[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "LinearFunction"
+static PetscErrorCode LinearFunction(PetscInt dim,PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+{
+  PetscFunctionBeginUser;
+  u[0] = (x[0] * 2.0 + 1.) + (x[1] * 20.0 + 10.) + ((dim == 3) ? (x[2] * 200.0 + 100.) : 0.);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MultiaffineFunction"
 static PetscErrorCode MultiaffineFunction(PetscInt dim,PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
 {
@@ -63,13 +72,19 @@ int main(int argc, char **argv)
   void           *ctxs[1] = {NULL};
   const PetscInt cells[] = {3, 3, 3};
   PetscReal      diff, tol = PETSC_SMALL;
+  PetscBool      linear = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm, "", "DMForestTransfer() Test Options", "DMFOREST");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The dimension (2 or 3)", "ex2.c", dim, &dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-linear","Transfer a simple linear function", "ex2.c", linear, &linear, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  if (linear) {
+    funcs[0] = LinearFunction;
+  }
 
   /* the base mesh */
   ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &base);CHKERRQ(ierr);
@@ -81,6 +96,7 @@ int main(int argc, char **argv)
   ierr = DMSetType(preForest,(dim == 2) ? DMP4EST : DMP8EST);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(preForest,base);CHKERRQ(ierr);
   ierr = DMForestSetInitialRefinement(preForest,1);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(preForest);CHKERRQ(ierr);
   ierr = DMSetUp(preForest);CHKERRQ(ierr);
   ierr = DMViewFromOptions(preForest,NULL,"-dm_pre_view");CHKERRQ(ierr);
 
@@ -116,9 +132,9 @@ int main(int argc, char **argv)
 
   /* output */
   if (diff < tol) {
-    ierr = PetscPrintf(comm,"DMForestTransfer() passes.\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"DMForestTransferVec() passes.\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm,"DMForestTransfer() fails with error %g and tolerance %g\n",diff,tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"DMForestTransferVec() fails with error %g and tolerance %g\n",diff,tol);CHKERRQ(ierr);
   }
 
   /* cleanup */
