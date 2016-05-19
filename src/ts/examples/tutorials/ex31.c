@@ -818,7 +818,7 @@ PetscErrorCode RHSJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Mat A, Mat B,
   value[1][0] = 0.;        value[1][1] = 0. ; value[1][2] = m1; value[1][3] = m2;
   value[2][0] = 0.;        value[2][1] = 0.;  value[2][2] = 0.; value[2][3] = 2*t;
   value[3][0] = -2.*t/y[0];value[3][1] = 0.;  value[3][2] = 0.; value[3][3] = 0.;
-  ierr = MatSetValues(A,4,&row[0],4,&row[0],&value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(A,4,&row[0],4,&row[0],&value[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);

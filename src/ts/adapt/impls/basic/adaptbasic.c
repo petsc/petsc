@@ -10,7 +10,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptChoose_Basic"
-static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
+static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscInt       order  = PETSC_DECIDE;
@@ -69,6 +69,9 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 
   *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
   *wlte   = enorm;
+  *wltea    = -1;  /* Weighted absolute local truncation error is not used */
+  *wlter    = -1;  /* Weighted relative local truncation error is not used */
+
   PetscFunctionReturn(0);
 }
 

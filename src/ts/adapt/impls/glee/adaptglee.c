@@ -12,23 +12,24 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptChoose_GLEE"
-static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
+static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
   TSAdapt_GLEE  *glee = (TSAdapt_GLEE*)adapt->data;
   TSType         time_scheme;      /* Type of time-integration scheme        */
   PetscErrorCode ierr;
   Vec            X,Y,E;
   PetscReal      enorm,enorma,enormr,hfac_lte,h_lte,safety;
-  PetscInt       order,order_add,stepno;
+  PetscInt       order,stepno;
 
   PetscFunctionBegin;
+  *next_sc = 0; /* Reuse the same order scheme */
+
   ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
 
   safety = glee->safety;
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
   if (!strcmp(time_scheme,TSGLEE)){
     /* the method is of GLEE type */
-    order_add=0; /* typically same order estimates */
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     /* ierr = TSGetPreviousSolution(ts,&Y);CHKERRQ(ierr);
      */
@@ -39,7 +40,6 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
     ierr = TSErrorWeightedENorm(ts,E,X,X,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   } else {
     /* the method is NOT of GLEE type */
-    order_add=0; /* typically lower order estimates */
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     if (!glee->Y) {ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);}
     Y     = glee->Y;
@@ -47,6 +47,16 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
     ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
     ierr  = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   }
+
+  if (enorm < 0) {
+    *accept  = PETSC_TRUE;
+    *next_h  = h;            /* Reuse the old step */
+    *wlte    = -1;           /* Weighted local truncation error was not evaluated */
+    *wltea    = -1;           /* Weighted local truncation error was not evaluated */
+    *wlter    = -1;           /* Weighted local truncation error was not evaluated */
+    PetscFunctionReturn(0);
+  }
+
   if (enorm > 1.) {
     if (!*accept) safety *= glee->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
@@ -64,17 +74,17 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
     *accept = PETSC_TRUE;
   }
 
-  /* The optimal new step based purely on local truncation error for this step. */
-  if (enorm == 0.0) {
+   /* The optimal new step based purely on local truncation error for this step. */
+  if (enorm > 0)
+    hfac_lte = safety * PetscPowReal(enorm,((PetscReal)-1)/order);
+  else
     hfac_lte = safety * PETSC_INFINITY;
-  } else {
-    hfac_lte = safety * PetscPowReal(enorm,-1./(order+order_add));
-  }
-  h_lte    = h * PetscClipInterval(hfac_lte,glee->clip[0],glee->clip[1]);
+  h_lte = h * PetscClipInterval(hfac_lte,glee->clip[0],glee->clip[1]);
 
-  *next_sc = 0;
-  *next_h  = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
-  *wlte    = enorm;
+  *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
+  *wlte   = enorm;
+  *wltea  = enorma;
+  *wlter  = enormr;
   PetscFunctionReturn(0);
 }
 
@@ -165,7 +175,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt adapt)
 
   a->clip[0]       = 0.1;
   a->clip[1]       = 10.;
-  a->safety        = 0.99;
+  a->safety        = 0.9;
   a->reject_safety = 0.5;
   a->always_accept = PETSC_FALSE;
   PetscFunctionReturn(0);

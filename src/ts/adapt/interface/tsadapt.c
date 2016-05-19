@@ -587,6 +587,8 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   PetscInt       ncandidates = adapt->candidates.n;
   PetscInt       scheme = 0;
   PetscReal      wlte = -1.0;
+  PetscReal      wltea = -1.0;
+  PetscReal      wlter = -1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
@@ -603,7 +605,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
     PetscFunctionReturn(0);
   }
 
-  ierr = (*adapt->ops->choose)(adapt,ts,h,&scheme,next_h,accept,&wlte);CHKERRQ(ierr);
+  ierr = (*adapt->ops->choose)(adapt,ts,h,&scheme,next_h,accept,&wlte,&wltea,&wlter);CHKERRQ(ierr);
   if (scheme < 0 || (ncandidates > 0 && scheme >= ncandidates)) SETERRQ2(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %D not in valid range 0..%D",scheme,ncandidates-1);
   if (*next_h < 0) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %g must be positive",(double)*next_h);
   if (next_sc) *next_sc = scheme;
