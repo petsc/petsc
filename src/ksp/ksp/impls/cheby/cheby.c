@@ -195,7 +195,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
 
   Level: intermediate
 
-.seealso: KSPChebyshevEstEigSet(), PetscNoisyCreate()
+.seealso: KSPChebyshevEstEigSet()
 @*/
 PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp,PetscBool use)
 {
@@ -321,11 +321,12 @@ static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest,P
   PetscFunctionReturn(0);
 }
 
-static unsigned int chebyhash(unsigned int x) {
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x);
-    return x;
+static PetscScalar chebyhash(PetscInt xx) {
+  unsigned int x = xx;
+  x = ((x >> 16) ^ x) * 0x45d9f3b;
+  x = ((x >> 16) ^ x) * 0x45d9f3b;
+  x = ((x >> 16) ^ x);
+  return (PetscScalar)(x-2147483648)*5.e-10; /* center around zero, scaled about -1. to 1.*/
 }
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_Chebyshev"
@@ -360,7 +361,6 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
       if (cheb->usenoisy) {
         B  = ksp->work[1];
-        /* ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr); */
         {
           PetscErrorCode ierr;
           PetscInt       n,i,istart;
@@ -369,7 +369,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
           ierr = VecGetLocalSize(B,&n);CHKERRQ(ierr);
           ierr = VecGetArray(B,&xx);CHKERRQ(ierr);
           for (i=0; i<n; i++) {
-            PetscReal v = (PetscReal)(chebyhash(i+istart) - 2147483648)*5.e-10; /* center around zero */
+            PetscScalar v = chebyhash(i+istart);
             xx[i] = v;
           }
           ierr = VecRestoreArray(B,&xx);CHKERRQ(ierr);
@@ -563,6 +563,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSet_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetUseNoisy_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigGetKSP_C",NULL);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

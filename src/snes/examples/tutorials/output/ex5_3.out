@@ -75,7 +75,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.129582, max = 1.4254
+          Chebyshev: eigenvalue estimates:  min = 0.129621, max = 1.42583
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 2 MPI processes
             type: gmres
@@ -85,6 +85,7 @@ SNES Object: 2 MPI processes
             tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
+          Chebyshev: estimating eigenvalues using noisy right hand side
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -103,7 +104,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.127897, max = 1.40687
+          Chebyshev: eigenvalue estimates:  min = 0.126628, max = 1.39291
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 2 MPI processes
             type: gmres
@@ -113,6 +114,7 @@ SNES Object: 2 MPI processes
             tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
+          Chebyshev: estimating eigenvalues using noisy right hand side
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning

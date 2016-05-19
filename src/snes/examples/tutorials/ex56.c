@@ -178,7 +178,7 @@ int main(int argc,char **args)
   PetscBool      flg,use_snes=PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
@@ -453,9 +453,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);
-  /* ierr = PetscFree(coords);CHKERRQ(ierr); */
-
-  ierr = PetscFinalize();
-  PetscFunctionReturn(0);
-}
  
+  ierr = PetscFinalize();
+  return ierr;
+}
