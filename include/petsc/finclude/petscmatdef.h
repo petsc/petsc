@@ -26,6 +26,7 @@
 #define MPPTScotchStragegyType PetscEnum
 #define MatAssemblyType PetscEnum
 #define MatFactorType PetscEnum
+#define MatFactorError PetscEnum
 #define MatFactorShiftType PetscEnum
 #define MatOrderingType character*(80)
 #define MatSORType PetscEnum
