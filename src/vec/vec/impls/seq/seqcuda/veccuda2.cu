@@ -33,7 +33,7 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
   if (!v->spptr) {
     ierr = PetscMalloc(sizeof(Vec_CUDA),&v->spptr);CHKERRQ(ierr);
     veccuda = (Vec_CUDA*)v->spptr;
-    err = cudaMalloc((void **)&veccuda->GPUarray_allocated,sizeof(PetscScalar)*((PetscBLASInt)v->map->n));CHKERRCUDA(err);
+    err = cudaMalloc((void**)&veccuda->GPUarray_allocated,sizeof(PetscScalar)*((PetscBLASInt)v->map->n));CHKERRCUDA(err);
     veccuda->GPUarray = veccuda->GPUarray_allocated;
     err = cudaStreamCreate(&stream);CHKERRCUDA(err);
     veccuda->stream = stream;

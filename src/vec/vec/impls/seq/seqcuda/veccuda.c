@@ -396,7 +396,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
       V->valid_GPU_array = PETSC_CUDA_UNALLOCATED;
     }
     veccuda = (Vec_CUDA*)V->spptr;
-    veccuda->GPUarray = (PetscScalar *)array;
+    veccuda->GPUarray = (PetscScalar*)array;
   }
   PetscFunctionReturn(0);
 }
