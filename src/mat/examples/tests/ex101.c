@@ -29,10 +29,10 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(pA,3,&P);CHKERRQ(ierr);
-  ierr = MatDestroy(&pA);
+  ierr = MatDestroy(&pA);CHKERRQ(ierr);
 
   /* Create AIJ equivalent matrix, aijP, for comparison testing */
-  ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);
+  ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);CHKERRQ(ierr);
 
   /* Create AIJ matrix, A */
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);

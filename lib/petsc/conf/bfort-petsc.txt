@@ -12,6 +12,7 @@ native KSPNormType
 native KSPCGType
 native MatSchurComplementAinvType
 native MatFactorType
+native MatFactorError
 native MatCompositeType
 native MatAssemblyType
 native MatInfoType

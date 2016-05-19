@@ -76,7 +76,6 @@
 #endif
 #endif
 
-
 #define SuiteSparse_long long long
 #define SuiteSparse_long_max LONG_LONG_MAX
 #define SuiteSparse_long_id "%lld"
@@ -92,12 +91,10 @@ typedef struct {
   klu_K_common   Common;
   klu_K_symbolic *Symbolic;
   klu_K_numeric  *Numeric;
-  PetscInt     *perm_c,*perm_r;
-  MatStructure flg;
-  PetscBool    PetscMatOrdering;
-
-  /* Flag to clean up KLU objects during Destroy */
-  PetscBool CleanUpKLU;
+  PetscInt       *perm_c,*perm_r;
+  MatStructure   flg;
+  PetscBool      PetscMatOrdering;
+  PetscBool      CleanUpKLU;
 } Mat_KLU;
 
 #undef __FUNCT__
@@ -105,16 +102,15 @@ typedef struct {
 static PetscErrorCode MatDestroy_KLU(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_KLU    *lu=(Mat_KLU*)A->spptr;
+  Mat_KLU    *lu=(Mat_KLU*)A->data;
 
   PetscFunctionBegin;
-  if (lu && lu->CleanUpKLU) {
+  if (lu->CleanUpKLU) {
     klu_K_free_symbolic(&lu->Symbolic,&lu->Common);
     klu_K_free_numeric(&lu->Numeric,&lu->Common);
     ierr = PetscFree2(lu->perm_r,lu->perm_c);CHKERRQ(ierr);
   }
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -122,7 +118,7 @@ static PetscErrorCode MatDestroy_KLU(Mat A)
 #define __FUNCT__ "MatSolveTranspose_KLU"
 static PetscErrorCode MatSolveTranspose_KLU(Mat A,Vec b,Vec x)
 {
-  Mat_KLU       *lu = (Mat_KLU*)A->spptr;
+  Mat_KLU       *lu = (Mat_KLU*)A->data;
   PetscScalar    *xa;
   PetscErrorCode ierr;
   PetscInt       status;
@@ -142,7 +138,7 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatSolve_KLU"
 static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
 {
-  Mat_KLU       *lu = (Mat_KLU*)A->spptr;
+  Mat_KLU       *lu = (Mat_KLU*)A->data;
   PetscScalar    *xa;
   PetscErrorCode ierr;
   PetscInt       status;
@@ -167,7 +163,7 @@ static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_KLU"
 static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat_KLU        *lu = (Mat_KLU*)(F)->spptr;
+  Mat_KLU        *lu = (Mat_KLU*)(F)->data;
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
   PetscInt       *ai = a->i,*aj=a->j;
   PetscScalar    *av = a->a;
@@ -194,7 +190,7 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,const MatFactorInfo *in
 static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
-  Mat_KLU       *lu = (Mat_KLU*)(F->spptr);
+  Mat_KLU       *lu = (Mat_KLU*)(F->data);
   PetscErrorCode ierr;
   PetscInt       i,*ai = a->i,*aj = a->j,m=A->rmap->n,n=A->cmap->n;
   const PetscInt *ra,*ca;
@@ -230,7 +226,7 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFac
 #define __FUNCT__ "MatFactorInfo_KLU"
 static PetscErrorCode MatFactorInfo_KLU(Mat A,PetscViewer viewer)
 {
-  Mat_KLU       *lu= (Mat_KLU*)A->spptr;
+  Mat_KLU       *lu= (Mat_KLU*)A->data;
   klu_K_numeric *Numeric=(klu_K_numeric*)lu->Numeric;
   PetscErrorCode ierr;
 
@@ -268,8 +264,6 @@ static PetscErrorCode MatView_KLU(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
-
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -327,11 +321,13 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   /* Create the factorization matrix F */
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
+  ierr = PetscStrallocpy("klu",&((PetscObject)B)->type_name);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
+
   ierr = PetscNewLog(B,&lu);CHKERRQ(ierr);
 
-  B->spptr                 = lu;
+  B->data                  = lu;
+  B->ops->getinfo          = MatGetInfo_External;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_KLU;
   B->ops->destroy          = MatDestroy_KLU;
   B->ops->view             = MatView_KLU;

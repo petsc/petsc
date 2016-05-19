@@ -1,4 +1,4 @@
-DM Object:Hexahedral Mesh 4 MPI processes
+DM Object: Hexahedral Mesh 4 MPI processes
   type: plex
 Mesh 'Hexahedral Mesh':
 orientation is missing

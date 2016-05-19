@@ -1,17 +1,6 @@
 #include <../src/snes/impls/gs/gsimpl.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESNGSDestroy_Private"
-static PetscErrorCode SNESNGSDestroy_Private(ISColoring coloring)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SNESComputeNGSDefaultSecant"
 PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,void *ctx)
 {
@@ -20,7 +9,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
   PetscInt       i,j,k,ncolors;
   DM             dm;
   PetscBool      flg;
-  ISColoring     coloring;
+  ISColoring     coloring = gs->coloring;
   MatColoring    mc;
   Vec            W,G,F;
   PetscScalar    h=gs->h;
@@ -33,7 +22,6 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
   PetscInt       its;
   PetscErrorCode (*func)(SNES,Vec,Vec,void*);
   void           *fctx;
-  PetscContainer colorcontainer;
   PetscBool      mat = gs->secant_mat,equal,isdone,alldone;
   PetscScalar    *xa,*fa,*wa,*ga;
 
@@ -48,8 +36,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
   ierr = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,NULL,&func,&fctx);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)snes,"SNESNGSColoring",(PetscObject*)&colorcontainer);CHKERRQ(ierr);
-  if (!colorcontainer) {
+  if (!coloring) {
     /* create the coloring */
     ierr = DMHasColoring(dm,&flg);CHKERRQ(ierr);
     if (flg && !mat) {
@@ -62,13 +49,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
       ierr = MatColoringApply(mc,&coloring);CHKERRQ(ierr);
       ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
     }
-    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)snes),&colorcontainer);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(colorcontainer,(void *)coloring);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(colorcontainer,(PetscErrorCode (*)(void *))SNESNGSDestroy_Private);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)snes,"SNESNGSColoring",(PetscObject)colorcontainer);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&colorcontainer);CHKERRQ(ierr);
-  } else {
-    ierr = PetscContainerGetPointer(colorcontainer,(void **)&coloring);CHKERRQ(ierr);
+    gs->coloring = coloring;
   }
   ierr = ISColoringGetIS(coloring,&ncolors,&coloris);CHKERRQ(ierr);
   ierr = VecEqual(X,snes->vec_sol,&equal);CHKERRQ(ierr);

@@ -228,7 +228,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       struct {PetscInt max,sum;} inwork,outwork;
       inwork.max   = osm->n_local_true;
       inwork.sum   = osm->n_local_true;
-      ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,MPIU_MAXSUM_OP,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
     }
@@ -1659,7 +1659,7 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
 @*/
 PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[])
 {
-  PC_ASM         *osm;
+  PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
   PetscBool      match;
 
@@ -1668,15 +1668,10 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
   PetscValidIntPointer(n,2);
   if (is) PetscValidPointer(is,3);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
-  if (!match) {
-    if (n) *n = 0;
-    if (is) *is = NULL;
-  } else {
-    osm = (PC_ASM*)pc->data;
-    if (n) *n = osm->n_local_true;
-    if (is) *is = osm->is;
-    if (is_local) *is_local = osm->is_local;
-  }
+  if (!match) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PC is not a PCASM");
+  if (n) *n = osm->n_local_true;
+  if (is) *is = osm->is;
+  if (is_local) *is_local = osm->is_local;
   PetscFunctionReturn(0);
 }
 

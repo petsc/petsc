@@ -1,6 +1,5 @@
 
-#include <petsc/private/kspimpl.h>                    /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h>
+#include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h>    /*I "petscksp.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPReset_Chebyshev"

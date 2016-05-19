@@ -6,6 +6,7 @@
 
 PETSC_EXTERN PetscBool SNESLineSearchRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(void);
+PETSC_EXTERN PetscLogEvent SNESLINESEARCH_Apply;
 
 typedef struct _LineSearchOps *LineSearchOps;
 

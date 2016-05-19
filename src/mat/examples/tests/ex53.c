@@ -152,7 +152,7 @@ int main(int argc,char **args)
 
   /* Test MatGetRow()/ MatRestoreRow() */
   for (ct=0; ct<100; ct++) {
-    ierr = PetscRandomGetValue(rand,&v);
+    ierr = PetscRandomGetValue(rand,&v);CHKERRQ(ierr);
     row  = rstart + (int)(PetscRealPart(v)*m);
     ierr = MatGetRow(A,row,&ncols1,&cols1,&v1);CHKERRQ(ierr);
     ierr = MatGetRow(B,row,&ncols2,&cols2,&v2);CHKERRQ(ierr);

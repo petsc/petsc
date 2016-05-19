@@ -215,12 +215,14 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
   Mat            A = pc->pmat;
-
+  MatFactorError err;
+  
   PetscFunctionBegin;
   if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
   ierr = MatInvertBlockDiagonal(A,&jac->diag);CHKERRQ(ierr);
-  if (A->errortype) pc->failedreason = (PCFailedReason)A->errortype;
+  ierr = MatFactorGetError(A,&err);CHKERRQ(ierr);
+  if (err) pc->failedreason = (PCFailedReason)err;
  
   ierr = MatGetBlockSize(A,&jac->bs);CHKERRQ(ierr);
   jac->mbs = A->rmap->n/jac->bs;

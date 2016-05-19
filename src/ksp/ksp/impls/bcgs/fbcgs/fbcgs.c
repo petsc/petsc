@@ -17,7 +17,7 @@ static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
 }
 
 /* Only need a few hacks from KSPSolve_BCGS */
-#include <petsc/private/pcimpl.h>            /*I "petscksp.h" I*/
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_FBCGS"
 static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
@@ -29,6 +29,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   PetscReal      dp    = 0.0,d2;
   KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
   PC             pc;
+  Mat            mat;
 
   PetscFunctionBegin;
   X  = ksp->vec_sol;
@@ -56,8 +57,9 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   /* Compute initial residual */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&mat,NULL);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,pc->mat,X,S2);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,mat,X,S2);CHKERRQ(ierr);
     ierr = VecCopy(B,R);CHKERRQ(ierr);
     ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
   } else {
@@ -93,7 +95,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr); /* p <- r - omega * beta* v + beta * p */
 
     ierr = KSP_PCApply(ksp,P,P2);CHKERRQ(ierr); /* p2 <- K p */
-    ierr = KSP_MatMult(ksp,pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
+    ierr = KSP_MatMult(ksp,mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
 
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
@@ -101,7 +103,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ierr  = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr); /* s <- r - alpha v */
 
     ierr = KSP_PCApply(ksp,S,S2);CHKERRQ(ierr); /* s2 <- K s */
-    ierr = KSP_MatMult(ksp,pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
+    ierr = KSP_MatMult(ksp,mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
 
     ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {

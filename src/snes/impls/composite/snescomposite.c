@@ -762,7 +762,7 @@ PetscErrorCode  SNESCompositeSetDamping(SNES snes,PetscInt n,PetscReal dmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve_Composite"
-PetscErrorCode SNESSolve_Composite(SNES snes)
+static PetscErrorCode SNESSolve_Composite(SNES snes)
 {
   Vec            F;
   Vec            X;

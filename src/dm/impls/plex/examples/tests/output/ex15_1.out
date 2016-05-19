@@ -1,5 +1,5 @@
 ==== original V in global ordering. size==18	block size=2
-Vec Object:V 2 MPI processes
+Vec Object: V 2 MPI processes
   type: mpi
 Process [0]
 1.
@@ -22,7 +22,7 @@ Process [1]
 0.
 1.
 ====  V in natural ordering. size==18	block size=2
-Vec Object:NV 2 MPI processes
+Vec Object: NV 2 MPI processes
   type: mpi
 Process [0]
 0.
@@ -45,7 +45,7 @@ Process [1]
 1.
 1.
 ==== Vector from file. size==18	block size=2
-Vec Object:V 2 MPI processes
+Vec Object: V 2 MPI processes
   type: mpi
 Process [0]
 1.
@@ -69,7 +69,7 @@ Process [1]
 1.
 V and RV are equal
 ==== Vector from file. size==18	block size=2
-Vec Object:V 2 MPI processes
+Vec Object: V 2 MPI processes
   type: mpi
 Process [0]
 0.

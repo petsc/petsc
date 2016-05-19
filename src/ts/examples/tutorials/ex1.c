@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
   user.mx    = 4;
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
       Set a large number of timesteps and final duration time
      to insure convergence to steady state.
   */
-  ierr = TSSetDuration(ts,1000,1.e12);
+  ierr = TSSetDuration(ts,1000,1.e12);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /*

@@ -84,53 +84,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-/*
-       These two functions are the MPI reduction operation used for max and min with index
-   A call to MPI_Op_create() converts the function Vec[Max,Min]_Local() to the MPI operator Vec[Max,Min]_Local_Op.
-   These are marked PETSC_EXTERN since the function pointers are passed to MPI.
-*/
-MPI_Op VecMax_Local_Op = 0;
-MPI_Op VecMin_Local_Op = 0;
-
-#undef __FUNCT__
-#define __FUNCT__ "VecMax_Local"
-PETSC_EXTERN void MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
-{
-  PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
-
-  PetscFunctionBegin;
-  if (*datatype != MPIU_REAL) {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
-    MPI_Abort(MPI_COMM_SELF,1);
-  }
-  if (xin[0] > xout[0]) {
-    xout[0] = xin[0];
-    xout[1] = xin[1];
-  } else if (xin[0] == xout[0]) {
-    xout[1] = PetscMin(xin[1],xout[1]);
-  }
-  PetscFunctionReturnVoid(); /* cannot return a value */
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecMin_Local"
-PETSC_EXTERN void MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
-{
-  PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
-
-  PetscFunctionBegin;
-  if (*datatype != MPIU_REAL) {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
-    MPI_Abort(MPI_COMM_SELF,1);
-  }
-  if (xin[0] < xout[0]) {
-    xout[0] = xin[0];
-    xout[1] = xin[1];
-  } else if (xin[0] == xout[0]) {
-    xout[1] = PetscMin(xin[1],xout[1]);
-  }
-  PetscFunctionReturnVoid();
-}
+extern MPI_Op MPIU_MAXINDEX_OP, MPIU_MININDEX_OP;
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMax_MPI"
@@ -152,7 +106,7 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     rstart   = xin->map->rstart;
     work2[0] = work;
     work2[1] = *idx + rstart;
-    ierr     = MPIU_Allreduce(work2,z2,2,MPIU_REAL,VecMax_Local_Op,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr     = MPIU_Allreduce(work2,z2,2,MPIU_REAL,MPIU_MAXINDEX_OP,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     *z       = z2[0];
     *idx     = (PetscInt)z2[1];
   }
@@ -180,7 +134,7 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
-    ierr = MPIU_Allreduce(work2,z2,2,MPIU_REAL,VecMin_Local_Op,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(work2,z2,2,MPIU_REAL,MPIU_MININDEX_OP,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     *z   = z2[0];
     *idx = (PetscInt)z2[1];
   }

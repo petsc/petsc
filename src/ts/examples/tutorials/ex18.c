@@ -1173,5 +1173,5 @@ int main(int argc, char **argv)
   ierr = PetscFree(user.monitorFuncs);CHKERRQ(ierr);
   ierr = FunctionalDestroy(&user.functionalRegistry);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }

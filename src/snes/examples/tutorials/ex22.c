@@ -82,7 +82,7 @@ int main(int argc,char **argv)
   DM             packer;
   PetscBool      use_monitor = PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsSetFromOptions(NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */

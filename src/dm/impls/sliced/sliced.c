@@ -163,7 +163,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
 
   PetscFunctionBegin;
   PetscValidPointer(inf,3);
-  if (*inf) {ierr = PetscFree3((*inf)->i,(*inf)->j,*inf);CHKERRQ(ierr);}
+  if (*inf) {ierr = PetscFree3(*inf,(*inf)->i,(*inf)->j);CHKERRQ(ierr);}
   if (!fill) PetscFunctionReturn(0);
   for (i=0,nz=0; i<bs*bs; i++) if (fill[i]) nz++;
   ierr  = PetscMalloc3(1,&f,bs+1,&fi,nz,&fj);CHKERRQ(ierr);

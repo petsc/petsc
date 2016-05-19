@@ -921,9 +921,9 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 
 .seealso: DMCreateLocalVector()
 @*/
-PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
+PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
-  PetscInt       bs = -1;
+  PetscInt       bs = -1, bsLocal, bsMin, bsMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -948,13 +948,23 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
         ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
-        bdof = cdof ? 1 : dof;
-        if (bs < 0)          {bs = bdof;}
-        else if (bs != bdof) {bs = 1;}
+        /* If you have dofs, and constraints, and they are unequal, we set the blocksize to 1 */
+        bdof = cdof && (dof-cdof) ? 1 : dof;
+        if (dof) {
+          if (bs < 0)          {bs = bdof;}
+          else if (bs != bdof) {bs = 1;}
+        }
         for (c = 0; c < dof; ++c, ++l) {
           ltog[l] = off+c;
         }
       }
+      /* Must have same blocksize on all procs (some might have no points) */
+      bsLocal = bs;
+      ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+      bsLocal = bs < 0 ? bsMax : bs;
+      ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+      if (bsMin != bsMax) {bs = 1;}
+      else                {bs = bsMax;}
       ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, bs < 0 ? 1 : bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
@@ -2146,9 +2156,11 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   switch (mode) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
+  case INSERT_BC_VALUES:
     isInsert = PETSC_TRUE; break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
+  case ADD_BC_VALUES:
     isInsert = PETSC_FALSE; break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);

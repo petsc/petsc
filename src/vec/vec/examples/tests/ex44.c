@@ -132,7 +132,6 @@ int main(int argc, char * argv[]) {
     ierr = PetscFree(idx);CHKERRQ(ierr);
     ierr = PetscFree(idy);CHKERRQ(ierr);
   }
-  PetscFinalize();
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

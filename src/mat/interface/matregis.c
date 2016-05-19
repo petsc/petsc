@@ -14,12 +14,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
 
-PETSC_EXTERN PetscErrorCode MatCreate_SeqBSTRM(Mat);
-PETSC_EXTERN PetscErrorCode MatCreate_MPIBSTRM(Mat);
-
-PETSC_EXTERN PetscErrorCode MatCreate_SeqSBSTRM(Mat);
-PETSC_EXTERN PetscErrorCode MatCreate_MPISBSTRM(Mat);
-
 PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
 
@@ -116,14 +110,6 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegisterBaseName(MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = MatRegister(MATMPISBAIJ,       MatCreate_MPISBAIJ);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQSBAIJ,       MatCreate_SeqSBAIJ);CHKERRQ(ierr);
-
-  ierr = MatRegisterBaseName(MATBSTRM,MATSEQBSTRM,MATMPIBSTRM);CHKERRQ(ierr);
-  ierr = MatRegister(MATMPIBSTRM,       MatCreate_MPIBSTRM);CHKERRQ(ierr);
-  ierr = MatRegister(MATSEQBSTRM,       MatCreate_SeqBSTRM);CHKERRQ(ierr);
-
-  ierr = MatRegisterBaseName(MATSBSTRM,MATSEQSBSTRM,MATMPISBSTRM);CHKERRQ(ierr);
-  ierr = MatRegister(MATMPISBSTRM,      MatCreate_MPISBSTRM);CHKERRQ(ierr);
-  ierr = MatRegister(MATSEQSBSTRM,      MatCreate_SeqSBSTRM);CHKERRQ(ierr);
 
   ierr = MatRegisterBaseName(MATDENSE,MATSEQDENSE,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatRegister(MATMPIDENSE,       MatCreate_MPIDense);CHKERRQ(ierr);

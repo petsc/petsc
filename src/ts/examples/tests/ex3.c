@@ -91,7 +91,7 @@ int main(int argc,char **argv)
 
   /* create LHS matrix Amat */
   /*------------------------*/
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, NULL, &appctx.Amat);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, NULL, &appctx.Amat);CHKERRQ(ierr);
   ierr = MatSetFromOptions(appctx.Amat);CHKERRQ(ierr);
   ierr = MatSetUp(appctx.Amat);CHKERRQ(ierr);
   /* set space grid points - interio points only! */

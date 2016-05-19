@@ -4,7 +4,7 @@ PetscBool         SNESLineSearchRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList SNESLineSearchList              = NULL;
 
 PetscClassId  SNESLINESEARCH_CLASSID;
-PetscLogEvent SNESLineSearch_Apply;
+PetscLogEvent SNESLINESEARCH_Apply;
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchMonitorCancel"
@@ -706,11 +706,11 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
     ierr = VecNorm(F, NORM_2, &linesearch->fnorm);CHKERRQ(ierr);
   }
 
-  ierr = PetscLogEventBegin(SNESLineSearch_Apply,linesearch,X,F,Y);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNESLINESEARCH_Apply,linesearch,X,F,Y);CHKERRQ(ierr);
 
   ierr = (*linesearch->ops->apply)(linesearch);CHKERRQ(ierr);
 
-  ierr = PetscLogEventEnd(SNESLineSearch_Apply,linesearch,X,F,Y);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SNESLINESEARCH_Apply,linesearch,X,F,Y);CHKERRQ(ierr);
 
   if (fnorm) *fnorm = linesearch->fnorm;
   PetscFunctionReturn(0);

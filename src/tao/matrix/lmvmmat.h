@@ -1,8 +1,6 @@
 #ifndef __LMVMMAT_H
 #define __LMVMMAT_H
 
-
-#include <petsc/private/matimpl.h>
 #include <petscksp.h>
 
 #define MatLMVM_Scale_None              0

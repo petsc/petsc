@@ -110,7 +110,7 @@ KSP Object: 1 MPI processes
 PC Object: 1 MPI processes
   type: none
   linear system matrix = precond matrix:
-  Mat Object:   1 MPI processes
+  Mat Object: 1 MPI processes
     type: normal
     rows=181, cols=181
 Number of iterations = 100

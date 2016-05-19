@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       size=8,size1=6,size2=2, i,j;
 
-  PetscInitialize(&argc,&argv,0,help);
+  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
 
   /*
    * Create matrix and three vectors: these are all normal
@@ -105,9 +105,8 @@ int main(int argc,char **argv)
   ierr = MatMult(A22,X2,Z2);CHKERRQ(ierr);
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
-  ierr = VecNorm(Z,NORM_2,&nrm);
+  ierr = VecNorm(Z,NORM_2,&nrm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test1; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
-
   ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult the usual way:\n");CHKERRQ(ierr);
   ierr = VecView(Y,0);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult by subblock:\n");CHKERRQ(ierr);
@@ -137,7 +136,7 @@ int main(int argc,char **argv)
   ierr = MatMult(A22,X2,Z2);CHKERRQ(ierr);
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
-  ierr = VecNorm(Z,NORM_2,&nrm);
+  ierr = VecNorm(Z,NORM_2,&nrm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test2; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
 
   /*
@@ -149,7 +148,7 @@ int main(int argc,char **argv)
   ierr = MatMultTranspose(A22,X2,Z2);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd(A12,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
-  ierr = VecNorm(Z,NORM_2,&nrm);
+  ierr = VecNorm(Z,NORM_2,&nrm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test3; error norm=%g\n",(double)nrm);CHKERRQ(ierr);
 
   ierr = PetscFree(a);CHKERRQ(ierr);

@@ -9,7 +9,7 @@ SOURCEC	 = mpisbaij.c mmsbaij.c sbaijov.c mpiaijsbaij.c
 SOURCEF	 =
 SOURCEH	 = mpisbaij.h
 LIBBASE	 = libpetscmat
-DIRS	 = sbstream
+DIRS	 = 
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/sbaij/mpi/
 

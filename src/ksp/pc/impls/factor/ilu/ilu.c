@@ -151,11 +151,12 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
 #define __FUNCT__ "PCSetUp_ILU"
 static PetscErrorCode PCSetUp_ILU(PC pc)
 {
-  PetscErrorCode ierr;
-  PC_ILU         *ilu = (PC_ILU*)pc->data;
-  MatInfo        info;
-  PetscBool      flg;
+  PetscErrorCode         ierr;
+  PC_ILU                 *ilu = (PC_ILU*)pc->data;
+  MatInfo                info;
+  PetscBool              flg;
   const MatSolverPackage stype;
+  MatFactorError         err;
 
   PetscFunctionBegin;
   /* ugly hack to change default, since it is not support by some matrix types */
@@ -187,8 +188,9 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     ((PC_Factor*)ilu)->info.diagonal_fill = 0.0;
 
     ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);CHKERRQ(ierr);
-    if (pc->pmat->errortype) { /* Factor() fails */
-      pc->failedreason = (PCFailedReason)pc->pmat->errortype;
+    ierr = MatFactorGetError(pc->pmat,&err);CHKERRQ(ierr);
+    if (err) { /* Factor() fails */
+      pc->failedreason = (PCFailedReason)err;
       PetscFunctionReturn(0);
     }
 
@@ -196,7 +198,6 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     /* must update the pc record of the matrix state or the PC will attempt to run PCSetUp() yet again */
     ierr = PetscObjectStateGet((PetscObject)pc->pmat,&pc->matstate);CHKERRQ(ierr);
   } else {
-    Mat F;
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
@@ -237,21 +238,24 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
     }
-    F = ((PC_Factor*)ilu)->fact;
-    if (F->errortype) { /* FactorSymbolic() fails */
-      pc->failedreason = (PCFailedReason)F->errortype;
+    ierr = MatFactorGetError(((PC_Factor*)ilu)->fact,&err);CHKERRQ(ierr);
+    if (err) { /* FactorSymbolic() fails */
+      pc->failedreason = (PCFailedReason)err;
       PetscFunctionReturn(0);
     }
 
     ierr = MatLUFactorNumeric(((PC_Factor*)ilu)->fact,pc->pmat,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
-    if (F->errortype) { /* FactorNumeric() fails */
-      pc->failedreason = (PCFailedReason)F->errortype;
+    ierr = MatFactorGetError(((PC_Factor*)ilu)->fact,&err);CHKERRQ(ierr);
+    if (err) { /* FactorNumeric() fails */
+      pc->failedreason = (PCFailedReason)err;
     }
   }
 
   ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    ierr = PCFactorSetMatSolverPackage(pc,((PC_Factor*)ilu)->fact->solvertype);CHKERRQ(ierr);
+    const MatSolverPackage solverpackage;
+    ierr = MatFactorGetSolverPackage(((PC_Factor*)ilu)->fact,&solverpackage);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverPackage(pc,solverpackage);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

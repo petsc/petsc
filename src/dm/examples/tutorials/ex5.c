@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = DMDAGetElements(da,&ne,&nc,&e);CHKERRQ(ierr);
   ierr = VecGetArray(local,&lv);CHKERRQ(ierr);
   for (i=0; i<ne; i++) {
-    ierr       = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]);
+    ierr       = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]);CHKERRQ(ierr);
     lv[e[3*i]] = i;
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
