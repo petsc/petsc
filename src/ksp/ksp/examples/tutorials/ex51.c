@@ -60,8 +60,6 @@ int main(int argc,char **args)
   ierr  = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr  = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr  = MatSetUp(A);CHKERRQ(ierr);
-  start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
-  end   = start + M/size + ((M%size) > rank);
 
   /* Create matrix  */
   ierr  = MatCreate(PETSC_COMM_WORLD,&Mass);CHKERRQ(ierr);
