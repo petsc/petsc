@@ -14,6 +14,8 @@
 #if !defined(__STCG)
 #define __STCG
 
+#include <petsc/private/kspimpl.h>
+
 typedef struct {
   PetscReal radius;
   PetscReal norm_d;

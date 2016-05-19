@@ -1,7 +1,6 @@
 #if !defined(__PGMRES)
 #define __PGMRES
 
-#include <petsc/private/kspimpl.h>
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 

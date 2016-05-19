@@ -5,6 +5,8 @@
 #if !defined(__QCG)
 #define __QCG
 
+#include <petsc/private/kspimpl.h>
+
 typedef struct {
   PetscReal quadratic;
   PetscReal ltsnrm;

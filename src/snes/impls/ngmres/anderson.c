@@ -23,8 +23,7 @@ static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptions
   ierr = PetscOptionsBool("-snes_anderson_monitor",     "Monitor steps of Anderson Mixing","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_restart",      "Iterations before forced restart", "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_restart_it",   "Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-snes_anderson_restart_type","Restart type","SNESNGMRESSetRestartType",SNESNGMRESRestartTypes,
-                          (PetscEnum)ngmres->restart_type,(PetscEnum*)&ngmres->restart_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_anderson_restart_type","Restart type","SNESNGMRESSetRestartType",SNESNGMRESRestartTypes,(PetscEnum)ngmres->restart_type,(PetscEnum*)&ngmres->restart_type,NULL);CHKERRQ(ierr);
   if (debug) {
     ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   }

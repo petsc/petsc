@@ -4,8 +4,8 @@
 */
 
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc/private/vecimpl.h>
 #include <petsc/private/isimpl.h>
+#include <petsc/private/vecimpl.h>
 
 /* Logging support */
 PetscClassId MAT_CLASSID;
@@ -34,7 +34,7 @@ PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_
 PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
-PetscLogEvent MAT_Merge,MAT_Residual;
+PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
 PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
@@ -57,14 +57,14 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
    Example of Usage:
 .vb
      PetscRandomCreate(PETSC_COMM_WORLD,&rctx);
-     VecSetRandom(x,rctx);
+     MatSetRandom(x,rctx);
      PetscRandomDestroy(rctx);
 .ve
 
    Level: intermediate
 
-   Concepts: vector^setting to random
-   Concepts: random^vector
+   Concepts: matrix^setting to random
+   Concepts: random^matrix
 
 .seealso: MatZeroEntries(), MatSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
@@ -86,12 +86,37 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
     rctx = randObj;
   }
 
-  ierr = PetscLogEventBegin(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setrandom)(x,rctx);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
 
   x->assembled = PETSC_TRUE;
   ierr         = PetscRandomDestroy(&randObj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorGetError"
+/*@
+   MatFactorGetError - gets the error code from a factorization
+
+   Logically Collective on Mat
+
+   Input Parameters:
+.  mat - the factored matrix
+
+   Output Parameter:
+.  err  - the error code
+
+   Level: advanced
+
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic()
+@*/
+PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  *err = mat->errortype;
   PetscFunctionReturn(0);
 }
 

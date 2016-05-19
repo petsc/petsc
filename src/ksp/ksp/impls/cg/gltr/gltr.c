@@ -1,6 +1,5 @@
 
-#include <petsc/private/kspimpl.h>             /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/impls/cg/gltr/gltrimpl.h>
+#include <../src/ksp/ksp/impls/cg/gltr/gltrimpl.h>  /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
 
 #define GLTR_PRECONDITIONED_DIRECTION   0

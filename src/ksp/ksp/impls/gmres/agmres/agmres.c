@@ -44,18 +44,17 @@ extern PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP,PetscInt);
 #define __FUNCT__ "KSPSetUp_AGMRES"
 static PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
-  PetscInt       hes;
-  PetscInt       nloc;
-  KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
-  PetscInt       neig    = agmres->neig;
-  PetscInt       max_k   = agmres->max_k;
-  PetscInt       N       = MAXKSPSIZE;
-  PetscInt       lwork   = PetscMax(8 * N + 16, 4 * neig * (N - neig));
+  PetscErrorCode  ierr;
+  PetscInt        hes;
+  PetscInt        nloc;
+  KSP_AGMRES      *agmres = (KSP_AGMRES*)ksp->data;
+  PetscInt        neig    = agmres->neig;
+  const PetscInt  max_k   = agmres->max_k;
+  PetscInt        N       = MAXKSPSIZE;
+  PetscInt        lwork   = PetscMax(8 * N + 16, 4 * neig * (N - neig));
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPAGMRES");
-  max_k = agmres->max_k;
   N     = MAXKSPSIZE;
   /* Preallocate space during the call to KSPSetup_GMRES for the Krylov basis */
   agmres->q_preallocate = PETSC_TRUE; /* No allocation on the fly */
@@ -128,15 +127,15 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec ptr, Vec *result)
 #define __FUNCT__ "KSPComputeShifts_GMRES"
 PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
-  KSP_AGMRES     *agmres = (KSP_AGMRES*)(ksp->data);
-  KSP            kspgmres;
-  Mat            Amat, Pmat;
-  PetscInt       max_k = agmres->max_k;
-  PC             pc;
-  PetscInt       m;
-  PetscScalar    *Rshift, *Ishift;
-  PetscBool      flg;
+  PetscErrorCode  ierr;
+  KSP_AGMRES      *agmres = (KSP_AGMRES*)(ksp->data);
+  KSP             kspgmres;
+  Mat             Amat, Pmat;
+  const PetscInt  max_k = agmres->max_k;
+  PC              pc;
+  PetscInt        m;
+  PetscScalar     *Rshift, *Ishift;
+  PetscBool       flg;
 
   PetscFunctionBegin;
   /* Perform one cycle of classical GMRES (with the Arnoldi process) to get the Hessenberg matrix
@@ -204,7 +203,7 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   KSP_AGMRES     *agmres = (KSP_AGMRES*)(ksp->data);
   PetscInt       max_k   = agmres->max_k; /* size of the (non augmented) Krylov subspace */
   PetscInt       Neig    = 0;
-  PetscInt       max_it  = ksp->max_it;
+  const PetscInt max_it  = ksp->max_it;
   PetscBool      flg;
 
   /* Perform one cycle of dgmres to find the eigenvalues and compute the first approximations of the eigenvectors */
@@ -214,7 +213,7 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   /* Send the size of the augmented basis to DGMRES */
   ksp->max_it             = max_k; /* set this to have DGMRES performing only one cycle */
   ksp->ops->buildsolution = KSPBuildSolution_DGMRES;
-  ierr                    = KSPSolve_DGMRES(ksp);
+  ierr                    = KSPSolve_DGMRES(ksp);CHKERRQ(ierr);
   ksp->guess_zero         = PETSC_FALSE;
   if (ksp->reason == KSP_CONVERGED_RTOL) {
     ierr = PetscLogEventEnd(KSP_AGMRESComputeShifts, ksp, 0,0,0);CHKERRQ(ierr);
@@ -242,7 +241,7 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
       wi[i] = agmres->wi[i];
     }
 
-    ierr = KSPSolve_DGMRES(ksp);
+    ierr = KSPSolve_DGMRES(ksp);CHKERRQ(ierr);
 
     ksp->guess_zero = PETSC_FALSE;
     if (ksp->reason == KSP_CONVERGED_RTOL) PetscFunctionReturn(0);
@@ -295,7 +294,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
   PetscReal      *Rshift = agmres->Rshift;
   PetscReal      *Ishift = agmres->Ishift;
   PetscReal      *Scale  = agmres->Scale;
-  PetscInt       max_k   = agmres->max_k;
+  const PetscInt max_k   = agmres->max_k;
   PetscInt       KspSize = KSPSIZE;  /* if max_k == KspSizen then the basis should not be augmented */
   PetscInt       j       = 1;
 
@@ -408,7 +407,7 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
   PetscScalar    *Scale  = agmres->Scale;
   PetscErrorCode ierr;
   PetscInt       i       = 0, j = 0;
-  PetscInt       max_k   = agmres->max_k;
+  const PetscInt max_k   = agmres->max_k;
   PetscInt       KspSize = KSPSIZE;
   PetscInt       N       = MAXKSPSIZE+1;
 
@@ -453,7 +452,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
   PetscErrorCode ierr;
-  PetscInt       max_k = agmres->max_k;       /* Size of the non-augmented Krylov basis */
+  const PetscInt max_k = agmres->max_k;       /* Size of the non-augmented Krylov basis */
   PetscInt       i, j;
   PetscInt       r = agmres->r;           /* current number of augmented eigenvectors */
   PetscBLASInt   KspSize;
@@ -661,7 +660,7 @@ static PetscErrorCode KSPDestroy_AGMRES(KSP ksp)
     ierr = PetscFree(agmres->Z);CHKERRQ(ierr);
     ierr = PetscFree(agmres->beta);CHKERRQ(ierr);
   }
-  ierr = KSPDestroy_DGMRES(ksp);
+  ierr = KSPDestroy_DGMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -689,7 +688,7 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, " AGMRES : restart=%d using %s\n", agmres->max_k, cstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, " AGMRES : %s\n", Nstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, " AGMRES: Number of matvecs : %D\n", agmres->matvecs);CHKERRQ(ierr);
-    if (agmres->force) PetscViewerASCIIPrintf (viewer, " AGMRES: Adaptive strategy is used: FALSE\n");
+    if (agmres->force) {ierr = PetscViewerASCIIPrintf (viewer, " AGMRES: Adaptive strategy is used: FALSE\n");CHKERRQ(ierr);}
     else PetscViewerASCIIPrintf(viewer, " AGMRES: Adaptive strategy is used: TRUE\n");
     if (agmres->DeflPrecond) {
       ierr=PetscViewerASCIIPrintf(viewer, " AGMRES: STRATEGY OF DEFLATION: PRECONDITIONER \n");CHKERRQ(ierr);
@@ -702,8 +701,8 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, " AGMRES: STRATEGY OF DEFLATION: AUGMENT\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer," AGMRES: augmented vectors  %d at frequency %d with %s\n", agmres->r, agmres->neig, ritzvec);CHKERRQ(ierr);
     }
-    ierr=PetscViewerASCIIPrintf(viewer, " AGMRES: Minimum relaxation parameter for the adaptive strategy(smv)  = %g\n", agmres->smv);
-    ierr=PetscViewerASCIIPrintf(viewer, " AGMRES: Maximum relaxation parameter for the adaptive strategy(bgv)  = %g\n", agmres->bgv);
+    ierr=PetscViewerASCIIPrintf(viewer, " AGMRES: Minimum relaxation parameter for the adaptive strategy(smv)  = %g\n", agmres->smv);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(viewer, " AGMRES: Maximum relaxation parameter for the adaptive strategy(bgv)  = %g\n", agmres->bgv);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,agmres->max_k);CHKERRQ(ierr);
   }
@@ -720,7 +719,7 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptionItems *PetscOptionsObj
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_DGMRES(PetscOptionsObject,ksp);  /* Set common options from DGMRES and GMRES */
+  ierr = KSPSetFromOptions_DGMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);  /* Set common options from DGMRES and GMRES */
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP AGMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_agmres_eigen", "Number of eigenvalues to deflate", "KSPDGMRESSetEigen", agmres->neig, &neig, &flg);CHKERRQ(ierr);
   if (flg) {

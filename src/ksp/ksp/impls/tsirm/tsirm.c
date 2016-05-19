@@ -1,10 +1,6 @@
-/*
-    This file implements TSIRM, the Two-Stage Iteration with least-squares Residual Minimization method. 
-    It is an iterative method to solve large sparse linear systems of the form Ax=b, and it improves the convergence of Krylov based iterative methods.
-    The principle is to build an external iteration over a Krylov method (for example GMRES), and to frequently store its current residual in a matrix S. After a given number of outer iterations, a least-squares minimization step (with CGLS or LSQR) is applied on S, in order to compute a better solution and to make new iterations if required.
-*/
+
+
 #include <petsc/private/kspimpl.h>	/*I "petscksp.h" I*/
-#include <petscksp.h>
 
 typedef struct {
   PetscReal tol_ls;
@@ -35,7 +31,7 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
   /* Matrix S of residuals */
   ierr = MatCreate(PETSC_COMM_WORLD,&tsirm->S);CHKERRQ(ierr); 
   ierr = MatSetSizes(tsirm->S,tsirm->Iend-tsirm->Istart,PETSC_DECIDE,tsirm->size,tsirm->size_ls);CHKERRQ(ierr);
-  ierr = MatSetType(tsirm->S,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetType(tsirm->S,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(tsirm->S);CHKERRQ(ierr);
   
   /* Residual and vector Alpha computed in the minimization step */
@@ -56,7 +52,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscScalar    *array;
   PetscReal      norm = 20;
   PetscInt       i,*ind_row,first_iteration = 1,its = 0,total = 0,col = 0;
-  PetscInt       iter_minimization = 0,restart = 30;
+  PetscInt       restart = 30;
   KSP            ksp_min;  /* KSP for minimization */
   PC             pc_min;    /* PC for minimization */
   
@@ -65,15 +61,13 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   b = ksp->vec_rhs; /* Right-hand side vector */
   
   /* Row indexes (these indexes are global) */
-  ierr = PetscMalloc(tsirm->Iend-tsirm->Istart,&ind_row);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tsirm->Iend-tsirm->Istart,&ind_row);CHKERRQ(ierr);
   for (i=0;i<tsirm->Iend-tsirm->Istart;i++) ind_row[i] = i+tsirm->Istart;
   
   /* Inner solver */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = PCKSPGetKSP(pc,&sub_ksp);CHKERRQ(ierr);
   ierr = KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,restart);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(sub_ksp);CHKERRQ(ierr);
   
   /* previously it seemed good but with SNES it seems not good... */
   ierr = KSP_MatMult(sub_ksp,tsirm->A,x,tsirm->r);CHKERRQ(ierr);
@@ -84,7 +78,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   ierr = KSPSetInitialGuessNonzero(sub_ksp,PETSC_TRUE);CHKERRQ(ierr);
   do {
     for (col=0;col<tsirm->size_ls && ksp->reason==0;col++) {
-      /* Solve (inner ietration) */
+      /* Solve (inner iteration) */
       ierr = KSPSolve(sub_ksp,b,x);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(sub_ksp,&its);CHKERRQ(ierr);
       total += its;
@@ -125,14 +119,12 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
       ierr = KSPGetPC(ksp_min,&pc_min);CHKERRQ(ierr);
       ierr = PCSetType(pc_min,PCNONE);CHKERRQ(ierr);
       ierr = KSPSolve(ksp_min,b,tsirm->Alpha);CHKERRQ(ierr);    /* Find Alpha such that ||AS Alpha = b|| */ 
-      ierr = KSPGetIterationNumber(ksp_min,&iter_minimization);CHKERRQ(ierr);
-      ierr = KSPGetResidualNorm(ksp_min,&norm);CHKERRQ(ierr);
-      ierr = KSPMonitor(ksp_min,iter_minimization,norm);CHKERRQ(ierr);
-
+      ierr = KSPDestroy(&ksp_min);CHKERRQ(ierr);
       /* Apply minimization */
       ierr = MatMult(tsirm->S,tsirm->Alpha,x);CHKERRQ(ierr); /* x = S * Alpha */
     }
   } while (ksp->its<ksp->max_it && !ksp->reason);
+  ierr = MatDestroy(&AS);CHKERRQ(ierr);
   ierr = PetscFree(ind_row);CHKERRQ(ierr);
   ksp->its = total;
   PetscFunctionReturn(0);
@@ -163,15 +155,51 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Free work vectors */
   ierr = MatDestroy(&tsirm->S);CHKERRQ(ierr);
   ierr = VecDestroy(&tsirm->Alpha);CHKERRQ(ierr);
   ierr = VecDestroy(&tsirm->r);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_TSIRM"
+/*MC
+     KSPTSIRM - Implements the two-stage iteration with least-squares residual minimization method.
+
+
+   Options Database Keys:
++  -ksp_ksp_type <solver> -         the type of the inner solver (GMRES or any of its variants for instance)
+.  -ksp_pc_type <preconditioner> - the type of the preconditioner applied to the inner solver
+.  -ksp_ksp_max_it <maxits> -      the maximum number of inner iterations (iterations of the inner solver)
+.  -ksp_ksp_rtol <tol> -           sets the relative convergence tolerance of the inner solver
+.  -ksp_tsirm_cgls <number> -      if 1 use CGLS solver in the minimization step, otherwise use LSQR solver
+.  -ksp_tsirm_max_it_ls <maxits> - the maximum number of iterations for the least-squares minimization solver
+.  -ksp_tsirm_tol_ls <tol> -       sets the convergence tolerance of the least-squares minimization solver 
+-  -ksp_tsirm_size_ls <size> -     the number of residuals for the least-squares minimization step
+
+   Level: advanced
+
+   Notes: TSIRM is a new two-stage iteration method for solving large sparse linear systems of the form Ax=b. The main idea behind this new 
+          method is the use a least-squares residual minimization to improve the convergence of Krylov based iterative methods, typically those of GMRES variants.
+          The principle of TSIRM algorithm  is to build an outer iteration over a Krylov method, called inner solver, and to frequently store the current residual
+          computed by the given Krylov method in a matrix of residuals S. After a few outer iterations, a least-squares minimization step is applied on the matrix 
+          composed by the saved residuals, in order to compute a better solution and to make new iterations if required. The GMRES method , or any of its variants,
+          can potentially be used as inner solver. The minimization step consists in solving the least-squares problem min||b-ASα|| to find α which minimizes the
+          residuals (b-AS). The minimization step is performed using two solvers of linear least-squares problems: CGLS  or LSQR. A new solution x with 
+          a minimal residual is computed with x=Sα.
+
+   References:
+. 1 R. Couturier, L. Ziane Khodja, and C. Guyeux. TSIRM: A Two-Stage Iteration with least-squares Residual Minimization algorithm to solve large sparse linear systems. In PDSEC 2015, 16th IEEE Int. Workshop on Parallel and Distributed Scientific and Engineering Computing (in conjunction with IPDPS 2015), Hyderabad, India, 2015.
+
+   Contributed by: Lilia Ziane Khodja
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,
+           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
+           KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
+           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPCSide()
+
+M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
 {
   PetscErrorCode ierr;

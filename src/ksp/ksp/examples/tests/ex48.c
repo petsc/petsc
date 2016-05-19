@@ -8,7 +8,6 @@ static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
     Provided by: Mark Filipiak <mjf@staffmail.ed.ac.uk>
 */
 #include <petscksp.h>
-#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

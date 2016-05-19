@@ -200,7 +200,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetOrdering",   MAT_CLASSID,&MAT_GetOrdering);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_CLASSID,&MAT_IncreaseOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_CLASSID,&MAT_Partitioning);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCoarsen",  MAT_COARSEN_CLASSID,&MAT_Coarsen);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCoarsen",       MAT_COARSEN_CLASSID,&MAT_Coarsen);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatZeroEntries",   MAT_CLASSID,&MAT_ZeroEntries);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatLoad",          MAT_CLASSID,&MAT_Load);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatView",          MAT_CLASSID,&MAT_View);CHKERRQ(ierr);
@@ -233,6 +233,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatRedundantMat",  MAT_CLASSID,&MAT_RedundantMat);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetMultiProcBlock", MAT_CLASSID,&MAT_GetMultiProcBlock);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetRandom",     MAT_CLASSID,&MAT_SetRandom);CHKERRQ(ierr);
 
   /* these may be specific to MPIAIJ matrices */
   ierr = PetscLogEventRegister("MatMPISumSeqNumeric",MAT_CLASSID,&MAT_Seqstompinum);CHKERRQ(ierr);

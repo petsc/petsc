@@ -6,7 +6,6 @@
     complex numbers version, so most probably some are incorrect.
 */
 
-#include <petsc/private/kspimpl.h>
 #include <../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h>
 
 #undef __FUNCT__
