@@ -54,7 +54,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "createBoxMesh"
-/* edge is the number of vertices per edge */
+/* same as DMPlexCreateBoxMesh but the number of vertices per edge is set byt the user */
 PetscErrorCode createBoxMesh(MPI_Comm comm, AppCtx *user)  //PetscInt dim, PetscInt edge, PetscBool bdyMarkers, PetscBool interpolate, DM *dm)
 {
   DM             boundary;
@@ -127,10 +127,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
 #define __FUNCT__ "WriteMetric"
 PetscErrorCode WriteMetric(MPI_Comm comm, AppCtx *user, Vec * metric) 
 {  
-	Vec               coordinates, met;
-	const PetscScalar *coords;
-	PetscReal         h, lambda1, lambda2, lambda3, lbd, lmax;
-	PetscInt          dim, vStart, vEnd, numVertices, i;
+  Vec               coordinates, met;
+  const PetscScalar *coords;
+  PetscReal         h, lambda1, lambda2, lambda3, lbd, lmax;
+  PetscInt          dim, vStart, vEnd, numVertices, i;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -144,13 +144,13 @@ PetscErrorCode WriteMetric(MPI_Comm comm, AppCtx *user, Vec * metric)
   ierr = VecSetSizes(met, PETSC_DECIDE, numVertices*dim*dim);CHKERRQ(ierr);
   ierr = VecSetFromOptions(met);CHKERRQ(ierr);
   
-	for (i=0; i<numVertices; ++i) {
-	  switch (user->metOpt) {
-	  case 0:
+  for (i=0; i<numVertices; ++i) {
+    switch (user->metOpt) {
+    case 0:
       lbd = 1/(user->hmax*user->hmax);
       lambda1 = lambda2 = lambda3 = lbd;
       break;
-	  case 1:
+    case 1:
       h = user->hmax - (user->hmax-user->hmin)*coords[dim*i];
       h = h*h;
       lmax = 1/(user->hmax*user->hmax);
@@ -158,7 +158,7 @@ PetscErrorCode WriteMetric(MPI_Comm comm, AppCtx *user, Vec * metric)
       lambda2 = lmax;
       lambda3 = lmax;
       break;
-	  case 2:
+    case 2:
       h = user->hmax*fabs(1-exp(-fabs(coords[dim*i]-0.5))) + user->hmin;
       lbd = 1/(h*h);
       lmax = 1/(user->hmax*user->hmax);
@@ -166,27 +166,27 @@ PetscErrorCode WriteMetric(MPI_Comm comm, AppCtx *user, Vec * metric)
       lambda2 = lmax;
       lambda3 = lmax;
       break;  
-	  default:
-	    SETERRQ1(PetscObjectComm((PetscObject) user->dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1 or 2, cannot be %d", user->metOpt);
-	  } 
-		if (dim == 2) {
-			ierr = VecSetValue(met, 4*i  , lambda1, INSERT_VALUES);CHKERRQ(ierr);
-			ierr = VecSetValue(met, 4*i+1, 0      , INSERT_VALUES);CHKERRQ(ierr);
-			ierr = VecSetValue(met, 4*i+2, 0      , INSERT_VALUES);CHKERRQ(ierr);
-			ierr = VecSetValue(met, 4*i+3, lambda2, INSERT_VALUES);CHKERRQ(ierr);
-		}
-		else {
-		  ierr = VecSetValue(met, 9*i  , lambda1, INSERT_VALUES);CHKERRQ(ierr);
-		  ierr = VecSetValue(met, 9*i+1, 0      , INSERT_VALUES);CHKERRQ(ierr);
-		  ierr = VecSetValue(met, 9*i+2, 0      , INSERT_VALUES);CHKERRQ(ierr);
-		  ierr = VecSetValue(met, 9*i+3, 0      , INSERT_VALUES);CHKERRQ(ierr);
-		  ierr = VecSetValue(met, 9*i+4, lambda2, INSERT_VALUES);CHKERRQ(ierr);
-		  ierr = VecSetValue(met, 9*i+5, 0      , INSERT_VALUES);CHKERRQ(ierr);
-		  ierr = VecSetValue(met, 9*i+6, 0      , INSERT_VALUES);CHKERRQ(ierr);
-		  ierr = VecSetValue(met, 9*i+7, 0      , INSERT_VALUES);CHKERRQ(ierr);
-		  ierr = VecSetValue(met, 9*i+8, lambda3, INSERT_VALUES);CHKERRQ(ierr);
-		}		
-	}
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject) user->dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1 or 2, cannot be %d", user->metOpt);
+    } 
+    if (dim == 2) {
+      ierr = VecSetValue(met, 4*i  , lambda1, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 4*i+1, 0      , INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 4*i+2, 0      , INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 4*i+3, lambda2, INSERT_VALUES);CHKERRQ(ierr);
+    }
+    else {
+      ierr = VecSetValue(met, 9*i  , lambda1, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 9*i+1, 0      , INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 9*i+2, 0      , INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 9*i+3, 0      , INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 9*i+4, lambda2, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 9*i+5, 0      , INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 9*i+6, 0      , INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 9*i+7, 0      , INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(met, 9*i+8, lambda3, INSERT_VALUES);CHKERRQ(ierr);
+    }    
+  }
 
   ierr = VecAssemblyBegin(met);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(met); CHKERRQ(ierr); 
@@ -200,39 +200,39 @@ PetscErrorCode WriteMetric(MPI_Comm comm, AppCtx *user, Vec * metric)
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main (int argc, char * argv[]) {
-		
-	AppCtx            user;                 /* user-defined work context */
-	MPI_Comm          comm;
-	DM                dma;
-	Vec               metric;
-	PetscErrorCode    ierr;
-	PetscViewer       viewer;	
+    
+  AppCtx            user;                 /* user-defined work context */
+  MPI_Comm          comm;
+  DM                dma;
+  Vec               metric;
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;  
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  	
+    
   ierr = CreateMesh(comm, &user);CHKERRQ(ierr);
   ierr = DMView(user.dm,0);CHKERRQ(ierr);
   ierr = WriteMetric(comm, &user, &metric);CHKERRQ(ierr);
-	
+  
   ierr = DMPlexAdapt(user.dm, metric, user.bdyLabel, &dma); CHKERRQ(ierr);
-	
-	ierr = DMView(dma,0);CHKERRQ(ierr);
-	if (user.vtkView){
-	  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+  
+  ierr = DMView(dma,0);CHKERRQ(ierr);
+  if (user.vtkView){
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-  	ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-  	ierr = PetscViewerFileSetName(viewer, "mesha.vtk");CHKERRQ(ierr);
-  	ierr = DMView(dma, viewer);CHKERRQ(ierr);
-  	ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-	}
- 	
-	ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
-	ierr = DMDestroy(&dma);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "mesha.vtk");CHKERRQ(ierr);
+    ierr = DMView(dma, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+   
+  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  ierr = DMDestroy(&dma);CHKERRQ(ierr);
   ierr = VecDestroy(&metric);CHKERRQ(ierr);
-	PetscFinalize();
-	return 0;
-	
+  PetscFinalize();
+  return 0;
+  
 }
