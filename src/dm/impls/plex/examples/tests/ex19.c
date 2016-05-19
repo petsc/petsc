@@ -213,11 +213,13 @@ int main (int argc, char * argv[]) {
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
     
   ierr = CreateMesh(comm, &user);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)user.dm, "DMinit");CHKERRQ(ierr);
   ierr = DMView(user.dm,0);CHKERRQ(ierr);
   ierr = WriteMetric(comm, &user, &metric);CHKERRQ(ierr);
   
   ierr = DMPlexAdapt(user.dm, metric, user.bdyLabel, &dma); CHKERRQ(ierr);
   
+  ierr = PetscObjectSetName((PetscObject)dma, "DMadapt");CHKERRQ(ierr);
   ierr = DMView(dma,0);CHKERRQ(ierr);
   if (user.vtkView){
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
