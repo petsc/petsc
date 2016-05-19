@@ -4423,7 +4423,14 @@ PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, P
 
   PetscFunctionBegin;
   if (sfIn) {
-    ierr = DMPlexTransferVecTree_Interpolate(dmIn,vecIn,dmOut,vecOut,sfIn,cidsIn);CHKERRQ(ierr);
+    Vec vecInLocal;
+
+    ierr = DMGetLocalVector(dmIn,&vecInLocal);CHKERRQ(ierr);
+    ierr = VecSet(vecInLocal,0.0);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dmIn,vecIn,INSERT_VALUES,vecInLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dmIn,vecIn,INSERT_VALUES,vecInLocal);CHKERRQ(ierr);
+    ierr = DMPlexTransferVecTree_Interpolate(dmIn,vecInLocal,dmOut,vecOut,sfIn,cidsIn);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dmIn,&vecInLocal);CHKERRQ(ierr);
   }
   if (sfOut) {
     ierr = DMPlexTransferVecTree_Inject(dmIn,vecIn,dmOut,vecOut,sfOut,cidsOut);CHKERRQ(ierr);
