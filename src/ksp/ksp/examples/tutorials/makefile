@@ -989,6 +989,10 @@ runex18:
 	-@${MPIEXEC} -n 3 ./ex18 -m 39 -n 18 -ksp_monitor_short -permute nd > ex18_1.tmp 2>&1; \
 	   ${DIFF} output/ex18_1.out ex18_1.tmp || printf "${PWD}\nPossible problem with ex18_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex18_1.tmp
+runex18_bas:
+	-@${MPIEXEC} -n 1 ./ex18 -m 13 -n 17 -ksp_monitor_short -ksp_type cg -pc_type icc -pc_factor_mat_solver_package bas -ksp_view -pc_factor_levels 1 > ex18_bas.tmp 2>&1; \
+	   ${DIFF} output/ex18_bas.out ex18_bas.tmp || printf "${PWD}\nPossible problem with ex18_bas, diffs above\n=========================================\n"; \
+	   ${RM} -f ex18_bas.tmp
 runex18_2:
 	-@${MPIEXEC} -n 3 ./ex18 -m 39 -n 18 -ksp_monitor_short -permute rcm > ex18_2.tmp 2>&1; \
 	   ${DIFF} output/ex18_2.out ex18_2.tmp || printf "${PWD}\nPossible problem with ex18_2, diffs above\n=========================================\n"; \
@@ -1539,7 +1543,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
                                  ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm ex65.PETSc runex65 ex65.rm
-TESTEXAMPLES_C_NOTSINGLE       = ex43.PETSc runex43_3 ex43.rm ex15.PETSc runex15_tsirm ex15.rm
+TESTEXAMPLES_C_NOTSINGLE       = ex18.PETSc runex18_bas ex18.rm ex43.PETSc runex43_3 ex43.rm ex15.PETSc runex15_tsirm ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm \
                                  ex34.PETSc runex34 runex34_2 ex34.rm \

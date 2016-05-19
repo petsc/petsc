@@ -7,12 +7,16 @@
   Works with MATAIJ  matrices
 
   Options Database Keys:
-+ -pc_factor_levels <l>
-- -pc_factor_drop_tolerance
++ -pc_factor_levels <l> - number of levels of fill
+- -pc_factor_drop_tolerance - is not currently hooked up to do anything
 
-  Level: beginner
+  Level: intermediate
 
    Contributed by: Bas van 't Hof
+
+   Notes: Since this currently hooked up to use drop tolerance it should produce the same factors and hence convergence as the PETSc ICC, for higher 
+     levels of fill it does not. This needs to be investigated. Unless you are interested in drop tolerance ICC and willing to work through the code
+     we recommend not using this functionality.
 
 .seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, PCFactorSetLevels(), PCFactorSetDropTolerance()
 

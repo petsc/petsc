@@ -29,7 +29,7 @@ int main(int argc,char **args)
   PetscReal      norm,tol=1000.*PETSC_MACHINE_EPSILON;  /* norm of solution error */
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
-  PetscScalar    neg_one = -1.0,one = 1.0,value[3];
+  PetscScalar    one = 1.0,value[3];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {

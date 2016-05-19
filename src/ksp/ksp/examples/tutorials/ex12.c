@@ -49,7 +49,7 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
-  PetscScalar    v,one = 1.0,neg_one = -1.0;
+  PetscScalar    v,one = 1.0;
   PC             pc;      /* preconditioner context */
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -175,7 +175,7 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
