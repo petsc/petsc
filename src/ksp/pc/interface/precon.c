@@ -1487,7 +1487,7 @@ PetscErrorCode  PCGetOptionsPrefix(PC pc,const char *prefix[])
 
 #undef __FUNCT__
 #define __FUNCT__ "PCPreSolveChangeRHS"
-PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
+PETSC_INTERN PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
 {
   PetscErrorCode ierr;
 
