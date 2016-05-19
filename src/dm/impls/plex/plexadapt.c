@@ -152,6 +152,8 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   ierr = PetscFree5(x, y, z, cells, met);CHKERRQ(ierr);
   ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
   ierr = PetscFree(coords);CHKERRQ(ierr);
+  ierr = DMDestroy(&udm);CHKERRQ(ierr);
+  ierr = DMDestroy(&coordDM);CHKERRQ(ierr);
   /* Read out mesh */
   pragmatic_get_info(&numVerticesAdp, &numCellsAdp);
   ierr = PetscMalloc1(numVerticesAdp*dim, &coordsAdp);CHKERRQ(ierr);
