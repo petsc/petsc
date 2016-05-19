@@ -39,7 +39,6 @@ int main(int argc,char **argv)
   PetscScalar       v2;
   PetscScalar       *xx;
 
-
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-second_order",&second_order,NULL);CHKERRQ(ierr);
@@ -102,7 +101,7 @@ int main(int argc,char **argv)
   }
 
   /* perturb initial guess */
-  ierr = VecGetArray(x,&xx);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     v2   = xx[i]*sperturb;
     ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
@@ -122,9 +121,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);     ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);     ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
