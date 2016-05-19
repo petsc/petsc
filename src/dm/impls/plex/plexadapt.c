@@ -148,12 +148,11 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   ierr = DMLabelDestroy(&bd);CHKERRQ(ierr);
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
   pragmatic_set_metric(met);
-  pragmatic_adapt();
   ierr = PetscFree5(x, y, z, cells, met);CHKERRQ(ierr);
   ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
   ierr = PetscFree(coords);CHKERRQ(ierr);
   ierr = DMDestroy(&udm);CHKERRQ(ierr);
-  ierr = DMDestroy(&coordDM);CHKERRQ(ierr);
+  pragmatic_adapt();
   /* Read out mesh */
   pragmatic_get_info(&numVerticesAdp, &numCellsAdp);
   ierr = PetscMalloc1(numVerticesAdp*dim, &coordsAdp);CHKERRQ(ierr);
@@ -176,7 +175,6 @@ PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdyLabelName[], DM *dmA
   }
   ierr = PetscMalloc1(numCellsAdp*(dim+1), &cellsAdp);CHKERRQ(ierr); // only for simplicial meshes
   pragmatic_get_elements(cellsAdp);
-  ierr = DMPlexCreate(comm, dmAdapted);CHKERRQ(ierr);
   ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCellsAdp, numVerticesAdp, numCornersAdp, PETSC_TRUE, cellsAdp, dim, coordsAdp, dmAdapted);CHKERRQ(ierr);
   /* Read out boundary tags */
   pragmatic_get_boundaryTags(&boundaryTags);

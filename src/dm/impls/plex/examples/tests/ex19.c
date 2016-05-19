@@ -31,7 +31,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->noBdyTags  = PETSC_FALSE;
   ierr = PetscStrcpy(options->bdyLabel, "");CHKERRQ(ierr);
   options->metOpt     = 1;
-  options->hmin       = 0.01;
+  options->hmin       = 0.05;
   options->hmax       = 0.5;
   options->vtkView    = PETSC_FALSE;
   
