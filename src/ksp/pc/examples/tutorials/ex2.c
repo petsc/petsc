@@ -31,7 +31,6 @@ int main(int argc,char **argv)
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = PetscOptionsSetValue(NULL,"-options_left",NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
 
   /*
