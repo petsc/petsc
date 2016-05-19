@@ -1960,6 +1960,7 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   p4est_t              *root, *refined;
   DM                   dmRoot, dmRefined;
   DM_Plex              *mesh;
+  PetscInt             rank;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
@@ -2057,6 +2058,12 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   ierr                   = DMPlexCreateReferenceTree_Union(dmRoot,dmRefined,"identity",dm);CHKERRQ(ierr);
   mesh                   = (DM_Plex*) (*dm)->data;
   mesh->getchildsymmetry = DMReferenceTreeGetChildSymmetry_pforest;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = DMViewFromOptions(dmRoot,   NULL,"-dm_p4est_ref_root_view");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(dmRefined,NULL,"-dm_p4est_ref_refined_view");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(dmRefined,NULL,"-dm_p4est_ref_tree_view");CHKERRQ(ierr);
+  }
   ierr                   = DMDestroy(&dmRefined);CHKERRQ(ierr);
   ierr                   = DMDestroy(&dmRoot);CHKERRQ(ierr);
   PetscStackCallP4est(p4est_destroy,(refined));
@@ -2685,7 +2692,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                     PetscInt minDir    = PetscMin(otherDir1,otherDir2);
                     PetscInt maxDir    = PetscMax(otherDir1,otherDir2);
 
-                    coarseEdge = m * 4 + maxDir * 2 * ((vertex >> maxDir) & 1) + minDir * ((vertex >> minDir) & 1);
+                    coarseEdge = m * 4 + 2 * ((vertex >> maxDir) & 1) + ((vertex >> minDir) & 1);
                     break;
                   }
                 }
