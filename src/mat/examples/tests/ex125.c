@@ -36,12 +36,12 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical colums */
   nrhs = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
-  if (!rank) printf("ex125: nrhs %d\n",nrhs);
+  if (!rank) PetscPrintf(PETSC_COMM_SELF,"ex125: nrhs %D\n",nrhs);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ int main(int argc,char **args)
   ierr           = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 2; nfact++) {
-    if (!rank) printf(" %d-the LU numfactorization \n",nfact);
+    if (!rank) PetscPrintf(PETSC_COMM_SELF," %D-the LU numfactorization \n",nfact);
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SUPERLU_DIST)
@@ -156,7 +156,7 @@ int main(int argc,char **args)
         ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,2.0,&RHS);CHKERRQ(ierr);
       }
       for (nsolve = 0; nsolve < 2; nsolve++) {
-        if (!rank) printf("   %d-the MatMatSolve \n",nsolve);
+        if (!rank) PetscPrintf(PETSC_COMM_SELF,"   %D-the MatMatSolve \n",nsolve);
         ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
 
         /* Check the error */
@@ -164,7 +164,7 @@ int main(int argc,char **args)
         ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
         if (norm > tol) {
           if (!rank) {
-            ierr = PetscPrintf(PETSC_COMM_SELF,"%d-the MatMatSolve: Norm of error %g, nsolve %d\n",nsolve,norm,nsolve);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"%D-the MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);
           }
         }
       }
@@ -182,7 +182,7 @@ int main(int argc,char **args)
         ierr = VecCopy(x,u);CHKERRQ(ierr);
         ierr = MatMult(A,x,b);CHKERRQ(ierr);
 
-        if (!rank) printf("   %d-the MatSolve \n",nsolve);
+        if (!rank) PetscPrintf(PETSC_COMM_SELF,"   %D-the MatSolve \n",nsolve);
         ierr = MatSolve(F,b,x);CHKERRQ(ierr);
 
         /* Check the error */
@@ -194,7 +194,7 @@ int main(int argc,char **args)
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
           if (!rank) {
-            ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: Norm of error %g, resi %g, LU numfact %d\n",norm,resi,nfact);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: Norm of error %g, resi %g, LU numfact %D\n",norm,resi,nfact);CHKERRQ(ierr);
           }
         }
       }
