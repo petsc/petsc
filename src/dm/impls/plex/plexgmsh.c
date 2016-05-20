@@ -249,6 +249,16 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         ierr = DMPlexRestoreJoin(*dm, gmsh_elem[c].numNodes, (const PetscInt *) pcone, &joinSize, &join);CHKERRQ(ierr);
       }
     }
+
+    /* Create cell sets */
+    for (cell = 0, c = 0; c < numCells; ++c) {
+      if (gmsh_elem[c].dim == dim) {
+        if (gmsh_elem[c].numTags > 0) {
+          ierr = DMSetLabelValue(*dm, "Cell Sets", cell, gmsh_elem[c].tags[0]);CHKERRQ(ierr);
+          cell++;
+        }
+      }
+    }
   }
 
   /* Read coordinates */
