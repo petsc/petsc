@@ -1,6 +1,4 @@
 
-
-
 #include <petsc/private/matimpl.h>
 #include <petsc/private/pcimpl.h>
 #include <petscksp.h> /*I "petscksp.h" I*/
@@ -693,6 +691,8 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeGetKSP"
 /*@
  PCTelescopeGetKSP - Gets the KSP created by the telescoping PC.
 
@@ -707,9 +707,7 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
  Level: advanced
 
  .keywords: PC, telescopting solve
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetKSP"
+@*/
 PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
 {
   PetscErrorCode ierr;
@@ -718,6 +716,8 @@ PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeGetReductionFactor"
 /*@
  PCTelescopeGetReductionFactor - Gets the factor by which the original number of processes has been reduced by.
 
@@ -732,9 +732,7 @@ PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
  Level: advanced
 
  .keywords: PC, telescoping solve
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetReductionFactor"
+@*/
 PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
 {
   PetscErrorCode ierr;
@@ -743,6 +741,8 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeSetReductionFactor"
 /*@
  PCTelescopeSetReductionFactor - Sets the factor by which the original number of processes has been reduced by.
 
@@ -757,9 +757,7 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
  Level: advanced
 
  .keywords: PC, telescoping solve
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetReductionFactor"
+@*/
 PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
 {
   PetscErrorCode ierr;
@@ -768,6 +766,8 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeGetIgnoreDM"
 /*@
  PCTelescopeGetIgnoreDM - Get the flag indicating if any DM attached to the PC will be used.
 
@@ -782,9 +782,7 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
  Level: advanced
 
  .keywords: PC, telescoping solve
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetIgnoreDM"
+@*/
 PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 {
   PetscErrorCode ierr;
@@ -793,6 +791,8 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeSetIgnoreDM"
 /*@
  PCTelescopeSetIgnoreDM - Set a flag to ignore any DM attached to the PC.
 
@@ -807,9 +807,7 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
  Level: advanced
 
  .keywords: PC, telescoping solve
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetIgnoreDM"
+@*/
 PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
 {
   PetscErrorCode ierr;
@@ -818,6 +816,8 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeGetIgnoreKSPComputeOperators"
 /*@
  PCTelescopeGetIgnoreKSPComputeOperators - Get the flag indicating if KSPComputeOperators will be used.
 
@@ -832,9 +832,7 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
  Level: advanced
 
  .keywords: PC, telescoping solve
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetIgnoreKSPComputeOperators"
+@*/
 PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
 {
   PetscErrorCode ierr;
@@ -843,6 +841,8 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeSetIgnoreKSPComputeOperators"
 /*@
  PCTelescopeSetIgnoreKSPComputeOperators - Set a flag to ignore KSPComputeOperators.
 
@@ -857,9 +857,7 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
  Level: advanced
 
  .keywords: PC, telescoping solve
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetIgnoreKSPComputeOperators"
+@*/
 PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
 {
   PetscErrorCode ierr;
@@ -868,6 +866,8 @@ PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeGetDM"
 /*@
  PCTelescopeGetDM - Get the re-partitioned DM attached to the sub KSP.
 
@@ -882,9 +882,7 @@ PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
  Level: advanced
 
  .keywords: PC, telescoping solve
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetDM"
+@*/
 PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 {
   PetscErrorCode ierr;
@@ -893,6 +891,8 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeSetSubcommType"
 /*@
  PCTelescopeSetSubcommType - set subcommunicator type (interlaced or contiguous)
 
@@ -907,9 +907,7 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
  .keywords: PC, telescoping solve
 
  .seealso : PetscSubcommType, PetscSubcomm, PCTELESCOPE
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetSubcommType"
+@*/
 PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
 {
   PetscErrorCode ierr;
@@ -918,6 +916,8 @@ PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeGetSubCommType"
 /*@
  PCTelescopeGetSubcommType - Get the subcommunicator type (interlaced or contiguous)
 
@@ -934,9 +934,7 @@ PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
  .keywords: PC, telescoping solve
 
  .seealso : PetscSubComm, PetscSubcommType, PCTELESCOPE
- @*/
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetSubCommType"
+@*/
 PetscErrorCode PCTelescopeGetSubCommType(PC pc, PetscSubcommType *subcommtype)
 {
   PetscErrorCode ierr;
