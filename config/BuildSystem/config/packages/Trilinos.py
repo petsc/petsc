@@ -118,6 +118,8 @@ class Configure(config.package.CMakePackage):
     # FEI include files cause crashes on Apple with clang compilers
     args.append('-DTrilinos_ENABLE_STK=OFF')
 
+    if not hasattr(self.compilers, 'FC'):
+      args.append('-DTrilinos_ENABLE_Fortran=OFF')
 
     # The documentation specifically says:
     #     WARNING: Do not try to hack the system and set:

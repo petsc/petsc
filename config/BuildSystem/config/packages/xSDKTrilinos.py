@@ -68,6 +68,9 @@ class Configure(config.package.CMakePackage):
     # These are packages that PETSc may be using that Trilinos is not be using 
     plibs = self.exodusii.dlib+self.ssl.lib+self.x.lib
 
+    if not hasattr(self.compilers, 'FC'):
+      args.append('-DxSDKTrilinos_ENABLE_Fortran=OFF')
+
     if self.framework.argDB['prefix']:
        idir = os.path.join(self.installdir.dir,'lib')
     else:
