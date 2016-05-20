@@ -39,8 +39,9 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+    if not self.framework.argDB['download-superlu_dist-gpu']:
+      args.append('-DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE')
     args.append('-DUSE_XSDK_DEFAULTS=YES')
-
     metis_inc = self.headers.toStringNoDupes(self.metis.include)[2:]
     parmetis_inc = self.headers.toStringNoDupes(self.parmetis.include)[2:]
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
