@@ -699,14 +699,14 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  subksp - the KSP defined the smaller set of processes
+.  subksp - the KSP defined the smaller set of processes
 
  Level: advanced
 
- .keywords: PC, telescopting solve
+.keywords: PC, telescopting solve
 @*/
 PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
 {
@@ -724,14 +724,14 @@ PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  fact - the reduction factor
+.  fact - the reduction factor
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
 {
@@ -749,14 +749,14 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  fact - the reduction factor
+.  fact - the reduction factor
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
 {
@@ -774,14 +774,14 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  v - the flag
+.  v - the flag
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
 {
@@ -799,14 +799,14 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  v - Use PETSC_TRUE to ignore any DM
+.  v - Use PETSC_TRUE to ignore any DM
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
 {
@@ -824,14 +824,14 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  v - the flag
+.  v - the flag
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
 {
@@ -849,14 +849,14 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  v - Use PETSC_TRUE to ignore the method (if defined) set via KSPSetComputeOperators on pc
+.  v - Use PETSC_TRUE to ignore the method (if defined) set via KSPSetComputeOperators on pc
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
 {
@@ -874,14 +874,14 @@ PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  subdm - The re-partitioned DM
+.  subdm - The re-partitioned DM
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 @*/
 PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 {
@@ -899,14 +899,14 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
  Logically Collective
 
  Input Parameter:
- .  pc - the preconditioner context
- .  subcommtype - the subcommunicator type (see PetscSubcommType)
++  pc - the preconditioner context
+-  subcommtype - the subcommunicator type (see PetscSubcommType)
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 
- .seealso : PetscSubcommType, PetscSubcomm, PCTELESCOPE
+.seealso: PetscSubcommType, PetscSubcomm, PCTELESCOPE
 @*/
 PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
 {
@@ -917,25 +917,25 @@ PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetSubCommType"
+#define __FUNCT__ "PCTelescopeGetSubcommType"
 /*@
  PCTelescopeGetSubcommType - Get the subcommunicator type (interlaced or contiguous)
 
  Not Collective
 
  Input Parameter:
- .  pc - the preconditioner context
+.  pc - the preconditioner context
 
  Output Parameter:
- .  subcommtype - the subcommunicator type (see PetscSubcommType)
+.  subcommtype - the subcommunicator type (see PetscSubcommType)
 
  Level: advanced
 
- .keywords: PC, telescoping solve
+.keywords: PC, telescoping solve
 
- .seealso : PetscSubComm, PetscSubcommType, PCTELESCOPE
+.seealso: PetscSubcomm, PetscSubcommType, PCTELESCOPE
 @*/
-PetscErrorCode PCTelescopeGetSubCommType(PC pc, PetscSubcommType *subcommtype)
+PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
