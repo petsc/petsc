@@ -1868,8 +1868,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   ierr = DMPlexGetTree(dm,&parentSection,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (!parentSection) {
     ierr = BuildGradientReconstruction_Internal(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = BuildGradientReconstruction_Internal_Tree(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(faceGeometry, &fgeom);CHKERRQ(ierr);
