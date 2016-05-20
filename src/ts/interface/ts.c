@@ -6169,7 +6169,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
   n_glb  = err_glb[3];
   na_glb = err_glb[4];
   nr_glb = err_glb[5];
-  
+
   *norm  = 0.;
   if(n_glb>0. ){*norm  = PetscSqrtReal(gsum  / n_glb );}
   *norma = 0.;
@@ -6535,7 +6535,7 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
   n_glb  = err_glb[3];
   na_glb = err_glb[4];
   nr_glb = err_glb[5];
-  
+
   *norm  = 0.;
   if(n_glb>0. ){*norm  = PetscSqrtReal(gsum  / n_glb );}
   *norma = 0.;

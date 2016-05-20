@@ -18,32 +18,31 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   TSType         time_scheme;      /* Type of time-integration scheme        */
   PetscErrorCode ierr;
   Vec            X,Y,E;
-  PetscReal      enorm,enorma,enormr,hfac_lte,h_lte,safety;
+  PetscReal      enorm,enorma,enormr,hfac_lte,hfac_ltea,hfac_lter,h_lte,safety;
   PetscInt       order,stepno;
+  PetscBool      bGTEMethod=PETSC_FALSE;
 
   PetscFunctionBegin;
+
   *next_sc = 0; /* Reuse the same order scheme */
-
-  ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
-
   safety = glee->safety;
+  ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
-  if (!strcmp(time_scheme,TSGLEE)){
-    /* the method is of GLEE type */
+  if (!strcmp(time_scheme,TSGLEE)) bGTEMethod=PETSC_TRUE;
+  order = adapt->candidates.order[0];
+
+  if (bGTEMethod){/* the method is of GLEE type */
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-    /* ierr = TSGetPreviousSolution(ts,&Y);CHKERRQ(ierr);
-     */
     if (!glee->E) {ierr = VecDuplicate(X,&glee->E);CHKERRQ(ierr);}
     E     = glee->E;
     ierr = TSGetTimeError(ts,0,&E);CHKERRQ(ierr);
-    /* this should be called with Y */
+    /* this should be called with Y (the solution at the beginning of the step)*/
     ierr = TSErrorWeightedENorm(ts,E,X,X,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   } else {
-    /* the method is NOT of GLEE type */
+    /* the method is NOT of GLEE type; use the stantard basic augmented by separate atol and rtol */
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     if (!glee->Y) {ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);}
     Y     = glee->Y;
-    order = adapt->candidates.order[0];
     ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
     ierr  = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   }
@@ -51,37 +50,58 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   if (enorm < 0) {
     *accept  = PETSC_TRUE;
     *next_h  = h;            /* Reuse the old step */
-    *wlte    = -1;           /* Weighted local truncation error was not evaluated */
-    *wltea    = -1;           /* Weighted local truncation error was not evaluated */
-    *wlter    = -1;           /* Weighted local truncation error was not evaluated */
+    *wlte    = -1;           /* Weighted error was not evaluated */
+    *wltea   = -1;           /* Weighted absolute error was not evaluated */
+    *wlter   = -1;           /* Weighted relative error was not evaluated */
     PetscFunctionReturn(0);
   }
 
-  if (enorm > 1.) {
+  if (enorm > 1. || enorma > 1. || enormr > 1.) {
     if (!*accept) safety *= glee->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting because step size %g is at minimum\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else if (glee->always_accept) {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting step of size %g because always_accept is set\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], rejecting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
       *accept = PETSC_FALSE;
     }
   } else {
-    ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+    ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative] [%g, %g, %g], accepting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
     *accept = PETSC_TRUE;
   }
 
-   /* The optimal new step based purely on local truncation error for this step. */
-  if (enorm > 0)
-    hfac_lte = safety * PetscPowReal(enorm,((PetscReal)-1)/order);
-  else
-    hfac_lte = safety * PETSC_INFINITY;
-  h_lte = h * PetscClipInterval(hfac_lte,glee->clip[0],glee->clip[1]);
-
-  *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
+  if (bGTEMethod){
+    /* The optimal new step based on the current global truncation error. */
+    if (enorm > 0) {
+      /* factor based on the absolute tolerance */
+      hfac_ltea = safety * PetscPowReal(1./enorma,((PetscReal)1)/order);
+      /* factor based on the relative tolerance */
+      hfac_lter = safety * PetscPowReal(1./enormr,((PetscReal)1)/order);
+      /* pick the minimum time step among the relative and absolute tolerances */
+      hfac_lte  = PetscMin(hfac_ltea,hfac_lter);
+    } else {
+      hfac_lte = safety * PETSC_INFINITY;
+    }
+    h_lte = h * PetscClipInterval(hfac_lte,glee->clip[0],glee->clip[1]);
+    *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
+  } else {
+    /* The optimal new step based purely on local truncation error for this step. */
+    if (enorm > 0) {
+      /* factor based on the absolute tolerance */
+      hfac_ltea = safety * PetscPowReal(enorma,((PetscReal)-1)/order);
+      /* factor based on the relative tolerance */
+      hfac_lter = safety * PetscPowReal(enormr,((PetscReal)-1)/order);
+      /* pick the minimum time step among the relative and absolute tolerances */
+      hfac_lte  = PetscMin(hfac_ltea,hfac_lter);
+    } else {
+      hfac_lte = safety * PETSC_INFINITY;
+    }
+    h_lte = h * PetscClipInterval(hfac_lte,glee->clip[0],glee->clip[1]);
+    *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
+  }
   *wlte   = enorm;
   *wltea  = enorma;
   *wlter  = enormr;

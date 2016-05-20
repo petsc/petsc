@@ -626,6 +626,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
       ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e family='%s' scheme=%D:'%s' dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,*accept ? "accepted" : "rejected",(double)ts->ptime,(double)h,((PetscObject)ts)->type_name,scheme,sc_name,(double)*next_h);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e wlte=%5.3g family='%s' scheme=%D:'%s' dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,*accept ? "accepted" : "rejected",(double)ts->ptime,(double)h,(double)wlte,((PetscObject)ts)->type_name,scheme,sc_name,(double)*next_h);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(adapt->monitor,"            wlte=%5.3g wltea=%5.3g wlter=%5.3g \n",((PetscObject)adapt)->type_name,(double)wlte,(double)wltea,(double)wlter);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
   }
