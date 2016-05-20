@@ -2685,7 +2685,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                     PetscInt minDir    = PetscMin(otherDir1,otherDir2);
                     PetscInt maxDir    = PetscMax(otherDir1,otherDir2);
 
-                    coarseEdge = m * 4 + maxDir * 2 * ((vertex >> maxDir) & 1) + minDir * ((vertex >> minDir) & 1);
+                    coarseEdge = m * 4 + 2 * ((vertex >> maxDir) & 1) + ((vertex >> minDir) & 1);
                     break;
                   }
                 }
