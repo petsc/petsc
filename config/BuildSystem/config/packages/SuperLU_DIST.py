@@ -50,6 +50,9 @@ class Configure(config.package.CMakePackage):
     if self.indexTypes.integerSize == 64:
       args.append('-DXSDK_INDEX_SIZE=64')
 
+    if not hasattr(self.compilers, 'FC'):
+      args.append('-DXSDK_ENABLE_Fortran=OFF')
+
     args.append('-Denable_tests=0')
     args.append('-Denable_examples=0')
     #  CMake in SuperLU should set this; but like many other packages it does not
