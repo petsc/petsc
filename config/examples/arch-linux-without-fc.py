@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-fc=0'
+  '--with-fc=0',
   '--with-shared-libraries=1'
   ]
 
