@@ -27,17 +27,21 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
 {
   PetscMPIInt     rank;
   PetscInt        i, nstep, ngeo, fileID, cellID, facetID, spaceDim, meshDim;
-  PetscInt        numVertices = 0, numCells = 0, numFacets = 0, numCorners, numFacetCorners;
+  PetscInt        numVertices = 0, numCells = 0, numFacets = 0, numCorners, numFacetCorners, numCellsLocal, numVerticesLocal;
   PetscInt       *cellList, *facetList, *facetIDs;
   char           *axisname, *unitname, meshname[MED_NAME_SIZE+1], geotypename[MED_NAME_SIZE+1];
   char            meshdescription[MED_COMMENT_SIZE+1], dtunit[MED_SNAME_SIZE+1];
   PetscScalar    *coordinates = NULL;
+  PetscLayout     vLayout, cLayout;
+  const PetscInt *vrange, *crange;
 #if defined(PETSC_HAVE_MED)
   med_sorting_type sortingtype;
   med_mesh_type   meshtype;
   med_axis_type   axistype;
   med_bool        coordinatechangement, geotransformation;
   med_geometry_type geotype[2];
+  med_filter      vfilter = MED_FILTER_INIT;
+  med_filter      cfilter = MED_FILTER_INIT;
 #endif
   PetscErrorCode  ierr;
 
@@ -49,7 +53,6 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   if (MEDnMesh(fileID) < 1) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "No meshes found in .med mesh file: %s", filename);
   spaceDim = MEDmeshnAxis(fileID, 1);
   if (spaceDim < 1) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Mesh of unknown space dimension found in .med mesh file: %s", filename);
-
   /* Read general mesh information */
   ierr = PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &axisname);CHKERRQ(ierr);
   ierr = PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &unitname);CHKERRQ(ierr);
@@ -57,15 +60,21 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
                      dtunit, &sortingtype, &nstep, &axistype, axisname, unitname);CHKERRQ(ierr);
   ierr = PetscFree(axisname);
   ierr = PetscFree(unitname);
-
-  if (!rank) {
-    /* Read mesh coordinates */
-    numVertices = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_NODE, MED_NO_GEOTYPE,
-                                 MED_COORDINATE, MED_NO_CMODE,&coordinatechangement, &geotransformation);
-    if (numVertices < 0) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "No nodes found in .med mesh file: %s", filename);
-    ierr = PetscMalloc1(numVertices*spaceDim, &coordinates);CHKERRQ(ierr);
-    ierr = MEDmeshNodeCoordinateRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE, coordinates);CHKERRQ(ierr);
-  }
+  /* Partition mesh coordinates */
+  numVertices = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_NODE, MED_NO_GEOTYPE,
+                               MED_COORDINATE, MED_NO_CMODE,&coordinatechangement, &geotransformation);
+  ierr = PetscLayoutCreate(comm, &vLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(vLayout, numVertices);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(vLayout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(vLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(vLayout, &vrange);CHKERRQ(ierr);
+  numVerticesLocal = vrange[rank+1]-vrange[rank];
+  ierr = MEDfilterBlockOfEntityCr(fileID, numVertices, 1, spaceDim, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
+                                  MED_NO_PROFILE, vrange[rank]+1, 1, numVerticesLocal, 1, 1, &vfilter);CHKERRQ(ierr);
+  /* Read mesh coordinates */
+  if (numVertices < 0) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "No nodes found in .med mesh file: %s", filename);
+  ierr = PetscMalloc1(numVerticesLocal*spaceDim, &coordinates);CHKERRQ(ierr);
+  ierr = MEDmeshNodeCoordinateAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, &vfilter, coordinates);CHKERRQ(ierr);
   /* Read the types of entity sets in the mesh */
   ngeo = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,MED_GEO_ALL, MED_CONNECTIVITY,
                         MED_NODAL, &coordinatechangement, &geotransformation);
@@ -79,19 +88,25 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   facetID = geotype[0]/100 > geotype[1]/100 ? 1 : 0;
   meshDim = geotype[cellID] / 100;
   numCorners = geotype[cellID] % 100;
-
-  if (!rank) {
-    /* Read cell connectivity */
-    numCells = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID], MED_CONNECTIVITY,
-                              MED_NODAL,&coordinatechangement, &geotransformation);
-    if (numCells < 0) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "No cells found in .med mesh file: %s", filename);
-    ierr = PetscMalloc1(numCells*numCorners, &cellList);
-    ierr = MEDmeshElementConnectivityRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
-                                        MED_NODAL, MED_FULL_INTERLACE, cellList);CHKERRQ(ierr);
-    for (i = 0; i < numCells*numCorners; i++) cellList[i]--; /* Correct entity counting */
-  }
+  /* Partition cells */
+  numCells = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
+                            MED_CONNECTIVITY, MED_NODAL,&coordinatechangement, &geotransformation);
+  ierr = PetscLayoutCreate(comm, &cLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(cLayout, numCells);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(cLayout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(cLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(cLayout, &crange);CHKERRQ(ierr);
+  numCellsLocal = crange[rank+1]-crange[rank];
+  ierr = MEDfilterBlockOfEntityCr(fileID, numCells, 1, numCorners, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
+                                  MED_NO_PROFILE, crange[rank]+1, 1, numCellsLocal, 1, 1, &cfilter);CHKERRQ(ierr);
+  /* Read cell connectivity */
+  if (numCells < 0) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "No cells found in .med mesh file: %s", filename);
+  ierr = PetscMalloc1(numCellsLocal*numCorners, &cellList);
+  ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
+                                              MED_NODAL, &cfilter, cellList);CHKERRQ(ierr);
+  for (i = 0; i < numCellsLocal*numCorners; i++) cellList[i]--; /* Correct entity counting */
   /* Generate the DM */
-  ierr = DMPlexCreateFromCellList(comm, meshDim, numCells, numVertices, numCorners, interpolate, cellList, spaceDim, coordinates, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellListParallel(comm, meshDim, numCellsLocal, numVerticesLocal, numCorners, interpolate, cellList, spaceDim, coordinates, dm);CHKERRQ(ierr);
 
   if (!rank) {
     /* Read facet connectivity */
@@ -126,6 +141,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
     ierr = PetscFree(coordinates);CHKERRQ(ierr);
     ierr = PetscFree(cellList);CHKERRQ(ierr);
   }
+  ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&cLayout);CHKERRQ(ierr);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires Med mesh reader support. Reconfigure using --download-med");
 #endif
