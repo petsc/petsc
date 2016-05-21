@@ -247,32 +247,25 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if defined(PETSC_HAVE_STDINT_H)
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t Petsc64bitInt;
+# define MPIU_INT64 MPI_INT64_T
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long Petsc64bitInt;
+# define MPIU_INT64 MPI_LONG_LONG_INT
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 Petsc64bitInt;
+# define MPIU_INT64 MPI_INT64_T
 #else
-typedef unknown64bit Petsc64bitInt
+#error "cannot determine Petsc64bitInt type"
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef Petsc64bitInt PetscInt;
-#  if defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
-#    define MPIU_INT MPI_LONG_LONG_INT
-#  else
-#    define MPIU_INT MPI_LONG_LONG_INT
-#  endif
+#define MPIU_INT MPIU_INT64
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
-#if defined(PETSC_HAVE_MPI_INT64_T)
-#  define MPIU_INT64 MPI_INT64_T
-#else
-#  define MPIU_INT64 MPI_LONG_LONG_INT
-#endif
-
 
 /*MC
     PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
