@@ -63,68 +63,74 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
 #define __FUNCT__ "ComputeMetric"
 static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
 {
-  Vec                coordinates, met;
-  const PetscInt     dim = user->dim;
+  DM                 cdm, mdm;
+  PetscSection       csec, msec;
+  Vec                coordinates;
   const PetscScalar *coords;
-  PetscReal          h, lambda1, lambda2, lambda3, lbd, lmax;
-  PetscInt           vStart, vEnd, numVertices, i;
+  PetscScalar       *met;
+  PetscReal          h, lambda[3], lbd, lmax;
+  PetscInt           pStart, pEnd, p, d;
+  const PetscInt     dim = user->dim, Nd = dim*dim;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMClone(cdm, &mdm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(cdm, &csec);CHKERRQ(ierr);
+
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &msec);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(msec, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(msec, 0, Nd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(csec, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(msec, pStart, pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionSetDof(msec, p, Nd);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(msec, p, 0, Nd);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(msec);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(mdm, msec);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&msec);CHKERRQ(ierr);
+
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  numVertices = vEnd - vStart;
-
-  ierr = VecCreate(PetscObjectComm((PetscObject) dm), metric);CHKERRQ(ierr);
-  ierr = VecSetSizes(*metric, PETSC_DECIDE, numVertices*dim*dim);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(*metric);CHKERRQ(ierr);
-
+  ierr = DMCreateGlobalVector(mdm, metric);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-  for (i = 0; i < numVertices; ++i) {
+  ierr = VecGetArray(*metric, &met);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    const PetscScalar *pcoords;
+    PetscScalar       *pmet;
+
+    ierr = DMPlexPointLocalRead(cdm, p, coords, &pcoords);CHKERRQ(ierr);
     switch (user->metOpt) {
     case 0:
       lbd = 1/(user->hmax*user->hmax);
-      lambda1 = lambda2 = lambda3 = lbd;
+      lambda[0] = lambda[1] = lambda[2] = lbd;
       break;
     case 1:
-      h = user->hmax - (user->hmax-user->hmin)*coords[dim*i];
+      h = user->hmax - (user->hmax-user->hmin)*pcoords[0];
       h = h*h;
       lmax = 1/(user->hmax*user->hmax);
-      lambda1 = 1/h;
-      lambda2 = lmax;
-      lambda3 = lmax;
+      lambda[0] = 1/h;
+      lambda[1] = lmax;
+      lambda[2] = lmax;
       break;
     case 2:
-      h = user->hmax*fabs(1-exp(-fabs(coords[dim*i]-0.5))) + user->hmin;
+      h = user->hmax*fabs(1-exp(-fabs(pcoords[0]-0.5))) + user->hmin;
       lbd = 1/(h*h);
       lmax = 1/(user->hmax*user->hmax);
-      lambda1 = lbd;
-      lambda2 = lmax;
-      lambda3 = lmax;
+      lambda[0] = lbd;
+      lambda[1] = lmax;
+      lambda[2] = lmax;
       break;
     default:
       SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1 or 2, cannot be %d", user->metOpt);
     }
-    if (dim == 2) {
-      ierr = VecSetValue(*metric, 4*i  , lambda1, INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 4*i+1, 0      , INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 4*i+2, 0      , INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 4*i+3, lambda2, INSERT_VALUES);CHKERRQ(ierr);
-    } else {
-      ierr = VecSetValue(*metric, 9*i  , lambda1, INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 9*i+1, 0      , INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 9*i+2, 0      , INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 9*i+3, 0      , INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 9*i+4, lambda2, INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 9*i+5, 0      , INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 9*i+6, 0      , INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 9*i+7, 0      , INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecSetValue(*metric, 9*i+8, lambda3, INSERT_VALUES);CHKERRQ(ierr);
-    }
+    /* Only set the diagonal */
+    ierr = DMPlexPointGlobalRef(mdm, p, met, &pmet);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) pmet[d*(dim+1)] = lambda[d];
   }
-  ierr = VecAssemblyBegin(*metric);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(*metric);CHKERRQ(ierr);
+  ierr = VecRestoreArray(*metric, &met);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDestroy(&mdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
