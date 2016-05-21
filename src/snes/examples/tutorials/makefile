@@ -1158,6 +1158,18 @@ runex58_2:
 	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full  -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
 	   ${DIFF} output/ex58_2.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex58.tmp
+runex59:
+	-@${MPIEXEC} -n 1 ./ex59 -n 14 -snes_monitor_short -snes_converged_reason > ex59.tmp 2>&1; \
+	   ${DIFF} output/ex59_1.out ex59.tmp || printf "${PWD}\nPossible problem with ex59_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex59.tmp
+runex59_2:
+	-@${MPIEXEC} -n 1 ./ex59 -n 15 -snes_monitor_short -snes_converged_reason > ex59_2.tmp 2>&1; \
+	   ${DIFF} output/ex59_2.out ex59_2.tmp || printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex59_2.tmp
+runex59_3:
+	-@${MPIEXEC} -n 1 ./ex59 -n 14 -second_order -snes_monitor_short -snes_converged_reason > ex59_3.tmp 2>&1; \
+	   ${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex59_3.tmp
 runex70:
 	-@${MPIEXEC} -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_1_pc_type none   > ex70.tmp 2>&1; \
 	   ${DIFF} output/ex70_1.out ex70.tmp || printf "${PWD}\nPossible problem with ex70_1, diffs above\n=========================================\n"; \
@@ -1207,7 +1219,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  ex42.PETSc runex42 ex42.rm \
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
-                                 ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
+                                 ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm
