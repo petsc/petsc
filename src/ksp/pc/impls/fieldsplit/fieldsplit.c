@@ -1,6 +1,6 @@
 
 #include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
-#include <petscksp.h>
+#include <petsc/private/kspimpl.h>
 #include <petscdm.h>
 
 
