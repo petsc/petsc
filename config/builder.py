@@ -299,11 +299,11 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex17': [{'numProcs': 1, 'args': '-test_partition 0 -dm_view ascii::ascii_info_detail'},
                                                                   ],
-                        'src/dm/impls/plex/examples/tests/ex19': [{'numProcs': 1, 'args': '-dim 2 -nbrVerEdge 5 -noBdyTags -met 2', 'requires': ['pragmatic']},
-                                                                  {'numProcs': 1, 'args': '-dim 2 -nbrVerEdge 5 -bdyLabel marker -met 2', 'requires': ['pragmatic']},
-                                                                  {'numProcs': 1, 'args': '-dim 3 -nbrVerEdge 5 -noBdyTags -met 2', 'requires': ['pragmatic']},
-                                                                  {'numProcs': 1, 'args': '-dim 3 -nbrVerEdge 5 -bdyLabel marker -met 2', 'requires': ['pragmatic']}
-                                                                  ],                                          
+                        'src/dm/impls/plex/examples/tests/ex19': [{'numProcs': 1, 'args': '-dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 0 -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']},
+                                                                  {'numProcs': 1, 'args': '-dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 1 -bdyLabel marker -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -nbrVerEdge 5 -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -nbrVerEdge 5 -bdyLabel marker -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']}
+                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
