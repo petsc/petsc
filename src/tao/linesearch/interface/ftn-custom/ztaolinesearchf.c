@@ -63,11 +63,7 @@ static PetscErrorCode ourtaolinesearchobjectiveandgtsroutine(TaoLineSearch ls, V
     return 0;
 }
 
-EXTERN_C_BEGIN
-
-
-
-void PETSC_STDCALL taolinesearchsetobjectiveroutine_(TaoLineSearch *ls, void (PETSC_STDCALL *func)(TaoLineSearch*, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL taolinesearchsetobjectiveroutine_(TaoLineSearch *ls, void (PETSC_STDCALL *func)(TaoLineSearch*, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*ls,NFUNCS);
@@ -79,7 +75,7 @@ void PETSC_STDCALL taolinesearchsetobjectiveroutine_(TaoLineSearch *ls, void (PE
     }
 }
 
-void PETSC_STDCALL taolinesearchsetgradientroutine_(TaoLineSearch *ls, void (PETSC_STDCALL *func)(TaoLineSearch*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL taolinesearchsetgradientroutine_(TaoLineSearch *ls, void (PETSC_STDCALL *func)(TaoLineSearch*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*ls,NFUNCS);
@@ -91,7 +87,7 @@ void PETSC_STDCALL taolinesearchsetgradientroutine_(TaoLineSearch *ls, void (PET
     }
 }
 
-void PETSC_STDCALL taolinesearchsetobjectiveandgradientroutine_(TaoLineSearch *ls, void (PETSC_STDCALL *func)(TaoLineSearch*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL taolinesearchsetobjectiveandgradientroutine_(TaoLineSearch *ls, void (PETSC_STDCALL *func)(TaoLineSearch*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*ls,NFUNCS);
@@ -103,10 +99,7 @@ void PETSC_STDCALL taolinesearchsetobjectiveandgradientroutine_(TaoLineSearch *l
     }
 }
 
-
-
-
-void PETSC_STDCALL taolinesearchsetobjectiveandgtsroutine_(TaoLineSearch *ls, void (PETSC_STDCALL *func)(TaoLineSearch*, Vec *, Vec *, PetscReal*, PetscReal*,void*, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL taolinesearchsetobjectiveandgtsroutine_(TaoLineSearch *ls, void (PETSC_STDCALL *func)(TaoLineSearch*, Vec *, Vec *, PetscReal*, PetscReal*,void*, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*ls,NFUNCS);
@@ -118,9 +111,7 @@ void PETSC_STDCALL taolinesearchsetobjectiveandgtsroutine_(TaoLineSearch *ls, vo
     }
 }
 
-
-
-void PETSC_STDCALL taolinesearchsettype_(TaoLineSearch *ls, CHAR type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchsettype_(TaoLineSearch *ls, CHAR type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 
 {
     char *t;
@@ -131,14 +122,14 @@ void PETSC_STDCALL taolinesearchsettype_(TaoLineSearch *ls, CHAR type_name PETSC
 
 }
 
-void PETSC_STDCALL taolinesearchview_(TaoLineSearch *ls, PetscViewer *viewer, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL taolinesearchview_(TaoLineSearch *ls, PetscViewer *viewer, PetscErrorCode *ierr)
 {
     PetscViewer v;
     PetscPatchDefaultViewers_Fortran(viewer,v);
     *ierr = TaoLineSearchView(*ls,v);
 }
 
-void PETSC_STDCALL taolinesearchgetoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchgetoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *name;
   *ierr = TaoLineSearchGetOptionsPrefix(*ls,&name);
@@ -147,7 +138,7 @@ void PETSC_STDCALL taolinesearchgetoptionsprefix_(TaoLineSearch *ls, CHAR prefix
 
 }
 
-void PETSC_STDCALL taolinesearchappendoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchappendoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *name;
   FIXCHAR(prefix,len,name);
@@ -155,7 +146,7 @@ void PETSC_STDCALL taolinesearchappendoptionsprefix_(TaoLineSearch *ls, CHAR pre
   FREECHAR(prefix,name);
 }
 
-void PETSC_STDCALL taolinesearchsetoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchsetoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(prefix,len,t);
@@ -163,7 +154,7 @@ void PETSC_STDCALL taolinesearchsetoptionsprefix_(TaoLineSearch *ls, CHAR prefix
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
 {
   const char *tname;
   *ierr = TaoLineSearchGetType(*ls,&tname);
@@ -171,4 +162,3 @@ void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, CHAR name PETSC_MIXE
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 
 }
-EXTERN_C_END
