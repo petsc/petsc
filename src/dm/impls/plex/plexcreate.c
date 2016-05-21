@@ -879,6 +879,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   Input Parameters:
 + comm - The communicator for the DM object
 . dim - The spatial dimension
+. numFaces - Number of faces per dimension
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
@@ -889,7 +890,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
 .keywords: DM, create
 .seealso: DMPlexCreateHexBoxMesh(), DMSetType(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFaces, PetscBool interpolate, DM *dm)
 {
   DM             boundary;
   PetscErrorCode ierr;
@@ -905,7 +906,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
   {
     PetscReal lower[2] = {0.0, 0.0};
     PetscReal upper[2] = {1.0, 1.0};
-    PetscInt  edges[2] = {2, 2};
+    PetscInt  edges[2] = {numFaces, numFaces};
 
     ierr = DMPlexCreateSquareBoundary(boundary, lower, upper, edges);CHKERRQ(ierr);
     break;
@@ -914,7 +915,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
   {
     PetscReal lower[3] = {0.0, 0.0, 0.0};
     PetscReal upper[3] = {1.0, 1.0, 1.0};
-    PetscInt  faces[3] = {1, 1, 1};
+    PetscInt  faces[3] = {numFaces, numFaces, numFaces};
 
     ierr = DMPlexCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);
     break;
