@@ -1009,8 +1009,8 @@ TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
                                  ex25.PETSc runex25 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
-                                 ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
-                                 ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
+                                 ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm
+TESTEXAMPLES_FORTRAN_DATAFILESPATH = ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
 TESTEXAMPLES_PARMETIS_DATAFILESPATH = ex31.PETSc runex31 ex31.rm
 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =

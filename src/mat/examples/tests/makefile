@@ -2568,7 +2568,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 runex40_2 ex40.rm ex41.PETSc
                                  ex180.PETSc runex180 ex180.rm  ex190.PETSc runex190 ex190.rm \
                                  ex198.PETSc runex198 runex198_2 ex198.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm
-TESTEXAMPLES_DOUBLEINT32       = ex79f.PETSc runex79f ex79f.rm
+TESTEXAMPLES_FORTRAN_DOUBLEINT32  = ex79f.PETSc runex79f ex79f.rm
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
