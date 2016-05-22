@@ -634,7 +634,7 @@ runex19:
 	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_cgs:
-	-@${MPIEXEC} -n 1 ./ex19 -pc_type jacobi -da_refine 1 -ksp_monitor_short -ksp_type cgs > ex19_cgs.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19  -da_refine 1 -ksp_monitor_short -ksp_type cgs > ex19_cgs.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cgs.out ex19_cgs.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_cgs, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_cgs.tmp
