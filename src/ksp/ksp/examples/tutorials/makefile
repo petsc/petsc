@@ -990,7 +990,7 @@ runex18:
 	   ${DIFF} output/ex18_1.out ex18_1.tmp || printf "${PWD}\nPossible problem with ex18_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex18_1.tmp
 runex18_bas:
-	-@${MPIEXEC} -n 1 ./ex18 -m 13 -n 17 -ksp_monitor_short -ksp_type cg -pc_type icc -pc_factor_mat_solver_package bas -ksp_view -pc_factor_levels 1 > ex18_bas.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex18 -m 13 -n 17 -ksp_monitor_short -ksp_type cg -pc_type icc -pc_factor_mat_solver_package bas -ksp_view -pc_factor_levels 1 | grep -v "CG or CGNE: variant" > ex18_bas.tmp 2>&1; \
 	   ${DIFF} output/ex18_bas.out ex18_bas.tmp || printf "${PWD}\nPossible problem with ex18_bas, diffs above\n=========================================\n"; \
 	   ${RM} -f ex18_bas.tmp
 runex18_2:

@@ -28,13 +28,13 @@ M*/
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_memory_requirement"
-long int spbas_memory_requirement(spbas_matrix matrix)
+size_t spbas_memory_requirement(spbas_matrix matrix)
 {
-  long int memreq = 6 * sizeof(PetscInt)  + /* nrows, ncols, nnz, n_alloc_icol, n_alloc_val, col_idx_type */
+  size_t memreq = 6 * sizeof(PetscInt)  + /* nrows, ncols, nnz, n_alloc_icol, n_alloc_val, col_idx_type */
                     sizeof(PetscBool)               + /* block_data */
                     sizeof(PetscScalar**)           + /* values */
                     sizeof(PetscScalar*)            + /* alloc_val */
-                    2 * sizeof(int**)               + /* icols, icols0 */
+                    2 * sizeof(PetscInt**)          + /* icols, icols0 */
                     2 * sizeof(PetscInt*)           + /* row_nnz, alloc_icol */
                     matrix.nrows * sizeof(PetscInt) + /* row_nnz[*] */
                     matrix.nrows * sizeof(PetscInt*); /* icols[*] */
@@ -265,8 +265,8 @@ PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt * irow_in, PetscIn
 PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, PetscInt nrows, PetscInt ncols, PetscInt col_idx_type, spbas_matrix *B,PetscReal *mem_reduction)
 {
   PetscInt        nnz      = irow_in[nrows];
-  long int        mem_orig = (nrows + nnz) * sizeof(PetscInt);
-  long int        mem_compressed;
+  size_t          mem_orig = (nrows + nnz) * sizeof(PetscInt);
+  size_t          mem_compressed;
   PetscErrorCode  ierr;
   PetscInt        *isort;
   PetscInt        *icols;
