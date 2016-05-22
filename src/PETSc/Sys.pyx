@@ -9,7 +9,7 @@ cdef class Sys:
         cdef int cminor = PETSC_VERSION_MINOR
         cdef int cmicro = PETSC_VERSION_SUBMINOR
         cdef int cpatch = PETSC_VERSION_PATCH
-        cdef int cdevel = not PETSC_VERSION_RELEASE
+        cdef int cdevel = PETSC_VERSION_RELEASE != 1
         cdef const_char *cdate = PETSC_VERSION_DATE
         cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
         version = (cmajor, cminor, cmicro)
@@ -35,7 +35,7 @@ cdef class Sys:
         cdef int cminor = PETSC_VERSION_MINOR
         cdef int cmicro = PETSC_VERSION_SUBMINOR
         cdef int cpatch = PETSC_VERSION_PATCH
-        cdef int crelease = PETSC_VERSION_RELEASE
+        cdef int crelease = PETSC_VERSION_RELEASE == 1
         cdef const_char *cdate = PETSC_VERSION_DATE
         cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
         author = bytes2str(cauthorinfo).split('\n')

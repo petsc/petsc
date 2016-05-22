@@ -122,7 +122,7 @@ class PetscConfig:
             'minor'  : re.compile(r"#define\s+PETSC_VERSION_MINOR\s+(\d+)"),
             'micro'  : re.compile(r"#define\s+PETSC_VERSION_SUBMINOR\s+(\d+)"),
             'patch'  : re.compile(r"#define\s+PETSC_VERSION_PATCH\s+(\d+)"),
-            'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(\d+)"),
+            'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(-*\d+)"),
             }
         petscversion_h = os.path.join(petsc_dir, 'include', 'petscversion.h')
         with open(petscversion_h, 'rt') as f: data = f.read()
@@ -130,7 +130,7 @@ class PetscConfig:
         minor = int(version_re['minor'].search(data).groups()[0])
         micro = int(version_re['micro'].search(data).groups()[0])
         release = int(version_re['release'].search(data).groups()[0])
-        return  (major, minor, micro), bool(release)
+        return  (major, minor, micro), (release == 1)
 
     def _get_petsc_config(self, petsc_dir, petsc_arch):
         from os.path import join, isdir, exists
