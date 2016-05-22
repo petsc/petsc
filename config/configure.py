@@ -347,6 +347,8 @@ def petsc_configure(configure_options):
       petscnagupgrade.currentversion(petscdir)
   except:
     pass
+  if petscdir.find(' ') > -1:
+    raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
   print '==============================================================================='
   print '             Configuring PETSc to compile on your system                       '
   print '==============================================================================='
