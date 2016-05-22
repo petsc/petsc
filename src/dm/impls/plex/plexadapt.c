@@ -24,20 +24,27 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
 {
   const char        *bdName = "_boundary_";
   DM                 udm, cdm;
-  DMLabel            bdLabel = NULL, bdLabelFull, bdLabelNew;
+  DMLabel            bdLabel = NULL, bdLabelFull;
   IS                 bdIS;
   PetscSection       coordSection;
   Vec                coordinates;
   const PetscScalar *coords, *met;
-  PetscScalar       *coordsNew;
   const PetscInt    *bdFacesFull;
-  PetscInt          *bdFaces, *bdFaceIds, *bdTags;
+  PetscInt          *bdFaces, *bdFaceIds;
   PetscReal         *x, *y, *z, *metric;
-  PetscReal         *xNew[3] = {NULL, NULL, NULL};
-  PetscInt          *cells, *cellsNew;
-  PetscInt           dim, d, cStart, cEnd, numCells, numCellsNew, c, coff, vStart, vEnd, numVertices, numVerticesNew, v;
-  PetscInt           off, maxConeSize, numCornersNew, numBdFaces, fStart, fEnd, f, bdSize;
+  PetscInt          *cells;
+  PetscInt           dim, cStart, cEnd, numCells, c, coff, vStart, vEnd, numVertices, v;
+  PetscInt           off, maxConeSize, numBdFaces, f, bdSize;
   PetscBool          flg;
+#ifdef PETSC_HAVE_PRAGMATIC
+  DMLabel            bdLabelNew;
+  PetscScalar       *coordsNew;
+  PetscInt          *bdTags;
+  PetscReal         *xNew[3] = {NULL, NULL, NULL};
+  PetscInt          *cellsNew;
+  PetscInt           d, numCellsNew, numVerticesNew;
+  PetscInt           numCornersNew, fStart, fEnd;
+#endif
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
