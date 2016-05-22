@@ -906,8 +906,9 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFace
   {
     PetscReal lower[2] = {0.0, 0.0};
     PetscReal upper[2] = {1.0, 1.0};
-    PetscInt  edges[2] = {numFaces, numFaces};
+    PetscInt  edges[2];
 
+    edges[0] = numFaces; edges[1] = numFaces;
     ierr = DMPlexCreateSquareBoundary(boundary, lower, upper, edges);CHKERRQ(ierr);
     break;
   }
@@ -915,8 +916,9 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFace
   {
     PetscReal lower[3] = {0.0, 0.0, 0.0};
     PetscReal upper[3] = {1.0, 1.0, 1.0};
-    PetscInt  faces[3] = {numFaces, numFaces, numFaces};
+    PetscInt  faces[3];
 
+    faces[0] = numFaces; faces[1] = numFaces; faces[2] = numFaces;
     ierr = DMPlexCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);
     break;
   }
