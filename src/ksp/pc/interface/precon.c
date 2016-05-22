@@ -1486,6 +1486,20 @@ PetscErrorCode  PCGetOptionsPrefix(PC pc,const char *prefix[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCPreSolveChangeRHS"
+PETSC_INTERN PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(change,2);
+  *change = PETSC_FALSE;
+  ierr = PetscTryMethod(pc,"PCPreSolveChangeRHS_C",(PC,PetscBool*),(pc,change));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCPreSolve"
 /*@
    PCPreSolve - Optional pre-solve phase, intended for any
