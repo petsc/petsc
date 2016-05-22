@@ -5,12 +5,12 @@ static char help[] = "Tests mesh adaptation with DMPlex and pragmatic.\n";
 typedef struct {
   DM        dm;
   /* Definition of the test case (mesh and metric field) */
-  PetscInt  dim;                          /* The topological mesh dimension */
-  char      mshNam[PETSC_MAX_PATH_LEN];   /* Name of the mesh filename if any */
-  PetscInt  nbrVerEdge;                   /* Number of vertices per edge if unit square/cube generated */
-  char      bdyLabel[PETSC_MAX_PATH_LEN]; /* Name of the label marking boundary facets */
-  PetscInt  metOpt;                       /* Different choices of metric */
-  PetscReal hmax, hmin;                   /* Max and min sizes prescribed by the metric */
+  PetscInt  dim;                         /* The topological mesh dimension */
+  char      mshNam[PETSC_MAX_PATH_LEN];  /* Name of the mesh filename if any */
+  PetscInt  nbrVerEdge;                  /* Number of vertices per edge if unit square/cube generated */
+  char      bdLabel[PETSC_MAX_PATH_LEN]; /* Name of the label marking boundary facets */
+  PetscInt  metOpt;                      /* Different choices of metric */
+  PetscReal hmax, hmin;                  /* Max and min sizes prescribed by the metric */
 } AppCtx;
 
 #undef __FUNCT__
@@ -23,7 +23,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim        = 2;
   ierr = PetscStrcpy(options->mshNam, "");CHKERRQ(ierr);
   options->nbrVerEdge = 5;
-  ierr = PetscStrcpy(options->bdyLabel, "");CHKERRQ(ierr);
+  ierr = PetscStrcpy(options->bdLabel, "");CHKERRQ(ierr);
   options->metOpt     = 1;
   options->hmin       = 0.05;
   options->hmax       = 0.5;
@@ -32,7 +32,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex19.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-msh", "Name of the mesh filename if any", "ex19.c", options->mshNam, options->mshNam, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-nbrVerEdge", "Number of vertices per edge if unit square/cube generated", "ex19.c", options->nbrVerEdge, &options->nbrVerEdge, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-bdyLabel", "Name of the label marking boundary facets", "ex19.c", options->bdyLabel, options->bdyLabel, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-bdLabel", "Name of the label marking boundary facets", "ex19.c", options->bdLabel, options->bdLabel, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-met", "Different choices of metric", "ex19.c", options->metOpt, &options->metOpt, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-hmax", "Max size prescribed by the metric", "ex19.c", options->hmax, &options->hmax, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ int main (int argc, char * argv[]) {
   ierr = DMViewFromOptions(user.dm, NULL, "-init_dm_view");CHKERRQ(ierr);
 
   ierr = ComputeMetric(user.dm, &user, &metric);CHKERRQ(ierr);
-  ierr = DMPlexAdapt(user.dm, metric, user.bdyLabel, &dma);CHKERRQ(ierr);
+  ierr = DMPlexAdapt(user.dm, metric, user.bdLabel, &dma);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dma, "DMadapt");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dma, NULL, "-adapt_dm_view");CHKERRQ(ierr);
 
