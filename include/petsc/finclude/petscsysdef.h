@@ -208,6 +208,7 @@
 #define PetscBinarySeekType PetscEnum
 
 #define PetscBuildTwoSidedType PetscEnum
+#define PetscSubcommType PetscEnum
 
 #define PetscOptions PetscFortranAddr
 

@@ -1143,6 +1143,11 @@ runex43_5:
 	   ${DIFF} output/ex43_5.out ex43_5.tmp || printf "${PWD}\nPossible problem with ex43_5, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_5.tmp
 
+runex43_6:
+	-@${MPIEXEC} -n 8 ./ex43 -stokes_ksp_view -stokes_pc_type mg -stokes_pc_mg_levels 2 -stokes_mg_coarse_pc_type telescope -stokes_mg_coarse_pc_telescope_reduction_factor 2 -stokes_pc_mg_galerkin 1 -stokes_mg_coarse_pc_telescope_subcomm_type contiguous > ex43_6.tmp 2>&1; \
+	   ${DIFF} output/ex43_6.out ex43_6.tmp || printf "${PWD}\nPossible problem with ex43_6, diffs above\n=========================================\n"; \
+	   ${RM} -f ex43_6.tmp
+
 runex45:
 	-@${MPIEXEC} -n 4 ./ex45 -pc_type exotic -ksp_monitor_short -ksp_type fgmres -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi > ex45_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex45_1.out ex45_1.tmp || printf "${PWD}\nPossible problem with ex45_1, diffs above\n=========================================\n"; \
@@ -1540,7 +1545,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex18.PETSc runex18_3 ex18.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc runex29_telescope ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex42.PETSc ex42.rm \
-                                 ex43.PETSc runex43 runex43_2 runex43_bjacobi runex43_bjacobi_baij runex43_nested_gmg runex43_3 ex43.rm \
+                                 ex43.PETSc runex43 runex43_2 runex43_bjacobi runex43_bjacobi_baij runex43_nested_gmg runex43_3 runex43_6 ex43.rm \
                                  ex45.PETSc runex45 runex45_2 runex45_telescope runex45_telescope_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm \
                                  ex51.PETSc runex51 ex51.rm \
