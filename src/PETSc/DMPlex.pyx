@@ -423,6 +423,16 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = dmOverlap
         return sf
 
+    def interpolate(self):
+        cdef PetscDM newdm = NULL
+        CHKERR( DMPlexInterpolate(self.dm, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+
+    def uninterpolate(self):
+        cdef PetscDM newdm = NULL
+        CHKERR( DMPlexUninterpolate(self.dm, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+
     def distributeField(self, SF sf not None,
                         Section sec not None, Vec vec not None,
                         Section newsec=None, Vec newvec=None):
