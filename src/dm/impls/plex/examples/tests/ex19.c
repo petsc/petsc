@@ -51,11 +51,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
   PetscFunctionBegin;
   ierr = PetscStrcmp(user->mshNam, "", &flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->nbrVerEdge-1, PETSC_TRUE, (void *) user);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->nbrVerEdge-1, PETSC_TRUE, &user->dm);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, user->mshNam, PETSC_TRUE, &user->dm);CHKERRQ(ierr);
     ierr = DMGetDimension(user->dm, &user->dim);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(user->dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
