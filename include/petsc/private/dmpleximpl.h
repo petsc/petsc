@@ -212,6 +212,7 @@ PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM,PetscInt,const PetscSc
 
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
+PETSC_INTERN PetscErrorCode DMPlexRemesh_Internal(DM, Vec, const char[], DM *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DihedralInvert"
