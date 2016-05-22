@@ -108,7 +108,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
     ierr = PetscFree(eqns);CHKERRQ(ierr);
 
     bdLabelName[0] = '\0';
-    ierr = PetscOptionsGetString(NULL, dm->hdr.prefix, "-plex_coarsen_bd_label", bdLabelName, PETSC_MAX_PATH_LEN-1, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL, dm->hdr.prefix, "-dm_plex_coarsen_bd_label", bdLabelName, PETSC_MAX_PATH_LEN-1, NULL);CHKERRQ(ierr);
     ierr = DMPlexRemesh_Internal(dm, metricVec, bdLabelName, &dm->coarseMesh);CHKERRQ(ierr);
     ierr = VecDestroy(&metricVec);CHKERRQ(ierr);
   }
