@@ -1162,6 +1162,8 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptio
   ierr = PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMView", mesh->printTol, &mesh->printTol, NULL);CHKERRQ(ierr);
   /* Point Location */
   ierr = PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMView", PETSC_FALSE, &mesh->useHashLocation, NULL);CHKERRQ(ierr);
+  /* Generation and remeshing */
+  ierr = PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMView", PETSC_FALSE, &mesh->remeshBd, NULL);CHKERRQ(ierr);
   /* Projection behavior */
   ierr = PetscOptionsInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL);CHKERRQ(ierr);
@@ -1402,6 +1404,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->triangleOpts = NULL;
   ierr = PetscPartitionerCreate(PetscObjectComm((PetscObject)dm), &mesh->partitioner);CHKERRQ(ierr);
   ierr = PetscPartitionerSetTypeFromOptions_Internal(mesh->partitioner);CHKERRQ(ierr);
+  mesh->remeshBd     = PETSC_FALSE;
 
   mesh->subpointMap = NULL;
 

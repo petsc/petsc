@@ -11,6 +11,7 @@
   Input Parameters:
 + dm - The DM object
 . vertexMetric - The metric to which the mesh is adapted, defined vertex-wise.
+. remeshBd - Flag to allow boundary changes
 - bdLabelName - Label name for boundary tags which are preserved in dmNew, or NULL. Should not be "_boundary_".
 
   Output Parameter:
@@ -20,7 +21,7 @@
 
 .seealso: DMCoarsen(), DMRefine()
 */
-PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabelName[], DM *dmNew)
+PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabelName[], PetscBool remeshBd, DM *dmNew)
 {
   const char        *bdName = "_boundary_";
   DM                 udm, cdm;
@@ -51,7 +52,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vertexMetric, VEC_CLASSID, 2);
   PetscValidCharPointer(bdLabelName, 3);
-  PetscValidPointer(dmNew, 4);
+  PetscValidPointer(dmNew, 5);
   if (bdLabelName) {
     size_t len;
 
@@ -138,7 +139,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   }
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
   pragmatic_set_metric(metric);
-  pragmatic_adapt(1);
+  pragmatic_adapt(remeshBd ? 1 : 0);
   /* Read out mesh */
   pragmatic_get_info(&numVerticesNew, &numCellsNew);
   ierr = PetscMalloc1(numVerticesNew*dim, &coordsNew);CHKERRQ(ierr);
@@ -220,9 +221,14 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
 @*/
 PetscErrorCode DMPlexAdapt(DM dm, Vec metric, const char bdLabelName[], DM *dmAdapt)
 {
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexRemesh_Internal(dm, metric, bdLabelName, dmAdapt);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(metric, VEC_CLASSID, 2);
+  PetscValidCharPointer(bdLabelName, 3);
+  PetscValidPointer(dmAdapt, 4);
+  ierr = DMPlexRemesh_Internal(dm, metric, bdLabelName, mesh->remeshBd, dmAdapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

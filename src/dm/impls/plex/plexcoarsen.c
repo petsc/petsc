@@ -4,6 +4,7 @@
 #define __FUNCT__ "DMCoarsen_Plex"
 PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 {
+  DM_Plex           *mesh = (DM_Plex *) dm->data;
   const PetscReal    coarseRatio = PetscSqr(0.5);
   DM                 udm, coordDM;
   Mat                A;
@@ -109,7 +110,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 
     bdLabelName[0] = '\0';
     ierr = PetscOptionsGetString(NULL, dm->hdr.prefix, "-dm_plex_coarsen_bd_label", bdLabelName, PETSC_MAX_PATH_LEN-1, NULL);CHKERRQ(ierr);
-    ierr = DMPlexRemesh_Internal(dm, metricVec, bdLabelName, &dm->coarseMesh);CHKERRQ(ierr);
+    ierr = DMPlexRemesh_Internal(dm, metricVec, bdLabelName, mesh->remeshBd, &dm->coarseMesh);CHKERRQ(ierr);
     ierr = VecDestroy(&metricVec);CHKERRQ(ierr);
   }
   ierr = PetscObjectReference((PetscObject) dm->coarseMesh);CHKERRQ(ierr);
