@@ -491,6 +491,34 @@ cdef class DMPlex(DM):
                                     cperm, &sec.sec) )
         return sec
 
+    def getPointLocal(self, point):
+        cdef PetscInt start = 0, end = 0
+        cdef PetscInt cpoint = asInt(point)
+        CHKERR( DMPlexGetPointLocal(self.dm, cpoint, &start, &end) )
+        return toInt(start), toInt(end)
+
+    def getPointLocalField(self, point, field):
+        cdef PetscInt start = 0, end = 0
+        cdef PetscInt cpoint = asInt(point)
+        cdef PetscInt cfield = asInt(field)
+        CHKERR( DMPlexGetPointLocalField(self.dm, cpoint, cfield, &start, &end) )
+        return toInt(start), toInt(end)
+
+    def getPointGlobal(self, point):
+        cdef PetscInt start = 0, end = 0
+        cdef PetscInt cpoint = asInt(point)
+        CHKERR( DMPlexGetPointGlobal(self.dm, cpoint, &start, &end) )
+        return toInt(start), toInt(end)
+
+    def getPointGlobalField(self, point, field):
+        cdef PetscInt start = 0, end = 0
+        cdef PetscInt cpoint = asInt(point)
+        cdef PetscInt cfield = asInt(field)
+        CHKERR( DMPlexGetPointGlobalField(self.dm, cpoint, cfield, &start, &end) )
+        return toInt(start), toInt(end)
+
+    #
+
     def setRefinementUniform(self, refinementUniform=True):
         cdef PetscBool flag = refinementUniform
         CHKERR( DMPlexSetRefinementUniform(self.dm, flag) )
