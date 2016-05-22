@@ -423,6 +423,16 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = dmOverlap
         return sf
 
+    def interpolate(self):
+        cdef PetscDM newdm = NULL
+        CHKERR( DMPlexInterpolate(self.dm, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+
+    def uninterpolate(self):
+        cdef PetscDM newdm = NULL
+        CHKERR( DMPlexUninterpolate(self.dm, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+
     def distributeField(self, SF sf not None,
                         Section sec not None, Vec vec not None,
                         Section newsec=None, Vec newvec=None):
@@ -490,6 +500,34 @@ cdef class DMPlex(DM):
                                     nbc, bcfield, bccomps, bcpoints,
                                     cperm, &sec.sec) )
         return sec
+
+    def getPointLocal(self, point):
+        cdef PetscInt start = 0, end = 0
+        cdef PetscInt cpoint = asInt(point)
+        CHKERR( DMPlexGetPointLocal(self.dm, cpoint, &start, &end) )
+        return toInt(start), toInt(end)
+
+    def getPointLocalField(self, point, field):
+        cdef PetscInt start = 0, end = 0
+        cdef PetscInt cpoint = asInt(point)
+        cdef PetscInt cfield = asInt(field)
+        CHKERR( DMPlexGetPointLocalField(self.dm, cpoint, cfield, &start, &end) )
+        return toInt(start), toInt(end)
+
+    def getPointGlobal(self, point):
+        cdef PetscInt start = 0, end = 0
+        cdef PetscInt cpoint = asInt(point)
+        CHKERR( DMPlexGetPointGlobal(self.dm, cpoint, &start, &end) )
+        return toInt(start), toInt(end)
+
+    def getPointGlobalField(self, point, field):
+        cdef PetscInt start = 0, end = 0
+        cdef PetscInt cpoint = asInt(point)
+        cdef PetscInt cfield = asInt(field)
+        CHKERR( DMPlexGetPointGlobalField(self.dm, cpoint, cfield, &start, &end) )
+        return toInt(start), toInt(end)
+
+    #
 
     def setRefinementUniform(self, refinementUniform=True):
         cdef PetscBool flag = refinementUniform
