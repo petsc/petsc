@@ -80,9 +80,9 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-    x[v-vStart] = coords[off+0];
-    if (dim > 1) y[v-vStart] = coords[off+1];
-    if (dim > 2) z[v-vStart] = coords[off+2];
+    x[v-vStart] = PetscRealPart(coords[off+0]);
+    if (dim > 1) y[v-vStart] = PetscRealPart(coords[off+1]);
+    if (dim > 2) z[v-vStart] = PetscRealPart(coords[off+2]);
   }
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
   /* Get boundary mesh */
@@ -118,7 +118,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   ierr = DMLabelDestroy(&bdLabelFull);CHKERRQ(ierr);
   /* Get metric */
   ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
-  for (v = 0; v < (vEnd-vStart)*PetscSqr(dim); ++v) metric[v] = met[v];
+  for (v = 0; v < (vEnd-vStart)*PetscSqr(dim); ++v) metric[v] = PetscRealPart(met[v]);
   ierr = VecRestoreArrayRead(vertexMetric, &met);CHKERRQ(ierr);
   /* Create new mesh */
 #ifdef PETSC_HAVE_PRAGMATIC

@@ -9,9 +9,8 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
   Mat                A;
   Vec                metricVec, coordinates, mb, mx;
   PetscSection       coordSection;
-  const PetscScalar *coords;
   PetscScalar       *metric;
-  PetscReal         *eqns;
+  PetscScalar       *eqns;
   PetscInt           dim, cStart, cEnd, c, vStart, vEnd, numVertices, v, size;
   char               bdLabelName[PETSC_MAX_PATH_LEN];
   PetscErrorCode     ierr;
@@ -45,7 +44,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
       /* Only works for simplices */
       for (i = 0, r = 0; i < dim+1; ++i) {
         for (j = 0; j < i; ++j, ++r) {
-          for (d = 0; d < dim; ++d) e[d] = cellCoords[i*dim+d] - cellCoords[j*dim+d];
+          for (d = 0; d < dim; ++d) e[d] = PetscRealPart(cellCoords[i*dim+d] - cellCoords[j*dim+d]);
           /* FORTRAN ORDERING */
           if (dim == 2) {
             eqns[0*size+r] = PetscSqr(e[0]);
