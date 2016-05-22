@@ -1372,6 +1372,11 @@ runex59_3:
 	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -ksp_max_it 4 > ex59_3.tmp 2>&1;         \
 	${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; \
 	${RM} -f ex59_3.tmp
+runex59_approximate:
+	-@${MPIEXEC} -n 8 ./ex59 -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -ksp_max_it 25 -subdomain_mat_type aij -pc_bddc_switch_static -pc_bddc_dirichlet_approximate -pc_bddc_neumann_approximate -pc_bddc_dirichlet_pc_type gamg -pc_bddc_neumann_pc_type sor -pc_bddc_neumann_approximate_scale > ex59_approximate.tmp 2>&1;         \
+	${DIFF} output/ex59_approximate.out ex59_approximate.tmp || printf "${PWD}\nPossible problem with ex59_approximate, diffs above\n=========================================\n"; \
+	${RM} -f ex59_approximate.tmp
+
 runex60:
 	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type fcg -ksp_fcg_mmax 1 -eta 0.1 > ex60_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex60_1.out ex60_1.tmp) then true; \

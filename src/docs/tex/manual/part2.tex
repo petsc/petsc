@@ -2968,7 +2968,8 @@ MPI processes. Complex numbers are supported as well. For non-symmetric problems
 
 Unlike conventional non-overlapping methods that iterates just on the degrees of freedom at the interface between subdomain,
 PCBDDC iterates on the whole set of degrees of freedom allowing the use of approximate subdomain solvers.
-When using approximate solvers with singular problems, the nullspace of the operator should be provided using PCBDDCSetNullSpace().
+When using approximate solvers, the command line switches \trl{-pc_bddc_dirichlet_approximate} and/or \trl{-pc_bddc_neumann_approximate} should be used to inform PCBDDC.
+If any of the local problems is singular, the nullspace of the local operator should be attached to the local matrix via MatSetNullSpace().
 
 At the basis of the method there's the analysis of the connected components of the interface for the detection of vertices,
 edges and faces equivalence classes. Additional information on the degrees of freedom can be supplied to PCBDDC by using
