@@ -570,7 +570,7 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   PetscFunctionBegin;
   if (!ctx->fem) PetscFunctionReturn(0);
   /* Create DM */
-  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, 2, 2, PETSC_FALSE, &dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   /* Project solution into FE space */
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);

@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-dim","the dimension of the problem","",2,&dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   numDof[0] = dim;
   ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, NULL, NULL, &section);CHKERRQ(ierr);

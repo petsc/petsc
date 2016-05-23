@@ -1,0 +1,197 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 289
+  1-cells: 800
+  2-cells: 512
+Labels:
+  marker: 1 strata of sizes (128)
+  depth: 3 strata of sizes (289, 800, 512)
+  DM_0x84000000_0 in 2 dimensions:
+    0-cells:   99  
+    1-cells:   258  
+    2-cells:   160  
+  Labels:
+    _boundary_: 1 strata of sizes (36)
+    depth: 3 strata of sizes (99, 258, 160)
+    DM_0x84000000_1 in 2 dimensions:
+      0-cells:     38    
+      1-cells:     91    
+      2-cells:     54    
+    Labels:
+      _boundary_: 1 strata of sizes (20)
+      depth: 3 strata of sizes (38, 91, 54)
+      DM_0x84000000_2 in 2 dimensions:
+        0-cells:       19      
+        1-cells:       40      
+        2-cells:       22      
+      Labels:
+        _boundary_: 1 strata of sizes (14)
+        depth: 3 strata of sizes (19, 40, 22)
+  0 SNES Function norm 8.32828 
+    0 KSP unpreconditioned resid norm 8.328278903362e+00 true resid norm 8.328278903362e+00 ||r(i)||/||b|| 1.000000000000e+00
+    1 KSP unpreconditioned resid norm 4.187754904786e-06 true resid norm 4.187754904786e-06 ||r(i)||/||b|| 5.028355742379e-07
+    2 KSP unpreconditioned resid norm 1.795165339852e-12 true resid norm 1.795165339852e-12 ||r(i)||/||b|| 2.155505790190e-13
+  1 SNES Function norm < 1.e-11
+Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=0., absolute=1e-08, solution=1e-08
+  total number of linear solver iterations=2
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI processes
+    type: richardson
+      Richardson: damping factor=1.
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=0., absolute=1e-08, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI processes
+    type: mg
+      MG: type is MULTIPLICATIVE, levels=4 cycles=v
+        Cycles per PCApply=1
+        Not using Galerkin computed coarse grid matrices
+    Coarse grid solver -- level -------------------------------
+      KSP Object: (mg_coarse_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_coarse_) 1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+          matrix ordering: nd
+          factor fill ratio given 5., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=5, cols=5
+                package used to perform factorization: petsc
+                total: nonzeros=17, allocated nonzeros=17
+                total number of mallocs used during MatSetValues calls =0
+                  using I-node routines: found 4 nodes, limit used is 5
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=5, cols=5
+          total: nonzeros=17, allocated nonzeros=17
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    Down solver (pre-smoother) on level 1 -------------------------------
+      KSP Object: (mg_levels_1_) 1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=10
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_1_) 1 MPI processes
+        type: ilu
+          ILU: out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=18, cols=18
+                package used to perform factorization: petsc
+                total: nonzeros=92, allocated nonzeros=92
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=18, cols=18
+          total: nonzeros=92, allocated nonzeros=92
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 2 -------------------------------
+      KSP Object: (mg_levels_2_) 1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=10
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_2_) 1 MPI processes
+        type: ilu
+          ILU: out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=63, cols=63
+                package used to perform factorization: petsc
+                total: nonzeros=369, allocated nonzeros=369
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=63, cols=63
+          total: nonzeros=369, allocated nonzeros=369
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 3 -------------------------------
+      KSP Object: (mg_levels_3_) 1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=10
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_3_) 1 MPI processes
+        type: ilu
+          ILU: out-of-place factorization
+          0 levels of fill
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: natural
+          factor fill ratio given 1., needed 1.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=225, cols=225
+                package used to perform factorization: petsc
+                total: nonzeros=1457, allocated nonzeros=1457
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=225, cols=225
+          total: nonzeros=1457, allocated nonzeros=1457
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI processes
+      type: seqaij
+      rows=225, cols=225
+      total: nonzeros=1457, allocated nonzeros=1457
+      total number of mallocs used during MatSetValues calls =0
+        not using I-node routines
+Number of SNES iterations = 1
+L_2 Error: 0.00173611

@@ -47,6 +47,11 @@ ex15: ex15.o  chkopts
 	-${CLINKER} -o ex15 ex15.o ${PETSC_DM_LIB}
 	${RM} -f ex15.o
 
+ex19: ex19.o  chkopts
+	-${CLINKER} -o ex19 ex19.o ${PETSC_DM_LIB}
+	${RM} -f ex19.o
+
+
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -ctetgen_verbose 4 -dm_view ascii::ascii_info_detail -info -info_exclude null > ex1_0.tmp 2>&1;\

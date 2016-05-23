@@ -1,111 +1,40 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#ifdef PETSC_HAVE_PRAGMATIC
-#include <pragmatic/cpragmatic.h>
-#endif
-
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCoarsen_Plex"
 PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 {
-#ifdef PETSC_HAVE_PRAGMATIC
-  DM             udm, coordDM;
-  DMLabel        bd;
-  Mat            A;
-  Vec            coordinates, mb, mx;
-  PetscSection   coordSection;
-  const PetscScalar *coords;
-  double        *coarseCoords;
-  IS             bdIS;
-  PetscReal     *x, *y, *z, *eqns, *metric;
-  PetscReal      coarseRatio = PetscSqr(0.5);
-  const PetscInt *faces;
-  PetscInt      *cells, *bdFaces, *bdFaceIds;
-  PetscInt       dim, numCorners, cStart, cEnd, numCells, numCoarseCells, c, vStart, vEnd, numVertices, numCoarseVertices, v, numBdFaces, f, maxConeSize, size, bdSize, coff;
-#endif
-  PetscErrorCode ierr;
+  DM_Plex           *mesh = (DM_Plex *) dm->data;
+  const PetscReal    coarseRatio = PetscSqr(0.5);
+  DM                 udm, coordDM;
+  Mat                A;
+  Vec                metricVec, coordinates, mb, mx;
+  PetscSection       coordSection;
+  PetscScalar       *metric;
+  PetscScalar       *eqns;
+  PetscInt           dim, cStart, cEnd, c, vStart, vEnd, numVertices, v, size;
+  char               bdLabelName[PETSC_MAX_PATH_LEN];
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_PRAGMATIC
   if (!dm->coarseMesh) {
+    /* Create metric */
+    ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(coordDM, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-    ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
-    ierr = DMPlexGetMaxSizes(udm, &maxConeSize, NULL);CHKERRQ(ierr);
-    numCells    = cEnd - cStart;
     numVertices = vEnd - vStart;
-    ierr = PetscCalloc5(numVertices, &x, numVertices, &y, numVertices, &z, numVertices*PetscSqr(dim), &metric, numCells*maxConeSize, &cells);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-    for (v = vStart; v < vEnd; ++v) {
-      PetscInt off;
-
-      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-      x[v-vStart] = coords[off+0];
-      y[v-vStart] = coords[off+1];
-      if (dim > 2) z[v-vStart] = coords[off+2];
-    }
-    ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
-    for (c = 0, coff = 0; c < numCells; ++c) {
-      const PetscInt *cone;
-      PetscInt        coneSize, cl;
-
-      ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(udm, c, &cone);CHKERRQ(ierr);
-      for (cl = 0; cl < coneSize; ++cl) cells[coff++] = cone[cl] - vStart;
-    }
-    switch (dim) {
-    case 2:
-      pragmatic_2d_init(&numVertices, &numCells, cells, x, y);
-      break;
-    case 3:
-      pragmatic_3d_init(&numVertices, &numCells, cells, x, y, z);
-      break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic coarsening defined for dimension %d", dim);
-    }
-    /* Create boundary mesh */
-    ierr = DMLabelCreate("boundary", &bd);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, bd);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumIS(bd, 1, &bdIS);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumSize(bd, 1, &numBdFaces);CHKERRQ(ierr);
-    ierr = ISGetIndices(bdIS, &faces);CHKERRQ(ierr);
-    for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
-      PetscInt *closure = NULL;
-      PetscInt  closureSize, cl;
-
-      ierr = DMPlexGetTransitiveClosure(dm, faces[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (cl = 0; cl < closureSize*2; cl += 2) {
-        if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
-      }
-      ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    }
-    ierr = PetscMalloc2(bdSize, &bdFaces, numBdFaces, &bdFaceIds);CHKERRQ(ierr);
-    for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
-      PetscInt *closure = NULL;
-      PetscInt  closureSize, cl;
-
-      ierr = DMPlexGetTransitiveClosure(dm, faces[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (cl = 0; cl < closureSize*2; cl += 2) {
-        if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart;
-      }
-      /* TODO Fix */
-      bdFaceIds[f] = 1;
-      ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    }
-    ierr = ISDestroy(&bdIS);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&bd);CHKERRQ(ierr);
-    pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
-    /* Create metric */
+    ierr = VecCreateSeq(PETSC_COMM_SELF, numVertices*PetscSqr(dim), &metricVec);CHKERRQ(ierr);
+    ierr = VecGetArray(metricVec, &metric);CHKERRQ(ierr);
     size = (dim*(dim+1))/2;
     ierr = PetscMalloc1(PetscSqr(size), &eqns);CHKERRQ(ierr);
     ierr = MatCreateSeqDense(PETSC_COMM_SELF, size, size, eqns, &A);CHKERRQ(ierr);
     ierr = MatCreateVecs(A, &mx, &mb);CHKERRQ(ierr);
     ierr = VecSet(mb, 1.0);CHKERRQ(ierr);
-    for (c = 0; c < numCells; ++c) {
+    for (c = cStart; c < cEnd; ++c) {
       const PetscScalar *sol;
       PetscScalar       *cellCoords = NULL;
       PetscReal          e[3], vol;
@@ -116,7 +45,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
       /* Only works for simplices */
       for (i = 0, r = 0; i < dim+1; ++i) {
         for (j = 0; j < i; ++j, ++r) {
-          for (d = 0; d < dim; ++d) e[d] = cellCoords[i*dim+d] - cellCoords[j*dim+d];
+          for (d = 0; d < dim; ++d) e[d] = PetscRealPart(cellCoords[i*dim+d] - cellCoords[j*dim+d]);
           /* FORTRAN ORDERING */
           if (dim == 2) {
             eqns[0*size+r] = PetscSqr(e[0]);
@@ -172,39 +101,18 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
       for (s = 0; s < supportSize; ++s) {ierr = DMPlexComputeCellGeometryFVM(dm, support[s], &vol, NULL, NULL);CHKERRQ(ierr); totVol += vol;}
       for (s = 0; s < PetscSqr(dim); ++s) metric[v*PetscSqr(dim)+s] /= totVol;
     }
+    ierr = VecRestoreArray(metricVec, &metric);CHKERRQ(ierr);
     ierr = VecDestroy(&mx);CHKERRQ(ierr);
     ierr = VecDestroy(&mb);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = DMDestroy(&udm);CHKERRQ(ierr);
     ierr = PetscFree(eqns);CHKERRQ(ierr);
-    pragmatic_set_metric(metric);
-    pragmatic_adapt();
-    /* Read out mesh */
-    pragmatic_get_info(&numCoarseVertices, &numCoarseCells);
-    ierr = PetscMalloc1(numCoarseVertices*dim, &coarseCoords);CHKERRQ(ierr);
-    switch (dim) {
-    case 2:
-      pragmatic_get_coords_2d(x, y);
-      numCorners = 3;
-      for (v = 0; v < numCoarseVertices; ++v) {coarseCoords[v*2+0] = x[v]; coarseCoords[v*2+1] = y[v];}
-      break;
-    case 3:
-      pragmatic_get_coords_3d(x, y, z);
-      numCorners = 4;
-      for (v = 0; v < numCoarseVertices; ++v) {coarseCoords[v*3+0] = x[v]; coarseCoords[v*3+1] = y[v]; coarseCoords[v*3+2] = z[v];}
-      break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic coarsening defined for dimension %d", dim);
-    }
-    pragmatic_get_elements(cells);
-    /* TODO Read out markers for boundary */
-    ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCoarseCells, numCoarseVertices, numCorners, PETSC_TRUE, cells, dim, coarseCoords, &dm->coarseMesh);CHKERRQ(ierr);
-    pragmatic_finalize();
-    ierr = PetscFree5(x, y, z, metric, cells);CHKERRQ(ierr);
-    ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
-    ierr = PetscFree(coarseCoords);CHKERRQ(ierr);
+
+    bdLabelName[0] = '\0';
+    ierr = PetscOptionsGetString(NULL, dm->hdr.prefix, "-dm_plex_coarsen_bd_label", bdLabelName, PETSC_MAX_PATH_LEN-1, NULL);CHKERRQ(ierr);
+    ierr = DMPlexRemesh_Internal(dm, metricVec, bdLabelName, mesh->remeshBd, &dm->coarseMesh);CHKERRQ(ierr);
+    ierr = VecDestroy(&metricVec);CHKERRQ(ierr);
   }
-#endif
   ierr = PetscObjectReference((PetscObject) dm->coarseMesh);CHKERRQ(ierr);
   *dmCoarsened = dm->coarseMesh;
   PetscFunctionReturn(0);
