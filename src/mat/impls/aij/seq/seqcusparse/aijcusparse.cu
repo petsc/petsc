@@ -59,8 +59,9 @@ PetscErrorCode MatCUSPARSESetHandle(Mat A,const cusparseHandle_t handle)
   Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
 
   PetscFunctionBegin;
-  if (cusparsestruct->handle)
+  if (cusparsestruct->handle) {
     stat = cusparseDestroy(cusparsestruct->handle);CHKERRCUDA(stat);
+  }
   cusparsestruct->handle = handle;
   stat = cusparseSetPointerMode(cusparsestruct->handle, CUSPARSE_POINTER_MODE_DEVICE);CHKERRCUDA(stat);
   PetscFunctionReturn(0);
@@ -999,15 +1000,17 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
 #define __FUNCT__ "MatSolveTranspose_SeqAIJCUSPARSE"
 static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 {
-  PetscInt                          n = xx->map->n;
-  PetscScalar                       *xarray, *barray;
-  thrust::device_ptr<PetscScalar>   xGPU,bGPU;
-  cusparseStatus_t                  stat;
-  Mat_SeqAIJCUSPARSETriFactors      *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactorT = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->loTriFactorPtrTranspose;
-  Mat_SeqAIJCUSPARSETriFactorStruct *upTriFactorT = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->upTriFactorPtrTranspose;
-  THRUSTARRAY                       *tempGPU = (THRUSTARRAY*)cusparseTriFactors->workVector;
-  PetscErrorCode                    ierr;
+  PetscInt                              n = xx->map->n;
+  const PetscScalar                     *barray;
+  PetscScalar                           *xarray;
+  thrust::device_ptr<const PetscScalar> bGPU;
+  thrust::device_ptr<PetscScalar>       xGPU;
+  cusparseStatus_t                      stat;
+  Mat_SeqAIJCUSPARSETriFactors          *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
+  Mat_SeqAIJCUSPARSETriFactorStruct     *loTriFactorT = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->loTriFactorPtrTranspose;
+  Mat_SeqAIJCUSPARSETriFactorStruct     *upTriFactorT = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->upTriFactorPtrTranspose;
+  THRUSTARRAY                           *tempGPU = (THRUSTARRAY*)cusparseTriFactors->workVector;
+  PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   /* Analyze the matrix and create the transpose ... on the fly */
@@ -1067,7 +1070,8 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering"
 static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  PetscScalar                       *xarray, *barray;
+  const PetscScalar                 *barray;
+  PetscScalar                       *xarray;
   cusparseStatus_t                  stat;
   Mat_SeqAIJCUSPARSETriFactors      *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
   Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactorT = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->loTriFactorPtrTranspose;
@@ -1117,16 +1121,18 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec
 #define __FUNCT__ "MatSolve_SeqAIJCUSPARSE"
 static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 {
-  PetscScalar                       *xarray, *barray;
-  thrust::device_ptr<PetscScalar>   xGPU,bGPU;
-  cusparseStatus_t                  stat;
-  Mat_SeqAIJCUSPARSETriFactors      *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactor = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->loTriFactorPtr;
-  Mat_SeqAIJCUSPARSETriFactorStruct *upTriFactor = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->upTriFactorPtr;
-  THRUSTARRAY                       *tempGPU = (THRUSTARRAY*)cusparseTriFactors->workVector;
-  PetscErrorCode                    ierr;
-  VecType                           t;
-  PetscBool                         flg;
+  const PetscScalar                     *barray;
+  PetscScalar                           *xarray;
+  thrust::device_ptr<const PetscScalar> bGPU;
+  thrust::device_ptr<PetscScalar>       xGPU;
+  cusparseStatus_t                      stat;
+  Mat_SeqAIJCUSPARSETriFactors          *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
+  Mat_SeqAIJCUSPARSETriFactorStruct     *loTriFactor = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->loTriFactorPtr;
+  Mat_SeqAIJCUSPARSETriFactorStruct     *upTriFactor = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->upTriFactorPtr;
+  THRUSTARRAY                           *tempGPU = (THRUSTARRAY*)cusparseTriFactors->workVector;
+  PetscErrorCode                        ierr;
+  VecType                               t;
+  PetscBool                             flg;
 
   PetscFunctionBegin;
   ierr = VecGetType(bb,&t);CHKERRQ(ierr);
@@ -1184,7 +1190,8 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqAIJCUSPARSE_NaturalOrdering"
 static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  PetscScalar                       *xarray, *barray;
+  const PetscScalar                 *barray;
+  PetscScalar                       *xarray;
   cusparseStatus_t                  stat;
   Mat_SeqAIJCUSPARSETriFactors      *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
   Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactor = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->loTriFactorPtr;
@@ -1399,7 +1406,8 @@ static PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct *matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
-  PetscScalar                  *xarray,*yarray;
+  const PetscScalar            *xarray;
+  PetscScalar                  *yarray;
   PetscErrorCode               ierr;
   cusparseStatus_t             stat;
 
@@ -1440,7 +1448,8 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct *matstructT = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->matTranspose;
-  PetscScalar                  *xarray,*yarray;
+  const PetscScalar            *xarray;
+  PetscScalar                  *yarray;
   PetscErrorCode               ierr;
   cusparseStatus_t             stat;
 
@@ -1489,7 +1498,8 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJCUSPARSE              *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct    *matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
   thrust::device_ptr<PetscScalar> zptr;
-  PetscScalar                     *xarray,*zarray;
+  const PetscScalar               *xarray;
+  PetscScalar                     *zarray;
   PetscErrorCode                  ierr;
   cusparseStatus_t                stat;
 
@@ -1549,7 +1559,8 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
   Mat_SeqAIJCUSPARSE              *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct    *matstructT = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->matTranspose;
   thrust::device_ptr<PetscScalar> zptr;
-  PetscScalar                     *xarray,*zarray;
+  const PetscScalar               *xarray;
+  PetscScalar                     *zarray;
   PetscErrorCode                  ierr;
   cusparseStatus_t                stat;
 

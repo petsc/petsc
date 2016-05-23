@@ -12,8 +12,8 @@ class Configure(config.package.Package):
     self.cxx              = 0
     self.complex          = 1
     self.cudaArch         = ''
-    self.CUDAVersion      = '4200' # Minimal cuda version is 4.2
-    self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/100%10)
+    self.CUDAVersion      = '4020' # Minimal cuda version is 4.2
+    self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/10%10)
     self.hastests         = 1
     self.hastestsdatafiles= 1
     return
@@ -121,8 +121,8 @@ class Configure(config.package.Package):
     else:
       raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-version')
     if self.defaultScalarType.lower() == 'complex':
-      CUDAVersionComplex    = '7000' # Minimal cuda version for complex is 7.0
-      CUDAVersionComplexStr = str(int(CUDAVersionComplex)/1000) + '.' + str(int(CUDAVersionComplex)/100%10)
+      CUDAVersionComplex    = '7050' # Minimal cuda version for complex is 7.5
+      CUDAVersionComplexStr = str(int(CUDAVersionComplex)/1000) + '.' + str(int(CUDAVersionComplex)/10%10)
       if 'known-cuda-version' in self.argDB:
         if self.argDB['known-cuda-version'] < CUDAVersionComplex:
           raise RuntimeError('CUDA version error '+self.argDB['known-cuda-version']+' < '+CUDAVersionComplex+': PETSC currently requires CUDA version '+CUDAVersionComplexStr+' or higher when compiling with CUDA')
