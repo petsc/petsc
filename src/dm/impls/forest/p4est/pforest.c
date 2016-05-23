@@ -4410,6 +4410,25 @@ static PetscErrorCode DMGetDimPoints_pforest(DM dm, PetscInt dim, PetscInt *cSta
   PetscFunctionReturn(0);
 }
 
+#define DMForestClearAdaptivityForest_pforest _append_pforest(DMForestClearAdaptivityForest)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMForestClearAdaptivityForest_pforest)
+static PetscErrorCode DMForestClearAdaptivityForest_pforest(DM dm)
+{
+  DM_Forest         *forest;
+  DM_Forest_pforest *pforest;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  forest  = (DM_Forest*) dm->data;
+  pforest = (DM_Forest_pforest *) forest->data;
+  ierr = PetscSFDestroy(&(pforest->pointAdaptToSelfSF));CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&(pforest->pointSelfToAdaptSF));CHKERRQ(ierr);
+  ierr = PetscFree(pforest->pointAdaptToSelfCids);CHKERRQ(ierr);
+  ierr = PetscFree(pforest->pointSelfToAdaptCids);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* Need to forward declare */
 #define DMInitialize_pforest _append_pforest(DMInitialize)
 static PetscErrorCode DMInitialize_pforest(DM dm);
@@ -4583,6 +4602,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   forest->transfervec               = DMForestTransferVec_pforest;
   forest->createcellchart           = DMForestCreateCellChart_pforest;
   forest->createcellsf              = DMForestCreateCellSF_pforest;
+  forest->clearadaptivityforest     = DMForestClearAdaptivityForest_pforest;
   pforest->topo                     = NULL;
   pforest->forest                   = NULL;
   pforest->ghost                    = NULL;

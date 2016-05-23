@@ -388,6 +388,9 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func) (
   by users directly: DMForestTemplate() constructs a new forest to be adapted from an old forest and calls this
   routine.
 
+  Note that this can be called after setup with adapt = NULL, which will clear all internal data related to the
+  adaptivity forest from dm.  This way, repeatedly adapting does not leave stale DM objects in memory.
+
   Logically collective on dm
 
   Input Parameter:
@@ -400,14 +403,23 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func) (
 @*/
 PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
 {
-  DM_Forest      *forest;
+  DM_Forest      *forest, *adaptForest, *oldAdaptForest;
+  DM             oldAdapt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  forest = (DM_Forest*) dm->data;
-  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  forest   = (DM_Forest*) dm->data;
+  ierr     = DMForestGetAdaptivityForest(dm,&oldAdapt);CHKERRQ(ierr);
+  if (adapt != NULL && dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  adaptForest    = (DM_Forest*) adapt ? adapt->data : NULL;
+  oldAdaptForest = (DM_Forest*) oldAdapt ? oldAdapt->data : NULL;
+  if (adaptForest != oldAdaptForest) {
+    ierr = PetscSFDestroy(&forest->preCoarseToFine);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&forest->coarseToPreFine);CHKERRQ(ierr);
+    if (forest->clearadaptivityforest) {ierr = (forest->clearadaptivityforest)(dm);CHKERRQ(ierr);}
+  }
   switch (forest->adaptPurpose) {
   case DM_FOREST_KEEP:
     ierr          = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);

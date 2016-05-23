@@ -10,6 +10,7 @@
 typedef struct {
   PetscInt                   refct;
   void                       *data;
+  PetscErrorCode             (*clearadaptivityforest)(DM);
   PetscErrorCode             (*transfervec)(DM,Vec,DM,Vec);
   PetscErrorCode             (*createcellchart)(DM,PetscInt*,PetscInt*);
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);

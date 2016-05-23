@@ -66,6 +66,7 @@ int main(int argc, char **argv)
   MPI_Comm       comm;
   DM             base, preForest, postForest;
   PetscInt       dim = 2;
+  PetscInt       preCount, postCount;
   PetscFE        fe;
   Vec            preVec, postVecTransfer, postVecExact;
   PetscErrorCode (*funcs[1]) (PetscInt,PetscReal,const PetscReal [],PetscInt,PetscScalar [], void *) = {MultiaffineFunction};
@@ -108,6 +109,8 @@ int main(int argc, char **argv)
   ierr = DMProjectFunction(preForest,0.,funcs,ctxs,INSERT_VALUES,preVec);CHKERRQ(ierr);
   ierr = VecViewFromOptions(preVec,NULL,"-vec_pre_view");CHKERRQ(ierr);
 
+  ierr = PetscObjectGetReference((PetscObject)preForest,&preCount);CHKERRQ(ierr);
+
   /* adapt */
   ierr = AddAdaptivityLabel(preForest,"adapt");CHKERRQ(ierr);
   ierr = DMForestTemplate(preForest,comm,&postForest);CHKERRQ(ierr);
@@ -136,6 +139,11 @@ int main(int argc, char **argv)
   } else {
     ierr = PetscPrintf(comm,"DMForestTransferVec() fails with error %g and tolerance %g\n",diff,tol);CHKERRQ(ierr);
   }
+
+  /* disconnect preForest from postForest */
+  ierr = DMForestSetAdaptivityForest(postForest,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectGetReference((PetscObject)preForest,&postCount);CHKERRQ(ierr);
+  if (postCount != preCount) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %d to %d\n",preCount,postCount);
 
   /* cleanup */
   ierr = VecDestroy(&postVecExact);CHKERRQ(ierr);
