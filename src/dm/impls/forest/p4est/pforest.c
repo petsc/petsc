@@ -4103,7 +4103,7 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
 #define DMForestTransferVec_pforest _append_pforest(DMForestTransferVec)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMForestTransferVec_pforest)
-static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut)
+static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscBool useBCs, PetscReal time)
 {
   DM                        adapt, plexIn, plexOut;
   DM_Forest                 *forestIn, *forestAdapt;
@@ -4139,7 +4139,7 @@ static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, 
   ierr = DMPforestGetPlex(dmIn,&plexIn);CHKERRQ(ierr);
   ierr = DMPforestGetPlex(dmOut,&plexOut);CHKERRQ(ierr);
 
-  ierr = DMPlexTransferVecTree(plexIn,vecIn,plexOut,vecOut,inSF,outSF,inCids,outCids);CHKERRQ(ierr);
+  ierr = DMPlexTransferVecTree(plexIn,vecIn,plexOut,vecOut,inSF,outSF,inCids,outCids,useBCs,time);CHKERRQ(ierr);
   ierr = PetscFree(inCids);CHKERRQ(ierr);
   ierr = PetscFree(outCids);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&inSF);CHKERRQ(ierr);
