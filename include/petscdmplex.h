@@ -45,6 +45,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char [], PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellList(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], PetscInt, const double[], DM*);
+PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], PetscInt, const double[], DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromDAG(DM, PetscInt, const PetscInt [], const PetscInt [], const PetscInt [], const PetscInt [], const PetscScalar []);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm, PetscInt, PetscBool, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexGetChart(DM, PetscInt *, PetscInt *);
