@@ -570,18 +570,21 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
 PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
 {
   FETIDPMat_ctx  mat_ctx;
+  PC_BDDC        *pcbddc;
   PC_IS          *pcis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(fetimat,(void**)&mat_ctx);CHKERRQ(ierr);
   pcis = (PC_IS*)mat_ctx->pc->data;
+  pcbddc = (PC_BDDC*)mat_ctx->pc->data;
   /* Application of B_delta^T */
   ierr = VecScatterBegin(mat_ctx->l2g_lambda,x,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(mat_ctx->l2g_lambda,x,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = MatMultTranspose(mat_ctx->B_delta,mat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
   /* Application of \widetilde{S}^-1 */
   ierr = VecSet(pcis->vec1_D,0.0);CHKERRQ(ierr);
+  ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
   /* Application of B_delta */
   ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);
