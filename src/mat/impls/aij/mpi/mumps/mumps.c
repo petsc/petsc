@@ -1882,7 +1882,7 @@ PetscErrorCode MatFactorGetSchurComplement_MUMPS(Mat F,Mat* S)
 #define __FUNCT__ "MatFactorFactorizeSchurComplement_MUMPS"
 PetscErrorCode MatFactorFactorizeSchurComplement_MUMPS(Mat F)
 {
-  Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
+  Mat_MUMPS      *mumps =(Mat_MUMPS*)F->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2000,7 +2000,7 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose_MUMPS(Mat F, Vec rhs, Vec 
 #define __FUNCT__ "MatFactorSetSchurComplementSolverType_MUMPS"
 PetscErrorCode MatFactorSetSchurComplementSolverType_MUMPS(Mat F, PetscInt sym)
 {
-  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->data;
 
   PetscFunctionBegin;
   if (mumps->schur_factored && mumps->sym != mumps->schur_sym) {

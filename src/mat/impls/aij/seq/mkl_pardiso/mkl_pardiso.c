@@ -460,7 +460,7 @@ PetscErrorCode MatFactorInvertSchurComplement_MKL_PARDISO(Mat F)
 #define __FUNCT__ "MatFactorFactorizeSchurComplement_MKL_PARDISO"
 PetscErrorCode MatFactorFactorizeSchurComplement_MKL_PARDISO(Mat F)
 {
-  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->spptr;
+  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -522,7 +522,7 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose_MKL_PARDISO(Mat F, Vec rhs
 #define __FUNCT__ "MatFactorSetSchurComplementSolverType_MKL_PARDISO"
 PetscErrorCode MatFactorSetSchurComplementSolverType_MKL_PARDISO(Mat F, PetscInt sym)
 {
-  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->spptr;
+  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
 
   PetscFunctionBegin;
   if (mpardiso->schur_factored && sym != mpardiso->schur_solver_type) {
