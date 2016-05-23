@@ -1184,7 +1184,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
 {
   DM_Plex           *mesh  = (DM_Plex *) dm->data;
   DM                 dmAux, dmGrad;
-  Vec                localX, A, cellGeometryFVM = NULL, faceGeometryFVM = NULL, grad = NULL, locGrad = NULL;
+  Vec                localX, A, cellGeometryFVM = NULL, faceGeometryFVM = NULL, locGrad = NULL;
   PetscDS            prob, probAux = NULL;
   PetscSection       section, sectionAux;
   PetscFV            fvm = NULL;
@@ -1197,7 +1197,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
   PetscInt          *uOff, *uOff_x, *aOff = NULL;
   PetscInt           dim, Nf, NfAux = 0, f, numCells, cStart, cEnd, cEndInterior, c;
   PetscInt           totDim, totDimAux;
-  PetscBool          useFEM = PETSC_FALSE, useFVM = PETSC_FALSE;
+  PetscBool          useFVM = PETSC_FALSE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -1233,7 +1233,6 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFE_CLASSID) {useFEM = PETSC_TRUE;}
     if (id == PETSCFV_CLASSID) {useFVM = PETSC_TRUE; fvm = (PetscFV) obj;}
   }
   if (useFVM) {

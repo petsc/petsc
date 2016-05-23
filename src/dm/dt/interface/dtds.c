@@ -2103,8 +2103,7 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
 @*/
 PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
 {
-  PetscInt       g;
-  PetscErrorCode ierr;
+  PetscInt g;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
