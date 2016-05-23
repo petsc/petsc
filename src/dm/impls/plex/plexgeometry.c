@@ -1883,3 +1883,48 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetDataFVM"
+PetscErrorCode DMPlexGetDataFVM(DM dm, PetscFV fv, Vec *cellgeom, Vec *facegeom, DM *gradDM)
+{
+  PetscObject    cellgeomobj, facegeomobj;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_cellgeom_fvm", &cellgeomobj);CHKERRQ(ierr);
+  if (!cellgeomobj) {
+    Vec cellgeomInt, facegeomInt;
+
+    ierr = DMPlexComputeGeometryFVM(dm, &cellgeomInt, &facegeomInt);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dm, "DMPlex_cellgeom_fvm",(PetscObject)cellgeomInt);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dm, "DMPlex_facegeom_fvm",(PetscObject)facegeomInt);CHKERRQ(ierr);
+    ierr = VecDestroy(&cellgeomInt);CHKERRQ(ierr);
+    ierr = VecDestroy(&facegeomInt);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_cellgeom_fvm", &cellgeomobj);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_facegeom_fvm", &facegeomobj);CHKERRQ(ierr);
+  if (cellgeom) *cellgeom = (Vec) cellgeomobj;
+  if (facegeom) *facegeom = (Vec) facegeomobj;
+  if (gradDM) {
+    PetscObject gradobj;
+    PetscBool   computeGradients;
+
+    ierr = PetscFVGetComputeGradients(fv,&computeGradients);CHKERRQ(ierr);
+    if (!computeGradients) {
+      *gradDM = NULL;
+      PetscFunctionReturn(0);
+    }
+    ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_dmgrad_fvm", &gradobj);CHKERRQ(ierr);
+    if (!gradobj) {
+      DM dmGradInt;
+
+      ierr = DMPlexComputeGradientFVM(dm,fv,(Vec) facegeomobj,(Vec) cellgeomobj,&dmGradInt);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dm, "DMPlex_dmgrad_fvm", (PetscObject)dmGradInt);CHKERRQ(ierr);
+      ierr = DMDestroy(&dmGradInt);CHKERRQ(ierr);
+      ierr = PetscObjectQuery((PetscObject) dm, "DMPlex_dmgrad_fvm", &gradobj);CHKERRQ(ierr);
+    }
+    *gradDM = (DM) gradobj;
+  }
+  PetscFunctionReturn(0);
+}

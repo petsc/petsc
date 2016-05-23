@@ -915,11 +915,9 @@ PetscErrorCode DMPlexSNESGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, Pet
   if (!obj) {
     Vec cellgeom, facegeom;
 
-    ierr = DMPlexComputeGeometryFVM(dm, &cellgeom, &facegeom);CHKERRQ(ierr);
+    ierr = DMPlexGetDataFVM(dm, NULL, &cellgeom, &facegeom, NULL);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) dmsnes, "DMPlexSNES_facegeom_fvm", (PetscObject) facegeom);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) dmsnes, "DMPlexSNES_cellgeom_fvm", (PetscObject) cellgeom);CHKERRQ(ierr);
-    ierr = VecDestroy(&facegeom);CHKERRQ(ierr);
-    ierr = VecDestroy(&cellgeom);CHKERRQ(ierr);
   }
   if (facegeom) {PetscValidPointer(facegeom, 2); ierr = PetscObjectQuery((PetscObject) dmsnes, "DMPlexSNES_facegeom_fvm", (PetscObject *) facegeom);CHKERRQ(ierr);}
   if (cellgeom) {PetscValidPointer(cellgeom, 3); ierr = PetscObjectQuery((PetscObject) dmsnes, "DMPlexSNES_cellgeom_fvm", (PetscObject *) cellgeom);CHKERRQ(ierr);}
@@ -962,10 +960,8 @@ PetscErrorCode DMPlexSNESGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
     DM  dmGrad;
     Vec faceGeometry, cellGeometry;
 
-    ierr = DMPlexSNESGetGeometryFVM(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
-    ierr = DMPlexComputeGradientFVM(dm, fv, faceGeometry, cellGeometry, &dmGrad);CHKERRQ(ierr);
+    ierr = DMPlexGetDataFVM(dm, fv, &cellGeometry, &faceGeometry, &dmGrad);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) dmsnes, "DMPlexSNES_dmgrad_fvm", (PetscObject) dmGrad);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
   }
   ierr = PetscObjectQuery((PetscObject) dmsnes, "DMPlexSNES_dmgrad_fvm", (PetscObject *) dmGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
