@@ -14,7 +14,7 @@ configure_options = [
   '--download-superlu=1',
   '--download-superlu-commit=origin/master',
   '--download-superlu_dist=1',
-  '--download-superlu_dist-commit=origin/master',
+#  '--download-superlu_dist-commit=origin/master',
   '--download-saws',
   '--download-saws-commit=origin/master',
   '--download-chombo=1',

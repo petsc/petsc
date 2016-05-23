@@ -116,7 +116,8 @@ PetscInt XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b)
   check_handle(xyt_handle);
 
   /* need to copy b into x? */
-  if (b) PCTFS_rvec_copy(x,b,xyt_handle->mvi->n);do_xyt_solve(xyt_handle,x);
+  if (b) PCTFS_rvec_copy(x,b,xyt_handle->mvi->n);
+  do_xyt_solve(xyt_handle,x);
 
   return(0);
 }

@@ -1,4 +1,4 @@
-DM Object:Simplicial Mesh 2 MPI processes
+DM Object: Simplicial Mesh 2 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
 orientation is missing
@@ -203,7 +203,7 @@ Proc 1 Comp 0:
 1 2
 2 0
 3 8
-DM Object:Simplicial Mesh 2 MPI processes
+DM Object: Simplicial Mesh 2 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
 orientation is missing

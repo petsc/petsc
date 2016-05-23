@@ -69,7 +69,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
     if (className) {
@@ -135,7 +135,7 @@ PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
 typedef PetscErrorCode (*FCN1)(void*,Vec); /* force argument to next function to not be extern C*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFunctioniBase_MFFD"
-PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
+static PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -147,7 +147,7 @@ PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
 typedef PetscErrorCode (*FCN2)(void*,PetscInt,Vec,PetscScalar*); /* force argument to next function to not be extern C*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFunctioni_MFFD"
-PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
+static PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -158,7 +158,7 @@ PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDResetHHistory_MFFD"
-PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
+static PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
 {
   MatMFFD ctx = (MatMFFD)J->data;
 
@@ -209,7 +209,7 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
 /* ----------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MFFD"
-PetscErrorCode MatDestroy_MFFD(Mat mat)
+static PetscErrorCode MatDestroy_MFFD(Mat mat)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)mat->data;
@@ -243,7 +243,7 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
    MatMFFDView_MFFD - Views matrix-free parameters.
 
 */
-PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
+static PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
@@ -315,7 +315,7 @@ PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
         u = current iterate
         h = difference interval
 */
-PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
+static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 {
   MatMFFD        ctx = (MatMFFD)mat->data;
   PetscScalar    h;
@@ -337,7 +337,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /*
       Compute differencing parameter
   */
-  if (!ctx->ops->compute) {
+  if (!((PetscObject)ctx)->type_name) {
     ierr = MatMFFDSetType(mat,MATMFFD_WP);CHKERRQ(ierr);
     ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
   }
@@ -408,7 +408,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
         u = current iterate
         h = difference interval
 */
-PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
+static PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 {
   MatMFFD        ctx = (MatMFFD)mat->data;
   PetscScalar    h,*aa,*ww,v;
@@ -456,7 +456,7 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScale_MFFD"
-PetscErrorCode MatDiagonalScale_MFFD(Mat mat,Vec ll,Vec rr)
+static PetscErrorCode MatDiagonalScale_MFFD(Mat mat,Vec ll,Vec rr)
 {
   MatMFFD        aij = (MatMFFD)mat->data;
   PetscErrorCode ierr;
@@ -479,7 +479,7 @@ PetscErrorCode MatDiagonalScale_MFFD(Mat mat,Vec ll,Vec rr)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDiagonalSet_MFFD"
-PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
+static PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
 {
   MatMFFD        aij = (MatMFFD)mat->data;
   PetscErrorCode ierr;
@@ -495,7 +495,7 @@ PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatShift_MFFD"
-PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
+static PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
 {
   MatMFFD shell = (MatMFFD)Y->data;
 
@@ -506,7 +506,7 @@ PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatScale_MFFD"
-PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
+static PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 {
   MatMFFD shell = (MatMFFD)Y->data;
 
@@ -546,7 +546,7 @@ typedef PetscErrorCode (*FCN3)(void*,Vec,Vec,PetscScalar*); /* force argument to
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetCheckh_MFFD"
-PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
+static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 {
   MatMFFD ctx = (MatMFFD)J->data;
 
@@ -593,7 +593,7 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MFFD"
-PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObject,Mat mat)
+static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObject,Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;
@@ -626,7 +626,7 @@ PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObject,Mat 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetPeriod_MFFD"
-PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
+static PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -638,7 +638,7 @@ PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFunction_MFFD"
-PetscErrorCode  MatMFFDSetFunction_MFFD(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
+static PetscErrorCode  MatMFFDSetFunction_MFFD(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -650,7 +650,7 @@ PetscErrorCode  MatMFFDSetFunction_MFFD(Mat mat,PetscErrorCode (*func)(void*,Vec
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFunctionError_MFFD"
-PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
+static PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 

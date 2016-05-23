@@ -5,7 +5,7 @@
  * References : [1] Bai, Zhaojun and  Hu, D. and Reichel, L. A Newton basis GMRES implementation. IMA J. Numer. Anal. 14 (1994), no. 4, 563-581.
  *
  */
-#include <agmresimpl.h>
+#include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPAGMRESLejafmaxarray"

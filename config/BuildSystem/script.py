@@ -207,7 +207,7 @@ class Script(logger.Logger):
               else:
                 outputClosed = 1
                 lst.remove(output)
-            if out.find('password:') >= 0 or err.find('password:') >= 0:
+            if msg and msg.find('password:') >= 0:
               loginError = 1
               break
           if outputClosed and errorClosed:

@@ -15,6 +15,8 @@
 #if !defined(__NASH)
 #define __NASH
 
+#include <petsc/private/kspimpl.h>
+
 typedef struct {
   PetscReal radius;
   PetscReal norm_d;

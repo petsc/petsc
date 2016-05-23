@@ -1,4 +1,4 @@
-DM Object:Mesh 1 MPI processes
+DM Object: Mesh 1 MPI processes
   type: plex
 Mesh 'Mesh':
 orientation is missing
@@ -146,7 +146,7 @@ Label 'marker':
 [0]: 29 (1)
 [0]: 30 (1)
 [0]: 32 (1)
-DM Object:Submesh 1 MPI processes
+DM Object: Submesh 1 MPI processes
   type: plex
 Mesh 'Submesh':
 orientation is missing
@@ -249,7 +249,7 @@ Label 'subpoint_map':
 [0]: 12 (0)
 [0]: 13 (0)
 [0]: 14 (0)
-DM Object:Submesh 1 MPI processes
+DM Object: Submesh 1 MPI processes
   type: plex
 Mesh 'Submesh':
 orientation is missing

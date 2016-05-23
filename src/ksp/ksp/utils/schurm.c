@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h>
 #include <petscksp.h>                 /*I "petscksp.h" I*/
 const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};

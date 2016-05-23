@@ -58,9 +58,9 @@ int main( int argc, char **argv )
   AppCtx             user;              /* user-defined work context */
 
   /* Initialize TAO,PETSc */
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
 
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size >1) SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
 
   /* Specify default dimension of the problem */
@@ -87,7 +87,7 @@ int main( int argc, char **argv )
      Create a vector to hold the variables.  Compute an initial solution.
      Set this vector, which will be used by TAO.
   */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);                      /* PETSc routine                */
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
   ierr = MSA_InitialPoint(&user,x);CHKERRQ(ierr);                /* Application specific routine */
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);   /* A TAO routine                */
 
@@ -95,7 +95,7 @@ int main( int argc, char **argv )
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
 
   /* Create a matrix data structure to store the Hessian.  This structure will be used by TAO */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,7,NULL,&(user.H));        /* PETSc routine */
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,7,NULL,&(user.H));CHKERRQ(ierr);
   ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
 

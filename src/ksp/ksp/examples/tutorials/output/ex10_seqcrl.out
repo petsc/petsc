@@ -27,7 +27,7 @@ PC Object: 1 MPI processes
     matrix ordering: natural
     factor fill ratio given 1., needed 1.
       Factored matrix follows:
-        Mat Object:         1 MPI processes
+        Mat Object: 1 MPI processes
           type: seqaij
           rows=36, cols=36
           package used to perform factorization: petsc
@@ -35,7 +35,7 @@ PC Object: 1 MPI processes
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
   linear system matrix = precond matrix:
-  Mat Object:   1 MPI processes
+  Mat Object: 1 MPI processes
     type: seqaijcrl
     rows=36, cols=36
     total: nonzeros=156, allocated nonzeros=156

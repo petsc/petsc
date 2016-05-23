@@ -19,7 +19,16 @@ configure_options = [
   '--with-cxx-dialect=C++11',
   '--download-spai=1',
   '--download-parms=1',
-  '--download-chaco=1'
+  '--download-chaco=1',
+  '--download-pastix',
+  '--download-ctetgen',
+  '--download-netcdf',
+  '--download-hdf5',
+  '--download-exodusii',
+  '--download-party',
+  '--download-yaml',
+  '--download-ml',
+  '--download-sundials',
   ]
 
 if __name__ == '__main__':

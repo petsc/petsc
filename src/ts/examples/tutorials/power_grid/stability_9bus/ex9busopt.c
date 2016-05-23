@@ -432,7 +432,7 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
     fnet[2*gbus[i]]   -= IGi;
     fnet[2*gbus[i]+1] -= IGr;
 
-    Vm = PetscSqrtScalar(Vd*Vd + Vq*Vq); Vm2 = Vm*Vm;
+    Vm = PetscSqrtScalar(Vd*Vd + Vq*Vq);
 
     SE = k1[i]*PetscExpScalar(k2[i]*Efd);
 
@@ -1155,8 +1155,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /* ------------------------------------------------------------------ */

@@ -135,9 +135,7 @@ PETSC_EXTERN void MPIAPI PetscMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN void MPIAPI PetscMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 #endif
 
-extern MPI_Op PetscMaxSum_Op;
-
-PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm,PetscMPIInt,void*,void*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm,PetscMPIInt,void*,void*);
@@ -228,10 +226,10 @@ extern PetscFPT PetscFPTData;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-PetscSpinlock PetscViewerASCIISpinLockOpen;
-PetscSpinlock PetscViewerASCIISpinLockStdout;
-PetscSpinlock PetscViewerASCIISpinLockStderr;
-PetscSpinlock PetscCommSpinLock;
+extern PetscSpinlock PetscViewerASCIISpinLockOpen;
+extern PetscSpinlock PetscViewerASCIISpinLockStdout;
+extern PetscSpinlock PetscViewerASCIISpinLockStderr;
+extern PetscSpinlock PetscCommSpinLock;
 #endif
 
 /* -----------------------------------------------------------------------------------------------*/
@@ -402,7 +400,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
        Create the PETSc MPI reduction operator that sums of the first
      half of the entries and maxes the second half.
   */
-  *ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);
+  *ierr = MPI_Op_create(MPIU_MaxSum_Local,1,&MPIU_MAXSUM_OP);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
 
   *ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);
@@ -495,7 +493,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
   *ierr = PetscFinalize();
 }
 
-void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();

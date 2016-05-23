@@ -426,12 +426,12 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_
 
 /*
  *
- *  GAMGTableCreate
+ *  PCGAMGHashTableCreate
  */
 
 #undef __FUNCT__
-#define __FUNCT__ "GAMGTableCreate"
-PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)
+#define __FUNCT__ "PCGAMGHashTableCreate"
+PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
   PetscInt       kk;
@@ -445,8 +445,8 @@ PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "GAMGTableDestroy"
-PetscErrorCode GAMGTableDestroy(GAMGHashTable *a_tab)
+#define __FUNCT__ "PCGAMGHashTableDestroy"
+PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
 
@@ -457,8 +457,8 @@ PetscErrorCode GAMGTableDestroy(GAMGHashTable *a_tab)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "GAMGTableAdd"
-PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data)
+#define __FUNCT__ "PCGAMGHashTableAdd"
+PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data)
 {
   PetscInt kk,idx;
 
@@ -492,12 +492,12 @@ PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_dat
     for (kk=0;kk<a_tab->size;kk++) a_tab->table[kk] = -1;
     for (kk=0;kk<oldsize;kk++) {
       if (oldtable[kk] != -1) {
-        ierr = GAMGTableAdd(a_tab, oldtable[kk], olddata[kk]);CHKERRQ(ierr);
+        ierr = PCGAMGHashTableAdd(a_tab, oldtable[kk], olddata[kk]);CHKERRQ(ierr);
        }
     }
     ierr = PetscFree(oldtable);CHKERRQ(ierr);
     ierr = PetscFree(olddata);CHKERRQ(ierr);
-    ierr = GAMGTableAdd(a_tab, a_key, a_data);CHKERRQ(ierr);
+    ierr = PCGAMGHashTableAdd(a_tab, a_key, a_data);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1500,7 +1500,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 #define __FUNCT__ "PCBDDCSetUpSolvers"
 PetscErrorCode PCBDDCSetUpSolvers(PC pc)
 {
-  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   PetscScalar    *coarse_submat_vals;
   PetscErrorCode ierr;
 
@@ -1512,11 +1511,6 @@ PetscErrorCode PCBDDCSetUpSolvers(PC pc)
   /* Setup local neumann solver ksp_R */
   /* PCBDDCSetUpLocalScatters should be called first! */
   ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
-
-  /* Change global null space passed in by the user if change of basis has been requested */
-  if (pcbddc->NullSpace && pcbddc->ChangeOfBasisMatrix) {
-    ierr = PCBDDCNullSpaceAdaptGlobal(pc);CHKERRQ(ierr);
-  }
 
   /*
      Setup local correction and local part of coarse basis.
@@ -1543,7 +1537,6 @@ PetscErrorCode PCBDDCResetCustomization(PC pc)
   ierr = PCBDDCGraphResetCSR(pcbddc->mat_graph);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->user_primal_vertices);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&pcbddc->NullSpace);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
@@ -2972,7 +2965,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   PetscScalar    m_one = -1.0;
   PetscReal      value;
   PetscInt       n_D,n_R;
-  PetscBool      use_exact,use_exact_reduced,issbaij;
+  PetscBool      check_corr[2],issbaij;
   PetscErrorCode ierr;
   /* prefixes stuff */
   char           dir_prefix[256],neu_prefix[256],str_level[16];
@@ -3167,31 +3160,39 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     ierr = KSPSetUp(pcbddc->ksp_R);CHKERRQ(ierr);
   }
 
-  /* check Dirichlet and Neumann solvers and adapt them if a nullspace correction is needed */
-  if (pcbddc->NullSpace || pcbddc->dbg_flag) {
-    if (pcbddc->dbg_flag) {
-      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-    }
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+  }
+
+  /* adapt Dirichlet and Neumann solvers if a nullspace correction has been requested */
+  check_corr[0] = check_corr[1] = PETSC_FALSE;
+  if (pcbddc->NullSpace_corr[0]) {
+    ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
+  }
+  if (dirichlet && pcbddc->NullSpace_corr[0] && !pcbddc->switch_static) {
+    check_corr[0] = PETSC_TRUE;
+    ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_TRUE,pcbddc->NullSpace_corr[1]);CHKERRQ(ierr);
+  }
+  if (neumann && pcbddc->NullSpace_corr[2]) {
+    check_corr[1] = PETSC_TRUE;
+    ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_FALSE,pcbddc->NullSpace_corr[3]);CHKERRQ(ierr);
+  }
+
+  /* check Dirichlet and Neumann solvers */
+  if (pcbddc->dbg_flag) {
     if (dirichlet) { /* Dirichlet */
       ierr = VecSetRandom(pcis->vec1_D,NULL);CHKERRQ(ierr);
       ierr = MatMult(pcis->A_II,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec2_D,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecAXPY(pcis->vec1_D,m_one,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecNorm(pcis->vec1_D,NORM_INFINITY,&value);CHKERRQ(ierr);
-      /* need to be adapted? */
-      use_exact = (PetscAbsReal(value) > 1.e-4 ? PETSC_FALSE : PETSC_TRUE);
-      ierr = MPIU_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-      ierr = PCBDDCSetUseExactDirichlet(pc,use_exact_reduced);CHKERRQ(ierr);
-      /* print info */
-      if (pcbddc->dbg_flag) {
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_D))->prefix,value);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_D))->prefix,value);CHKERRQ(ierr);
+      if (check_corr[0]) {
+        ierr = PCBDDCNullSpaceCheckCorrection(pc,PETSC_TRUE);CHKERRQ(ierr);
       }
-      if (pcbddc->NullSpace && !use_exact_reduced && !pcbddc->switch_static) {
-        ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_TRUE,pcis->is_I_local);CHKERRQ(ierr);
-      }
+      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
     if (neumann) { /* Neumann */
       ierr = VecSetRandom(pcbddc->vec1_R,NULL);CHKERRQ(ierr);
@@ -3199,17 +3200,11 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec2_R,pcbddc->vec2_R);CHKERRQ(ierr);
       ierr = VecAXPY(pcbddc->vec1_R,m_one,pcbddc->vec2_R);CHKERRQ(ierr);
       ierr = VecNorm(pcbddc->vec1_R,NORM_INFINITY,&value);CHKERRQ(ierr);
-      /* need to be adapted? */
-      use_exact = (PetscAbsReal(value) > 1.e-4 ? PETSC_FALSE : PETSC_TRUE);
-      ierr = MPIU_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-      /* print info */
-      if (pcbddc->dbg_flag) {
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann solve (%s) = % 1.14e\n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_R))->prefix,value);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann solve (%s) = % 1.14e\n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_R))->prefix,value);CHKERRQ(ierr);
+      if (check_corr[1]) {
+        ierr = PCBDDCNullSpaceCheckCorrection(pc,PETSC_FALSE);CHKERRQ(ierr);
       }
-      if (pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
-        ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_FALSE,pcbddc->is_R_local);CHKERRQ(ierr);
-      }
+      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
   }
   /* free Neumann problem's matrix */
@@ -3610,26 +3605,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
       n_ISForFaces = 0;
     }
-
-#if defined(PETSC_USE_DEBUG)
-    /* HACK: when solving singular problems not using vertices, a change of basis is mandatory.
-       Also use_change_of_basis should be consistent among processors */
-    if (pcbddc->NullSpace) {
-      PetscBool tbool[2],gbool[2];
-
-      if (!ISForVertices && !pcbddc->user_ChangeOfBasisMatrix) {
-        pcbddc->use_change_of_basis = PETSC_TRUE;
-        if (!ISForEdges) {
-          pcbddc->use_change_on_faces = PETSC_TRUE;
-        }
-      }
-      tbool[0] = pcbddc->use_change_of_basis;
-      tbool[1] = pcbddc->use_change_on_faces;
-      ierr = MPIU_Allreduce(tbool,gbool,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-      pcbddc->use_change_of_basis = gbool[0];
-      pcbddc->use_change_on_faces = gbool[1];
-    }
-#endif
 
     /* check if near null space is attached to global mat */
     ierr = MatGetNearNullSpace(pc->pmat,&nearnullsp);CHKERRQ(ierr);
@@ -5660,7 +5635,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PC_BDDC                *pcbddc = (PC_BDDC*)pc->data;
   PC_IS                  *pcis = (PC_IS*)pc->data;
   Mat                    coarse_mat,coarse_mat_is,coarse_submat_dense;
-  MatNullSpace           CoarseNullSpace=NULL;
+  MatNullSpace           CoarseNullSpace = NULL;
   ISLocalToGlobalMapping coarse_islg;
   IS                     coarse_is,*isarray;
   PetscInt               i,im_active=-1,active_procs=-1;
@@ -6037,13 +6012,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 #endif
 
-  /* Compute coarse null space (special handling by BDDC only) */
-#if 0
-  if (pcbddc->NullSpace) {
-    ierr = PCBDDCNullSpaceAssembleCoarse(pc,coarse_mat,&CoarseNullSpace);CHKERRQ(ierr);
-  }
-#endif
-  /* hack */
   if (pcbddc->coarse_ksp) {
     Vec crhs,csol;
 
@@ -6092,15 +6060,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (CoarseNullSpace) {
       PetscBool isnull;
       ierr = MatNullSpaceTest(CoarseNullSpace,coarse_mat,&isnull);CHKERRQ(ierr);
-      if (0) {
-        if (isbddc && !pcbddc->benign_saddle_point) {
-          ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
-        } else {
-          ierr = MatSetNullSpace(coarse_mat,CoarseNullSpace);CHKERRQ(ierr);
-        }
-      } else {
-        ierr = MatNullSpaceDestroy(&CoarseNullSpace);CHKERRQ(ierr);
+      if (isnull) {
+        ierr = MatSetNullSpace(coarse_mat,CoarseNullSpace);CHKERRQ(ierr);
       }
+      /* TODO: add local nullspaces (if any) */
     }
     /* setup coarse ksp */
     ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
@@ -6147,15 +6110,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       /* create random vec */
       ierr = MatCreateVecs(coarse_mat,&coarse_vec,&check_vec);CHKERRQ(ierr);
       ierr = VecSetRandom(check_vec,NULL);CHKERRQ(ierr);
-      if (CoarseNullSpace) {
-        ierr = MatNullSpaceRemove(CoarseNullSpace,check_vec);CHKERRQ(ierr);
-      }
       ierr = MatMult(coarse_mat,check_vec,coarse_vec);CHKERRQ(ierr);
       /* solve coarse problem */
       ierr = KSPSolve(check_ksp,coarse_vec,coarse_vec);CHKERRQ(ierr);
-      if (CoarseNullSpace) {
-        ierr = MatNullSpaceRemove(CoarseNullSpace,coarse_vec);CHKERRQ(ierr);
-      }
       /* set eigenvalue estimation if preonly has not been requested */
       if (compute_eigs) {
         ierr = PetscMalloc1(pcbddc->coarse_size+1,&eigs_r);CHKERRQ(ierr);
@@ -6209,6 +6166,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       }
     }
   }
+  ierr = MatNullSpaceDestroy(&CoarseNullSpace);CHKERRQ(ierr);
   /* print additional info */
   if (pcbddc->dbg_flag) {
     /* waits until all processes reaches this point */
@@ -6218,7 +6176,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 
   /* free memory */
-  ierr = MatNullSpaceDestroy(&CoarseNullSpace);CHKERRQ(ierr);
   ierr = MatDestroy(&coarse_mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

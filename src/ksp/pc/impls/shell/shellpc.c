@@ -5,7 +5,6 @@
 */
 
 #include <petsc/private/pcimpl.h>        /*I "petscpc.h" I*/
-#include <petsc/private/vecimpl.h>
 
 typedef struct {
   void *ctx;                     /* user provided contexts for preconditioner */
@@ -177,6 +176,15 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCPreSolveChangeRHS_Shell"
+static PetscErrorCode PCPreSolveChangeRHS_Shell(PC pc,PetscBool* change)
+{
+  PetscFunctionBegin;
+  *change = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCPreSolve_Shell"
 static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 {
@@ -252,6 +260,20 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   PetscFunctionBegin;
   ierr = PetscFree(shell->name);CHKERRQ(ierr);
   if (shell->destroy) PetscStackCall("PCSHELL user function destroy()",ierr = (*shell->destroy)(pc);CHKERRQ(ierr));
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetDestroy_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetSetUp_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApply_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplySymmetricLeft_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplySymmetricRight_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyBA_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetPreSolve_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetPostSolve_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetView_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyTranspose_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetName_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellGetName_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyRichardson_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -356,12 +378,18 @@ static PetscErrorCode  PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(P
 #define __FUNCT__ "PCShellSetPreSolve_Shell"
 static PetscErrorCode  PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,Vec))
 {
-  PC_Shell *shell = (PC_Shell*)pc->data;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   shell->presolve = presolve;
-  if (presolve) pc->ops->presolve = PCPreSolve_Shell;
-  else          pc->ops->presolve = 0;
+  if (presolve) {
+    pc->ops->presolve = PCPreSolve_Shell;
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",PCPreSolveChangeRHS_Shell);CHKERRQ(ierr);
+  } else {
+    pc->ops->presolve = 0;
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

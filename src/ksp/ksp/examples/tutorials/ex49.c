@@ -240,7 +240,7 @@ static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,Pets
     if (sj != 0) *sy = sj+1;
   }
 
-  if (sk) {
+  if (sz) {
     *sz = sk;
     if (sk != 0) *sz = sk+1;
   }

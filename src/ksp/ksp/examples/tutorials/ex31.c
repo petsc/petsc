@@ -86,12 +86,12 @@ int main(int argc,char **argv)
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp, da);CHKERRQ(ierr);
 
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");CHKERRQ(ierr);
   user.phi = 0.5;
   ierr     = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, NULL);CHKERRQ(ierr);
   user.dt  = 0.1;
   ierr     = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsEnd();
+  ierr     = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = CreateStructures(da, &user);CHKERRQ(ierr);
   ierr = ComputePredictor(da, &user);CHKERRQ(ierr);

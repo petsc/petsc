@@ -378,9 +378,9 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
-  ierr = PetscLogEventBegin(Mat_Coloring_Apply,mc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
   ierr = (*mc->ops->apply)(mc,coloring);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mat_Coloring_Apply,mc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
   /* valid */
   if (mc->valid) {
     ierr = MatColoringTestValid(mc,*coloring);CHKERRQ(ierr);

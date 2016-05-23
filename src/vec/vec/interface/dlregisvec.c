@@ -67,7 +67,7 @@ PetscErrorCode  ISInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
@@ -80,11 +80,55 @@ PetscErrorCode  ISInitializePackage(void)
 }
 
 extern MPI_Op PetscSplitReduction_Op;
-extern MPI_Op VecMax_Local_Op;
-extern MPI_Op VecMin_Local_Op;
 
-PETSC_EXTERN void MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-PETSC_EXTERN void MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+/*
+       These two functions are the MPI reduction operation used for max and min with index
+   A call to MPI_Op_create() converts the function Vec[Max,Min]_Local() to the MPI operator Vec[Max,Min]_Local_Op.
+
+*/
+MPI_Op MPIU_MAXINDEX_OP = 0;
+MPI_Op MPIU_MININDEX_OP = 0;
+
+#undef __FUNCT__
+#define __FUNCT__ "MPIU_MaxIndex_Local"
+static void MPIAPI MPIU_MaxIndex_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+{
+  PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_REAL) {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
+    MPI_Abort(MPI_COMM_SELF,1);
+  }
+  if (xin[0] > xout[0]) {
+    xout[0] = xin[0];
+    xout[1] = xin[1];
+  } else if (xin[0] == xout[0]) {
+    xout[1] = PetscMin(xin[1],xout[1]);
+  }
+  PetscFunctionReturnVoid(); /* cannot return a value */
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPIU_MinIndex_Local"
+static void MPIAPI MPIU_MinIndex_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+{
+  PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_REAL) {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
+    MPI_Abort(MPI_COMM_SELF,1);
+  }
+  if (xin[0] < xout[0]) {
+    xout[0] = xin[0];
+    xout[1] = xin[1];
+  } else if (xin[0] == xout[0]) {
+    xout[1] = PetscMin(xin[1],xout[1]);
+  }
+  PetscFunctionReturnVoid();
+}
+
 PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
 const char *const NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
@@ -190,7 +234,7 @@ PetscErrorCode  VecInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
@@ -213,8 +257,8 @@ PetscErrorCode  VecInitializePackage(void)
     Create the special MPI reduction operation that may be used by VecNorm/DotBegin()
   */
   ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_create(VecMax_Local,2,&VecMax_Local_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_create(VecMin_Local,2,&VecMin_Local_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_create(MPIU_MaxIndex_Local,2,&MPIU_MAXINDEX_OP);CHKERRQ(ierr);
+  ierr = MPI_Op_create(MPIU_MinIndex_Local,2,&MPIU_MININDEX_OP);CHKERRQ(ierr);
 
   /* Register the different norm types for cached norms */
   for (i=0; i<4; i++) {
@@ -244,8 +288,8 @@ PetscErrorCode  VecFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&VecList);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&VecMin_Local_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MAXINDEX_OP);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MININDEX_OP);CHKERRQ(ierr);
   VecPackageInitialized = PETSC_FALSE;
   VecRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);

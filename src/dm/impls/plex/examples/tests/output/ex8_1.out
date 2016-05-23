@@ -1,4 +1,4 @@
-DM Object:triangle 1 MPI processes
+DM Object: triangle 1 MPI processes
   type: plex
 Mesh 'triangle':
 orientation is missing
@@ -29,7 +29,7 @@ Process 0:
   (   1) dim  2 offset   0 -1. -1.
   (   2) dim  2 offset   2 1. -1.
   (   3) dim  2 offset   4 -1. 1.
-DM Object:triangle 1 MPI processes
+DM Object: triangle 1 MPI processes
   type: plex
 Mesh 'triangle':
 orientation is missing
@@ -60,7 +60,7 @@ Process 0:
   (   1) dim  3 offset   0 -1. -1. 0.
   (   2) dim  3 offset   3 1. -1. 0.
   (   3) dim  3 offset   6 -1. 1. 0.
-DM Object:triangle 1 MPI processes
+DM Object: triangle 1 MPI processes
   type: plex
 Mesh 'triangle':
 orientation is missing
@@ -91,7 +91,7 @@ Process 0:
   (   1) dim  3 offset   0 0. -1. -1.
   (   2) dim  3 offset   3 0. 1. -1.
   (   3) dim  3 offset   6 0. -1. 1.
-DM Object:quadrilateral 1 MPI processes
+DM Object: quadrilateral 1 MPI processes
   type: plex
 Mesh 'quadrilateral':
 orientation is missing
@@ -129,7 +129,7 @@ Process 0:
   (   2) dim  2 offset   2 1. -1.
   (   3) dim  2 offset   4 1. 1.
   (   4) dim  2 offset   6 -1. 1.
-DM Object:quadrilateral 1 MPI processes
+DM Object: quadrilateral 1 MPI processes
   type: plex
 Mesh 'quadrilateral':
 orientation is missing
@@ -167,7 +167,7 @@ Process 0:
   (   2) dim  3 offset   3 1. -1. 0.
   (   3) dim  3 offset   6 1. 1. 0.
   (   4) dim  3 offset   9 -1. 1. 0.
-DM Object:tetrahedron 1 MPI processes
+DM Object: tetrahedron 1 MPI processes
   type: plex
 Mesh 'tetrahedron':
 orientation is missing
@@ -237,7 +237,7 @@ Process 0:
   (   2) dim  3 offset   3 -1. 1. -1.
   (   3) dim  3 offset   6 1. -1. -1.
   (   4) dim  3 offset   9 -1. -1. 1.
-DM Object:hexahedron 1 MPI processes
+DM Object: hexahedron 1 MPI processes
   type: plex
 Mesh 'hexahedron':
 orientation is missing

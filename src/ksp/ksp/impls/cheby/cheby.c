@@ -1,6 +1,5 @@
 
-#include <petsc/private/kspimpl.h>                    /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h>
+#include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h>    /*I "petscksp.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPReset_Chebyshev"
@@ -411,7 +410,17 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
         }
         ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
       } else {
-        B = ksp->vec_rhs;
+        PC        pc;
+        PetscBool change;
+
+        ierr = KSPGetPC(cheb->kspest,&pc);CHKERRQ(ierr);
+        ierr = PCPreSolveChangeRHS(pc,&change);CHKERRQ(ierr);
+        if (change) {
+          B = ksp->work[1];
+          ierr = VecCopy(ksp->vec_rhs,B);CHKERRQ(ierr);
+        } else {
+          B = ksp->vec_rhs;
+        }
       }
       ierr = KSPSolve(cheb->kspest,B,ksp->work[0]);CHKERRQ(ierr);
 

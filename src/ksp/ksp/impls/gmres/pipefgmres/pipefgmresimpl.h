@@ -1,7 +1,6 @@
 #if !defined(PIPEFGMRES_H_)
 #define PIPEFGMRES_H_
 
-#include <petsc/private/kspimpl.h>
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 

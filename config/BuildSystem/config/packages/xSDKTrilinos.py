@@ -68,6 +68,9 @@ class Configure(config.package.CMakePackage):
     # These are packages that PETSc may be using that Trilinos is not be using 
     plibs = self.exodusii.dlib+self.ssl.lib+self.x.lib
 
+    if not hasattr(self.compilers, 'FC'):
+      args.append('-DxSDKTrilinos_ENABLE_Fortran=OFF')
+
     if self.framework.argDB['prefix']:
        idir = os.path.join(self.installdir.dir,'lib')
     else:
@@ -107,8 +110,10 @@ class Configure(config.package.CMakePackage):
     else:
       self.logClear()
       self.logPrintDivider( debugSection = 'screen')
-      self.logPrint('Since this is a batch system xSDKTrilinos cannot run tests directly', debugSection = 'screen')
-      self.logPrint('Submit the following program(s) to your batch system with four MPI processes', debugSection = 'screen')
+      self.logPrint('Since this is a batch system xSDKTrilinos cannot run tests directly. To run a short test suite.', debugSection = 'screen')
+      self.logPrint('   Obtain an interactive session with your batch system', debugSection = 'screen')
+      self.logPrint('   cd to installxSDK/xsdk/petsc/arch-linux2-c-debug/externalpackages/git.xsdktrilinos/build', debugSection = 'screen')
+      self.logPrint('   ctest', debugSection = 'screen')
       linewidth = self.linewidth
       self.linewidth = -1
       if self.hypre.found:

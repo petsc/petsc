@@ -23,18 +23,18 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
   PC_Kaczmarz       *jac = (PC_Kaczmarz*)pc->data;
   PetscInt          xs,xe,ys,ye,ncols,i,j;
   const PetscInt    *cols;
-  const PetscScalar *vals;
+  const PetscScalar *vals,*xarray;
   PetscErrorCode    ierr;
   PetscScalar       r;
   PetscReal         anrm;
-  PetscScalar       *xarray,*yarray;
+  PetscScalar       *yarray;
   PetscReal         lambda=jac->lambda;
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(pc->pmat,&xs,&xe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(pc->pmat,&ys,&ye);CHKERRQ(ierr);
   ierr = VecSet(y,0.);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
   for (i=xs;i<xe;i++) {
     /* get the maximum row width and row norms */
@@ -78,7 +78,7 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
     }
   }
   ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -108,7 +108,7 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Kaczmarz: lambda = %G\n",jac->lambda);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Kaczmarz: lambda = %g\n",(double)jac->lambda);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

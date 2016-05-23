@@ -1,6 +1,5 @@
 
-#include <petsc/private/kspimpl.h>             /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/impls/cg/gltr/gltrimpl.h>
+#include <../src/ksp/ksp/impls/cg/gltr/gltrimpl.h>  /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
 
 #define GLTR_PRECONDITIONED_DIRECTION   0
@@ -141,7 +140,7 @@ PetscErrorCode  KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_GLTR"
-PetscErrorCode KSPSolve_GLTR(KSP ksp)
+static PetscErrorCode KSPSolve_GLTR(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "GLTR is not available for complex systems");
@@ -1308,7 +1307,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_GLTR"
-PetscErrorCode KSPSetUp_GLTR(KSP ksp)
+static PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 {
   KSP_GLTR       *cg = (KSP_GLTR*)ksp->data;
   PetscInt       max_its;
@@ -1335,7 +1334,7 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_GLTR"
-PetscErrorCode KSPDestroy_GLTR(KSP ksp)
+static PetscErrorCode KSPDestroy_GLTR(KSP ksp)
 {
   KSP_GLTR       *cg = (KSP_GLTR*)ksp->data;
   PetscErrorCode ierr;
@@ -1424,7 +1423,7 @@ static PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GLTR"
-PetscErrorCode KSPSetFromOptions_GLTR(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_GLTR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GLTR       *cg = (KSP_GLTR*)ksp->data;

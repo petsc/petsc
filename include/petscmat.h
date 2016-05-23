@@ -60,12 +60,6 @@ typedef const char* MatType;
 #define MATSBAIJ           "sbaij"
 #define MATSEQSBAIJ        "seqsbaij"
 #define MATMPISBAIJ        "mpisbaij"
-#define MATSEQBSTRM        "seqbstrm"
-#define MATMPIBSTRM        "mpibstrm"
-#define MATBSTRM           "bstrm"
-#define MATSEQSBSTRM       "seqsbstrm"
-#define MATMPISBSTRM       "mpisbstrm"
-#define MATSBSTRM          "sbstrm"
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
@@ -101,8 +95,8 @@ J*/
 #define MATSOLVERSUPERLU_DIST "superlu_dist"
 #define MATSOLVERUMFPACK      "umfpack"
 #define MATSOLVERCHOLMOD      "cholmod"
-#define MATSOLVERCLIQUE       "clique"
 #define MATSOLVERKLU          "klu"
+#define MATSOLVERCLIQUE       "clique"
 #define MATSOLVERELEMENTAL    "elemental"
 #define MATSOLVERESSL         "essl"
 #define MATSOLVERLUSOL        "lusol"
@@ -114,8 +108,6 @@ J*/
 #define MATSOLVERPETSC        "petsc"
 #define MATSOLVERBAS          "bas"
 #define MATSOLVERCUSPARSE     "cusparse"
-#define MATSOLVERBSTRM        "bstrm"
-#define MATSOLVERSBSTRM       "sbstrm"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -227,11 +219,6 @@ PETSC_EXTERN PetscErrorCode MatCreateLRC(Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,ISLocalToGlobalMapping,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-
-PETSC_EXTERN PetscErrorCode MatCreateSeqBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateSeqSBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPISBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 
 PETSC_EXTERN PetscErrorCode MatCreateScatter(MPI_Comm,VecScatter,Mat*);
 PETSC_EXTERN PetscErrorCode MatScatterSetVecScatter(Mat,VecScatter);
@@ -997,9 +984,13 @@ PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
     Level: beginner
 
-    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+    Developer Notes: Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+
+.seealso: MatGetFactor()
 S*/
 typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY,MAT_FACTOR_OTHER} MatFactorError;
+
+PETSC_EXTERN PetscErrorCode MatFactorGetError(Mat,MatFactorError*);
 
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
@@ -1145,6 +1136,7 @@ PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringVal
 PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeightType);
 PETSC_EXTERN PetscErrorCode MatColoringSetWeights(MatColoring,PetscReal*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringCreateWeights(MatColoring,PetscReal **,PetscInt **lperm);
+PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences

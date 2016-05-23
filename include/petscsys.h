@@ -247,32 +247,25 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if defined(PETSC_HAVE_STDINT_H)
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t Petsc64bitInt;
+# define MPIU_INT64 MPI_INT64_T
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long Petsc64bitInt;
+# define MPIU_INT64 MPI_LONG_LONG_INT
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 Petsc64bitInt;
+# define MPIU_INT64 MPI_INT64_T
 #else
-typedef unknown64bit Petsc64bitInt
+#error "cannot determine Petsc64bitInt type"
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef Petsc64bitInt PetscInt;
-#  if defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
-#    define MPIU_INT MPI_LONG_LONG_INT
-#  else
-#    define MPIU_INT MPI_LONG_LONG_INT
-#  endif
+#define MPIU_INT MPIU_INT64
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
-#if defined(PETSC_HAVE_MPI_INT64_T)
-#  define MPIU_INT64 MPI_INT64_T
-#else
-#  define MPIU_INT64 MPI_LONG_LONG_INT
-#endif
-
 
 /*MC
     PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
@@ -1496,7 +1489,7 @@ PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEn
 /*
    These are MPI operations for MPI_Allreduce() etc
 */
-PETSC_EXTERN MPI_Op PetscMaxSum_Op;
+PETSC_EXTERN MPI_Op MPIU_MAXSUM_OP;
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 PETSC_EXTERN MPI_Op MPIU_SUM;
 #else
@@ -1652,6 +1645,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject,const
 #define PetscObjectComposeFunction(a,b,d) PetscObjectComposeFunction_Private(a,b,(PetscVoidFunction)(d))
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSetPrintedOptions(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject,PetscObject);
 PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 
 #include <petscviewertypes.h>
@@ -2877,6 +2872,12 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
  * possible. */
 PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,(size_t)count,(void**)slot);}
+
+typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
+extern PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton;
+PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted*);
+PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted*);
+PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted,const char*,const char*,PetscBool*);
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 #undef __FUNCT__

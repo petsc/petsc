@@ -60,7 +60,7 @@ PC Object: 1 MPI processes
   type: python
     Python: example1.Jacobi
   linear system matrix = precond matrix:
-  Mat Object:   1 MPI processes
+  Mat Object: 1 MPI processes
     type: python
     rows=100, cols=100
         Python: example1.Laplace1D

@@ -5,7 +5,6 @@
 #define __FACTOR_H
 
 #include <petsc/private/pcimpl.h>
-#include <petsc/private/matimpl.h>
 
 typedef struct {
   Mat              fact;              /* factored matrix */

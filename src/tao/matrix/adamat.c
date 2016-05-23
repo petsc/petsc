@@ -1,5 +1,4 @@
-#include <petsc/private/matimpl.h>              /*I  "mat.h"  I*/
-#include <petsc/private/vecimpl.h>
+#include <petscmat.h>              /*I  "mat.h"  I*/
 
 typedef struct{
   Mat      A;
@@ -253,7 +252,7 @@ static PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(ierr);
-  ierr = ISCreateStride(((PetscObject)mat)->comm,high-low,low,1,&ISrow);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),high-low,low,1,&ISrow);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(ctx->A,ISrow,iscol,cll,&Atemp);CHKERRQ(ierr);
   ierr = ISDestroy(&ISrow);CHKERRQ(ierr);
 
@@ -335,7 +334,7 @@ PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSAME,&issame);CHKERRQ(ierr);
@@ -352,7 +351,7 @@ PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr=MatGetSize(mat,&M,&N);CHKERRQ(ierr);
     ierr=MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreateDense(((PetscObject)mat)->comm,m,m,N,N,NULL,NewMat);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)mat),m,m,N,N,NULL,NewMat);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){
       ierr = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(ierr);
@@ -373,7 +372,7 @@ PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreateSeqDense(((PetscObject)mat)->comm,N,N,NULL,NewMat);CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)mat),N,N,NULL,NewMat);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){
       ierr = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(ierr);
@@ -437,7 +436,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
 @*/
 PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
 {
-  MPI_Comm       comm=((PetscObject)mat)->comm;
+  MPI_Comm       comm=PetscObjectComm((PetscObject)mat);
   TaoMatADACtx   ctx;
   PetscErrorCode ierr;
   PetscInt       nloc,n;

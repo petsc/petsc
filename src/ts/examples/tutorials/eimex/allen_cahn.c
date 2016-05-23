@@ -35,9 +35,9 @@ int main(int argc, char **argv)
   PetscInt          steps,maxsteps,mx;
   PetscErrorCode    ierr;
   PetscReal         ftime;
-  AppCtx      user;       /* user-defined work context */
+  AppCtx            user;       /* user-defined work context */
 
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
   /* Initialize user application context */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Allen-Cahn equation","");
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 
 

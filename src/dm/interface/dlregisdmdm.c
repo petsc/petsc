@@ -109,7 +109,7 @@ PetscErrorCode  DMInitializePackage(void)
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {
@@ -188,7 +188,7 @@ PetscErrorCode PetscFEInitializePackage(void)
     if (className) {ierr = PetscInfoDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "fe", &className);CHKERRQ(ierr);
     if (className) {ierr = PetscLogEventDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
@@ -262,7 +262,7 @@ PetscErrorCode PetscFVInitializePackage(void)
     if (className) {ierr = PetscInfoDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "fv", &className);CHKERRQ(ierr);
     if (className) {ierr = PetscLogEventDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
@@ -333,7 +333,7 @@ PetscErrorCode PetscDSInitializePackage(void)
     if (className) {ierr = PetscInfoDeactivateClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ds", &className);CHKERRQ(ierr);
     if (className) {ierr = PetscLogEventDeactivateClass(PETSCDS_CLASSID);CHKERRQ(ierr);}

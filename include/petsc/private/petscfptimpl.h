@@ -22,7 +22,6 @@ extern PetscFPT  PetscFPTData;
 PETSC_STATIC_INLINE PetscErrorCode  PetscFPTView(PetscViewer viewer)
 {
   PetscInt       i;
-  PetscErrorCode ierr;
 
   if (!PetscFPTData) return(0);
   for (i=0; i<PetscFPTData->tablesize; i++) {

@@ -22,10 +22,8 @@ typedef struct {
   cliq::DistMap                            *inverseMap;
   cliq::DistSymmInfo                       *info;
   cliq::DistSymmFrontTree<PetscCliqScalar> *frontTree;
-  cliq::DistMultiVec<PetscCliqScalar>        *rhs;
-  cliq::DistNodalMultiVec<PetscCliqScalar>   *xNodal;
-
-  PetscErrorCode (*Destroy)(Mat);
+  cliq::DistMultiVec<PetscCliqScalar>      *rhs;
+  cliq::DistNodalMultiVec<PetscCliqScalar> *xNodal;
 } Mat_Clique;
 
 #endif

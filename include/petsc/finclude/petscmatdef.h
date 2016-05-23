@@ -26,6 +26,7 @@
 #define MPPTScotchStragegyType PetscEnum
 #define MatAssemblyType PetscEnum
 #define MatFactorType PetscEnum
+#define MatFactorError PetscEnum
 #define MatFactorShiftType PetscEnum
 #define MatOrderingType character*(80)
 #define MatSORType PetscEnum
@@ -106,13 +107,6 @@
 #define MATSEQSBAIJ        'seqsbaij'
 #define MATMPISBAIJ        'mpisbaij'
 
-#define MATSEQBSTRM        'seqbstrm'
-#define MATMPIBSTRM        'mpibstrm'
-#define MATBSTRM           'bstrm'
-#define MATSEQSBSTRM       'seqsbstrm'
-#define MATMPISBSTRM       'mpisbstrm'
-#define MATSBSTRM          'sbstrm'
-
 #define MATDAAD            'daad'
 #define MATMFFD            'mffd'
 #define MATNORMAL          'normal'
@@ -153,8 +147,6 @@
 #define MATSOLVERPETSC        'petsc'
 #define MATSOLVERBAS          'bas'
 #define MATSOLVERCUSPARSE     'cusparse'
-#define MATSOLVERBSTRM        'bstrm'
-#define MATSOLVERSBSTRM       'sbstrm'
 
 !
 ! GPU Storage Formats for CUSP and CUSPARSE

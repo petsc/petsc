@@ -1387,7 +1387,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,A->cmap->n,A->rmap->N,A->cmap->n,A->rmap->N);CHKERRQ(ierr);
     ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(C,bs,0,col);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(C,bs,0,col);CHKERRQ(ierr);
     ierr = PetscFree(col);CHKERRQ(ierr);
   } else {
     C = *B;
@@ -2403,7 +2403,7 @@ PetscErrorCode MatSetUp_SeqBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(A,A->rmap->bs,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A,A->rmap->bs,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2827,7 +2827,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat, MatType,MatReuse,Ma
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJSetPreallocation_SeqBAIJ"
-PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz,PetscInt *nnz)
+static PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz,PetscInt *nnz)
 {
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
@@ -3063,7 +3063,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_seqsbaij_C",MatConvert_SeqBAIJ_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetPreallocation_C",MatSeqBAIJSetPreallocation_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetPreallocationCSR_C",MatSeqBAIJSetPreallocationCSR_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_seqbstrm_C",MatConvert_SeqBAIJ_SeqBSTRM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3287,7 +3286,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
   }
 
   /* Do preallocation  */
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(newmat,bs,0,browlengths);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(newmat,bs,0,browlengths);CHKERRQ(ierr);
   a    = (Mat_SeqBAIJ*)newmat->data;
 
   /* set matrix "i" values */
@@ -3414,7 +3413,7 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*A,bs,nz,(PetscInt*)nnz);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(*A,bs,nz,(PetscInt*)nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3566,7 +3565,7 @@ PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*mat,bs,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(*mat,bs,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
   baij = (Mat_SeqBAIJ*)(*mat)->data;
   ierr = PetscMalloc2(m,&baij->imax,m,&baij->ilen);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)*mat,2*m*sizeof(PetscInt));CHKERRQ(ierr);

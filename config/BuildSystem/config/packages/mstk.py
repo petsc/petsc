@@ -4,7 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download         = ['http://software.lanl.gov/ascem/tpls/mstk-2.23.tgz']
+    self.gitcommit        = 'master'
+    self.download         = ['git://https://github.com/MeshToolkit/MSTK','http://software.lanl.gov/ascem/tpls/mstk-2.23.tgz']
     self.downloaddirname  = 'mstk'
     self.includes         = ['MSTK.h']
     self.liblist          = [['libmstk.a']]
@@ -20,6 +21,8 @@ class Configure(config.package.CMakePackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.mpi             = framework.require('config.packages.MPI',self)
     self.metis           = framework.require('config.packages.metis',self)
+    self.parmetis        = framework.require('config.packages.parmetis',self)
+    self.ptscotch        = framework.require('config.packages.PTScotch',self)
     self.zoltan          = framework.require('config.packages.Zoltan',self)
     self.exodusii        = framework.require('config.packages.exodusii',self)
     self.trilinos        = framework.require('config.packages.Trilinos',self)
@@ -51,6 +54,13 @@ class Configure(config.package.CMakePackage):
         args.append('-DZOLTAN_DIR:FILEPATH='+self.zoltan.directory)
       else:
        args.append('-DZOLTAN_DIR:FILEPATH='+self.trilinos.directory)
+      if self.parmetis.found:
+        args.append('-DZOLTAN_NEEDS_ParMETIS=yes')
+        args.append('-DParMETIS_DIR:FILEPATH='+self.parmetis.directory)
+      if self.ptscotch.found:
+        args.append('-DZOLTAN_NEEDS_PTSCOTCH=yes')
+        args.append('-DPTSCOTCH_DIR:FILEPATH='+self.ptscotch.directory)
+
     if self.exodusii.found or self.trilinos.found:
       args.append('-DENABLE_EXODUSII:BOOL=ON')
       if self.exodusii.found:

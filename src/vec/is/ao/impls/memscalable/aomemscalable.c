@@ -448,6 +448,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
       ierr  = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
       petsc = (PetscInt*)mypetsc;
     }
+  } else {
+    petsc = NULL;
   }
 
   /* create a map with global size N - used to determine the local sizes of ao - shall we use local napp instead of N? */

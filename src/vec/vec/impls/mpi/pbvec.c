@@ -441,8 +441,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecPointwiseMult_Seq,
                                 VecPointwiseDivide_Seq,
                                 VecSetValues_MPI, /* 20 */
-                                VecAssemblyBegin_MPI_BTS,
-                                VecAssemblyEnd_MPI_BTS,
+                                VecAssemblyBegin_MPI,
+                                VecAssemblyEnd_MPI,
                                 0,
                                 VecGetSize_MPI,
                                 VecGetSize_Seq,

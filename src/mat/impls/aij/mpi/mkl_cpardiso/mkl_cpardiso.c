@@ -211,7 +211,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatReuse re
 #define __FUNCT__ "MatDestroy_MKL_CPARDISO"
 PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
 {
-  Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->spptr;
+  Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -238,8 +238,12 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
       &mat_mkl_cpardiso->err);
   }
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+
+  if (mat_mkl_cpardiso->ConvertToTriples == MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO) {
+    ierr = PetscFree(mat_mkl_cpardiso->ia);CHKERRQ(ierr);
+  }
   ierr = MPI_Comm_free(&(mat_mkl_cpardiso->comm_mkl_cpardiso));CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
@@ -254,7 +258,7 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
 #define __FUNCT__ "MatSolve_MKL_CPARDISO"
 PetscErrorCode MatSolve_MKL_CPARDISO(Mat A,Vec b,Vec x)
 {
-  Mat_MKL_CPARDISO   *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->spptr;
+  Mat_MKL_CPARDISO   *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->data;
   PetscErrorCode    ierr;
   PetscScalar       *xarray;
   const PetscScalar *barray;
@@ -298,7 +302,7 @@ PetscErrorCode MatSolve_MKL_CPARDISO(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatSolveTranspose_MKL_CPARDISO"
 PetscErrorCode MatSolveTranspose_MKL_CPARDISO(Mat A,Vec b,Vec x)
 {
-  Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->spptr;
+  Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -316,7 +320,7 @@ PetscErrorCode MatSolveTranspose_MKL_CPARDISO(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatMatSolve_MKL_CPARDISO"
 PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
 {
-  Mat_MKL_CPARDISO  *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->spptr;
+  Mat_MKL_CPARDISO  *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->data;
   PetscErrorCode    ierr;
   PetscScalar       *barray, *xarray;
   PetscBool         flg;
@@ -368,18 +372,13 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
 #define __FUNCT__ "MatFactorNumeric_MKL_CPARDISO"
 PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(F)->spptr;
+  Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(F)->data;
   PetscErrorCode   ierr;
-
-  /* numerical factorization phase */
-  /*-------------------------------*/
 
   PetscFunctionBegin;
   mat_mkl_cpardiso->matstruc = SAME_NONZERO_PATTERN;
   ierr = (*mat_mkl_cpardiso->ConvertToTriples)(A, MAT_REUSE_MATRIX,&mat_mkl_cpardiso->nz,&mat_mkl_cpardiso->ia,&mat_mkl_cpardiso->ja,&mat_mkl_cpardiso->a);CHKERRQ(ierr);
 
-  /* numerical factorization phase */
-  /*-------------------------------*/
   mat_mkl_cpardiso->phase = JOB_NUMERICAL_FACTORIZATION;
   cluster_sparse_solver (
     mat_mkl_cpardiso->pt,
@@ -411,7 +410,7 @@ PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *in
 #define __FUNCT__ "PetscSetMKL_CPARDISOFromOptions"
 PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
 {
-  Mat_MKL_CPARDISO    *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->spptr;
+  Mat_MKL_CPARDISO    *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->data;
   PetscErrorCode      ierr;
   PetscInt            icntl;
   PetscBool           flg;
@@ -419,44 +418,19 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_CPARDISO Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mkl_cpardiso_65",
-    "Number of threads to use",
-    "None",
-    threads,
-    &threads,
-    &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mkl_cpardiso_65","Number of threads to use","None",threads,&threads,&flg);CHKERRQ(ierr);
   if (flg) mkl_set_num_threads(threads);
 
-  ierr = PetscOptionsInt("-mat_mkl_cpardiso_66",
-    "Maximum number of factors with identical sparsity structure that must be kept in memory at the same time",
-    "None",
-     mat_mkl_cpardiso->maxfct,
-    &icntl,
-    &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mkl_cpardiso_66","Maximum number of factors with identical sparsity structure that must be kept in memory at the same time","None",mat_mkl_cpardiso->maxfct,&icntl,&flg);CHKERRQ(ierr);
   if (flg) mat_mkl_cpardiso->maxfct = icntl;
 
-  ierr = PetscOptionsInt("-mat_mkl_cpardiso_67",
-    "Indicates the actual matrix for the solution phase",
-    "None",
-    mat_mkl_cpardiso->mnum,
-    &icntl,
-    &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mkl_cpardiso_67","Indicates the actual matrix for the solution phase","None",mat_mkl_cpardiso->mnum,&icntl,&flg);CHKERRQ(ierr);
   if (flg) mat_mkl_cpardiso->mnum = icntl;
 
-  ierr = PetscOptionsInt("-mat_mkl_cpardiso_68",
-    "Message level information",
-    "None",
-    mat_mkl_cpardiso->msglvl,
-    &icntl,
-    &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mkl_cpardiso_68","Message level information","None",mat_mkl_cpardiso->msglvl,&icntl,&flg);CHKERRQ(ierr);
   if (flg) mat_mkl_cpardiso->msglvl = icntl;
 
-  ierr = PetscOptionsInt("-mat_mkl_cpardiso_69",
-    "Defines the matrix type",
-    "None",
-    mat_mkl_cpardiso->mtype,
-    &icntl,
-    &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mkl_cpardiso_69","Defines the matrix type","None",mat_mkl_cpardiso->mtype,&icntl,&flg);CHKERRQ(ierr);
   if(flg){
     mat_mkl_cpardiso->mtype = icntl;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -466,160 +440,67 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
 #endif
     mat_mkl_cpardiso->iparm[34] = 1;
   }
-  ierr = PetscOptionsInt("-mat_mkl_cpardiso_1",
-    "Use default values",
-    "None",
-    mat_mkl_cpardiso->iparm[0],
-    &icntl,
-    &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mkl_cpardiso_1","Use default values","None",mat_mkl_cpardiso->iparm[0],&icntl,&flg);CHKERRQ(ierr);
 
   if(flg && icntl != 0){
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_2",
-      "Fill-in reducing ordering for the input matrix",
-      "None",
-      mat_mkl_cpardiso->iparm[1],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_2","Fill-in reducing ordering for the input matrix","None",mat_mkl_cpardiso->iparm[1],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[1] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_4",
-      "Preconditioned CGS/CG",
-      "None",
-      mat_mkl_cpardiso->iparm[3],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_4","Preconditioned CGS/CG","None",mat_mkl_cpardiso->iparm[3],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[3] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_5",
-      "User permutation",
-      "None",
-      mat_mkl_cpardiso->iparm[4],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_5","User permutation","None",mat_mkl_cpardiso->iparm[4],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[4] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_6",
-      "Write solution on x",
-      "None",
-      mat_mkl_cpardiso->iparm[5],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_6","Write solution on x","None",mat_mkl_cpardiso->iparm[5],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[5] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_8",
-      "Iterative refinement step",
-      "None",
-      mat_mkl_cpardiso->iparm[7],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_8","Iterative refinement step","None",mat_mkl_cpardiso->iparm[7],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[7] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_10",
-      "Pivoting perturbation",
-      "None",
-      mat_mkl_cpardiso->iparm[9],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_10","Pivoting perturbation","None",mat_mkl_cpardiso->iparm[9],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[9] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_11",
-      "Scaling vectors",
-      "None",
-      mat_mkl_cpardiso->iparm[10],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_11","Scaling vectors","None",mat_mkl_cpardiso->iparm[10],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[10] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_12",
-      "Solve with transposed or conjugate transposed matrix A",
-      "None",
-      mat_mkl_cpardiso->iparm[11],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_12","Solve with transposed or conjugate transposed matrix A","None",mat_mkl_cpardiso->iparm[11],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[11] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_13",
-      "Improved accuracy using (non-) symmetric weighted matching",
-      "None",
-      mat_mkl_cpardiso->iparm[12],
-      &icntl,
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_13","Improved accuracy using (non-) symmetric weighted matching","None",mat_mkl_cpardiso->iparm[12],&icntl,
       &flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[12] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_18",
-      "Numbers of non-zero elements",
-      "None",
-      mat_mkl_cpardiso->iparm[17],
-      &icntl,
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_18","Numbers of non-zero elements","None",mat_mkl_cpardiso->iparm[17],&icntl,
       &flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[17] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_19",
-      "Report number of floating point operations",
-      "None",
-      mat_mkl_cpardiso->iparm[18],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_19","Report number of floating point operations","None",mat_mkl_cpardiso->iparm[18],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[18] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_21",
-      "Pivoting for symmetric indefinite matrices",
-      "None",
-      mat_mkl_cpardiso->iparm[20],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_21","Pivoting for symmetric indefinite matrices","None",mat_mkl_cpardiso->iparm[20],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[20] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_24",
-      "Parallel factorization control",
-      "None",
-      mat_mkl_cpardiso->iparm[23],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_24","Parallel factorization control","None",mat_mkl_cpardiso->iparm[23],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[23] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_25",
-      "Parallel forward/backward solve control",
-      "None",
-      mat_mkl_cpardiso->iparm[24],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_25","Parallel forward/backward solve control","None",mat_mkl_cpardiso->iparm[24],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[24] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_27",
-      "Matrix checker",
-      "None",
-      mat_mkl_cpardiso->iparm[26],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_27","Matrix checker","None",mat_mkl_cpardiso->iparm[26],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[26] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_31",
-      "Partial solve and computing selected components of the solution vectors",
-      "None",
-      mat_mkl_cpardiso->iparm[30],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_31","Partial solve and computing selected components of the solution vectors","None",mat_mkl_cpardiso->iparm[30],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[30] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_34",
-      "Optimal number of threads for conditional numerical reproducibility (CNR) mode",
-      "None",
-      mat_mkl_cpardiso->iparm[33],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_34","Optimal number of threads for conditional numerical reproducibility (CNR) mode","None",mat_mkl_cpardiso->iparm[33],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[33] = icntl;
 
-    ierr = PetscOptionsInt("-mat_mkl_cpardiso_60",
-      "Intel MKL_CPARDISO mode",
-      "None",
-      mat_mkl_cpardiso->iparm[59],
-      &icntl,
-      &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mkl_cpardiso_60","Intel MKL_CPARDISO mode","None",mat_mkl_cpardiso->iparm[59],&icntl,&flg);CHKERRQ(ierr);
     if (flg) mat_mkl_cpardiso->iparm[59] = icntl;
   }
 
-  PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -686,7 +567,7 @@ PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpa
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMKL_CPARDISO"
 PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_MKL_CPARDISO *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->spptr;
+  Mat_MKL_CPARDISO *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->data;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -694,7 +575,6 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const M
 
   /* Set MKL_CPARDISO options from the options database */
   ierr = PetscSetMKL_CPARDISOFromOptions(F,A);CHKERRQ(ierr);
-
   ierr = (*mat_mkl_cpardiso->ConvertToTriples)(A,MAT_INITIAL_MATRIX,&mat_mkl_cpardiso->nz,&mat_mkl_cpardiso->ia,&mat_mkl_cpardiso->ja,&mat_mkl_cpardiso->a);CHKERRQ(ierr);
 
   mat_mkl_cpardiso->n = A->rmap->N;
@@ -722,7 +602,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const M
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
     &mat_mkl_cpardiso->err);
 
-  if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
+  if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\".Check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
   F->ops->lufactornumeric = MatFactorNumeric_MKL_CPARDISO;
@@ -739,7 +619,7 @@ PetscErrorCode MatView_MKL_CPARDISO(Mat A, PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
-  Mat_MKL_CPARDISO  *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->spptr;
+  Mat_MKL_CPARDISO  *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->data;
   PetscInt          i;
 
   PetscFunctionBegin;
@@ -770,7 +650,7 @@ PetscErrorCode MatView_MKL_CPARDISO(Mat A, PetscViewer viewer)
 #define __FUNCT__ "MatGetInfo_MKL_CPARDISO"
 PetscErrorCode MatGetInfo_MKL_CPARDISO(Mat A, MatInfoType flag, MatInfo *info)
 {
-  Mat_MKL_CPARDISO *mat_mkl_cpardiso =(Mat_MKL_CPARDISO*)A->spptr;
+  Mat_MKL_CPARDISO *mat_mkl_cpardiso =(Mat_MKL_CPARDISO*)A->data;
 
   PetscFunctionBegin;
   info->block_size        = 1.0;
@@ -789,20 +669,16 @@ PetscErrorCode MatGetInfo_MKL_CPARDISO(Mat A, MatInfoType flag, MatInfo *info)
 #define __FUNCT__ "MatMkl_CPardisoSetCntl_MKL_CPARDISO"
 PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt ival)
 {
-  Mat_MKL_CPARDISO *mat_mkl_cpardiso =(Mat_MKL_CPARDISO*)F->spptr;
+  Mat_MKL_CPARDISO *mat_mkl_cpardiso =(Mat_MKL_CPARDISO*)F->data;
 
   PetscFunctionBegin;
   if(icntl <= 64){
     mat_mkl_cpardiso->iparm[icntl - 1] = ival;
   } else {
-    if(icntl == 65)
-      mkl_set_num_threads((int)ival);
-    else if(icntl == 66)
-      mat_mkl_cpardiso->maxfct = ival;
-    else if(icntl == 67)
-      mat_mkl_cpardiso->mnum = ival;
-    else if(icntl == 68)
-      mat_mkl_cpardiso->msglvl = ival;
+    if(icntl == 65) mkl_set_num_threads((int)ival);
+    else if(icntl == 66) mat_mkl_cpardiso->maxfct = ival;
+    else if(icntl == 67) mat_mkl_cpardiso->mnum = ival;
+    else if(icntl == 68) mat_mkl_cpardiso->msglvl = ival;
     else if(icntl == 69){
       int pt[IPARM_SIZE];
       mat_mkl_cpardiso->mtype = ival;
@@ -873,17 +749,13 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy("mkl_cpardiso",&((PetscObject)B)->type_name);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
 
   ierr = PetscNewLog(B,&mat_mkl_cpardiso);CHKERRQ(ierr);
 
-  if (isSeqAIJ) {
-    ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-  mat_mkl_cpardiso->ConvertToTriples = MatCopy_seqaij_seqaij_MKL_CPARDISO;
-  } else {
-    mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO;
-    ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
-  }
+  if (isSeqAIJ) mat_mkl_cpardiso->ConvertToTriples = MatCopy_seqaij_seqaij_MKL_CPARDISO;
+  else          mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO;
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMKL_CPARDISO;
   B->ops->destroy = MatDestroy_MKL_CPARDISO;
@@ -894,7 +766,7 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype
   B->factortype   = ftype;
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
 
-  B->spptr = mat_mkl_cpardiso;
+  B->data = mat_mkl_cpardiso;
 
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);

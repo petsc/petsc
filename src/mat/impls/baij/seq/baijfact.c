@@ -1576,7 +1576,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr    = PetscMalloc1(nnz_max,&ba);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)isicol);CHKERRQ(ierr);
 
   b               = (Mat_SeqBAIJ*)(B)->data;

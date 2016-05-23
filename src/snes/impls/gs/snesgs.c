@@ -143,21 +143,15 @@ PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt * sweeps)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESDefaultApplyNGS"
-PetscErrorCode SNESDefaultApplyNGS(SNES snes,Vec X,Vec F,void *ctx)
-{
-  PetscFunctionBegin;
-  /* see if there's a coloring on the DM */
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NGS"
 PetscErrorCode SNESReset_NGS(SNES snes)
 {
+  SNES_NGS       *gs = (SNES_NGS*)snes->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = ISColoringDestroy(&gs->coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -213,13 +207,13 @@ PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES 
     ierr = SNESNGSSetTolerances(snes,atol,rtol,stol,max_its);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_ngs_secant","Use pointwise secant local Jacobian approximation","",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngs_secant","Use finite difference secant approximation with coloring","",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetNGS(snes,SNESComputeNGSDefaultSecant,NULL);CHKERRQ(ierr);
-    ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Setting default finite difference secant approximation with coloring\n");CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-snes_ngs_secant_h","Differencing parameter for secant search","",gs->h,&gs->h,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_ngs_secant_mat_coloring","Use the Jacobian coloring for the secant GS","",gs->secant_mat,&gs->secant_mat,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngs_secant_mat_coloring","Use the graph coloring of the Jacobian for the secant GS","",gs->secant_mat,&gs->secant_mat,&flg);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -229,7 +223,19 @@ PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES 
 #define __FUNCT__ "SNESView_NGS"
 PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+  PetscErrorCode (*f)(SNES,Vec,Vec,void*);
+  SNES_NGS       *gs = (SNES_NGS*)snes->data;
+  PetscBool      iascii;
+
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = DMSNESGetNGS(snes->dm,&f,NULL);CHKERRQ(ierr);
+    if (f == SNESComputeNGSDefaultSecant) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  NGS:  Use finite difference secant approximation with coloring with h = %g \n",(double)gs->h);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -322,9 +328,23 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
 }
 
 /*MC
-  SNESNGS - Just calls the user-provided solution routine provided with SNESSetNGS()
+  SNESNGS - Either calls the user-provided solution routine provided with SNESSetNGS() or does a finite difference secant approximation
+            using coloring.
 
    Level: advanced
+
+  Options Database:
++   -snes_ngs_sweeps - Number of sweeps of GS to apply
+.    -snes_ngs_atol - Absolute residual tolerance for GS iteration
+.    -snes_ngs_rtol - Relative residual tolerance for GS iteration
+.    -snes_ngs_stol - Absolute update tolerance for GS iteration
+.    -snes_ngs_max_it - Maximum number of sweeps of GS to apply
+.    -snes_ngs_secant - Use pointwise secant local Jacobian approximation with coloring instead of user provided Gauss-Seidel routine, this is
+                        used by default if no user provided Gauss-Seidel routine is available. Requires either that a DM that can compute a coloring
+                        is available or a Jacobian sparse matrix is provided (from which to get the coloring).
+.    -snes_ngs_secant_h - Differencing parameter for secant approximation
+-    -snes_ngs_secant_mat_coloring - Use the graph coloring of the Jacobian for the secant GS even if a DM is available.
+
 
   Notes:
   the Gauss-Seidel smoother is inherited through composition.  If a solver has been created with SNESGetPC(), it will have
@@ -334,7 +354,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
 .  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types)
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types), SNESNGSSetSweeps(), SNESNGSSetTolerances()
 M*/
 
 #undef __FUNCT__

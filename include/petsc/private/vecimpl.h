@@ -149,10 +149,11 @@ struct _p_Vec {
 #endif
 };
 
+PETSC_EXTERN PetscLogEvent VEC_SetRandom;
 PETSC_EXTERN PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
 PETSC_EXTERN PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
 PETSC_EXTERN PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
-PETSC_EXTERN PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
+PETSC_EXTERN PetscLogEvent VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
 PETSC_EXTERN PetscLogEvent VEC_ReduceBegin,VEC_ReduceEnd;
 PETSC_EXTERN PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_Ops;
 PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPU, VEC_CUSPCopyFromGPU;

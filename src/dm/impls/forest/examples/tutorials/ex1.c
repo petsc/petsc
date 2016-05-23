@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 {
   DM             dm;
   char           typeString[256] = {'\0'};
-  PetscViewer    viewer = NULL;
+  PetscViewer    viewer          = NULL;
   PetscBool      flg;
   PetscErrorCode ierr;
 
