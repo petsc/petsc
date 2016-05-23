@@ -183,7 +183,9 @@ class PetscConfig:
         petsc_inc = flaglist(self['PETSC_CC_INCLUDES'])
         petsc_lib = flaglist(
             '-L%s %s' % (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']))
-        petsc_lib['runtime_library_dirs'].append(self['PETSC_LIB_DIR'])
+        # runtime_library_dirs is not supported on Windows
+        if sys.platform != 'win32':
+            petsc_lib['runtime_library_dirs'].append(self['PETSC_LIB_DIR'])
 
         # Link in extra libraries on static builds
         if self['BUILDSHAREDLIB'] != 'yes':
