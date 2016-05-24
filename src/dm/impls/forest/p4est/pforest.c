@@ -673,6 +673,8 @@ static PetscErrorCode DMPforestComputeOverlappingRanks(PetscMPIInt size, PetscMP
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPforestGetPlex(DM,DM*);
+
 #define DMSetUp_pforest _append_pforest(DMSetUp)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMSetUp_pforest)
@@ -1234,6 +1236,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   }
   forest->preCoarseToFine = preCoarseToFine;
   forest->coarseToPreFine = coarseToPreFine;
+  dm->setupcalled = PETSC_TRUE;
+  ierr = DMPforestGetPlex(dm,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1320,8 +1324,6 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
-static PetscErrorCode DMPforestGetPlex(DM,DM*);
 
 #define DMView_HDF5_pforest _append_pforest(DMView_HDF5)
 #undef __FUNCT__
@@ -4032,7 +4034,7 @@ static PetscErrorCode DMPforestGetPlex(DM dm,DM *plex)
     ierr = DMConvert_pforest_plex(dm,DMPLEX,NULL);CHKERRQ(ierr);
   }
   ierr  = DMShareDiscretization(dm,pforest->plex);CHKERRQ(ierr);
-  *plex = pforest->plex;
+  if (plex) *plex = pforest->plex;
   PetscFunctionReturn(0);
 }
 
