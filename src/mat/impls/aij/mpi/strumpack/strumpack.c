@@ -297,7 +297,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   ierr = PetscGetProgramName(pname,len);CHKERRQ(ierr);
   ierr = PetscStrcat(pname," ");CHKERRQ(ierr);
   ierr = PetscStrcat(pname,copts);CHKERRQ(ierr);
-  ierr = PetscStrToArray(copts,' ',&argc,&args);CHKERRQ(ierr);
+  ierr = PetscStrToArray(pname,' ',&argc,&args);CHKERRQ(ierr);
   ierr = PetscFree(copts);CHKERRQ(ierr);
   ierr = PetscFree(pname);CHKERRQ(ierr);
 
