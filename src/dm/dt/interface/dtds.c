@@ -1086,6 +1086,40 @@ PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDSHasJacobian"
+/*@C
+  PetscDSHasJacobian - Signals that Jacobian functions have been set
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS
+
+  Output Parameter:
+. hasJac - flag that pointwise function for the Jacobian has been set
+
+  Level: intermediate
+
+.seealso: PetscDSGetJacobianPreconditioner(), PetscDSSetJacobianPreconditioner(), PetscDSGetJacobian()
+@*/
+PetscErrorCode PetscDSHasJacobian(PetscDS prob, PetscBool *hasJac)
+{
+  PetscInt f, g, h;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  *hasJac = PETSC_FALSE;
+  for (f = 0; f < prob->Nf; ++f) {
+    for (g = 0; g < prob->Nf; ++g) {
+      for (h = 0; h < 4; ++h) {
+        if (prob->g[(f*prob->Nf + g)*4+h]) *hasJac = PETSC_TRUE;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDSGetJacobian"
 /*@C
   PetscDSGetJacobian - Get the pointwise Jacobian function for given test and basis field
@@ -2050,6 +2084,83 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDSGetFieldIndex"
+/*@
+  PetscDSGetFieldIndex - Returns the index of the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- disc - The discretization object
+
+  Output Parameter:
+. f - The field number
+
+  Level: beginner
+
+.seealso: PetscGetDiscretization(), PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
+{
+  PetscInt g;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(f, 3);
+  *f = -1;
+  for (g = 0; g < prob->Nf; ++g) {if (disc == prob->disc[g]) break;}
+  if (g == prob->Nf) SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Field not found in PetscDS.");
+  *f = g;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetFieldSize"
+/*@
+  PetscDSGetFieldSize - Returns the size of the given field in the full space basis
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. size - The size
+
+  Level: beginner
+
+.seealso: PetscDSGetFieldOffset(), PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
+{
+  PetscClassId   id;
+  PetscInt       Nb, Nc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(size, 3);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  *size = 0;
+  ierr = PetscObjectGetClassId(prob->disc[f], &id);CHKERRQ(ierr);
+  if (id == PETSCFE_CLASSID)      {
+    PetscFE fe = (PetscFE) prob->disc[f];
+
+    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  } else if (id == PETSCFV_CLASSID) {
+    PetscFV fv = (PetscFV) prob->disc[f];
+
+    Nb   = 1;
+    ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+  } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+  *size = Nb*Nc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDSGetFieldOffset"
 /*@
   PetscDSGetFieldOffset - Returns the offset of the given field in the full space basis
@@ -2065,11 +2176,11 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
 
   Level: beginner
 
-.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetFieldSize(), PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
-  PetscInt       g;
+  PetscInt       size, g;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2078,12 +2189,8 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   *off = 0;
   for (g = 0; g < f; ++g) {
-    PetscFE  fe = (PetscFE) prob->disc[g];
-    PetscInt Nb, Nc;
-
-    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-    *off += Nb*Nc;
+    ierr = PetscDSGetFieldSize(prob, g, &size);CHKERRQ(ierr);
+    *off += size;
   }
   PetscFunctionReturn(0);
 }

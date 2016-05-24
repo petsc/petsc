@@ -1,5 +1,6 @@
 #include <petsc/private/dmimpl.h>           /*I      "petscdm.h"          I*/
 #include <petsc/private/dmlabelimpl.h>      /*I      "petscdmlabel.h"     I*/
+#include <petscdmplex.h>
 #include <petscsf.h>
 #include <petscds.h>
 
@@ -4732,9 +4733,11 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   DM             cdm;
   PetscSection   coordSection, cSection;
   Vec            coordinates,  cVec;
-  PetscScalar   *coords, *coords2, *anchor;
-  PetscInt       Nc, cStart, cEnd, c, vStart, vEnd, v, sStart, sEnd, dof, d, off, off2, bs, coordSize;
+  PetscScalar   *coords, *coords2, *anchor, *localized;
+  PetscInt       Nc, vStart, vEnd, v, sStart, sEnd, newStart = PETSC_MAX_INT, newEnd = PETSC_MIN_INT, dof, d, off, off2, bs, coordSize;
   PetscBool      alreadyLocalized, alreadyLocalizedGlobal;
+  PetscInt       maxHeight = 0, h;
+  PetscInt       *pStart = NULL, *pEnd = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4747,47 +4750,79 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
     ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isplex);CHKERRQ(ierr);
     if (isplex) {
-      ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
       ierr = DMPlexGetDepthStratum(cdm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetMaxProjectionHeight(cdm,&maxHeight);CHKERRQ(ierr);
+      ierr = DMGetWorkArray(dm,2*(maxHeight + 1),PETSC_INT,&pStart);CHKERRQ(ierr);
+      pEnd = &pStart[maxHeight + 1];
+      newStart = vStart;
+      newEnd   = vEnd;
+      for (h = 0; h <= maxHeight; h++) {
+        ierr = DMPlexGetHeightStratum(cdm, h, &pStart[h], &pEnd[h]);CHKERRQ(ierr);
+        newStart = PetscMin(newStart,pStart[h]);
+        newEnd   = PetscMax(newEnd,pEnd[h]);
+      }
     } else SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
   }
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(coordSection,&sStart,&sEnd);CHKERRQ(ierr);
-  alreadyLocalized = alreadyLocalizedGlobal = PETSC_TRUE;
-  for (c = cStart; c < cEnd; ++c) {
-    if (c < sStart || c >= sEnd) {
-      alreadyLocalized = PETSC_FALSE;
-      break;
-    }
-    ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
-    if (!dof) {
-      alreadyLocalized = PETSC_FALSE;
-      break;
-    }
-  }
-  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-  if (alreadyLocalizedGlobal) PetscFunctionReturn(0);
+
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &cSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(cSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(coordSection, 0, &Nc);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(cSection, 0, Nc);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(cSection, cStart, vEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(cSection, newStart, newEnd);CHKERRQ(ierr);
+
+  ierr = DMGetWorkArray(dm, 2 * bs, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
+  localized = &anchor[bs];
+  alreadyLocalized = alreadyLocalizedGlobal = PETSC_TRUE;
+  for (h = 0; h <= maxHeight; h++) {
+    PetscInt cStart = pStart[h], cEnd = pEnd[h], c;
+
+    for (c = cStart; c < cEnd; ++c) {
+      PetscScalar *cellCoords = NULL;
+      PetscInt     b;
+
+      if (c < sStart || c >= sEnd) alreadyLocalized = PETSC_FALSE;
+      ierr = DMPlexVecGetClosure(cdm, coordSection, coordinates, c, &dof, &cellCoords);CHKERRQ(ierr);
+      for (b = 0; b < bs; ++b) anchor[b] = cellCoords[b];
+      for (d = 0; d < dof/bs; ++d) {
+        ierr = DMLocalizeCoordinate_Internal(dm, bs, anchor, &cellCoords[d*bs], localized);CHKERRQ(ierr);
+        for (b = 0; b < bs; b++) {
+          if (cellCoords[d*bs + b] != localized[b]) break;
+        }
+        if (b < bs) break;
+      }
+      if (d < dof/bs) {
+        if (c >= sStart && c < sEnd) {
+          PetscInt cdof;
+
+          ierr = PetscSectionGetDof(coordSection, c, &cdof);CHKERRQ(ierr);
+          if (cdof != dof) alreadyLocalized = PETSC_FALSE;
+        }
+        ierr = PetscSectionSetDof(cSection, c, dof);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(cSection, c, 0, dof);CHKERRQ(ierr);
+      }
+      ierr = DMPlexVecRestoreClosure(cdm, coordSection, coordinates, c, &dof, &cellCoords);CHKERRQ(ierr);
+    }
+  }
+  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  if (alreadyLocalizedGlobal) {
+    ierr = DMRestoreWorkArray(dm, 2 * bs, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm,2*(maxHeight + 1),PETSC_INT,&pStart);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   for (v = vStart; v < vEnd; ++v) {
     ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(cSection,     v,  dof);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldDof(cSection, v, 0, dof);CHKERRQ(ierr);
   }
-  for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexVecGetClosure(cdm, coordSection, coordinates, c, &dof, NULL);CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(cSection, c, dof);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(cSection, c, 0, dof);CHKERRQ(ierr);
-  }
   ierr = PetscSectionSetUp(cSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(cSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) dm), &cVec);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)cVec,"coordinates");CHKERRQ(ierr);
-  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
   ierr = VecSetBlockSize(cVec,         bs);CHKERRQ(ierr);
   ierr = VecSetSizes(cVec, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(cVec,VECSTANDARD);CHKERRQ(ierr);
@@ -4799,18 +4834,24 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
     ierr = PetscSectionGetOffset(cSection,     v, &off2);CHKERRQ(ierr);
     for (d = 0; d < dof; ++d) coords2[off2+d] = coords[off+d];
   }
-  ierr = DMGetWorkArray(dm, 3, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *cellCoords = NULL;
-    PetscInt     b;
+  for (h = 0; h <= maxHeight; h++) {
+    PetscInt cStart = pStart[h], cEnd = pEnd[h], c;
 
-    ierr = DMPlexVecGetClosure(cdm, coordSection, coordinates, c, &dof, &cellCoords);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(cSection, c, &off2);CHKERRQ(ierr);
-    for (b = 0; b < bs; ++b) anchor[b] = cellCoords[b];
-    for (d = 0; d < dof/bs; ++d) {ierr = DMLocalizeCoordinate_Internal(dm, bs, anchor, &cellCoords[d*bs], &coords2[off2+d*bs]);CHKERRQ(ierr);}
-    ierr = DMPlexVecRestoreClosure(cdm, coordSection, coordinates, c, &dof, &cellCoords);CHKERRQ(ierr);
+    for (c = cStart; c < cEnd; ++c) {
+      PetscScalar *cellCoords = NULL;
+      PetscInt     b, cdof;
+
+      ierr = PetscSectionGetDof(cSection,c,&cdof);CHKERRQ(ierr);
+      if (!cdof) continue;
+      ierr = DMPlexVecGetClosure(cdm, coordSection, coordinates, c, &dof, &cellCoords);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(cSection, c, &off2);CHKERRQ(ierr);
+      for (b = 0; b < bs; ++b) anchor[b] = cellCoords[b];
+      for (d = 0; d < dof/bs; ++d) {ierr = DMLocalizeCoordinate_Internal(dm, bs, anchor, &cellCoords[d*bs], &coords2[off2+d*bs]);CHKERRQ(ierr);}
+      ierr = DMPlexVecRestoreClosure(cdm, coordSection, coordinates, c, &dof, &cellCoords);CHKERRQ(ierr);
+    }
   }
-  ierr = DMRestoreWorkArray(dm, 3, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, 2 * bs, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,2*(maxHeight + 1),PETSC_INT,&pStart);CHKERRQ(ierr);
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(cVec,        &coords2);CHKERRQ(ierr);
   ierr = DMSetCoordinateSection(dm, PETSC_DETERMINE, cSection);CHKERRQ(ierr);

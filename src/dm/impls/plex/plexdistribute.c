@@ -1530,7 +1530,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
   Note: If the mesh was not distributed, the return value is NULL.
 
-  The user can control the definition of adjacency for the mesh using DMPlexGetAdjacencyUseCone() and
+  The user can control the definition of adjacency for the mesh using DMPlexSetAdjacencyUseCone() and
   DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
   representation on the mesh.
 

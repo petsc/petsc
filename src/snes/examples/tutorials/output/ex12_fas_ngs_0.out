@@ -88,6 +88,7 @@ SNES Object: 1 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     SNES Object: (fas_levels_1_) 1 MPI processes
       type: ngs
+        NGS:  Use finite difference secant approximation with coloring with h = 1e-08 
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
       total number of linear solver iterations=0
