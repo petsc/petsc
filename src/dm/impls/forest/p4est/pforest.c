@@ -3386,8 +3386,10 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     PetscInt    pStart, pEnd, pStartA, pEndA;
     PetscInt    *values, *adaptValues;
     DMLabelLink next = adapt->labels->next;
+    const char  *adaptName;
     DM          adaptPlex;
 
+    ierr = DMForestGetAdaptivityLabel(dm,&adaptName);CHKERRQ(ierr);
     ierr = DMPforestGetPlex(adapt,&adaptPlex);CHKERRQ(ierr);
     ierr = DMPforestGetTransferSF(adapt,dm,dofPerDim,&transferForward,&transferBackward);CHKERRQ(ierr);
     ierr = DMPlexGetChart(plex,&pStart,&pEnd);CHKERRQ(ierr);
@@ -3429,7 +3431,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     while (next) {
       DMLabel    adaptLabel = next->label;
       const char *name      = adaptLabel->name;
-      PetscBool  isDepth, isGhost, isVTK;
+      PetscBool  isDepth, isGhost, isVTK, isAdapt;
       DMLabel    label;
       PetscInt   p;
 
@@ -3445,6 +3447,11 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       }
       ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
       if (isVTK) {
+        next = next->next;
+        continue;
+      }
+      ierr = PetscStrcmp(name,adaptName,&isAdapt);CHKERRQ(ierr);
+      if (isAdapt) {
         next = next->next;
         continue;
       }
