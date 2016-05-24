@@ -59,6 +59,28 @@ static PetscErrorCode MultiaffineFunction(PetscInt dim,PetscReal time, const Pet
   PetscFunctionReturn(0);
 }
 
+typedef struct _bc_func_ctx
+{
+  PetscErrorCode (*func) (PetscInt,PetscReal,const PetscReal [], PetscInt, PetscScalar [], void *);
+  PetscInt dim;
+  PetscInt Nf;
+  void *ctx;
+}
+bc_func_ctx;
+
+#undef __FUNCT__
+#define __FUNCT__ "bc_func_fv"
+static PetscErrorCode bc_func_fv (PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+{
+  bc_func_ctx    *bcCtx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  bcCtx = (bc_func_ctx *) ctx;
+  ierr = (bcCtx->func)(bcCtx->dim,time,c,bcCtx->Nf,xG,bcCtx->ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
@@ -67,13 +89,15 @@ int main(int argc, char **argv)
   DM             base, preForest, postForest;
   PetscInt       dim = 2;
   PetscInt       preCount, postCount;
-  PetscFE        fe;
   Vec            preVec, postVecTransfer, postVecExact;
   PetscErrorCode (*funcs[1]) (PetscInt,PetscReal,const PetscReal [],PetscInt,PetscScalar [], void *) = {MultiaffineFunction};
   void           *ctxs[1] = {NULL};
   const PetscInt cells[] = {3, 3, 3};
   PetscReal      diff, tol = PETSC_SMALL;
   PetscBool      linear = PETSC_FALSE;
+  PetscBool      useFV = PETSC_FALSE;
+  PetscDS        ds;
+  bc_func_ctx    bcCtx;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
@@ -81,20 +105,59 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The dimension (2 or 3)", "ex2.c", dim, &dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-linear","Transfer a simple linear function", "ex2.c", linear, &linear, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_fv","Use a finite volume approximation", "ex2.c", useFV, &useFV, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (linear) {
     funcs[0] = LinearFunction;
   }
 
+  bcCtx.func = funcs[0];
+  bcCtx.dim  = dim;
+  bcCtx.Nf   = 1;
+  bcCtx.ctx  = NULL;
+
   /* the base mesh */
   ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &base);CHKERRQ(ierr);
+  if (useFV) {
+    PetscFV      fv;
+    PetscLimiter limiter;
+    DM           baseFV;
+
+    ierr = DMPlexConstructGhostCells(base,NULL,NULL,&baseFV);CHKERRQ(ierr);
+    ierr = DMDestroy(&base);CHKERRQ(ierr);
+    base = baseFV;
+    ierr = PetscFVCreate(comm, &fv);CHKERRQ(ierr);
+    ierr = PetscFVSetSpatialDimension(fv,dim);CHKERRQ(ierr);
+    ierr = PetscFVSetType(fv,PETSCFVLEASTSQUARES);CHKERRQ(ierr);
+    ierr = PetscFVSetNumComponents(fv,1);CHKERRQ(ierr);
+    ierr = PetscLimiterCreate(comm,&limiter);CHKERRQ(ierr);
+    ierr = PetscLimiterSetType(limiter,PETSCLIMITERNONE);CHKERRQ(ierr);
+    ierr = PetscFVSetLimiter(fv,limiter);CHKERRQ(ierr);
+    ierr = PetscLimiterDestroy(&limiter);CHKERRQ(ierr);
+    ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
+    ierr = DMSetField(base,0,(PetscObject)fv);CHKERRQ(ierr);
+    ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
+  } else {
+    PetscFE fe;
+    ierr = PetscFECreateDefault(base,dim,1,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+    ierr = DMSetField(base,0,(PetscObject)fe);CHKERRQ(ierr);
+    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  }
+  {
+    PetscInt comps[] = {0};
+    PetscInt ids[]   = {1, 2, 3, 4, 5, 6};
+
+    ierr = DMAddBoundary(base,PETSC_TRUE, "bc", "marker", 0, 1, comps, useFV ? (void(*)()) bc_func_fv : (void(*)()) funcs[0], 2 * dim, ids, useFV ? (void *) &bcCtx : NULL);CHKERRQ(ierr);
+  }
   ierr = AddIdentityLabel(base);CHKERRQ(ierr);
   ierr = DMViewFromOptions(base,NULL,"-dm_base_view");CHKERRQ(ierr);
 
   /* the pre adaptivity forest */
   ierr = DMCreate(comm,&preForest);CHKERRQ(ierr);
   ierr = DMSetType(preForest,(dim == 2) ? DMP4EST : DMP8EST);CHKERRQ(ierr);
+  ierr = DMGetDS(base,&ds);CHKERRQ(ierr);
+  ierr = DMSetDS(preForest,ds);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(preForest,base);CHKERRQ(ierr);
   ierr = DMForestSetInitialRefinement(preForest,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(preForest);CHKERRQ(ierr);
@@ -102,9 +165,6 @@ int main(int argc, char **argv)
   ierr = DMViewFromOptions(preForest,NULL,"-dm_pre_view");CHKERRQ(ierr);
 
   /* the pre adaptivity field */
-  ierr = PetscFECreateDefault(preForest,dim,1,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-  ierr = DMSetField(preForest,0,(PetscObject)fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(preForest,&preVec);CHKERRQ(ierr);
   ierr = DMProjectFunction(preForest,0.,funcs,ctxs,INSERT_VALUES,preVec);CHKERRQ(ierr);
   ierr = VecViewFromOptions(preVec,NULL,"-vec_pre_view");CHKERRQ(ierr);
@@ -120,7 +180,7 @@ int main(int argc, char **argv)
 
   /* transfer */
   ierr = DMCreateGlobalVector(postForest,&postVecTransfer);CHKERRQ(ierr);
-  ierr = DMForestTransferVec(preForest,preVec,postForest,postVecTransfer);CHKERRQ(ierr);
+  ierr = DMForestTransferVec(preForest,preVec,postForest,postVecTransfer,PETSC_TRUE,0.0);CHKERRQ(ierr);
   ierr = VecViewFromOptions(postVecTransfer,NULL,"-vec_post_transfer_view");CHKERRQ(ierr);
 
   /* the exact post adaptivity field */
