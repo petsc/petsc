@@ -1662,10 +1662,11 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   {
-    PetscBool      adaptInitial = useAMR, adaptInitialGlobal;
+    PetscBool      adaptInitial = useAMR, adaptInitialGlobal, viewInitial = PETSC_FALSE;
     DM             gradDM;
     Vec            cellGeom, faceGeom;
     PetscLimiter   nonelimiter, origlimiter;
+    PetscInt       adaptIter = 0;
 
     ierr = DMPlexTSGetGradientDM(dm,fvm,&gradDM);CHKERRQ(ierr);
     ierr = DMPlexTSGetGeometryFVM(dm, &faceGeom, &cellGeom, NULL);CHKERRQ(ierr);
@@ -1678,8 +1679,37 @@ int main(int argc, char **argv)
     ierr = PetscLimiterSetType(nonelimiter,PETSCLIMITERNONE);CHKERRQ(ierr);
     ierr = PetscFVSetLimiter(fvm,nonelimiter);CHKERRQ(ierr);
     ierr = PetscLimiterDestroy(&nonelimiter);CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(comm,NULL,"Initial refinement options","");CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-view_initial_refinement","View initial conditions","",viewInitial,&viewInitial,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();
     do {
       ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+      if (viewInitial) {
+        PetscViewer viewer;
+        char        buf[256];
+        PetscBool   isHDF5, isVTK;
+
+        ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
+        ierr = PetscViewerSetType(viewer,PETSCVIEWERHDF5);CHKERRQ(ierr);
+        ierr = PetscViewerSetOptionsPrefix(viewer,"initial_");CHKERRQ(ierr);
+        ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK);CHKERRQ(ierr);
+        if (isHDF5) {
+          ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.h5", adaptIter);CHKERRQ(ierr);
+        } else if (isVTK) {
+          ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.vtu", adaptIter);CHKERRQ(ierr);
+          ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
+        if (isHDF5) {
+          ierr = DMView(dm,viewer);CHKERRQ(ierr);
+          ierr = PetscViewerFileSetMode(viewer,FILE_MODE_UPDATE);CHKERRQ(ierr);
+        }
+        ierr = VecView(X,viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      }
       if (adaptInitial) {
         DM                plex, cellDM;
         PetscBool         isForest;
@@ -1692,7 +1722,7 @@ int main(int argc, char **argv)
         PetscLogDouble    bytes;
 
         ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-        ierr = PetscInfo1(ts, "refinement loop: memory used %g\n", bytes);CHKERRQ(ierr);
+        ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
         ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
         ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
 
@@ -1766,7 +1796,9 @@ int main(int argc, char **argv)
         }
         ierr = DMDestroy(&plex);CHKERRQ(ierr);
       }
+      adaptIter++;
     } while (adaptInitial);
+    /* restore the original limiter */
     ierr = PetscFVSetLimiter(fvm,origlimiter);CHKERRQ(ierr);
     ierr = PetscLimiterDestroy(&origlimiter);CHKERRQ(ierr);
   }
