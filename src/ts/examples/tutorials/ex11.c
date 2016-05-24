@@ -100,6 +100,7 @@ struct _n_Model {
   PetscReal        maxspeed;    /* estimate of global maximum speed (for CFL calculation) */
   PetscReal        bounds[2*DIM];
   DMBoundaryType   bcs[3];
+  PetscErrorCode   (*errorIndicator)(PetscInt, PetscReal, PetscInt, const PetscScalar[], const PetscScalar[], PetscReal *, void *);
 };
 
 struct _n_User {
@@ -789,6 +790,23 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
   ierr = ModelFunctionalRegister(mod,"Momentum",&eu->monitor.Momentum,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
   ierr = ModelFunctionalRegister(mod,"Pressure",&eu->monitor.Pressure,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ErrorIndicator_Simple"
+static PetscErrorCode ErrorIndicator_Simple(PetscInt dim, PetscReal volume, PetscInt numComps, const PetscScalar u[], const PetscScalar grad[], PetscReal *error, void *ctx)
+{
+  PetscReal      err = 0.;
+  PetscInt       i, j;
+
+  PetscFunctionBeginUser;
+  for (i = 0; i < numComps; i++) {
+    for (j = 0; j < dim; j++) {
+      err += PetscSqr(PetscRealPart(grad[i * dim + j]));
+    }
+  }
+  *error = volume * err;
   PetscFunctionReturn(0);
 }
 
@@ -1574,6 +1592,7 @@ int main(int argc, char **argv)
   /* set up BCs, functions, tags */
   ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
   ierr = (*mod->setupbc)(dm,phys);CHKERRQ(ierr);
+  mod->errorIndicator = ErrorIndicator_Simple;
 
   {
     DM dmDist;
@@ -1717,6 +1736,7 @@ int main(int argc, char **argv)
         PetscInt          cStart, cEnd, cEndInterior, c;
         PetscReal         refineTol = PetscSqrtReal(2.5), coarseTol = 0.0;
         PetscReal         minInd = PETSC_MAX_REAL, maxInd = PETSC_MIN_REAL;
+        const PetscScalar *pointVals;
         const PetscScalar *pointGrads;
         const PetscScalar *pointGeom;
         PetscLogDouble    bytes;
@@ -1739,23 +1759,22 @@ int main(int argc, char **argv)
         cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
         ierr = VecGetArrayRead(grad,&pointGrads);CHKERRQ(ierr);
         ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
         ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
         if (isForest) {ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);}
 
         adaptInitial = PETSC_FALSE;
         for (c = cStart; c < cEnd; c++) {
-          PetscInt  i;
-          PetscReal vol, gradnorm2 = 0., errInd;
+          PetscReal errInd = 0.;
           const     PetscScalar     *pointGrad;
+          const     PetscScalar     *pointVal;
           const     PetscFVCellGeom *cg;
 
           ierr = DMPlexPointLocalRead(gradDM,c,pointGrads,&pointGrad);CHKERRQ(ierr);
           ierr = DMPlexPointLocalRead(cellDM,c,pointGeom,&cg);CHKERRQ(ierr);
+          ierr = DMPlexPointLocalRead(plex,c,pointVals,&pointVal);CHKERRQ(ierr);
 
-          vol = cg->volume;
-
-          for (i = 0; i < phys->dof; i++) gradnorm2 += PetscSqr(PetscRealPart(pointGrad[i]));
-          errInd = vol * gradnorm2;
+          ierr = (mod->errorIndicator)(dim,cg->volume,phys->dof,pointVal,pointGrad,&errInd,user);CHKERRQ(ierr);
           maxInd = PetscMax(maxInd,errInd);
           minInd = PetscMin(minInd,errInd);
           if (errInd > PetscSqr(refineTol)) {
@@ -1767,6 +1786,7 @@ int main(int argc, char **argv)
           }
         }
         ierr = PetscInfo2(ts, "initial error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(grad,&pointGrads);CHKERRQ(ierr);
         ierr = VecDestroy(&grad);CHKERRQ(ierr);
