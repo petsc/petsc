@@ -1649,6 +1649,13 @@ PETSC_EXTERN PetscErrorCode MatMkl_CPardisoSetCntl(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
+/*
+   PETSc interface to SUPERLU_DIST
+*/
+#ifdef PETSC_HAVE_SUPERLU_DIST
+PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat,PetscScalar*);
+#endif
+
 #ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
