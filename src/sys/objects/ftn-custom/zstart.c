@@ -15,6 +15,8 @@
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas_v2.h>
+
+extern cublasHandle_t cublasv2handle;
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
