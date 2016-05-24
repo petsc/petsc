@@ -91,8 +91,8 @@ PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscB
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5SetBaseDimension2"
-/*@C
-     PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a 
+/*@
+     PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
 
     Logically Collective on PetscViewer
@@ -125,8 +125,8 @@ PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer,PetscBool flg
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5GetBaseDimension2"
-/*@C
-     PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a 
+/*@
+     PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
 
     Logically Collective on PetscViewer
@@ -168,7 +168,7 @@ PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool fl
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5SetSPOutput"
-/*@C
+/*@
      PetscViewerHDF5SetSPOutput - Data is written to disk in single precision even if PETSc is
        compiled with double precision PetscReal.
 
@@ -203,7 +203,7 @@ PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer,PetscBool flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5GetSPOutput"
-/*@C
+/*@
      PetscViewerHDF5GetSPOutput - Data is written to disk in single precision even if PETSc is
        compiled with double precision PetscReal.
 
@@ -617,7 +617,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5WriteAttribute"
-/*@
+/*@C
  PetscViewerHDF5WriteAttribute - Write a scalar attribute
 
   Input Parameters:
@@ -666,7 +666,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5ReadAttribute"
-/*@
+/*@C
  PetscViewerHDF5ReadAttribute - Read a scalar attribute
 
   Input Parameters:
@@ -735,7 +735,7 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5HasAttribute"
-/*@
+/*@C
  PetscViewerHDF5HasAttribute - Check whether a scalar attribute exists
 
   Input Parameters:
