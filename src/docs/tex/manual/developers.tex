@@ -158,7 +158,7 @@ Note that PETSc can be configured to build a separate shared library for each to
 For example, 
 \begin{itemize}
 \item \trl{MatStashCreate_Private} is marked \trl{PETSC_INTERN} as it is used across compilation units, but only within the \trl{Mat} package.
-\item All functions, such as \trl{KSP_Create()}, included in the public headers \trl{include/petsc*.h}) should be marked \trl{PETSC_EXTERN}.
+\item All functions, such as \trl{KSPCreate()}, included in the public headers \trl{include/petsc*.h}) should be marked \trl{PETSC_EXTERN}.
 \item \trl{MatHeaderReplace()} is not intended for users (it is in \trl{include/petsc/private/matimpl.h}) but is marked \trl{PETSC_EXTERN} since it is used both by implementations of the \trl{Mat} class (which could be defined in plugin implementations) and by functions in the \trl{DM} and \trl{KSP} packages.
 \end{itemize}
 \end{itemize}
