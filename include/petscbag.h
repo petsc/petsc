@@ -40,7 +40,7 @@ PETSC_EXTERN PetscErrorCode PetscBagRegisterRealArray(PetscBag,void*,PetscInt, c
 PETSC_EXTERN PetscErrorCode PetscBagRegisterString(PetscBag,void*,PetscInt,const char*, const char*, const char*);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterScalar(PetscBag,void*,PetscScalar,const  char*,const  char*);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterInt(PetscBag,void*,PetscInt,const  char*,const  char*);
-PETSC_EXTERN PetscErrorCode PetscBagRegister64bitInt(PetscBag,void*,Petsc64bitInt,const  char*,const  char*);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterInt64(PetscBag,void*,PetscInt64,const  char*,const  char*);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterIntArray(PetscBag,void*,PetscInt,const  char*,const  char*);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterEnum(PetscBag,void*,const char*const*,PetscEnum,const char*,const  char*);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterBool(PetscBag,void*,PetscBool ,const  char*,const  char*);

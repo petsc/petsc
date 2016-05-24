@@ -207,7 +207,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize,
    Level: beginner
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
-           PetscBagRegister64bitInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
+           PetscBagRegisterInt64(), PetscBagRegisterBool(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
@@ -240,9 +240,9 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBagRegister64bitInt"
+#define __FUNCT__ "PetscBagRegisterInt64"
 /*@C
-   PetscBagRegister64bitInt - add an integer value to the bag
+   PetscBagRegisterInt64 - add an integer value to the bag
 
    Logically Collective on PetscBag
 
@@ -260,7 +260,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PetscBagRegister64bitInt(PetscBag bag,void *addr,Petsc64bitInt mdefault,const char *name,const char *help)
+PetscErrorCode PetscBagRegisterInt64(PetscBag bag,void *addr,PetscInt64 mdefault,const char *name,const char *help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
@@ -278,7 +278,7 @@ PetscErrorCode PetscBagRegister64bitInt(PetscBag bag,void *addr,Petsc64bitInt md
     ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%d>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,odefault,help);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetInt(NULL,bag->bagprefix,nname,&odefault,&flg);CHKERRQ(ierr);
-  if (flg) mdefault = (Petsc64bitInt)odefault;
+  if (flg) mdefault = (PetscInt64)odefault;
 
   ierr         = PetscNew(&item);CHKERRQ(ierr);
   item->dtype  = PETSC_INT;
@@ -286,7 +286,7 @@ PetscErrorCode PetscBagRegister64bitInt(PetscBag bag,void *addr,Petsc64bitInt md
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next       = 0;
   item->msize      = 1;
-  *(Petsc64bitInt*)addr = mdefault;
+  *(PetscInt64*)addr = mdefault;
   ierr             = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
