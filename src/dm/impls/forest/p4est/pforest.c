@@ -2811,7 +2811,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       pforestF->pointAdaptToSelfCids = cids;
     } else {
       ierr = PetscMalloc1(pEndF-pStartF,&pforestF->pointAdaptToSelfCids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(pforestC->pointAdaptToSelfCids,cids,(pEndF-pStartF)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemcpy(pforestF->pointAdaptToSelfCids,cids,(pEndF-pStartF)*sizeof(PetscInt));CHKERRQ(ierr);
     }
   }
   ierr = PetscFree2(treeQuads,treeQuadCounts);CHKERRQ(ierr);
@@ -3738,6 +3738,25 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
   PetscFunctionReturn(0);
 }
 
+#define DMForestClearAdaptivityForest_pforest _append_pforest(DMForestClearAdaptivityForest)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMForestClearAdaptivityForest_pforest)
+static PetscErrorCode DMForestClearAdaptivityForest_pforest(DM dm)
+{
+  DM_Forest         *forest;
+  DM_Forest_pforest *pforest;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  forest  = (DM_Forest*) dm->data;
+  pforest = (DM_Forest_pforest *) forest->data;
+  ierr = PetscSFDestroy(&(pforest->pointAdaptToSelfSF));CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&(pforest->pointSelfToAdaptSF));CHKERRQ(ierr);
+  ierr = PetscFree(pforest->pointAdaptToSelfCids);CHKERRQ(ierr);
+  ierr = PetscFree(pforest->pointSelfToAdaptCids);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMConvert_pforest_plex)
 static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
@@ -3850,7 +3869,6 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr  = PetscSFCreate(comm,&pointSF);CHKERRQ(ierr);
     ierr  = DMCreateReferenceTree_pforest(comm,&refTree);CHKERRQ(ierr);
     ierr  = DMPlexSetReferenceTree(newPlex,refTree);CHKERRQ(ierr);
-    ierr  = DMDestroy(&refTree);CHKERRQ(ierr);
     ierr  = PetscSectionCreate(comm,&parentSection);CHKERRQ(ierr);
     ierr  = DMPlexGetChart(newPlex,&pStart,&pEnd);CHKERRQ(ierr);
     ierr  = PetscSectionSetChart(parentSection,pStart,pEnd);CHKERRQ(ierr);
@@ -3905,6 +3923,8 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
       ierr    = DMGetPointSF(newPlexGhosted,&pointSF);CHKERRQ(ierr);
       ierr    = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);
       ierr    = DMDestroy(&newPlex);CHKERRQ(ierr);
+      ierr    = DMPlexSetReferenceTree(newPlexGhosted,refTree);CHKERRQ(ierr);
+      ierr    = DMForestClearAdaptivityForest_pforest(dm);CHKERRQ(ierr);
       newPlex = newPlexGhosted;
 
       /* share the labels back */
@@ -3914,6 +3934,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
       pforest->plex = newPlex;
     }
+    ierr  = DMDestroy(&refTree);CHKERRQ(ierr);
     if (forest->setfromoptionscalled) {
       ierr = PetscObjectOptionsBegin((PetscObject)newPlex);CHKERRQ(ierr);
       ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,newPlex);CHKERRQ(ierr);
@@ -4407,25 +4428,6 @@ static PetscErrorCode DMGetDimPoints_pforest(DM dm, PetscInt dim, PetscInt *cSta
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
   ierr = DMGetDimPoints(plex,dim,cStart,cEnd);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#define DMForestClearAdaptivityForest_pforest _append_pforest(DMForestClearAdaptivityForest)
-#undef __FUNCT__
-#define __FUNCT__ _pforest_string(DMForestClearAdaptivityForest_pforest)
-static PetscErrorCode DMForestClearAdaptivityForest_pforest(DM dm)
-{
-  DM_Forest         *forest;
-  DM_Forest_pforest *pforest;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  forest  = (DM_Forest*) dm->data;
-  pforest = (DM_Forest_pforest *) forest->data;
-  ierr = PetscSFDestroy(&(pforest->pointAdaptToSelfSF));CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&(pforest->pointSelfToAdaptSF));CHKERRQ(ierr);
-  ierr = PetscFree(pforest->pointAdaptToSelfCids);CHKERRQ(ierr);
-  ierr = PetscFree(pforest->pointSelfToAdaptCids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
