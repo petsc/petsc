@@ -158,7 +158,9 @@ int main(int argc, char **argv)
   ierr = DMSetType(preForest,(dim == 2) ? DMP4EST : DMP8EST);CHKERRQ(ierr);
   ierr = DMGetDS(base,&ds);CHKERRQ(ierr);
   ierr = DMSetDS(preForest,ds);CHKERRQ(ierr);
+  ierr = DMCopyBoundary(base,preForest);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(preForest,base);CHKERRQ(ierr);
+  ierr = DMForestSetMinimumRefinement(preForest,1);CHKERRQ(ierr);
   ierr = DMForestSetInitialRefinement(preForest,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(preForest);CHKERRQ(ierr);
   ierr = DMSetUp(preForest);CHKERRQ(ierr);
