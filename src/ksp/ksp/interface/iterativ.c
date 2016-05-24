@@ -1144,7 +1144,7 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (ksp->dm) {                /* Move the DMSNES context over to the new DM unless the new DM already has one */
-    if (ksp->dm->dmksp && ksp->dmAuto && !dm->dmksp) {
+    if (ksp->dm->dmksp && !dm->dmksp) {
       DMKSP kdm;
       ierr = DMCopyDMKSP(ksp->dm,dm);CHKERRQ(ierr);
       ierr = DMGetDMKSP(ksp->dm,&kdm);CHKERRQ(ierr);
