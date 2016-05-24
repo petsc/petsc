@@ -66,21 +66,7 @@ PetscErrorCode DMPlexTSGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMGetDMTS(plex, &dmts);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_facegeom_fvm", &obj);CHKERRQ(ierr);
-  if (!obj) {
-    Vec cellgeom, facegeom;
-
-    ierr = DMPlexGetDataFVM(plex, NULL, &cellgeom, &facegeom, NULL);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_facegeom_fvm", (PetscObject) facegeom);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_cellgeom_fvm", (PetscObject) cellgeom);CHKERRQ(ierr);
-  }
-  if (facegeom) {PetscValidPointer(facegeom, 2); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_facegeom_fvm", (PetscObject *) facegeom);CHKERRQ(ierr);}
-  if (cellgeom) {PetscValidPointer(cellgeom, 3); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_cellgeom_fvm", (PetscObject *) cellgeom);CHKERRQ(ierr);}
-  if (minRadius) {ierr = DMPlexGetMinRadius(plex, minRadius);CHKERRQ(ierr);}
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  ierr = DMPlexSNESGetGeometryFVM(dm,facegeom,cellgeom,minRadius);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -109,23 +95,7 @@ PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(fv,PETSCFV_CLASSID,2);
-  PetscValidPointer(dmGrad,3);
-  ierr = PetscFVGetComputeGradients(fv, &computeGradients);CHKERRQ(ierr);
-  if (!computeGradients) {*dmGrad = NULL; PetscFunctionReturn(0);}
-  ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMGetDMTS(plex, &dmts);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_dmgrad_fvm", &obj);CHKERRQ(ierr);
-  if (!obj) {
-    DM  dmGrad;
-    Vec faceGeometry, cellGeometry;
-
-    ierr = DMPlexGetDataFVM(plex,fv,&cellGeometry,&faceGeometry,&dmGrad);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_dmgrad_fvm", (PetscObject) dmGrad);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_dmgrad_fvm", (PetscObject *) dmGrad);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  ierr = DMPlexSNESGetGradientDM(dm,fv,dmGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
