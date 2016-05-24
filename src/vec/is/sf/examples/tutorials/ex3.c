@@ -24,7 +24,7 @@ int main(int argc, char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process\n");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
   ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
@@ -62,8 +62,8 @@ int main(int argc, char **argv)
   ierr = MPI_Type_commit(&contig);CHKERRQ(ierr);
 
   for (i=0;i<10000;i++) {
-    ierr = PetscSFBcastBegin(sf,contig,(const void*)bufA,(void *)bufAout);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,contig,(const void*)bufA,(void *)bufAout);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,contig,bufA,bufAout);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,contig,bufA,bufAout);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(A,(const PetscScalar**)&bufA);CHKERRQ(ierr);
   ierr = VecRestoreArray(Aout,&bufAout);CHKERRQ(ierr);
