@@ -454,7 +454,9 @@ static int pforest_coarsen_flag_any(p4est_t * p4est, p4est_topidx_t which_tree, 
 {
   PetscInt  i;
   PetscBool any = PETSC_FALSE;
+  PetscInt  minLevel = *((PetscInt*) p4est->user_pointer);
 
+  if (quadrants[0]->level <= minLevel) return 0;
   for (i = 0; i < P4EST_CHILDREN; i++) {
     if (quadrants[i]->p.user_int == DM_FOREST_COARSEN) {
       any = PETSC_TRUE;
@@ -468,7 +470,9 @@ static int pforest_coarsen_flag_all(p4est_t * p4est, p4est_topidx_t which_tree, 
 {
   PetscInt  i;
   PetscBool all = PETSC_TRUE;
+  PetscInt  minLevel = *((PetscInt*) p4est->user_pointer);
 
+  if (quadrants[0]->level <= minLevel) return 0;
   for (i = 0; i < P4EST_CHILDREN; i++) {
     if (quadrants[i]->p.user_int != DM_FOREST_COARSEN) {
       all = PETSC_FALSE;
@@ -493,6 +497,10 @@ static int pforest_refine_uniform(p4est_t * p4est, p4est_topidx_t which_tree, p4
 
 static int pforest_refine_flag(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
 {
+  PetscInt maxLevel = *((PetscInt*) p4est->user_pointer);
+
+  if ((PetscInt) quadrant->level >= maxLevel) return 0;
+
   return (quadrant->p.user_int == DM_FOREST_REFINE);
 }
 
@@ -868,7 +876,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscInt                   c, cStart, cEnd, cLocalStart, count;
         p4est_topidx_t             flt, llt, t;
         PetscBool                  adaptAny;
+        PetscInt                   maxLevel, minLevel;
 
+        ierr = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
+        ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
         ierr = DMForestGetAdaptivityStrategy(dm,&strategy);CHKERRQ(ierr);
         ierr = PetscStrncmp(strategy,"any",3,&adaptAny);CHKERRQ(ierr);
         ierr = DMForestGetCellChart(adaptFrom,&cStart,&cEnd);CHKERRQ(ierr);
@@ -900,12 +911,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         }
         ierr = PetscFree(cellFlags);CHKERRQ(ierr);
 
+        pforest->forest->user_pointer = (void*) &minLevel;
         if (adaptAny) {
           PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_keep));
         } else {
           PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_all,pforest_init_keep));
         }
+        pforest->forest->user_pointer = (void*) &maxLevel;
         PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_flag,NULL));
+        pforest->forest->user_pointer = (void*) dm;
         PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
         if (computeAdaptSF) {
           ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),apforest->forest,apforest->cLocalStart,pforest->forest,0,&preCoarseToFine,&coarseToPreFine);CHKERRQ(ierr);
