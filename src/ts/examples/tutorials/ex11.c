@@ -1370,7 +1370,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
 
   if (stepnum >= 0) {
-    stepnum += user->model->monitorStepOffset;
+    stepnum += user->monitorStepOffset;
   }
   if (stepnum >= 0) {           /* No summary for final time */
     Model             mod = user->model;
@@ -1492,7 +1492,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   PetscBool         isForest;
   Vec               grad, locX;
   PetscInt          cStart, cEnd, cEndInterior, c, dim;
-  PetscReal         minMaxInd[2] = {PETSC_MIN_REAL, PETSC_MAX_REAL}, minMaxIndGlobal[2], minInd, maxInd, time;
+  PetscReal         minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2], minInd, maxInd, time;
   const PetscScalar *pointVals;
   const PetscScalar *pointGrads;
   const PetscScalar *pointGeom;
@@ -1572,7 +1572,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
       ierr = initializeTS(adaptedDM,user,tsNew);CHKERRQ(ierr);
     }
     if (solNew) {
-      ierr = DMCreateGlobalVector(dm, solNew);CHKERRQ(ierr);
+      ierr = DMCreateGlobalVector(adaptedDM, solNew);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) *solNew, "solution");CHKERRQ(ierr);
       ierr = DMForestTransferVec(dm, sol, adaptedDM, *solNew, PETSC_TRUE, time);CHKERRQ(ierr);
     }
@@ -1870,6 +1870,7 @@ int main(int argc, char **argv)
           ierr = TSDestroy(&ts);CHKERRQ(ierr);
           ts   = tsNew;
           ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+          ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
           ierr = DMCreateGlobalVector(dm,&X);CHKERRQ(ierr);
           ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
           ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
@@ -1938,7 +1939,9 @@ int main(int argc, char **argv)
         ierr = TSDestroy(&ts);CHKERRQ(ierr);
         ts   = tsNew;
         X    = solNew;
+        ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
         ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
         ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
         mod->maxspeed = phys->maxspeed;
         if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
