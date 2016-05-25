@@ -547,6 +547,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
 {
   FETIDPMat_ctx  mat_ctx;
   PC_IS          *pcis;
+  PetscBool      lumped = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -558,10 +559,17 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   fetidppc_ctx->B_Ddelta = mat_ctx->B_Ddelta;
   ierr = PetscObjectReference((PetscObject)mat_ctx->l2g_lambda);CHKERRQ(ierr);
   fetidppc_ctx->l2g_lambda = mat_ctx->l2g_lambda;
-  /* create local Schur complement matrix */
+  /* create preconditioner */
   pcis = (PC_IS*)fetidppc_ctx->pc->data;
-  ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
-  ierr = MatSchurComplementSetKSP(fetidppc_ctx->S_j,pcis->ksp_D);CHKERRQ(ierr);
+  /* Dirichlet preconditioner */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fetidp_lumped",&lumped,NULL);CHKERRQ(ierr);
+  if (!lumped) {
+    ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
+    ierr = MatSchurComplementSetKSP(fetidppc_ctx->S_j,pcis->ksp_D);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject)pcis->A_BB);CHKERRQ(ierr);
+    fetidppc_ctx->S_j = pcis->A_BB;
+  }
   PetscFunctionReturn(0);
 }
 
