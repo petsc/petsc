@@ -82,6 +82,13 @@ cdef class Object:
     def setFromOptions(self):
         CHKERR( PetscObjectSetFromOptions(self.obj[0]) )
 
+    def viewFromOptions(self, name, Object prefix=None):
+        cdef PetscObject pobj = NULL
+        cdef const_char *cval = NULL
+        pobj = prefix.obj[0] if prefix is not None else NULL
+        name = str2bytes(name, &cval)
+        CHKERR( PetscObjectViewFromOptions(self.obj[0], pobj, cval) )
+
     #
 
     def getComm(self):

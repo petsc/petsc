@@ -14,6 +14,7 @@ cdef extern from * nogil:
     int PetscObjectSetOptionsPrefix(PetscObject,char[])
     int PetscObjectGetOptionsPrefix(PetscObject,char*[])
     int PetscObjectSetFromOptions(PetscObject)
+    int PetscObjectViewFromOptions(PetscObject,PetscObject,char[])
 
     int PetscObjectGetComm(PetscObject,MPI_Comm*)
     int PetscObjectGetClassId(PetscObject,PetscClassId*)
