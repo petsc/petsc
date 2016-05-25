@@ -1280,6 +1280,22 @@ runex52_superlu_dist:
 	-@${MPIEXEC} -n 2 ./ex52 -use_superlu_lu > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_superlu_dist, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
+runex52_strumpack_ilu:
+	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_ilu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack_ilu, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
+runex52_strumpack:
+	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_lu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
+runex52_strumpack_ilu_2:
+	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_ilu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack_ilu, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
+runex52_strumpack_2:
+	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_lu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
 
 runex52f_mumps:
 	-@${MPIEXEC} -n 3 ./ex52f > ex52.tmp 2>&1;	  \
@@ -1608,6 +1624,7 @@ TESTEXAMPLES_SUPERLU_DATAFILESPATH      = ex10.PETSc runex10_superlu_lu_1 ex10.r
 TESTEXAMPLES_SUPERLU_DIST               = ex52.PETSc runex52_superlu_dist ex52.rm ex64.PETSc runex64 ex64.rm \
 	 			          ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
 TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_STRUMPACK                  = ex52.PETSc runex52_strumpack_ilu runex52_strumpack runex52_strumpack_ilu_2 runex52_strumpack_2 ex52.rm
 TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
 TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
 TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
