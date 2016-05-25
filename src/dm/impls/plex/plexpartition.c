@@ -464,8 +464,16 @@ PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (!((PetscObject) part)->type_name) defaultType = PETSCPARTITIONERCHACO;
-  else                                  defaultType = ((PetscObject) part)->type_name;
+  if (!((PetscObject) part)->type_name)
+#if defined(PETSC_HAVE_CHACO)
+    defaultType = PETSCPARTITIONERCHACO;
+#elif defined(PETSC_HAVE_PARMETIS)
+    defaultType = PETSCPARTITIONERPARMETIS;
+#else
+    defaultType = PETSCPARTITIONERSIMPLE;
+#endif
+  else
+    defaultType = ((PetscObject) part)->type_name;
   ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
