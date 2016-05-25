@@ -1657,6 +1657,16 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat,PetscScalar*);
 #endif
 
+/*
+   PETSc interface to STRUMPACK
+*/
+#ifdef PETSC_HAVE_STRUMPACK
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSRelCompTol(Mat,PetscReal);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSMinSize(Mat,PetscInt);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetColPerm(Mat,PetscBool);
+#endif
+
+
 #ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
