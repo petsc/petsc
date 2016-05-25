@@ -2762,6 +2762,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
     ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
     ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   }
   if (matis->A->symmetric_set) {
     ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric);CHKERRQ(ierr);
@@ -3337,7 +3338,6 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   ierr = PCBDDCScatterCoarseDataEnd(pc,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* Coarse solution -> rhs and sol updated inside PCBDDCScattarCoarseDataBegin/End */
-  /* TODO remove null space when doing multilevel */
   if (pcbddc->coarse_ksp) {
     Mat          coarse_mat;
     Vec          rhs,sol;
@@ -3381,7 +3381,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
         ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
       }
     }
-    /* we don't the benign correction at coarser levels anymore */
+    /* we don't need the benign correction at coarser levels anymore */
     if (pcbddc->benign_have_null && isbddc) {
       PC        coarse_pc;
       PC_BDDC*  coarsepcbddc;
