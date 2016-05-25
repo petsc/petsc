@@ -2606,7 +2606,7 @@ TESTEXAMPLES_MUMPS_DATAFILESPATH = ex125.PETSc runex125_mumps runex125_mumps_2 e
 TESTEXAMPLES_MKL_PARDISO       = ex125.PETSc runex125_mkl_pardiso ex125.rm \
                                  ex192.PETSc runex192_mkl_pardiso ex192.rm
 TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex125.PETSc runex125_superlu_dist runex125_superlu_dist_2 ex125.rm
-TESTEXAMPLES_SUPERLU_DIST_COMPLEX = ex125.PETSc runex125_superlu_dist_complex ex125.rm
+TESTEXAMPLES_SUPERLU_DIST_COMPLEX_DATAFILESPATH = ex125.PETSc runex125_superlu_dist_complex ex125.rm
 TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
