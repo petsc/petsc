@@ -327,6 +327,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (dim != 2) SETERRQ(comm, PETSC_ERR_SUP, "I have only coded this for 2D");
   ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscGridHashCreate(comm, dim, coords, &lbox);CHKERRQ(ierr);
@@ -1867,8 +1868,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   ierr = DMPlexGetTree(dm,&parentSection,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (!parentSection) {
     ierr = BuildGradientReconstruction_Internal(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = BuildGradientReconstruction_Internal_Tree(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(faceGeometry, &fgeom);CHKERRQ(ierr);

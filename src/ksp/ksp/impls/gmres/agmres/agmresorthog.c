@@ -150,7 +150,6 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   ierr = PetscBLASIntCast(nloc,&bnloc);CHKERRQ(ierr);
   if (nvec > nloc) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONG, "In QR factorization, the number of local rows should be greater or equal to the number of columns");
   pas = 1;
-  k   = 0;
   /* Copy the vectors of the basis */
   for (j = 0; j < nvec; j++) {
     ierr = VecGetArray(VEC_V(j), &col);CHKERRQ(ierr);
@@ -188,7 +187,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
       /*Elimination of Rloc(1,d)*/
       c    = wbufptr[d];
       s    = Qloc[d*nloc];
-      ierr = KSPAGMRESRoddecGivens(&c, &s, &rho, 1);
+      ierr = KSPAGMRESRoddecGivens(&c, &s, &rho, 1);CHKERRQ(ierr);
       /*Apply Givens Rotation*/
       for (k = d; k < nvec; k++) {
         old          = wbufptr[k];
@@ -286,13 +285,13 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
       } else {
         for (j = nvec - 1; j >= d + 1; j--) {
           i         = j - d;
-          ierr      = KSPAGMRESRoddecGivens(&c, &s, &(Qloc[j * nloc + i]), 0);
+          ierr      = KSPAGMRESRoddecGivens(&c, &s, &(Qloc[j * nloc + i]), 0);CHKERRQ(ierr);
           zp        = zloc[i-1];
           zq        = zloc[i];
           zloc[i-1] =     c * zp + s * zq;
           zloc[i]   =     -s * zp + c * zq;
         }
-        ierr = KSPAGMRESRoddecGivens(&c, &s, &(Qloc[d * nloc]), 0);
+        ierr = KSPAGMRESRoddecGivens(&c, &s, &(Qloc[d * nloc]), 0);CHKERRQ(ierr);
         if (rank == Last) {
           zp      = y[d];
           zq      = zloc[0];

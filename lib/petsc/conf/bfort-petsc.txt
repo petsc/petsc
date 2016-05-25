@@ -1,4 +1,5 @@
 # these include enums
+native PetscSubcommType
 native DMDAStencilType
 native DMDAInterpolationType
 native DMDAElementType
@@ -12,6 +13,7 @@ native KSPNormType
 native KSPCGType
 native MatSchurComplementAinvType
 native MatFactorType
+native MatFactorError
 native MatCompositeType
 native MatAssemblyType
 native MatInfoType

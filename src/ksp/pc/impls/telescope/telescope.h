@@ -8,6 +8,7 @@ typedef enum { TELESCOPE_DEFAULT = 0, TELESCOPE_DMDA, TELESCOPE_DMPLEX } PCTeles
 typedef struct _PC_Telescope *PC_Telescope;
 struct _PC_Telescope {
   PetscSubcomm      psubcomm;
+  PetscSubcommType  subcommtype;
   PetscInt          redfactor; /* factor to reduce comm size by */
   KSP               ksp;
   IS                isin;

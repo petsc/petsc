@@ -298,6 +298,7 @@ PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 PETSC_EXTERN PetscLogEvent KSP_Solve_FS_0,KSP_Solve_FS_1,KSP_Solve_FS_2,KSP_Solve_FS_3,KSP_Solve_FS_4,KSP_Solve_FS_S,KSP_Solve_FS_L,KSP_Solve_FS_U;
 
 PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
 
 /*
     Either generate an error or mark as diverged when a scalar from an inner product is Nan or Inf

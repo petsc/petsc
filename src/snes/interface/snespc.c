@@ -2,7 +2,6 @@
 #include <petsc/private/snesimpl.h>      /*I "petscsnes.h"  I*/
 #include <petscdmshell.h>
 
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESApplyNPC"
 /*@

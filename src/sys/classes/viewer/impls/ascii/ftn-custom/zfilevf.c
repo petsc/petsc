@@ -3,12 +3,14 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscviewerfilesetname_                PETSCVIEWERFILESETNAME
+#define petscviewerfilegetname_                PETSCVIEWERFILEGETNAME
 #define petscviewerasciiprintf_                PETSCVIEWERASCIIPRINTF
 #define petscviewerasciisynchronizedprintf_    PETSCVIEWERASCIISYNCHRONIZEDPRINTF
-#define petscviewerasciipushsynchronized_      PETSCVIEWERASCIIPUSHSYNCHRONIZE
-#define petscviewerasciipopsynchronized_       PETSCVIEWERASCIIPOPSYNCHRONIZE
+#define petscviewerasciipushsynchronized_      PETSCVIEWERASCIIPUSHSYNCHRONIZED
+#define petscviewerasciipopsynchronized_       PETSCVIEWERASCIIPOPSYNCHRONIZED
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerfilesetname_                petscviewerfilesetname
+#define petscviewerfilegetname_                petscviewerfilegetname
 #define petscviewerasciiprintf_                petscviewerasciiprintf
 #define petscviewerasciisynchronizedprintf_    petscviewerasciisynchronizedprintf
 #define petscviewerasciipushsynchronized_      petscviewerasciipushsynchronized
@@ -23,6 +25,15 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,CHAR
   FIXCHAR(name,len,c1);
   *ierr = PetscViewerFileSetName(v,c1);
   FREECHAR(name,c1);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscviewerfilegetname_(PetscViewer *viewer, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+   const char *c1;
+
+   *ierr = PetscViewerGetType(*viewer, &c1);
+   *ierr = PetscStrncpy(name, c1, len);
+   FIXRETURNCHAR(PETSC_TRUE, name, len);
 }
 
 #undef __FUNCT__

@@ -1077,10 +1077,11 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
      an inverse, multi-rooted SF. Note that this ignores local leaf
      indexing due to the use of the multiSF in PetscSFGather. */
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleaves, &leafPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nroots, &leafPoints);CHKERRQ(ierr);
+  for (p = 0; p < nroots; ++p) leafPoints[p].rank = leafPoints[p].index = -1;
   for (p = 0; p < nleaves; p++) {
-    leafPoints[p].index = ilocal[p];
-    leafPoints[p].rank = rank;
+    leafPoints[ilocal[p]].index = ilocal[p];
+    leafPoints[ilocal[p]].rank  = rank;
   }
   ierr = PetscSFComputeDegreeBegin(sf, &rootDegree);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(sf, &rootDegree);CHKERRQ(ierr);

@@ -85,7 +85,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscOptionsEnd();
 
   if (!flg) {
-    ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);
   } else {
     /* Read in FEniCS HDF5 output */
     ierr = PetscViewerHDF5Open(comm, filename, FILE_MODE_READ, &viewer);CHKERRQ(ierr);

@@ -338,15 +338,18 @@ def print_final_timestamp(framework):
   return
 
 def petsc_configure(configure_options):
-  try:
+  if 'PETSC_DIR' in os.environ:
     petscdir = os.environ['PETSC_DIR']
-    sys.path.append(os.path.join(petscdir,'bin'))
-    import petscnagupgrade
-    file     = os.path.join(petscdir,'.nagged')
-    if not petscnagupgrade.naggedtoday(file):
-      petscnagupgrade.currentversion(petscdir)
-  except:
-    pass
+    if petscdir.find(' ') > -1:
+      raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
+    try:
+      sys.path.append(os.path.join(petscdir,'bin'))
+      import petscnagupgrade
+      file     = os.path.join(petscdir,'.nagged')
+      if not petscnagupgrade.naggedtoday(file):
+        petscnagupgrade.currentversion(petscdir)
+    except:
+      pass
   print '==============================================================================='
   print '             Configuring PETSc to compile on your system                       '
   print '==============================================================================='

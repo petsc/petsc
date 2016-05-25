@@ -45,6 +45,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char [], PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellList(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], PetscInt, const double[], DM*);
+PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], PetscInt, const double[], DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromDAG(DM, PetscInt, const PetscInt [], const PetscInt [], const PetscInt [], const PetscInt [], const PetscScalar []);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm, PetscInt, PetscBool, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexGetChart(DM, PetscInt *, PetscInt *);
@@ -117,7 +118,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateDoublet(MPI_Comm, PetscInt, PetscBool, P
 PETSC_EXTERN PetscErrorCode DMPlexCreateSquareBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSquareMesh(DM, const PetscReal [], const PetscReal [], const PetscInt [], DMBoundaryType, DMBoundaryType);
-PETSC_EXTERN PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscInt, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm, PetscInt, const PetscInt[], DMBoundaryType, DMBoundaryType, DMBoundaryType, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell(PetscInt, PetscInt, int []);
@@ -309,4 +310,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalBegin(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalEnd(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalBegin(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalEnd(DM, Vec, Vec);
+
+/* mesh adaptation */
+PETSC_EXTERN PetscErrorCode DMPlexAdapt(DM, Vec, const char [], DM *);
 #endif

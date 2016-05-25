@@ -806,11 +806,8 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     bsLocal = bs < 0 ? bsMax : bs;
     ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-    if (bsMin != bsMax) {
-      bs = 1;
-    } else {
-      bs = bsMax;
-    }
+    if (bsMin != bsMax) {bs = 1;}
+    else                {bs = bsMax;}
     ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
     ierr = DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);

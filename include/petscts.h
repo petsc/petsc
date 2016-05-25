@@ -548,6 +548,7 @@ PETSC_EXTERN PetscErrorCode TSSSPSetNumStages(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSSPGetNumStages(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSSPInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSSSPFinalizePackage(void);
+PETSC_EXTERN PetscFunctionList TSSSPList;
 
 /*S
    TSAdapt - Abstract object that manages time-step adaptivity

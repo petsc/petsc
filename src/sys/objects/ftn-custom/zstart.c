@@ -15,6 +15,8 @@
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas_v2.h>
+
+extern cublasHandle_t cublasv2handle;
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -493,7 +495,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
   *ierr = PetscFinalize();
 }
 
-void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();

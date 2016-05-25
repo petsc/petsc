@@ -5,6 +5,8 @@
 #if !defined(__CHEBY)
 #define __CHEBY
 
+#include <petsc/private/kspimpl.h>
+
 typedef struct {
   PetscReal        emin,emax;    /* store user provided estimates of extreme eigenvalues */
   KSP              kspest;       /* KSP used to estimate eigenvalues */

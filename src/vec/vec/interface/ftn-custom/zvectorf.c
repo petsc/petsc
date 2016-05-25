@@ -1,5 +1,5 @@
 #include <petsc/private/fortranimpl.h>
-#include <petsc/private/vecimpl.h>
+#include <petscvec.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -192,7 +192,7 @@ PETSC_EXTERN void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,Pe
   PetscMPIInt    size;
   const PetscInt *r;
 
-  *ierr = MPI_Comm_size((*x)->map->comm,&size);if (*ierr) return;
+  *ierr = MPI_Comm_size(PetscObjectComm((PetscObject)*x),&size);if (*ierr) return;
   *ierr = VecGetOwnershipRanges(*x,&r);if (*ierr) return;
   *ierr = PetscMemcpy(range,r,(size+1)*sizeof(PetscInt));
 }

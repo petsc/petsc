@@ -4,7 +4,6 @@
 */
 
 #include <petsc/private/dmdaimpl.h>      /*I  "petscdmda.h"   I*/
-#include <petsc/private/vecimpl.h>
 #include <petscdraw.h>
 #include <petscviewerhdf5.h>
 

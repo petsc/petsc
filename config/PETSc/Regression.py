@@ -83,11 +83,15 @@ class Configure(config.base.Configure):
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
+          if hasattr(self.compilers, 'FC'):
+            rjobs.append('Fortran_DATAFILESPATH')
           for j in self.framework.packages:
             if j.hastestsdatafiles:
                 ejobs.append(j.name.upper()+'_DATAFILESPATH')
         if self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           rjobs.append('DOUBLEINT32')
+          if hasattr(self.compilers, 'FC'):
+            rjobs.append('Fortran_DOUBLEINT32')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':

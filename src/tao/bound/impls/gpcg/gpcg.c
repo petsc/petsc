@@ -1,4 +1,4 @@
-#include <petsc/private/kspimpl.h>
+#include <petscksp.h>
 #include <../src/tao/bound/impls/gpcg/gpcg.h>        /*I "gpcg.h" I*/
 
 
@@ -26,7 +26,6 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
   ierr = MatDestroy(&gpcg->Hsub_pre);CHKERRQ(ierr);
   ierr = ISDestroy(&gpcg->Free_Local);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
-  tao->data = NULL;
   PetscFunctionReturn(0);
 }
 

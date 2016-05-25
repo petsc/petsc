@@ -247,32 +247,25 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if defined(PETSC_HAVE_STDINT_H)
-typedef int64_t Petsc64bitInt;
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+typedef int64_t PetscInt64;
+# define MPIU_INT64 MPI_INT64_T
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
-typedef long long Petsc64bitInt;
+typedef long long PetscInt64;
+# define MPIU_INT64 MPI_LONG_LONG_INT
 #elif defined(PETSC_HAVE___INT64)
-typedef __int64 Petsc64bitInt;
+typedef __int64 PetscInt64;
+# define MPIU_INT64 MPI_INT64_T
 #else
-typedef unknown64bit Petsc64bitInt
+#error "cannot determine PetscInt64 type"
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
-typedef Petsc64bitInt PetscInt;
-#  if defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
-#    define MPIU_INT MPI_LONG_LONG_INT
-#  else
-#    define MPIU_INT MPI_LONG_LONG_INT
-#  endif
+typedef PetscInt64 PetscInt;
+#define MPIU_INT MPIU_INT64
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
-#if defined(PETSC_HAVE_MPI_INT64_T)
-#  define MPIU_INT64 MPI_INT64_T
-#else
-#  define MPIU_INT64 MPI_LONG_LONG_INT
-#endif
-
 
 /*MC
     PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
@@ -302,7 +295,7 @@ typedef int PetscInt;
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
-typedef Petsc64bitInt PetscBLASInt;
+typedef PetscInt64 PetscBLASInt;
 #else
 typedef int PetscBLASInt;
 #endif
@@ -1534,7 +1527,7 @@ typedef struct _p_PetscObject* PetscObject;
 
 .seealso: PetscObjectState, PetscObjectGetId()
 M*/
-typedef Petsc64bitInt PetscObjectId;
+typedef PetscInt64 PetscObjectId;
 
 /*MC
     PetscObjectState - integer state for a PetscObject
@@ -1547,7 +1540,7 @@ typedef Petsc64bitInt PetscObjectId;
 
 .seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
 M*/
-typedef Petsc64bitInt PetscObjectState;
+typedef PetscInt64 PetscObjectState;
 
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
@@ -2278,7 +2271,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
   PetscFunctionReturn(0);
 }
 
-#define PetscIntMult64bit(a,b)   ((Petsc64bitInt)(a))*((Petsc64bitInt)(b))
+#define PetscInt64Mult(a,b)   ((PetscInt64)(a))*((PetscInt64)(b))
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRealIntMultTruncate"
@@ -2295,7 +2288,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
    Output Parameter:
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two PetscInt as a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two positive PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
 
@@ -2309,9 +2302,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 @*/
 PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
-  r  =  (Petsc64bitInt) (a*(PetscReal)b);
+  r  =  (PetscInt64) (a*(PetscReal)b);
   if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
   return (PetscInt) r;
 }
@@ -2331,7 +2324,7 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
    Output Parameter:
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two PetscInt as a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
 
@@ -2345,9 +2338,9 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 @*/
 PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
-  r  =  PetscIntMult64bit(a,b);
+  r  =  PetscInt64Mult(a,b);
   if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
   return (PetscInt) r;
 }
@@ -2367,7 +2360,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
    Output Parameter:
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two PetscInt as a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
 
@@ -2379,9 +2372,9 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 @*/
 PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
-  r  =  ((Petsc64bitInt)a) + ((Petsc64bitInt)b);
+  r  =  ((PetscInt64)a) + ((PetscInt64)b);
   if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
   return (PetscInt) r;
 }
@@ -2401,7 +2394,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
    Output Parameter:ma
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two 32 bit PetscInt and store in a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
 
    Developers Note: We currently assume that PetscInt addition can never overflow, this is obviously wrong but requires many more checks.
@@ -2412,10 +2405,10 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,PetscInt *result)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
   PetscFunctionBegin;
-  r  =  PetscIntMult64bit(a,b);
+  r  =  PetscInt64Mult(a,b);
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (r > PETSC_MAX_INT) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Product of two integer %d %d overflow, you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
 #endif
@@ -2438,7 +2431,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
    Output Parameter:ma
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two 32 bit PetscInt and store in a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
 
    Level: advanced
@@ -2447,10 +2440,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscInt *result)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
   PetscFunctionBegin;
-  r  =  ((Petsc64bitInt)a) + ((Petsc64bitInt)b);
+  r  =  ((PetscInt64)a) + ((PetscInt64)b);
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (r > PETSC_MAX_INT) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sum of two integer %d %d overflow, you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
 #endif

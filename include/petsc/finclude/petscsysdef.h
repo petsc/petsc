@@ -48,8 +48,8 @@
 #else
 #define PetscInt integer4
 #endif
-#define Petsc64bitInt integer8
-#define PetscObjectState Petsc64bitInt
+#define PetscInt64 integer8
+#define PetscObjectState PetscInt64
 
 #if (PETSC_SIZEOF_INT == 4)
 #define PetscFortranInt integer4
@@ -208,6 +208,7 @@
 #define PetscBinarySeekType PetscEnum
 
 #define PetscBuildTwoSidedType PetscEnum
+#define PetscSubcommType PetscEnum
 
 #define PetscOptions PetscFortranAddr
 

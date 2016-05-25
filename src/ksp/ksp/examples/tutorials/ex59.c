@@ -42,7 +42,7 @@ typedef struct {
   PetscInt xm_l,ym_l,zm_l;
   /* starting global indexes for subdomain in lexicographic ordering */
   PetscInt startx,starty,startz;
-  /* Is is a pure Neumann problem? */
+  /* pure Neumann problem */
   PetscBool pure_neumann;
   /* Dirichlet BC implementation */
   PetscBool DBC_zerorows;
@@ -377,6 +377,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
   ierr      = MatCreate(PETSC_COMM_SELF,&temp_local_mat);CHKERRQ(ierr);
   ierr      = MatSetSizes(temp_local_mat,localsize,localsize,localsize,localsize);CHKERRQ(ierr);
+  ierr      = MatSetOptionsPrefix(temp_local_mat,"subdomain_");CHKERRQ(ierr);
   /* set local matrices type: here we use SEQSBAIJ primarily for testing purpose */
   /* in order to avoid conversions inside the BDDC code, use SeqAIJ if possible */
   if (dd.DBC_zerorows && !dd.ipx) { /* in this case, we need to zero out some of the rows, so use seqaij */
@@ -384,6 +385,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   } else {
     ierr      = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
   }
+  ierr = MatSetFromOptions(temp_local_mat);CHKERRQ(ierr);
 
   i = PetscPowRealInt(3.0*(dd.p+1.0),dd.dim);
 
@@ -789,6 +791,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   *A = temp_A;
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "ComputeKSPFETIDP"
 static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fetidp)
@@ -902,11 +905,14 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
     }
   }
 
-  /* Pass null space information to BDDC (don't pass it via MatSetNullSpace!) */
-  if (dd.pure_neumann) {
+  /* Pass local null space information to local matrices (needed when using approximate local solvers) */
+  if (dd.ipx || dd.pure_neumann) {
     MatNullSpace nsp;
-    ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
-    ierr = PCBDDCSetNullSpace(pc,nsp);CHKERRQ(ierr);
+    Mat          local_mat;
+
+    ierr = MatISGetLocalMat(A,&local_mat);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(local_mat,nsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
   }
   ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);

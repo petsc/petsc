@@ -1209,7 +1209,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 -  -pc_mg_dump_binary - dumps the matrices for each level and the restriction/interpolation matrices
                         to the binary output file called binaryoutput
 
-   Notes: By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
+   Notes: If one uses a Krylov method such GMRES or CG as the smoother than one must use KSPFGMRES, KSPGCG, or KSPRICHARDSON as the outer Krylov method
 
        When run with a single level the smoother options are used on that level NOT the coarse grid solver options
 

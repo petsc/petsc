@@ -58,6 +58,8 @@ PETSC_EXTERN PetscErrorCode PetscDSGetNumFields(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTotalDimension(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTotalBdDimension(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTotalComponents(PetscDS, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSGetFieldIndex(PetscDS, PetscObject, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSGetFieldSize(PetscDS, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetFieldOffset(PetscDS, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdFieldOffset(PetscDS, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffset(PetscDS, PetscInt, PetscInt *);
@@ -104,6 +106,7 @@ PETSC_EXTERN PetscErrorCode PetscDSSetResidual(PetscDS, PetscInt,
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         PetscReal, const PetscReal[], PetscScalar[]));
+PETSC_EXTERN PetscErrorCode PetscDSHasJacobian(PetscDS, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDSGetJacobian(PetscDS, PetscInt, PetscInt,
                                                void (**)(PetscInt, PetscInt, PetscInt,
                                                          const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],

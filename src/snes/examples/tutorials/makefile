@@ -331,7 +331,11 @@ runex5_5_ngmres:
 	   if (${DIFF} output/ex5_5_ngmres.out ex5_5_ngmres.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_5_ngmres, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_ngmres.tmp
-
+runex5_5_anderson:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type anderson > ex5_5_anderson.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_anderson.out ex5_5_anderson.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex5_5_anderson, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5_5_anderson.tmp
 runex5_5_nasm:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
         -snes_type nasm -snes_nasm_type restrict -snes_max_it 10 > ex5_5_nasm.tmp 2>&1; \
@@ -1154,6 +1158,18 @@ runex58_2:
 	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full  -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
 	   ${DIFF} output/ex58_2.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex58.tmp
+runex59:
+	-@${MPIEXEC} -n 1 ./ex59 -n 14 -snes_monitor_short -snes_converged_reason > ex59.tmp 2>&1; \
+	   ${DIFF} output/ex59_1.out ex59.tmp || printf "${PWD}\nPossible problem with ex59_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex59.tmp
+runex59_2:
+	-@${MPIEXEC} -n 1 ./ex59 -n 15 -snes_monitor_short -snes_converged_reason > ex59_2.tmp 2>&1; \
+	   ${DIFF} output/ex59_2.out ex59_2.tmp || printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex59_2.tmp
+runex59_3:
+	-@${MPIEXEC} -n 1 ./ex59 -n 14 -second_order -snes_monitor_short -snes_converged_reason > ex59_3.tmp 2>&1; \
+	   ${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex59_3.tmp
 runex70:
 	-@${MPIEXEC} -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_1_pc_type none   > ex70.tmp 2>&1; \
 	   ${DIFF} output/ex70_1.out ex70.tmp || printf "${PWD}\nPossible problem with ex70_1, diffs above\n=========================================\n"; \
@@ -1178,7 +1194,7 @@ runex73f90t:
 # This is way too slow  ex30.PETSc runex30 ex30.rm
 TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm  ex5.PETSc runex5  \
-                                 runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
+                                 runex5_5_ngmres runex5_5_anderson runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden \
                                  runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_5_nasm  \
@@ -1190,7 +1206,7 @@ TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  ex70.PETSc runex70 runex70_2 runex70_3 runex70_4 ex70.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc runex5_2 runex5_3 runex5_4 runex5_5_ls runex5_5_fas runex5_5_fas_monitor runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda runex5_6  ex5.rm \
                                  ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_lag_pc ex15.rm ex16.PETSc runex16 runex16_2 runex16_3 ex16.rm ex18.PETSc runex18 ex18.rm ex21.PETSc runex21 ex21.rm \
-                                 ex19.PETSc runex19_kaczmarz runex19 runex19_2 runex19_bcols1 runex19_2_bcols1 runex19_fdcoloring_wp runex19_fdcoloring_ds \
+                                 ex19.PETSc runex19_kaczmarz runex19 runex19_tfqmr runex19_tcqmr runex19_2 runex19_bcols1 runex19_2_bcols1 runex19_fdcoloring_wp runex19_fdcoloring_ds \
                                  runex19_ngmres_fas_gssecant runex19_ngs runex19_ngs_fd \
                                  runex19_fdcoloring_wp_bcols1 runex19_fdcoloring_ds_bcols1 \
                                  runex19_fdcoloring_wp_baij runex19_fdcoloring_ds_baij runex19_5 \
@@ -1203,7 +1219,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  ex42.PETSc runex42 ex42.rm \
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
-                                 ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
+                                 ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm

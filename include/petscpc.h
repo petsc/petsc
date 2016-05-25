@@ -274,7 +274,6 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);
@@ -322,6 +321,8 @@ PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode PCTelescopeGetSubcommType(PC,PetscSubcommType*);
+PETSC_EXTERN PetscErrorCode PCTelescopeSetSubcommType(PC,PetscSubcommType);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetReductionFactor(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetReductionFactor(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreDM(PC,PetscBool*);

@@ -1,10 +1,9 @@
 #if !defined(__DGMRES)
 #define __DGMRES
 
-#include <petsc/private/kspimpl.h>        /*I "petscksp.h" I*/
-#include <petscblaslapack.h>
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
+#include <petscblaslapack.h>
 
 #define KSPDGMRESHEADER \
   /* Data specific to DGMRES */ \

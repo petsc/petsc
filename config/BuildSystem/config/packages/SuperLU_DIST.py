@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v5.0.0'
-    self.download         = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_5.0.0.tar.gz','git://https://github.com/xiaoyeli/superlu_dist']
+    self.gitcommit         = 'v5.1.0'
+    self.download         = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_5.1.0.tar.gz','git://https://github.com/xiaoyeli/superlu_dist']
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
     self.liblist          = [['libsuperlu_dist.a']]
@@ -39,8 +39,9 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+    if not self.framework.argDB['download-superlu_dist-gpu']:
+      args.append('-DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE')
     args.append('-DUSE_XSDK_DEFAULTS=YES')
-
     metis_inc = self.headers.toStringNoDupes(self.metis.include)[2:]
     parmetis_inc = self.headers.toStringNoDupes(self.parmetis.include)[2:]
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
@@ -49,6 +50,9 @@ class Configure(config.package.CMakePackage):
 
     if self.indexTypes.integerSize == 64:
       args.append('-DXSDK_INDEX_SIZE=64')
+
+    if not hasattr(self.compilers, 'FC'):
+      args.append('-DXSDK_ENABLE_Fortran=OFF')
 
     args.append('-Denable_tests=0')
     args.append('-Denable_examples=0')

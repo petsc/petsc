@@ -306,6 +306,189 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexInterpolatePointSF"
+/* This interpolates the PointSF in parallel following local interpolation */
+static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt depth)
+{
+  PetscMPIInt        numProcs, rank;
+  PetscInt           p, c, d, dof, offset;
+  PetscInt           numLeaves, numRoots, candidatesSize, candidatesRemoteSize;
+  const PetscInt    *localPoints;
+  const PetscSFNode *remotePoints;
+  PetscSFNode       *candidates, *candidatesRemote, *claims;
+  PetscSection       candidateSection, candidateSectionRemote, claimSection;
+  PetscHashI         leafhash;
+  PetscHashIJ        roothash;
+  PetscHashIJKey     key;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+  if (numProcs < 2 || numRoots < 0) PetscFunctionReturn(0);
+  /* Build hashes of points in the SF for efficient lookup */
+  PetscHashICreate(leafhash);
+  PetscHashIJCreate(&roothash);
+  ierr = PetscHashIJSetMultivalued(roothash, PETSC_FALSE);CHKERRQ(ierr);
+  for (p = 0; p < numLeaves; ++p) {
+    PetscHashIAdd(leafhash, localPoints[p], p);
+    key.i = remotePoints[p].index; key.j = remotePoints[p].rank;
+    PetscHashIJAdd(roothash, key, p);
+  }
+  /* Build a section / SFNode array of candidate points in the single-level adjacency of leaves,
+     where each candidate is defined by the root entry for the other vertex that defines the edge. */
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &candidateSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(candidateSection, 0, numRoots);CHKERRQ(ierr);
+  {
+    PetscInt leaf, root, idx, a, *adj = NULL;
+    for (p = 0; p < numLeaves; ++p) {
+      PetscInt adjSize = PETSC_DETERMINE;
+      ierr = DMPlexGetAdjacency_Internal(dm, localPoints[p], PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, &adjSize, &adj);CHKERRQ(ierr);
+      for (a = 0; a < adjSize; ++a) {
+        PetscHashIMap(leafhash, adj[a], leaf);
+        if (leaf >= 0) {ierr = PetscSectionAddDof(candidateSection, localPoints[p], 1);CHKERRQ(ierr);}
+      }
+    }
+    ierr = PetscSectionSetUp(candidateSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(candidateSection, &candidatesSize);CHKERRQ(ierr);
+    ierr = PetscMalloc1(candidatesSize, &candidates);CHKERRQ(ierr);
+    for (p = 0; p < numLeaves; ++p) {
+      PetscInt adjSize = PETSC_DETERMINE;
+      ierr = PetscSectionGetOffset(candidateSection, localPoints[p], &offset);CHKERRQ(ierr);
+      ierr = DMPlexGetAdjacency_Internal(dm, localPoints[p], PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, &adjSize, &adj);CHKERRQ(ierr);
+      for (idx = 0, a = 0; a < adjSize; ++a) {
+        PetscHashIMap(leafhash, adj[a], root);
+        if (root >= 0) candidates[offset+idx++] = remotePoints[root];
+      }
+    }
+    ierr = PetscFree(adj);CHKERRQ(ierr);
+  }
+  /* Gather candidate section / array pair into the root partition via inverse(multi(pointSF)). */
+  {
+    PetscSF   sfMulti, sfInverse, sfCandidates;
+    PetscInt *remoteOffsets;
+    ierr = PetscSFGetMultiSF(pointSF, &sfMulti);CHKERRQ(ierr);
+    ierr = PetscSFCreateInverseSF(sfMulti, &sfInverse);CHKERRQ(ierr);
+    ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &candidateSectionRemote);CHKERRQ(ierr);
+    ierr = PetscSFDistributeSection(sfInverse, candidateSection, &remoteOffsets, candidateSectionRemote);CHKERRQ(ierr);
+    ierr = PetscSFCreateSectionSF(sfInverse, candidateSection, remoteOffsets, candidateSectionRemote, &sfCandidates);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(candidateSectionRemote, &candidatesRemoteSize);CHKERRQ(ierr);
+    ierr = PetscMalloc1(candidatesRemoteSize, &candidatesRemote);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sfCandidates, MPIU_2INT, candidates, candidatesRemote);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfCandidates, MPIU_2INT, candidates, candidatesRemote);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfInverse);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfCandidates);CHKERRQ(ierr);
+    ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
+  }
+  /* Walk local roots and check for each remote candidate whether we know all required points,
+     either from owning it or having a root entry in the point SF. If we do we place a claim
+     by replacing the vertex number with our edge ID. */
+  {
+    PetscInt        idx, root, joinSize, vertices[2];
+    const PetscInt *rootdegree, *join = NULL;
+    ierr = PetscSFComputeDegreeBegin(pointSF, &rootdegree);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeEnd(pointSF, &rootdegree);CHKERRQ(ierr);
+    /* Loop remote edge connections and put in a claim if both vertices are known */
+    for (idx = 0, p = 0; p < numRoots; ++p) {
+      for (d = 0; d < rootdegree[p]; ++d) {
+        ierr = PetscSectionGetDof(candidateSectionRemote, idx, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(candidateSectionRemote, idx, &offset);CHKERRQ(ierr);
+        for (c = 0; c < dof; ++c) {
+          /* We own both vertices, so we claim the edge by replacing vertex with edge */
+          if (candidatesRemote[offset+c].rank == rank) {
+            vertices[0] = p; vertices[1] = candidatesRemote[offset+c].index;
+            ierr = DMPlexGetJoin(dm, 2, vertices, &joinSize, &join);CHKERRQ(ierr);
+            if (joinSize == 1) candidatesRemote[offset+c].index = join[0];
+            ierr = DMPlexRestoreJoin(dm, 2, vertices, &joinSize, &join);CHKERRQ(ierr);
+            continue;
+          }
+          /* If we own one vertex and share a root with the other, we claim it */
+          key.i = candidatesRemote[offset+c].index; key.j = candidatesRemote[offset+c].rank;
+          PetscHashIJGet(roothash, key, &root);
+          if (root >= 0) {
+            vertices[0] = p; vertices[1] = localPoints[root];
+            ierr = DMPlexGetJoin(dm, 2, vertices, &joinSize, &join);CHKERRQ(ierr);
+            if (joinSize == 1) {
+              candidatesRemote[offset+c].index = join[0];
+              candidatesRemote[offset+c].rank = rank;
+            }
+            ierr = DMPlexRestoreJoin(dm, 2, vertices, &joinSize, &join);CHKERRQ(ierr);
+          }
+        }
+        idx++;
+      }
+    }
+  }
+  /* Push claims back to receiver via the MultiSF and derive new pointSF mapping on receiver */
+  {
+    PetscSF         sfMulti, sfClaims, sfPointNew;
+    PetscHashI      claimshash;
+    PetscInt        size, pStart, pEnd, root, joinSize, numLocalNew;
+    PetscInt       *remoteOffsets, *localPointsNew, vertices[2];
+    const PetscInt *join = NULL;
+    PetscSFNode    *remotePointsNew;
+    ierr = PetscSFGetMultiSF(pointSF, &sfMulti);CHKERRQ(ierr);
+    ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &claimSection);CHKERRQ(ierr);
+    ierr = PetscSFDistributeSection(sfMulti, candidateSectionRemote, &remoteOffsets, claimSection);CHKERRQ(ierr);
+    ierr = PetscSFCreateSectionSF(sfMulti, candidateSectionRemote, remoteOffsets, claimSection, &sfClaims);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(claimSection, &size);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size, &claims);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sfClaims, MPIU_2INT, candidatesRemote, claims);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfClaims, MPIU_2INT, candidatesRemote, claims);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfClaims);CHKERRQ(ierr);
+    ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
+    /* Walk the original section of local supports and add an SF entry for each updated item */
+    PetscHashICreate(claimshash);
+    for (p = 0; p < numRoots; ++p) {
+      ierr = PetscSectionGetDof(candidateSection, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(candidateSection, p, &offset);CHKERRQ(ierr);
+      for (d = 0; d < dof; ++d) {
+        if (candidates[offset+d].index != claims[offset+d].index) {
+          key.i = candidates[offset+d].index; key.j = candidates[offset+d].rank;
+          PetscHashIJGet(roothash, key, &root);
+          if (root >= 0) {
+            vertices[0] = p; vertices[1] = localPoints[root];
+            ierr = DMPlexGetJoin(dm, 2, vertices, &joinSize, &join);CHKERRQ(ierr);
+            if (joinSize == 1) PetscHashIAdd(claimshash, join[0], offset+d);
+            ierr = DMPlexRestoreJoin(dm, 2, vertices, &joinSize, &join);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+    /* Create new pointSF from hashed claims */
+    PetscHashISize(claimshash, numLocalNew);
+    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeaves + numLocalNew, &localPointsNew);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeaves + numLocalNew, &remotePointsNew);CHKERRQ(ierr);
+    for (p = 0; p < numLeaves; ++p) {
+      localPointsNew[p] = localPoints[p];
+      remotePointsNew[p].index = remotePoints[p].index;
+      remotePointsNew[p].rank = remotePoints[p].rank;
+    }
+    p = numLeaves; ierr = PetscHashIGetKeys(claimshash, &p, localPointsNew);CHKERRQ(ierr);
+    for (p = numLeaves; p < numLeaves + numLocalNew; ++p) {
+      PetscHashIMap(claimshash, localPointsNew[p], offset);
+      remotePointsNew[p] = claims[offset];
+    }
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject) dm), &sfPointNew);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sfPointNew, pEnd-pStart, numLeaves+numLocalNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = DMSetPointSF(dm, sfPointNew);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfPointNew);CHKERRQ(ierr);
+    PetscHashIDestroy(claimshash);
+  }
+  PetscHashIDestroy(leafhash);
+  ierr = PetscHashIJDestroy(&roothash);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&candidateSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&candidateSectionRemote);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&claimSection);CHKERRQ(ierr);
+  ierr = PetscFree(candidates);CHKERRQ(ierr);
+  ierr = PetscFree(candidatesRemote);CHKERRQ(ierr);
+  ierr = PetscFree(claims);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexInterpolate"
 /*@C
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
@@ -327,6 +510,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
   DM             idm, odm = dm;
+  PetscSF        sfPoint;
   PetscInt       depth, dim, d;
   PetscErrorCode ierr;
 
@@ -344,7 +528,11 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     else                        {ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);}
     ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
     ierr = DMSetDimension(idm, dim);CHKERRQ(ierr);
-    if (depth > 0) {ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);}
+    if (depth > 0) {
+      ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);
+      ierr = DMGetPointSF(odm, &sfPoint);CHKERRQ(ierr);
+      ierr = DMPlexInterpolatePointSF(idm, sfPoint, depth);CHKERRQ(ierr);
+    }
     if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
     odm  = idm;
   }

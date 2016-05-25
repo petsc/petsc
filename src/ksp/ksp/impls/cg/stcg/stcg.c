@@ -1,6 +1,5 @@
 
-#include <petsc/private/kspimpl.h>             /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/impls/cg/stcg/stcgimpl.h>
+#include <../src/ksp/ksp/impls/cg/stcg/stcgimpl.h>  /*I "petscksp.h" I*/
 
 #define STCG_PRECONDITIONED_DIRECTION   0
 #define STCG_UNPRECONDITIONED_DIRECTION 1

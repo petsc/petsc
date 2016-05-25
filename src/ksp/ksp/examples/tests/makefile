@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c
+                ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -182,6 +182,12 @@ ex47f: ex47f.o chkopts
 ex48: ex48.o chkopts
 	-${CLINKER} -o ex48 ex48.o ${PETSC_KSP_LIB}
 	${RM} ex48.o
+ex49: ex49.o chkopts
+	-${CLINKER} -o ex49 ex49.o ${PETSC_KSP_LIB}
+	${RM} ex49.o
+ex50: ex50.o chkopts
+	-${CLINKER} -o ex50 ex50.o ${PETSC_KSP_LIB}
+	${RM} ex50.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -1000,6 +1006,16 @@ runex48:
 	   else printf "${PWD}\nPossible problem with ex48, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex48.tmp
 
+runex49:
+	@for bs in 1 2 3 4 5 6 7 8 9 10 11 12; do \
+           ${MPIEXEC} -n 1 ./ex49 -bs $$bs -pc_type cholesky  ;\
+         done;
+runex50:
+	@for bs in 1 2 3 4 5 6 7 ; do \
+           ${MPIEXEC} -n 1 ./ex50 -bs $$bs -pc_type pbjacobi  ;\
+         done;
+
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
                                  ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 runex21_2 runex21_3 ex21.rm \
@@ -1013,7 +1029,8 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_noche
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm ex41.PETSc runex41 runex41_2 ex41.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
-                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm
+                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm\
+                                 ex49.PETSc runex49 ex49.rm ex50.PETSc runex50 ex50.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
@@ -1024,8 +1041,8 @@ TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
                                  ex25.PETSc runex25 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
-                                 ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
-                                 ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
+                                 ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm
+TESTEXAMPLES_FORTRAN_DATAFILESPATH = ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
 TESTEXAMPLES_PARMETIS_DATAFILESPATH = ex31.PETSc runex31 ex31.rm
 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =

@@ -19,8 +19,3 @@ Vec Object: 1 MPI processes
 
 Convergence in 4 iterations.
 
-#PETSc Option Table entries:
--malloc_test
--options_left
-#End of PETSc Option Table entries
-There are no unused options.

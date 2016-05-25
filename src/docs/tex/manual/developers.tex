@@ -152,6 +152,15 @@ We use several conventions:
       for example, ISInvertPermutation(), MatMult() or KSPGMRESSetRestart().
 \item Functions that PETSc provides as defaults for user provideable functions end with \trl{Default} (for example, \trl{KSPMonitorDefault()} or \trl{PetscSignalHandlerDefault()})
 \item Options database keys are lower case, have an underscore between words and match the function name associated with the option without the word {\em set} or {\em get}. For example, \trl{-ksp_gmres_restart}.
+\item Library functions should be declared \trl{PETSC_INTERN} if they are intended to be visible only within a single shared library. 
+They should be declared \trl{PETSC_EXTERN} if intended to be visible across shared libraries. 
+Note that PETSc can be configured to build a separate shared library for each top-level class (\trl{Mat}, \trl{Vec}, \trl{KSP},etc.) and that plugin implementations of these classes can be included as separate shared libraries; thus, private functions may be marked \trl{PETSC_EXTERN}.
+For example, 
+\begin{itemize}
+\item \trl{MatStashCreate_Private} is marked \trl{PETSC_INTERN} as it is used across compilation units, but only within the \trl{Mat} package.
+\item All functions, such as \trl{KSPCreate()}, included in the public headers \trl{include/petsc*.h}) should be marked \trl{PETSC_EXTERN}.
+\item \trl{MatHeaderReplace()} is not intended for users (it is in \trl{include/petsc/private/matimpl.h}) but is marked \trl{PETSC_EXTERN} since it is used both by implementations of the \trl{Mat} class (which could be defined in plugin implementations) and by functions in the \trl{DM} and \trl{KSP} packages.
+\end{itemize}
 \end{itemize}
 
 \section{Coding Conventions and Style Guide}
@@ -293,10 +302,10 @@ instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg
 \item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate ./configure checks and \#if defined() checks the code. Code should also be provided that works if the MPI feature is not available. For example,
 \begin{tabbing}
 \#if\= defined(PETSC\_HAVE\_MPI\_IN\_PLACE)\\
-\>    ierr  = MPI_Allgatherv(\=MPI\_IN\_PLACE,0,MPI\_DATATYPE\_NULL,lens,recvcounts,\\
+\>    ierr  = MPI\_Allgatherv(\=MPI\_IN\_PLACE,0,MPI\_DATATYPE\_NULL,lens,recvcounts,\\
 \> \> displs,MPIU\_INT,comm);CHKERRQ(ierr);\\
 \#else\\
-\>    ierr  = MPI_Allgatherv(lens,sendcount,MPIU\_INT,lens,recvcounts,\\
+\>    ierr  = MPI\_Allgatherv(lens,sendcount,MPIU\_INT,lens,recvcounts,\\
 \> \> displs,MPIU\_INT,comm);CHKERRQ(ierr);\\
 \#endif
 \end{tabbing}
@@ -399,7 +408,7 @@ return PetscError(\=comm,\_\_LINE\_\_,\_\_FUNCT\_\_,\_\_FILE\_\_,error code,erro
 \> ''Error message'');
 \end{tabbing}
 It calls the error handler with the current function name and location: line number,
-file and directory, plus an error code and an error message. Normally \trl{comm} is PETSC_COMM_SELF, it can only be another communicator if
+file and directory, plus an error code and an error message. Normally \trl{comm} is PETSC\_COMM\_SELF, it can only be another communicator if
 one is absolutely sure the same error will be generated on all processes in the communicator. This is to prevent the same error message from
 being printed by many processes. The \trl{error type} is \trl{PETSC_ERROR_INITIAL} on detection of the initial error and \trl{PETSC_ERROR_REPEAT} for any additional calls. This is so that
 the detailed error information is only printed once instead of for all levels of returned errors.
@@ -438,7 +447,7 @@ The variable \trl{eh} is the current error handler context and is defined in
 \begin{tabbing}
 ty\=pedef struct \_EH*\= EH;\\
 struct \_EH \{\\
-  \>PetscErrorCode \> handler(\=MPI_Comm,int,const char*,const char*,const char *,\\
+  \>PetscErrorCode \> handler(\=MPI\_Comm,int,const char*,const char*,const char *,\\
 \> \> \> PetscErrorCode,PetscErrorType,const char*,void *);\\
   \>void \>  *ctx;\\
   \>EH   \>  previous;\\

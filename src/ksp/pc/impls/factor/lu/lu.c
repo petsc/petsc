@@ -94,10 +94,10 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
 #define __FUNCT__ "PCSetUp_LU"
 static PetscErrorCode PCSetUp_LU(PC pc)
 {
-  PetscErrorCode ierr;
-  PC_LU          *dir = (PC_LU*)pc->data;
+  PetscErrorCode         ierr;
+  PC_LU                  *dir = (PC_LU*)pc->data;
   const MatSolverPackage stype;
-
+  MatFactorError         err;
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
 
@@ -111,15 +111,16 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->col);CHKERRQ(ierr);
     }
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-    if (pc->pmat->errortype) { /* Factor() fails */
-      pc->failedreason = (PCFailedReason)pc->pmat->errortype;
+    ierr = MatFactorGetError(pc->pmat,&err);CHKERRQ(ierr);
+    if (err) { /* Factor() fails */
+      pc->failedreason = (PCFailedReason)err;
       PetscFunctionReturn(0);
     }
 
     ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
     MatInfo info;
-    Mat     F;
+
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       if (dir->nonzerosalongdiagonal) {
@@ -156,22 +157,25 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
-    F = ((PC_Factor*)dir)->fact;
-    if (F->errortype) { /* FactorSymbolic() fails */
-      pc->failedreason = (PCFailedReason)F->errortype;
+    ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
+    if (err) { /* FactorSymbolic() fails */
+      pc->failedreason = (PCFailedReason)err;
       PetscFunctionReturn(0);
     }
 
     ierr = MatLUFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-    if (F->errortype) { /* FactorNumeric() fails */
-      pc->failedreason = (PCFailedReason)F->errortype;
+    ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
+    if (err) { /* FactorNumeric() fails */
+      pc->failedreason = (PCFailedReason)err;
     }
 
   }
 
   ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    ierr = PCFactorSetMatSolverPackage(pc,((PC_Factor*)dir)->fact->solvertype);CHKERRQ(ierr);
+    const MatSolverPackage solverpackage;
+    ierr = MatFactorGetSolverPackage(((PC_Factor*)dir)->fact,&solverpackage);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverPackage(pc,solverpackage);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
