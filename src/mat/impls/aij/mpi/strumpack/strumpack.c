@@ -1,4 +1,4 @@
-#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/aij/seq/aij.h>            /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <StrumpackSparseSolver.h>
 
