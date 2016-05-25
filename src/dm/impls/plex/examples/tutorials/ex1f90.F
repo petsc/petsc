@@ -6,7 +6,8 @@
       Vec :: u
       PetscViewer :: viewer
       PetscSection :: section
-      PetscInt :: dim,numFields,numBC,i,val
+      PetscInt :: dim,numCells,numFields,numBC
+      PetscInt :: i,val
       PetscInt, target, dimension(3) ::                                 &
      &     numComp
       PetscInt, pointer :: pNumComp(:)
@@ -33,8 +34,13 @@
       CHKERRQ(ierr)
       interpolate = PETSC_TRUE
 !     Create a mesh
-      call DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, interpolate, dm,
-     &     ierr)
+      if (dim .eq. 2) then
+         numCells = 2
+      else
+         numCells = 1
+      endif
+      call DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, numCells,         &
+     &     interpolate, dm, ierr)
       CHKERRQ(ierr)
 !     Create a scalar field u, a vector field v, and a surface vector field w
       numFields  = 3
