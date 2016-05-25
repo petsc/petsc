@@ -4,10 +4,11 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit         = '026d6fa' # maint/3.7 from may-21-2026
-    self.download          = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/downloads/petsc4py-'+self.gitcommit+'.tar.gz']
+    self.download          = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
     self.functions         = []
     self.includes          = []
     self.skippackagewithoptions = 1
+    self.downloaddirname   = 'petsc-petsc4py'
     return
 
   def setupDependencies(self, framework):
