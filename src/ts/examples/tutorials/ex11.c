@@ -1688,7 +1688,7 @@ int main(int argc, char **argv)
     PetscInt       adaptIter = 0;
 
     ierr = DMPlexTSGetGradientDM(dm,fvm,&gradDM);CHKERRQ(ierr);
-    ierr = DMPlexTSGetGeometryFVM(dm, &faceGeom, &cellGeom, NULL);CHKERRQ(ierr);
+    ierr = DMPlexTSGetGeometryFVM(dm, &faceGeom, &cellGeom, &minRadius);CHKERRQ(ierr);
     adaptInitial = adaptInitial && (gradDM != NULL);
 
     /* use no limiting when estimating gradients for adaptivity */
@@ -1701,8 +1701,19 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBegin(comm,NULL,"Initial refinement options","");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-view_initial_refinement","View initial conditions","",viewInitial,&viewInitial,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();
-    do {
-      ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+    ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+    while (adaptInitial) {
+      DM                plex, cellDM;
+      PetscBool         isForest;
+      Vec               grad, locX;
+      PetscInt          cStart, cEnd, cEndInterior, c;
+      PetscReal         refineTol = PetscSqrtReal(2.5), coarseTol = 0.0;
+      PetscReal         minInd = PETSC_MAX_REAL, maxInd = PETSC_MIN_REAL;
+      const PetscScalar *pointVals;
+      const PetscScalar *pointGrads;
+      const PetscScalar *pointGeom;
+      PetscLogDouble    bytes;
+
       if (viewInitial) {
         PetscViewer viewer;
         char        buf[256];
@@ -1729,95 +1740,89 @@ int main(int argc, char **argv)
         ierr = VecView(X,viewer);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
-      if (adaptInitial) {
-        DM                plex, cellDM;
-        PetscBool         isForest;
-        Vec               grad, locX;
-        PetscInt          cStart, cEnd, cEndInterior, c;
-        PetscReal         refineTol = PetscSqrtReal(2.5), coarseTol = 0.0;
-        PetscReal         minInd = PETSC_MAX_REAL, maxInd = PETSC_MIN_REAL;
-        const PetscScalar *pointVals;
-        const PetscScalar *pointGrads;
-        const PetscScalar *pointGeom;
-        PetscLogDouble    bytes;
 
-        ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-        ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
-        ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-        ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
+      ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
+      ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
+      ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+      ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
 
-        ierr = DMCreateLocalVector(plex, &locX);CHKERRQ(ierr);
+      ierr = DMCreateLocalVector(plex,&locX);CHKERRQ(ierr);
 
-        ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, faceGeom, cellGeom, NULL);CHKERRQ(ierr);
-        ierr = DMGlobalToLocalBegin(plex, X, INSERT_VALUES, locX);CHKERRQ(ierr);
-        ierr = DMGlobalToLocalEnd  (plex, X, INSERT_VALUES, locX);CHKERRQ(ierr);
+      ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, faceGeom, cellGeom, NULL);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalBegin(plex, X, INSERT_VALUES, locX);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalEnd  (plex, X, INSERT_VALUES, locX);CHKERRQ(ierr);
 
-        ierr = DMCreateGlobalVector(gradDM, &grad);CHKERRQ(ierr);
-        ierr = DMPlexReconstructGradientsFVM(plex, locX, grad);CHKERRQ(ierr);
-        ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
-        ierr = DMPlexGetHybridBounds(plex,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-        cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
-        ierr = VecGetArrayRead(grad,&pointGrads);CHKERRQ(ierr);
-        ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
-        ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
-        ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
-        if (isForest) {ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);}
+      ierr = DMCreateGlobalVector(gradDM, &grad);CHKERRQ(ierr);
+      ierr = DMPlexReconstructGradientsFVM(plex, locX, grad);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetHybridBounds(plex,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+      cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
+      ierr = VecGetArrayRead(grad,&pointGrads);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
+      ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
+      if (isForest) {ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);}
 
-        adaptInitial = PETSC_FALSE;
-        for (c = cStart; c < cEnd; c++) {
-          PetscReal errInd = 0.;
-          const     PetscScalar     *pointGrad;
-          const     PetscScalar     *pointVal;
-          const     PetscFVCellGeom *cg;
+      adaptInitial = PETSC_FALSE;
+      for (c = cStart; c < cEnd; c++) {
+        PetscReal errInd = 0.;
+        const     PetscScalar     *pointGrad;
+        const     PetscScalar     *pointVal;
+        const     PetscFVCellGeom *cg;
 
-          ierr = DMPlexPointLocalRead(gradDM,c,pointGrads,&pointGrad);CHKERRQ(ierr);
-          ierr = DMPlexPointLocalRead(cellDM,c,pointGeom,&cg);CHKERRQ(ierr);
-          ierr = DMPlexPointLocalRead(plex,c,pointVals,&pointVal);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(gradDM,c,pointGrads,&pointGrad);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(cellDM,c,pointGeom,&cg);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(plex,c,pointVals,&pointVal);CHKERRQ(ierr);
 
-          ierr = (mod->errorIndicator)(dim,cg->volume,phys->dof,pointVal,pointGrad,&errInd,user);CHKERRQ(ierr);
-          maxInd = PetscMax(maxInd,errInd);
-          minInd = PetscMin(minInd,errInd);
-          if (errInd > PetscSqr(refineTol)) {
-            adaptInitial = PETSC_TRUE;
-            if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_REFINE);CHKERRQ(ierr);}
-          }
-          if (errInd < PetscSqr(coarseTol)) {
-            if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_COARSEN);CHKERRQ(ierr);}
-          }
+        ierr = (mod->errorIndicator)(dim,cg->volume,phys->dof,pointVal,pointGrad,&errInd,user);CHKERRQ(ierr);
+        maxInd = PetscMax(maxInd,errInd);
+        minInd = PetscMin(minInd,errInd);
+        if (errInd > PetscSqr(refineTol)) {
+          adaptInitial = PETSC_TRUE;
+          if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_REFINE);CHKERRQ(ierr);}
         }
-        ierr = PetscInfo2(ts, "initial error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
-        ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
-        ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
-        ierr = VecRestoreArrayRead(grad,&pointGrads);CHKERRQ(ierr);
-        ierr = VecDestroy(&grad);CHKERRQ(ierr);
-        ierr = VecDestroy(&locX);CHKERRQ(ierr);
-        ierr = MPI_Allreduce(&adaptInitial,&adaptInitialGlobal,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-        adaptInitial = adaptInitialGlobal;
-        if (adaptInitial) {
-          if (isForest) {
-            DM adaptedDM;
+        if (errInd < PetscSqr(coarseTol)) {
+          if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_COARSEN);CHKERRQ(ierr);}
+        }
+      }
+      ierr = PetscInfo2(ts, "initial error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr); ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr); ierr = VecRestoreArrayRead(grad,&pointGrads);CHKERRQ(ierr); ierr = VecDestroy(&grad);CHKERRQ(ierr); ierr = VecDestroy(&locX);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&adaptInitial,&adaptInitialGlobal,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+      adaptInitial = adaptInitialGlobal;
+      if (adaptInitial) {
+        if (isForest) {
+          DM        adaptedDM;
+          PetscBool success;
 
-            ierr = DMForestTemplate(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
-            ierr = DMForestSetAdaptivityLabel(adaptedDM,"adapt");CHKERRQ(ierr);
-            ierr = DMSetUp(adaptedDM);CHKERRQ(ierr);
-            ierr = DMForestSetAdaptivityForest(adaptedDM,NULL);CHKERRQ(ierr); /* clear out internal references to the pre-adaptation dm */
+          ierr = DMForestTemplate(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
+          ierr = DMForestSetAdaptivityLabel(adaptedDM,"adapt");CHKERRQ(ierr);
+          ierr = DMSetUp(adaptedDM);CHKERRQ(ierr);
+          /* Did any refinement/coarsening actually occur? */
+          ierr = DMForestSetAdaptivityForest(adaptedDM,NULL);CHKERRQ(ierr); /* clear out internal references to the pre-adaptation dm */
+          ierr = DMForestGetAdaptivitySuccess(adaptedDM,&success);CHKERRQ(ierr);
+          if (success) {
             ierr = DMDestroy(&plex);CHKERRQ(ierr);
             ierr = VecDestroy(&X);CHKERRQ(ierr);
             ierr = DMDestroy(&dm);CHKERRQ(ierr);
             dm   = adaptedDM;
             ierr = TSSetDM(ts,dm);CHKERRQ(ierr);
-            ierr = DMPlexTSGetGradientDM(dm,fvm,&gradDM);CHKERRQ(ierr);
-            ierr = DMPlexTSGetGeometryFVM(dm, &faceGeom, &cellGeom, NULL);CHKERRQ(ierr);
             ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
             ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
+            ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+            ierr = DMPlexTSGetGradientDM(dm,fvm,&gradDM);CHKERRQ(ierr);
+            ierr = DMPlexTSGetGeometryFVM(dm, &faceGeom, &cellGeom, &minRadius);CHKERRQ(ierr);
           }
-        } else {
-          break;
+          else {
+            adaptInitial = PETSC_FALSE;
+            ierr         = DMDestroy(&adaptedDM);CHKERRQ(ierr);
+          }
         }
-        ierr = DMDestroy(&plex);CHKERRQ(ierr);
+      } else {
+        break;
       }
+      ierr = DMDestroy(&plex);CHKERRQ(ierr);
       adaptIter++;
-    } while (adaptInitial);
+    }
     /* restore the original limiter */
     ierr = PetscFVSetLimiter(fvm,origlimiter);CHKERRQ(ierr);
     ierr = PetscLimiterDestroy(&origlimiter);CHKERRQ(ierr);
@@ -1838,7 +1843,6 @@ int main(int argc, char **argv)
     ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   }
 
-  ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
   /* collect max maxspeed from all processes -- todo */
   mod->maxspeed = phys->maxspeed;
