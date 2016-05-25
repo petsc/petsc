@@ -67,6 +67,8 @@ cdef extern from * nogil:
     int DMPlexRestoreTransitiveClosure(PetscDM,PetscInt,PetscBool,PetscInt*,PetscInt*[])
     int DMPlexVecGetClosure(PetscDM,PetscSection,PetscVec,PetscInt,PetscInt*,PetscScalar*[])
     int DMPlexVecRestoreClosure(PetscDM,PetscSection,PetscVec,PetscInt,PetscInt*,PetscScalar*[])
+    int DMPlexVecSetClosure(PetscDM,PetscSection,PetscVec,PetscInt,PetscScalar[],PetscInsertMode)
+    int DMPlexMatSetClosure(PetscDM,PetscSection,PetscSection,PetscMat,PetscInt,PetscScalar[],PetscInsertMode)
 
     int DMPlexGenerate(PetscDM,const_char[],PetscBool ,PetscDM*)
     int DMPlexTriangleSetOptions(PetscDM,const_char*)

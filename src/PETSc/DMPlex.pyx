@@ -344,6 +344,36 @@ cdef class DMPlex(DM):
             CHKERR( DMPlexVecRestoreClosure(self.dm, sec.sec, vec.vec, cp, &csize, &cvals) )
         return closure
 
+    def getVecClosure(self, Section sec, Vec vec not None, point):
+        cdef PetscSection csec = sec.sec if sec is not None else NULL
+        cdef PetscInt cp = asInt(point), csize = 0
+        cdef PetscScalar *cvals = NULL
+        CHKERR( DMPlexVecGetClosure(self.dm, csec, vec.vec, cp, &csize, &cvals) )
+        try:
+            closure = array_s(csize, cvals)
+        finally:
+            CHKERR( DMPlexVecRestoreClosure(self.dm, csec, vec.vec, cp, &csize, &cvals) )
+        return closure
+
+    def setVecClosure(self, Section sec, Vec vec not None, point, values, addv=None):
+        cdef PetscSection csec = sec.sec if sec is not None else NULL
+        cdef PetscInt cp = asInt(point)
+        cdef PetscInt csize = 0
+        cdef PetscScalar *cvals = NULL
+        cdef object tmp = iarray_s(values, &csize, &cvals)
+        cdef PetscInsertMode im = insertmode(addv)
+        CHKERR( DMPlexVecSetClosure(self.dm, csec, vec.vec, cp, cvals, im) )
+
+    def setMatClosure(self, Section sec, Section gsec, Mat mat not None, point, values, addv=None):
+        cdef PetscSection csec  =  sec.sec if  sec is not None else NULL
+        cdef PetscSection cgsec = gsec.sec if gsec is not None else NULL
+        cdef PetscInt cp = asInt(point)
+        cdef PetscInt csize = 0
+        cdef PetscScalar *cvals = NULL
+        cdef object tmp = iarray_s(values, &csize, &cvals)
+        cdef PetscInsertMode im = insertmode(addv)
+        CHKERR( DMPlexMatSetClosure(self.dm, csec, cgsec, mat.mat, cp, cvals, im) )
+
     def generate(self, DMPlex boundary, name=None, interpolate=True):
         cdef PetscBool interp = interpolate
         cdef const_char *cname = NULL
