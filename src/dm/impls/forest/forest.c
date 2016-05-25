@@ -1701,6 +1701,39 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMForestAdaptLabel"
+/*@
+  DMForestAdaptLabel - Adapt a forest based on a label with values interpreted as coarsening and refining flags.
+
+  Collective on dm
+
+  Input parameters:
++ dm - the pre-adaptation forest
+- name - the name of the label with the flags: "adapt" will be used in NULL is passed
+
+  Output parameters:
+. adaptedDM - the adapted forest: will be NULL if no refining or coarsening occurred.
+
+  Level: intermediate
+@*/
+PetscErrorCode DMForestAdaptLabel(DM dm, const char name[], DM *adaptedDM)
+{
+  PetscBool      success;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMForestTemplate(dm,PetscObjectComm((PetscObject)dm),adaptedDM);CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityLabel(*adaptedDM,"adapt");CHKERRQ(ierr);
+  ierr = DMSetUp(*adaptedDM);CHKERRQ(ierr);
+  ierr = DMForestGetAdaptivitySuccess(*adaptedDM,&success);CHKERRQ(ierr);
+  if (!success) {
+    ierr = DMDestroy(adaptedDM);CHKERRQ(ierr);
+    *adaptedDM = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMInitialize_Forest"
 static PetscErrorCode DMInitialize_Forest(DM dm)
 {

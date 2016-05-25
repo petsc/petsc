@@ -113,6 +113,9 @@ PETSC_EXTERN PetscErrorCode DMForestGetWeightCapacity(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMForestSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMForestSetUp(DM);
 
+/* convenience wrapper to common adaptivity pattern */
+PETSC_EXTERN PetscErrorCode DMForestAdaptLabel(DM, const char [], DM *);
+
 PETSC_EXTERN PetscErrorCode DMForestGetFineProjector(DM,Mat *);
 PETSC_EXTERN PetscErrorCode DMForestGetCoarseRestrictor(DM,Mat *);
 
