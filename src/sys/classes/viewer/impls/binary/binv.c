@@ -880,11 +880,13 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *d
 -  dtype - type of data to read
 
    Output Parameters:
-.  count - number of items of data actually read, or NULL
+.  count - number of items of data actually read, or NULL. Unless an error is generated this is always set to the input parameter num.
 
    Level: beginner
 
    Concepts: binary files
+
+   Developer Note: Since count is always set to num it is not clear what purpose the output argument count serves.
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
@@ -902,6 +904,7 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,
   } else {
 #endif
     ierr = PetscBinarySynchronizedRead(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,num,dtype);CHKERRQ(ierr);
+    if (count) *count = num;
 #if defined(PETSC_HAVE_MPIIO)
   }
 #endif
