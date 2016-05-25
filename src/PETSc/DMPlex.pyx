@@ -41,12 +41,13 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def createBoxMesh(self, dim, interpolate=True, comm=None):
+    def createBoxMesh(self, dim, numFaces=1, interpolate=True, comm=None):
         cdef PetscInt  cdim = asInt(dim)
+        cdef PetscInt  cnumFaces = asInt(numFaces)
         cdef PetscBool interp = interpolate
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM   newdm = NULL
-        CHKERR( DMPlexCreateBoxMesh(ccomm,cdim, interp, &newdm) )
+        CHKERR( DMPlexCreateBoxMesh(ccomm, cdim, cnumFaces, interp, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
