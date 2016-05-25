@@ -400,6 +400,9 @@ cdef class DMPlex(DM):
         cdef PetscBool flag = useClosure
         CHKERR( DMPlexSetAdjacencyUseClosure(self.dm, flag) )
 
+    def setPartitioner(self, Partitioner part not None):
+        CHKERR( DMPlexSetPartitioner(self.dm, part.part) )
+
     def getPartitioner(self):
         cdef Partitioner part = Partitioner()
         CHKERR( DMPlexGetPartitioner(self.dm, &part.part) )
