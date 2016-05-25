@@ -411,8 +411,9 @@ cdef class DMPlex(DM):
         cdef PetscInt coverlap = asInt(overlap)
         cdef SF sf = SF()
         CHKERR( DMPlexDistribute(self.dm, coverlap, &sf.sf, &dmParallel) )
-        PetscCLEAR(self.obj); self.dm = dmParallel
-        return sf
+        if dmParallel != NULL:
+            PetscCLEAR(self.obj); self.dm = dmParallel
+            return sf
 
     def distributeOverlap(self, overlap=0):
         cdef PetscInt coverlap = asInt(overlap)
