@@ -1723,7 +1723,7 @@ PetscErrorCode DMForestAdaptLabel(DM dm, const char name[], DM *adaptedDM)
 
   PetscFunctionBegin;
   ierr = DMForestTemplate(dm,PetscObjectComm((PetscObject)dm),adaptedDM);CHKERRQ(ierr);
-  ierr = DMForestSetAdaptivityLabel(*adaptedDM,"adapt");CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityLabel(*adaptedDM,name ? name : "adapt");CHKERRQ(ierr);
   ierr = DMSetUp(*adaptedDM);CHKERRQ(ierr);
   ierr = DMForestGetAdaptivitySuccess(*adaptedDM,&success);CHKERRQ(ierr);
   if (!success) {
