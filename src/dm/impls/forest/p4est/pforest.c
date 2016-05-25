@@ -179,6 +179,7 @@ typedef struct {
   PetscBool           partition_for_coarsening;
   PetscBool           coarsen_hierarchy;
   PetscBool           labelsFinalized;
+  PetscBool           adaptivitySuccess;
   PetscInt            cLocalStart;
   PetscInt            cLocalEnd;
   DM                  plex;
@@ -442,19 +443,32 @@ static PetscErrorCode DMForestTemplate_pforest(DM dm, DM tdm)
 #define DMPlexCreateConnectivity_pforest _append_pforest(DMPlexCreateConnectivity)
 static PetscErrorCode DMPlexCreateConnectivity_pforest(DM,p4est_connectivity_t**,PetscInt**);
 
+typedef struct _PforestAdaptCtx
+{
+  PetscInt  maxLevel;
+  PetscInt  minLevel;
+  PetscBool anyChange;
+}
+PforestAdaptCtx;
+
 static int pforest_coarsen_uniform(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
 {
-  PetscInt minLevel = *((PetscInt*) p4est->user_pointer);
+  PforestAdaptCtx *ctx     = (PforestAdaptCtx*) p4est->user_pointer;
+  PetscInt        minLevel = ctx->minLevel;
 
-  if ((PetscInt) quadrants[0]->level > minLevel) return 1;
+  if ((PetscInt) quadrants[0]->level > minLevel) {
+    ctx->anyChange = PETSC_TRUE;
+    return 1;
+  }
   return 0;
 }
 
 static int pforest_coarsen_flag_any(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
 {
-  PetscInt  i;
-  PetscBool any = PETSC_FALSE;
-  PetscInt  minLevel = *((PetscInt*) p4est->user_pointer);
+  PetscInt        i;
+  PetscBool       any      = PETSC_FALSE;
+  PforestAdaptCtx *ctx     = (PforestAdaptCtx*) p4est->user_pointer;
+  PetscInt        minLevel = ctx->minLevel;
 
   if (quadrants[0]->level <= minLevel) return 0;
   for (i = 0; i < P4EST_CHILDREN; i++) {
@@ -463,14 +477,21 @@ static int pforest_coarsen_flag_any(p4est_t * p4est, p4est_topidx_t which_tree, 
       break;
     }
   }
-  return any ? 1 : 0;
+  if (any) {
+    ctx->anyChange = PETSC_TRUE;
+    return 1;
+  }
+  else {
+    return 0;
+  }
 }
 
 static int pforest_coarsen_flag_all(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
 {
-  PetscInt  i;
-  PetscBool all = PETSC_TRUE;
-  PetscInt  minLevel = *((PetscInt*) p4est->user_pointer);
+  PetscInt        i;
+  PetscBool       all      = PETSC_TRUE;
+  PforestAdaptCtx *ctx     = (PforestAdaptCtx*) p4est->user_pointer;
+  PetscInt        minLevel = ctx->minLevel;
 
   if (quadrants[0]->level <= minLevel) return 0;
   for (i = 0; i < P4EST_CHILDREN; i++) {
@@ -479,7 +500,12 @@ static int pforest_coarsen_flag_all(p4est_t * p4est, p4est_topidx_t which_tree, 
       break;
     }
   }
-  return all ? 1 : 0;
+  if (all) {
+    ctx->anyChange = PETSC_TRUE;
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 static void pforest_init_keep(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
@@ -489,19 +515,32 @@ static void pforest_init_keep(p4est_t *p4est, p4est_topidx_t which_tree, p4est_q
 
 static int pforest_refine_uniform(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
 {
-  PetscInt maxLevel = *((PetscInt*) p4est->user_pointer);
+  PforestAdaptCtx *ctx     = (PforestAdaptCtx*) p4est->user_pointer;
+  PetscInt        maxLevel = ctx->maxLevel;
 
-  if ((PetscInt) quadrant->level < maxLevel) return 1;
-  return 0;
+  if ((PetscInt) quadrant->level < maxLevel) {
+    ctx->anyChange = PETSC_TRUE;
+    return 1;
+  }
+  else {
+    return 0;
+  }
 }
 
 static int pforest_refine_flag(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
 {
-  PetscInt maxLevel = *((PetscInt*) p4est->user_pointer);
+  PforestAdaptCtx *ctx     = (PforestAdaptCtx*) p4est->user_pointer;
+  PetscInt        maxLevel = ctx->maxLevel;
 
   if ((PetscInt) quadrant->level >= maxLevel) return 0;
 
-  return (quadrant->p.user_int == DM_FOREST_REFINE);
+  if (quadrant->p.user_int == DM_FOREST_REFINE) {
+    ctx->anyChange = PETSC_TRUE;
+    return 1;
+  }
+  else {
+    return 0;
+  }
 }
 
 #undef __FUNCT__
@@ -693,9 +732,13 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   DM                base, adaptFrom;
   DMForestTopology  topoName;
   PetscSF           preCoarseToFine = NULL, coarseToPreFine = NULL;
+  PforestAdaptCtx   ctx;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ctx.minLevel  = PETSC_MAX_INT;
+  ctx.maxLevel  = 0;
+  ctx.anyChange = PETSC_FALSE;
   /* sanity check */
   ierr = DMForestGetAdaptivityForest(dm,&adaptFrom);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(dm,&base);CHKERRQ(ierr);
@@ -845,10 +888,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       ierr = MPI_Allreduce(&numValues,&numValuesGlobal,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)adaptFrom));CHKERRQ(ierr);
       ierr = DMLabelGetDefaultValue(adaptLabel,&defaultValue);CHKERRQ(ierr);
       if (!numValuesGlobal && defaultValue == DM_FOREST_COARSEN) { /* uniform coarsen */
-        PetscInt minLevel;
-
-        ierr                          = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
-        pforest->forest->user_pointer = (void*) &minLevel;
+        ierr                          = DMForestGetMinimumRefinement(dm,&ctx.minLevel);CHKERRQ(ierr);
+        pforest->forest->user_pointer = (void*) &ctx;
         PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
         pforest->forest->user_pointer = (void*) dm;
         PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
@@ -857,10 +898,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),pforest->forest,0,apforest->forest,apforest->cLocalStart,&coarseToPreFine,NULL);CHKERRQ(ierr);
         }
       } else if (!numValuesGlobal && defaultValue == DM_FOREST_REFINE) { /* uniform refine */
-        PetscInt maxLevel;
-
-        ierr                          = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
-        pforest->forest->user_pointer = (void*) &maxLevel;
+        ierr                          = DMForestGetMaximumRefinement(dm,&ctx.maxLevel);CHKERRQ(ierr);
+        pforest->forest->user_pointer = (void*) &ctx;
         PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_uniform,NULL));
         pforest->forest->user_pointer = (void*) dm;
         PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
@@ -876,10 +915,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscInt                   c, cStart, cEnd, cLocalStart, count;
         p4est_topidx_t             flt, llt, t;
         PetscBool                  adaptAny;
-        PetscInt                   maxLevel, minLevel;
 
-        ierr = DMForestGetMaximumRefinement(dm,&maxLevel);CHKERRQ(ierr);
-        ierr = DMForestGetMinimumRefinement(dm,&minLevel);CHKERRQ(ierr);
+        ierr = DMForestGetMaximumRefinement(dm,&ctx.maxLevel);CHKERRQ(ierr);
+        ierr = DMForestGetMinimumRefinement(dm,&ctx.minLevel);CHKERRQ(ierr);
         ierr = DMForestGetAdaptivityStrategy(dm,&strategy);CHKERRQ(ierr);
         ierr = PetscStrncmp(strategy,"any",3,&adaptAny);CHKERRQ(ierr);
         ierr = DMForestGetCellChart(adaptFrom,&cStart,&cEnd);CHKERRQ(ierr);
@@ -911,13 +949,12 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         }
         ierr = PetscFree(cellFlags);CHKERRQ(ierr);
 
-        pforest->forest->user_pointer = (void*) &minLevel;
+        pforest->forest->user_pointer = (void*) &ctx;
         if (adaptAny) {
           PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_keep));
         } else {
           PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_all,pforest_init_keep));
         }
-        pforest->forest->user_pointer = (void*) &maxLevel;
         PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_flag,NULL));
         pforest->forest->user_pointer = (void*) dm;
         PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
@@ -1054,17 +1091,20 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
     if ((size > 1) && (pforest->partition_for_coarsening || forest->cellWeights || forest->weightCapacity != 1. || forest->weightsFactor != 1.)) {
-      PetscBool copyForest   = PETSC_FALSE;
-      p4est_t   *forest_copy = NULL;
+      PetscBool      copyForest   = PETSC_FALSE;
+      p4est_t        *forest_copy = NULL;
+      p4est_gloidx_t shipped      = 0;
+
       if (preCoarseToFine || coarseToPreFine) copyForest = PETSC_TRUE;
       if (copyForest) PetscStackCallP4estReturn(forest_copy,p4est_copy,(pforest->forest,0));
 
       if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
-        PetscStackCallP4est(p4est_partition,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
+        PetscStackCallP4estReturn(shipped,p4est_partition_ext,(pforest->forest,(int)pforest->partition_for_coarsening,NULL));
       } else {
         /* TODO: handle non-uniform partition cases */
         SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
       }
+      if (shipped) ctx.anyChange = PETSC_TRUE;
       if (forest_copy) {
         if (preCoarseToFine || coarseToPreFine) {
           PetscSF        repartSF; /* repartSF has roots in the old partition */
@@ -1248,10 +1288,26 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       }
     }
   }
-  forest->preCoarseToFine = preCoarseToFine;
-  forest->coarseToPreFine = coarseToPreFine;
-  dm->setupcalled = PETSC_TRUE;
+  forest->preCoarseToFine    = preCoarseToFine;
+  forest->coarseToPreFine    = coarseToPreFine;
+  pforest->adaptivitySuccess = ctx.anyChange;
+  dm->setupcalled            = PETSC_TRUE;
   ierr = DMPforestGetPlex(dm,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#define DMForestGetAdaptivitySuccess_pforest _append_pforest(DMForestGetAdaptivitySuccess)
+#undef __FUNCT__
+#define __FUNCT__ _pforest_string(DMForestGetAdaptivitySuccess_pforest)
+static PetscErrorCode DMForestGetAdaptivitySuccess_pforest(DM dm, PetscBool *success)
+{
+  DM_Forest         *forest;
+  DM_Forest_pforest *pforest;
+
+  PetscFunctionBegin;
+  forest   = (DM_Forest *) dm->data;
+  pforest  = (DM_Forest_pforest *) forest->data;
+  *success = pforest->adaptivitySuccess;
   PetscFunctionReturn(0);
 }
 
@@ -4628,6 +4684,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   forest->createcellchart           = DMForestCreateCellChart_pforest;
   forest->createcellsf              = DMForestCreateCellSF_pforest;
   forest->clearadaptivityforest     = DMForestClearAdaptivityForest_pforest;
+  forest->getadaptivitysuccess      = DMForestGetAdaptivitySuccess_pforest;
   pforest->topo                     = NULL;
   pforest->forest                   = NULL;
   pforest->ghost                    = NULL;

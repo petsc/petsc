@@ -970,6 +970,41 @@ PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivitySuccess"
+/*@
+  DMForestGetAdaptivitySuccess - Return whether the requested adaptation (refinement, coarsening, repartitioning,
+  etc.) was successful.  PETSC_FALSE indicates that the post-adaptation forest is the same as the pre-adpatation
+  forest.  A requested adaptation may have been unsuccessful if, for example, the requested refinement would have
+  exceeded the maximum refinement level.
+
+  Collective on dm
+
+  Input Parameter:
+
+. dm - the post-adaptation forest
+
+  Output Parameter:
+
+. success - PETSC_TRUE if the post-adaptation forest is different from the pre-adaptation forest.
+
+  Level: intermediate
+
+.see
+@*/
+PetscErrorCode DMForestGetAdaptivitySuccess(DM dm, PetscBool *success)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() has not been called yet.");
+  forest = (DM_Forest *) dm->data;
+  ierr = (forest->getadaptivitysuccess)(dm,success);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMForestSetComputeAdaptivitySF"
 /*@
   DMForestSetComputeAdaptivitySF - During the pre-setup phase, set whether transfer PetscSFs should be computed
