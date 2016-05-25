@@ -456,11 +456,7 @@ static int pforest_coarsen_uniform(p4est_t * p4est, p4est_topidx_t which_tree, p
   PforestAdaptCtx *ctx     = (PforestAdaptCtx*) p4est->user_pointer;
   PetscInt        minLevel = ctx->minLevel;
 
-  if ((PetscInt) quadrants[0]->level > minLevel) {
-    ctx->anyChange = PETSC_TRUE;
-    return 1;
-  }
-  return 0;
+  return (int) ((PetscInt) quadrants[0]->level > minLevel);
 }
 
 static int pforest_coarsen_flag_any(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
@@ -477,13 +473,7 @@ static int pforest_coarsen_flag_any(p4est_t * p4est, p4est_topidx_t which_tree, 
       break;
     }
   }
-  if (any) {
-    ctx->anyChange = PETSC_TRUE;
-    return 1;
-  }
-  else {
-    return 0;
-  }
+  return any ? 1 : 0;
 }
 
 static int pforest_coarsen_flag_all(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrants[])
@@ -500,12 +490,7 @@ static int pforest_coarsen_flag_all(p4est_t * p4est, p4est_topidx_t which_tree, 
       break;
     }
   }
-  if (all) {
-    ctx->anyChange = PETSC_TRUE;
-    return 1;
-  } else {
-    return 0;
-  }
+  return all ? 1 : 0;
 }
 
 static void pforest_init_keep(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
@@ -518,13 +503,7 @@ static int pforest_refine_uniform(p4est_t * p4est, p4est_topidx_t which_tree, p4
   PforestAdaptCtx *ctx     = (PforestAdaptCtx*) p4est->user_pointer;
   PetscInt        maxLevel = ctx->maxLevel;
 
-  if ((PetscInt) quadrant->level < maxLevel) {
-    ctx->anyChange = PETSC_TRUE;
-    return 1;
-  }
-  else {
-    return 0;
-  }
+  return ((PetscInt) quadrant->level < maxLevel);
 }
 
 static int pforest_refine_flag(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
@@ -534,13 +513,7 @@ static int pforest_refine_flag(p4est_t * p4est, p4est_topidx_t which_tree, p4est
 
   if ((PetscInt) quadrant->level >= maxLevel) return 0;
 
-  if (quadrant->p.user_int == DM_FOREST_REFINE) {
-    ctx->anyChange = PETSC_TRUE;
-    return 1;
-  }
-  else {
-    return 0;
-  }
+  return (quadrant->p.user_int == DM_FOREST_REFINE);
 }
 
 #undef __FUNCT__
@@ -958,6 +931,31 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_flag,NULL));
         pforest->forest->user_pointer = (void*) dm;
         PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
+        for (t = flt, count = cLocalStart; t <= llt; t++) {
+          p4est_tree_t       *atree    = &(((p4est_tree_t*) apforest->forest->trees->array)[t]);
+          p4est_tree_t       *tree     = &(((p4est_tree_t*) p4est->trees->array)[t]);
+          PetscInt           anumQuads = (PetscInt) atree->quadrants.elem_count, i;
+          PetscInt           numQuads  = (PetscInt) tree->quadrants.elem_count;
+          p4est_quadrant_t   *aquads   = (p4est_quadrant_t *) atree->quadrants.array;
+          p4est_quadrant_t   *quads    = (p4est_quadrant_t *) tree->quadrants.array;
+
+          if (anumQuads != numQuads) {
+            ctx.anyChange = PETSC_TRUE;
+          } else {
+            for (i = 0; i < numQuads; i++) {
+              p4est_quadrant_t *aq = &aquads[i];
+              p4est_quadrant_t *q  = &quads[i];
+
+              if (aq->level != q->level) {
+                ctx.anyChange = PETSC_TRUE;
+                break;
+              }
+            }
+          }
+          if (ctx.anyChange) {
+            break;
+          }
+        }
         if (computeAdaptSF) {
           ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),apforest->forest,apforest->cLocalStart,pforest->forest,0,&preCoarseToFine,&coarseToPreFine);CHKERRQ(ierr);
         }
@@ -1173,6 +1171,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMForestGetPartitionOverlap(dm,&overlap);CHKERRQ(ierr);
 
+      if (adaptFrom) {
+        PetscInt aoverlap;
+
+        ierr = DMForestGetPartitionOverlap(adaptFrom,&aoverlap);CHKERRQ(ierr);
+        if (aoverlap != overlap) {
+          ctx.anyChange = PETSC_TRUE;
+        }
+      }
+
       if (overlap > 0) {
         PetscInt i, cLocalStart;
         PetscInt cEnd;
@@ -1288,10 +1295,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       }
     }
   }
-  forest->preCoarseToFine    = preCoarseToFine;
-  forest->coarseToPreFine    = coarseToPreFine;
-  pforest->adaptivitySuccess = ctx.anyChange;
-  dm->setupcalled            = PETSC_TRUE;
+  forest->preCoarseToFine = preCoarseToFine;
+  forest->coarseToPreFine = coarseToPreFine;
+  dm->setupcalled         = PETSC_TRUE;
+  ierr = MPI_Allreduce(&ctx.anyChange,&(pforest->adaptivitySuccess),1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   ierr = DMPforestGetPlex(dm,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
