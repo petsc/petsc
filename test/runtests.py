@@ -1,5 +1,6 @@
 import sys, os
 import optparse
+import platform
 import unittest
 
 def getoptionparser():
@@ -88,7 +89,7 @@ def import_package(options, pkgname):
 def getprocessorinfo():
     from petsc4py.PETSc import COMM_WORLD
     rank = COMM_WORLD.getRank()
-    name =  os.uname()[1]
+    name = platform.uname()[1]
     return (rank, name)
 
 def getpythoninfo():
