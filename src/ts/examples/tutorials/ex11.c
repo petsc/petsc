@@ -1520,7 +1520,13 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
-  if (isForest) {ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);}
+  if (isForest) {
+    DMLabel adaptLabel;
+
+    ierr = DMRemoveLabel(dm,"adapt",&adaptLabel);CHKERRQ(ierr);
+    ierr = PetscFree(adaptLabel);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);
+  }
 
   for (c = cStart; c < cEnd; c++) {
     PetscReal             errInd = 0.;
@@ -1934,6 +1940,7 @@ int main(int argc, char **argv)
       }
       ierr = PetscFVSetLimiter(fvm,limiter);CHKERRQ(ierr);
       if (tsNew) {
+        ierr = PetscInfo(ts, "AMR used\n");CHKERRQ(ierr);
         ierr = DMDestroy(&dm);CHKERRQ(ierr);
         ierr = VecDestroy(&X);CHKERRQ(ierr);
         ierr = TSDestroy(&ts);CHKERRQ(ierr);
@@ -1947,16 +1954,12 @@ int main(int argc, char **argv)
         if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
         dt   = cfl * minRadius / user->model->maxspeed;
         ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
-        ierr = TSSetDuration(ts,adaptInterval,finalTime);CHKERRQ(ierr);
       }
       else {
-        PetscInt lastSteps;
-
-        ierr    = TSGetTimeStepNumber(ts,&lastSteps);CHKERRQ(ierr);
-        nsteps -= lastSteps;
-        ierr    = TSSetDuration(ts,lastSteps + adaptInterval,finalTime);CHKERRQ(ierr);
+        ierr = PetscInfo(ts, "AMR not used\n");CHKERRQ(ierr);
       }
       user->monitorStepOffset = nsteps;
+      ierr    = TSSetDuration(ts,adaptInterval,finalTime);CHKERRQ(ierr);
       ierr    = TSSolve(ts,X);CHKERRQ(ierr);
       ierr    = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
       ierr    = TSGetTimeStepNumber(ts,&incSteps);CHKERRQ(ierr);

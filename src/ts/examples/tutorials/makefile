@@ -403,9 +403,9 @@ runex11_euler:
 
 runex11_euler_p4est:
 	-@${MPIEXEC} -n 1 ./ex11 -ufv_vtk_interval 1 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 \
-          -dm_type p4est -dm_forest_maximum_refinement 5 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -ts_final_time 1 \
+          -dm_type p4est -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -ts_final_time 1 \
           -ts_ssp_type rks2 -ts_ssp_nstages 10 -petscfv_type leastsquares -petsclimiter_type minmod \
-					-ufv_use_amr -ufv_view_initial_refinement -ufv_refine_tol 2.5
+					-ufv_use_amr -ufv_view_initial_refinement -ufv_refine_tol 0.5 -ufv_coarsen_tol 1.e-2
 
 runex12:
 	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_theta_initial_guess_extrapolate 0 \
