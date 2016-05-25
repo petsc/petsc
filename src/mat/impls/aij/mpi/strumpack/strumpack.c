@@ -483,18 +483,19 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
 
   PetscOptionsEnd();
 
-  /* Disable the outer iterative solver from STRUMPACK.                                       */
-  /* When STRUMPACK is used as a direct solver, it will by default do iterative refinement.   */
-  /* When STRUMPACK is used with as an approximate factorization preconditioner (by enabling  */
-  /* low-rank compression), it will use it's own GMRES. Here we can in both cases disable the */
-  /* outer iterative solver, as PETSc uses STRUMPACK from within a KSP.                       */
-  PetscStackCall("STRUMPACK_set_Krylov_solver", STRUMPACK_set_Krylov_solver(sp->S, STRUMPACK_DIRECT));
+  if (ftype == MAT_FACTOR_ILU) {
+    /* When enabling HSS compression, the STRUMPACK solver becomes an incomplete                */
+    /* (or approximate) LU factorization.                                                       */
+    PetscStackCall("STRUMPACK_use_HSS",STRUMPACK_use_HSS(sp->S,1));
+    /* Disable the outer iterative solver from STRUMPACK.                                       */
+    /* When STRUMPACK is used as a direct solver, it will by default do iterative refinement.   */
+    /* When STRUMPACK is used with as an approximate factorization preconditioner (by enabling  */
+    /* low-rank compression), it will use it's own GMRES. Here we can disable the               */
+    /* outer iterative solver, as PETSc uses STRUMPACK from within a KSP.                       */
+    PetscStackCall("STRUMPACK_set_Krylov_solver", STRUMPACK_set_Krylov_solver(sp->S, STRUMPACK_DIRECT));
+  }
 
-  /* When enabling HSS compression, the STRUMPACK solver becomes an incomplete                */
-  /* (or approximate) LU factorization.                                                       */
-  if (ftype == MAT_FACTOR_ILU) PetscStackCall("STRUMPACK_use_HSS",STRUMPACK_use_HSS(sp->S,1));
-
-  /* Allow the user to set or overwrite the above options from the command line               */
+  /* Allow the user to set or overwrite the above options from the command line                 */
   PetscStackCall("STRUMPACK_set_from_options",STRUMPACK_set_from_options(sp->S));
   ierr = PetscStrToArrayDestroy(argc,args);CHKERRQ(ierr);
 
