@@ -427,9 +427,28 @@ cdef class DMPlex(DM):
         cdef PetscBool flag = useCone
         CHKERR( DMPlexSetAdjacencyUseCone(self.dm, flag) )
 
+    def getAdjacencyUseCone(self):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( DMPlexGetAdjacencyUseCone(self.dm, &flag) )
+        return <bint> flag
+
     def setAdjacencyUseClosure(self, useClosure=True):
         cdef PetscBool flag = useClosure
         CHKERR( DMPlexSetAdjacencyUseClosure(self.dm, flag) )
+
+    def getAdjacencyUseClosure(self):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( DMPlexGetAdjacencyUseClosure(self.dm, &flag) )
+        return <bint> flag
+
+    def setAdjacencyUseAnchors(self, useAnchors=True):
+        cdef PetscBool flag = useAnchors
+        CHKERR( DMPlexSetAdjacencyUseAnchors(self.dm, flag) )
+
+    def getAdjacencyUseAnchors(self):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( DMPlexGetAdjacencyUseAnchors(self.dm, &flag) )
+        return <bint> flag
 
     def setPartitioner(self, Partitioner part not None):
         CHKERR( DMPlexSetPartitioner(self.dm, part.part) )

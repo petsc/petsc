@@ -93,6 +93,10 @@ cdef extern from * nogil:
 
     int DMPlexSetAdjacencyUseCone(PetscDM,PetscBool)
     int DMPlexSetAdjacencyUseClosure(PetscDM,PetscBool)
+    int DMPlexSetAdjacencyUseAnchors(PetscDM,PetscBool)
+    int DMPlexGetAdjacencyUseCone(PetscDM,PetscBool*)
+    int DMPlexGetAdjacencyUseClosure(PetscDM,PetscBool*)
+    int DMPlexGetAdjacencyUseAnchors(PetscDM,PetscBool*)
     #int DMPlexCreateNeighborCSR(PetscDM,PetscInt,PetscInt*,PetscInt**,PetscInt**)
     #int DMPlexCreatePartition(PetscDM,const_char[],PetscInt,PetscBool,PetscSection*,PetscIS*,PetscSection*,PetscIS*)
     #int DMPlexCreatePartitionClosure(PetscDM,PetscSection,PetscIS,PetscSection*,PetscIS*)
