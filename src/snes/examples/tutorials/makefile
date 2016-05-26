@@ -1159,14 +1159,23 @@ runex58_2:
 	   ${DIFF} output/ex58_2.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex58.tmp
 runex59:
-	-@${MPIEXEC} -n 1 ./ex59 -n 14 -snes_monitor_short -snes_converged_reason > ex59.tmp 2>&1; \
-	   ${DIFF} output/ex59_1.out ex59.tmp || printf "${PWD}\nPossible problem with ex59_1, diffs above\n=========================================\n"; \
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex59 -n 14 -snes_monitor_short -snes_converged_reason > ex59.tmp 2>&1; \
+           if (${DIFF} output/ex59_1.out ex59_1.tmp > /dev/null 2>&1) then x='good'; fi ;\
+	   if (${DIFF} output/ex59_1_alt.out ex59_1.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$x" = "bad" ]; then ${DIFF} output/ex59_1.out ex59_1.tmp ; ${DIFF} output/ex59_1_alt.out ex59_1.tmp ; printf "${PWD}\nPossible problem with ex59_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59.tmp
 runex59_2:
-	-@${MPIEXEC} -n 1 ./ex59 -n 15 -snes_monitor_short -snes_converged_reason > ex59_2.tmp 2>&1; \
-	   ${DIFF} output/ex59_2.out ex59_2.tmp || printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex59_2.tmp
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex59  -n 15 -snes_monitor_short -snes_converged_reason > ex59.tmp 2>&1; \
+           if (${DIFF} output/ex59_2.out ex59_2.tmp > /dev/null 2>&1) then x='good'; fi ;\
+	   if (${DIFF} output/ex59_2_alt.out ex59_2.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$x" = "bad" ]; then ${DIFF} output/ex59_2.out ex59_2.tmp ; ${DIFF} output/ex59_2_alt.out ex59_2.tmp ; printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59.tmp
 runex59_3:
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex59 -n 14 -second_order -snes_monitor_short -snes_converged_reason  > ex59.tmp 2>&1; \
+           if (${DIFF} output/ex59_3.out ex59_3.tmp > /dev/null 2>&1) then x='good'; fi ;\
+	   if (${DIFF} output/ex59_3_alt.out ex59_3.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$x" = "bad" ]; then ${DIFF} output/ex59_3.out ex59_3.tmp ; ${DIFF} output/ex59_3_alt.out ex59_3.tmp ; printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59.tmp
 	-@${MPIEXEC} -n 1 ./ex59 -n 14 -second_order -snes_monitor_short -snes_converged_reason > ex59_3.tmp 2>&1; \
 	   ${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex59_3.tmp
