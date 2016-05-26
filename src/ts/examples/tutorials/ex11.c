@@ -1712,8 +1712,8 @@ int main(int argc, char **argv)
           for (j = 0; j < dimEmbed; j++) {
             coord[j] = mod->bounds[2 * j] + coord[j] * (mod->bounds[2 * j + 1] - mod->bounds[2 * j]);
             if (dim==2 && cells[1]==1 && j==0 && skew) {
-              if (cells[0]==2 && coord[j]==mod->bounds[3] && i==8) {
-                coord[j] *= (1.57735026918963); /* hack to get 60 deg skewed mesh */
+              if (cells[0]==2 && i==8) {
+                coord[j] = .57735026918963; /* hack to get 60 deg skewed mesh */
               }
               else if (cells[0]==3) {
                 if(i==2 || i==10) coord[j] = mod->bounds[1]/4.;
