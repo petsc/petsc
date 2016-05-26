@@ -170,20 +170,21 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   }
   ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
 
-  ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
-  fetidpmat_ctx->n_lambda = (PetscInt)PetscRealPart(scalar_value);
-
   /* compute global ordering of lagrange multipliers and associate l2g map */
   ierr = ISCreateGeneral(comm,partial_sum,aux_local_numbering_1,PETSC_COPY_VALUES,&subset_n);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(pcis->mapping,subset_n,&subset);CHKERRQ(ierr);
   ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,partial_sum,aux_local_numbering_2,PETSC_OWN_POINTER,&subset_mult);CHKERRQ(ierr);
-  ierr = PCBDDCSubsetNumbering(subset,subset_mult,&i,&subset_n);CHKERRQ(ierr);
+  ierr = PCBDDCSubsetNumbering(subset,subset_mult,&fetidpmat_ctx->n_lambda,&subset_n);CHKERRQ(ierr);
   ierr = ISDestroy(&subset);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
+  i = (PetscInt)PetscRealPart(scalar_value);
   if (i != fetidpmat_ctx->n_lambda) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global number of multipliers mismatch! (%d!=%d)\n",fetidpmat_ctx->n_lambda,i);
+#endif
 
   /* init data for scaling factors exchange */
   partial_sum = 0;
