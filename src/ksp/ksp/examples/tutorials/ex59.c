@@ -77,24 +77,24 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
   count_adj=0;
   for (k=0; k<dd.zm_l; k++) {
     internal_node = PETSC_TRUE;
-    kstart_csr    =1;
-    kend_csr      =dd.zm_l-1;
+    kstart_csr    = k>0 ? k-1 : k;
+    kend_csr      = k<dd.zm_l-1 ? k+2 : k+1;
     if (k == 0 || k == dd.zm_l-1) {
       internal_node = PETSC_FALSE;
       kstart_csr    = k;
       kend_csr      = k+1;
     }
     for (j=0; j<dd.ym_l; j++) {
-      jstart_csr=1;
-      jend_csr  =dd.ym_l-1;
+      jstart_csr = j>0 ? j-1 : j;
+      jend_csr   = j<dd.ym_l-1 ? j+2 : j+1;
       if (j == 0 || j == dd.ym_l-1) {
         internal_node = PETSC_FALSE;
         jstart_csr    = j;
         jend_csr      = j+1;
       }
       for (i=0; i<dd.xm_l; i++) {
-        istart_csr = 1;
-        iend_csr   = dd.xm_l-1;
+        istart_csr = i>0 ? i-1 : i;
+        iend_csr   = i<dd.xm_l-1 ? i+2 : i+1;
         if (i == 0 || i == dd.xm_l-1) {
           internal_node = PETSC_FALSE;
           istart_csr    = i;
@@ -125,24 +125,24 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
   count_adj=0;
   for (k=0; k<dd.zm_l; k++) {
     internal_node = PETSC_TRUE;
-    kstart_csr    = 1;
-    kend_csr      = dd.zm_l-1;
+    kstart_csr    = k>0 ? k-1 : k;
+    kend_csr      = k<dd.zm_l-1 ? k+2 : k+1;
     if (k == 0 || k == dd.zm_l-1) {
       internal_node = PETSC_FALSE;
       kstart_csr    = k;
       kend_csr      = k+1;
     }
     for (j=0; j<dd.ym_l; j++) {
-      jstart_csr = 1;
-      jend_csr   = dd.ym_l-1;
+      jstart_csr = j>0 ? j-1 : j;
+      jend_csr   = j<dd.ym_l-1 ? j+2 : j+1;
       if (j == 0 || j == dd.ym_l-1) {
         internal_node = PETSC_FALSE;
         jstart_csr    = j;
         jend_csr      = j+1;
       }
       for (i=0; i<dd.xm_l; i++) {
-        istart_csr = 1;
-        iend_csr   = dd.xm_l-1;
+        istart_csr = i>0 ? i-1 : i;
+        iend_csr   = i<dd.xm_l-1 ? i+2 : i+1;
         if (i == 0 || i == dd.xm_l-1) {
           internal_node = PETSC_FALSE;
           istart_csr    = i;
@@ -825,8 +825,8 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   PetscErrorCode ierr;
   KSP            temp_ksp;
   PC             pc;
-  IS             dirichletIS=0,neumannIS=0,*bddc_dofs_splitting;
-  PetscInt       localsize,*xadj=NULL,*adjncy=NULL;
+  IS             primals,dirichletIS=0,neumannIS=0,*bddc_dofs_splitting;
+  PetscInt       vidx[8],localsize,*xadj=NULL,*adjncy=NULL;
   MatNullSpace   near_null_space;
 
   PetscFunctionBeginUser;
@@ -864,7 +864,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   ierr = PetscFree(bddc_dofs_splitting);CHKERRQ(ierr);
 
   /* Primal constraints implemented by using a near null space attached to A -> now it passes in only the constants
-    (which in practice is not needed since, by default, PCBDDC build the primal space using constants for quadrature formulas */
+    (which in practice is not needed since by default PCBDDC builds the primal space using constants for quadrature formulas */
 #if 0
   Vec vecs[2];
   PetscRandom rctx;
@@ -885,6 +885,19 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   /* CSR graph of subdomain dofs */
   ierr = BuildCSRGraph(dd,&xadj,&adjncy);CHKERRQ(ierr);
   ierr = PCBDDCSetLocalAdjacencyGraph(pc,localsize,xadj,adjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  /* Prescribe user-defined primal vertices: in this case we use the 8 corners in 3D (for 2D and 1D, the indices are duplicated) */
+  vidx[0] = 0*dd.xm_l+0;
+  vidx[1] = 0*dd.xm_l+dd.xm_l-1;
+  vidx[2] = (dd.ym_l-1)*dd.xm_l+0;
+  vidx[3] = (dd.ym_l-1)*dd.xm_l+dd.xm_l-1;
+  vidx[4] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+0*dd.xm_l+0;
+  vidx[5] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+0*dd.xm_l+dd.xm_l-1;
+  vidx[6] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+(dd.ym_l-1)*dd.xm_l+0;
+  vidx[7] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+(dd.ym_l-1)*dd.xm_l+dd.xm_l-1;
+  ierr = ISCreateGeneral(dd.gcomm,8,vidx,PETSC_COPY_VALUES,&primals);CHKERRQ(ierr);
+  ierr = PCBDDCSetPrimalVerticesLocalIS(pc,primals);CHKERRQ(ierr);
+  ierr = ISDestroy(&primals);CHKERRQ(ierr);
 
   /* Neumann/Dirichlet indices on the global boundary */
   if (dd.DBC_zerorows) {
@@ -1060,8 +1073,8 @@ int main(int argc,char **args)
   ierr = VecAXPY(bddc_solution,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(bddc_solution,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"---------------------BDDC stats-------------------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",(double)mineig,(double)maxeig);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
@@ -1086,8 +1099,8 @@ int main(int argc,char **args)
   ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = VecGetSize(fetidp_solution,&ndofs);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",(double)mineig,(double)maxeig);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
