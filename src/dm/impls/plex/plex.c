@@ -759,7 +759,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   PetscSection   sectionGlobal;
   PetscInt       bs = -1, mbs;
   PetscInt       localSize;
-  PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
+  PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isMatIS;
   PetscErrorCode ierr;
   MatType        mtype;
   ISLocalToGlobalMapping ltog;
@@ -783,8 +783,9 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATIS, &isMatIS);CHKERRQ(ierr);
   if (!isShell) {
-    PetscBool fillMatrix = (PetscBool) !dm->prealloc_only;
+    PetscBool fillMatrix = (PetscBool)(!dm->prealloc_only && !isMatIS);
     PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal, bsMax, bsMin;
     PetscInt  pStart, pEnd, p, dof, cdof;
 
