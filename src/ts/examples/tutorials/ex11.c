@@ -1694,7 +1694,7 @@ int main(int argc, char **argv)
         if (dim != DIM) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D in -grid_size",dim);CHKERRQ(ierr);
       }
       ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, mod->bcs[0], mod->bcs[1], mod->bcs[2], &dm);CHKERRQ(ierr);
-      if (skew) {
+      if (flg2) {
         PetscInt dimEmbed, i;
         PetscInt nCoords;
         PetscScalar *coords;
@@ -1711,7 +1711,7 @@ int main(int argc, char **argv)
           PetscScalar *coord = &coords[i];
           for (j = 0; j < dimEmbed; j++) {
             coord[j] = mod->bounds[2 * j] + coord[j] * (mod->bounds[2 * j + 1] - mod->bounds[2 * j]);
-            if (dim==2 && cells[1]==1 && j==0) {
+            if (dim==2 && cells[1]==1 && j==0 && skew) {
               if (cells[0]==2 && coord[j]==mod->bounds[3] && i==8) {
                 coord[j] *= (1.57735026918963); /* hack to get 60 deg skewed mesh */
               }
