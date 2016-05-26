@@ -257,6 +257,7 @@
 #define PETSCRAND 'rand'
 #define PETSCRAND48 'rand48'
 #define PETSCSPRNG 'sprng'
+#define PETSCRANDER48 'rander48'
 !
 !
 !
