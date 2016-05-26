@@ -1681,19 +1681,20 @@ int main(int argc, char **argv)
     dim = DIM;
     if (!len) { /* a null name means just do a hex box */
       PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
-      PetscBool flg1, flg2;
+      PetscBool flg1, flg2, skew = PETSC_FALSE;
       PetscInt nret1 = DIM;
       PetscInt nret2 = 2*DIM;
       ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
       ierr = PetscOptionsIntArray("-grid_size","number of cells in each direction","",cells,&nret1,&flg1);CHKERRQ(ierr);
-      ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (e.g., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2);CHKERRQ(ierr);
+      ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (i.e., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-grid_skew_60","Skew grid for 60 degree shock mesh","",skew,&skew,NULL);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
       if (flg1) {
         dim = nret1;
         if (dim != DIM) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D in -grid_size",dim);CHKERRQ(ierr);
       }
       ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, mod->bcs[0], mod->bcs[1], mod->bcs[2], &dm);CHKERRQ(ierr);
-      if (flg2) {
+      if (skew) {
         PetscInt dimEmbed, i;
         PetscInt nCoords;
         PetscScalar *coords;
@@ -1710,7 +1711,7 @@ int main(int argc, char **argv)
           PetscScalar *coord = &coords[i];
           for (j = 0; j < dimEmbed; j++) {
             coord[j] = mod->bounds[2 * j] + coord[j] * (mod->bounds[2 * j + 1] - mod->bounds[2 * j]);
-            if (dim==2 && cells[1]==1 && j==0 && 0) {
+            if (dim==2 && cells[1]==1 && j==0) {
               if (cells[0]==2 && coord[j]==mod->bounds[3] && i==8) {
                 coord[j] *= (1.57735026918963); /* hack to get 60 deg skewed mesh */
               }
