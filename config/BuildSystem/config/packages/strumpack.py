@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download         = ['http://portal.nersc.gov/project/sparse/strumpack/STRUMPACK-sparse-1.0.1.tar.gz']
+    self.download         = ['http://portal.nersc.gov/project/sparse/strumpack/STRUMPACK-sparse-1.0.2.tar.gz']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
     self.liblist          = [['libstrumpack_sparse.a']]
@@ -24,7 +24,7 @@ class Configure(config.package.CMakePackage):
     self.ptscotch       = framework.require('config.packages.PTScotch',self)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.openmp         = framework.require('config.packages.openmp',self)
-    self.deps           = [self.mpi,self.openmp,self.blasLapack,self.scalapack,self.parmetis,self.metis,self.ptscotch]
+    self.deps           = [self.mpi,self.blasLapack,self.scalapack,self.parmetis,self.metis,self.ptscotch]
     return
 
   def formCMakeConfigureArgs(self):
@@ -51,6 +51,11 @@ class Configure(config.package.CMakePackage):
     #          is referenced by DSO
     #if not self.checkSharedLibrariesEnabled():
     args.append('-DBUILD_SHARED_LIBS=off')
+
+    if self.openmp.found:
+      args.append('-DUSE_OPENMP=ON')
+    else:
+      args.append('-DUSE_OPENMP=OFF')
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="' + self.framework.getCompiler() + '"')
