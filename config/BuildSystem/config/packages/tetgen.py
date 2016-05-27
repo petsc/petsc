@@ -163,7 +163,7 @@ class Configure(config.package.Package):
     g.write('TETGENLIB        = $(LIBDIR)/libtet.$(AR_LIB_SUFFIX)\n')
     g.write('SHLIB            = libtet\n')
 
-    cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
+    cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
     cflags += ' '+self.headers.toString('.')
     cflags += ' -fPIC'
     predcflags = '-O0 -fPIC'    # Need to compile without optimization

@@ -15,7 +15,7 @@ class Configure(config.package.Package):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     self.setCompilers.pushLanguage('C')
-    g.write('CC = '+self.setCompilers.getCompiler()+' '+self.setCompilers.getCompilerFlags()+'\n')
+    g.write('CC = '+self.setCompilers.getCompiler()+' '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
     self.setCompilers.popLanguage()
     g.close()
 

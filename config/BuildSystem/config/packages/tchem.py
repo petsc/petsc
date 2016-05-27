@@ -25,7 +25,7 @@ class Configure(config.package.Package):
     args = []
     self.framework.pushLanguage('C')
     args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
+    args.append('CFLAGS="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')

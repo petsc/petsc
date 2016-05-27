@@ -41,7 +41,7 @@ class Configure(config.package.Package):
     g = open(os.path.join(self.packageDir, mkfile), 'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CF           = '+self.setCompilers.getCompilerFlags()+'\n')
+    g.write('CF           = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
     self.setCompilers.popLanguage()
     g.write('MAKE         ='+self.make.make+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
