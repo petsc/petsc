@@ -1138,11 +1138,12 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
     PetscFVCellGeom       *cgL, *cgR;
     PetscScalar           *xL, *xR, *gL, *gR;
     PetscScalar           *uLl = *uL, *uRl = *uR;
-    PetscInt               ghost, nsupp;
+    PetscInt               ghost, nsupp, nchild;
 
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
     ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
-    if (ghost >= 0) continue;
+    ierr = DMPlexGetTreeChildren(dm, face, &nchild, NULL);CHKERRQ(ierr);
+    if (ghost >= 0 || nchild > 0) continue;
     ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dmCell, cells[0], cellgeom, &cgL);CHKERRQ(ierr);
@@ -1153,23 +1154,30 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
       ierr = PetscDSGetComponentOffset(prob, f, &off);CHKERRQ(ierr);
       if (isFE[f]) {
         const PetscInt *cone;
-        PetscInt        comp, coneSize, faceLocL, faceLocR, ldof, rdof, d;
+        PetscInt        comp, coneSizeL, coneSizeR, faceLocL, faceLocR, ldof, rdof, d;
 
         xL = xR = NULL;
         ierr = DMPlexVecGetClosure(dm, section, locX, cells[0], &ldof, (PetscScalar **) &xL);CHKERRQ(ierr);
         ierr = DMPlexVecGetClosure(dm, section, locX, cells[1], &rdof, (PetscScalar **) &xR);CHKERRQ(ierr);
         ierr = DMPlexGetCone(dm, cells[0], &cone);CHKERRQ(ierr);
-        ierr = DMPlexGetConeSize(dm, cells[0], &coneSize);CHKERRQ(ierr);
-        for (faceLocL = 0; faceLocL < coneSize; ++faceLocL) if (cone[faceLocL] == face) break;
-        if (faceLocL == coneSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d", face, cells[0]);
+        ierr = DMPlexGetConeSize(dm, cells[0], &coneSizeL);CHKERRQ(ierr);
+        for (faceLocL = 0; faceLocL < coneSizeL; ++faceLocL) if (cone[faceLocL] == face) break;
         ierr = DMPlexGetCone(dm, cells[1], &cone);CHKERRQ(ierr);
-        ierr = DMPlexGetConeSize(dm, cells[1], &coneSize);CHKERRQ(ierr);
-        for (faceLocR = 0; faceLocR < coneSize; ++faceLocR) if (cone[faceLocR] == face) break;
-        if (faceLocR == coneSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d", face, cells[1]);
+        ierr = DMPlexGetConeSize(dm, cells[1], &coneSizeR);CHKERRQ(ierr);
+        for (faceLocR = 0; faceLocR < coneSizeR; ++faceLocR) if (cone[faceLocR] == face) break;
+        if (faceLocL == coneSizeL && faceLocR == coneSizeR) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d or cell %d", face, cells[0], cells[1]);
         /* Check that FEM field has values in the right cell (sometimes its an FV ghost cell) */
-        ierr = EvaluateFaceFields(prob, f, faceLocL, xL, &uLl[iface*Nc+off]);CHKERRQ(ierr);
-        if (rdof == ldof) {ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);}
-        else              {ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr); for(d = 0; d < comp; ++d) uRl[iface*Nc+off+d] = uLl[iface*Nc+off+d];}
+        /* TODO: this is a hack that might not be right for nonconforming */
+        if (faceLocL < coneSizeL) {
+          ierr = EvaluateFaceFields(prob, f, faceLocL, xL, &uLl[iface*Nc+off]);CHKERRQ(ierr);
+          if (rdof == ldof && faceLocR < coneSizeR) {ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);}
+          else              {ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr); for(d = 0; d < comp; ++d) uRl[iface*Nc+off+d] = uLl[iface*Nc+off+d];}
+        }
+        else {
+          ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr);
+          for(d = 0; d < comp; ++d) uLl[iface*Nc+off+d] = uRl[iface*Nc+off+d];
+        }
         ierr = DMPlexVecRestoreClosure(dm, section, locX, cells[0], &ldof, (PetscScalar **) &xL);CHKERRQ(ierr);
         ierr = DMPlexVecRestoreClosure(dm, section, locX, cells[1], &rdof, (PetscScalar **) &xR);CHKERRQ(ierr);
       } else {
