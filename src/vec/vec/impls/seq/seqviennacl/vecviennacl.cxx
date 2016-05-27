@@ -554,6 +554,18 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScal
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecMTDot_SeqViennaCL"
+PetscErrorCode VecMTDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Since complex case is not supported at the moment, this is the same as VecMDot_SeqViennaCL */
+  ierr = VecMDot_SeqViennaCL(xin,nv,yin,z);CHKERRQ(ierr);
+  ViennaCLWaitForGPU();
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__
@@ -1086,8 +1098,10 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   V->ops->tdot_local      = VecTDot_SeqViennaCL;
   V->ops->norm_local      = VecNorm_SeqViennaCL;
   V->ops->mdot_local      = VecMDot_SeqViennaCL;
+  V->ops->mtdot_local     = VecMTDot_SeqViennaCL;
   V->ops->maxpy           = VecMAXPY_SeqViennaCL;
   V->ops->mdot            = VecMDot_SeqViennaCL;
+  V->ops->mtdot           = VecMTDot_SeqViennaCL;
   V->ops->aypx            = VecAYPX_SeqViennaCL;
   V->ops->waxpy           = VecWAXPY_SeqViennaCL;
   V->ops->dotnorm2        = VecDotNorm2_SeqViennaCL;
