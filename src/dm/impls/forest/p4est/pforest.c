@@ -2159,6 +2159,8 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   PetscDS        ds, dsB;
   PetscBool      newDS;
   void           *ctx;
+  PetscInt       num;
+  PetscReal      val;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2168,6 +2170,8 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
   ierr  = DMGetDS(dmB,&dsB);CHKERRQ(ierr);
   newDS = (PetscBool) (ds != dsB);
   ierr  = DMSetDS(dmB,ds);CHKERRQ(ierr);
+  ierr  = DMGetOutputSequenceNumber(dmA,&num,&val);CHKERRQ(ierr);
+  ierr  = DMSetOutputSequenceNumber(dmB,num,val);CHKERRQ(ierr);
   if (newDS) {
     ierr = DMClearGlobalVectors(dmB);CHKERRQ(ierr);
     ierr = DMClearLocalVectors(dmB);CHKERRQ(ierr);
