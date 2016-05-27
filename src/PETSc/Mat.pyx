@@ -618,6 +618,7 @@ cdef class Mat(Object):
     def duplicate(self, copy=False):
         cdef PetscMatDuplicateOption flag = MAT_DO_NOT_COPY_VALUES
         if copy: flag = MAT_COPY_VALUES
+        if copy > MAT_COPY_VALUES: flag = MAT_SHARE_NONZERO_PATTERN
         cdef Mat mat = type(self)()
         CHKERR( MatDuplicate(self.mat, flag, &mat.mat) )
         return mat
