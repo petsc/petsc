@@ -44,8 +44,9 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.mpi.usingMPIUni and not self.argDB['with-mumps-serial']:
-      raise RuntimeError('Since you are building without MPI you must use --with-mumps-serial to install the correct MUMPS.')
+    if self.argDB['with-'+self.package] or self.argDB['download-'+self.package]:
+      if self.mpi.usingMPIUni and not self.argDB['with-mumps-serial']:
+        raise RuntimeError('Since you are building without MPI you must use --with-mumps-serial to install the correct MUMPS.')
     if self.argDB['with-mumps-serial']:
       if not self.mpi.usingMPIUni:
         raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
