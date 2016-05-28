@@ -8,7 +8,8 @@ class Configure(config.package.Package):
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_5.0.1-p1.tar.gz']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
-                            ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a']]
+                            ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a'],
+                            ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a','libmpiseq.a']]
     self.functions        = ['dmumps_c']
     self.includes         = ['dmumps_c.h']
     #
