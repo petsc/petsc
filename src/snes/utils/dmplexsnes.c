@@ -1143,7 +1143,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
     ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
     ierr = DMPlexGetTreeChildren(dm, face, &nchild, NULL);CHKERRQ(ierr);
-    if (ghost >= 0 || nchild > 0) continue;
+    if (ghost >= 0 || nsupp > 2 || nchild > 0) continue;
     ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dmCell, cells[0], cellgeom, &cgL);CHKERRQ(ierr);
@@ -1157,6 +1157,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
         PetscInt        comp, coneSizeL, coneSizeR, faceLocL, faceLocR, ldof, rdof, d;
 
         xL = xR = NULL;
+        ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr); 
         ierr = DMPlexVecGetClosure(dm, section, locX, cells[0], &ldof, (PetscScalar **) &xL);CHKERRQ(ierr);
         ierr = DMPlexVecGetClosure(dm, section, locX, cells[1], &rdof, (PetscScalar **) &xR);CHKERRQ(ierr);
         ierr = DMPlexGetCone(dm, cells[0], &cone);CHKERRQ(ierr);
@@ -1171,7 +1172,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
         if (faceLocL < coneSizeL) {
           ierr = EvaluateFaceFields(prob, f, faceLocL, xL, &uLl[iface*Nc+off]);CHKERRQ(ierr);
           if (rdof == ldof && faceLocR < coneSizeR) {ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);}
-          else              {ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr); for(d = 0; d < comp; ++d) uRl[iface*Nc+off+d] = uLl[iface*Nc+off+d];}
+          else              {for(d = 0; d < comp; ++d) uRl[iface*Nc+off+d] = uLl[iface*Nc+off+d];}
         }
         else {
           ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);
@@ -1186,19 +1187,6 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
 
         ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fv);CHKERRQ(ierr);
         ierr = PetscFVGetNumComponents(fv, &numComp);CHKERRQ(ierr);
-        if (nsupp > 2) {
-          for (f = 0; f < Nf; ++f) {
-            PetscInt off;
-
-            ierr = PetscDSGetComponentOffset(prob, f, &off);CHKERRQ(ierr);
-            ierr = PetscFVGetNumComponents(fv, &numComp);CHKERRQ(ierr);
-            for (c = 0; c < numComp; ++c) {
-              uLl[iface*Nc+off+c] = 0.;
-              uRl[iface*Nc+off+c] = 0.;
-            }
-          }
-          continue;
-        }
         ierr = DMPlexPointLocalFieldRead(dm, cells[0], f, x, &xL);CHKERRQ(ierr);
         ierr = DMPlexPointLocalFieldRead(dm, cells[1], f, x, &xR);CHKERRQ(ierr);
         if (dmGrad) {
@@ -1313,10 +1301,12 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
     PetscFVCellGeom       *cgL, *cgR;
     PetscFVFaceGeom       *fgeoml = *fgeom;
     PetscReal             *voll   = *vol;
-    PetscInt               ghost, d;
+    PetscInt               ghost, d, nchild, nsupp;
 
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
-    if (ghost >= 0) continue;
+    ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
+    ierr = DMPlexGetTreeChildren(dm, face, &nchild, NULL);CHKERRQ(ierr);
+    if (ghost >= 0 || nsupp > 2 || nchild > 0) continue;
     ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dmCell, cells[0], cellgeom, &cgL);CHKERRQ(ierr);
@@ -1673,15 +1663,12 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
         for (face = fS, iface = 0; face < fE; ++face) {
           const PetscInt *cells;
           PetscScalar    *fL, *fR;
-          PetscInt        ghost, d, nsupp;
+          PetscInt        ghost, d, nsupp, nchild;
 
           ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
           ierr = DMPlexGetSupportSize(dm, face, &nsupp);CHKERRQ(ierr);
-          if (ghost >= 0) continue;
-          if (nsupp > 2) { /* noop */
-            ++iface;
-            continue;
-          }
+          ierr = DMPlexGetTreeChildren(dm, face, &nchild, NULL);CHKERRQ(ierr);
+          if (ghost >= 0 || nsupp > 2 || nchild > 0) continue;
           ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
           ierr = DMPlexPointGlobalFieldRef(dm, cells[0], f, fa, &fL);CHKERRQ(ierr);
           ierr = DMPlexPointGlobalFieldRef(dm, cells[1], f, fa, &fR);CHKERRQ(ierr);
