@@ -98,45 +98,95 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector *
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectViennaCLSetFromOptions"
-PETSC_EXTERN PetscErrorCode PetscObjectViennaCLSetFromOptions(PetscObject obj)
+#define __FUNCT__ "PetscViennaCLInit"
+PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 {
   PetscErrorCode       ierr;
-#ifdef VIENNACL_WITH_OPENCL
-  PetscBool            flg;
-#endif
+  char                 string[20];
+  PetscBool            flg,flg_cuda,flg_opencl,flg_openmp;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin(obj);
+  /* ViennaCL backend selection: CUDA, OpenCL, or OpenMP */
+  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_backend",string,12,&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      ierr = PetscStrcasecmp(string,"cuda",&flg_cuda);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(string,"opencl",&flg_opencl);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(string,"openmp",&flg_openmp);CHKERRQ(ierr);
 
-#ifdef VIENNACL_WITH_OPENCL
-  ierr = PetscOptionsHasName(NULL,NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
-  if (flg) {
-    try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_CPU);
+      /* A default (sequential) CPU backend is always available - even if OpenMP is not enabled. */
+      if (flg_openmp) viennacl::backend::default_memory_type(viennacl::MAIN_MEMORY);
+#if defined(PETSC_HAVE_CUDA)
+      else if (flg_cuda) viennacl::backend::default_memory_type(viennacl::CUDA_MEMORY);
+#endif
+#if defined(PETSC_HAVE_OPENCL)
+      else if (flg_opencl) viennacl::backend::default_memory_type(viennacl::OPENCL_MEMORY);
+#endif
+      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Backend not recognized or available: %s.\n Pass -viennacl_view to see available backends for ViennaCL.\n", string);
     } catch (std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
   }
-  ierr = PetscOptionsHasName(NULL,NULL,"-viennacl_device_gpu",&flg);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_OPENCL)
+  /* ViennaCL OpenCL device type configuration */
+  ierr = PetscOptionsGetString(NULL,NULL,"-viennacl_opencl_device_type",string,12,&flg);CHKERRQ(ierr);
   if (flg) {
     try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_GPU);
-    } catch (std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-    }
-  }
-  ierr = PetscOptionsHasName(NULL,NULL,"-viennacl_device_accelerator",&flg);CHKERRQ(ierr);
-  if (flg) {
-    try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_ACCELERATOR);
+      ierr = PetscStrcasecmp(string,"cpu",&flg);CHKERRQ(ierr);
+      if (flg) viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_CPU);
+
+      ierr = PetscStrcasecmp(string,"gpu",&flg);CHKERRQ(ierr);
+      if (flg) viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_GPU);
+
+      ierr = PetscStrcasecmp(string,"accelerator",&flg);CHKERRQ(ierr);
+      if (flg) viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_ACCELERATOR);
     } catch (std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
   }
 #endif
 
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  /* Print available backends */
+  ierr = PetscOptionsHasName(NULL,NULL,"-viennacl_view",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "ViennaCL backends available: ");CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA, ");CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_OPENCL)
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "OpenCL, ");CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_OPENMP)
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "OpenMP ");CHKERRQ(ierr);
+#else
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "OpenMP (1 thread) ");CHKERRQ(ierr);
+#endif
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");CHKERRQ(ierr);
+
+    /* Print selected backends */
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "ViennaCL backend  selected: ");CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    if (viennacl::backend::default_memory_type() == viennacl::CUDA_MEMORY) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA ");CHKERRQ(ierr);
+    }
+#endif
+#if defined(PETSC_HAVE_OPENCL)
+    if (viennacl::backend::default_memory_type() == viennacl::OPENCL_MEMORY) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "OpenCL ");CHKERRQ(ierr);
+    }
+#endif
+#if defined(PETSC_HAVE_OPENMP)
+    if (viennacl::backend::default_memory_type() == viennacl::MAIN_MEMORY) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "OpenMP ");CHKERRQ(ierr);
+    }
+#else
+    if (viennacl::backend::default_memory_type() == viennacl::MAIN_MEMORY) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "OpenMP (sequential - consider reconfiguration: --with-openmp=1) ");CHKERRQ(ierr);
+    }
+#endif
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -185,7 +235,6 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
   // First allocate memory on the GPU if needed
   if (!v->spptr) {
     try {
-      ierr = PetscObjectViennaCLSetFromOptions((PetscObject)v);CHKERRQ(ierr);
       v->spptr                            = new Vec_ViennaCL;
       ((Vec_ViennaCL*)v->spptr)->GPUarray = new ViennaCLVector((PetscBLASInt)v->map->n);
 
