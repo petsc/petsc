@@ -397,7 +397,7 @@ cdef extern from * nogil:
     int MatNullSpaceCreateRigidBody(PetscVec,PetscNullSpace*)
     int MatNullSpaceGetVecs(PetscNullSpace,PetscBool*,PetscInt*,const_PetscVec*[])
     int MatNullSpaceRemove(PetscNullSpace,PetscVec)
-    int MatNullSpaceTest(PetscNullSpace,PetscMat)
+    int MatNullSpaceTest(PetscNullSpace,PetscMat,PetscBool*)
 
     ctypedef int MatNullSpaceFunction(PetscNullSpace,
                                       PetscVec,
