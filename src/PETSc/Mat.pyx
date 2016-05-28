@@ -1548,6 +1548,11 @@ cdef class NullSpace(Object):
     def remove(self, Vec vec not None):
         CHKERR( MatNullSpaceRemove(self.nsp, vec.vec) )
 
+    def test(self, Mat mat not None):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( MatNullSpaceTest(self.nsp, mat.mat, &flag) )
+        return <bint> flag
+
 # --------------------------------------------------------------------
 
 del MatType
