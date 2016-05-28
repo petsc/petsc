@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its;
   PetscMPIInt    rank,size;
-  PetscScalar    neg_one = -1.0,one = 1.0,value[3];
+  PetscScalar    one = 1.0,value[3];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* Check the error */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
@@ -89,7 +89,7 @@ int main(int argc,char **args)
   ierr = KSPSolveTranspose(ksp,b,x2);CHKERRQ(ierr);
 
   /* Check the error */
-  ierr = VecAXPY(x2,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x2,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x2,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
@@ -108,7 +108,7 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* Check the error */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {

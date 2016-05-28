@@ -1,0 +1,38 @@
+  0 KSP Residual norm 7.36728 
+  1 KSP Residual norm 2.66277 
+  2 KSP Residual norm 1.24001 
+  3 KSP Residual norm 0.21366 
+  4 KSP Residual norm 0.0387509 
+  5 KSP Residual norm 0.00668864 
+  6 KSP Residual norm 0.000976839 
+  7 KSP Residual norm 0.000305636 
+  8 KSP Residual norm 4.93246e-05 
+KSP Object: 1 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=3.96825e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: icc
+    1 level of fill
+    tolerance for zero pivot 2.22045e-14
+    using Manteuffel shift [POSITIVE_DEFINITE]
+    matrix ordering: natural
+    factor fill ratio given 1., needed 0.976077
+      Factored matrix follows:
+        Mat Object:         1 MPI processes
+          type: seqsbaij
+          rows=221, cols=221
+          package used to perform factorization: bas
+          total: nonzeros=1020, allocated nonzeros=1020
+          total number of mallocs used during MatSetValues calls =0
+              block size is 1
+  linear system matrix = precond matrix:
+  Mat Object:   1 MPI processes
+    type: seqaij
+    rows=221, cols=221
+    total: nonzeros=1045, allocated nonzeros=1105
+    total number of mallocs used during MatSetValues calls =0
+      not using I-node routines
+Norm of error 7.2747e-05 iterations 8

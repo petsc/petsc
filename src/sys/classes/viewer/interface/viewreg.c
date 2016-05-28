@@ -122,7 +122,7 @@ $       ascii[:[filename][:[format][:append]]]    defaults to stdout - format ca
                                                   for example ascii::ascii_info prints just the information about the object not all details
                                                   unless :append is given filename opens in write mode, overwriting what was already there
 $       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-$       draw[:drawtype]                           for example, draw:tikz  or draw:x
+$       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x 
 $       socket[:port]                             defaults to the standard output port
 $       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
@@ -164,7 +164,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
       if (viewer) {
         ierr = (*PetscHelpPrintf)(comm,"\n  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
         ierr = (*PetscHelpPrintf)(comm,"    -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
-        ierr = (*PetscHelpPrintf)(comm,"    -%s%s draw[:drawtype]: %s (%s)\n",pre ? pre : "",name+1,"Draws object","PetscOptionsGetViewer");CHKERRQ(ierr);
+        ierr = (*PetscHelpPrintf)(comm,"    -%s%s draw[:drawtype[:filename]] %s (%s)\n",pre ? pre : "",name+1,"Draws object","PetscOptionsGetViewer");CHKERRQ(ierr);
         ierr = (*PetscHelpPrintf)(comm,"    -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Pushes object to a Unix socket","PetscOptionsGetViewer");CHKERRQ(ierr);
         ierr = (*PetscHelpPrintf)(comm,"    -%s%s saws[:communicatorname]: %s (%s)\n\n",pre ? pre : "",name+1,"Publishes object to SAWs","PetscOptionsGetViewer");CHKERRQ(ierr);
       } else {
@@ -247,6 +247,14 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
             if (loc3_fmode && *loc3_fmode) { /* Has non-empty file mode ("write" or "append") */
               ierr = PetscEnumFind(PetscFileModes,loc3_fmode,(PetscEnum*)&fmode,&flag);CHKERRQ(ierr);
               if (!flag) SETERRQ1(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
+            }
+            if (loc2_fmt) {
+              PetscBool tk;
+              ierr = PetscStrcmp(loc1_fname,"tikz",&tk);CHKERRQ(ierr);
+              if (tk) {
+                ierr = PetscViewerDrawSetInfo(*viewer,NULL,loc2_fmt,0,0,0,0);CHKERRQ(ierr);
+                *loc2_fmt = 0;
+              }
             }
             ierr = PetscViewerFileSetMode(*viewer,flag?fmode:FILE_MODE_WRITE);CHKERRQ(ierr);
             ierr = PetscViewerFileSetName(*viewer,loc1_fname);CHKERRQ(ierr);

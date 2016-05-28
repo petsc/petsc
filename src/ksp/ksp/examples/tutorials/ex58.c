@@ -24,7 +24,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,n = 20,col[3],its;
   PetscMPIInt    size;
-  PetscScalar    neg_one      = -1.0,one = 1.0,value[3];
+  PetscScalar    one = 1.0,value[3];
   PetscBool      nonzeroguess = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -159,7 +159,7 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
