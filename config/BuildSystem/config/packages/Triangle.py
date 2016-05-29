@@ -51,7 +51,7 @@ class Configure(config.package.Package):
     g.write('SHLIB            = libtriangle\n')
 
     self.setCompilers.pushLanguage('C')
-    cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
+    cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
     cflags += ' '+self.headers.toString('.')
     cflags += ' -fPIC'
 

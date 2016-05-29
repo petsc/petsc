@@ -34,7 +34,7 @@ class Configure(config.package.Package):
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+'-D_OPENMP\n')
+    g.write('CFLAGS       = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' -D_OPENMP\n')
     g.write('LOADER       = '+self.setCompilers.getLinker()+'\n')
     g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()

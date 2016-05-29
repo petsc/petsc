@@ -50,7 +50,7 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-tests')
 
     self.framework.pushLanguage('C')
-    args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    args.append('--with-cflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.mpi.include)+'"')
     self.framework.popLanguage()
 
@@ -63,7 +63,7 @@ class Configure(config.package.GNUPackage):
 
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+      args.append('--with-cxxflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
       self.framework.popLanguage()
     else:
       raise RuntimeError('Error: ML requires C++ compiler. None specified')

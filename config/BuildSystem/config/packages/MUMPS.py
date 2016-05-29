@@ -94,7 +94,7 @@ class Configure(config.package.Package):
     g.write('RM = /bin/rm -f\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTC    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
+    g.write('OPTC    = ' + self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.write('OUTC = -o \n')
     self.setCompilers.popLanguage()
     if not self.compilers.fortranIsF90:
