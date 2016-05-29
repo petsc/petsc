@@ -3769,6 +3769,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   if (!pforest->plex) {
     ierr = DMCreate(comm,&newPlex);CHKERRQ(ierr);
     ierr = DMSetType(newPlex,DMPLEX);CHKERRQ(ierr);
+    ierr = DMSetMatType(newPlex,dm->mattype);CHKERRQ(ierr);
     ierr = PetscFree(newPlex->labels);CHKERRQ(ierr); /* share labels */
     dm->labels->refct++;
     newPlex->labels = dm->labels;
