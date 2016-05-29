@@ -47,7 +47,7 @@ class Configure(config.package.Package):
     g.write('CCD        = '+self.setCompilers.getCompiler()+'\n')
 
     # Building cflags/ldflags
-    self.cflags = self.setCompilers.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)
+    self.cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)
     ldflags = self.libraries.toString(self.mpi.lib)
     if self.libraries.add('-lz','gzwrite'):
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'

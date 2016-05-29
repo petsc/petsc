@@ -47,7 +47,7 @@ class Configure(config.package.Package):
 
     self.setCompilers.pushLanguage('C')
     configOpts.append('CC="'+self.setCompilers.getCompiler()+'"')
-    configOpts.append('CCOPTIONS="'+self.setCompilers.getCompilerFlags()+' -DADDC_ "')
+    configOpts.append('CCOPTIONS="'+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' -DADDC_ "')
     self.setCompilers.popLanguage()
 
     if hasattr(self.setCompilers, 'FC'):
