@@ -1,6 +1,5 @@
-#include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
-#include <../src/mat/impls/aij/seq/aij.h>
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
+
+#include <../src/mat/impls/aij/mpi/mpiaij.h>     /*I "petscmat.h"  I*/
 #include <petscsf.h>
 
 typedef struct {
@@ -494,15 +493,13 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
   ierr = PetscFree(jp->dwts);CHKERRQ(ierr);
   ierr = PetscFree(jp->dmask);CHKERRQ(ierr);
   ierr = PetscFree(jp->cmask);CHKERRQ(ierr);
-  if (jp->owts) {
-    ierr = PetscFree(jp->owts);CHKERRQ(ierr);
-    ierr = PetscFree(jp->omask);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(jp->owts);CHKERRQ(ierr);
+  ierr = PetscFree(jp->omask);CHKERRQ(ierr);
   ierr = PetscFree(weights);CHKERRQ(ierr);
   ierr = PetscFree(lperm);CHKERRQ(ierr);
   ierr = PetscFree(maxweights);CHKERRQ(ierr);
   ierr = PetscFree(mincolor);CHKERRQ(ierr);
-  if (jp->sf) {ierr = PetscSFDestroy(&jp->sf);CHKERRQ(ierr);}
+  ierr = PetscSFDestroy(&jp->sf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
