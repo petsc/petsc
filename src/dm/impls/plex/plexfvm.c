@@ -6,7 +6,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexApplyLimiter_Internal"
-static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter lim, PetscInt dim, PetscInt dof, PetscInt off, PetscInt cell, PetscInt face, PetscInt fStart, PetscInt fEnd,
+static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter lim, PetscInt dim, PetscInt dof, PetscInt cell, PetscInt face, PetscInt fStart, PetscInt fEnd,
                                                   PetscReal *cellPhi, const PetscScalar *x, const PetscScalar *cellgeom, const PetscFVCellGeom *cg, const PetscScalar *cx, const PetscScalar *cgrad)
 {
   const PetscInt *children;
@@ -22,7 +22,7 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
       PetscInt childFace = children[c];
 
       if (childFace >= fStart && childFace < fEnd) {
-        ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,off,cell,childFace,fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
+        ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,cell,childFace,fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
       }
     }
   } else {
@@ -39,7 +39,7 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
     DMPlex_WaxpyD_Internal(dim, -1, cg->centroid, ncg->centroid, v);
     for (d = 0; d < dof; ++d) {
       /* We use the symmetric slope limited form of Berger, Aftosmis, and Murman 2005 */
-      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[off+d] - cx[off+d]) / DMPlex_DotD_Internal(dim, &cgrad[d*dim], v);
+      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[d] - cx[d]) / DMPlex_DotD_Internal(dim, &cgrad[d*dim], v);
 
       ierr = PetscLimiterLimit(lim, flim, &phi);CHKERRQ(ierr);
       cellPhi[d] = PetscMin(cellPhi[d], phi);
@@ -59,14 +59,14 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
   const PetscScalar *facegeom, *cellgeom, *x;
   PetscScalar       *gr;
   PetscReal         *cellPhi;
-  PetscInt           dim, face, cell, field, dof, off, cStart, cEnd, cEndInterior;
+  PetscInt           dim, face, cell, field, dof, cStart, cEnd, cEndInterior, nFields;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &nFields);CHKERRQ(ierr);
   ierr = PetscDSGetFieldIndex(prob, (PetscObject) fvm, &field);CHKERRQ(ierr);
-  ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
   ierr = PetscDSGetFieldSize(prob, field, &dof);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
   ierr = PetscFVGetLimiter(fvm, &lim);CHKERRQ(ierr);
@@ -96,11 +96,15 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
     ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
     for (c = 0; c < 2; ++c) {
-      ierr = DMPlexPointLocalRead(dm, cells[c], x, &cx[c]);CHKERRQ(ierr);
+      if (nFields > 1) {
+        ierr = DMPlexPointLocalFieldRead(dm, cells[c], field, x, &cx[c]);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexPointLocalRead(dm, cells[c], x, &cx[c]);CHKERRQ(ierr);
+      }
       ierr = DMPlexPointGlobalRef(dmGrad, cells[c], gr, &cgrad[c]);CHKERRQ(ierr);
     }
     for (pd = 0; pd < dof; ++pd) {
-      PetscScalar delta = cx[1][off+pd] - cx[0][off+pd];
+      PetscScalar delta = cx[1][pd] - cx[0][pd];
 
       for (d = 0; d < dim; ++d) {
         if (cgrad[0]) cgrad[0][pd*dim+d] += fg->grad[0][d] * delta;
@@ -129,7 +133,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
     /* Limiter will be minimum value over all neighbors */
     for (d = 0; d < dof; ++d) cellPhi[d] = PETSC_MAX_REAL;
     for (f = 0; f < coneSize; ++f) {
-      ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,off,cell,faces[f],fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
+      ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,cell,faces[f],fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
     }
     /* Apply limiter to gradient */
     for (pd = 0; pd < dof; ++pd)
