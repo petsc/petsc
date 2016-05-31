@@ -167,10 +167,8 @@ def run_tests(options, testsuite, runner=None):
 def test_refleaks(options, args):
     from sys import gettotalrefcount
     from gc import collect
+    from copy import deepcopy
     testsuite = load_tests(options, args)
-    testsuite._cleanup =  False
-    for case in testsuite:
-        case._cleanup = False
     class EmptyIO(object):
         def write(self, *args):
             pass
@@ -181,7 +179,7 @@ def test_refleaks(options, args):
     while repeats:
         collect()
         r1 = gettotalrefcount()
-        run_tests(options, testsuite, runner)
+        run_tests(options, deepcopy(testsuite), runner)
         collect()
         r2 = gettotalrefcount()
         leaks = r2-r1
