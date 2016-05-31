@@ -3,11 +3,11 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://www.mpfr.org/mpfr-current/mpfr-3.1.3.tar.gz']
+    self.download  = ['http://www.mpfr.org/mpfr-current/mpfr-3.1.4.tar.gz']
     self.functions = ['mpfr_get_version']
     self.includes  = ['mpfr.h']
     self.liblist   = [['libmpfr.a']]
-    self.pkgname   = 'mpfr-3.1.3'
+    self.pkgname   = 'mpfr-3.1.4'
     return
 
   def setupDependencies(self, framework):
