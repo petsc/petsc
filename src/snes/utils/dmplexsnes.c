@@ -179,7 +179,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N*ctx->dim, globalPointsScalar, &pointVec);CHKERRQ(ierr);
   ierr = PetscMalloc2(N,&foundProcs,N,&globalProcs);CHKERRQ(ierr);
   cellSF = NULL;
-  ierr = DMLocatePoints(dm, pointVec, &cellSF);CHKERRQ(ierr);
+  ierr = DMLocatePoints(dm, pointVec, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(cellSF,NULL,&numFound,&foundPoints,&foundCells);CHKERRQ(ierr);
 #endif
   for (p = 0; p < numFound; ++p) {

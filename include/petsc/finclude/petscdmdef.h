@@ -9,7 +9,8 @@
 #include "petsc/finclude/petscvecdef.h"
 #include "petsc/finclude/petscmatdef.h"
 
-#define DMBoundaryType PetscEnum
+#define DMBoundaryType      PetscEnum
+#define DMPointLocationType PetscEnum
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define DM               PetscFortranAddr

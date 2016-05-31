@@ -54,7 +54,7 @@ struct _DMOps {
   PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
   PetscErrorCode (*getdimpoints)(DM,PetscInt,PetscInt*,PetscInt*);
-  PetscErrorCode (*locatepoints)(DM,Vec,PetscSF);
+  PetscErrorCode (*locatepoints)(DM,Vec,DMPointLocationType,PetscSF);
 
   PetscErrorCode (*projectfunctionlocal)(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
   PetscErrorCode (*projectfunctionlabellocal)(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);

@@ -4871,39 +4871,38 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   Input Parameters:
 + dm - The DM
 . v - The Vec of points
+. ltype - The type of point location, e.g. DM_POINTLOCATION_NONE or DM_POINTLOCATION_NEAREST
 - cells - Points to either NULL, or a PetscSF with guesses for which cells contain each point.
 
   Output Parameter:
-. cells - The PetscSF containing the ranks and local indices of the containing points.
++ v - The Vec of points, which now contains the nearest mesh points to the given points if DM_POINTLOCATION_NEAREST is used
+- cells - The PetscSF containing the ranks and local indices of the containing points.
 
 
   Level: developer
 
+  Notes:
   To do a search of the local cells of the mesh, v should have PETSC_COMM_SELF as its communicator.
-
-  To do a search of all the cells in the distributed mesh, v should have the same communicator as
-  dm.
+  To do a search of all the cells in the distributed mesh, v should have the same communicator as dm.
 
   If *cellSF is NULL on input, a PetscSF will be created.
-
-  If *cellSF is not NULL on input, it should point to an existing PetscSF, whose graph will be used as initial
-  guesses.
+  If *cellSF is not NULL on input, it should point to an existing PetscSF, whose graph will be used as initial guesses.
 
   An array that maps each point to its containing cell can be obtained with
 
-    const PetscSFNode *cells;
-    PetscInt           nFound;
-    const PetscSFNode *found;
-
-    PetscSFGetGraph(cells,NULL,&nFound,&found,&cells);
+$    const PetscSFNode *cells;
+$    PetscInt           nFound;
+$    const PetscSFNode *found;
+$
+$    PetscSFGetGraph(cells,NULL,&nFound,&found,&cells);
 
   Where cells[i].rank is the rank of the cell containing point found[i] (or i if found == NULL), and cells[i].index is
   the index of the cell in its rank's local numbering.
 
 .keywords: point location, mesh
-.seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
+.seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMPointLocationType
 @*/
-PetscErrorCode DMLocatePoints(DM dm, Vec v, PetscSF *cellSF)
+PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *cellSF)
 {
   PetscErrorCode ierr;
 
@@ -4923,7 +4922,7 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, PetscSF *cellSF)
   }
   ierr = PetscLogEventBegin(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
   if (dm->ops->locatepoints) {
-    ierr = (*dm->ops->locatepoints)(dm,v,*cellSF);CHKERRQ(ierr);
+    ierr = (*dm->ops->locatepoints)(dm,v,ltype,*cellSF);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Point location not available for this DM");
   ierr = PetscLogEventEnd(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

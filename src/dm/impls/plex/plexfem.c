@@ -1788,7 +1788,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         }
         ierr = VecRestoreArray(pointVec, &pV);CHKERRQ(ierr);
         /* Get set of coarse cells that overlap points (would like to group points by coarse cell) */
-        ierr = DMLocatePoints(dmc, pointVec, &coarseCellSF);CHKERRQ(ierr);
+        ierr = DMLocatePoints(dmc, pointVec, DM_POINTLOCATION_NEAREST, &coarseCellSF);CHKERRQ(ierr);
         ierr = PetscSFViewFromOptions(coarseCellSF, NULL, "-interp_sf_view");CHKERRQ(ierr);
         /* Update preallocation info */
         ierr = PetscSFGetGraph(coarseCellSF, NULL, &numCoarseCells, NULL, &coarseCells);CHKERRQ(ierr);
@@ -1875,7 +1875,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         }
         ierr = VecRestoreArray(pointVec, &pV);CHKERRQ(ierr);
         /* Get set of coarse cells that overlap points (would like to group points by coarse cell) */
-        ierr = DMLocatePoints(dmc, pointVec, &coarseCellSF);CHKERRQ(ierr);
+        ierr = DMLocatePoints(dmc, pointVec, DM_POINTLOCATION_NEAREST, &coarseCellSF);CHKERRQ(ierr);
         /* Update preallocation info */
         ierr = PetscSFGetGraph(coarseCellSF, NULL, &numCoarseCells, NULL, &coarseCells);CHKERRQ(ierr);
         if (numCoarseCells != Np) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not all closure points located");

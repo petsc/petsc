@@ -31,6 +31,19 @@ typedef struct _p_DM* DM;
 E*/
 typedef enum {DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_TWIST} DMBoundaryType;
 
+/*E
+  DMPointLocationType - Describes the method to handle point location failure
+
+  Level: beginner
+
+  If a search using DM_POINTLOCATION_NONE fails, the failure is signaled with a negative cell number. On the
+  other hand, if DM_POINTLOCATION_NEAREST is used, on failure, the (approximate) nearest point in the mesh is
+  used, replacing the given point in the input vector.
+
+.seealso: DMLocatePoints()
+E*/
+typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST} DMPointLocationType;
+
 /*S
   PetscPartitioner - PETSc object that manages a graph partitioner
 
