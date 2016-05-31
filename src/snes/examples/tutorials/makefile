@@ -1181,9 +1181,6 @@ runex59_3:
 	   if (${DIFF} output/ex59_3_alt.out ex59_3.tmp > /dev/null 2>&1) then x='good'; fi; \
            if [ "$x" = "bad" ]; then ${DIFF} output/ex59_3.out ex59_3.tmp ; ${DIFF} output/ex59_3_alt.out ex59_3.tmp ; printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59.tmp
-	-@${MPIEXEC} -n 1 ./ex59 -n 14 -second_order -snes_monitor_short -snes_converged_reason > ex59_3.tmp 2>&1; \
-	   ${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex59_3.tmp
 runex70:
 	-@${MPIEXEC} -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_1_pc_type none   > ex70.tmp 2>&1; \
 	   ${DIFF} output/ex70_1.out ex70.tmp || printf "${PWD}\nPossible problem with ex70_1, diffs above\n=========================================\n"; \
