@@ -427,7 +427,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
 
       <h3><a name="differentiterations">How come when I run the same linear solver on a different number of processes it takes a different number of iterations?</a></h3>
 
-      The convergence of many of the preconditioners in PETSc including the the
+      The convergence of many of the preconditioners in PETSc including the
       default parallel preconditioner block Jacobi depends on the number of
       processes. The more processes the (slightly) slower convergence it has.
       This is the nature of iterative solvers, the more parallelism means the
