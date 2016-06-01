@@ -6,7 +6,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexApplyLimiter_Internal"
-static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter lim, PetscInt dim, PetscInt dof, PetscInt cell, PetscInt face, PetscInt fStart, PetscInt fEnd,
+static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter lim, PetscInt dim, PetscInt dof, PetscInt cell, PetscInt field, PetscInt face, PetscInt fStart, PetscInt fEnd,
                                                   PetscReal *cellPhi, const PetscScalar *x, const PetscScalar *cellgeom, const PetscFVCellGeom *cg, const PetscScalar *cx, const PetscScalar *cgrad)
 {
   const PetscInt *children;
@@ -22,7 +22,7 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
       PetscInt childFace = children[c];
 
       if (childFace >= fStart && childFace < fEnd) {
-        ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,cell,childFace,fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
+        ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,cell,field,childFace,fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
       }
     }
   } else {
@@ -34,12 +34,17 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
 
     ierr  = DMPlexGetSupport(dm, face, &fcells);CHKERRQ(ierr);
     ncell = cell == fcells[0] ? fcells[1] : fcells[0];
-    ierr  = DMPlexPointLocalRead(dm, ncell, x, &ncx);CHKERRQ(ierr);
+    if (field >= 0) {
+      ierr  = DMPlexPointLocalFieldRead(dm, ncell, field, x, &ncx);CHKERRQ(ierr);
+    } else {
+      ierr  = DMPlexPointLocalRead(dm, ncell, x, &ncx);CHKERRQ(ierr);
+    }
     ierr  = DMPlexPointLocalRead(dmCell, ncell, cellgeom, &ncg);CHKERRQ(ierr);
     DMPlex_WaxpyD_Internal(dim, -1, cg->centroid, ncg->centroid, v);
     for (d = 0; d < dof; ++d) {
       /* We use the symmetric slope limited form of Berger, Aftosmis, and Murman 2005 */
-      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[d] - cx[d]) / DMPlex_DotD_Internal(dim, &cgrad[d*dim], v);
+      PetscReal denom = DMPlex_DotD_Internal(dim, &cgrad[d * dim], v);
+      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[d] - cx[d]) / denom;
 
       ierr = PetscLimiterLimit(lim, flim, &phi);CHKERRQ(ierr);
       cellPhi[d] = PetscMin(cellPhi[d], phi);
@@ -126,14 +131,19 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
 
     ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(dm, cell, x, &cx);CHKERRQ(ierr);
+    if (nFields > 1) {
+      ierr = DMPlexPointLocalFieldRead(dm, cell, field, x, &cx);CHKERRQ(ierr);
+    }
+    else {
+      ierr = DMPlexPointLocalRead(dm, cell, x, &cx);CHKERRQ(ierr);
+    }
     ierr = DMPlexPointLocalRead(dmCell, cell, cellgeom, &cg);CHKERRQ(ierr);
     ierr = DMPlexPointGlobalRef(dmGrad, cell, gr, &cgrad);CHKERRQ(ierr);
     if (!cgrad) continue; /* Unowned overlap cell, we do not compute */
     /* Limiter will be minimum value over all neighbors */
     for (d = 0; d < dof; ++d) cellPhi[d] = PETSC_MAX_REAL;
     for (f = 0; f < coneSize; ++f) {
-      ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,cell,faces[f],fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
+      ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,cell,nFields > 1 ? field : -1,faces[f],fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
     }
     /* Apply limiter to gradient */
     for (pd = 0; pd < dof; ++pd)
