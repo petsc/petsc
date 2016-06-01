@@ -1567,7 +1567,6 @@ static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices(DM refTree, PetscSc
         ierr = PetscSectionGetOffset(refConSec,p,&cOff);CHKERRQ(ierr);
       }
 
-      if (!cDof) continue;
       for (r = 0; r < cDof; r++) {
         rows[r] = cOff + r;
       }
@@ -1644,7 +1643,6 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices(DM refTree, Pet
         ierr = PetscSectionGetDof(refConSec,p,&cDof);CHKERRQ(ierr);
       }
 
-      if (!cDof) continue;
       ierr = PetscFree(refPointFieldMats[p - pRefStart][f]);CHKERRQ(ierr);
     }
     ierr = PetscFree(refPointFieldMats[p - pRefStart]);CHKERRQ(ierr);
@@ -3405,7 +3403,6 @@ static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices_Injection(DM refTre
         ierr = PetscSectionGetOffset(refConSec,p,&cOff);CHKERRQ(ierr);
       }
 
-      if (!cDof) continue;
       for (r = 0; r < cDof; r++) {
         rows[r] = cOff + r;
       }
@@ -3473,7 +3470,6 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices_Injection(DM re
         ierr = PetscSectionGetDof(refConSec,p,&cDof);CHKERRQ(ierr);
       }
 
-      if (!cDof) continue;
       ierr = PetscFree(refPointFieldMats[p - pRefStart][f]);CHKERRQ(ierr);
     }
     ierr = PetscFree(refPointFieldMats[p - pRefStart]);CHKERRQ(ierr);
