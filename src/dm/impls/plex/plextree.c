@@ -2279,7 +2279,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)coarse),&rootMatricesSec);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(rootIndicesSec,pStartC,pEndC);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(rootMatricesSec,pStartC,pEndC);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(globalCoarse,&numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(localCoarse,&numFields);CHKERRQ(ierr);
   {
     PetscInt maxFields = PetscMax(1,numFields) + 1;
     ierr = PetscMalloc7(maxFields,&offsets,maxFields,&offsetsCopy,maxFields,&newOffsets,maxFields,&newOffsetsCopy,maxFields,&rowOffsets,maxFields,&numD,maxFields,&numO);CHKERRQ(ierr);
@@ -4025,6 +4025,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = VecSetOption(vecFine,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetChart(coarse,&pStartC,&pEndC);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(coarse,0,&cellStart,&cellEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
@@ -4080,7 +4081,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   /* create sections that will send to children the indices and matrices they will need to construct the interpolator */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)coarse),&rootValuesSec);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(rootValuesSec,pStartC,pEndC);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(globalCoarse,&numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(localCoarse,&numFields);CHKERRQ(ierr);
   {
     PetscInt maxFields = PetscMax(1,numFields) + 1;
     ierr = PetscMalloc7(maxFields,&offsets,maxFields,&offsetsCopy,maxFields,&newOffsets,maxFields,&newOffsetsCopy,maxFields,&rowOffsets,maxFields,&numD,maxFields,&numO);CHKERRQ(ierr);
@@ -4288,6 +4289,9 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
           PetscScalar *rVal = &pointWork[offsets[f]];
           PetscInt i, j;
 
+#if 0
+          ierr = PetscInfo6(coarse,"field %D, numFields %D, childId %D, numRows %D, numCols %D, refPointFieldN %D\n",f,numFields,childId,numRows,numCols,refPointFieldN[childId - pRefStart][f]);CHKERRQ(ierr);
+#endif
           for (i = 0; i < numRows; i++) {
             PetscScalar val = 0.;
             for (j = 0; j < numCols; j++) {
@@ -4353,6 +4357,8 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
   PetscFunctionBegin;
 
   /* get the templates for the fine-to-coarse injection from the reference tree */
+  ierr = VecSetOption(vecFine,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecSetOption(vecCoarse,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetReferenceTree(coarse,&refTree);CHKERRQ(ierr);
   ierr = DMGetDS(coarse,&ds);CHKERRQ(ierr);
   ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
