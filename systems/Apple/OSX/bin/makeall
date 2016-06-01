@@ -7,24 +7,31 @@
 # See ./makeframework on how to use the framework:
 #
 #
+
+if [ ! -f include/petscversion.h ]; then
+    echo "Could not locate include/petscversion.h! Please invoke this script from top level PETSc source dir"
+    exit 1
+fi
+
+export PETSC_DIR=$PWD
 export PETSC_ARCH=arch-osx-debug
 rm -rf arch-osx-debug
-./systems/Apple/osx/bin/arch-osx-debug.py
+./systems/Apple/OSX/bin/arch-osx-debug.py
 make all test
-./systems/Apple/osx/bin/makeframework debug
+./systems/Apple/OSX/bin/makeframework debug
 
 export PETSC_ARCH=arch-osx-release
 rm -rf arch-osx-release
-./systems/Apple/osx/bin/arch-osx-release.py
+./systems/Apple/OSX/bin/arch-osx-release.py
 make all test
-./systems/Apple/osx/bin/makeframework release
+./systems/Apple/OSX/bin/makeframework release
 
 export LOC=$PETSC_DIR
 make alldoc
 make allman
-./systems/Apple/osx/bin/makedocs
+./systems/Apple/OSX/bin/makedocs
 
-./systems/Apple/osx/bin/makedmg
+./systems/Apple/OSX/bin/makedmg
 
 echo "To use the PETSc.framework in examples either run the installer ${PETSC_DIR}/PETSc-OSX.dmg"
 echo "  or sudo cp -r ${PETSC_DIR}/arch-osx-release/PETSc-OSX  /Library/Frameworks"
