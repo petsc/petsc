@@ -488,7 +488,7 @@ process, but can be output at any time using the <methodname>outputHeader</metho
 <methodname>addSubstitutionFile</methodname> method can be used to tag a file for substitution, and also specify a
 different file for the result of the substitution.</para>
 
-<para>In the <command>autoconf</command> approach, separating the the defines and substitutions for different packages
+<para>In the <command>autoconf</command> approach, separating the defines and substitutions for different packages
 becomes troublesome, and in some cases impossible to maintain. To help with this, we have introduced
 <emphasis>prefixes</emphasis> for the defines and substitutions. The are strings, unique to each module, which are
 prepended with an underscore to each identifier defined or substituted. These are set on a per object basis using the

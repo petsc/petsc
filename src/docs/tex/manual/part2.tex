@@ -2725,7 +2725,7 @@ numerical stability (since they are designed to preserve nonzero
 structure), thus occasionally a LU factorization will fail with a zero
 pivot when, in fact, the matrix is non-singular. The option
 \trl{-pc_factor_nonzeros_along_diagonal <tol>} \findex{-pc_factor_nonzeros_along_diagonal}
-will often help eliminate the zero pivot, by preprocessing the the
+will often help eliminate the zero pivot, by preprocessing the
 column ordering to remove small values from the diagonal. Here, \trl{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
 is~$ 1.e-10.$
@@ -2944,7 +2944,7 @@ you may want to try the Auxilary Maxwell Space (AMS, \trl{-pc_type hypre -pc_hyp
 or the Auxilary Divergence Space (ADS, \trl{-pc_type hypre -pc_hypre_set_type ads}) solvers.
 These solvers need some additional information on the underlying mesh;
 specifically, AMS needs the so-called discrete gradient operator, which can be specified via
-PCHYPRESetDiscreteGradient(). In addition to the the discrete gradient, ADS also needs the
+PCHYPRESetDiscreteGradient(). In addition to the discrete gradient, ADS also needs the
 specification of the discrete curl operator, which can be set using PCHYPRESetDiscreteCurl().
 
 PETSc's AMG solver is constructed as a framework for developers to
@@ -5468,7 +5468,7 @@ And the sensitivity of the cost function w.r.t. to the parameter $p_m$ can be co
 \frac{\mathrm{d} \Psi}{\mathrm{d} p_m} = \mu(t_0) + \lambda(t_0)  \frac{\mathrm{d} \left[ \phi(t_0) \; \omega(t_0) \right]^T}{\mathrm{d} p_m}  .
 \]
 
-For explicit methods where one does not need to provide the the
+For explicit methods where one does not need to provide the
 Jacobian $F_u$ for the forward solve one still does need it for the
 backward solve and thus must call
 \begin{tabbing}

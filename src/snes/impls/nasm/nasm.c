@@ -186,7 +186,7 @@ static PetscErrorCode SNESSetFromOptions_NASM(PetscOptionItems *PetscOptionsObje
   if (flg) {ierr = SNESNASMSetType(snes,asmtype);CHKERRQ(ierr);}
   flg    = PETSC_FALSE;
   monflg = PETSC_TRUE;
-  ierr   = PetscOptionsReal("-snes_nasm_damping","Log times for subSNES solves and restriction","SNESNASMSetDamping",nasm->damping,&nasm->damping,&flg);CHKERRQ(ierr);
+  ierr   = PetscOptionsReal("-snes_nasm_damping","The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)","SNESNASMSetDamping",nasm->damping,&nasm->damping,&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESNASMSetDamping(snes,nasm->damping);CHKERRQ(ierr);}
   subviewflg = PETSC_FALSE;
   ierr   = PetscOptionsBool("-snes_nasm_sub_view","Print detailed information for every processor when using -snes_view","",subviewflg,&subviewflg,&flg);CHKERRQ(ierr);
@@ -591,6 +591,8 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes,PetscBool f
 
    Level: intermediate
 
+   Notes: The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
+
 .keywords: SNES, NASM, damping
 
 .seealso: SNESNASM, SNESNASMGetDamping()
@@ -683,7 +685,6 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
   PetscFunctionBegin;
   ierr = SNESNASMGetType(snes,&type);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = SNESNASMGetDamping(snes,&dmp);CHKERRQ(ierr);
   ierr = VecSet(Y,0);CHKERRQ(ierr);
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
@@ -742,6 +743,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Only basic and restrict types are supported for SNESNASM");
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
+  ierr = SNESNASMGetDamping(snes,&dmp);CHKERRQ(ierr);
   ierr = VecAXPY(X,dmp,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -894,6 +896,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
    Options Database:
 +  -snes_nasm_log - enable logging events for the communication and solve stages
 .  -snes_nasm_type <basic,restrict> - type of subdomain update used
+.  -snes_asm_damping <dmp> - the new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
 .  -snes_nasm_finaljacobian - compute the local and global jacobians of the final iterate
 .  -snes_nasm_finaljacobian_type <finalinner,finalouter,initial> - pick state the jacobian is calculated at
 .  -sub_snes_ - options prefix of the subdomain nonlinear solves
@@ -906,7 +909,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 .  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types), SNESNASMSetType(), SNESNASMGetType(), SNESNASMSetSubdomains(), SNESNASMGetSubdomains(), SNESNASMGetSubdomainVecs(), SNESNASMSetComputeFinalJacobian(), SNESNASMSetDamping(), SNESNASMGetDamping()
 M*/
 
 #undef __FUNCT__

@@ -136,6 +136,7 @@ int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
   }
   if (MaxComm > MAX_COMM) return MPI_FAILURE;
   *newcomm =  MaxComm++;
+  comm_active[*newcomm-1] = 1;
   return MPI_SUCCESS;
 }
 
@@ -152,6 +153,7 @@ int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
   }
   if (MaxComm > MAX_COMM) return MPI_FAILURE;
   *out = MaxComm++;
+  comm_active[*out-1] = 1;
   return 0;
 }
 
