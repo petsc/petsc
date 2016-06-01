@@ -63,7 +63,6 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscSc
 static PetscErrorCode DMPlexClosestPoint_Simplex_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscReal cpoint[])
 {
   const PetscInt  embedDim = 2;
-  const PetscReal eps      = PETSC_SQRT_MACHINE_EPSILON;
   PetscReal       x        = PetscRealPart(point[0]);
   PetscReal       y        = PetscRealPart(point[1]);
   PetscReal       v0[2], J[4], invJ[4], detJ;
@@ -622,7 +621,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     for (p = 0; p < numPoints; p++) {
       const PetscScalar *point = &a[p*bs];
       PetscReal          cpoint[3], diff[3], dist, distMax = PETSC_MAX_REAL;
-      PetscInt           dbin[3], bin, cell = -1, cellOffset, d;
+      PetscInt           dbin[3], bin, cellOffset, d;
 
       if (cells[p].rank < 0) {
         ++numFound;
@@ -631,7 +630,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
         ierr = PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset);CHKERRQ(ierr);
         for (c = cellOffset; c < cellOffset + numCells; ++c) {
           ierr = DMPlexClosestPoint_Internal(dm, dim, point, boxCells[c], cpoint);CHKERRQ(ierr);
-          for (d = 0; d < dim; ++d) diff[d] = cpoint[d] - point[d];
+          for (d = 0; d < dim; ++d) diff[d] = cpoint[d] - PetscRealPart(point[d]);
           dist = DMPlex_NormD_Internal(dim, diff);
           if (dist < distMax) {
             for (d = 0; d < dim; ++d) a[p*bs+d] = cpoint[d];
