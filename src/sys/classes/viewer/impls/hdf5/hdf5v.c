@@ -247,6 +247,8 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (hdf5->file_id) PetscStackCallHDF5(H5Fclose,(hdf5->file_id));
+  if (hdf5->filename) {ierr = PetscFree(hdf5->filename);CHKERRQ(ierr);}
   ierr = PetscStrallocpy(name, &hdf5->filename);CHKERRQ(ierr);
   /* Set up file access property list with parallel I/O access */
   PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
