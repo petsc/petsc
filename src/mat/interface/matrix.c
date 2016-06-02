@@ -1700,7 +1700,7 @@ PetscErrorCode MatSetStencil(Mat mat,PetscInt dim,const PetscInt dims[],const Pe
    in the matrix.
 
    Each time an entry is set within a sparse matrix via MatSetValues(),
-   internal searching must be done to determine where to place the the
+   internal searching must be done to determine where to place the
    data in the matrix storage space.  By instead inserting blocks of
    entries via MatSetValuesBlocked(), the overhead of matrix assembly is
    reduced.
