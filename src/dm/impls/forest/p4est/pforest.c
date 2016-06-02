@@ -2636,12 +2636,14 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             cids[p-pStartF]     = -1;
           }
         } else {
+          PetscInt levelDiff = quad->level - quadCoarse->level;
+
           if (formCids) {
             PetscInt cl;
             PetscInt *pointClosure = NULL;
             int      cid;
 
-            if (quadCoarse->level < quad->level - 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Recursive child ids not implemented");
+            if (levelDiff > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Recursive child ids not implemented");
             PetscStackCallP4estReturn(cid,p4est_quadrant_child_id,(quad));
             ierr = DMPlexGetTransitiveClosure(plexF,c,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
             for (cl = 0; cl < P4EST_INSUL; cl++) {
@@ -2795,8 +2797,22 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                   if (formCids) cids[p-pStartF] = -1;
                 }
               } else {
+                PetscInt k, thisp = p, limit;
+
                 roots[p-pStartF] = q;
                 rootType[p-pStartF] = l;
+                limit = transferIdent ? levelDiff : (levelDiff - 1);
+                for (k = 0; k < limit; k++) {
+                  PetscInt parent;
+
+                  ierr = DMPlexGetTreeParent(plexF,thisp,&parent,NULL);CHKERRQ(ierr);
+                  if (parent == thisp) break;
+
+                  roots[parent-pStartF] = q;
+                  rootType[parent-pStartF] = l;
+                  if (formCids) cids[parent-pStartF] = -1;
+                  thisp = parent;
+                }
               }
             }
           }
