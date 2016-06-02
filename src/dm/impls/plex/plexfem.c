@@ -282,8 +282,8 @@ PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM dm, PetscReal time, DMLabel l
         PetscFV fv = (PetscFV) obj;
 
         ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
+        ierr = PetscFVGetDualSpace(fv, &cellsp[f]);CHKERRQ(ierr);
+        sp[f] = cellsp[f];
       } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim*numComp[f];
@@ -534,7 +534,6 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
 
         ierr = PetscFVGetNumComponents(fv, &Ncf[f]);CHKERRQ(ierr);
         ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
