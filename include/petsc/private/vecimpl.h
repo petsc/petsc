@@ -185,8 +185,8 @@ PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
   PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */
 
 /* Default obtain and release vectors; can be used by any implementation */
-PETSC_INTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
-PETSC_INTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
+PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
+PETSC_EXTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
 PETSC_INTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
