@@ -88,7 +88,6 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   PetscReal mu=s_mu, lambda=s_lambda,rad;
   PetscInt i;
-  for (i=0,rad=0.;i<dim;i++) rad += r[i]*r[i];
   for (i=0,rad=0.;i<dim;i++) {
     PetscReal t=x[i]-.5;
     rad += t*t;
