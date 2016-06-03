@@ -5336,14 +5336,18 @@ TSAdapt. The avaialble TSAdapt types are listed in Table \ref{tab:adaptors}.
 \begin{table}[tb]
 \centering
 \caption{TSAdapt: available adaptors.\label{tab:adaptors}}
-\begin{tabular}{|l|c|l|}
+\begin{tabular}{|l|c|p{5cm}|}
 \hline
 ID & Name & Notes\\
+\hline
+TSADAPTNONE & "none"    & no adaptivity\\
 \hline
 TSADAPTBASIC& "basic"   & the default
 adaptor \\
 \hline
-TSADAPTNONE & "none"    & no adaptivity\\
+TSADAPTGLEE& "glee"   & extesion of the basic adaptor to treat $\TolA$
+and $\TolR$ as separate criteria, it can also control global erorrs
+if the integrator (e.g., TSGLEE) provides this information \\
 %\hline
 %TSADAPTCFL  & "cfl"&\\
 \hline
@@ -5408,6 +5412,11 @@ This adaptive controller works in the following way. After completing
 step $k$, if $\SErr_{k+1} \le 1.0$, then the step is accepted and the
 next step is modified according to (\ref{eq:hnew}); otherwise, the step
 is rejected and retaken with the step length computed in (\ref{eq:hnew}).
+
+\noindent\textbf{\trl{TSAdapt} glee.} TSADAPTGLEE is an extesion of
+the basic adaptor to treat $\TolA$ and $\TolR$ as separate criteria,
+it can also control global erorrs if the integrator (e.g., TSGLEE)
+provides this information.
 
 \subsection{Handling of discontinuities}
 
