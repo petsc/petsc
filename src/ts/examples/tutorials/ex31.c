@@ -1349,7 +1349,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = VecNorm(Yerr,NORM_2,&err_norm);
   ierr = VecDestroy(&Yerr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Estimated Error = %E.\n",err_norm);CHKERRQ(ierr);
-  
+
   /* Exact solution */
   ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);
   ierr = ExactSolution(Yex,&ptype[0],tfinal,exact_flag);CHKERRQ(ierr);
