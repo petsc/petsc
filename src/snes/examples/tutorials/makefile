@@ -637,12 +637,12 @@ runex19_2:
 runex19_bcols1:
 	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full -mat_fd_coloring_bcols 1 > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
-	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
+	   else  printf "${PWD}\nPossible problem with ex19_bcols1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_2_bcols1:
 	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols 1> ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
-	   else  printf "${PWD}\nPossible problem with ex19_2, diffs above\n=========================================\n"; fi; \
+	   else  printf "${PWD}\nPossible problem with ex19_2_bcols1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_fdcoloring_wp:
 	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg > ex19_1.tmp 2>&1; \
@@ -955,7 +955,7 @@ runex22:
 	-@x="bad"; ${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_converged_reason -ksp_converged_reason -snes_view > ex22_1.tmp 2>&1; \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp > /dev/null 2>&1) then x='good'; fi ;\
 	   if (${DIFF} output/ex22_1_alt.out ex22_1.tmp > /dev/null 2>&1) then x='good'; fi; \
-	   if [ "$x" = "bad" ]; then ${DIFF} output/ex22_1.out ex22_1.tmp ; ${DIFF} output/ex22_1_alt.out ex22_1.tmp ; printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
+	   if [ "$$x" = "bad" ]; then ${DIFF} output/ex22_1.out ex22_1.tmp ; ${DIFF} output/ex22_1_alt.out ex22_1.tmp ; printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex22_1.tmp
 
 runex25:
