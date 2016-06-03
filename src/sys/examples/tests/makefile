@@ -129,10 +129,12 @@ runex1f:
 	   ${RM} -f ex1f.tmp1 ex1f.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1 ./ex2 > ex2.tmp1 2>&1; egrep "(Caught signal number 11 SEGV)" ex2.tmp1  > ex2.tmp;\
-	if (${DIFF} output/ex2_1.out ex2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex2.tmp1 ex2.tmp
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex2 > ex2.tmp1 2>&1; egrep "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" ex2.tmp1  > ex2.tmp;\
+           if (${DIFF} output/ex2_1.out ex2.tmp > /dev/null 2>&1) then x='good'; fi ;\
+           if (${DIFF} output/ex2_1_alt.out ex2.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$$x" = "bad" ]; then ${DIFF} output/ex2_1.out ex2.tmp ; ${DIFF} output/ex2_1_alt.out ex2.tmp ; printf "${PWD}\nPossible problem with ex2_1, diffs above\n=============\
+============================\n"; fi; \
+           ${RM} -f ex2.tmp1 ex2.tmp
 
 #  Since this test produces very different information on different machines there is no way to automate
 #  the checking of the output to see if it is correct; hence this is not in the nightly tests, though it would be nice if we could add it

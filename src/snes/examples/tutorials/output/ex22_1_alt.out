@@ -42,7 +42,7 @@ SNES Object: 2 MPI processes
         maximum iterations=6, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        using PRECONDITIONED norm type for convergence test
       PC Object: (mg_coarse_) 2 MPI processes
         type: none
         linear system matrix = precond matrix:
