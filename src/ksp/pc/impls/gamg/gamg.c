@@ -246,6 +246,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         *a_Amat_crs = Cmat; /* output - no repartitioning or reduction, bail out because nested here */
         ierr        = PetscFree(counts);CHKERRQ(ierr);
         ierr = PetscInfo2(pc,"Aggregate processors noop: new_size=%D, neq(loc)=%D\n",new_size,ncrs_eq);CHKERRQ(ierr);
+#if defined PETSC_GAMG_USE_LOG
+        ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
+#endif
         PetscFunctionReturn(0);
       }
 
