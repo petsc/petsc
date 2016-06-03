@@ -647,7 +647,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
         ts->snes_its += its; ts->ksp_its += lits;
       }
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-      ierr = TSAdaptCheckStage(adapt,ts,glee->stage_time,Y[i],&accept);CHKERRQ(ierr);
+      ierr = TSAdaptCheckStage(adapt,ts,glee->stage_time,YStage[i],&accept);CHKERRQ(ierr);
       if (!accept) goto reject_step;
       ierr = TSPostStage(ts,glee->stage_time,i,YStage); CHKERRQ(ierr);
       ierr = TSComputeRHSFunction(ts,t+h*c[i],YStage[i],YdotStage[i]);CHKERRQ(ierr);
