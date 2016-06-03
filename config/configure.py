@@ -131,9 +131,9 @@ def chkenable():
 def argsAddDownload(value,deps = [],options = []):
   # Adds --download-value to args if the command line DOES NOT already has --with-value or --download-value in it
   # this is to prevent introducing conflicting arguments to ones that already exist
-  for i in sys.argv:
-    if i.startswith('--with-'+value): return
-    if i.startswith('--download-'+value) and not i.startswith('--download-'+value+'-commit'): return
+  for opt in sys.argv[1:]:
+    optname = opt.split('=')[0].strip('-')
+    if optname in ['download-'+value,'with-'+value,'with-'+value+'-dir','with-'+value+'-include','with-'+value+'lib']: return
   sys.argv.append('--download-'+value)
   for i in deps:
     argsAddDownload(i)
