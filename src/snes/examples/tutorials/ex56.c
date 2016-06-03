@@ -56,9 +56,12 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
-  PetscReal trace=0,mu=s_mu,lambda=s_lambda,r[]={x[0]-.5,x[1]-.5,x[2]-.5},rad;
+  PetscReal trace=0,mu=s_mu,lambda=s_lambda,rad;
   PetscInt i,j;
-  for (i=0,rad=0.;i<dim;i++) rad += r[i]*r[i];
+  for (i=0,rad=0.;i<dim;i++) {
+    PetscReal t=x[i]-.5;
+    rad += t*t;
+  }
   rad = PetscSqrtReal(rad);
   if (rad>0.25) {
     mu *= s_soft_alpha;
@@ -83,9 +86,13 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
-  PetscReal mu=s_mu, lambda=s_lambda, r[3]={x[0]-.5,x[1]-.5,x[2]-.5},rad;
+  PetscReal mu=s_mu, lambda=s_lambda,rad;
   PetscInt i;
   for (i=0,rad=0.;i<dim;i++) rad += r[i]*r[i];
+  for (i=0,rad=0.;i<dim;i++) {
+    PetscReal t=x[i]-.5;
+    rad += t*t;
+  }
   rad = PetscSqrtReal(rad);
   if (rad>0.25) {
     mu *= s_soft_alpha;
@@ -193,6 +200,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsBool("-two_solves","solve additional variant of the problem","",two_solves,&two_solves,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL);CHKERRQ(ierr);
+    i = 3;
     ierr = PetscOptionsInt("-mat_block_size","","",i,&i,&flg);CHKERRQ(ierr);
     if (!flg || i!=3) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER, "'-mat_block_size 3' must be set (%D) and = 3 (%D)",flg,flg? i : 3);
   }
