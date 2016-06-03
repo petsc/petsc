@@ -1097,6 +1097,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
     ierr = PetscInfo(pc,"No selected points on coarse grid\n");CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
     *a_P_out = NULL;  /* out */
+    ierr = PetscLogEventEnd(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscInfo1(pc,"New grid %D nodes\n",ii/col_bs);CHKERRQ(ierr);
