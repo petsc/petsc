@@ -29,16 +29,21 @@ class Configure(config.package.CMakePackage):
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    args.append('-DCMAKE_CXX_FLAGS="' \
-                + self.headers.toStringNoDupes(self.ptscotch.include) + ' ' \
-                + self.headers.toStringNoDupes(self.metis.include) + ' ' \
-                + self.headers.toStringNoDupes(self.parmetis.include) + '"')
-    args.append('-DCMAKE_EXE_LINKER_FLAGS="' \
-                + self.libraries.toString(self.blasLapack.dlib) + ' ' \
-                + self.libraries.toString(self.scalapack.lib) + ' ' \
-                + self.libraries.toStringNoDupes(self.ptscotch.lib) + ' ' \
-                + self.libraries.toStringNoDupes(self.metis.lib) + ' ' \
-                + self.libraries.toStringNoDupes(self.parmetis.lib) + '"')
+
+    args.append('-DBLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DLAPACK_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DSCALAPACK_LIBRARIES="'+self.libraries.toString(self.scalapack.lib)+'"')
+    args.append('-DSCALAPACK_LIBRARY="'+self.libraries.toString(self.scalapack.lib)+'"')
+    args.append('-DBLACS_LIBRARY="'+self.libraries.toString(self.scalapack.lib)+'"')
+    
+    args.append('-DMETIS_LIBRARIES="'+self.libraries.toString(self.metis.lib)+'"')
+    args.append('-DMETIS_INCLUDES="'+self.headers.toStringNoDupes(self.metis.include)[2:]+'"')
+
+    args.append('-DPARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib)+'"')
+    args.append('-DPARMETIS_INCLUDES="'+self.headers.toStringNoDupes(self.parmetis.include)[2:]+'"')
+
+    args.append('-DSCOTCH_LIBRARIES="'+self.libraries.toString(self.ptscotch.lib)+'"')
+    args.append('-DSCOTCH_INCLUDES="'+self.headers.toStringNoDupes(self.ptscotch.include)[2:]+'"')
 
     if self.compilerFlags.debugging:
       args.append('-DCMAKE_BUILD_TYPE=Debug')
