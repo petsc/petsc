@@ -60,8 +60,6 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 @*/
 PetscErrorCode DMPlexTSGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
 {
-  DMTS           dmts;
-  PetscObject    obj;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -87,9 +85,6 @@ PetscErrorCode DMPlexTSGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, Petsc
 @*/
 PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 {
-  DMTS           dmts;
-  PetscObject    obj;
-  PetscBool      computeGradients;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
