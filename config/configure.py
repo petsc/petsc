@@ -133,7 +133,7 @@ def argsAddDownload(value,deps = [],options = []):
   # this is to prevent introducing conflicting arguments to ones that already exist
   for opt in sys.argv[1:]:
     optname = opt.split('=')[0].strip('-')
-    if optname in ['download-'+value,'with-'+value,'with-'+value+'-dir','with-'+value+'-include','with-'+value+'lib']: return
+    if optname in ['download-'+value,'with-'+value,'with-'+value+'-dir','with-'+value+'-include','with-'+value+'-lib']: return
   sys.argv.append('--download-'+value)
   for i in deps:
     argsAddDownload(i)
