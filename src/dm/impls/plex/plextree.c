@@ -4169,16 +4169,16 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
         for (i = 0; i < lDof; i++) pVal[i] = coarseArray[lOff + i];
       }
       if (grad && p >= cellStart && p < cellEnd) {
-        const PetscFVCellGeom *cg;
+        PetscFVCellGeom *cg;
         PetscScalar *gradVals;
         PetscInt i;
 
         pVal += (numValues - dim * (1 + numFVcomps));
 
-        ierr = DMPlexPointLocalRead(cellDM,p,cellGeomArray,&cg);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(cellDM,p,cellGeomArray,(void *) &cg);CHKERRQ(ierr);
         for (i = 0; i < dim; i++) pVal[i] = cg->centroid[i];
         pVal += dim;
-        ierr = DMPlexPointGlobalRead(gradDM,p,gradArray,&gradVals);CHKERRQ(ierr);
+        ierr = DMPlexPointGlobalRead(gradDM,p,gradArray,(void *) &gradVals);CHKERRQ(ierr);
         for (i = 0; i < dim * numFVcomps; i++) pVal[i] = gradVals[i];
       }
     }

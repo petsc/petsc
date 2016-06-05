@@ -62,7 +62,6 @@ PetscErrorCode DMPlexTSGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, Petsc
 {
   DMTS           dmts;
   PetscObject    obj;
-  DM             plex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -91,7 +90,6 @@ PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
   DMTS           dmts;
   PetscObject    obj;
   PetscBool      computeGradients;
-  DM             plex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

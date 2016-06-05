@@ -414,8 +414,8 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
   forest   = (DM_Forest*) dm->data;
   ierr     = DMForestGetAdaptivityForest(dm,&oldAdapt);CHKERRQ(ierr);
   if (adapt != NULL && dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
-  adaptForest    = (DM_Forest*) adapt ? adapt->data : NULL;
-  oldAdaptForest = (DM_Forest*) oldAdapt ? oldAdapt->data : NULL;
+  adaptForest    = (DM_Forest*) (adapt ? adapt->data : NULL);
+  oldAdaptForest = (DM_Forest*) (oldAdapt ? oldAdapt->data : NULL);
   if (adaptForest != oldAdaptForest) {
     ierr = PetscSFDestroy(&forest->preCoarseToFine);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&forest->coarseToPreFine);CHKERRQ(ierr);
