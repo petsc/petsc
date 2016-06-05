@@ -1076,14 +1076,15 @@ PetscErrorCode DMPlexRestoreCellFields(DM dm, PetscInt cStart, PetscInt cEnd, Ve
 - locaGrad - A local vector with field gradients, or NULL
 
   Output Parameters:
-+ uL - The field values at the left side of the face
++ Nface - The number of faces with field values
+. uL - The field values at the left side of the face
 - uR - The field values at the right side of the face
 
   Level: developer
 
 .seealso: DMPlexGetCellFields()
 @*/
-PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscScalar **uL, PetscScalar **uR)
+PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
 {
   DM                 dmFace, dmCell, dmGrad = NULL;
   PetscSection       section;
@@ -1210,6 +1211,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
     }
     ++iface;
   }
+  *Nface = iface;
   ierr = VecRestoreArrayRead(locX, &x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
@@ -1236,14 +1238,15 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
 - locaGrad - A local vector with field gradients, or NULL
 
   Output Parameters:
-+ uL - The field values at the left side of the face
++ Nface - The number of faces with field values
+. uL - The field values at the left side of the face
 - uR - The field values at the right side of the face
 
   Level: developer
 
 .seealso: DMPlexGetFaceFields()
 @*/
-PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscScalar **uL, PetscScalar **uR)
+PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
 {
   PetscErrorCode ierr;
 
@@ -1266,14 +1269,15 @@ PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Ve
 - cellGeometry - A local vector with cell geometry
 
   Output Parameters:
-+ fgeom - The extract the face centroid and normal
++ Nface - The number of faces with field values
+. fgeom - The extract the face centroid and normal
 - vol   - The cell volume
 
   Level: developer
 
 .seealso: DMPlexGetCellFields()
 @*/
-PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscFVFaceGeom **fgeom, PetscReal **vol)
+PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
 {
   DM                 dmFace, dmCell;
   DMLabel            ghostLabel;
@@ -1319,6 +1323,7 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
     voll[iface*2+1] = cgR->volume;
     ++iface;
   }
+  *Nface = iface;
   ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1337,14 +1342,15 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
 - cellGeometry - A local vector with cell geometry
 
   Output Parameters:
-+ fgeom - The extract the face centroid and normal
++ Nface - The number of faces with field values
+. fgeom - The extract the face centroid and normal
 - vol   - The cell volume
 
   Level: developer
 
 .seealso: DMPlexGetFaceFields()
 @*/
-PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscFVFaceGeom **fgeom, PetscReal **vol)
+PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
 {
   PetscErrorCode ierr;
 
@@ -1569,7 +1575,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
     PetscReal       *vol;
     PetscFVFaceGeom *fgeom;
     PetscInt         cS = cStart+chunk*cellChunkSize, cE = PetscMin(cS+cellChunkSize, cEnd), numCells = cE - cS, cell;
-    PetscInt         fS = fStart+chunk*faceChunkSize, fE = PetscMin(fS+faceChunkSize, fEnd), numFaces = fE - fS, face;
+    PetscInt         fS = fStart+chunk*faceChunkSize, fE = PetscMin(fS+faceChunkSize, fEnd), numFaces, face;
 
     /* Extract field coefficients */
     if (useFEM) {
@@ -1578,8 +1584,8 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
       ierr = PetscMemzero(elemVec, numCells*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
     }
     if (useFVM) {
-      ierr = DMPlexGetFaceFields(dm, fS, fE, locX, locX_t, faceGeometryFVM, cellGeometryFVM, locGrad, &uL, &uR);CHKERRQ(ierr);
-      ierr = DMPlexGetFaceGeometry(dm, fS, fE, faceGeometryFVM, cellGeometryFVM, &fgeom, &vol);CHKERRQ(ierr);
+      ierr = DMPlexGetFaceFields(dm, fS, fE, locX, locX_t, faceGeometryFVM, cellGeometryFVM, locGrad, &numFaces, &uL, &uR);CHKERRQ(ierr);
+      ierr = DMPlexGetFaceGeometry(dm, fS, fE, faceGeometryFVM, cellGeometryFVM, &numFaces, &fgeom, &vol);CHKERRQ(ierr);
       ierr = DMGetWorkArray(dm, numFaces*totDim, PETSC_SCALAR, &fluxL);CHKERRQ(ierr);
       ierr = DMGetWorkArray(dm, numFaces*totDim, PETSC_SCALAR, &fluxR);CHKERRQ(ierr);
       ierr = PetscMemzero(fluxL, numFaces*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1714,8 +1720,8 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
       ierr = DMRestoreWorkArray(dm, numCells*totDim, PETSC_SCALAR, &elemVec);CHKERRQ(ierr);
     }
     if (useFVM) {
-      ierr = DMPlexRestoreFaceFields(dm, fS, fE, locX, locX_t, faceGeometryFVM, cellGeometryFVM, locGrad, &uL, &uR);CHKERRQ(ierr);
-      ierr = DMPlexRestoreFaceGeometry(dm, fS, fE, faceGeometryFVM, cellGeometryFVM, &fgeom, &vol);CHKERRQ(ierr);
+      ierr = DMPlexRestoreFaceFields(dm, fS, fE, locX, locX_t, faceGeometryFVM, cellGeometryFVM, locGrad, &numFaces, &uL, &uR);CHKERRQ(ierr);
+      ierr = DMPlexRestoreFaceGeometry(dm, fS, fE, faceGeometryFVM, cellGeometryFVM, &numFaces, &fgeom, &vol);CHKERRQ(ierr);
       ierr = DMRestoreWorkArray(dm, numFaces*totDim, PETSC_SCALAR, &fluxL);CHKERRQ(ierr);
       ierr = DMRestoreWorkArray(dm, numFaces*totDim, PETSC_SCALAR, &fluxR);CHKERRQ(ierr);
       if (dmGrad) {ierr = DMRestoreLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);}
