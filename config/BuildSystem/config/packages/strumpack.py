@@ -49,8 +49,8 @@ class Configure(config.package.CMakePackage):
     #  /usr/bin/ld: ex5: hidden symbol `SCOTCH_dgraphOrderCompute' in
     #        /home/pieterg/workspace/petsc/arch-linux2-c-debug/lib/libptscotch.a(library_dgraph_order.o)
     #          is referenced by DSO
-    #if not self.checkSharedLibrariesEnabled():
-    args.append('-DBUILD_SHARED_LIBS=off')
+    if not self.checkSharedLibrariesEnabled():
+      args.append('-DBUILD_SHARED_LIBS=off')
 
     if self.openmp.found:
       args.append('-DUSE_OPENMP=ON')
