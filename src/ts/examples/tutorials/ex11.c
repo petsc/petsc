@@ -1489,7 +1489,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
 {
   DM                dm, gradDM, plex, cellDM, adaptedDM = NULL;
   Vec               cellGeom, faceGeom;
-  PetscBool         isForest;
+  PetscBool         isForest, computeGradient;
   Vec               grad, locX;
   PetscInt          cStart, cEnd, cEndInterior, c, dim;
   PetscReal         minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2], minInd, maxInd, time;
@@ -1503,10 +1503,12 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = VecGetDM(sol, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, &faceGeom, &cellGeom, NULL);CHKERRQ(ierr);
+  ierr = PetscFVGetComputeGradients(fvm,&computeGradient);CHKERRQ(ierr);
+  ierr = PetscFVSetComputeGradients(fvm,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexTSGetGradientDM(dm,fvm,&gradDM);CHKERRQ(ierr);
-  if (!gradDM) SETERRQ(PetscObjectComm((PetscObject)fvm),PETSC_ERR_SUP,"Finite volume method with gradient reconstruction required for adaptive refinement.");
   ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+  ierr = DMPlexComputeGradientFVM(plex,fvm,faceGeom,cellGeom,&gradDM);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(plex,&locX);CHKERRQ(ierr);
   ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, faceGeom, cellGeom, NULL);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(plex, sol, INSERT_VALUES, locX);CHKERRQ(ierr);
@@ -1554,6 +1556,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = VecDestroy(&grad);CHKERRQ(ierr);
   ierr = VecDestroy(&locX);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  ierr = PetscFVSetComputeGradients(fvm,computeGradient);CHKERRQ(ierr);
   minMaxInd[1] = -minMaxInd[1];
   ierr = MPI_Allreduce(minMaxInd,minMaxIndGlobal,2,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   minInd = minMaxIndGlobal[0];
