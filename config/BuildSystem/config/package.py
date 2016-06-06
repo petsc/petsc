@@ -8,6 +8,10 @@ try:
 except ImportError:
   from md5 import new as new_md5
 
+class FakePETScDir:
+  def __init__(self):
+    self.dir = 'UNKNOWN'
+
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -98,17 +102,14 @@ class Package(config.base.Configure):
     self.programs        = framework.require('config.programs', self)
     self.sourceControl   = framework.require('config.sourceControl',self)
     try:
-      import PETSc
+      import PETSc.options
       self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
-      self.petscdirMod     = framework.require('PETSc.options.petscdir', self.setCompilers)
+      self.petscdir        = framework.require('PETSc.options.petscdir', self.setCompilers)
       self.petscclone      = framework.require('PETSc.options.petscclone',self.setCompilers)
-      self.useShared       = self.sharedLibraries.useShared
-      self.petscdir        = self.petscdirMod.dir
-      self.isClone         = self.petscclone.isClone
+      self.havePETSc       = True
     except ImportError:
-      self.useShared       = True
-      self.petscdir        = 'UNKNOWN'
-      self.isClone         = True
+      self.havePETSc       = False
+      self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
     if not self.isMPI and not self.package == 'make':
@@ -590,6 +591,11 @@ class Package(config.base.Configure):
     '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
     import retrieval
 
+    if self.havePETSc:
+      isClone = self.petscclone.isClone
+    else:
+      isClone = True
+
     retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     retriever.setup()
     retriever.saveLog()
@@ -608,7 +614,7 @@ class Package(config.base.Configure):
       if git_urls:
         if not hasattr(self.sourceControl, 'git'):
           self.logPrint('Git not found - skipping giturls: '+str(git_urls)+'\n')
-        elif (self.isClone) or self.framework.clArgDB.has_key('with-git'):
+        elif isClone or self.framework.clArgDB.has_key('with-git'):
           download_urls = git_urls+download_urls
         else:
           download_urls = download_urls+git_urls
@@ -845,9 +851,13 @@ class Package(config.base.Configure):
     return self.rmArgs(args,rejects)
 
   def checkSharedLibrariesEnabled(self):
+    if self.havePETSc:
+      useShared = self.sharedLibraries.useShared
+    else:
+      useShared = True
     if self.framework.clArgDB.has_key('download-'+self.package+'-shared') and self.argDB['download-'+self.package+'-shared']:
       raise RuntimeError(self.package+' cannot use download-'+self.package+'-shared=1. This flag can only be used to disable '+self.package+' shared libraries')
-    if not self.useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
+    if not useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
       return False
     else:
       return True
@@ -855,21 +865,21 @@ class Package(config.base.Configure):
   def compilePETSc(self):
     try:
       self.logPrintBox('Compiling PETSc; this may take several minutes')
-      output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir+' && '+self.make.make+' all PETSC_DIR='+self.petscdir+' PETSC_ARCH='+self.arch,timeout=1000, log = self.log)
+      output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=1000, log = self.log)
       self.log.write(output+err)
     except RuntimeError, e:
       raise RuntimeError('Error running make all on PETSc: '+str(e))
     if self.framework.argDB['prefix']:
       try:
         self.logPrintBox('Installing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir+' && '+self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
         self.log.write(output+err)
       except RuntimeError, e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
     elif not self.argDB['with-batch']:
       try:
         self.logPrintBox('Testing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir+' && '+self.make.make+' test PETSC_DIR='+self.petscdir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
         output = output+err
         self.log.write(output)
         if output.find('error') > -1 or output.find('Error') > -1:

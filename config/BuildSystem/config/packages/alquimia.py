@@ -63,14 +63,14 @@ class Configure(config.package.CMakePackage):
     if self.framework.argDB['prefix']:
        idir = os.path.join(self.getDefaultInstallDir(),'lib')
     else:
-       idir = os.path.join(self.petscdir,self.arch,'lib')
+       idir = os.path.join(self.petscdir.dir,self.arch,'lib')
     if self.framework.argDB['with-single-library']:
       plibs = self.libraries.toStringNoDupes(['-L'+idir,' -lpetsc']+plibs)
     else:
       plibs = self.libraries.toStringNoDupes(['-L'+idir,'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+plibs)
 
     args.append('-DTPL_PETSC_LDFLAGS="'+plibs+'"')
-    args.append('-DTPL_PETSC_INCLUDE_DIRS="'+os.path.join(self.petscdir,'include')+';'+';'.join(self.hdf5.include)+'"')
+    args.append('-DTPL_PETSC_INCLUDE_DIRS="'+os.path.join(self.petscdir.dir,'include')+';'+';'.join(self.hdf5.include)+'"')
 
     args.append('-DXSDK_WITH_PFLOTRAN=ON')
     args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[0])
@@ -79,7 +79,7 @@ class Configure(config.package.CMakePackage):
 
   def postProcess(self):
     #alquimia cmake requires PETSc environmental variables
-    os.environ['PETSC_DIR']  = self.petscdir
+    os.environ['PETSC_DIR']  = self.petscdir.dir
     os.environ['PETSC_ARCH'] = self.arch
     config.package.CMakePackage.Install(self)
     if not self.argDB['with-batch']:
