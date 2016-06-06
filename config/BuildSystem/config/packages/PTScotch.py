@@ -15,8 +15,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
-    self.mpi            = framework.require('config.packages.MPI',self)
+    self.mpi  = framework.require('config.packages.MPI',self)
     self.deps = [self.mpi]
     return
 
@@ -65,7 +64,7 @@ class Configure(config.package.Package):
     # SCOTCH_PTSCOTCH is NOT defined above Mac does not know what clock_gettime() is!
     if self.setCompilers.isDarwin(self.log):
       self.cflags = self.cflags + ' -DCOMMON_TIMING_OLD'
-    if self.indexTypes.integerSize == 64:
+    if self.getDefaultIndexSize() == 64:
       self.cflags = self.cflags + ' -DINTSIZE64'
     else:
       self.cflags = self.cflags + ' -DINTSIZE32'

@@ -18,8 +18,6 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
-    self.installdir    = framework.require('PETSc.options.installDir',  self)
-    self.petscdir      = framework.require('PETSc.options.petscdir', self.setCompilers)
     self.mpi           = framework.require('config.packages.MPI', self)
     self.hdf5          = framework.require('config.packages.hdf5', self)
     self.pflotran      = framework.require('config.packages.pflotran', self)
@@ -63,16 +61,16 @@ class Configure(config.package.CMakePackage):
 
     plibs = self.hdf5.lib
     if self.framework.argDB['prefix']:
-       idir = os.path.join(self.installdir.dir,'lib')
+       idir = os.path.join(self.getDefaultInstallDir(),'lib')
     else:
-       idir = os.path.join(self.petscdir.dir,self.arch,'lib')
+       idir = os.path.join(self.petscdir,self.arch,'lib')
     if self.framework.argDB['with-single-library']:
       plibs = self.libraries.toStringNoDupes(['-L'+idir,' -lpetsc']+plibs)
     else:
       plibs = self.libraries.toStringNoDupes(['-L'+idir,'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+plibs)
 
     args.append('-DTPL_PETSC_LDFLAGS="'+plibs+'"')
-    args.append('-DTPL_PETSC_INCLUDE_DIRS="'+os.path.join(self.petscdir.dir,'include')+';'+';'.join(self.hdf5.include)+'"')
+    args.append('-DTPL_PETSC_INCLUDE_DIRS="'+os.path.join(self.petscdir,'include')+';'+';'.join(self.hdf5.include)+'"')
 
     args.append('-DXSDK_WITH_PFLOTRAN=ON')
     args.append('-DTPL_PFLOTRAN_LIBRARIES='+self.pflotran.lib[0])
@@ -81,7 +79,7 @@ class Configure(config.package.CMakePackage):
 
   def postProcess(self):
     #alquimia cmake requires PETSc environmental variables
-    os.environ['PETSC_DIR']  = self.petscdir.dir
+    os.environ['PETSC_DIR']  = self.petscdir
     os.environ['PETSC_ARCH'] = self.arch
     config.package.CMakePackage.Install(self)
     if not self.argDB['with-batch']:
