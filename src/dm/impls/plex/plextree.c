@@ -4170,8 +4170,8 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
       }
       if (grad && p >= cellStart && p < cellEnd) {
         PetscFVCellGeom *cg;
-        PetscScalar *gradVals;
-        PetscInt i;
+        PetscScalar     *gradVals = NULL;
+        PetscInt        i;
 
         pVal += (numValues - dim * (1 + numFVcomps));
 
