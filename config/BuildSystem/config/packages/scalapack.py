@@ -56,6 +56,9 @@ class Configure(config.package.Package):
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
     g.write('CCFLAGS      = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' $(MPIINC)\n')
+    noopt = self.checkNoOptFlag()
+    g.write('CFLAGS       = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
+
     g.write('CCLOADER     = '+self.setCompilers.getLinker()+'\n')
     g.write('CCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()
