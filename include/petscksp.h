@@ -545,6 +545,20 @@ M*/
 M*/
 
 /*MC
+     KSP_DIVERGED_PCSETUP_FAILED - It was not possible to build the requested preconditioner. This is usually due to a 
+     zero pivot in a factorization. It can also result from a failure in a subpreconditioner inside a nested preconditioner
+     such as PCFIELDSPLIT.
+
+   Level: beginner
+
+    Notes: Run with -ksp_error_if_not_converged to stop the program when the error is detected and print an error message with details.
+
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
      KSP_CONVERGED_ITERATING - This flag is returned if you call KSPGetConvergedReason()
         while the KSPSolve() is still running.
 
