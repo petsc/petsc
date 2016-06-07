@@ -120,6 +120,8 @@ PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
    for each node (rather than 1 component for the whole grid, then the next
    component, etc.)
 
+   Do NOT call AODestroy() on the ao returned by this function.
+
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DMDACreate2d(), DMDASetAOType(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()

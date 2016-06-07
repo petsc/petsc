@@ -2006,8 +2006,8 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt *ival)
    References:
 .     MUMPS Users' Guide
 
-.seealso: MatGetFactor()
-@*/
+.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
+ @*/
 PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
 {
   PetscErrorCode ierr;
@@ -2040,7 +2040,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
    References:
 .     MUMPS Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetIcntl(Mat F,PetscInt icntl,PetscInt *ival)
 {
@@ -2098,7 +2098,7 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F,PetscInt icntl,PetscReal *val)
    References:
 .     MUMPS Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
 {
@@ -2132,7 +2132,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
    References:
 .      MUMPS Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetCntl(Mat F,PetscInt icntl,PetscReal *val)
 {
@@ -2210,7 +2210,7 @@ PetscErrorCode MatMumpsGetRinfog_MUMPS(Mat F,PetscInt icntl,PetscReal *rinfog)
    References:
 .      MUMPS Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
 {
@@ -2243,7 +2243,7 @@ PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
    References:
 .      MUMPS Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
 {
@@ -2276,7 +2276,7 @@ PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
    References:
 .       MUMPS Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
 {
@@ -2309,7 +2309,7 @@ PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
    References:
 .      MUMPS Users' Guide
 
-.seealso: MatGetFactor()
+.seealso: MatGetFactor(), MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
 @*/
 PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 {
@@ -2365,7 +2365,14 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 
   Level: beginner
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
+    Notes: When a MUMPS factorization fails inside a KSP solve, for example with a KSP_DIVERGED_PCSETUP_FAILED, one can find the MUMPS information about the failure by calling 
+$          KSPGetPC(ksp,&pc);
+$          PCFactorGetMatrix(pc,&mat);
+$          MatMumpsGetInfo(mat,....);
+$          MatMumpsGetInfog(mat,....); etc.
+           Or you can run with -ksp_error_if_not_converged and the program will be stopped and the information printed in the error message.
+
+.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(), PCGetFactor(), PCFactorGetMatrix()
 
 M*/
 

@@ -1877,25 +1877,27 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 
     Input Parameters:
 +   pc      - the preconditioner context
-.   ptype   - which matrix to use for preconditioning the Schur complement: PC_FIELDSPLIT_SCHUR_PRE_A11 (default), PC_FIELDSPLIT_SCHUR_PRE_SELF, PC_FIELDSPLIT_PRE_USER
+.   ptype   - which matrix to use for preconditioning the Schur complement: PC_FIELDSPLIT_SCHUR_PRE_A11 (default), PC_FIELDSPLIT_SCHUR_PRE_SELF, PC_FIELDSPLIT_SCHUR_PRE_USER 
+              PC_FIELDSPLIT_SCHUR_PRE_SELFP, and PC_FIELDSPLIT_SCHUR_PRE_FULL
 -   userpre - matrix to use for preconditioning, or NULL
 
     Options Database:
-.     -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> default is a11
+.     -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11. See notes for meaning of various arguments
 
     Notes:
 $    If ptype is
-$        user then the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
-$             to this function).
 $        a11 then the preconditioner for the Schur complement is generated from the block diagonal part of the preconditioner
 $             matrix associated with the Schur complement (i.e. A11), not he Schur complement matrix
-$        full then the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation computed internally by PFIELDSPLIT (this is expensive)
 $        self the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
 $             The only preconditioner that currently works with this symbolic respresentation matrix object is the PCLSC
 $             preconditioner
+$        user then the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
+$             to this function).
 $        selfp then the preconditioning for the Schur complement is generated from an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
 $             This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
-$             lumped before extracting the diagonal: -fieldsplit_1_mat_schur_complement_ainv_type lump
+$             lumped before extracting the diagonal using the additional option -fieldsplit_1_mat_schur_complement_ainv_type lump
+$        full then the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation computed internally by PFIELDSPLIT (this is expensive)
+$             useful mostly as a test that the Schur complement approach can work for your problem
 
      When solving a saddle point problem, where the A11 block is identically zero, using a11 as the ptype only makes sense
     with the additional option -fieldsplit_1_pc_type none. Usually for saddle point problems one would use a ptype of self and
