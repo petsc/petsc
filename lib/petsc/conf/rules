@@ -260,8 +260,9 @@ tree: ${ACTION}
               continue; \
             fi; \
             (cd $$dir ; \
-            if [ ${NO_PRINT_DIR}foo = foo ] ; then echo ${ACTION} in: `pwd`; fi; \
-            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} NO_PRINT_DIR=${NO_PRINT_DIR});\
+            if [ ${PRINT_PROGRESS}foo = dotfoo ] ; then printf "."; fi; \
+            if [ ${PRINT_PROGRESS}foo = foo -o ${PRINT_PROGRESS}foo = yesfoo -o ${PRINT_PROGRESS}foo = dirfoo ] ; then echo ${ACTION} in: `pwd`; fi; \
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} PRINT_PROGRESS=${PRINT_PROGRESS});\
 	  done
 
 
