@@ -512,7 +512,8 @@ class Configure(config.package.Package):
 
     oldFlags = self.compilers.CPPFLAGS # Disgusting save and restore
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    for combiner in ['MPI_COMBINER_DUP', 'MPI_COMBINER_CONTIGUOUS']:
+    for combiner in ['MPI_COMBINER_DUP', 'MPI_COMBINER_CONTIGUOUS',
+                     'MPI_COMBINER_NAMED']:
       if self.checkCompile('#include <mpi.h>', 'int combiner = %s;' % (combiner,)):
         self.addDefine('HAVE_' + combiner,1)
     self.compilers.CPPFLAGS = oldFlags
