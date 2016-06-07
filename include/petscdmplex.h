@@ -195,6 +195,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGetOrientedFace(DM, PetscInt, PetscInt, const 
 /* Geometry Support */
 PETSC_EXTERN PetscErrorCode DMPlexGetMinRadius(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexSetMinRadius(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt, PetscScalar[], PetscReal[]);
 
 /* Point Location */
 typedef struct _PetscGridHash *PetscGridHash;

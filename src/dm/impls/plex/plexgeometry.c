@@ -663,11 +663,24 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeProjection2Dto1D_Internal"
-/*
-  DMPlexComputeProjection2Dto1D_Internal - Rewrite coordinates to be the 1D projection of the 2D
-*/
-PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[], PetscReal R[])
+#define __FUNCT__ "DMPlexComputeProjection2Dto1D"
+/*@C
+  DMPlexComputeProjection2Dto1D - Rewrite coordinates to be the 1D projection of the 2D coordinates
+
+  Not collective
+
+  Input Parameter:
+. coords - The coordinates of a segment
+
+  Output Parameters:
++ coords - The new y-coordinate, and 0 for x
+- R - The rotation which accomplishes the projection
+
+  Level: developer
+
+.seealso: DMPlexComputeProjection3Dto1D(), DMPlexComputeProjection3Dto2D()
+@*/
+PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[])
 {
   const PetscReal x = PetscRealPart(coords[2] - coords[0]);
   const PetscReal y = PetscRealPart(coords[3] - coords[1]);
@@ -682,16 +695,26 @@ PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[], Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeProjection3Dto1D_Internal"
-/*
-  DMPlexComputeProjection3Dto1D_Internal - Rewrite coordinates to be the 1D projection of the 3D
+#define __FUNCT__ "DMPlexComputeProjection3Dto1D"
+/*@C
+  DMPlexComputeProjection3Dto1D - Rewrite coordinates to be the 1D projection of the 3D coordinates
 
-  This uses the basis completion described by Frisvad,
+  Not collective
 
-  http://www.imm.dtu.dk/~jerf/papers/abstracts/onb.html
-  DOI:10.1080/2165347X.2012.689606
-*/
-PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[], PetscReal R[])
+  Input Parameter:
+. coords - The coordinates of a segment
+
+  Output Parameters:
++ coords - The new y-coordinate, and 0 for x and z
+- R - The rotation which accomplishes the projection
+
+  Note: This uses the basis completion described by Frisvad in http://www.imm.dtu.dk/~jerf/papers/abstracts/onb.html, DOI:10.1080/2165347X.2012.689606
+
+  Level: developer
+
+.seealso: DMPlexComputeProjection2Dto1D(), DMPlexComputeProjection3Dto2D()
+@*/
+PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[])
 {
   PetscReal      x    = PetscRealPart(coords[3] - coords[0]);
   PetscReal      y    = PetscRealPart(coords[4] - coords[1]);
@@ -721,11 +744,24 @@ PetscErrorCode DMPlexComputeProjection3Dto1D_Internal(PetscScalar coords[], Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeProjection3Dto2D_Internal"
-/*
-  DMPlexComputeProjection3Dto2D_Internal - Rewrite coordinates to be the 2D projection of the 3D
-*/
-PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
+#define __FUNCT__ "DMPlexComputeProjection3Dto2D"
+/*@
+  DMPlexComputeProjection3Dto2D - Rewrite coordinates to be the 2D projection of the 3D coordinates
+
+  Not collective
+
+  Input Parameter:
+. coords - The coordinates of a segment
+
+  Output Parameters:
++ coords - The new y- and z-coordinates, and 0 for x
+- R - The rotation which accomplishes the projection
+
+  Level: developer
+
+.seealso: DMPlexComputeProjection2Dto1D(), DMPlexComputeProjection3Dto1D()
+@*/
+PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt coordSize, PetscScalar coords[], PetscReal R[])
 {
   PetscReal      x1[3],  x2[3], n[3], norm;
   PetscReal      x1p[3], x2p[3], xnp[3];
@@ -915,7 +951,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
     PetscReal      R[9], J0;
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    ierr = DMPlexComputeProjection3Dto1D_Internal(coords, R);CHKERRQ(ierr);
+    ierr = DMPlexComputeProjection3Dto1D(coords, R);CHKERRQ(ierr);
     if (J)    {
       J0   = 0.5*PetscRealPart(coords[1]);
       J[0] = R[0]*J0; J[1] = R[1]; J[2] = R[2];
@@ -929,7 +965,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
     PetscReal      R[4], J0;
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    ierr = DMPlexComputeProjection2Dto1D_Internal(coords, R);CHKERRQ(ierr);
+    ierr = DMPlexComputeProjection2Dto1D(coords, R);CHKERRQ(ierr);
     if (J)    {
       J0   = 0.5*PetscRealPart(coords[1]);
       J[0] = R[0]*J0; J[1] = R[1];
@@ -972,7 +1008,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
     PetscReal      R[9], J0[9] = {1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0};
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    ierr = DMPlexComputeProjection3Dto2D_Internal(numCoords, coords, R);CHKERRQ(ierr);
+    ierr = DMPlexComputeProjection3Dto2D(numCoords, coords, R);CHKERRQ(ierr);
     if (J)    {
       const PetscInt pdim = 2;
 
@@ -1036,7 +1072,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
     PetscReal      R[9], J0[9] = {1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0};
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
-    ierr = DMPlexComputeProjection3Dto2D_Internal(numCoords, coords, R);CHKERRQ(ierr);
+    ierr = DMPlexComputeProjection3Dto2D(numCoords, coords, R);CHKERRQ(ierr);
     if (J)    {
       const PetscInt pdim = 2;
 
@@ -1390,7 +1426,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
       for (d = 0; d < dim; ++d) normal[d] = 0.0;
     }
   }
-  if (dim == 3) {ierr = DMPlexComputeProjection3Dto2D_Internal(coordSize, coords, R);CHKERRQ(ierr);}
+  if (dim == 3) {ierr = DMPlexComputeProjection3Dto2D(coordSize, coords, R);CHKERRQ(ierr);}
   for (p = 0; p < numCorners; ++p) {
     /* Need to do this copy to get types right */
     for (d = 0; d < tdim; ++d) {
