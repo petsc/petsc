@@ -10,6 +10,11 @@ configure_options = [
   '--download-parmetis=1',
   '--download-elemental=1',
   '--with-cxx-dialect=C++11',
+  '--download-metis',
+  '--download-parmetis',
+  '--download-ptscotch',
+  '--download-scalapack',
+  '--download-strumpack',
   ]
 
 if __name__ == '__main__':
