@@ -229,6 +229,8 @@ buildexamples_OPENMP:
 
 TESTMODE = testexamples
 
+ALLTESTS_PRINT_PROGRESS = no
+
 alltests:
 	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
@@ -238,7 +240,8 @@ alltest:
 	-@date
 	-@for i in ${TEST_RUNS} ; do \
           echo "******* Testing: ${TESTMODE}_$$i *******"; \
-	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" NO_PRINT_DIR=yes tree ; \
+	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" PRINT_PROGRESS=${ALLTESTS_PRINT_PROGRESS} tree ; \
+	  if [ ${ALLTESTS_PRINT_PROGRESS}foo = dotfoo ] ; then printf "\n"; fi; \
 	done
 	-@date
 
