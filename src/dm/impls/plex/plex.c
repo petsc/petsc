@@ -3,6 +3,7 @@
 #include <petsc/private/vecimpl.h>
 #include <petscsf.h>
 #include <petscds.h>
+#include <petscdraw.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
@@ -97,11 +98,88 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecView_Plex_Draw"
+PetscErrorCode VecView_Plex_Draw(Vec v, PetscViewer viewer)
+{
+  DM                 dm;
+  PetscDraw          draw, popup;
+  DM                 cdm;
+  DMLabel            markers;
+  PetscSection       coordSection;
+  Vec                coordinates;
+  const PetscScalar *coords, *array;
+  PetscReal          bound[4] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscReal          min, max;
+  PetscBool          isnull;
+  PetscInt           dim, vStart, vEnd, cStart, cEnd, c, N, level;
+  const char        *name;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (dim != 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D", dim);
+  ierr = DMGetCoarsenLevel(dm, &level);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(cdm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw, &isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+  ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+  ierr = PetscDrawSetTitle(draw, name);CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  for (c = 0; c < N; c += dim) {
+    bound[0] = PetscMin(bound[0], coords[c]);   bound[2] = PetscMax(bound[2], coords[c]);
+    bound[1] = PetscMin(bound[1], coords[c+1]); bound[3] = PetscMax(bound[3], coords[c+1]);
+  }
+  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw, bound[0], bound[1], bound[2], bound[3]);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+
+  ierr = VecMin(v, NULL, &min);CHKERRQ(ierr);
+  ierr = VecMax(v, NULL, &max);CHKERRQ(ierr);
+  ierr = PetscDrawGetPopup(draw, &popup);CHKERRQ(ierr);
+  ierr = PetscDrawScalePopup(popup, min, max);CHKERRQ(ierr);
+
+  ierr = VecGetArrayRead(v, &array);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *coords = NULL, *a;
+    PetscInt     numCoords, color;
+
+    ierr = DMPlexPointGlobalRead(dm, c, array, &a);CHKERRQ(ierr);
+    color = PetscDrawRealToColor(PetscRealPart(a[0]), min, max);
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+    switch (numCoords) {
+    case 6:
+      ierr = PetscDrawTriangle(draw, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5], color, color, color);CHKERRQ(ierr);
+      break;
+    case 8:
+      ierr = PetscDrawTriangle(draw, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5], color, color, color);CHKERRQ(ierr);
+      ierr = PetscDrawTriangle(draw, coords[4], coords[5], coords[6], coords[7], coords[0], coords[1], color, color, color);CHKERRQ(ierr);
+      break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %D coordinates", numCoords);
+    }
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArrayRead(v, &array);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecView_Plex"
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk, ishdf5, isseq;
+  PetscBool      isvtk, ishdf5, isdraw, isseq;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -109,6 +187,7 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
   if (isvtk) {
     Vec         locv;
@@ -127,6 +206,8 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
+  } else if (isdraw) {
+    ierr = VecView_Plex_Draw(v, viewer);CHKERRQ(ierr);
   } else {
     if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
     else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
@@ -664,10 +745,76 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexView_Draw"
+PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
+{
+  PetscDraw          draw;
+  DM                 cdm;
+  DMLabel            markers;
+  PetscSection       coordSection;
+  Vec                coordinates;
+  const PetscScalar *coords;
+  PetscReal          bound[4] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscBool          isnull;
+  PetscInt           dim, vStart, vEnd, cStart, cEnd, c, N;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (dim != 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D", dim);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(cdm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw, &isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+  ierr = PetscDrawSetTitle(draw, "Mesh");CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  for (c = 0; c < N; c += dim) {
+    bound[0] = PetscMin(bound[0], coords[c]);   bound[2] = PetscMax(bound[2], coords[c]);
+    bound[1] = PetscMin(bound[1], coords[c+1]); bound[3] = PetscMax(bound[3], coords[c+1]);
+  }
+  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscDrawSetCoordinates(draw, bound[0], bound[1], bound[2], bound[3]);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *coords = NULL;
+    PetscInt     numCoords;
+
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+    switch (numCoords) {
+    case 6:
+      ierr = PetscDrawLine(draw, coords[0], coords[1], coords[2], coords[3], PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, coords[2], coords[3], coords[4], coords[5], PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, coords[4], coords[5], coords[0], coords[1], PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      break;
+    case 8:
+      ierr = PetscDrawLine(draw, coords[0], coords[1], coords[2], coords[3], PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, coords[2], coords[3], coords[4], coords[5], PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, coords[4], coords[5], coords[6], coords[7], PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, coords[6], coords[7], coords[0], coords[1], PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %D coordinates", numCoords);
+    }
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+  }
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMView_Plex"
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
-  PetscBool      iascii, ishdf5, isvtk;
+  PetscBool      iascii, ishdf5, isvtk, isdraw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -676,6 +823,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = DMPlexView_Ascii(dm, viewer);CHKERRQ(ierr);
   } else if (ishdf5) {
@@ -686,9 +834,10 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
-  }
-  else if (isvtk) {
+  } else if (isvtk) {
     ierr = DMPlexVTKWriteAll((PetscObject) dm,viewer);CHKERRQ(ierr);
+  } else if (isdraw) {
+    ierr = DMPlexView_Draw(dm, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
