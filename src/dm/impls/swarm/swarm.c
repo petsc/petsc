@@ -483,31 +483,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char f
   if (type == PETSC_STRING) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
   if (type == PETSC_STRUCT) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
   if (type == PETSC_DATATYPE_UNKNOWN) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
-  
-  switch (type) {
-    case PETSC_CHAR:
-      size = sizeof(PetscChar);
-      break;
-    case PETSC_SHORT:
-      size = sizeof(PetscShort);
-      break;
-    case PETSC_INT:
-      size = sizeof(PetscInt);
-      break;
-    case PETSC_LONG:
-      size = sizeof(Petsc64bitInt);
-      break;
-    case PETSC_FLOAT:
-      size = sizeof(PetscFloat);
-      break;
-    case PETSC_DOUBLE:
-      size = sizeof(PetscReal);
-      break;
-      
-    default:
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
-      break;
-  }
+
+  ierr = PetscDataTypeGetSize(type, &size);CHKERRQ(ierr);
   
   /* Load a specific data type into data bucket, specifying textual name and its size in bytes */
 	ierr = DataBucketRegisterField(swarm->db,"DMSwarmRegisterPetscDatatypeField",fieldname,blocksize*size,NULL);CHKERRQ(ierr);
