@@ -1043,13 +1043,45 @@ PetscErrorCode DMDestroy_Swarm(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSwarmView_Draw"
+PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
+{
+  DM             cdm;
+  PetscDraw      draw;
+  PetscReal     *coords, oldPause;
+  PetscInt       Np, p, bs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+  ierr = DMSwarmGetCellDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = PetscDrawGetPause(draw, &oldPause);CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw, 0.0);CHKERRQ(ierr);
+  ierr = DMView(cdm, viewer);CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw, oldPause);CHKERRQ(ierr);
+
+  ierr = DMSwarmGetLocalSize(dm, &Np);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm, DMSwarmPICField_coor, &bs, NULL, (void **) &coords);CHKERRQ(ierr);
+  for (p = 0; p < Np; ++p) {
+    const PetscInt i = p*bs;
+
+    ierr = PetscDrawEllipse(draw, coords[i], coords[i+1], 0.01, 0.01, PETSC_DRAW_BLUE);CHKERRQ(ierr);
+  }
+  ierr = DMSwarmRestoreField(dm, DMSwarmPICField_coor, &bs, NULL, (void **) &coords);CHKERRQ(ierr);
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMView_Swarm"
 PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
-  PetscBool      iascii,ibinary,ishdf5,isvtk;
+  PetscBool      iascii,ibinary,ishdf5,isvtk,isdraw;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
@@ -1057,10 +1089,11 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = DataBucketView(PetscObjectComm((PetscObject)dm),swarm->db,NULL,DATABUCKET_VIEW_STDOUT);CHKERRQ(ierr);
   } else if (ibinary) {
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO VTK support");
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO HDF5 support");
@@ -1069,6 +1102,8 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 #endif
   } else if (isvtk) {
     SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO VTK support");
+  } else if (isdraw) {
+    ierr = DMSwarmView_Draw(dm, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
