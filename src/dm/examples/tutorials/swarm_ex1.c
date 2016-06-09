@@ -449,7 +449,7 @@ PetscErrorCode ex1_4(void)
     ierr = DMDAVecRestoreArray(dmcellcdm,coor,&LA_coor);CHKERRQ(ierr);
   }
   
-  PetscMalloc1(1,&zone);
+  ierr = PetscMalloc1(1,&zone);CHKERRQ(ierr);
   if (commsize == 4) {
     if (rank == 0) {
       zone->cx[0] = 0.5;
@@ -521,6 +521,7 @@ PetscErrorCode ex1_4(void)
   
   ierr = DMDestroy(&dmcell);CHKERRQ(ierr);
   ierr = DMDestroy(&dms);CHKERRQ(ierr);
+  ierr = PetscFree(zone);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
