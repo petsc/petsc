@@ -54,7 +54,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscSc
   eta = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]);
 
   if ((xi >= -eps) && (eta >= -eps) && (xi + eta <= 2.0+eps)) *cell = c;
-  else *cell = -1;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   PetscFunctionReturn(0);
 }
 
@@ -116,7 +116,7 @@ static PetscErrorCode DMPlexLocatePoint_General_2D_Internal(DM dm, const PetscSc
     if ((cond1 || cond2)  && above) ++crossings;
   }
   if (crossings % 2) *cell = c;
-  else *cell = -1;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -140,7 +140,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
   zeta = invJ[2*embedDim+0]*(x - v0[0]) + invJ[2*embedDim+1]*(y - v0[1]) + invJ[2*embedDim+2]*(z - v0[2]);
 
   if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 2.0)) *cell = c;
-  else *cell = -1;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   PetscFunctionReturn(0);
 }
 
@@ -191,7 +191,7 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
     }
   }
   if (found) *cell = c;
-  else *cell = -1;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
