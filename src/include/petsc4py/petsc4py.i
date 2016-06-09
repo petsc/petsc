@@ -72,12 +72,12 @@ Py##Pkg##_ChkErrQ($1); %set_output(VOID_Object);
 
 /* PetscInt */
 /* -------- */
-%fragment(SWIG_From_frag(Petsc64bitInt),"header",
+%fragment(SWIG_From_frag(PetscInt64),"header",
           fragment=SWIG_From_frag(long long),
           fragment=SWIG_From_frag(long))
 {
 SWIGINTERN SWIG_Object
-SWIG_From_dec(Petsc64bitInt)(Petsc64bitInt val) {
+SWIG_From_dec(PetscInt64)(PetscInt64 val) {
 %#if PETSC_SIZEOF_LONG == 8
   return SWIG_From(long)(%numeric_cast(val,long));
 %#else
@@ -85,37 +85,37 @@ SWIG_From_dec(Petsc64bitInt)(Petsc64bitInt val) {
 %#endif
 }
 }
-%fragment(SWIG_AsVal_frag(Petsc64bitInt),"header",
+%fragment(SWIG_AsVal_frag(PetscInt64),"header",
           fragment=SWIG_AsVal_frag(long long),
           fragment=SWIG_AsVal_frag(long))
 {
 SWIGINTERN int
-SWIG_AsVal_dec(Petsc64bitInt)(SWIG_Object obj, Petsc64bitInt *val) {
+SWIG_AsVal_dec(PetscInt64)(SWIG_Object obj, PetscInt64 *val) {
 %#if PETSC_SIZEOF_LONG == 8
   long v; int res = SWIG_AsVal(long)(obj, &v);
 %#else
   long long v; int res = SWIG_AsVal(long long)(obj, &v);
 %#endif
-  if (SWIG_IsOK(res) && val) if (val) *val = %numeric_cast(v,Petsc64bitInt);
+  if (SWIG_IsOK(res) && val) if (val) *val = %numeric_cast(v,PetscInt64);
   return res;
 }
 }
 %fragment(SWIG_From_frag(PetscInt),"header",
-          fragment=SWIG_From_frag(Petsc64bitInt),
+          fragment=SWIG_From_frag(PetscInt64),
           fragment=SWIG_From_frag(int))
 {
 %#if defined(PETSC_USE_64BIT_INDICES)
-%define_as(SWIG_From(PetscInt), SWIG_From(Petsc64bitInt))
+%define_as(SWIG_From(PetscInt), SWIG_From(PetscInt64))
 %#else
 %define_as(SWIG_From(PetscInt), SWIG_From(int))
 %#endif
 }
 %fragment(SWIG_AsVal_frag(PetscInt),"header",
-          fragment=SWIG_AsVal_frag(Petsc64bitInt),
+          fragment=SWIG_AsVal_frag(PetscInt64),
           fragment=SWIG_AsVal_frag(int))
 {
 %#if defined(PETSC_USE_64BIT_INDICES)
-%define_as(SWIG_AsVal(PetscInt), SWIG_AsVal(Petsc64bitInt))
+%define_as(SWIG_AsVal(PetscInt), SWIG_AsVal(PetscInt64))
 %#else
 %define_as(SWIG_AsVal(PetscInt), SWIG_AsVal(int))
 %#endif
