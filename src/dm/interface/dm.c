@@ -4909,15 +4909,14 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
-  PetscValidPointer(cellSF,3);
+  PetscValidPointer(cellSF,4);
   if (*cellSF) {
     PetscMPIInt result;
 
-    PetscValidHeaderSpecific(cellSF,PETSCSF_CLASSID,3);
+    PetscValidHeaderSpecific(*cellSF,PETSCSF_CLASSID,4);
     ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)v),PetscObjectComm((PetscObject)cellSF),&result);CHKERRQ(ierr);
     if (result != MPI_IDENT && result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"cellSF must have a communicator congruent to v's");
-  }
-  else {
+  } else {
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)v),cellSF);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
