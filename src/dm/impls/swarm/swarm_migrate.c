@@ -1,4 +1,5 @@
 
+#include <petscsf.h>
 #include <petscdmswarm.h>
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 #include "data_bucket.h"
@@ -199,9 +200,9 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
   PetscInt p,npoints,npointsg=0,npoints2,npoints2g,len,*rankval,npoints_prior_migration;
-  const PetscInt *LA_iscell;
+  PetscSF sfcell;
+  const PetscSFNode *LA_sfcell;
   DM dmcell;
-  IS iscell;
   Vec pos;
   PetscBool error_check = swarm->migrate_error_on_missing_point;
   PetscMPIInt commsize,rank;
@@ -214,7 +215,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   if (commsize == 1) PetscFunctionReturn(0);
   
   ierr = DMSwarmCreateGlobalVectorFromField(dm,DMSwarmPICField_coor,&pos);CHKERRQ(ierr);
-  ierr = DMLocatePoints(dmcell,pos,&iscell);CHKERRQ(ierr);
+  ierr = DMLocatePoints(dmcell,pos,DM_POINTLOCATION_NONE,&sfcell);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(dm,DMSwarmPICField_coor,&pos);CHKERRQ(ierr);
 
   if (error_check) {
@@ -222,13 +223,12 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   }
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscell,&LA_iscell);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
-    rankval[p] = LA_iscell[p];
+    rankval[p] = LA_sfcell[p].index;
   }
-  ierr = ISRestoreIndices(iscell,&LA_iscell);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscell);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfcell);CHKERRQ(ierr);
   
   ierr = DMSwarmMigrate_DMNeighborScatter(dm,dmcell,remove_sent_points,&npoints_prior_migration);CHKERRQ(ierr);
   
@@ -282,18 +282,17 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
     
     ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,bs*npoints2,(const PetscScalar*)LA_coor,&pos);CHKERRQ(ierr);
-    ierr = DMLocatePoints(dmcell,pos,&iscell);CHKERRQ(ierr);
+    ierr = DMLocatePoints(dmcell,pos,DM_POINTLOCATION_NONE,&sfcell);CHKERRQ(ierr);
     
     ierr = VecDestroy(&pos);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor);CHKERRQ(ierr);
     
-    ierr = ISGetIndices(iscell,&LA_iscell);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
     for (p=0; p<npoints2; p++) {
-      rankval[p] = LA_iscell[p];
+      rankval[p] = LA_sfcell[p].index;
     }
-    ierr = ISRestoreIndices(iscell,&LA_iscell);CHKERRQ(ierr);
-    ierr = ISDestroy(&iscell);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfcell);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
     
     /* remove points which left processor */
