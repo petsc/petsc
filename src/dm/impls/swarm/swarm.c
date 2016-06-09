@@ -146,17 +146,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
 
-#if 1
-  ierr = DMSwarmRestoreField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
-  if (commsize == 1) {
-    ierr = VecCreateSeq(PetscObjectComm((PetscObject)dm),n*bs,&x);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
-  } else {
-    ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),n*bs,PETSC_DETERMINE,&x);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
-  }
-#else
   /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
   if (type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid for PETSC_REAL");
 
@@ -172,7 +161,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   /* Set guard */
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
   ierr = PetscObjectComposeFunction((PetscObject)x,name,DMSwarmDestroyGlobalVectorFromField);CHKERRQ(ierr);
-#endif
   *vec = x;
   PetscFunctionReturn(0);
 }
@@ -224,6 +212,32 @@ PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char
   
   ierr = VecDestroy(vec);CHKERRQ(ierr);
   
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmCreateGlobalVector"
+PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVector(DM dm, const char fieldname[], Vec *vec)
+{
+  DM_Swarm      *swarm = (DM_Swarm *) dm->data;
+  PetscScalar   *array;
+  PetscInt       bs,n;
+  PetscMPIInt    commsize;
+  PetscErrorCode ierr;
+
+  if (!swarm->issetup) {ierr = DMSetUp(dm);CHKERRQ(ierr);}
+
+  ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm,fieldname,&bs,NULL,(void**) &array);CHKERRQ(ierr);
+  ierr = DMSwarmRestoreField(dm,fieldname,&bs,NULL,(void**) &array);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
+  if (commsize == 1) {
+    ierr = VecCreateSeq(PetscObjectComm((PetscObject)dm),n*bs,vec);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*vec,bs);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),n*bs,PETSC_DETERMINE,vec);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*vec,bs);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

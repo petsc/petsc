@@ -200,7 +200,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
   PetscInt p,npoints,npointsg=0,npoints2,npoints2g,*rankval,npoints_prior_migration;
-  PetscSF sfcell;
+  PetscSF sfcell = NULL;
   const PetscSFNode *LA_sfcell;
   DM dmcell;
   Vec pos;
