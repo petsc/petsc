@@ -199,7 +199,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  PetscInt p,npoints,npointsg=0,npoints2,npoints2g,len,*rankval,npoints_prior_migration;
+  PetscInt p,npoints,npointsg=0,npoints2,npoints2g,*rankval,npoints_prior_migration;
   PetscSF sfcell;
   const PetscSFNode *LA_sfcell;
   DM dmcell;
@@ -212,7 +212,6 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-  if (commsize == 1) PetscFunctionReturn(0);
   
   ierr = DMSwarmCreateGlobalVectorFromField(dm,DMSwarmPICField_coor,&pos);CHKERRQ(ierr);
   ierr = DMLocatePoints(dmcell,pos,DM_POINTLOCATION_NONE,&sfcell);CHKERRQ(ierr);
@@ -230,7 +229,11 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfcell);CHKERRQ(ierr);
   
-  ierr = DMSwarmMigrate_DMNeighborScatter(dm,dmcell,remove_sent_points,&npoints_prior_migration);CHKERRQ(ierr);
+  if (commsize > 1) {
+    ierr = DMSwarmMigrate_DMNeighborScatter(dm,dmcell,remove_sent_points,&npoints_prior_migration);CHKERRQ(ierr);
+  } else {
+    ierr = DMSwarmGetSize(dm,&npoints_prior_migration);CHKERRQ(ierr);
+  }
   
   /* locate points newly recevied */
   ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
