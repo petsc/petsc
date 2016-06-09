@@ -1989,8 +1989,8 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   Input Arguments:
 + dm  - The DM
 . fvm - The PetscFV
-. faceGeometry - The face geometry from DMPlexGetFaceGeometryFVM()
-- cellGeometry - The face geometry from DMPlexGetCellGeometryFVM()
+. faceGeometry - The face geometry from DMPlexComputeFaceGeometryFVM()
+- cellGeometry - The face geometry from DMPlexComputeCellGeometryFVM()
 
   Output Parameters:
 + faceGeometry - The geometric factors for gradient calculation are inserted
