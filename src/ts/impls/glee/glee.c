@@ -664,7 +664,6 @@ static PetscErrorCode TSStep_GLEE(TS ts)
       /* ignore next_scheme for now */
       ts->ptime     += ts->time_step;
       ts->time_step  = next_time_step;
-      ts->steps++;
       glee->status = TS_STEP_COMPLETE;
       /* compute and store the global error */
       /* Note: this is not needed if TSAdaptGLEE is not used */
