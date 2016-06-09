@@ -624,7 +624,7 @@ int main(int argc, char **argv)
       PetscInt            Np, p, d;
 
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %D\n", tn);CHKERRQ(ierr);
-      ierr = DMSwarmCreateGlobalVectorFromField(sdm, DMSwarmPICField_coor, &pvel);CHKERRQ(ierr);
+      ierr = DMSwarmCreateGlobalVector(sdm, DMSwarmPICField_coor, &pvel);CHKERRQ(ierr);
       ierr = DMSwarmGetLocalSize(sdm, &Np);CHKERRQ(ierr);
       /* Interpolate velocity */
       ierr = DMInterpolationCreate(PETSC_COMM_WORLD, &ictx);CHKERRQ(ierr);
@@ -641,7 +641,7 @@ int main(int argc, char **argv)
       ierr = VecViewFromOptions(pvel, NULL, "-vel_view");CHKERRQ(ierr);
       ierr = VecGetArrayRead(pvel, &pv);CHKERRQ(ierr);
       for (p = 0; p < Np; ++p) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "p (%g, %g) v (%g, %g) vexact(%g, %g)\n", coords[p*dim+0], coords[p*dim+1], pv[p*dim+0], pv[p*dim+1], PetscSqr(coords[p*dim+0]) + PetscSqr(coords[p*dim+1]), 2.0*PetscSqr(coords[p*dim+0]) - 2.0*coords[p*dim+0]*coords[p*dim+1]);CHKERRQ(ierr);
+        //ierr = PetscPrintf(PETSC_COMM_WORLD, "p (%g, %g) v (%g, %g) vexact(%g, %g)\n", coords[p*dim+0], coords[p*dim+1], pv[p*dim+0], pv[p*dim+1], PetscSqr(coords[p*dim+0]) + PetscSqr(coords[p*dim+1]), 2.0*PetscSqr(coords[p*dim+0]) - 2.0*coords[p*dim+0]*coords[p*dim+1]);CHKERRQ(ierr);
         for (d = 0; d < dim; ++d) coords[p*dim+d] += dt*pv[p*dim+d];
       }
       ierr = DMSwarmRestoreField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
