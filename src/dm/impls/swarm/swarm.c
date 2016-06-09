@@ -146,9 +146,20 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
 
+#if 1
+  ierr = DMSwarmRestoreField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
+  if (commsize == 1) {
+    ierr = VecCreateSeq(PetscObjectComm((PetscObject)dm),n*bs,&x);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),n*bs,PETSC_DETERMINE,&x);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
+  }
+#else
   /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
   if (type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid for PETSC_REAL");
-  
+
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
   if (commsize == 1) {
     ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)dm),bs,n*bs,array,&x);CHKERRQ(ierr);
@@ -161,7 +172,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
   /* Set guard */
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
   ierr = PetscObjectComposeFunction((PetscObject)x,name,DMSwarmDestroyGlobalVectorFromField);CHKERRQ(ierr);
-  
+#endif
   *vec = x;
   PetscFunctionReturn(0);
 }
