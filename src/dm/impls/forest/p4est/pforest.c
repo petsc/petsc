@@ -845,11 +845,15 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     const char        *adaptName;
     DMLabel           adaptLabel;
     PetscInt          defaultValue;
-    PetscInt          numValues, numValuesGlobal;
+    PetscInt          numValues, numValuesGlobal, cLocalStart, count;
     DM_Forest         *aforest  = (DM_Forest*) adaptFrom->data;
     DM_Forest_pforest *apforest = (DM_Forest_pforest*) aforest->data;
     PetscBool         computeAdaptSF;
+    p4est_topidx_t    flt, llt, t;
 
+    flt         = apforest->forest->first_local_tree;
+    llt         = apforest->forest->last_local_tree;
+    cLocalStart = apforest->cLocalStart;
     ierr = DMForestGetComputeAdaptivitySF(dm,&computeAdaptSF);CHKERRQ(ierr);
     PetscStackCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
     ierr = DMForestGetAdaptivityLabel(dm,&adaptName);CHKERRQ(ierr);
@@ -885,8 +889,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscInt                   *cellFlags;
         DMForestAdaptivityStrategy strategy;
         PetscSF                    cellSF;
-        PetscInt                   c, cStart, cEnd, cLocalStart, count;
-        p4est_topidx_t             flt, llt, t;
+        PetscInt                   c, cStart, cEnd;
         PetscBool                  adaptAny;
 
         ierr = DMForestGetMaximumRefinement(dm,&ctx.maxLevel);CHKERRQ(ierr);
@@ -906,10 +909,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
             ierr = PetscSFReduceEnd(cellSF,MPIU_INT,cellFlags,cellFlags,MPI_MIN);CHKERRQ(ierr);
           }
         }
-        flt = apforest->forest->first_local_tree;
-        llt = apforest->forest->last_local_tree;
-
-        cLocalStart = apforest->cLocalStart;
         for (t = flt, count = cLocalStart; t <= llt; t++) {
           p4est_tree_t       *tree    = &(((p4est_tree_t*) p4est->trees->array)[t]);
           PetscInt           numQuads = (PetscInt) tree->quadrants.elem_count, i;
@@ -931,33 +930,33 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_flag,NULL));
         pforest->forest->user_pointer = (void*) dm;
         PetscStackCallP4est(p4est_balance,(pforest->forest,P4EST_CONNECT_FULL,NULL));
-        for (t = flt, count = cLocalStart; t <= llt; t++) {
-          p4est_tree_t       *atree    = &(((p4est_tree_t*) apforest->forest->trees->array)[t]);
-          p4est_tree_t       *tree     = &(((p4est_tree_t*) p4est->trees->array)[t]);
-          PetscInt           anumQuads = (PetscInt) atree->quadrants.elem_count, i;
-          PetscInt           numQuads  = (PetscInt) tree->quadrants.elem_count;
-          p4est_quadrant_t   *aquads   = (p4est_quadrant_t *) atree->quadrants.array;
-          p4est_quadrant_t   *quads    = (p4est_quadrant_t *) tree->quadrants.array;
-
-          if (anumQuads != numQuads) {
-            ctx.anyChange = PETSC_TRUE;
-          } else {
-            for (i = 0; i < numQuads; i++) {
-              p4est_quadrant_t *aq = &aquads[i];
-              p4est_quadrant_t *q  = &quads[i];
-
-              if (aq->level != q->level) {
-                ctx.anyChange = PETSC_TRUE;
-                break;
-              }
-            }
-          }
-          if (ctx.anyChange) {
-            break;
-          }
-        }
         if (computeAdaptSF) {
           ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),apforest->forest,apforest->cLocalStart,pforest->forest,0,&preCoarseToFine,&coarseToPreFine);CHKERRQ(ierr);
+        }
+      }
+      for (t = flt, count = cLocalStart; t <= llt; t++) {
+        p4est_tree_t       *atree    = &(((p4est_tree_t*) apforest->forest->trees->array)[t]);
+        p4est_tree_t       *tree     = &(((p4est_tree_t*) pforest->forest->trees->array)[t]);
+        PetscInt           anumQuads = (PetscInt) atree->quadrants.elem_count, i;
+        PetscInt           numQuads  = (PetscInt) tree->quadrants.elem_count;
+        p4est_quadrant_t   *aquads   = (p4est_quadrant_t *) atree->quadrants.array;
+        p4est_quadrant_t   *quads    = (p4est_quadrant_t *) tree->quadrants.array;
+
+        if (anumQuads != numQuads) {
+          ctx.anyChange = PETSC_TRUE;
+        } else {
+          for (i = 0; i < numQuads; i++) {
+            p4est_quadrant_t *aq = &aquads[i];
+            p4est_quadrant_t *q  = &quads[i];
+
+            if (aq->level != q->level) {
+              ctx.anyChange = PETSC_TRUE;
+              break;
+            }
+          }
+        }
+        if (ctx.anyChange) {
+          break;
         }
       }
       {
