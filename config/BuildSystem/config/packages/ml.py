@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['git://https://bitbucket.org/petsc/pkg-ml.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-p3.tar.gz']
-    self.gitcommit         = 'v6.2-p3'
+    self.gitcommit         = 'v6.2-p4'
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-ml.git','https://bitbucket.org/petsc/pkg-ml/get/'+self.gitcommit+'.tar.gz']
     self.functions         = ['ML_Set_PrintLevel']
     self.includes          = ['ml_include.h']
     self.liblist           = [['libml.a']]
@@ -18,6 +18,7 @@ class Configure(config.package.GNUPackage):
                                  # essentially impossible to use ML's 64 bit integer mode with PETSc's --with-64-bit-indices
     self.needsMath         = 1   # ml test needs the system math library
     self.hastests          = 1
+    self.downloaddirname   = 'petsc-pkg-ml'
     return
 
   def setupDependencies(self, framework):
@@ -48,6 +49,7 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-ml-aztecoo')
     args.append('--disable-ml-examples')
     args.append('--disable-tests')
+    args.append('--enable-libcheck')
 
     self.framework.pushLanguage('C')
     args.append('--with-cflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
