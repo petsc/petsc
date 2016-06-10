@@ -645,8 +645,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   }
   /* This code is only be relevant when interfaced to parallel point location */
   /* Check for highest numbered proc that claims a point (do we care?) */
-  if (numFound < numPoints) {
-    if (ltype == DM_POINTLOCATION_NEAREST) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location does not support parallel point location.");
+  if (ltype == DM_POINTLOCATION_REMOVE && numFound < numPoints) {
     ierr = PetscMalloc1(numFound,&found);CHKERRQ(ierr);
     for (p = 0, numFound = 0; p < numPoints; p++) {
       if (cells[p].rank >= 0 && cells[p].index >= 0) {
