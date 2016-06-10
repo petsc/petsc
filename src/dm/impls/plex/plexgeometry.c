@@ -588,8 +588,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     const PetscScalar *point = &a[p*bs];
     PetscInt           dbin[3], bin, cell = -1, cellOffset;
 
-    cells[p].rank  = -1;
-    cells[p].index = -1;
+    cells[p].rank  = 0;
+    cells[p].index = DMLOCATEPOINT_POINT_NOT_FOUND;
     if (hash) {
       ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
       /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
@@ -623,7 +623,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       PetscReal          cpoint[3], diff[3], dist, distMax = PETSC_MAX_REAL;
       PetscInt           dbin[3], bin, cellOffset, d;
 
-      if (cells[p].rank < 0) {
+      if (cells[p].index < 0) {
         ++numFound;
         ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells);CHKERRQ(ierr);
