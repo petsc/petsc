@@ -33,6 +33,7 @@ PETSC_EXTERN const char DMSwarmPICField_coor[];
 
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec);
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec);
+PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVector(DM, const char[], Vec *);
 
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm);
 PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm);
