@@ -154,12 +154,12 @@ static PetscErrorCode PetscDrawCmap_Bone(int mapsize,unsigned char R[],unsigned 
   PetscFunctionReturn(0);
 }
 
-#include "cmap/coolwarm.h"
-#include "cmap/parula.h"
-#include "cmap/viridis.h"
-#include "cmap/plasma.h"
-#include "cmap/inferno.h"
-#include "cmap/magma.h"
+#include "../src/sys/classes/draw/utils/cmap/coolwarm.h"
+#include "../src/sys/classes/draw/utils/cmap/parula.h"
+#include "../src/sys/classes/draw/utils/cmap/viridis.h"
+#include "../src/sys/classes/draw/utils/cmap/plasma.h"
+#include "../src/sys/classes/draw/utils/cmap/inferno.h"
+#include "../src/sys/classes/draw/utils/cmap/magma.h"
 
 static struct {
   const char           *name;
