@@ -4071,7 +4071,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   if (outNumPoints)  *outNumPoints  = newNumPoints;
   if (outNumIndices) *outNumIndices = newNumIndices;
 
-  for (f = 1; f < numFields; ++f) newOffsets[f+1] += newOffsets[f];
+  for (f = 0; f < numFields; ++f) newOffsets[f+1] += newOffsets[f];
 
   if (!outPoints && !outValues) {
     if (offsets) {
@@ -4497,9 +4497,6 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   }
   if (outValues) {
     *outValues = newValues;
-  }
-  else {
-    ierr = DMRestoreWorkArray(dm,newNumIndices*newNumIndices,PETSC_SCALAR,&newValues);CHKERRQ(ierr);
   }
   for (f = 0; f <= numFields; f++) {
     offsets[f] = newOffsets[f];

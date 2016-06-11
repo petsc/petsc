@@ -2290,6 +2290,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     PetscInt maxChildId     = maxChildIds[p - pStartC];
     PetscInt numRowIndices  = 0;
     PetscInt numColIndices  = 0;
+    PetscInt f;
 
     ierr = PetscSectionGetDof(globalCoarse,p,&dof);CHKERRQ(ierr);
     if (dof < 0) {
@@ -2301,10 +2302,10 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     if (p >= cStart && p < cEnd) {
       ierr = PetscSectionGetDof(cSec,p,&cDof);CHKERRQ(ierr);
     }
-    offsets[0]    = 0;
-    newOffsets[0] = 0;
+    for (f = 0; f <= numFields; f++) offsets[f] = 0;
+    for (f = 0; f <= numFields; f++) newOffsets[f] = 0;
     if (maxChildId >= 0) { /* this point has children (with dofs) that will need to be interpolated from the closure of p */
-      PetscInt *closure = NULL, closureSize, cl, f;
+      PetscInt *closure = NULL, closureSize, cl;
 
       ierr = DMPlexGetTransitiveClosure(coarse,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       for (cl = 0; cl < closureSize; cl++) { /* get the closure */
@@ -2334,17 +2335,16 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           PetscInt numRow, numCol;
 
           numRow = offsets[f + 1] - offsets[f];
-          numCol = newOffsets[f + 1] - newOffsets[f + 1];
+          numCol = newOffsets[f + 1] - newOffsets[f];
           matSize += numRow * numCol;
         }
       }
       else {
         matSize = numRowIndices * numColIndices;
       }
-    }
-    else if (maxChildId == -1) {
+    } else if (maxChildId == -1) {
       if (cDof > 0) { /* this point's dofs are interpolated via cMat: get the submatrix of cMat */
-        PetscInt aOff, a, f;
+        PetscInt aOff, a;
 
         ierr = PetscSectionGetOffset(aSec,p,&aOff);CHKERRQ(ierr);
         for (f = 0; f < numFields; f++) {
@@ -2387,14 +2387,14 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = PetscSectionSetUp(rootIndicesSec);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(rootMatricesSec);CHKERRQ(ierr);
   {
-    PetscInt    numRootIndices, numRootMatrices;
+    PetscInt numRootIndices, numRootMatrices;
 
     ierr = PetscSectionGetStorageSize(rootIndicesSec,&numRootIndices);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(rootMatricesSec,&numRootMatrices);CHKERRQ(ierr);
     ierr = PetscMalloc2(numRootIndices,&rootIndices,numRootMatrices,&rootMatrices);CHKERRQ(ierr);
     for (p = pStartC; p < pEndC; p++) {
       PetscInt    numRowIndices, numColIndices, matSize, dof;
-      PetscInt    pIndOff, pMatOff;
+      PetscInt    pIndOff, pMatOff, f;
       PetscInt    *pInd;
       PetscInt    maxChildId = maxChildIds[p - pStartC];
       PetscScalar *pMat = NULL;
@@ -2403,10 +2403,12 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       if (!numColIndices) {
         continue;
       }
-      offsets[0]        = 0;
-      newOffsets[0]     = 0;
-      offsetsCopy[0]    = 0;
-      newOffsetsCopy[0] = 0;
+      for (f = 0; f <= numFields; f++) {
+        offsets[f]        = 0;
+        newOffsets[f]     = 0;
+        offsetsCopy[f]    = 0;
+        newOffsetsCopy[f] = 0;
+      }
       numColIndices -= 2 * numFields;
       ierr = PetscSectionGetOffset(rootIndicesSec,p,&pIndOff);CHKERRQ(ierr);
       pInd = &(rootIndices[pIndOff]);
@@ -2449,8 +2451,6 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           }
           ierr = DMPlexGetTransitiveClosure(coarse, p, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
           if (numFields) {
-            PetscInt f;
-
             for (cl = 0; cl < closureSize; cl++) {
               PetscInt c = closure[2 * cl];
 
@@ -2474,7 +2474,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             }
           }
           else {
-            PetscInt f, i, j, count;
+            PetscInt i, j, count;
             for (f = 0, count = 0; f < numFields; f++) {
               for (i = offsets[f]; i < offsets[f+1]; i++) {
                 for (j = newOffsets[f]; j < newOffsets[f+1]; j++, count++) {
@@ -2487,7 +2487,6 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           ierr = DMPlexRestoreTransitiveClosure(coarse, p, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
           ierr = DMRestoreWorkArray(coarse,numRowIndices * numColIndices,PETSC_SCALAR,&pMatIn);CHKERRQ(ierr);
           if (numFields) {
-            PetscInt f;
             for (f = 0; f < numFields; f++) {
               pInd[numColIndices + f]             = offsets[f+1];
               pInd[numColIndices + numFields + f] = newOffsets[f+1];
@@ -2519,10 +2518,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         ierr = PetscSectionGetDof(aSec,p,&aDof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(aSec,p,&aOff);CHKERRQ(ierr);
         if (numFields) {
-          PetscInt f;
-
           for (f = 0; f < numFields; f++) {
             PetscInt fDof;
+
             ierr = PetscSectionGetFieldDof(cSec,p,f,&fDof);CHKERRQ(ierr);
             offsets[f + 1] = fDof;
             for (a = 0; a < aDof; a++) {
@@ -2553,7 +2551,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           }
         }
         if (numFields) {
-          PetscInt count, f, a;
+          PetscInt count, a;
+
           for (f = 0, count = 0; f < numFields; f++) {
             PetscInt iSize = offsets[f + 1] - offsets[f];
             PetscInt jSize = newOffsets[f + 1] - newOffsets[f];
@@ -2587,8 +2586,6 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
 
         ierr = PetscSectionGetOffset(globalCoarse,p,&gOff);CHKERRQ(ierr);
         if (numFields) {
-          PetscInt f;
-
           for (f = 0; f < numFields; f++) {
             PetscInt fDof;
             ierr = PetscSectionGetFieldDof(localCoarse,p,f,&fDof);CHKERRQ(ierr);
