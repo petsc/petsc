@@ -110,134 +110,173 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmDestroyVectorFromField_Private"
+static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fieldname[], Vec *vec)
+{
+  DM_Swarm      *swarm = (DM_Swarm *) dm->data;
+  DataField      gfield;
+  void         (*fptr)(void);
+  PetscInt       bs, nlocal;
+  char           name[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(*vec, &nlocal);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(*vec, &bs);CHKERRQ(ierr);
+  if (nlocal/bs != swarm->db->L) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSwarm sizes have changed since vector was created - cannot ensure pointers are valid"); /* Stale data */
+  ierr = DataBucketGetDataFieldByName(swarm->db, fieldname, &gfield);CHKERRQ(ierr);
+  /* check vector is an inplace array */
+  PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "DMSwarm_VecFieldInPlace_%s", fieldname);
+  ierr = PetscObjectQueryFunction((PetscObject) *vec, name, &fptr);CHKERRQ(ierr);
+  if (!fptr) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Vector being destroyed was not created from DMSwarm field(%s)", fieldname);
+  ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmCreateVectorFromField_Private"
+static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fieldname[], MPI_Comm comm, Vec *vec)
+{
+  DM_Swarm      *swarm = (DM_Swarm *) dm->data;
+  DataField      gfield;
+  void         (*fptr)(void);
+  PetscDataType  type;
+  PetscScalar   *array;
+  PetscInt       bs, n;
+  char           name[PETSC_MAX_PATH_LEN];
+  PetscMPIInt    commsize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!swarm->issetup) {ierr = DMSetUp(dm);CHKERRQ(ierr);}
+  ierr = DataBucketGetSizes(swarm->db, &n, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm, fieldname, &bs, &type, (void **) &array);CHKERRQ(ierr);
+  if (type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Only valid for PETSC_REAL");
+
+  ierr = MPI_Comm_size(comm, &commsize);CHKERRQ(ierr);
+  if (commsize == 1) {
+    ierr = VecCreateSeqWithArray(comm, bs, n*bs, array, vec);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateMPIWithArray(comm, bs, n*bs, PETSC_DETERMINE, array, vec);CHKERRQ(ierr);
+  }
+  ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "DMSwarmSharedField_%s", fieldname);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *vec, name);CHKERRQ(ierr);
+
+  /* Set guard */
+  ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "DMSwarm_VecFieldInPlace_%s", fieldname);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) *vec, name, DMSwarmDestroyVectorFromField_Private);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
- 
- DMSwarmCreateGlobalVectorFromField - Creates a Vec object sharing the array associated with a given field
- 
- Collective on DM
- 
- Input parameters:
+  DMSwarmCreateGlobalVectorFromField - Creates a Vec object sharing the array associated with a given field
+
+  Collective on DM
+
+  Input parameters:
  . dm - a DMSwarm
  . fieldname - the textual name given to a registered field
- 
+
  Output parameters:
  . vec - the vector
- 
- Level: beginner
- 
- . seealso: DMSwarmRegisterPetscDatatypeField()
- 
+
+  Level: beginner
+
+. seealso: DMSwarmRegisterPetscDatatypeField()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmCreateGlobalVectorFromField"
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  MPI_Comm       comm = PetscObjectComm((PetscObject) dm);
   PetscErrorCode ierr;
-  PetscInt bs,n;
-  PetscScalar *array;
-  Vec x;
-  PetscDataType type;
-  char name[PETSC_MAX_PATH_LEN];
-  PetscMPIInt commsize;
-  
-  if (!swarm->issetup) { ierr = DMSetUp(dm);CHKERRQ(ierr); }
 
-  ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,fieldname,&bs,&type,(void**)&array);CHKERRQ(ierr);
-
-  /* Check all fields are of type PETSC_REAL or PETSC_SCALAR */
-  if (type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid for PETSC_REAL");
-
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
-  if (commsize == 1) {
-    ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)dm),bs,n*bs,array,&x);CHKERRQ(ierr);
-  } else {
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm),bs,n*bs,PETSC_DETERMINE,array,&x);CHKERRQ(ierr);
-  }
-  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmSharedField_%s",fieldname);
-  ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
-
-  /* Set guard */
-  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
-  ierr = PetscObjectComposeFunction((PetscObject)x,name,DMSwarmDestroyGlobalVectorFromField);CHKERRQ(ierr);
-  *vec = x;
+  PetscFunctionBegin;
+  ierr = DMSwarmCreateVectorFromField_Private(dm, fieldname, comm, vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-
 /*@C
- 
- DMSwarmDestroyGlobalVectorFromField - Destroys the Vec object which share the array associated with a given field
- 
- Collective on DM
- 
- Input parameters:
+  DMSwarmDestroyGlobalVectorFromField - Destroys the Vec object which share the array associated with a given field
+
+  Collective on DM
+
+  Input parameters:
  . dm - a DMSwarm
  . fieldname - the textual name given to a registered field
- 
- Output parameters:
+
+  Output parameters:
  . vec - the vector
- 
- Level: beginner
- 
- . seealso: DMSwarmRegisterPetscDatatypeField()
- 
+
+  Level: beginner
+
+. seealso: DMSwarmRegisterPetscDatatypeField()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMSwarmDestroyGlobalVectorFromField"
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  DataField gfield;
-  char name[PETSC_MAX_PATH_LEN];
-  void (*fptr)(void);
-  PetscInt bs,nlocal;
-  
-  ierr = VecGetLocalSize(*vec,&nlocal);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(*vec,&bs);CHKERRQ(ierr);
-  if (nlocal/bs != swarm->db->L) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSwarm sizes have changed since vector was created - cannot ensure pointers are valid"); /* Stale data */
 
-  /* get data field */
-  ierr = DataBucketGetDataFieldByName(swarm->db,fieldname,&gfield);CHKERRQ(ierr);
-  
-  /* check vector is an inplace array */
-  PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarm_VecFieldInPlace_%s",fieldname);
-  ierr = PetscObjectQueryFunction((PetscObject)(*vec),name,&fptr);CHKERRQ(ierr);
-  if (!fptr) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Vector being destroyed was not created from DMSwarm field(%s)",fieldname);
-  
-  /* restore data field */
-  ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
-  
-  ierr = VecDestroy(vec);CHKERRQ(ierr);
-  
+  PetscFunctionBegin;
+  ierr = DMSwarmDestroyVectorFromField_Private(dm, fieldname, vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMSwarmCreateLocalVectorFromField - Creates a Vec object sharing the array associated with a given field
+
+  Collective on DM
+
+  Input parameters:
+ . dm - a DMSwarm
+ . fieldname - the textual name given to a registered field
+
+ Output parameters:
+ . vec - the vector
+
+  Level: beginner
+
+. seealso: DMSwarmRegisterPetscDatatypeField()
+@*/
 #undef __FUNCT__
-#define __FUNCT__ "DMSwarmCreateGlobalVector"
-PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVector(DM dm, const char fieldname[], Vec *vec)
+#define __FUNCT__ "DMSwarmCreateLocalVectorFromField"
+PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
-  DM_Swarm      *swarm = (DM_Swarm *) dm->data;
-  PetscScalar   *array;
-  PetscInt       bs,n;
-  PetscMPIInt    commsize;
+  MPI_Comm       comm = PETSC_COMM_SELF;
   PetscErrorCode ierr;
 
-  if (!swarm->issetup) {ierr = DMSetUp(dm);CHKERRQ(ierr);}
+  PetscFunctionBegin;
+  ierr = DMSwarmCreateVectorFromField_Private(dm, fieldname, comm, vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  ierr = DataBucketGetSizes(swarm->db,&n,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,fieldname,&bs,NULL,(void**) &array);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(dm,fieldname,&bs,NULL,(void**) &array);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
-  if (commsize == 1) {
-    ierr = VecCreateSeq(PetscObjectComm((PetscObject)dm),n*bs,vec);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*vec,bs);CHKERRQ(ierr);
-  } else {
-    ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),n*bs,PETSC_DETERMINE,vec);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*vec,bs);CHKERRQ(ierr);
-  }
+/*@C
+  DMSwarmDestroyLocalVectorFromField - Destroys the Vec object which share the array associated with a given field
+
+  Collective on DM
+
+  Input parameters:
+ . dm - a DMSwarm
+ . fieldname - the textual name given to a registered field
+
+  Output parameters:
+ . vec - the vector
+
+  Level: beginner
+
+. seealso: DMSwarmRegisterPetscDatatypeField()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "DMSwarmDestroyLocalVectorFromField"
+PETSC_EXTERN PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSwarmDestroyVectorFromField_Private(dm, fieldname, vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

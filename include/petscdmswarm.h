@@ -61,6 +61,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell);
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell);
 
 PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM dm,DMSwarmType stype);
+PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM,const char[],Vec*);
+PETSC_EXTERN PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM,const char[],Vec*);
 
 #endif
 

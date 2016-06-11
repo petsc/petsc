@@ -206,16 +206,16 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   Vec pos;
   PetscBool error_check = swarm->migrate_error_on_missing_point;
   PetscMPIInt commsize,rank;
-  
+
   ierr = DMSwarmGetCellDM(dm,&dmcell);CHKERRQ(ierr);
   if (!dmcell) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid if cell DM provided");
-  
+
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-  
-  ierr = DMSwarmCreateGlobalVectorFromField(dm,DMSwarmPICField_coor,&pos);CHKERRQ(ierr);
-  ierr = DMLocatePoints(dmcell,pos,DM_POINTLOCATION_NONE,&sfcell);CHKERRQ(ierr);
-  ierr = DMSwarmDestroyGlobalVectorFromField(dm,DMSwarmPICField_coor,&pos);CHKERRQ(ierr);
+
+  ierr = DMSwarmCreateLocalVectorFromField(dm, DMSwarmPICField_coor, &pos);CHKERRQ(ierr);
+  ierr = DMLocatePoints(dmcell, pos, DM_POINTLOCATION_NONE, &sfcell);CHKERRQ(ierr);
+  ierr = DMSwarmDestroyLocalVectorFromField(dm, DMSwarmPICField_coor, &pos);CHKERRQ(ierr);
 
   if (error_check) {
     ierr = DMSwarmGetSize(dm,&npointsg);CHKERRQ(ierr);
