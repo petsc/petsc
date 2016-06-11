@@ -11,12 +11,37 @@ typedef struct {
 } KSP_FETIDP;
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPComputeEigenvalues_FETIDP"
+static PetscErrorCode KSPComputeEigenvalues_FETIDP(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
+{
+  KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPComputeEigenvalues(fetidp->innerksp,nmax,r,c,neig);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPComputeExtremeSingularValues_FETIDP"
+static PetscErrorCode KSPComputeExtremeSingularValues_FETIDP(KSP ksp,PetscReal *emax,PetscReal *emin)
+{
+  KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPComputeExtremeSingularValues(fetidp->innerksp,emax,emin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_FETIDP"
 static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
   PC_BDDC        *pcbddc;
   Mat            A,Ap;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -32,11 +57,16 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
     ierr = KSPReset(fetidp->innerksp);CHKERRQ(ierr);
     ierr = PCBDDCCreateFETIDPOperators(fetidp->innerbddc,&F,&D);CHKERRQ(ierr);
     ierr = KSPSetOperators(fetidp->innerksp,F,F);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(fetidp->innerksp,ksp->rtol,ksp->abstol,ksp->divtol,ksp->max_it);CHKERRQ(ierr);
     ierr = KSPSetPC(fetidp->innerksp,D);CHKERRQ(ierr);
     ierr = MatCreateVecs(F,&(fetidp->innerksp)->vec_rhs,&(fetidp->innerksp)->vec_sol);CHKERRQ(ierr);
     ierr = MatDestroy(&F);CHKERRQ(ierr);
     ierr = PCDestroy(&D);CHKERRQ(ierr);
   }
+  /* propagate settings to inner solve */
+  ierr = KSPGetComputeSingularValues(ksp,&flg);CHKERRQ(ierr);
+  ierr = KSPSetComputeSingularValues(fetidp->innerksp,flg);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(fetidp->innerksp);CHKERRQ(ierr);
   ierr = KSPSetUp(fetidp->innerksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -57,7 +87,11 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   ierr = KSPGetRhs(fetidp->innerksp,&Bl);CHKERRQ(ierr);
   ierr = KSPGetSolution(fetidp->innerksp,&Xl);CHKERRQ(ierr);
   ierr = PCBDDCMatFETIDPGetRHS(F,B,Bl);CHKERRQ(ierr);
-  ierr = KSPSolve(fetidp->innerksp,Bl,Xl);CHKERRQ(ierr);
+  if (ksp->transpose_solve) {
+    ierr = KSPSolveTranspose(fetidp->innerksp,Bl,Xl);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolve(fetidp->innerksp,Bl,Xl);CHKERRQ(ierr);
+  }
   ksp->reason = fetidp->innerksp->reason;
   ksp->its = fetidp->innerksp->its;
   ksp->totalits += fetidp->innerksp->its;
@@ -151,13 +185,15 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,&fetidp);CHKERRQ(ierr);
   ksp->data = (void*)fetidp;
-  ksp->ops->setup          = KSPSetUp_FETIDP;
-  ksp->ops->solve          = KSPSolve_FETIDP;
-  ksp->ops->destroy        = KSPDestroy_FETIDP;
-  ksp->ops->view           = KSPView_FETIDP;
-  ksp->ops->setfromoptions = KSPSetFromOptions_FETIDP;
-  //ksp->ops->buildsolution  = KSPBuildSolution_FETIDP;
-  //ksp->ops->buildresidual  = KSPBuildResidual_FETIDP;
+  ksp->ops->setup                        = KSPSetUp_FETIDP;
+  ksp->ops->solve                        = KSPSolve_FETIDP;
+  ksp->ops->destroy                      = KSPDestroy_FETIDP;
+  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_FETIDP;
+  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_FETIDP;
+  ksp->ops->view                         = KSPView_FETIDP;
+  ksp->ops->setfromoptions               = KSPSetFromOptions_FETIDP;
+  /* ksp->ops->buildsolution  = */
+  /* ksp->ops->buildresidual  = */
   /* create the inner KSP for the Lagrange multipliers */
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerksp);CHKERRQ(ierr);
   ierr = KSPGetPC(fetidp->innerksp,&pc);CHKERRQ(ierr);
