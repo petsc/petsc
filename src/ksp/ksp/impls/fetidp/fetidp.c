@@ -55,7 +55,7 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
     Mat F; /* the FETI-DP matrix */
     PC  D; /* the FETI-DP preconditioner */
     ierr = KSPReset(fetidp->innerksp);CHKERRQ(ierr);
-    ierr = PCBDDCCreateFETIDPOperators(fetidp->innerbddc,&F,&D);CHKERRQ(ierr);
+    ierr = PCBDDCCreateFETIDPOperators(fetidp->innerbddc,fetidp->fully_redundant,&F,&D);CHKERRQ(ierr);
     ierr = KSPSetOperators(fetidp->innerksp,F,F);CHKERRQ(ierr);
     ierr = KSPSetTolerances(fetidp->innerksp,ksp->rtol,ksp->abstol,ksp->divtol,ksp->max_it);CHKERRQ(ierr);
     ierr = KSPSetPC(fetidp->innerksp,D);CHKERRQ(ierr);
@@ -66,7 +66,6 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   /* propagate settings to inner solve */
   ierr = KSPGetComputeSingularValues(ksp,&flg);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(fetidp->innerksp,flg);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(fetidp->innerksp);CHKERRQ(ierr);
   ierr = KSPSetUp(fetidp->innerksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -124,6 +123,7 @@ PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  FETI_DP: fully redundant: %d\n",fetidp->fully_redundant);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  FETI_DP: inner solver details\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
   }
@@ -149,7 +149,7 @@ PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObject,KSP
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP FETIDP options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_fetidp_fullyredundant","Use fully redundant multipliers",NULL,fetidp->fully_redundant,&fetidp->fully_redundant,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_fetidp_fullyredundant","Use fully redundant multipliers","none",fetidp->fully_redundant,&fetidp->fully_redundant,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = PCSetFromOptions(fetidp->innerbddc);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(fetidp->innerksp);CHKERRQ(ierr);

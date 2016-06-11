@@ -1782,7 +1782,7 @@ extern PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPOperators_BDDC"
-static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, PC *fetidp_pc)
+static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_redundant, Mat *fetidp_mat, PC *fetidp_pc)
 {
 
   FETIDPMat_ctx  fetidpmat_ctx;
@@ -1796,6 +1796,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   /* FETIDP linear matrix */
   ierr = PCBDDCCreateFETIDPMatContext(pc,&fetidpmat_ctx);CHKERRQ(ierr);
+  fetidpmat_ctx->fully_redundant = fully_redundant;
   ierr = PCBDDCSetupFETIDPMatContext(fetidpmat_ctx);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,PETSC_DECIDE,PETSC_DECIDE,fetidpmat_ctx->n_lambda,fetidpmat_ctx->n_lambda,fetidpmat_ctx,&newmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_MULT,(void (*)(void))FETIDPMatMult);CHKERRQ(ierr);
@@ -1827,14 +1828,12 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
    Collective
 
    Input Parameters:
-.  pc - the BDDC preconditioning context (setup should have been called before)
++  pc - the BDDC preconditioning context (setup should have been called before)
+-  fully_redundant - true for a fully redundant set of Lagrange multipliers
 
    Output Parameters:
 +  fetidp_mat - shell FETI-DP matrix object
 -  fetidp_pc  - shell Dirichlet preconditioner for FETI-DP matrix
-
-   Options Database Keys:
-.    -fetidp_fullyredundant <false> - use or not a fully redundant set of Lagrange multipliers
 
    Level: developer
 
@@ -1843,14 +1842,14 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
 
 .seealso: PCBDDC, PCBDDCMatFETIDPGetRHS, PCBDDCMatFETIDPGetSolution
 @*/
-PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc)
+PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, Mat *fetidp_mat, PC *fetidp_pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (pc->setupcalled) {
-    ierr = PetscUseMethod(pc,"PCBDDCCreateFETIDPOperators_C",(PC,Mat*,PC*),(pc,fetidp_mat,fetidp_pc));CHKERRQ(ierr);
+    ierr = PetscUseMethod(pc,"PCBDDCCreateFETIDPOperators_C",(PC,PetscBool,Mat*,PC*),(pc,fully_redundant,fetidp_mat,fetidp_pc));CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You must call PCSetup_BDDC() first \n");
   PetscFunctionReturn(0);
 }
