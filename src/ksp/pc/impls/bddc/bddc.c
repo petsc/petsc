@@ -14,9 +14,6 @@
    - *** Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
    - BDDC with MG framework?
 
-   FETIDP
-   - Move FETIDP code to its own classes
-
    MATIS related operations contained in BDDC code
    - Provide general case for subassembling
 

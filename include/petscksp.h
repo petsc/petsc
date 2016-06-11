@@ -70,6 +70,7 @@ typedef const char* KSPType;
 #define KSPPIPEGCR    "pipegcr"
 #define KSPTSIRM      "tsirm"
 #define KSPCGLS       "cgls"
+#define KSPFETIDP     "fetidp"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId KSP_CLASSID;
