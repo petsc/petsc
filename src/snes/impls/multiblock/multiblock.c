@@ -93,7 +93,7 @@ static PetscErrorCode SNESMultiblockSetFieldsRuntime_Private(SNES snes)
     ierr    = PetscSNPrintf(name, sizeof(name), "%D", i);CHKERRQ(ierr);
     ierr    = PetscSNPrintf(optionname, sizeof(optionname), "-snes_multiblock_%D_fields", i);CHKERRQ(ierr);
     nfields = mb->bs;
-    ierr    = PetscOptionsGetIntArray(((PetscObject) snes)->prefix, optionname, ifields, &nfields, &flg);CHKERRQ(ierr);
+    ierr    = PetscOptionsGetIntArray(NULL,((PetscObject) snes)->prefix, optionname, ifields, &nfields, &flg);CHKERRQ(ierr);
     if (!flg) break;
     if (!nfields) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot list zero fields");
     ierr = SNESMultiblockSetFields(snes, name, nfields, ifields);CHKERRQ(ierr);
@@ -149,8 +149,8 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
         } else mb->bs = 1;
       }
 
-      ierr = PetscOptionsGetBool(((PetscObject) snes)->prefix, "-snes_multiblock_default", &flg, NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetBool(((PetscObject) snes)->prefix, "-snes_multiblock_detect_saddle_point", &stokes, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(NULL,((PetscObject) snes)->prefix, "-snes_multiblock_default", &flg, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(NULL,((PetscObject) snes)->prefix, "-snes_multiblock_detect_saddle_point", &stokes, NULL);CHKERRQ(ierr);
       if (stokes) {
         IS       zerodiags, rest;
         PetscInt nmin, nmax;
