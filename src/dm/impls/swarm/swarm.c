@@ -102,7 +102,7 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
   PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name);
   ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,name);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,swarm->db->L*swarm->vec_field_bs,swarm->db->L);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,swarm->db->L*swarm->vec_field_bs,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,swarm->vec_field_bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   *vec = x;
