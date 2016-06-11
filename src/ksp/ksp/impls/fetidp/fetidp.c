@@ -66,6 +66,9 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   /* propagate settings to inner solve */
   ierr = KSPGetComputeSingularValues(ksp,&flg);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(fetidp->innerksp,flg);CHKERRQ(ierr);
+  if (ksp->res_hist) {
+    ierr = KSPSetResidualHistory(fetidp->innerksp,ksp->res_hist,ksp->res_hist_max,ksp->res_hist_reset);CHKERRQ(ierr);
+  }
   ierr = KSPSetUp(fetidp->innerksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -91,10 +94,27 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   } else {
     ierr = KSPSolve(fetidp->innerksp,Bl,Xl);CHKERRQ(ierr);
   }
-  ksp->reason = fetidp->innerksp->reason;
-  ksp->its = fetidp->innerksp->its;
-  ksp->totalits += fetidp->innerksp->its;
+  /* update ksp with stats from inner ksp */
+  ierr = KSPGetConvergedReason(fetidp->innerksp,&ksp->reason);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(fetidp->innerksp,&ksp->its);CHKERRQ(ierr);
+  ksp->totalits += ksp->its;
+  ierr = KSPGetResidualHistory(fetidp->innerksp,NULL,&ksp->res_hist_len);CHKERRQ(ierr);
   ierr = PCBDDCMatFETIDPGetSolution(F,Xl,X);CHKERRQ(ierr);
+  ksp->setupstage = KSP_SETUP_NEW;
+#if 1
+  {
+    Mat A;
+    Vec Bc;
+    PetscReal error;
+    ierr = VecDuplicate(B,&Bc);CHKERRQ(ierr);
+    ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
+    ierr = MatMult(A,X,Bc);CHKERRQ(ierr);
+    ierr = VecAXPY(Bc,-1.,B);CHKERRQ(ierr);
+    ierr = VecNorm(Bc,NORM_2,&error);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"FETIDP ERROR %1.4e\n",error);
+    ierr = VecDestroy(&Bc);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -198,12 +218,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerksp);CHKERRQ(ierr);
   ierr = KSPGetPC(fetidp->innerksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  ierr = KSPAppendOptionsPrefix(fetidp->innerksp,"fetidp_inner_");CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(fetidp->innerksp,"ksp_fetidp_inner_");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fetidp->innerksp);CHKERRQ(ierr);
   /* create the inner BDDC */
   ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerbddc);CHKERRQ(ierr);
   ierr = PCSetType(fetidp->innerbddc,PCBDDC);CHKERRQ(ierr);
-  ierr = PCAppendOptionsPrefix(fetidp->innerbddc,"fetidp_inner_");CHKERRQ(ierr);
+  ierr = PCAppendOptionsPrefix(fetidp->innerbddc,"ksp_fetidp_inner_");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fetidp->innerbddc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
