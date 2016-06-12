@@ -48,6 +48,7 @@ typedef struct {
   PetscBool DBC_zerorows;
   /* Scaling factor for subdomain */
   PetscScalar scalingfactor;
+  PetscBool   testkspfetidp;
 } DomainData;
 
 /* structure holding GLL data */
@@ -798,22 +799,39 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
 {
   PetscErrorCode ierr;
   KSP            temp_ksp;
-  PC             pc,D;
-  Mat            F;
+  PC             pc;
 
   PetscFunctionBeginUser;
-  ierr        = KSPGetPC(ksp_bddc,&pc);CHKERRQ(ierr);
-  ierr        = PCBDDCCreateFETIDPOperators(pc,&F,&D);CHKERRQ(ierr);
-  ierr        = KSPCreate(PetscObjectComm((PetscObject)F),&temp_ksp);CHKERRQ(ierr);
-  ierr        = KSPSetOperators(temp_ksp,F,F);CHKERRQ(ierr);
-  ierr        = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
-  ierr        = KSPSetPC(temp_ksp,D);CHKERRQ(ierr);
-  ierr        = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr        = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
-  ierr        = KSPSetUp(temp_ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp_bddc,&pc);CHKERRQ(ierr);
+  if (!dd.testkspfetidp) {
+    PC  D;
+    Mat F;
+
+    ierr = PCBDDCCreateFETIDPOperators(pc,PETSC_TRUE,&F,&D);CHKERRQ(ierr);
+    ierr = KSPCreate(PetscObjectComm((PetscObject)F),&temp_ksp);CHKERRQ(ierr);
+    ierr = KSPSetOperators(temp_ksp,F,F);CHKERRQ(ierr);
+    ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
+    ierr = KSPSetPC(temp_ksp,D);CHKERRQ(ierr);
+    ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(temp_ksp,"fluxes_");CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
+    ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
+    ierr = MatDestroy(&F);CHKERRQ(ierr);
+    ierr = PCDestroy(&D);CHKERRQ(ierr);
+  } else {
+    Mat A,Ap;
+
+    ierr = KSPCreate(PetscObjectComm((PetscObject)ksp_bddc),&temp_ksp);CHKERRQ(ierr);
+    ierr = KSPGetOperators(ksp_bddc,&A,&Ap);CHKERRQ(ierr);
+    ierr = KSPSetOperators(temp_ksp,A,Ap);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(temp_ksp,"fluxes_");CHKERRQ(ierr);
+    ierr = KSPSetType(temp_ksp,KSPFETIDP);CHKERRQ(ierr);
+    ierr = KSPFETIDPSetInnerBDDC(temp_ksp,pc);CHKERRQ(ierr);
+    ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
+    ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
+  }
   *ksp_fetidp = temp_ksp;
-  ierr        = MatDestroy(&F);CHKERRQ(ierr);
-  ierr        = PCDestroy(&D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -916,6 +934,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
     ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
   }
   ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(temp_ksp,"physical_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
   *ksp = temp_ksp;
@@ -1024,6 +1043,8 @@ int main(int argc,char **args)
   printf("SIZES : %d %d %d\n",dd.xm,dd.ym,dd.zm);
   printf("STARTS: %d %d %d\n",dd.startx,dd.starty,dd.startz);
 #endif
+  dd.testkspfetidp = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-testkspfetidp",&dd.testkspfetidp,NULL);CHKERRQ(ierr);
   /* assemble global matrix */
   ierr = ComputeMatrix(dd,&A);CHKERRQ(ierr);
   /* get work vectors */
@@ -1065,17 +1086,25 @@ int main(int argc,char **args)
   ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",(double)mineig,(double)maxeig);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
-  /* assemble fetidp rhs on the space of Lagrange multipliers */
-  ierr = KSPGetOperators(KSPwithFETIDP,&F,NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(F,&fetidp_solution,&fetidp_rhs);CHKERRQ(ierr);
-  ierr = PCBDDCMatFETIDPGetRHS(F,bddc_rhs,fetidp_rhs);CHKERRQ(ierr);
-  ierr = VecSet(fetidp_solution,0.0);CHKERRQ(ierr);
-  /* test ksp with FETIDP */
-  ierr = KSPSolve(KSPwithFETIDP,fetidp_rhs,fetidp_solution);CHKERRQ(ierr);
+  if (!dd.testkspfetidp) {
+    /* assemble fetidp rhs on the space of Lagrange multipliers */
+    ierr = KSPGetOperators(KSPwithFETIDP,&F,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(F,&fetidp_solution,&fetidp_rhs);CHKERRQ(ierr);
+    ierr = PCBDDCMatFETIDPGetRHS(F,bddc_rhs,fetidp_rhs);CHKERRQ(ierr);
+    ierr = VecSet(fetidp_solution,0.0);CHKERRQ(ierr);
+    /* test ksp with FETIDP */
+    ierr = KSPSolve(KSPwithFETIDP,fetidp_rhs,fetidp_solution);CHKERRQ(ierr);
+    /* assemble fetidp solution on physical domain */
+    ierr = PCBDDCMatFETIDPGetSolution(F,fetidp_solution,fetidp_solution_all);CHKERRQ(ierr);
+  } else {
+    KSP kspF;
+    ierr = KSPSolve(KSPwithFETIDP,bddc_rhs,fetidp_solution_all);CHKERRQ(ierr);
+    ierr = KSPFETIDPGetInnerKSP(KSPwithFETIDP,&kspF);CHKERRQ(ierr);
+    ierr = KSPGetOperators(kspF,&F,NULL);CHKERRQ(ierr);
+  }
+  ierr = MatGetSize(F,&ndofs,NULL);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(KSPwithFETIDP,&its);CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues(KSPwithFETIDP,&maxeig,&mineig);CHKERRQ(ierr);
-  /* assemble fetidp solution on physical domain */
-  ierr = PCBDDCMatFETIDPGetSolution(F,fetidp_solution,fetidp_solution_all);CHKERRQ(ierr);
   /* check FETIDP sol */
   if (dd.pure_neumann) {
     ierr = VecSum(fetidp_solution_all,&scalar_value);CHKERRQ(ierr);
@@ -1084,7 +1113,6 @@ int main(int argc,char **args)
   }
   ierr = VecAXPY(fetidp_solution_all,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  ierr = VecGetSize(fetidp_solution,&ndofs);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n");CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);
