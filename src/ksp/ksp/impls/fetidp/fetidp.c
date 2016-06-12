@@ -16,8 +16,127 @@ typedef struct {
 } KSP_FETIDP;
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPFETIDPGetInnerKSP_FETIDP"
+static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp,KSP* innerksp)
+{
+  KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
+
+  PetscFunctionBegin;
+  *innerksp = fetidp->innerksp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPFETIDPGetInnerKSP"
+/*@
+ KSPFETIDPGetInnerKSP - Get the KSP object for the Lagrange multipliers
+
+   Input Parameters:
++  ksp - the FETI-DP KSP
+-  innerksp - the KSP for the multipliers
+
+   Level: advanced
+
+   Notes:
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp,KSP* innerksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidPointer(innerksp,2);
+  ierr = PetscUseMethod(ksp,"KSPFETIDPGetInnerKSP_C",(KSP,KSP*),(ksp,innerksp));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPFETIDPGetInnerBDDC_FETIDP"
+static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp,PC* pc)
+{
+  KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
+
+  PetscFunctionBegin;
+  *pc = fetidp->innerbddc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPFETIDPGetInnerBDDC"
+/*@
+ KSPFETIDPGetInnerBDDC - Get the BDDC object used to setup the FETI-DP matrix for the Lagrange multipliers
+
+   Input Parameters:
++  ksp - the FETI-DP KSP
+-  pc - the PCBDDC object
+
+   Level: advanced
+
+   Notes:
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp,PC* pc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidPointer(pc,2);
+  ierr = PetscUseMethod(ksp,"KSPFETIDPGetInnerBDDC_C",(KSP,PC*),(ksp,pc));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPFETIDPSetInnerBDDC_FETIDP"
+static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp,PC pc)
+{
+  KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCDestroy(&fetidp->innerbddc);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
+  fetidp->innerbddc = pc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPFETIDPSetInnerBDDC"
+/*@
+ KSPFETIDPSetInnerBDDC - Set the BDDC object used to setup the FETI-DP matrix for the Lagrange multipliers
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the FETI-DP KSP
+-  pc - the PCBDDC object
+
+   Level: advanced
+
+   Notes:
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp,PC pc)
+{
+  PetscBool      isbddc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
+  if (!isbddc) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"KSPFETIDPSetInnerBDDC need a PCBDDC preconditioner");
+  ierr = PetscTryMethod(ksp,"KSPFETIDPSetInnerBDDC_C",(KSP,PC),(ksp,pc));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPBuildSolution_FETIDP"
-PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp,Vec v,Vec *V)
+static PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp,Vec v,Vec *V)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
   Mat            F;
@@ -158,7 +277,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_FETIDP"
-PetscErrorCode KSPDestroy_FETIDP(KSP ksp)
+static PetscErrorCode KSPDestroy_FETIDP(KSP ksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
   PetscErrorCode ierr;
@@ -167,13 +286,16 @@ PetscErrorCode KSPDestroy_FETIDP(KSP ksp)
   ierr = PCDestroy(&fetidp->innerbddc);CHKERRQ(ierr);
   ierr = KSPDestroy(&fetidp->innerksp);CHKERRQ(ierr);
   ierr = PetscFree(fetidp->monctx);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPSetInnerBDDC_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPGetInnerBDDC_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPGetInnerKSP_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_FETIDP"
-PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
+static PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
   PetscErrorCode ierr;
@@ -201,7 +323,7 @@ PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FETIDP"
-PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
   PetscErrorCode ierr;
@@ -272,5 +394,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerbddc);CHKERRQ(ierr);
   ierr = PCSetType(fetidp->innerbddc,PCBDDC);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fetidp->innerbddc);CHKERRQ(ierr);
+  /* composed functions */
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPSetInnerBDDC_C",KSPFETIDPSetInnerBDDC_FETIDP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPGetInnerBDDC_C",KSPFETIDPGetInnerBDDC_FETIDP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPGetInnerKSP_C",KSPFETIDPGetInnerKSP_FETIDP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
