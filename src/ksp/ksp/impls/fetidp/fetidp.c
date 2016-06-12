@@ -26,7 +26,7 @@ PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp,Vec v,Vec *V)
 
   PetscFunctionBegin;
   ierr = KSPGetOperators(fetidp->innerksp,&F,NULL);CHKERRQ(ierr);
-  ierr = KSPGetSolution(fetidp->innerksp,&Xl);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(fetidp->innerksp,NULL,&Xl);CHKERRQ(ierr);
   if (v) {
     ierr = PCBDDCMatFETIDPGetSolution(F,Xl,v);CHKERRQ(ierr);
     *V = v;
@@ -207,6 +207,10 @@ PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObject,KSP
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)fetidp->innerksp,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(fetidp->innerksp,"ksp_fetidp_inner_");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)fetidp->innerbddc,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  ierr = PCAppendOptionsPrefix(fetidp->innerbddc,"ksp_fetidp_inner_");CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP FETIDP options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_fullyredundant","Use fully redundant multipliers","none",fetidp->fully_redundant,&fetidp->fully_redundant,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -258,7 +262,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerksp);CHKERRQ(ierr);
   ierr = KSPGetPC(fetidp->innerksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  ierr = KSPAppendOptionsPrefix(fetidp->innerksp,"ksp_fetidp_inner_");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fetidp->innerksp);CHKERRQ(ierr);
   /* monitor */
   ierr = PetscNew(&monctx);CHKERRQ(ierr);
@@ -268,7 +271,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   /* create the inner BDDC */
   ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerbddc);CHKERRQ(ierr);
   ierr = PCSetType(fetidp->innerbddc,PCBDDC);CHKERRQ(ierr);
-  ierr = PCAppendOptionsPrefix(fetidp->innerbddc,"ksp_fetidp_inner_");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fetidp->innerbddc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
