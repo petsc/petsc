@@ -5,10 +5,48 @@
     This file implements the FETI-DP method in PETSc as part of KSP.
 */
 typedef struct {
-  KSP        innerksp; /* the KSP for the Lagrange multipliers */
-  PC         innerbddc; /* the inner BDDC object */
-  PetscBool  fully_redundant;
+  KSP parentksp;
+} KSP_FETIDPMon;
+
+typedef struct {
+  KSP           innerksp;  /* the KSP for the Lagrange multipliers */
+  PC            innerbddc; /* the inner BDDC object */
+  PetscBool     fully_redundant;
+  KSP_FETIDPMon *monctx;   /* monitor context */
 } KSP_FETIDP;
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPBuildSolution_FETIDP"
+PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp,Vec v,Vec *V)
+{
+  KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
+  Mat            F;
+  Vec            Xl;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetOperators(fetidp->innerksp,&F,NULL);CHKERRQ(ierr);
+  ierr = KSPGetSolution(fetidp->innerksp,&Xl);CHKERRQ(ierr);
+  if (v) {
+    ierr = PCBDDCMatFETIDPGetSolution(F,Xl,v);CHKERRQ(ierr);
+    *V = v;
+  } else {
+    ierr = PCBDDCMatFETIDPGetSolution(F,Xl,*V);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitor_FETIDP"
+static PetscErrorCode KSPMonitor_FETIDP(KSP ksp,PetscInt it,PetscReal rnorm,void* ctx)
+{
+  KSP_FETIDPMon  *monctx = (KSP_FETIDPMon*)ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPMonitor(monctx->parentksp,it,rnorm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPComputeEigenvalues_FETIDP"
@@ -128,6 +166,7 @@ PetscErrorCode KSPDestroy_FETIDP(KSP ksp)
   PetscFunctionBegin;
   ierr = PCDestroy(&fetidp->innerbddc);CHKERRQ(ierr);
   ierr = KSPDestroy(&fetidp->innerksp);CHKERRQ(ierr);
+  ierr = PetscFree(fetidp->monctx);CHKERRQ(ierr);
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -200,6 +239,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_FETIDP     *fetidp;
+  KSP_FETIDPMon  *monctx;
   PC             pc;
 
   PetscFunctionBegin;
@@ -212,14 +252,19 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_FETIDP;
   ksp->ops->view                         = KSPView_FETIDP;
   ksp->ops->setfromoptions               = KSPSetFromOptions_FETIDP;
-  /* ksp->ops->buildsolution  = */
-  /* ksp->ops->buildresidual  = */
+  ksp->ops->buildsolution                = KSPBuildSolution_FETIDP;
+  ksp->ops->buildresidual                = KSPBuildResidualDefault;
   /* create the inner KSP for the Lagrange multipliers */
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerksp);CHKERRQ(ierr);
   ierr = KSPGetPC(fetidp->innerksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(fetidp->innerksp,"ksp_fetidp_inner_");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fetidp->innerksp);CHKERRQ(ierr);
+  /* monitor */
+  ierr = PetscNew(&monctx);CHKERRQ(ierr);
+  monctx->parentksp = ksp;
+  fetidp->monctx = monctx;
+  ierr = KSPMonitorSet(fetidp->innerksp,KSPMonitor_FETIDP,fetidp->monctx,NULL);CHKERRQ(ierr);
   /* create the inner BDDC */
   ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerbddc);CHKERRQ(ierr);
   ierr = PCSetType(fetidp->innerbddc,PCBDDC);CHKERRQ(ierr);
