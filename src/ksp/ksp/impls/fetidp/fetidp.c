@@ -257,27 +257,12 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   } else {
     ierr = KSPSolve(fetidp->innerksp,Bl,Xl);CHKERRQ(ierr);
   }
+  ierr = PCBDDCMatFETIDPGetSolution(F,Xl,X);CHKERRQ(ierr);
   /* update ksp with stats from inner ksp */
   ierr = KSPGetConvergedReason(fetidp->innerksp,&ksp->reason);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(fetidp->innerksp,&ksp->its);CHKERRQ(ierr);
   ksp->totalits += ksp->its;
   ierr = KSPGetResidualHistory(fetidp->innerksp,NULL,&ksp->res_hist_len);CHKERRQ(ierr);
-  ierr = PCBDDCMatFETIDPGetSolution(F,Xl,X);CHKERRQ(ierr);
-  ksp->setupstage = KSP_SETUP_NEW;
-#if 1
-  {
-    Mat A;
-    Vec Bc;
-    PetscReal error;
-    ierr = VecDuplicate(B,&Bc);CHKERRQ(ierr);
-    ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
-    ierr = MatMult(A,X,Bc);CHKERRQ(ierr);
-    ierr = VecAXPY(Bc,-1.,B);CHKERRQ(ierr);
-    ierr = VecNorm(Bc,NORM_2,&error);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"FETIDP ERROR %1.4e\n",error);
-    ierr = VecDestroy(&Bc);CHKERRQ(ierr);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -404,5 +389,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPSetInnerBDDC_C",KSPFETIDPSetInnerBDDC_FETIDP);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPGetInnerBDDC_C",KSPFETIDPGetInnerBDDC_FETIDP);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPGetInnerKSP_C",KSPFETIDPGetInnerKSP_FETIDP);CHKERRQ(ierr);
+  /* need to call KSPSetUp_FETIDP even with KSP_SETUP_NEWMATRIX */
+  ksp->setupnewmatrix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
