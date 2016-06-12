@@ -845,7 +845,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetSubdomainSection"
-/*@
+/*
   DMPlexGetSubdomainGlobalSection - Returns the section associated with the subdomain
 
   Not collective
@@ -859,7 +859,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   Level: developer
 
 .seealso:
-@*/
+*/
 PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
