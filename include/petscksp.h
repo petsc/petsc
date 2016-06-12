@@ -214,6 +214,9 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void*,PetscErrorCode(*)(void*));
 
+PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP,PC*);
+PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP,PC);
+PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP,KSP*);
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 
