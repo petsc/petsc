@@ -206,8 +206,14 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   ierr = KSPGetOperators(ksp,&A,&Ap);CHKERRQ(ierr);
   ierr = PCSetOperators(fetidp->innerbddc,A,Ap);CHKERRQ(ierr);
   ierr = PCSetUp(fetidp->innerbddc);CHKERRQ(ierr);
-  /* if the primal space is changed, setup F */
+
   pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
+  /* FETIDP need an exact coarse solver */
+  if (pcbddc->coarse_ksp) {
+    ierr = KSPSetTolerances(pcbddc->coarse_ksp,PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,1000);CHKERRQ(ierr);
+    ierr = KSPSetNormType(pcbddc->coarse_ksp,KSP_NORM_DEFAULT);CHKERRQ(ierr);
+  }
+  /* if the primal space is changed, setup F */
   if (pcbddc->new_primal_space) {
     Mat F; /* the FETI-DP matrix */
     PC  D; /* the FETI-DP preconditioner */
