@@ -1,4 +1,4 @@
-#include <petsc/private/kspimpl.h>
+#include <petsc/private/kspimpl.h> /*I <petscksp.h> I*/
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 
 /*
