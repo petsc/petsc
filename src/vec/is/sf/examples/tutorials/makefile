@@ -17,6 +17,11 @@ ex1: ex1.o chkopts
 ex2: ex2.o chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_VEC_LIB}
 	${RM} -f ex2.o
+
+ex3: ex3.o chkopts
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_VEC_LIB}
+	${RM} -f ex3.o
+
 #------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 4 ./ex1 -test_bcast -sf_type window > ex1_1.tmp 2>&1; \
@@ -93,8 +98,18 @@ runex2_window:
           ${DIFF} output/ex2_window.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_window, diffs above\n=========================================\n"; \
           ${RM} -f ex2.tmp
 
+runex3_basic:
+	-@${MPIEXEC} -n 1 ./ex3 -sf_type basic > ex3.tmp 2>&1; \
+	  ${DIFF} output/ex3_basic.out ex3.tmp || printf "${PWD}\nPossible problem with ex3_basic, diffs above\n=========================================\n"; \
+	  ${RM} -f ex3.tmp
+
+runex3_window:
+	-@${MPIEXEC} -n 1 ./ex3 -sf_type window > ex3.tmp 2>&1; \
+	  ${DIFF} output/ex3_window.out ex3.tmp || printf "${PWD}\nPossible problem with ex3_window, diffs above\n=========================================\n"; \
+	  ${RM} -f ex3.tmp
+
 TESTEXAMPLES_C		    = ex1.PETSc runex1_basic runex1_2_basic runex1_3_basic runex1_4_basic runex1_4_stride runex1_5_basic runex1_5_stride runex1_6_basic runex1_7_basic ex1.rm \
-                                ex2.PETSc runex2_basic runex2_window ex2.rm
+                                ex2.PETSc runex2_basic runex2_window ex2.rm ex3.PETSc runex3_basic runex3_window ex3.rm
 TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    =
 TESTEXAMPLES_FORTRAN_MPIUNI =
