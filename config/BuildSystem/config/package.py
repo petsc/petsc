@@ -1211,8 +1211,6 @@ class GNUPackage(Package):
     else:
       args.append('--disable-shared')
 
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
-       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     return args
 
   def Install(self):
@@ -1230,6 +1228,8 @@ class GNUPackage(Package):
 
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
     args = self.formGNUConfigureArgs()
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')
@@ -1319,13 +1319,13 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS=on')
     else:
       args.append('-DBUILD_SHARED_LIBS=off')
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
-       args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     return args
 
   def Install(self):
     import os
     args = self.formCMakeConfigureArgs()
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')
