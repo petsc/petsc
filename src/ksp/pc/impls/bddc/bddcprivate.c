@@ -221,7 +221,7 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
   if (!restore) {
     Mat                A_IB,A_BI;
     PetscScalar        *work;
-    PCBDDCReuseSolvers reuse = pcbddc->sub_schurs->reuse_solver;
+    PCBDDCReuseSolvers reuse = pcbddc->sub_schurs ? pcbddc->sub_schurs->reuse_solver : NULL;
 
     if (pcbddc->benign_original_mat) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Benign original mat has not been restored");
@@ -1137,6 +1137,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (!sub_schurs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptive selection of constraints requires SubSchurs data");
   if (!sub_schurs->schur_explicit) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_CPARDISO");
   if (sub_schurs->n_subs && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for general matrix pencils (herm %d, posdef %d)\n",sub_schurs->is_hermitian,sub_schurs->is_posdef);
 
@@ -1567,7 +1568,9 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
     ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
-  ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
+  if (pcbddc->sub_schurs) {
+    ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1744,7 +1747,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   need_benign_correction = PETSC_FALSE;
   if (isLU || isILU || isCHOL) {
     ierr = PCFactorGetMatrix(pc_R,&F);CHKERRQ(ierr);
-  } else if (sub_schurs->reuse_solver) {
+  } else if (sub_schurs && sub_schurs->reuse_solver) {
     PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
     MatFactorType      type;
 
@@ -1902,7 +1905,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   if (n_vertices) {
     IS is_aux;
 
-    if (sub_schurs->reuse_solver) { /* is_R_local is not sorted, ISComplement doesn't like it */
+    if (sub_schurs && sub_schurs->reuse_solver) { /* is_R_local is not sorted, ISComplement doesn't like it */
       IS tis;
 
       ierr = ISDuplicate(pcbddc->is_R_local,&tis);CHKERRQ(ierr);
@@ -2811,7 +2814,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   /* Dohrmann's notation: dofs splitted in R (Remaining: all dofs but the vertices) and V (Vertices) */
 
   /* create auxiliary bitmask and allocate workspace */
-  if (!sub_schurs->reuse_solver) {
+  if (!sub_schurs || !sub_schurs->reuse_solver) {
     ierr = PetscMalloc1(pcis->n-n_vertices,&idx_R_local);CHKERRQ(ierr);
     ierr = PetscBTCreate(pcis->n,&bitmask);CHKERRQ(ierr);
     for (i=0;i<n_vertices;i++) {
@@ -2836,7 +2839,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   if (bs>1 && !(n_vertices%bs)) {
     PetscBool is_blocked = PETSC_TRUE;
     PetscInt  *vary;
-    if (!sub_schurs->reuse_solver) {
+    if (!sub_schurs || !sub_schurs->reuse_solver) {
       ierr = PetscMalloc1(pcis->n/bs,&vary);CHKERRQ(ierr);
       ierr = PetscMemzero(vary,pcis->n/bs*sizeof(PetscInt));CHKERRQ(ierr);
       /* Verify that the vertex indices correspond to each element in a block (code taken from sbaij2.c) */
@@ -2869,7 +2872,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
     }
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,vbs,n_R/vbs,idx_R_local,PETSC_COPY_VALUES,&pcbddc->is_R_local);CHKERRQ(ierr);
-  if (sub_schurs->reuse_solver) {
+  if (sub_schurs && sub_schurs->reuse_solver) {
     PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
 
     ierr = ISRestoreIndices(reuse_solver->is_R,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
@@ -2892,7 +2895,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   }
 
   /* VecScatters pcbddc->R_to_B and (optionally) pcbddc->R_to_D */
-  if (!sub_schurs->reuse_solver) {
+  if (!sub_schurs || !sub_schurs->reuse_solver) {
     IS       is_aux1,is_aux2;
     PetscInt *aux_array1,*aux_array2,*is_indices,*idx_R_local;
 
@@ -3001,7 +3004,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   if (dirichlet) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     if (pcbddc->benign_n && !pcbddc->benign_change_explicit) {
-      if (!sub_schurs->reuse_solver) {
+      if (!sub_schurs || !sub_schurs->reuse_solver) {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented\n");
       }
       if (pcbddc->dbg_flag) {
@@ -3035,7 +3038,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
-    if (sub_schurs->reuse_solver) {
+    if (sub_schurs && sub_schurs->reuse_solver) {
       PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
 
       ierr = KSPSetPC(pcbddc->ksp_D,reuse_solver->interior_solver);CHKERRQ(ierr);
@@ -3107,7 +3110,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       }
     }
     /* extract A_RR */
-    if (sub_schurs->reuse_solver) {
+    if (sub_schurs && sub_schurs->reuse_solver) {
       PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
 
       if (pcbddc->dbg_flag) { /* we need A_RR to test the solver later */
@@ -3152,7 +3155,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     }
     ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
     /* Reuse solver if it is present */
-    if (sub_schurs->reuse_solver) {
+    if (sub_schurs && sub_schurs->reuse_solver) {
       PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
 
       ierr = KSPSetPC(pcbddc->ksp_R,reuse_solver->correction_solver);CHKERRQ(ierr);
@@ -3220,9 +3223,10 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
   PetscErrorCode  ierr;
   PC_BDDC*        pcbddc = (PC_BDDC*)(pc->data);
   PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
+  PetscBool       reuse_solver = sub_schurs ? ( sub_schurs->reuse_solver ? PETSC_TRUE : PETSC_FALSE ) : PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (!sub_schurs->reuse_solver) {
+  if (!reuse_solver) {
     ierr = VecSet(pcbddc->vec1_R,0.);CHKERRQ(ierr);
   }
   if (!pcbddc->switch_static) {
@@ -3230,7 +3234,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
       ierr = MatMultTranspose(pcbddc->local_auxmat2,inout_B,pcbddc->vec1_C);CHKERRQ(ierr);
       ierr = MatMultTransposeAdd(pcbddc->local_auxmat1,pcbddc->vec1_C,inout_B,inout_B);CHKERRQ(ierr);
     }
-    if (!sub_schurs->reuse_solver) {
+    if (!reuse_solver) {
       ierr = VecScatterBegin(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     } else {
@@ -3251,7 +3255,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
       ierr = VecScatterEnd(pcbddc->R_to_B,inout_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
   }
-  if (!sub_schurs->reuse_solver || pcbddc->switch_static) {
+  if (!reuse_solver || pcbddc->switch_static) {
     if (applytranspose) {
       ierr = KSPSolveTranspose(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec1_R);CHKERRQ(ierr);
     } else {
@@ -3268,7 +3272,7 @@ static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc, Vec inout_B, Vec
   }
   ierr = VecSet(inout_B,0.);CHKERRQ(ierr);
   if (!pcbddc->switch_static) {
-    if (!sub_schurs->reuse_solver) {
+    if (!reuse_solver) {
       ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,inout_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     } else {
@@ -4458,7 +4462,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         if (pcbddc->use_change_of_basis && pcbddc->adaptive_userdefined) {
           SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot mix automatic change of basis, adaptive selection and user-defined constraints");CHKERRQ(ierr);
         }
-        if (sub_schurs->S_Ej_all) {
+        if (sub_schurs && sub_schurs->S_Ej_all) {
           Mat                    S_new,tmat;
           IS                     is_all_N,is_V_Sall = NULL;
 
@@ -4517,7 +4521,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = MatDestroy(&tmat);CHKERRQ(ierr);
         }
         /* destroy any change of basis context in sub_schurs */
-        if (sub_schurs->change) {
+        if (sub_schurs && sub_schurs->change) {
           PetscInt i;
 
           for (i=0;i<sub_schurs->n_subs;i++) {
@@ -6483,7 +6487,6 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
 {
   PC_IS               *pcis=(PC_IS*)pc->data;
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
-  PCBDDCSubSchurs     sub_schurs=pcbddc->sub_schurs;
   PCBDDCGraph         graph;
   PetscErrorCode      ierr;
 
@@ -6525,7 +6528,10 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   }
 
   /* sub_schurs init */
-  ierr = PCBDDCSubSchursInit(sub_schurs,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap);CHKERRQ(ierr);
+  if (!pcbddc->sub_schurs) {
+    ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs);CHKERRQ(ierr);
+  }
+  ierr = PCBDDCSubSchursInit(pcbddc->sub_schurs,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap);CHKERRQ(ierr);
 
   /* free graph struct */
   if (pcbddc->sub_schurs_rebuild) {

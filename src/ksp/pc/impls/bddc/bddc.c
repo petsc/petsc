@@ -1533,7 +1533,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
   if (computesolvers) {
-    PCBDDCSubSchurs sub_schurs=pcbddc->sub_schurs;
+    PCBDDCSubSchurs sub_schurs;
 
     if (computesubschurs && computetopography) {
       ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
@@ -1542,7 +1542,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (!pcbddc->use_deluxe_scaling) {
       ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
     }
-    if (sub_schurs->schur_explicit) {
+    sub_schurs = pcbddc->sub_schurs;
+    if (sub_schurs && sub_schurs->schur_explicit) {
       if (computesubschurs) {
         ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
       }
@@ -2505,8 +2506,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->work_scaling          = 0;
   pcbddc->use_deluxe_scaling    = PETSC_FALSE;
 
-  /* create sub schurs structure */
-  ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs);CHKERRQ(ierr);
+  /* sub schurs options */
   pcbddc->sub_schurs_rebuild     = PETSC_FALSE;
   pcbddc->sub_schurs_layers      = -1;
   pcbddc->sub_schurs_use_useradj = PETSC_FALSE;
