@@ -2039,7 +2039,7 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   p4est_t              *root, *refined;
   DM                   dmRoot, dmRefined;
   DM_Plex              *mesh;
-  PetscInt             rank;
+  PetscMPIInt          rank;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
