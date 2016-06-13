@@ -1,6 +1,6 @@
 
 static char help[] = "Solves a linear system in parallel with KSP. Modified from ex2.c \n\
-                      Illustrate how to use external packages MUMPS and SUPERLU \n\
+                      Illustrate how to use external packages MUMPS, SUPERLU and STRUMPACK \n\
 Input parameters include:\n\
   -random_exact_sol : use a random exact solution vector\n\
   -view_exact_sol   : write exact solution vector to stdout\n\
@@ -27,6 +27,9 @@ int main(int argc,char **args)
 #endif
 #if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
   PetscBool      flg_superlu=PETSC_FALSE;
+#endif
+#if defined(PETSC_HAVE_STRUMPACK)
+  PetscBool      flg_strumpack=PETSC_FALSE;
 #endif
   PetscScalar    v;
   PetscMPIInt    rank,size;
@@ -226,6 +229,50 @@ int main(int argc,char **args)
     if (size == 1) {
       ierr = MatSuperluSetILUDropTol(F,1.e-8);CHKERRQ(ierr);
     }
+#endif
+  }
+#endif
+
+
+  /*
+    Example of how to use external package STRUMPACK
+    Note: runtime options
+          '-ksp_type preonly -pc_type lu/ilu -pc_factor_mat_solver_package strumpack \
+              -mat_strumpack_rctol 1.e-3 -mat_strumpack_hssminsize 50 -mat_strumpack_colperm 0'
+          are equivalent to these procedural calls
+
+    We refer to the STRUMPACK-sparse manual, section 5, on more info on how to tune the preconditioner.
+  */
+#if defined(PETSC_HAVE_STRUMPACK)
+  flg_ilu       = PETSC_FALSE;
+  flg_strumpack = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_strumpack_lu",&flg_strumpack,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_strumpack_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
+  if (flg_strumpack || flg_ilu) {
+    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    if (flg_strumpack) {
+      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+    } else if (flg_ilu) {
+      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+    }
+#if !defined(PETSC_HAVE_STRUMPACK)
+    SETERRQ(PETSC_COMM_WORLD,1,"This test requires STRUMPACK");
+#endif
+    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSTRUMPACK);CHKERRQ(ierr);
+    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
+    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_STRUMPACK)
+    /* The compression tolerance used when doing low-rank compression */
+    /* in the preconditioner. This is problem specific!               */
+    ierr = MatSTRUMPACKSetHSSRelCompTol(F,1.e-3);CHKERRQ(ierr);
+    /* Set minimum matrix size for HSS compression to 50 in order to  */
+    /* demonstrate preconditioner on small problems. For performance  */
+    /* a value of say 500 (the default) is better.                    */
+    ierr = MatSTRUMPACKSetHSSMinSize(F,50);CHKERRQ(ierr);
+    /* Since this is a simple discretization, the diagonal is always  */
+    /* nonzero, and there is no need for the extra MC64 permutation.  */
+    ierr = MatSTRUMPACKSetColPerm(F,PETSC_FALSE);CHKERRQ(ierr);
 #endif
   }
 #endif

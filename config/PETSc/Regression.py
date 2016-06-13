@@ -111,6 +111,8 @@ class Configure(config.base.Configure):
         for i in self.framework.packages:
           if i.name.upper() in ['FFTW','SUPERLU_DIST']:
             jobs.append(i.name.upper()+ '_COMPLEX')
+          elif i.name.upper() in ['STRUMPACK']:
+            jobs.append(i.name.upper())
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return

@@ -94,6 +94,9 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Essl(void);
 #if defined(PETSC_HAVE_SUPERLU)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU(void);
 #endif
+#if defined(PETSC_HAVE_STRUMPACK)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_STRUMPACK(void);
+#endif
 #if defined(PETSC_HAVE_PASTIX)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Pastix(void);
 #endif
@@ -337,6 +340,9 @@ PetscErrorCode  MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
   ierr = MatSolverPackageRegister_SuperLU();CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_STRUMPACK)
+  ierr = MatSolverPackageRegister_STRUMPACK();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
   ierr = MatSolverPackageRegister_Pastix();CHKERRQ(ierr);

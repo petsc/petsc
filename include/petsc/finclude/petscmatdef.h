@@ -132,6 +132,7 @@
 !
 #define MATSOLVERSUPERLU      'superlu'
 #define MATSOLVERSUPERLU_DIST 'superlu_dist'
+#define MATSOLVERSTRUMPACK    'strumpack'
 #define MATSOLVERUMFPACK      'umfpack'
 #define MATSOLVERCHOLMOD      'cholmod'
 #define MATSOLVERCLIQUE       'clique'
