@@ -344,7 +344,11 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 
    Level: Advanced
 
-   Notes: The inner KSP and BDDC can be accessed for customization
+   Notes: Options for the inner KSP and BDDC can be specified at command line prepending -ksp_fetidp_inner_ . E.g.,
+.vb
+      -ksp_fetidp_inner_ksp_type gmres -ksp_fetidp_inner_pc_bddc_neumann_pc_type ilu
+.ve
+   will use gmres for solving the linear system of the Lagrange multipliers and an ilu preconditioner for the Neumann solver
 
    References:
 .  [1] - C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, and D. Rixen, FETI-DP: a dual-primal unified FETI method. I. A faster alternative to the two-level FETI method, Internat. J. Numer. Methods Engrg., 50 (2001), pp. 1523--1544
