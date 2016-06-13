@@ -130,8 +130,8 @@ PetscErrorCode  PetscStageInfoDestroy(PetscStageInfo *stageInfo)
 
   PetscFunctionBegin;
   ierr = PetscFree(stageInfo->name);CHKERRQ(ierr);
-  ierr = EventPerfLogDestroy(stageInfo->eventLog);CHKERRQ(ierr);
-  ierr = ClassPerfLogDestroy(stageInfo->classLog);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogDestroy(stageInfo->eventLog);CHKERRQ(ierr);
+  ierr = PetscClassPerfLogDestroy(stageInfo->classLog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -158,7 +158,7 @@ PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
   PetscFunctionBegin;
   if (!stageLog) PetscFunctionReturn(0);
   ierr = PetscIntStackDestroy(stageLog->stack);CHKERRQ(ierr);
-  ierr = EventRegLogDestroy(stageLog->eventLog);CHKERRQ(ierr);
+  ierr = PetscEventRegLogDestroy(stageLog->eventLog);CHKERRQ(ierr);
   ierr = PetscClassRegLogDestroy(stageLog->classLog);CHKERRQ(ierr);
   for (stage = 0; stage < stageLog->numStages; stage++) {
     ierr = PetscStageInfoDestroy(&stageLog->stageInfo[stage]);CHKERRQ(ierr);
@@ -226,8 +226,8 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   stageLog->stageInfo[s].perfInfo.messageLength = 0.0;
   stageLog->stageInfo[s].perfInfo.numReductions = 0.0;
 
-  ierr = EventPerfLogCreate(&stageLog->stageInfo[s].eventLog);CHKERRQ(ierr);
-  ierr = ClassPerfLogCreate(&stageLog->stageInfo[s].classLog);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogCreate(&stageLog->stageInfo[s].eventLog);CHKERRQ(ierr);
+  ierr = PetscClassPerfLogCreate(&stageLog->stageInfo[s].classLog);CHKERRQ(ierr);
   *stage = s;
   PetscFunctionReturn(0);
 }
@@ -429,7 +429,7 @@ PetscErrorCode  PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventRe
 #undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetClassPerfLog"
 /*@C
-  PetscStageLogGetClassPerfLog - This function returns the ClassPerfLog for the given stage.
+  PetscStageLogGetClassPerfLog - This function returns the PetscClassPerfLog for the given stage.
 
   Not Collective
 
@@ -438,7 +438,7 @@ PetscErrorCode  PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventRe
 - stage    - The stage
 
   Output Parameter:
-. classLog - The ClassPerfLog
+. classLog - The PetscClassPerfLog
 
   Level: developer
 
@@ -633,7 +633,7 @@ PetscErrorCode  PetscStageLogCreate(PetscStageLog *stageLog)
 
   ierr = PetscIntStackCreate(&l->stack);CHKERRQ(ierr);
   ierr = PetscMalloc1(l->maxStages, &l->stageInfo);CHKERRQ(ierr);
-  ierr = EventRegLogCreate(&l->eventLog);CHKERRQ(ierr);
+  ierr = PetscEventRegLogCreate(&l->eventLog);CHKERRQ(ierr);
   ierr = PetscClassRegLogCreate(&l->classLog);CHKERRQ(ierr);
 
   *stageLog = l;
