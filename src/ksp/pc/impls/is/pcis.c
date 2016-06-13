@@ -48,8 +48,8 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
   PC_IS          *pcis = (PC_IS*)pc->data;
 
   PetscFunctionBegin;
-  ierr    = VecDestroy(&pcis->D);CHKERRQ(ierr);
   ierr    = PetscObjectReference((PetscObject)scaling_factors);CHKERRQ(ierr);
+  ierr    = VecDestroy(&pcis->D);CHKERRQ(ierr);
   pcis->D = scaling_factors;
   PetscFunctionReturn(0);
 }
@@ -205,7 +205,10 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     ierr = MatCreateVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);
     ierr = PetscMalloc1(pcis->n,&pcis->work_N);CHKERRQ(ierr);
     /* scaling vector */
-    ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+    if (!pcis->D) { /* it can happen that the user passed in a scaling vector via PCISSetSubdomainDiagonalScaling */
+      ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+      ierr = VecSet(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
+    }
 
     /* Creating the scatter contexts */
     ierr = VecScatterCreate(pcis->vec1_N,pcis->is_I_local,pcis->vec1_D,(IS)0,&pcis->N_to_D);CHKERRQ(ierr);
@@ -254,20 +257,15 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     ierr = MatDestroy(&newmat);CHKERRQ(ierr);
   }
 
-  /* Creating scaling "matrix" D */
+  /* Creating scaling vector D */
   ierr = PetscOptionsGetBool(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_is_use_stiffness_scaling",&pcis->use_stiffness_scaling,NULL);CHKERRQ(ierr);
-  if (!pcis->use_stiffness_scaling) {
-    ierr = VecSet(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
-  } else {
-    ierr = MatGetDiagonal(matis->A,pcis->vec1_N);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (pcis->use_stiffness_scaling) {
+    ierr = MatGetDiagonal(pcis->A_BB,pcis->D);CHKERRQ(ierr);
   }
-  ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   ierr = MatCreateVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
   ierr = VecSet(counter,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,pcis->D,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_B,pcis->D,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
