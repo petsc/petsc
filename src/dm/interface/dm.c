@@ -5956,7 +5956,6 @@ PetscErrorCode DMBoundaryDuplicate(DMBoundaryLinkList bd, DMBoundaryLinkList *bo
     ierr = PetscMemcpy(b2->ids, b->ids, b->numids*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMalloc1(b->numcomps, &b2->comps);CHKERRQ(ierr);
     ierr = PetscMemcpy(b2->comps, b->comps, b->numcomps*sizeof(PetscInt));CHKERRQ(ierr);
-    b2->label     = NULL;
     b2->essential = b->essential;
     b2->field     = b->field;
     b2->numcomps  = b->numcomps;
@@ -6048,8 +6047,6 @@ PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], co
   if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
   ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
   if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
-  if (b->labelname) {
-  }
   b->essential       = isEssential;
   b->field           = field;
   b->numcomps        = numcomps;
@@ -6185,12 +6182,14 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
   PetscValidPointer(isBd, 3);
   *isBd = PETSC_FALSE;
   while (b && !(*isBd)) {
-    if (!b->label) {ierr = DMGetLabel(dm, b->labelname, &b->label);CHKERRQ(ierr);}
-    if (b->label) {
+    DMLabel label;
+
+    ierr = DMGetLabel(dm,b->labelname,&label);CHKERRQ(ierr);
+    if (label) {
       PetscInt i;
 
       for (i = 0; i < b->numids && !(*isBd); ++i) {
-        ierr = DMLabelStratumHasPoint(b->label, b->ids[i], point, isBd);CHKERRQ(ierr);
+        ierr = DMLabelStratumHasPoint(label, b->ids[i], point, isBd);CHKERRQ(ierr);
       }
     }
     b = b->next;

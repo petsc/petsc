@@ -144,7 +144,6 @@ typedef struct _n_Boundary *DMBoundary;
 struct _n_Boundary {
   const char *name;
   const char *labelname;
-  DMLabel     label;
   PetscBool   essential;
   PetscInt    field;
   PetscInt    numcomps;
