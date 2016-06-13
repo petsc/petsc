@@ -335,20 +335,21 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 /*MC
      KSPFETIDP - The FETI-DP method
 
+   This class implements the FETI-DP method [1], using an inner KSP object for the Lagrange multipliers system.
+   The preconditioning matrix of the KSP should be of type MATIS.
+   The FETI-DP matrix is obtained through an auxiliary BDDC preconditioner.
+
    Options Database Keys:
-+   -ksp_fetidp_
-.   -ksp_fetidp_
--   -ksp_fetidp_
+.   -ksp_fetidp_fullyredundant <false> : use a fully redundant set of Lagrange multipliers
 
-   Level:
+   Level: Advanced
 
-   Notes:
+   Notes: The inner KSP and BDDC can be accessed for customization
 
    References:
-.   1. -
+.  [1] - C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, and D. Rixen, FETI-DP: a dual-primal unified FETI method. I. A faster alternative to the two-level FETI method, Internat. J. Numer. Methods Engrg., 50 (2001), pp. 1523--1544
 
-.seealso:
-
+.seealso: MATIS, PCBDDC, KSPFETIDPSetInnerBDDC, KSPFETIDPGetInnerBDDC, KSPFETIDPGetInnerKSP
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FETIDP"
