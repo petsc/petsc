@@ -14,8 +14,8 @@ class Configure(config.package.Package):
     self.cudaArch         = ''
     self.CUDAVersion      = '4020' # Minimal cuda version is 4.2
     self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/10%10)
-    self.hastests         = 1
-    self.hastestsdatafiles= 1
+    self.hastests         = 0
+    self.hastestsdatafiles= 0
     return
 
   def __str__(self):
