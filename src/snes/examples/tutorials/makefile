@@ -13,7 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                 ex25.c ex28.c ex30.c ex33.c \
                 ex35.c ex42.c ex46.c ex48.c \
-                ex58.c ex59.c \
+                ex56.c ex58.c ex59.c \
                 ex62.c ex70.c ex77.c\
                 ex47cu.cu
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex40f90.F90 ex74f.F90
@@ -1154,15 +1154,32 @@ runex48_5:
 	   ${DIFF} output/ex48_5.out ex48_5.tmp || printf "${PWD}\nPossible problem with ex48_5 mtype=$${mtype}, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48_5.tmp; \
          done
-
+runex56:
+	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 100 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.0 -ksp_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mat_block_size 3 -petscpartitioner_type parmetis > ex.tmp 2>&1; \
+         ${DIFF} output/ex56_0.out ex.tmp || printf "${PWD}\nPossible problem with ex56_0.out, diffs above \n=========================================\n"; \
+         ${RM} -f ex.tmp
+runex56_hypre:
+	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -mat_block_size 3 -petscpartitioner_type parmetis > ex.tmp 2>&1; \
+         ${DIFF} output/ex56_hypre.out ex.tmp || printf "${PWD}\nPossible problem with ex56_hypre.out, diffs above \n=========================================\n"; \
+#         ${RM} -f ex.tmp
+#runex56_p4est:
+#	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 100 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -ksp_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mat_block_size 3 -petscpartitioner_type parmetis -dm_type p4est > ex.tmp 2>&1; \
+#         ${DIFF} output/ex56_p4est.out ex.tmp || printf "${PWD}\nPossible problem with ex56_p4est.out, diffs above \n=========================================\n"; \
+         ${RM} -f ex.tmp
+runex56_ml:
+	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short  -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type parmetis -use_mat_nearnullspace  > ex.tmp 2>&1;	\
+         ${DIFF} output/ex56_ml.out ex.tmp || printf "${PWD}\nPossible problem with ex56_ml.out, diffs above\n=========================================\n"; \
+        ${RM} -f ex.tmp
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonrsls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full  -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
 	   ${DIFF} output/ex58_1.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex58.tmp
 runex58_2:
-	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full  -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
-	   ${DIFF} output/ex58_2.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex58.tmp
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full  -snes_max_it 100 -snes_converged_reason > ex58_2.tmp 2>&1; \
+           if (${DIFF} output/ex58_2.out ex58_2.tmp > /dev/null 2>&1) then x='good'; fi ;\
+           if (${DIFF} output/ex58_2_alt.out ex58_2.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$$x" = "bad" ]; then ${DIFF} output/ex58_2.out ex58_2.tmp ; ${DIFF} output/ex58_2_alt.out ex58_2.tmp ; printf "${PWD}\nPossible problem with ex58_2, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex58_2.tmp
 runex59:
 	-@x="bad"; ${MPIEXEC} -n 1 ./ex59 -n 14 -snes_monitor_short -snes_converged_reason > ex59_1.tmp 2>&1; \
            if (${DIFF} output/ex59_1.out ex59_1.tmp > /dev/null 2>&1) then x='good'; fi ;\
@@ -1231,6 +1248,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm
+TESTEXAMPLES_PARMETIS          = ex56.PETSc runex56 ex56.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm

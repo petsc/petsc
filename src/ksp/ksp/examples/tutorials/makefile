@@ -1323,7 +1323,7 @@ runex54:
         ${RM} -f ex.tmp
 
 runex54_Classical:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex54 -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
          ${DIFF} output/ex54_classical.out ex.tmp || printf "${PWD}\nPossible problem with ex54_classical.out, diffs above\n======================================\n"; \
        ${RM} -f ex.tmp
 
@@ -1343,7 +1343,7 @@ runex55_hypre:
         ${RM} -f ex.tmp
 
 runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -mg_levels_esteig_ksp_type cg -ksp_rtol 1.e-3 -ksp_monitor > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -mg_levels_esteig_ksp_type cg -ksp_rtol 1.e-3 -ksp_monitor_short > ex.tmp 2>&1; \
          ${DIFF} output/ex55_sa.out ex.tmp || printf "${PWD}\nPossible problem with ex55_sa.out, diffs above\n=========================================\n"; \
         ${RM} -f ex.tmp
 
@@ -1561,11 +1561,11 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex6.PETSc runex6 runex6_1 runex6_2 ex6.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
-                                 ex23.PETSc runex23 runex23_2 ex23.rm ex25.PETSc runex25 runex25_2 ex25.rm \
+                                 ex23.PETSc runex23 runex23_2 ex23.rm ex25.PETSc runex25_2 ex25.rm \
                                  ex18.PETSc runex18_3 ex18.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc runex29_telescope ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex42.PETSc ex42.rm \
-                                 ex43.PETSc runex43 runex43_2 runex43_bjacobi runex43_bjacobi_baij runex43_nested_gmg runex43_3 runex43_6 ex43.rm \
+                                 ex43.PETSc runex43 runex43_2 runex43_bjacobi runex43_bjacobi_baij runex43_nested_gmg runex43_6 ex43.rm \
                                  ex45.PETSc runex45 runex45_2 runex45_telescope runex45_telescope_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm \
                                  ex51.PETSc runex51 ex51.rm \
@@ -1575,7 +1575,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
                                  ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm ex65.PETSc runex65 ex65.rm
-TESTEXAMPLES_C_NOTSINGLE       = ex18.PETSc runex18_bas ex18.rm ex43.PETSc runex43_3 ex43.rm
+TESTEXAMPLES_C_NOTSINGLE       = ex18.PETSc runex18_bas ex18.rm ex25.PETSc runex25 ex25.rm ex43.PETSc runex43_3 ex43.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm  ex15.PETSc runex15_tsirm ex15.rm \
                                  ex34.PETSc runex34 runex34_2 ex34.rm \

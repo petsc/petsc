@@ -1,40 +1,41 @@
   Residual norms for stokes_ solve.
-  0 KSP Residual norm 0.00474175 
-  1 KSP Residual norm 0.00112716 
-  2 KSP Residual norm 0.00188228 
-  3 KSP Residual norm 0.00189896 
-  4 KSP Residual norm 0.00179067 
-  5 KSP Residual norm 0.00114405 
-  6 KSP Residual norm 0.00102866 
-  7 KSP Residual norm 0.0010481 
-  8 KSP Residual norm 0.000536182 
-  9 KSP Residual norm 0.000365259 
- 10 KSP Residual norm 0.000342975 
- 11 KSP Residual norm 0.000442177 
- 12 KSP Residual norm 0.00031869 
- 13 KSP Residual norm 0.000226686 
- 14 KSP Residual norm 0.000247487 
- 15 KSP Residual norm 0.000197765 
- 16 KSP Residual norm 0.000110796 
- 17 KSP Residual norm 5.13417e-05 
- 18 KSP Residual norm 3.99552e-05 
- 19 KSP Residual norm 2.95887e-05 
- 20 KSP Residual norm 2.65515e-05 
- 21 KSP Residual norm 2.26345e-05 
- 22 KSP Residual norm 2.02177e-05 
- 23 KSP Residual norm 1.49304e-05 
- 24 KSP Residual norm 9.29818e-06 
- 25 KSP Residual norm 5.37678e-06 
- 26 KSP Residual norm 3.33311e-06 
- 27 KSP Residual norm 2.05836e-06 
- 28 KSP Residual norm 1.40676e-06 
- 29 KSP Residual norm 1.01704e-06 
- 30 KSP Residual norm 6.78848e-07 
- 31 KSP Residual norm 4.09285e-07 
- 32 KSP Residual norm 3.09596e-07 
- 33 KSP Residual norm 1.50126e-07 
- 34 KSP Residual norm 7.81743e-08 
- 35 KSP Residual norm 4.73629e-08 
+  0 KSP Residual norm 0.00477565 
+  1 KSP Residual norm 0.00112366 
+  2 KSP Residual norm 0.00185947 
+  3 KSP Residual norm 0.00190497 
+  4 KSP Residual norm 0.00181449 
+  5 KSP Residual norm 0.0011633 
+  6 KSP Residual norm 0.00104766 
+  7 KSP Residual norm 0.00108925 
+  8 KSP Residual norm 0.000561857 
+  9 KSP Residual norm 0.00037724 
+ 10 KSP Residual norm 0.000343633 
+ 11 KSP Residual norm 0.000450265 
+ 12 KSP Residual norm 0.000339173 
+ 13 KSP Residual norm 0.000233863 
+ 14 KSP Residual norm 0.000248757 
+ 15 KSP Residual norm 0.000198859 
+ 16 KSP Residual norm 0.000114131 
+ 17 KSP Residual norm 5.27112e-05 
+ 18 KSP Residual norm 4.13626e-05 
+ 19 KSP Residual norm 3.14644e-05 
+ 20 KSP Residual norm 2.84109e-05 
+ 21 KSP Residual norm 2.34285e-05 
+ 22 KSP Residual norm 2.05284e-05 
+ 23 KSP Residual norm 1.54962e-05 
+ 24 KSP Residual norm 9.95168e-06 
+ 25 KSP Residual norm 5.81216e-06 
+ 26 KSP Residual norm 3.59577e-06 
+ 27 KSP Residual norm 2.2632e-06 
+ 28 KSP Residual norm 1.5193e-06 
+ 29 KSP Residual norm 1.09912e-06 
+ 30 KSP Residual norm 7.32167e-07 
+ 31 KSP Residual norm 4.43854e-07 
+ 32 KSP Residual norm 3.34227e-07 
+ 33 KSP Residual norm 1.63063e-07 
+ 34 KSP Residual norm 8.5728e-08 
+ 35 KSP Residual norm 5.1827e-08 
+ 36 KSP Residual norm 2.37302e-08 
 KSP Object: (stokes_) 4 MPI processes
   type: pipegcr
     PIPEGCR: max previous directions = 60
@@ -99,7 +100,7 @@ PC Object: (stokes_) 4 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (stokes_mg_levels_1_) 4 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.306009, max = 1.68305
+        Chebyshev: eigenvalue estimates:  min = 0.305926, max = 1.68259
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object: (stokes_mg_levels_1_esteig_) 4 MPI processes
           type: gmres
@@ -109,6 +110,7 @@ PC Object: (stokes_) 4 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -163,7 +165,7 @@ PC Object: (stokes_) 4 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (stokes_mg_levels_2_) 4 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.291297, max = 1.60213
+        Chebyshev: eigenvalue estimates:  min = 0.291447, max = 1.60296
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object: (stokes_mg_levels_2_esteig_) 4 MPI processes
           type: gmres
@@ -173,6 +175,7 @@ PC Object: (stokes_) 4 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -227,7 +230,7 @@ PC Object: (stokes_) 4 MPI processes
   Down solver (pre-smoother) on level 3 -------------------------------
     KSP Object: (stokes_mg_levels_3_) 4 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.356152, max = 1.95884
+        Chebyshev: eigenvalue estimates:  min = 0.345997, max = 1.90298
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object: (stokes_mg_levels_3_esteig_) 4 MPI processes
           type: gmres
@@ -237,6 +240,7 @@ PC Object: (stokes_) 4 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning

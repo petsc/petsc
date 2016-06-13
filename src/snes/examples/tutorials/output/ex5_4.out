@@ -12,15 +12,15 @@
     Linear solve converged due to CONVERGED_RTOL iterations 4
     1 SNES Function norm 0.00645541 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    2 SNES Function norm 1.84315e-05 
+    2 SNES Function norm 1.84316e-05 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    3 SNES Function norm 1.61293e-09 
+    3 SNES Function norm 1.61232e-09 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
   0 SNES Function norm 0.517003 
   Linear solve converged due to CONVERGED_RTOL iterations 4
-  1 SNES Function norm 0.000279815 
+  1 SNES Function norm 0.000279743 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  2 SNES Function norm 1.11875e-07 
+  2 SNES Function norm 1.1547e-07 
   Linear solve converged due to CONVERGED_RTOL iterations 4
   3 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
@@ -99,7 +99,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.129643, max = 1.42607
+          Chebyshev: eigenvalue estimates:  min = 0.129683, max = 1.42652
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 2 MPI processes
             type: gmres
@@ -109,6 +109,7 @@ SNES Object: 2 MPI processes
             tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
+          Chebyshev: estimating eigenvalues using noisy right hand side
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -127,7 +128,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.127798, max = 1.40578
+          Chebyshev: eigenvalue estimates:  min = 0.126645, max = 1.3931
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 2 MPI processes
             type: gmres
@@ -137,6 +138,7 @@ SNES Object: 2 MPI processes
             tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
+          Chebyshev: estimating eigenvalues using noisy right hand side
         maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning

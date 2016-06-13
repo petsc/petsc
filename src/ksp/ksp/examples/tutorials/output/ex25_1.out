@@ -1,104 +1,79 @@
   0 KSP Residual norm 0.0443241 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 1.15199 
-      1 KSP Residual norm 0.407194 
-      2 KSP Residual norm 0.658189 
+      0 KSP Residual norm 1.18269 
+      1 KSP Residual norm 0.367737 
+      2 KSP Residual norm 0.644935 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.318701 
-      1 KSP Residual norm 0.117071 
-      2 KSP Residual norm 0.190163 
+      0 KSP Residual norm 0.319897 
+      1 KSP Residual norm 0.102543 
+      2 KSP Residual norm 0.183219 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.810189 
-    1 KSP Residual norm 0.298615 
-    2 KSP Residual norm 0.477317 
+    0 KSP Residual norm 0.866193 
+    1 KSP Residual norm 0.221213 
+    2 KSP Residual norm 0.450773 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.027259 
-      1 KSP Residual norm 0.00985381 
-      2 KSP Residual norm 0.0157057 
+      0 KSP Residual norm 0.0271134 
+      1 KSP Residual norm 0.00893216 
+      2 KSP Residual norm 0.0153743 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00779491 
-      1 KSP Residual norm 0.00291156 
-      2 KSP Residual norm 0.0047 
+      0 KSP Residual norm 0.0078499 
+      1 KSP Residual norm 0.00254248 
+      2 KSP Residual norm 0.00453697 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.229091 
-    1 KSP Residual norm 0.084194 
-    2 KSP Residual norm 0.137516 
-  1 KSP Residual norm 0.00603837 
+    0 KSP Residual norm 0.23063 
+    1 KSP Residual norm 0.0567781 
+    2 KSP Residual norm 0.122998 
+  1 KSP Residual norm 0.00541079 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0107541 
-      1 KSP Residual norm 0.00335812 
-      2 KSP Residual norm 0.00375247 
+      0 KSP Residual norm 0.0128632 
+      1 KSP Residual norm 0.00388745 
+      2 KSP Residual norm 0.00452136 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00191116 
-      1 KSP Residual norm 0.000690169 
-      2 KSP Residual norm 0.00102604 
+      0 KSP Residual norm 0.00224993 
+      1 KSP Residual norm 0.000745261 
+      2 KSP Residual norm 0.00124138 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.48089 
-    1 KSP Residual norm 0.17755 
-    2 KSP Residual norm 0.290278 
+    0 KSP Residual norm 0.514866 
+    1 KSP Residual norm 0.126807 
+    2 KSP Residual norm 0.275105 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0023878 
-      1 KSP Residual norm 0.00207037 
-      2 KSP Residual norm 0.00106876 
+      0 KSP Residual norm 0.00242898 
+      1 KSP Residual norm 0.00220742 
+      2 KSP Residual norm 0.00108879 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.000470548 
-      1 KSP Residual norm 0.000222958 
-      2 KSP Residual norm 0.000272425 
+      0 KSP Residual norm 0.000491734 
+      1 KSP Residual norm 0.000208602 
+      2 KSP Residual norm 0.000278673 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.13967 
-    1 KSP Residual norm 0.0516171 
-    2 KSP Residual norm 0.0843605 
-  2 KSP Residual norm 1.66273e-05 
+    0 KSP Residual norm 0.141616 
+    1 KSP Residual norm 0.0348859 
+    2 KSP Residual norm 0.075679 
+  2 KSP Residual norm 8.66537e-06 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.170015 
-      1 KSP Residual norm 0.078139 
-      2 KSP Residual norm 0.0922292 
+      0 KSP Residual norm 0.271312 
+      1 KSP Residual norm 0.0871875 
+      2 KSP Residual norm 0.149766 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0508079 
-      1 KSP Residual norm 0.0176417 
-      2 KSP Residual norm 0.0262041 
+      0 KSP Residual norm 0.0737832 
+      1 KSP Residual norm 0.0239546 
+      2 KSP Residual norm 0.0425727 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.515401 
-    1 KSP Residual norm 0.146235 
-    2 KSP Residual norm 0.176232 
+    0 KSP Residual norm 0.473153 
+    1 KSP Residual norm 0.150019 
+    2 KSP Residual norm 0.221019 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0260206 
-      1 KSP Residual norm 0.00937521 
-      2 KSP Residual norm 0.00632089 
+      0 KSP Residual norm 0.0278394 
+      1 KSP Residual norm 0.0183611 
+      2 KSP Residual norm 0.00937928 
       Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00200191 
-      1 KSP Residual norm 0.00109247 
-      2 KSP Residual norm 0.000976659 
+      0 KSP Residual norm 0.00287737 
+      1 KSP Residual norm 0.001219 
+      2 KSP Residual norm 0.00153115 
     Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.095702 
-    1 KSP Residual norm 0.0315149 
-    2 KSP Residual norm 0.0434549 
-  3 KSP Residual norm 5.64541e-07 
-      Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.153556 
-      1 KSP Residual norm 0.0593926 
-      2 KSP Residual norm 0.0726789 
-      Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0368634 
-      1 KSP Residual norm 0.0132578 
-      2 KSP Residual norm 0.0195873 
-    Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.407513 
-    1 KSP Residual norm 0.165745 
-    2 KSP Residual norm 0.218695 
-      Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.0178806 
-      1 KSP Residual norm 0.0194426 
-      2 KSP Residual norm 0.0102234 
-      Residual norms for mg_levels_1_ solve.
-      0 KSP Residual norm 0.00373909 
-      1 KSP Residual norm 0.00183942 
-      2 KSP Residual norm 0.0019353 
-    Residual norms for mg_levels_2_ solve.
-    0 KSP Residual norm 0.0950972 
-    1 KSP Residual norm 0.0407754 
-    2 KSP Residual norm 0.0579224 
-  4 KSP Residual norm 7.6983e-09 
+    0 KSP Residual norm 0.116794 
+    1 KSP Residual norm 0.0371505 
+    2 KSP Residual norm 0.0546215 
+  3 KSP Residual norm 3.09855e-07 
 KSP Object: 1 MPI processes
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -143,7 +118,7 @@ PC Object: 1 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 1 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.0999994, max = 1.09999
+        Chebyshev: eigenvalue estimates:  min = 0.099124, max = 1.09036
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_1_esteig_) 1 MPI processes
           type: gmres
@@ -153,6 +128,7 @@ PC Object: 1 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -172,7 +148,7 @@ PC Object: 1 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 1 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.0999979, max = 1.09998
+        Chebyshev: eigenvalue estimates:  min = 0.0977779, max = 1.07556
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_2_esteig_) 1 MPI processes
           type: gmres
@@ -182,6 +158,7 @@ PC Object: 1 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -205,4 +182,4 @@ PC Object: 1 MPI processes
     total: nonzeros=1525, allocated nonzeros=1527
     total number of mallocs used during MatSetValues calls =0
       not using I-node routines
-Residual norm 2.59383e-09
+Residual norm 1.44478e-07
