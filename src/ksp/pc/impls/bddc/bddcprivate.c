@@ -30,12 +30,15 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
       ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
     }
   } else {
-    if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering */
+    if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering if bs > 1 */
       PetscInt i, n = matis->A->rmap->n;
-      ierr = MatGetBlockSize(pc->pmat,&pcbddc->n_ISForDofsLocal);CHKERRQ(ierr);
-      ierr = PetscMalloc1(pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
-      for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
-        ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+      ierr = MatGetBlockSize(pc->pmat,&i);CHKERRQ(ierr);
+      if (i > 1) {
+        pcbddc->n_ISForDofsLocal = i;
+        ierr = PetscMalloc1(pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+        for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
+          ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+        }
       }
     }
   }
