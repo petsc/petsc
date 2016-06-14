@@ -39,15 +39,16 @@ PetscErrorCode PCDestroy_TFS(PC pc)
 #define __FUNCT__ "PCApply_TFS_XXT"
 static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
 {
-  PC_TFS         *tfs = (PC_TFS*)pc->data;
-  PetscScalar    *xx,*yy;
-  PetscErrorCode ierr;
+  PC_TFS            *tfs = (PC_TFS*)pc->data;
+  PetscScalar       *yy;
+  const PetscScalar *xx;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-  ierr = XXT_solve(tfs->xxt,yy,xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = XXT_solve(tfs->xxt,yy,(PetscScalar*)xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -56,15 +57,16 @@ static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_TFS_XYT"
 static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
 {
-  PC_TFS         *tfs = (PC_TFS*)pc->data;
-  PetscScalar    *xx,*yy;
-  PetscErrorCode ierr;
+  PC_TFS            *tfs = (PC_TFS*)pc->data;
+  PetscScalar       *yy;
+  const PetscScalar *xx;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-  ierr = XYT_solve(tfs->xyt,yy,xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = XYT_solve(tfs->xyt,yy,(PetscScalar*)xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
