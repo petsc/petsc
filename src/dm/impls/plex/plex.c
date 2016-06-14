@@ -3060,6 +3060,83 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 /******************************** FEM Support **********************************/
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateSpectralClosurePermutation"
+PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscSection section)
+{
+  PetscInt      *perm;
+  PetscInt       dim, eStart, k, Nf, f, Nc, c, i, size = 0, offset = 0, foffset = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+  if (dim != 2) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Can only do quads now");
+  for (f = 0; f < Nf; ++f) {
+    /* An order k SEM disc has k-1 dofs on an edge */
+    ierr = DMPlexGetDepthStratum(dm, 1, &eStart, NULL);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldDof(section, eStart, f, &k);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
+    k = k/Nc + 1;
+    size += PetscSqr(k+1)*Nc;
+  }
+  ierr = PetscMalloc1(size, &perm);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    /* The original quad closure is oriented clockwise, {f, e_b, e_r, e_t, e_l, v_lb, v_rb, v_tr, v_tl} */
+    ierr = DMPlexGetDepthStratum(dm, 1, &eStart, NULL);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldDof(section, eStart, f, &k);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
+    k = k/Nc + 1;
+    /* The SEM order is
+
+       v_lb, {e_b}, v_rb,
+       e^{(k-1)-i}_l, {f^{((k-1)-i)*(k-1)}}, e^i_r,
+       v_lt, reverse {e_t}, v_rt
+    */
+    {
+      const PetscInt of   = 0;
+      const PetscInt oeb  = of   + PetscSqr(k-1);
+      const PetscInt oer  = oeb  + (k-1);
+      const PetscInt oet  = oer  + (k-1);
+      const PetscInt oel  = oet  + (k-1);
+      const PetscInt ovlb = oel  + (k-1);
+      const PetscInt ovrb = ovlb + 1;
+      const PetscInt ovrt = ovrb + 1;
+      const PetscInt ovlt = ovrt + 1;
+      PetscInt       o;
+
+      /* bottom */
+      for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovlb*Nc + c + foffset;
+      for (o = oeb; o < oer; ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+      for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovrb*Nc + c + foffset;
+      /* middle */
+      for (i = 0; i < k-1; ++i) {
+        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oel+(k-2)-i)*Nc + c + foffset;
+        for (o = of+(k-1)*i; o < of+(k-1)*(i+1); ++o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+        for (c = 0; c < Nc; ++c, ++offset) perm[offset] = (oer+i)*Nc + c + foffset;
+      }
+      /* top */
+      for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovlt*Nc + c + foffset;
+      for (o = oel-1; o >= oet; --o) for (c = 0; c < Nc; ++c, ++offset) perm[offset] = o*Nc + c + foffset;
+      for (c = 0; c < Nc; ++c, ++offset) perm[offset] = ovrt*Nc + c + foffset;
+      foffset = offset;
+    }
+  }
+  /* Check permutation */
+  {
+    PetscInt *check;
+
+    ierr = PetscMalloc1(size, &check);CHKERRQ(ierr);
+    for (i = 0; i < size; ++i) {check[i] = -1; if (perm[i] < 0 || perm[i] >= size) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid permutation index p[%D] = %D", i, perm[i]);}
+    for (i = 0; i < size; ++i) check[perm[i]] = i;
+    for (i = 0; i < size; ++i) {if (check[i] < 0) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Missing permutation index %D", i);}
+    ierr = PetscFree(check);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetClosurePermutation(section, (PetscObject) dm, size, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexVecGetClosure_Depth1_Static"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
