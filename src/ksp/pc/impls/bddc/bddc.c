@@ -2060,14 +2060,16 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
      change of basis for physical rhs if needed
      It also changes the rhs in case of dirichlet boundaries
   */
+  if (!pcbddc->original_rhs) {
+    ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
+  }
+  ierr = VecCopy(standard_rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+  ierr = PCPreSolve_BDDC(mat_ctx->pc,NULL,pcbddc->original_rhs,NULL);CHKERRQ(ierr);
   if (pcbddc->ChangeOfBasisMatrix) {
-    ierr = VecDuplicate(standard_rhs,&work);CHKERRQ(ierr);
-    ierr = PCPreSolve_BDDC(mat_ctx->pc,NULL,standard_rhs,NULL);CHKERRQ(ierr);
-    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,standard_rhs,work);CHKERRQ(ierr);
-  } else {
-    ierr = PCPreSolve_BDDC(mat_ctx->pc,NULL,standard_rhs,NULL);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)standard_rhs);CHKERRQ(ierr);
-    work = standard_rhs;
+    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcbddc->original_rhs,pcbddc->work_change);CHKERRQ(ierr);
+    work = pcbddc->work_change;
+   } else {
+    work = pcbddc->original_rhs;
   }
   /* store vectors for computation of fetidp final solution */
   ierr = VecScatterBegin(pcis->global_to_D,work,mat_ctx->temp_solution_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -2092,8 +2094,6 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
     ierr = VecScatterEnd(pcis->global_to_B,work,mat_ctx->temp_solution_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecPointwiseMult(mat_ctx->temp_solution_B,pcis->D,mat_ctx->temp_solution_B);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&work);CHKERRQ(ierr);
-  ierr = VecCopy(pcbddc->original_rhs,standard_rhs);CHKERRQ(ierr);
   /* BDDC rhs */
   ierr = VecCopy(mat_ctx->temp_solution_B,pcis->vec1_B);CHKERRQ(ierr);
   if (pcbddc->switch_static) {
