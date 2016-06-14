@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     const PetscScalar *array, *a;
     PetscInt           dof, point, d;
 
-    ierr = PetscSectionSetClosurePermutation(s, (PetscObject) dm, 0, PETSC_OWN_POINTER, NULL);CHKERRQ(ierr);
+    ierr = PetscSectionSetClosurePermutation(s, (PetscObject) dm, NULL);CHKERRQ(ierr);
     ierr = VecGetArrayRead(u, &array);CHKERRQ(ierr);
     point = 0;
     ierr = DMPlexPointLocalRead(dm, point, array, &a);CHKERRQ(ierr);
