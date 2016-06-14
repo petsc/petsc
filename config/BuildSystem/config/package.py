@@ -8,6 +8,10 @@ try:
 except ImportError:
   from md5 import new as new_md5
 
+class FakePETScDir:
+  def __init__(self):
+    self.dir = 'UNKNOWN'
+
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -97,9 +101,15 @@ class Package(config.base.Configure):
     self.libraries       = framework.require('config.libraries', self)
     self.programs        = framework.require('config.programs', self)
     self.sourceControl   = framework.require('config.sourceControl',self)
-    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
-    self.petscdir        = framework.require('PETSc.options.petscdir', self.setCompilers)
-    self.petscclone      = framework.require('PETSc.options.petscclone',self.setCompilers)
+    try:
+      import PETSc.options
+      self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+      self.petscdir        = framework.require('PETSc.options.petscdir', self.setCompilers)
+      self.petscclone      = framework.require('PETSc.options.petscclone',self.setCompilers)
+      self.havePETSc       = True
+    except ImportError:
+      self.havePETSc       = False
+      self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
     if not self.isMPI and not self.package == 'make':
@@ -586,6 +596,11 @@ class Package(config.base.Configure):
     '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
     import retrieval
 
+    if self.havePETSc:
+      isClone = self.petscclone.isClone
+    else:
+      isClone = True
+
     retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     retriever.setup()
     retriever.saveLog()
@@ -604,7 +619,7 @@ class Package(config.base.Configure):
       if git_urls:
         if not hasattr(self.sourceControl, 'git'):
           self.logPrint('Git not found - skipping giturls: '+str(git_urls)+'\n')
-        elif (self.petscclone.isClone) or self.framework.clArgDB.has_key('with-git'):
+        elif isClone or self.framework.clArgDB.has_key('with-git'):
           download_urls = git_urls+download_urls
         else:
           download_urls = download_urls+git_urls
@@ -841,9 +856,13 @@ class Package(config.base.Configure):
     return self.rmArgs(args,rejects)
 
   def checkSharedLibrariesEnabled(self):
+    if self.havePETSc:
+      useShared = self.sharedLibraries.useShared
+    else:
+      useShared = True
     if self.framework.clArgDB.has_key('download-'+self.package+'-shared') and self.argDB['download-'+self.package+'-shared']:
       raise RuntimeError(self.package+' cannot use download-'+self.package+'-shared=1. This flag can only be used to disable '+self.package+' shared libraries')
-    if not self.sharedLibraries.useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
+    if not useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
       return False
     else:
       return True

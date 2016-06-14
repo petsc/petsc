@@ -24,7 +24,6 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.metis          = framework.require('config.packages.metis',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
@@ -48,7 +47,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+metis_inc+';'+parmetis_inc+'"')
     args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib+self.metis.lib)+'"')
 
-    if self.indexTypes.integerSize == 64:
+    if self.getDefaultIndexSize() == 64:
       args.append('-DXSDK_INDEX_SIZE=64')
 
     if not hasattr(self.compilers, 'FC'):
