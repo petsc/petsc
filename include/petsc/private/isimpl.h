@@ -95,6 +95,9 @@ struct _p_PetscSection {
   PetscObject                   clObj;        /* Key for the closure (right now we only have one) */
   PetscSection                  clSection;    /* Section giving the number of points in each closure */
   IS                            clPoints;     /* Points in each closure */
+  PetscInt                      clSize;       /* The size of a dof closure of a cell, when it is uniform */
+  PetscInt                     *clPerm;       /* A permutation of the cell dof closure, of size clSize */
+  PetscInt                     *clInvPerm;    /* The inverse of clPerm */
 };
 
 
