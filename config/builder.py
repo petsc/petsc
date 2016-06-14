@@ -456,62 +456,6 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                {'num': 'fas_newton_0_p4est', 'numProcs': 1, 'args': '-run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash', 'requires' : ['p4est']},
                                                                ],
                         'src/snes/examples/tutorials/ex33':   [{'numProcs': 1, 'args': '-snes_converged_reason -snes_monitor_short'}],
-                        'src/snes/examples/tutorials/ex36':   [# 2D serial P2/P1 tests 0-1
-                                                               {'numProcs': 1, 'args': ''}],
-                        'src/snes/examples/tutorials/ex52':   [# 2D Laplacian 0-3
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch -gpu', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
-                                                               # 2D Laplacian refined 4-8
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -batch -gpu', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -batch -gpu -gpu_batches 4', 'requires': ['cuda']},
-                                                               # 2D Elasticity 9-12
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
-                                                               # 2D Elasticity refined 13-17
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu -gpu_batches 4', 'requires': ['cuda']},
-                                                               # 3D Laplacian 18-20
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch -gpu', 'requires': ['cuda']},
-                                                               # 3D Laplacian refined 21-24
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -batch -gpu', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
-                                                               # 3D Elasticity 25-27
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity',
-                                                                'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
-                                                               # 3D Elasticity refined 28-31
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -op_type elasticity', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
-                                                               # 2D Laplacian OpenCL 32-35
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type basic -dm_plex_print_fem 1',
-                                                                'requires': ['opencl']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type opencl -dm_plex_print_fem 1 -dm_plex_print_tol 1.0e-06',
-                                                                'requires': ['opencl']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type opencl -petscfe_num_blocks 2 -dm_plex_print_fem 1 -dm_plex_print_tol 1.0e-06',
-                                                                'requires': ['opencl']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type opencl -petscfe_num_blocks 2 -petscfe_num_batches 2 -dm_plex_print_fem 1 -dm_plex_print_tol 1.0e-06',
-                                                                'requires': ['opencl']},
-                                                               # 2D Laplacian Parallel Refinement 36-37
-                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -compute_function -batch -gpu -gpu_batches 2', 'requires': ['opencl']},
-                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -refinement_rounds 3 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['opencl']},
-                                                               ],
                         'src/snes/examples/tutorials/ex62':   [# 2D serial P1 tests 0-3
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
@@ -626,7 +570,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                 # 3D Advection 12
                                                                 {'num': 'adv_0', 'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201', 'requires': 'Broken'},
                                                                 # 2D p4est advection
-                                                                {'num': 'p4est_advec_2d', 'numProcs': 1,'args': '-ufv_vtk_interval 0 -f -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash -dm_forest_maximum_refinement 5','requires':['p4est']},
+                                                                {'num': 'p4est_advec_2d', 'numProcs': 1,'args': '-ufv_vtk_interval 0 -f -dm_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash -dm_forest_maximum_refinement 5','requires':['p4est']},
                                                                 ],
                         'src/ts/examples/tutorials/ex18':      [# 2D harmonic velocity, no porosity 0-7
                                                                 {'num': 'p1p1', 'numProcs': 1, 'args': '-x_bd_type none -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_factor_shift_type nonzero -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check'},

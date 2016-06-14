@@ -282,8 +282,8 @@ PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM dm, PetscReal time, DMLabel l
         PetscFV fv = (PetscFV) obj;
 
         ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
+        ierr = PetscFVGetDualSpace(fv, &cellsp[f]);CHKERRQ(ierr);
+        sp[f] = cellsp[f];
       } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim*numComp[f];
@@ -534,7 +534,6 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
 
         ierr = PetscFVGetNumComponents(fv, &Ncf[f]);CHKERRQ(ierr);
         ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
@@ -1160,146 +1159,6 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   ierr = PetscFree6(funcVal,interpolant,coords,v0,J,invJ);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = VecSqrtAbs(D);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexApplyLimiter_Internal"
-PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter lim, PetscInt dim, PetscInt dof, PetscInt off, PetscInt cell, PetscInt face, PetscInt fStart, PetscInt fEnd,
-                                           PetscReal *cellPhi, const PetscScalar *x, const PetscScalar *cellgeom, const PetscFVCellGeom *cg, const PetscScalar *cx, const PetscScalar *cgrad)
-{
-  const PetscInt *children;
-  PetscInt        numChildren;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetTreeChildren(dm,face,&numChildren,&children);CHKERRQ(ierr);
-  if (numChildren) {
-    PetscInt c;
-
-    for (c = 0; c < numChildren; c++) {
-      PetscInt childFace = children[c];
-
-      if (childFace >= fStart && childFace < fEnd) {
-        ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,off,cell,childFace,fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
-      }
-    }
-  } else {
-    PetscScalar     *ncx;
-    PetscFVCellGeom *ncg;
-    const PetscInt  *fcells;
-    PetscInt         ncell, d;
-    PetscReal        v[3];
-
-    ierr  = DMPlexGetSupport(dm, face, &fcells);CHKERRQ(ierr);
-    ncell = cell == fcells[0] ? fcells[1] : fcells[0];
-    ierr  = DMPlexPointLocalRead(dm, ncell, x, &ncx);CHKERRQ(ierr);
-    ierr  = DMPlexPointLocalRead(dmCell, ncell, cellgeom, &ncg);CHKERRQ(ierr);
-    DMPlex_WaxpyD_Internal(dim, -1, cg->centroid, ncg->centroid, v);
-    for (d = 0; d < dof; ++d) {
-      /* We use the symmetric slope limited form of Berger, Aftosmis, and Murman 2005 */
-      PetscReal phi, flim = 0.5 * PetscRealPart(ncx[off+d] - cx[off+d]) / DMPlex_DotD_Internal(dim, &cgrad[d*dim], v);
-
-      ierr = PetscLimiterLimit(lim, flim, &phi);CHKERRQ(ierr);
-      cellPhi[d] = PetscMin(cellPhi[d], phi);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexReconstructGradients_Internal"
-PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, Vec locX, Vec grad)
-{
-  DM                 dmFace, dmCell, dmGrad;
-  DMLabel            ghostLabel;
-  PetscDS            prob;
-  PetscLimiter       lim;
-  const PetscScalar *facegeom, *cellgeom, *x;
-  PetscScalar       *gr;
-  PetscReal         *cellPhi;
-  PetscInt           dim, face, cell, field, dof, off, cStart, cEnd, cEndInterior;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetFieldIndex(prob, (PetscObject) fvm, &field);CHKERRQ(ierr);
-  ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
-  ierr = PetscDSGetFieldSize(prob, field, &dof);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
-  ierr = PetscFVGetLimiter(fvm, &lim);CHKERRQ(ierr);
-  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
-  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(locX, &x);CHKERRQ(ierr);
-  ierr = VecGetDM(grad, &dmGrad);CHKERRQ(ierr);
-  ierr = VecZeroEntries(grad);CHKERRQ(ierr);
-  ierr = VecGetArray(grad, &gr);CHKERRQ(ierr);
-  /* Reconstruct gradients */
-  for (face = fStart; face < fEnd; ++face) {
-    const PetscInt        *cells;
-    PetscFVFaceGeom       *fg;
-    PetscScalar           *cx[2];
-    PetscScalar           *cgrad[2];
-    PetscBool              boundary;
-    PetscInt               ghost, c, pd, d, numChildren, numCells;
-
-    ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
-    ierr = DMIsBoundaryPoint(dm, face, &boundary);CHKERRQ(ierr);
-    ierr = DMPlexGetTreeChildren(dm, face, &numChildren, NULL);CHKERRQ(ierr);
-    if (ghost >= 0 || boundary || numChildren) continue;
-    ierr = DMPlexGetSupportSize(dm, face, &numCells);CHKERRQ(ierr);
-    if (numCells != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "facet %d has %d support points: expected 2",face,numCells);
-    ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
-    for (c = 0; c < 2; ++c) {
-      ierr = DMPlexPointLocalRead(dm, cells[c], x, &cx[c]);CHKERRQ(ierr);
-      ierr = DMPlexPointGlobalRef(dmGrad, cells[c], gr, &cgrad[c]);CHKERRQ(ierr);
-    }
-    for (pd = 0; pd < dof; ++pd) {
-      PetscScalar delta = cx[1][off+pd] - cx[0][off+pd];
-
-      for (d = 0; d < dim; ++d) {
-        if (cgrad[0]) cgrad[0][pd*dim+d] += fg->grad[0][d] * delta;
-        if (cgrad[1]) cgrad[1][pd*dim+d] -= fg->grad[1][d] * delta;
-      }
-    }
-  }
-  /* Limit interior gradients (using cell-based loop because it generalizes better to vector limiters) */
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMGetWorkArray(dm, dof, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
-  for (cell = dmGrad && lim ? cStart : cEnd; cell < cEndInterior; ++cell) {
-    const PetscInt        *faces;
-    PetscScalar           *cx;
-    PetscFVCellGeom       *cg;
-    PetscScalar           *cgrad;
-    PetscInt               coneSize, f, pd, d;
-
-    ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(dm, cell, x, &cx);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(dmCell, cell, cellgeom, &cg);CHKERRQ(ierr);
-    ierr = DMPlexPointGlobalRef(dmGrad, cell, gr, &cgrad);CHKERRQ(ierr);
-    if (!cgrad) continue; /* Unowned overlap cell, we do not compute */
-    /* Limiter will be minimum value over all neighbors */
-    for (d = 0; d < dof; ++d) cellPhi[d] = PETSC_MAX_REAL;
-    for (f = 0; f < coneSize; ++f) {
-      ierr = DMPlexApplyLimiter_Internal(dm,dmCell,lim,dim,dof,off,cell,faces[f],fStart,fEnd,cellPhi,x,cellgeom,cg,cx,cgrad);CHKERRQ(ierr);
-    }
-    /* Apply limiter to gradient */
-    for (pd = 0; pd < dof; ++pd)
-      /* Scalar limiter applied to each component separately */
-      for (d = 0; d < dim; ++d) cgrad[pd*dim+d] *= cellPhi[pd];
-  }
-  ierr = DMRestoreWorkArray(dm, dof, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(locX, &x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(grad, &gr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

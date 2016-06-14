@@ -100,11 +100,14 @@ struct _n_Model {
   PetscReal        maxspeed;    /* estimate of global maximum speed (for CFL calculation) */
   PetscReal        bounds[2*DIM];
   DMBoundaryType   bcs[3];
+  PetscErrorCode   (*errorIndicator)(PetscInt, PetscReal, PetscInt, const PetscScalar[], const PetscScalar[], PetscReal *, void *);
+  void             *errorCtx;
 };
 
 struct _n_User {
   PetscInt numSplitFaces;
   PetscInt vtkInterval;   /* For monitor */
+  PetscInt monitorStepOffset;
   Model    model;
 };
 
@@ -793,6 +796,23 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ErrorIndicator_Simple"
+static PetscErrorCode ErrorIndicator_Simple(PetscInt dim, PetscReal volume, PetscInt numComps, const PetscScalar u[], const PetscScalar grad[], PetscReal *error, void *ctx)
+{
+  PetscReal      err = 0.;
+  PetscInt       i, j;
+
+  PetscFunctionBeginUser;
+  for (i = 0; i < numComps; i++) {
+    for (j = 0; j < dim; j++) {
+      err += PetscSqr(PetscRealPart(grad[i * dim + j]));
+    }
+  }
+  *error = volume * err;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ConstructCellBoundary"
 PetscErrorCode ConstructCellBoundary(DM dm, User user)
 {
@@ -1349,6 +1369,9 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
 
+  if (stepnum >= 0) {
+    stepnum += user->monitorStepOffset;
+  }
   if (stepnum >= 0) {           /* No summary for final time */
     Model             mod = user->model;
     PetscInt          c,cStart,cEnd,fcount,i;
@@ -1443,12 +1466,143 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "initializeTS"
+static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSCreate(PetscObjectComm((PetscObject)dm), ts);CHKERRQ(ierr);
+  ierr = TSSetType(*ts, TSSSP);CHKERRQ(ierr);
+  ierr = TSSetDM(*ts, dm);CHKERRQ(ierr);
+  ierr = TSMonitorSet(*ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
+  ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user);CHKERRQ(ierr);
+  ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user);CHKERRQ(ierr);
+  ierr = TSSetDuration(*ts,1000,2.0);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(*ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "adaptToleranceFVM"
+static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal refineTol, PetscReal coarsenTol, User user, TS *tsNew, Vec *solNew)
+{
+  DM                dm, gradDM, plex, cellDM, adaptedDM = NULL;
+  Vec               cellGeom, faceGeom;
+  PetscBool         isForest, computeGradient;
+  Vec               grad, locX;
+  PetscInt          cStart, cEnd, cEndInterior, c, dim;
+  PetscReal         minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2], minInd, maxInd, time;
+  const PetscScalar *pointVals;
+  const PetscScalar *pointGrads;
+  const PetscScalar *pointGeom;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = TSGetTime(ts,&time);CHKERRQ(ierr);
+  ierr = VecGetDM(sol, &dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometryFVM(dm, &faceGeom, &cellGeom, NULL);CHKERRQ(ierr);
+  ierr = PetscFVGetComputeGradients(fvm,&computeGradient);CHKERRQ(ierr);
+  ierr = PetscFVSetComputeGradients(fvm,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGradientDM(dm,fvm,&gradDM);CHKERRQ(ierr);
+  ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
+  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
+  ierr = DMPlexComputeGradientFVM(plex,fvm,faceGeom,cellGeom,&gradDM);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(plex,&locX);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, faceGeom, cellGeom, NULL);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(plex, sol, INSERT_VALUES, locX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (plex, sol, INSERT_VALUES, locX);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(gradDM, &grad);CHKERRQ(ierr);
+  ierr = DMPlexReconstructGradientsFVM(plex, locX, grad);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(plex,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+  cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
+  ierr = VecGetArrayRead(grad,&pointGrads);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
+  ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
+  if (isForest) {
+    DMLabel adaptLabel;
+
+    ierr = DMRemoveLabel(dm,"adapt",&adaptLabel);CHKERRQ(ierr);
+    ierr = PetscFree(adaptLabel);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);
+  }
+
+  for (c = cStart; c < cEnd; c++) {
+    PetscReal             errInd = 0.;
+    const PetscScalar     *pointGrad;
+    const PetscScalar     *pointVal;
+    const PetscFVCellGeom *cg;
+
+    ierr = DMPlexPointLocalRead(gradDM,c,pointGrads,&pointGrad);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(cellDM,c,pointGeom,&cg);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(plex,c,pointVals,&pointVal);CHKERRQ(ierr);
+
+    ierr = (user->model->errorIndicator)(dim,cg->volume,user->model->physics->dof,pointVal,pointGrad,&errInd,user->model->errorCtx);CHKERRQ(ierr);
+    minMaxInd[0] = PetscMin(minMaxInd[0],errInd);
+    minMaxInd[1] = PetscMax(minMaxInd[1],errInd);
+    if (errInd > refineTol) {
+      if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_REFINE);CHKERRQ(ierr);}
+    }
+    if (errInd < coarsenTol) {
+      if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_COARSEN);CHKERRQ(ierr);}
+    }
+  }
+  ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(grad,&pointGrads);CHKERRQ(ierr);
+  ierr = VecDestroy(&grad);CHKERRQ(ierr);
+  ierr = VecDestroy(&locX);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  ierr = PetscFVSetComputeGradients(fvm,computeGradient);CHKERRQ(ierr);
+  minMaxInd[1] = -minMaxInd[1];
+  ierr = MPI_Allreduce(minMaxInd,minMaxIndGlobal,2,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  minInd = minMaxIndGlobal[0];
+  maxInd = -minMaxIndGlobal[1];
+  ierr = PetscInfo2(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
+  if (maxInd > refineTol) { /* at least one cell is over the refinement threshold */
+    if (isForest) {
+      ierr = DMForestAdaptLabel(dm,"adapt",&adaptedDM);CHKERRQ(ierr);
+    }
+    else {
+      ierr = DMRefine(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
+    }
+  }
+  else if (isForest && minInd < coarsenTol) { /* at least one cell is under the coarsening threshold */
+    ierr = DMForestAdaptLabel(dm,"adapt",&adaptedDM);CHKERRQ(ierr);
+  }
+  else if (maxInd < coarsenTol) { /* all cells are under the coarsening threshold */
+    ierr = DMCoarsen(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
+  }
+  if (adaptedDM) {
+    if (tsNew) {
+      ierr = initializeTS(adaptedDM,user,tsNew);CHKERRQ(ierr);
+    }
+    if (solNew) {
+      ierr = DMCreateGlobalVector(adaptedDM, solNew);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) *solNew, "solution");CHKERRQ(ierr);
+      ierr = DMForestTransferVec(dm, sol, adaptedDM, *solNew, PETSC_TRUE, time);CHKERRQ(ierr);
+    }
+    if (isForest) {ierr = DMForestSetAdaptivityForest(adaptedDM,NULL);CHKERRQ(ierr);} /* clear internal references to the previous dm */
+    ierr = DMDestroy(&adaptedDM);CHKERRQ(ierr);
+  }
+  else {
+    if (tsNew) *tsNew = NULL;
+    if (solNew) *solNew = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   MPI_Comm          comm;
   PetscDS           prob;
   PetscFV           fvm;
+  PetscLimiter      limiter = NULL, noneLimiter = NULL;
   User              user;
   Model             mod;
   Physics           phys;
@@ -1459,8 +1613,9 @@ int main(int argc, char **argv)
   TSConvergedReason reason;
   Vec               X;
   PetscViewer       viewer;
-  PetscBool         vtkCellGeom, splitFaces, useAMR;
-  PetscInt          overlap;
+  PetscBool         vtkCellGeom, splitFaces, useAMR, viewInitial;
+  PetscReal         refineTol, coarsenTol;
+  PetscInt          overlap, targetCells, adaptInterval;
   char              filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
   char              physname[256]  = "advect";
   PetscErrorCode    ierr;
@@ -1468,13 +1623,18 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
-  ierr      = PetscNew(&user);CHKERRQ(ierr);
-  ierr      = PetscNew(&user->model);CHKERRQ(ierr);
-  ierr      = PetscNew(&user->model->physics);CHKERRQ(ierr);
-  mod       = user->model;
-  phys      = mod->physics;
-  mod->comm = comm;
-  useAMR    = PETSC_FALSE;
+  ierr          = PetscNew(&user);CHKERRQ(ierr);
+  ierr          = PetscNew(&user->model);CHKERRQ(ierr);
+  ierr          = PetscNew(&user->model->physics);CHKERRQ(ierr);
+  mod           = user->model;
+  phys          = mod->physics;
+  mod->comm     = comm;
+  useAMR        = PETSC_FALSE;
+  viewInitial   = PETSC_FALSE;
+  refineTol     = PETSC_MAX_REAL;
+  coarsenTol    = 0.;
+  targetCells   = 0;
+  adaptInterval = 1;
 
   /* Register physical models to be available on the command line */
   ierr = PetscFunctionListAdd(&PhysicsList,"advect"          ,PhysicsCreate_Advect);CHKERRQ(ierr);
@@ -1495,6 +1655,11 @@ int main(int argc, char **argv)
     vtkCellGeom = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_use_amr","use local adaptive mesh refinement","",useAMR,&useAMR,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ufv_refine_tol","tolerance for refining cells in AMR","",refineTol,&refineTol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ufv_coarsen_tol","tolerance for coarsening cells in AMR","",coarsenTol,&coarsenTol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ufv_target_cells","target number of cells in AMR","",targetCells,&targetCells,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ufv_view_initial_refinement","View initial conditions refinement history","",viewInitial,&viewInitial,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ufv_adapt_interval","time steps between AMR","",adaptInterval,&adaptInterval,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1519,12 +1684,13 @@ int main(int argc, char **argv)
     dim = DIM;
     if (!len) { /* a null name means just do a hex box */
       PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
-      PetscBool flg1, flg2;
+      PetscBool flg1, flg2, skew = PETSC_FALSE;
       PetscInt nret1 = DIM;
       PetscInt nret2 = 2*DIM;
       ierr = PetscOptionsBegin(comm,NULL,"Rectangular mesh options","");CHKERRQ(ierr);
       ierr = PetscOptionsIntArray("-grid_size","number of cells in each direction","",cells,&nret1,&flg1);CHKERRQ(ierr);
-      ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (e.g., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2);CHKERRQ(ierr);
+      ierr = PetscOptionsRealArray("-grid_bounds","bounds of the mesh in each direction (i.e., x_min,x_max,y_min,y_max","",mod->bounds,&nret2,&flg2);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-grid_skew_60","Skew grid for 60 degree shock mesh","",skew,&skew,NULL);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
       if (flg1) {
         dim = nret1;
@@ -1548,9 +1714,9 @@ int main(int argc, char **argv)
           PetscScalar *coord = &coords[i];
           for (j = 0; j < dimEmbed; j++) {
             coord[j] = mod->bounds[2 * j] + coord[j] * (mod->bounds[2 * j + 1] - mod->bounds[2 * j]);
-            if (dim==2 && cells[1]==1 && j==0 && 0) {
-              if (cells[0]==2 && coord[j]==mod->bounds[3] && i==8) {
-                coord[j] *= (1.57735026918963); /* hack to get 60 deg skewed mesh */
+            if (dim==2 && cells[1]==1 && j==0 && skew) {
+              if (cells[0]==2 && i==8) {
+                coord[j] = .57735026918963; /* hack to get 60 deg skewed mesh */
               }
               else if (cells[0]==3) {
                 if(i==2 || i==10) coord[j] = mod->bounds[1]/4.;
@@ -1574,6 +1740,7 @@ int main(int argc, char **argv)
   /* set up BCs, functions, tags */
   ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
   ierr = (*mod->setupbc)(dm,phys);CHKERRQ(ierr);
+  mod->errorIndicator = ErrorIndicator_Simple;
 
   {
     DM dmDist;
@@ -1605,7 +1772,7 @@ int main(int argc, char **argv)
     PetscBool flg;
 
     ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-    ierr = PetscOptionsFList("-dm_plex_convert_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();
     if (flg) {
       DM dmConv;
@@ -1652,75 +1819,78 @@ int main(int argc, char **argv)
   ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
   ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
 
-  ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
-  ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
-  ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user);CHKERRQ(ierr);
-  ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user);CHKERRQ(ierr);
+  ierr = initializeTS(dm, user, &ts);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
-  {
-    PetscBool adaptInitial = useAMR;
+  ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+  if (useAMR) {
+    /* use no limiting when reconstructing gradients for adaptivity */
+    ierr = PetscFVGetLimiter(fvm, &limiter);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)limiter);CHKERRQ(ierr);
 
-    do {
-      ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
-      if (adaptInitial) {
-        DM gradDM;
+    ierr = PetscLimiterCreate(PetscObjectComm((PetscObject)fvm),&noneLimiter);CHKERRQ(ierr);
+    ierr = PetscLimiterSetType(noneLimiter,PETSCLIMITERNONE);CHKERRQ(ierr);
 
-        ierr = DMPlexTSGetGradientDM(dm, fvm, &gradDM);CHKERRQ(ierr);
-        if (gradDM) {
-          Vec               grad, locX;
-          PetscInt          cStart, cEnd, cEndInterior, c;
-          PetscReal         threshold = 0.1;
-          const PetscScalar *pointGrads;
+    ierr = PetscFVSetLimiter(fvm,noneLimiter);CHKERRQ(ierr);
+    if (targetCells > 0) {
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"AMR with target cell count not implemented yet.");
+    } else {
+      PetscInt adaptIter;
 
-          ierr = DMCreateLocalVector(dm, &locX);CHKERRQ(ierr);
-          /* this should hopefully include boundary conditions */
-          ierr = DMGlobalToLocalBegin(dm, X, INSERT_ALL_VALUES, locX);CHKERRQ(ierr);
-          ierr = DMGlobalToLocalEnd  (dm, X, INSERT_ALL_VALUES, locX);CHKERRQ(ierr);
-          ierr = DMCreateGlobalVector(gradDM, &grad);CHKERRQ(ierr);
-          ierr = DMPlexReconstructGradientsFVM(dm, locX, grad);CHKERRQ(ierr);
-          ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-          ierr = DMPlexGetHybridBounds(dm,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-          cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
-          ierr = VecGetArrayRead(grad,&pointGrads);CHKERRQ(ierr);
-          ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);
+      for (adaptIter = 0;;adaptIter++) {
+        PetscLogDouble bytes;
+        TS             tsNew = NULL;
 
-          adaptInitial = PETSC_FALSE;
-          for (c = cStart; c < cEnd; c++) {
-            PetscInt  i;
-            PetscReal vol, gradnorm2 = 0., errInd;
-            const     PetscScalar *pointGrad;
+        if (viewInitial) {
+          PetscViewer viewer;
+          char        buf[256];
+          PetscBool   isHDF5, isVTK;
 
-            ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
-            ierr = DMPlexPointLocalRead(gradDM,c,pointGrads,&pointGrad);CHKERRQ(ierr);
-
-            for (i = 0; i < phys->dof; i++) gradnorm2 += PetscSqr(PetscRealPart(pointGrad[i]));
-            errInd = PetscSqrtReal(vol * gradnorm2);
-            if (errInd > threshold) {
-              ierr         = DMSetLabelValue(dm,"adapt",c,DM_FOREST_REFINE);CHKERRQ(ierr);
-              adaptInitial = PETSC_TRUE;
-            }
+          ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
+          ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+          ierr = PetscViewerSetOptionsPrefix(viewer,"initial_");CHKERRQ(ierr);
+          ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK);CHKERRQ(ierr);
+          if (isHDF5) {
+            ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.h5", adaptIter);CHKERRQ(ierr);
+          } else if (isVTK) {
+            ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.vtu", adaptIter);CHKERRQ(ierr);
+            ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
           }
-          ierr = VecRestoreArrayRead(grad,&pointGrads);CHKERRQ(ierr);
-          ierr = VecDestroy(&grad);CHKERRQ(ierr);
-          ierr = VecDestroy(&locX);CHKERRQ(ierr);
-          ierr = MPI_Allreduce(&adaptInitial,&adaptInitial,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-          if (adaptInitial) {
-            DM adaptedDM;
-
-            ierr = DMForestTemplate(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
-            ierr = DMForestSetAdaptivityLabel(adaptedDM,"adapt");CHKERRQ(ierr);
-            ierr = DMSetUp(adaptedDM);CHKERRQ(ierr);
-            ierr = DMDestroy(&dm);CHKERRQ(ierr);
-            dm   = adaptedDM;
+          ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+          ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
+          if (isHDF5) {
+            ierr = DMView(dm,viewer);CHKERRQ(ierr);
+            ierr = PetscViewerFileSetMode(viewer,FILE_MODE_UPDATE);CHKERRQ(ierr);
           }
+          ierr = VecView(X,viewer);CHKERRQ(ierr);
+          ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+        }
+
+        ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
+        ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
+        ierr = adaptToleranceFVM(fvm, ts, X, refineTol, coarsenTol, user, &tsNew, NULL);CHKERRQ(ierr);
+        if (!tsNew) {
+          break;
+        } else {
+          ierr = DMDestroy(&dm);CHKERRQ(ierr);
+          ierr = VecDestroy(&X);CHKERRQ(ierr);
+          ierr = TSDestroy(&ts);CHKERRQ(ierr);
+          ts   = tsNew;
+          ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+          ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+          ierr = DMCreateGlobalVector(dm,&X);CHKERRQ(ierr);
+          ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
+          ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
         }
       }
-    } while (adaptInitial);
+    }
+    /* restore original limiter */
+    ierr = PetscFVSetLimiter(fvm,limiter);CHKERRQ(ierr);
   }
+
   if (vtkCellGeom) {
     DM  dmCell;
     Vec cellgeom, partition;
@@ -1737,18 +1907,69 @@ int main(int argc, char **argv)
     ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   }
 
-  ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
   /* collect max maxspeed from all processes -- todo */
+  ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
   mod->maxspeed = phys->maxspeed;
   if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   dt   = cfl * minRadius / user->model->maxspeed;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+  if (!useAMR) {
+    ierr = TSSolve(ts,X);CHKERRQ(ierr);
+    ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
+    ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+  } else {
+    PetscReal finalTime;
+    PetscInt  adaptIter;
+    TS        tsNew = NULL;
+    Vec       solNew = NULL;
+    PetscInt  incSteps;
+
+    ierr   = TSGetDuration(ts,NULL,&finalTime);CHKERRQ(ierr);
+    ierr   = TSSetDuration(ts,adaptInterval,finalTime);CHKERRQ(ierr);
+    ierr   = TSSolve(ts,X);CHKERRQ(ierr);
+    ierr   = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
+    ierr   = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+    for (adaptIter = 0;ftime < finalTime;adaptIter++) {
+      PetscLogDouble bytes;
+
+      ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
+      ierr = PetscInfo2(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
+      ierr = PetscFVSetLimiter(fvm,noneLimiter);CHKERRQ(ierr);
+      if (targetCells > 0) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"AMR with target cell count not implemented yet.");
+      }
+      else {
+        ierr = adaptToleranceFVM(fvm,ts,X,refineTol,coarsenTol,user,&tsNew,&solNew);CHKERRQ(ierr);
+      }
+      ierr = PetscFVSetLimiter(fvm,limiter);CHKERRQ(ierr);
+      if (tsNew) {
+        ierr = PetscInfo(ts, "AMR used\n");CHKERRQ(ierr);
+        ierr = DMDestroy(&dm);CHKERRQ(ierr);
+        ierr = VecDestroy(&X);CHKERRQ(ierr);
+        ierr = TSDestroy(&ts);CHKERRQ(ierr);
+        ts   = tsNew;
+        X    = solNew;
+        ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+        ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+        ierr = DMPlexTSGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
+        mod->maxspeed = phys->maxspeed;
+        if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+        dt   = cfl * minRadius / user->model->maxspeed;
+        ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
+      }
+      else {
+        ierr = PetscInfo(ts, "AMR not used\n");CHKERRQ(ierr);
+      }
+      user->monitorStepOffset = nsteps;
+      ierr    = TSSetDuration(ts,adaptInterval,finalTime);CHKERRQ(ierr);
+      ierr    = TSSolve(ts,X);CHKERRQ(ierr);
+      ierr    = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
+      ierr    = TSGetTimeStepNumber(ts,&incSteps);CHKERRQ(ierr);
+      nsteps += incSteps;
+    }
+  }
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
@@ -1762,6 +1983,8 @@ int main(int argc, char **argv)
   ierr = PetscFree(user->model);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = PetscLimiterDestroy(&limiter);CHKERRQ(ierr);
+  ierr = PetscLimiterDestroy(&noneLimiter);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fvm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();

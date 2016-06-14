@@ -454,6 +454,8 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  ierr = DMCreateLabel(dm,"marker");CHKERRQ(ierr);
+  ierr = DMCreateLabel(dm,"Face Sets");CHKERRQ(ierr);
   switch (dim) {
   case 2:
     faceMarkerTop    = 3;

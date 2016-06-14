@@ -88,7 +88,9 @@ PETSC_EXTERN PetscErrorCode DMForestGetComputeAdaptivitySF(DM, PetscBool *);
 
 PETSC_EXTERN PetscErrorCode DMForestGetAdaptivitySF(DM, PetscSF *, PetscSF *);
 
-PETSC_EXTERN PetscErrorCode DMForestTransferVec(DM, Vec, DM, Vec);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivitySuccess(DM, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode DMForestTransferVec(DM, Vec, DM, Vec, PetscBool, PetscReal);
 
 /* for a quadtree/octree mesh, this is the x:1 condition: 1 indicates a uniform mesh,
  *                                                        2 indicates typical 2:1,
@@ -110,6 +112,9 @@ PETSC_EXTERN PetscErrorCode DMForestGetWeightCapacity(DM, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode DMForestSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMForestSetUp(DM);
+
+/* convenience wrapper to common adaptivity pattern */
+PETSC_EXTERN PetscErrorCode DMForestAdaptLabel(DM, const char [], DM *);
 
 PETSC_EXTERN PetscErrorCode DMForestGetFineProjector(DM,Mat *);
 PETSC_EXTERN PetscErrorCode DMForestGetCoarseRestrictor(DM,Mat *);

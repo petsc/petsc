@@ -4877,7 +4877,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (snes->dm) {               /* Move the DMSNES context over to the new DM unless the new DM already has one */
-    if (snes->dm->dmsnes && snes->dmAuto && !dm->dmsnes) {
+    if (snes->dm->dmsnes && !dm->dmsnes) {
       ierr = DMCopyDMSNES(snes->dm,dm);CHKERRQ(ierr);
       ierr = DMGetDMSNES(snes->dm,&sdm);CHKERRQ(ierr);
       if (sdm->originaldm == snes->dm) sdm->originaldm = dm; /* Grant write privileges to the replacement DM */

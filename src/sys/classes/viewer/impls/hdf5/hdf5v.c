@@ -62,6 +62,7 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   }
   ierr = PetscFree(hdf5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -246,6 +247,8 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (hdf5->file_id) PetscStackCallHDF5(H5Fclose,(hdf5->file_id));
+  if (hdf5->filename) {ierr = PetscFree(hdf5->filename);CHKERRQ(ierr);}
   ierr = PetscStrallocpy(name, &hdf5->filename);CHKERRQ(ierr);
   /* Set up file access property list with parallel I/O access */
   PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
@@ -272,6 +275,18 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileGetName_HDF5"
+static PetscErrorCode PetscViewerFileGetName_HDF5(PetscViewer viewer,const char **name)
+{
+  PetscViewer_HDF5 *vhdf5 = (PetscViewer_HDF5*)viewer->data;
+
+  PetscFunctionBegin;
+  *name = vhdf5->filename;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_HDF5"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 {
@@ -291,6 +306,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   hdf5->groups           = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetBaseDimension2_C",PetscViewerHDF5SetBaseDimension2_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetSPOutput_C",PetscViewerHDF5SetSPOutput_HDF5);CHKERRQ(ierr);

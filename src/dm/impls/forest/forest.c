@@ -183,6 +183,7 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
     ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
     ierr = DMSetPeriodicity(*tdm,maxCell,L,bd);CHKERRQ(ierr);
   }
+  ierr = DMCopyBoundary(dm,*tdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -388,6 +389,9 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func) (
   by users directly: DMForestTemplate() constructs a new forest to be adapted from an old forest and calls this
   routine.
 
+  Note that this can be called after setup with adapt = NULL, which will clear all internal data related to the
+  adaptivity forest from dm.  This way, repeatedly adapting does not leave stale DM objects in memory.
+
   Logically collective on dm
 
   Input Parameter:
@@ -400,14 +404,23 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func) (
 @*/
 PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
 {
-  DM_Forest      *forest;
+  DM_Forest      *forest, *adaptForest, *oldAdaptForest;
+  DM             oldAdapt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  forest = (DM_Forest*) dm->data;
-  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  forest   = (DM_Forest*) dm->data;
+  ierr     = DMForestGetAdaptivityForest(dm,&oldAdapt);CHKERRQ(ierr);
+  if (adapt != NULL && dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
+  adaptForest    = (DM_Forest*) (adapt ? adapt->data : NULL);
+  oldAdaptForest = (DM_Forest*) (oldAdapt ? oldAdapt->data : NULL);
+  if (adaptForest != oldAdaptForest) {
+    ierr = PetscSFDestroy(&forest->preCoarseToFine);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&forest->coarseToPreFine);CHKERRQ(ierr);
+    if (forest->clearadaptivityforest) {ierr = (forest->clearadaptivityforest)(dm);CHKERRQ(ierr);}
+  }
   switch (forest->adaptPurpose) {
   case DM_FOREST_KEEP:
     ierr          = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);
@@ -957,6 +970,41 @@ PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivitySuccess"
+/*@
+  DMForestGetAdaptivitySuccess - Return whether the requested adaptation (refinement, coarsening, repartitioning,
+  etc.) was successful.  PETSC_FALSE indicates that the post-adaptation forest is the same as the pre-adpatation
+  forest.  A requested adaptation may have been unsuccessful if, for example, the requested refinement would have
+  exceeded the maximum refinement level.
+
+  Collective on dm
+
+  Input Parameter:
+
+. dm - the post-adaptation forest
+
+  Output Parameter:
+
+. success - PETSC_TRUE if the post-adaptation forest is different from the pre-adaptation forest.
+
+  Level: intermediate
+
+.see
+@*/
+PetscErrorCode DMForestGetAdaptivitySuccess(DM dm, PetscBool *success)
+{
+  DM_Forest      *forest;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() has not been called yet.");
+  forest = (DM_Forest *) dm->data;
+  ierr = (forest->getadaptivitysuccess)(dm,success);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMForestSetComputeAdaptivitySF"
 /*@
   DMForestSetComputeAdaptivitySF - During the pre-setup phase, set whether transfer PetscSFs should be computed
@@ -986,7 +1034,7 @@ PetscErrorCode DMForestSetComputeAdaptivitySF(DM dm, PetscBool computeSF)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMForestTransferVec"
-PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut)
+PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscBool useBCs, PetscReal time)
 {
   DM_Forest      *forest;
   PetscErrorCode ierr;
@@ -998,7 +1046,7 @@ PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut)
   PetscValidHeaderSpecific(vecOut ,VEC_CLASSID ,4);
   forest = (DM_Forest *) dmIn->data;
   if (!forest->transfervec) SETERRQ(PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"DMForestTransferVec() not implemented");
-  ierr = (forest->transfervec)(dmIn,vecIn,dmOut,vecOut);CHKERRQ(ierr);
+  ierr = (forest->transfervec)(dmIn,vecIn,dmOut,vecOut,useBCs,time);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1649,6 +1697,39 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
     ierr = DMLabelSetDefaultValue(coarsen,DM_FOREST_COARSEN);CHKERRQ(ierr);
   }
   ierr = DMForestSetAdaptivityLabel(*dmCoarsened,"coarsen");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestAdaptLabel"
+/*@
+  DMForestAdaptLabel - Adapt a forest based on a label with values interpreted as coarsening and refining flags.
+
+  Collective on dm
+
+  Input parameters:
++ dm - the pre-adaptation forest
+- name - the name of the label with the flags: "adapt" will be used in NULL is passed
+
+  Output parameters:
+. adaptedDM - the adapted forest: will be NULL if no refining or coarsening occurred.
+
+  Level: intermediate
+@*/
+PetscErrorCode DMForestAdaptLabel(DM dm, const char name[], DM *adaptedDM)
+{
+  PetscBool      success;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMForestTemplate(dm,PetscObjectComm((PetscObject)dm),adaptedDM);CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityLabel(*adaptedDM,name ? name : "adapt");CHKERRQ(ierr);
+  ierr = DMSetUp(*adaptedDM);CHKERRQ(ierr);
+  ierr = DMForestGetAdaptivitySuccess(*adaptedDM,&success);CHKERRQ(ierr);
+  if (!success) {
+    ierr = DMDestroy(adaptedDM);CHKERRQ(ierr);
+    *adaptedDM = NULL;
+  }
   PetscFunctionReturn(0);
 }
 

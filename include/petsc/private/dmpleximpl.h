@@ -204,7 +204,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems
 PETSC_INTERN PetscErrorCode DMPlexLabelComplete_Internal(DM,DMLabel,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM,DM,const char *,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM,DM,PetscSF,PetscInt *,Mat);
-PETSC_EXTERN PetscErrorCode DMPlexTransferVecTree(DM,Vec,DM,Vec,PetscSF,PetscSF,PetscInt *,PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexTransferVecTree(DM,Vec,DM,Vec,PetscSF,PetscSF,PetscInt *,PetscInt *,PetscBool,PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorTree(DM,DM,PetscSF,PetscInt *,Mat);
 PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM,PetscSection,PetscInt,PetscInt,const PetscInt*,const PetscScalar*,PetscInt*,PetscInt*,PetscInt**,PetscScalar**,PetscInt*,PetscBool);
 PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,PetscInt,PetscInt []);
@@ -251,8 +251,6 @@ PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscInt, PetscInt, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscInt, PetscInt, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
-PETSC_EXTERN PetscErrorCode DMPlexApplyLimiter_Internal(DM, DM, PetscLimiter, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt,
-                                                        PetscReal *, const PetscScalar *, const PetscScalar *, const PetscFVCellGeom *, const PetscScalar *, const PetscScalar *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlex_Invert2D_Internal"

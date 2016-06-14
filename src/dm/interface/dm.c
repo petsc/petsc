@@ -6000,18 +6000,11 @@ PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList *boundary)
 #define __FUNCT__ "DMCopyBoundary"
 PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 {
-  DMBoundary     b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMBoundaryDestroy(&dmNew->boundary);CHKERRQ(ierr);
   ierr = DMBoundaryDuplicate(dm->boundary, &dmNew->boundary);CHKERRQ(ierr);
-  for (b = dmNew->boundary->next; b; b = b->next) {
-    if (b->labelname) {
-      ierr = DMGetLabel(dmNew, b->labelname, &b->label);CHKERRQ(ierr);
-      if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
-    }
-  }
   PetscFunctionReturn(0);
 }
 
@@ -6056,8 +6049,6 @@ PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], co
   ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
   if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
   if (b->labelname) {
-    ierr = DMGetLabel(dm, b->labelname, &b->label);CHKERRQ(ierr);
-    if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
   }
   b->essential       = isEssential;
   b->field           = field;
@@ -6186,7 +6177,7 @@ PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const c
 #define __FUNCT__ "DMIsBoundaryPoint"
 PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 {
-  DMBoundary     b    = dm->boundary->next;
+  DMBoundary     b = dm->boundary->next;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6194,6 +6185,7 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
   PetscValidPointer(isBd, 3);
   *isBd = PETSC_FALSE;
   while (b && !(*isBd)) {
+    if (!b->label) {ierr = DMGetLabel(dm, b->labelname, &b->label);CHKERRQ(ierr);}
     if (b->label) {
       PetscInt i;
 
