@@ -1075,7 +1075,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     /* store the original rhs */
     if (copy_rhs) {
       ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
-      copy_rhs = PETSC_FALSE;
     }
 
     /* change rhs */
