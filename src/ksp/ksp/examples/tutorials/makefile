@@ -728,7 +728,16 @@ runex10_boomeramg_euclid_bj:
 	   if (${DIFF} output/ex10_boomeramg_euclid_bj.out ex10_boomeramg_euclid_bj.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_boomeramg_euclid_bj, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_boomeramg_euclid_bj.tmp
-
+runex10_cr:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_type cr -ksp_monitor_short -pc_type icc > ex10_cr.tmp 2>&1; \
+	   if (${DIFF} output/ex10_cr.out ex10_cr.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_cr, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_cr.tmp
+runex10_lcd:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_type lcd -ksp_monitor_short -pc_type icc > ex10_lcd.tmp 2>&1; \
+	   if (${DIFF} output/ex10_lcd.out ex10_lcd.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_lcd, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_lcd.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 LEVELS = 0 2 4
 runex10_19:
@@ -1594,7 +1603,7 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PET
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19  runex10_ILU runex10_ILUBAIJ runex10_cg \
+                                 runex10_9 runex10_10 runex10_19  runex10_ILU runex10_ILUBAIJ runex10_cg runex10_cr runex10_lcd \
                                  runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm \
                                  ex27.PETSc runex27 ex27.rm
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
