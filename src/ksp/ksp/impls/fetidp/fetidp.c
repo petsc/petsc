@@ -9,10 +9,11 @@ typedef struct {
 } KSP_FETIDPMon;
 
 typedef struct {
-  KSP           innerksp;  /* the KSP for the Lagrange multipliers */
-  PC            innerbddc; /* the inner BDDC object */
-  PetscBool     fully_redundant;
-  KSP_FETIDPMon *monctx;   /* monitor context */
+  KSP           innerksp;        /* the KSP for the Lagrange multipliers */
+  PC            innerbddc;       /* the inner BDDC object */
+  PetscBool     fully_redundant; /* true for using a fully redundant set of multipliers */
+  PetscBool     userbddc;        /* true if the user provided the PCBDDC object */
+  KSP_FETIDPMon *monctx;         /* monitor context, used to pass user defined monitors for the physical */
 } KSP_FETIDP;
 
 #undef __FUNCT__
@@ -100,6 +101,7 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp,PC pc)
   ierr = PCDestroy(&fetidp->innerbddc);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
   fetidp->innerbddc = pc;
+  fetidp->userbddc = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -324,6 +326,13 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* set options prefixes for the inner objects, since the parent prefix will be valid at this point */
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)fetidp->innerksp,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)fetidp->innerksp,"fetidp_");CHKERRQ(ierr);
+  if (!fetidp->userbddc) {
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)fetidp->innerbddc,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+    ierr = PetscObjectAppendOptionsPrefix((PetscObject)fetidp->innerbddc,"fetidp_bddc_");CHKERRQ(ierr);
+  }
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP FETIDP options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_fullyredundant","Use fully redundant multipliers","none",fetidp->fully_redundant,&fetidp->fully_redundant,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -337,16 +346,16 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 
    This class implements the FETI-DP method [1].
    The preconditioning matrix for the KSP must be of type MATIS.
-   The FETI-DP linear system is automatically generated constructing an internal PCBDDC object, and it is solved using an inner KSP object.
+   The FETI-DP linear system, which is automatically generated constructing an internal PCBDDC object, it is solved using an inner KSP object.
 
    Options Database Keys:
 .   -ksp_fetidp_fullyredundant <false> : use a fully redundant set of Lagrange multipliers
 
    Level: Advanced
 
-   Notes: Options for the inner KSP and for the customization of the PCBDDC object can be specified at command line prepending -fetidp_ . E.g.,
+   Notes: Options for the inner KSP and for the customization of the PCBDDC object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
 .vb
-      -fetidp_ksp_type gmres -fetidp_pc_bddc_symmetric false
+      -fetidp_ksp_type gmres -fetidp_bddc_pc_bddc_symmetric false
 .ve
    will use GMRES for the solution of the linear system on the Lagrange multipliers, generated using a non-symmetric PCBDDC.
 
@@ -401,10 +410,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFETIDPGetInnerKSP_C",KSPFETIDPGetInnerKSP_FETIDP);CHKERRQ(ierr);
   /* need to call KSPSetUp_FETIDP even with KSP_SETUP_NEWMATRIX */
   ksp->setupnewmatrix = PETSC_TRUE;
-  /* set options prefixes for the inner objects */
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)fetidp->innerksp,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)fetidp->innerksp,"fetidp_");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)fetidp->innerbddc,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)fetidp->innerbddc,"fetidp_");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
