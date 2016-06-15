@@ -1,5 +1,6 @@
 #include <petsc/private/dmimpl.h>           /*I      "petscdm.h"          I*/
 #include <petsc/private/dmlabelimpl.h>      /*I      "petscdmlabel.h"     I*/
+#include <petsc/private/petscdsimpl.h>      /*I      "petscds.h"     I*/
 #include <petscdmplex.h>
 #include <petscsf.h>
 #include <petscds.h>
@@ -74,8 +75,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
   ierr = PetscNew(&(v->labels));CHKERRQ(ierr);
   v->labels->refct = 1;
-  ierr = PetscNew(&(v->boundary));CHKERRQ(ierr);
-  v->boundary->refct = 1;
   *dm = v;
   PetscFunctionReturn(0);
 }
@@ -521,8 +520,6 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList *boundary);
-
 #undef __FUNCT__
 #define __FUNCT__ "DMDestroyLabelLinkList"
 PetscErrorCode DMDestroyLabelLinkList(DM dm)
@@ -670,7 +667,15 @@ PetscErrorCode  DMDestroy(DM *dm)
     }
     ierr = PetscFree((*dm)->labels);CHKERRQ(ierr);
   }
-  ierr = DMBoundaryDestroy(&(*dm)->boundary);CHKERRQ(ierr);
+  {
+    DMBoundary next = (*dm)->boundary;
+    while (next) {
+      DMBoundary b = next;
+
+      next = b->next;
+      ierr = PetscFree(b);CHKERRQ(ierr);
+    }
+  }
 
   ierr = PetscObjectDestroy(&(*dm)->dmksp);CHKERRQ(ierr);
   ierr = PetscObjectDestroy(&(*dm)->dmsnes);CHKERRQ(ierr);
@@ -5938,72 +5943,13 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 /*=== DMBoundary code ===*/
 
 #undef __FUNCT__
-#define __FUNCT__ "DMBoundaryDuplicate"
-PetscErrorCode DMBoundaryDuplicate(DMBoundaryLinkList bd, DMBoundaryLinkList *boundary)
-{
-  DMBoundary     b = bd->next, b2, bold = NULL;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscNew(boundary);CHKERRQ(ierr);
-  (*boundary)->refct = 1;
-  (*boundary)->next = NULL;
-  for (; b; b = b->next, bold = b2) {
-    ierr = PetscNew(&b2);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(b->name, (char **) &b2->name);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(b->labelname, (char **) &b2->labelname);CHKERRQ(ierr);
-    ierr = PetscMalloc1(b->numids, &b2->ids);CHKERRQ(ierr);
-    ierr = PetscMemcpy(b2->ids, b->ids, b->numids*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc1(b->numcomps, &b2->comps);CHKERRQ(ierr);
-    ierr = PetscMemcpy(b2->comps, b->comps, b->numcomps*sizeof(PetscInt));CHKERRQ(ierr);
-    b2->essential = b->essential;
-    b2->field     = b->field;
-    b2->numcomps  = b->numcomps;
-    b2->func      = b->func;
-    b2->numids    = b->numids;
-    b2->ctx       = b->ctx;
-    b2->next      = NULL;
-    if (!(*boundary)->next) (*boundary)->next   = b2;
-    if (bold)        bold->next = b2;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMBoundaryDestroy"
-PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList *boundary)
-{
-  DMBoundary     b, next;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!boundary) PetscFunctionReturn(0);
-  if (--((*boundary)->refct)) {
-    *boundary = NULL;
-    PetscFunctionReturn(0);
-  }
-  b = (*boundary)->next;
-  for (; b; b = next) {
-    next = b->next;
-    ierr = PetscFree(b->comps);CHKERRQ(ierr);
-    ierr = PetscFree(b->ids);CHKERRQ(ierr);
-    ierr = PetscFree(b->name);CHKERRQ(ierr);
-    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
-    ierr = PetscFree(b);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(*boundary);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMCopyBoundary"
-PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
+PETSC_DEPRECATED("Use DMGetDS(), PetscDSCopyBoundary()") PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMBoundaryDestroy(&dmNew->boundary);CHKERRQ(ierr);
-  ierr = DMBoundaryDuplicate(dm->boundary, &dmNew->boundary);CHKERRQ(ierr);
+  ierr = PetscDSCopyBoundary(dm->prob,dmNew->prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6108,25 +6054,50 @@ PETSC_DEPRECATED("Use DMGetDS(), PetscDSGetBoundary()") PetscErrorCode DMGetBoun
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPopulateBoundary"
+static PetscErrorCode DMPopulateBoundary(DM dm)
+{
+  DSBoundary dsbound;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dm->boundary) PetscFunctionReturn(0);
+  dsbound = dm->prob->boundary;
+  while (dsbound) {
+    DMBoundary dmbound;
+
+    ierr = PetscNew(&dmbound);CHKERRQ(ierr);
+    dmbound->dsboundary = dsbound;
+    ierr = DMGetLabel(dm, dsbound->labelname, &(dmbound->label));CHKERRQ(ierr);
+    if (!dmbound->label) PetscInfo2(dm, "DSBoundary %s wants label %s, which is not in this dm.\n",dsbound->name,dsbound->labelname);CHKERRQ(ierr);
+    dmbound->next = dm->boundary;
+    dm->boundary  = dmbound;
+    dsbound = dsbound->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMIsBoundaryPoint"
 PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 {
-  DMBoundary     b = dm->boundary->next;
+  DMBoundary     b = dm->boundary;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(isBd, 3);
   *isBd = PETSC_FALSE;
+  ierr = DMPopulateBoundary(dm);CHKERRQ(ierr);
   while (b && !(*isBd)) {
-    DMLabel label;
+    DMLabel    label = b->label;
+    DSBoundary dsb = b->dsboundary;
 
-    ierr = DMGetLabel(dm,b->labelname,&label);CHKERRQ(ierr);
     if (label) {
       PetscInt i;
 
-      for (i = 0; i < b->numids && !(*isBd); ++i) {
-        ierr = DMLabelStratumHasPoint(label, b->ids[i], point, isBd);CHKERRQ(ierr);
+      for (i = 0; i < dsb->numids && !(*isBd); ++i) {
+        ierr = DMLabelStratumHasPoint(label, dsb->ids[i], point, isBd);CHKERRQ(ierr);
       }
     }
     b = b->next;

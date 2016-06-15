@@ -1124,37 +1124,38 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptio
   PetscFunctionBegin;
   /* Handle boundary conditions */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) dm), NULL, "Boundary condition options", "");CHKERRQ(ierr);
-  for (b = dm->boundary->next; b; b = b->next) {
-    char      optname[1024];
-    PetscInt  ids[1024], len = 1024, i;
-    PetscBool flg;
+  for (b = dm->boundary; b; b = b->next) {
+    DSBoundary dsb = b->dsboundary;
+    char       optname[1024];
+    PetscInt   ids[1024], len = 1024, i;
+    PetscBool  flg;
 
-    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s", b->name);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s", dsb->name);CHKERRQ(ierr);
     ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
     ierr = PetscOptionsIntArray(optname, "List of boundary IDs", "", ids, &len, &flg);CHKERRQ(ierr);
     if (flg) {
       DMLabel label;
 
-      ierr = DMGetLabel(dm, b->labelname, &label);CHKERRQ(ierr);
+      ierr = DMGetLabel(dm, dsb->labelname, &label);CHKERRQ(ierr);
       for (i = 0; i < len; ++i) {
         PetscBool has;
 
         ierr = DMLabelHasValue(label, ids[i], &has);CHKERRQ(ierr);
-        if (!has) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Boundary id %D is not present in the label %s", ids[i], b->name);
+        if (!has) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Boundary id %D is not present in the label %s", ids[i], dsb->name);
       }
-      b->numids = len;
-      ierr = PetscFree(b->ids);CHKERRQ(ierr);
-      ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
+      dsb->numids = len;
+      ierr = PetscFree(dsb->ids);CHKERRQ(ierr);
+      ierr = PetscMalloc1(len, &dsb->ids);CHKERRQ(ierr);
+      ierr = PetscMemcpy(dsb->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
     }
-    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", dsb->name);CHKERRQ(ierr);
     ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
     ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
     if (flg) {
-      b->numcomps = len;
-      ierr = PetscFree(b->comps);CHKERRQ(ierr);
-      ierr = PetscMalloc1(len, &b->comps);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->comps, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
+      dsb->numcomps = len;
+      ierr = PetscFree(dsb->comps);CHKERRQ(ierr);
+      ierr = PetscMalloc1(len, &dsb->comps);CHKERRQ(ierr);
+      ierr = PetscMemcpy(dsb->comps, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
