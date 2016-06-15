@@ -3880,9 +3880,9 @@ PetscErrorCode DMSetDS(DM dm, PetscDS prob)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject) prob);CHKERRQ(ierr);
   ierr = PetscDSDestroy(&dm->prob);CHKERRQ(ierr);
   dm->prob = prob;
-  ierr = PetscObjectReference((PetscObject) dm->prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
