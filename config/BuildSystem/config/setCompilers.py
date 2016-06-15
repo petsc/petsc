@@ -1046,9 +1046,9 @@ class Configure(config.base.Configure):
     for language in languages:
       self.pushLanguage(language)
       if language in ['C','Cxx','CUDA']:
-        includeLine = 'void foo(void);\nvoid bar(void){foo();}\n'
+        includeLine = '#include<stdio.h>\nvoid foo(void){fprintf(stdout,"hello");\nreturn;}\nvoid bar(void){foo();}\n'
       else:
-        includeLine = '      function foo(a)\n      real:: a, bar\n      foo = bar(a)\n      end\n'
+        includeLine = '      function foo(a)\n      real:: a,x,bar\n      common /xx/ x\n      x=a\n      foo = bar(x)\n      end\n'
       compilerFlagsArg = self.getCompilerFlagsArg(1) # compiler only
       oldCompilerFlags = getattr(self, compilerFlagsArg)
       for testFlag in self.generatePICGuesses():
@@ -1303,7 +1303,7 @@ class Configure(config.base.Configure):
             self.sharedLibraryFlags = goodFlags
             self.sharedLibraryExt = ext
             # using printf appears to correctly identify non-pic code on X86_64
-            if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
+            if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {fprintf(stdout,"hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
               oldLib  = self.linkerObj
               oldLibs = self.LIBS
               self.LIBS += ' -L'+self.tmpDir+' -lconftest'
