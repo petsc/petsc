@@ -581,6 +581,16 @@ runex10:
 	   ${RM} -f ex10_1.tmp
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
+runex10_xxt:
+	-@${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -check_symmetry -ksp_type cg -pc_type tfs -ksp_monitor_short -ksp_view > ex10_xxt.tmp 2>&1; \
+	   if (${DIFF} output/ex10_xxt.out ex10_xxt.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_xxt, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_xxt.tmp
+runex10_xyt:
+	-@${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/arco1 -ksp_type gmres -pc_type tfs -ksp_monitor_short -ksp_view > ex10_xyt.tmp 2>&1; \
+	   if (${DIFF} output/ex10_xyt.out ex10_xyt.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_xyt, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_xyt.tmp
 runex10_2:
 	-@${MPIEXEC} -n 2 ./ex10 -ksp_type bicg \
 	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_2.tmp 2>&1; \
@@ -1593,7 +1603,7 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PET
                                  ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc ex10.rm ex11.PETSc runex11 ex11.rm
-TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
+TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_xxt runex10_xyt runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
                                  runex10_9 runex10_10 runex10_19  runex10_ILU runex10_ILUBAIJ runex10_cg \
                                  runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm \
                                  ex27.PETSc runex27 ex27.rm
