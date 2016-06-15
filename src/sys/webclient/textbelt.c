@@ -4,7 +4,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscTextBelt"
 /*@C
-     PetscTextBelt - Sends an SMS to an American phone number
+     PetscTextBelt - Sends an SMS to an American/Canadian phone number
 
    Not collective, only the first process in MPI_Comm does anything
 
@@ -20,6 +20,11 @@
 
    Notes: TextBelt is run for testing purposes only, please do not use this feature often
 
+   Developer Notes:  I do not know how to make the buff[] long enough to receive the "success" string but short enough that the code does not hang
+       waiting for part of the message to arrive that does not exist, hence the success flg may be improperly set to false even
+       though the message was delivered.
+
+.seealso: PetscOpenSocket(), PetscHTTPRequest()
 @*/
 PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char message[],PetscBool *flg)
 {
@@ -35,7 +40,7 @@ PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char messag
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     int       sock;
-    char      buff[186],*body;
+    char      buff[474],*body;
     PetscInt  i;
 
     ierr = PetscMalloc1(mlen+nlen+100,&body);CHKERRQ(ierr);

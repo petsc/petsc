@@ -12,6 +12,7 @@
 */
 #define PETSC_GOOGLE_CLIENT_ID  "521429262559-i19i57eek8tnt9ftpp4p91rcl0bo9ag5.apps.googleusercontent.com"
 #define PETSC_GOOGLE_CLIENT_ST  "vOds_A71I3_S_aHMq_kZAI0t"
+#define PETSC_GOOGLE_API_KEY    "AIzaSyDRZsOcySpWVzsUvIBL2UG3J2tcg-MXbyk"
 
 
 #undef __FUNCT__
@@ -288,7 +289,7 @@ PetscErrorCode PetscURLShorten(const char url[],char shorturl[],size_t lenshortu
   SSL            *ssl;
   int            sock;
   PetscErrorCode ierr;
-  char           buff[1024],body[512];
+  char           buff[1024],body[512],post[1024];
   PetscBool      found;
 
   PetscFunctionBegin;
@@ -297,7 +298,8 @@ PetscErrorCode PetscURLShorten(const char url[],char shorturl[],size_t lenshortu
   ierr = PetscStrcpy(body,"{");CHKERRQ(ierr);
   ierr = PetscPushJSONValue(body,"longUrl",url,sizeof(body)-2);CHKERRQ(ierr);
   ierr = PetscStrcat(body,"}");CHKERRQ(ierr);
-  ierr = PetscHTTPSRequest("POST","www.googleapis.com/urlshortener/v1/url",NULL,"application/json",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
+  ierr = PetscSNPrintf(post,sizeof(post),"www.googleapis.com/urlshortener/v1/url?key=%s",PETSC_GOOGLE_API_KEY);CHKERRQ(ierr);
+  ierr = PetscHTTPSRequest("POST",post,NULL,"application/json",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
   ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
   close(sock);
 
