@@ -2787,7 +2787,10 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
 #define __FUNCT__ "PetscDSDestroy_Basic"
 static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 {
+  PetscErrorCode      ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFree(prob->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2819,7 +2822,7 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS prob)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   ierr       = PetscNewLog(prob, &b);CHKERRQ(ierr);
   prob->data = b;
 
