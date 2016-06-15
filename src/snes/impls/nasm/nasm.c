@@ -948,6 +948,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_FALSE;
 
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   nasm->fjtype              = 0;
   nasm->xinit               = NULL;
   nasm->eventrestrictinterp = 0;

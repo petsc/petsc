@@ -960,6 +960,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
 
+  snes->alwayscomputesfinalresidual = PETSC_TRUE;
+
   ierr          = PetscNewLog(snes,&mb);CHKERRQ(ierr);
   snes->data    = (void*) mb;
   mb->defined   = PETSC_FALSE;

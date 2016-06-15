@@ -103,6 +103,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   snes->data = 0;
   PetscFunctionReturn(0);
 }

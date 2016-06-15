@@ -981,6 +981,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
     snes->max_its   = 10000;
   }
 
+  snes->alwayscomputesfinalresidual = PETSC_TRUE;
+
   ierr = PetscNewLog(snes,&fas);CHKERRQ(ierr);
 
   snes->data                  = (void*) fas;
