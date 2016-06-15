@@ -5947,7 +5947,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCopyBoundary"
-PETSC_DEPRECATED("Use DMGetDS(), PetscDSCopyBoundary()") PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
+PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 {
   PetscErrorCode ierr;
 
@@ -5982,7 +5982,7 @@ PETSC_DEPRECATED("Use DMGetDS(), PetscDSCopyBoundary()") PetscErrorCode DMCopyBo
 
 .seealso: DMGetBoundary()
 @*/
-PETSC_DEPRECATED("Use DMGetDS(), PetscDSAddBoundary()") PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -6007,7 +6007,7 @@ PETSC_DEPRECATED("Use DMGetDS(), PetscDSAddBoundary()") PetscErrorCode DMAddBoun
 
 .seealso: DMAddBoundary(), DMGetBoundary()
 @*/
-PETSC_DEPRECATED("Use DMGetDS(), PetscDSGetNumBoundary()") PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
+PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 {
   PetscErrorCode ierr;
 
@@ -6046,7 +6046,7 @@ PETSC_DEPRECATED("Use DMGetDS(), PetscDSGetNumBoundary()") PetscErrorCode DMGetN
 
 .seealso: DMAddBoundary()
 @*/
-PETSC_DEPRECATED("Use DMGetDS(), PetscDSGetBoundary()") PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   PetscErrorCode ierr;
 
