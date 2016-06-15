@@ -310,26 +310,29 @@ int main(int argc,char **args)
     PetscQuadrature q;
     PetscInt        order;
     PetscFE         feBd,fe;
-    DM cdm = dm;
+    PetscDS         prob;
+    DM              cdm = dm;
+
     ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, 2, &fe);CHKERRQ(ierr); /* elasticity */
     ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
     ierr = PetscFECreateDefault(dm, dim-1, dim, PETSC_FALSE, NULL, order, &feBd);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feBd, "deformation");CHKERRQ(ierr);
-    while (cdm) {
-      PetscDS        prob;
+    ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+
       /* FEM prob */
-      ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-      ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-      ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
-      ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d);CHKERRQ(ierr);
-      ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
-      ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+    ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
+    ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
+    /* bcs */
+    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, Ncomp, components, (void (*)()) zero, Nfid, fid, NULL);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
+    while (cdm) {
       /* ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr); */
-      /* bcs */
-      ierr = DMAddBoundary(cdm, PETSC_TRUE,  "fixed",    "Faces", 0, Ncomp, components, (void (*)()) zero, Nfid, fid, NULL);CHKERRQ(ierr);
-      ierr = DMAddBoundary(cdm, PETSC_FALSE, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
+      ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
 #if defined(MARK_DEBUG)
       ierr = DMView(cdm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 #endif

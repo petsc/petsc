@@ -472,13 +472,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupProblem"
-static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
-  PetscDS        prob;
+  const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->variableCoefficient) {
   case COEFF_NONE:
     ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
@@ -510,6 +509,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
+  ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -535,12 +535,11 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM             cdm   = dm;
   const PetscInt dim   = user->dim;
-  const PetscInt id    = 1;
   PetscFE        feAux = NULL;
   PetscFE        feBd  = NULL;
   PetscFE        feCh  = NULL;
   PetscFE        fe;
-  PetscDS        prob;
+  PetscDS        prob, probAux = NULL, probCh = NULL;
   PetscBool      simplex = user->simplex;
   PetscErrorCode ierr;
 
@@ -558,36 +557,40 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = PetscFECreateDefault(dm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
+    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
   }
-  if (user->check) {ierr = PetscFECreateDefault(dm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);}
+  if (user->check) {
+    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);
+    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probCh);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
+  }
   /* Set discretization and boundary conditions for each mesh */
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
+  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
     DM coordDM;
 
-    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-    ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
+    ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(cdm,&coordDM);CHKERRQ(ierr);
     if (feAux) {
       DM      dmAux;
-      PetscDS probAux;
 
       ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
-      ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
-      ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
+      ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
       ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
       ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
     }
     if (feCh) {
       DM      dmCh;
-      PetscDS probCh;
 
       ierr = DMClone(cdm, &dmCh);CHKERRQ(ierr);
       ierr = DMSetCoordinateDM(dmCh, coordDM);CHKERRQ(ierr);
-      ierr = DMGetDS(dmCh, &probCh);CHKERRQ(ierr);
-      ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
+      ierr = DMSetDS(dmCh, probCh);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dmCh", (PetscObject) dmCh);CHKERRQ(ierr);
       ierr = DMDestroy(&dmCh);CHKERRQ(ierr);
     }
@@ -597,14 +600,14 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
       ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
       if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
     }
-    ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(cdm, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feCh);CHKERRQ(ierr);
+  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
+  ierr = PetscDSDestroy(&probCh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

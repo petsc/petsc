@@ -499,13 +499,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupProblem"
-PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
 {
-  PetscDS        prob;
+  const PetscInt Ncomp = dim;
+  const PetscInt components[] = {0,1,2};
+  const PetscInt Nfid = 1;
+  const PetscInt fid[] = {1}; /* The fixed faces */
+  const PetscInt Npid = 1;
+  const PetscInt pid[] = {2}; /* The faces with pressure loading */
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 1, f0_p_3d, f1_p);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu_3d);CHKERRQ(ierr);
@@ -515,6 +519,9 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
   ierr = PetscDSSetBdResidual(prob, 1, f0_bd_p, f1_bd_p);CHKERRQ(ierr);
   ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
+
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, Ncomp, components, (void (*)()) coordinates, Nfid, fid, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "pressure", "Faces", 0, Ncomp, components, NULL, Npid, pid, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -563,36 +570,29 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", order, &feAux);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux, "elasticityMaterial");CHKERRQ(ierr);
- 
 
   /* Set discretization and boundary conditions for each mesh */
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
+  ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd[0]);CHKERRQ(ierr);
+  ierr = PetscDSSetBdDiscretization(prob, 1, (PetscObject) feBd[1]);CHKERRQ(ierr);
+  ierr = SetupProblem(prob, dim, user);CHKERRQ(ierr);
+  ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-    ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd[0]);CHKERRQ(ierr);
-    ierr = PetscDSSetBdDiscretization(prob, 1, (PetscObject) feBd[1]);CHKERRQ(ierr);
-    ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-
+    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(cdm, &coordDM);CHKERRQ(ierr);
     ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
-    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
+    ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) cdm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
     ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
     ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
 
-    const PetscInt Ncomp = dim;
-    const PetscInt components[] = {0,1,2};
-    const PetscInt Nfid = 1;
-    const PetscInt fid[] = {1}; /* The fixed faces */
-    const PetscInt Npid = 1;
-    const PetscInt pid[] = {2}; /* The faces with pressure loading */
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "fixed", "Faces", 0, Ncomp, components, (void (*)()) coordinates, Nfid, fid, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(cdm, PETSC_FALSE, "pressure", "Faces", 0, Ncomp, components, NULL, Npid, pid, user);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
+  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
 
   {
     /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
