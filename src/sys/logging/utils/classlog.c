@@ -93,9 +93,9 @@ PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ClassPerfLogCreate"
+#define __FUNCT__ "PetscClassPerfLogCreate"
 /*@C
-  ClassPerfLogCreate - This creates a PetscClassPerfLog object.
+  PetscClassPerfLogCreate - This creates a PetscClassPerfLog object.
 
   Not collective
 
@@ -105,9 +105,9 @@ PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c)
   Level: developer
 
 .keywords: log, class, create
-.seealso: ClassPerfLogDestroy(), PetscStageLogCreate()
+.seealso: PetscClassPerfLogDestroy(), PetscStageLogCreate()
 @*/
-PetscErrorCode ClassPerfLogCreate(PetscClassPerfLog *classLog)
+PetscErrorCode PetscClassPerfLogCreate(PetscClassPerfLog *classLog)
 {
   PetscClassPerfLog l;
   PetscErrorCode    ierr;
@@ -125,9 +125,9 @@ PetscErrorCode ClassPerfLogCreate(PetscClassPerfLog *classLog)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ClassPerfLogDestroy"
+#define __FUNCT__ "PetscClassPerfLogDestroy"
 /*@C
-  ClassPerfLogDestroy - This destroys a PetscClassPerfLog object.
+  PetscClassPerfLogDestroy - This destroys a PetscClassPerfLog object.
 
   Not collective
 
@@ -137,9 +137,9 @@ PetscErrorCode ClassPerfLogCreate(PetscClassPerfLog *classLog)
   Level: developer
 
 .keywords: log, event, destroy
-.seealso: ClassPerfLogCreate()
+.seealso: PetscClassPerfLogCreate()
 @*/
-PetscErrorCode ClassPerfLogDestroy(PetscClassPerfLog classLog)
+PetscErrorCode PetscClassPerfLogDestroy(PetscClassPerfLog classLog)
 {
   PetscErrorCode ierr;
 
@@ -151,9 +151,9 @@ PetscErrorCode ClassPerfLogDestroy(PetscClassPerfLog classLog)
 
 /*------------------------------------------------ General Functions -------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "ClassPerfInfoClear"
+#define __FUNCT__ "PetscClassPerfInfoClear"
 /*@C
-  ClassPerfInfoClear - This clears a PetscClassPerfInfo object.
+  PetscClassPerfInfoClear - This clears a PetscClassPerfInfo object.
 
   Not collective
 
@@ -163,9 +163,9 @@ PetscErrorCode ClassPerfLogDestroy(PetscClassPerfLog classLog)
   Level: developer
 
 .keywords: log, class, destroy
-.seealso: ClassPerfLogCreate()
+.seealso: PetscClassPerfLogCreate()
 @*/
-PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *classInfo)
+PetscErrorCode PetscClassPerfInfoClear(PetscClassPerfInfo *classInfo)
 {
   PetscFunctionBegin;
   classInfo->id           = -1;
@@ -177,9 +177,9 @@ PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *classInfo)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ClassPerfLogEnsureSize"
+#define __FUNCT__ "PetscClassPerfLogEnsureSize"
 /*@C
-  ClassPerfLogEnsureSize - This ensures that a PetscClassPerfLog is at least of a certain size.
+  PetscClassPerfLogEnsureSize - This ensures that a PetscClassPerfLog is at least of a certain size.
 
   Not collective
 
@@ -190,9 +190,9 @@ PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *classInfo)
   Level: developer
 
 .keywords: log, class, size, ensure
-.seealso: ClassPerfLogCreate()
+.seealso: PetscClassPerfLogCreate()
 @*/
-PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
+PetscErrorCode PetscClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
 {
   PetscClassPerfInfo *classInfo;
   PetscErrorCode     ierr;
@@ -207,7 +207,7 @@ PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
     classLog->maxClasses *= 2;
   }
   while (classLog->numClasses < size) {
-    ierr = ClassPerfInfoClear(&classLog->classInfo[classLog->numClasses++]);CHKERRQ(ierr);
+    ierr = PetscClassPerfInfoClear(&classLog->classInfo[classLog->numClasses++]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
