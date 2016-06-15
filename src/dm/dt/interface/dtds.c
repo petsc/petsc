@@ -420,6 +420,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 PetscErrorCode PetscDSDestroy(PetscDS *prob)
 {
   PetscInt       f;
+  DSBoundary     next;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -437,6 +438,17 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   ierr = PetscFree7((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->gp,(*prob)->gt,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
   ierr = PetscFree2((*prob)->fBd,(*prob)->gBd);CHKERRQ(ierr);
   if ((*prob)->ops->destroy) {ierr = (*(*prob)->ops->destroy)(*prob);CHKERRQ(ierr);}
+  next = (*prob)->boundary;
+  while (next) {
+    DSBoundary b = next;
+
+    next = b->next;
+    ierr = PetscFree(b->comps);CHKERRQ(ierr);
+    ierr = PetscFree(b->ids);CHKERRQ(ierr);
+    ierr = PetscFree(b->name);CHKERRQ(ierr);
+    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
+    ierr = PetscFree(b);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2480,6 +2492,169 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
   if (x)           {PetscValidPointer(x, 2);           *x           = prob->x;}
   if (refSpaceDer) {PetscValidPointer(refSpaceDer, 3); *refSpaceDer = prob->refSpaceDer;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSAddBoundary"
+/*@C
+  PetscDSAddBoundary - Add a boundary condition to the model
+
+  Input Parameters:
++ ds          - The PetscDS object
+. isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. name        - The BC name
+. labelname   - The label defining constrained points
+. field       - The field to constrain
+. numcomps    - The number of constrained field components
+. comps       - An array of constrained component numbers
+. bcFunc      - A pointwise function giving boundary values
+. numids      - The number of DMLabel ids for constrained points
+. ids         - An array of ids for constrained points
+- ctx         - An optional user context for bcFunc
+
+  Options Database Keys:
++ -bc_<boundary name> <num> - Overrides the boundary ids
+- -bc_<boundary name>_comp <num> - Overrides the boundary components
+
+  Level: developer
+
+.seealso: PetscDSGetBoundary()
+@*/
+PetscErrorCode PetscDSAddBoundary(PetscDS ds, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+{
+  DSBoundary     b;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  ierr = PetscNew(&b);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numcomps, &b->comps);CHKERRQ(ierr);
+  if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
+  ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
+  if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
+  b->essential       = isEssential;
+  b->field           = field;
+  b->numcomps        = numcomps;
+  b->func            = bcFunc;
+  b->numids          = numids;
+  b->ctx             = ctx;
+  b->next            = ds->boundary;
+  ds->boundary       = b;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetNumBoundary"
+/*@
+  PetscDSGetNumBoundary - Get the number of registered BC
+
+  Input Parameters:
+. ds - The PetscDS object
+
+  Output Parameters:
+. numBd - The number of BC
+
+  Level: intermediate
+
+.seealso: PetscDSAddBoundary(), PetscDSGetBoundary()
+@*/
+PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
+{
+  DSBoundary b = ds->boundary;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(numBd, 2);
+  *numBd = 0;
+  while (b) {++(*numBd); b = b->next;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetBoundary"
+/*@C
+  PetscDSGetBoundary - Add a boundary condition to the model
+
+  Input Parameters:
++ ds          - The PetscDS object
+- bd          - The BC number
+
+  Output Parameters:
++ isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. name        - The BC name
+. labelname   - The label defining constrained points
+. field       - The field to constrain
+. numcomps    - The number of constrained field components
+. comps       - An array of constrained component numbers
+. bcFunc      - A pointwise function giving boundary values
+. numids      - The number of DMLabel ids for constrained points
+. ids         - An array of ids for constrained points
+- ctx         - An optional user context for bcFunc
+
+  Options Database Keys:
++ -bc_<boundary name> <num> - Overrides the boundary ids
+- -bc_<boundary name>_comp <num> - Overrides the boundary components
+
+  Level: developer
+
+.seealso: PetscDSAddBoundary()
+@*/
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+{
+  DSBoundary b    = ds->boundary;
+  PetscInt   n    = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  while (b) {
+    if (n == bd) break;
+    b = b->next;
+    ++n;
+  }
+  if (!b) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  if (isEssential) {
+    PetscValidPointer(isEssential, 3);
+    *isEssential = b->essential;
+  }
+  if (name) {
+    PetscValidPointer(name, 4);
+    *name = b->name;
+  }
+  if (labelname) {
+    PetscValidPointer(labelname, 5);
+    *labelname = b->labelname;
+  }
+  if (field) {
+    PetscValidPointer(field, 6);
+    *field = b->field;
+  }
+  if (numcomps) {
+    PetscValidPointer(numcomps, 7);
+    *numcomps = b->numcomps;
+  }
+  if (comps) {
+    PetscValidPointer(comps, 8);
+    *comps = b->comps;
+  }
+  if (func) {
+    PetscValidPointer(func, 9);
+    *func = b->func;
+  }
+  if (numids) {
+    PetscValidPointer(numids, 10);
+    *numids = b->numids;
+  }
+  if (ids) {
+    PetscValidPointer(ids, 11);
+    *ids = b->ids;
+  }
+  if (ctx) {
+    PetscValidPointer(ctx, 12);
+    *ctx = b->ctx;
+  }
   PetscFunctionReturn(0);
 }
 

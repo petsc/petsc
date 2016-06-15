@@ -6033,28 +6033,13 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 
 .seealso: DMGetBoundary()
 @*/
-PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+PETSC_DEPRECATED("Use DMGetDS(), PetscDSAddBoundary()") PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
 {
-  DMBoundary     b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscNew(&b);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numcomps, &b->comps);CHKERRQ(ierr);
-  if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
-  ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
-  if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
-  b->essential       = isEssential;
-  b->field           = field;
-  b->numcomps        = numcomps;
-  b->func            = bcFunc;
-  b->numids          = numids;
-  b->ctx             = ctx;
-  b->next            = dm->boundary->next;
-  dm->boundary->next = b;
+  ierr = PetscDSAddBoundary(dm->prob,isEssential,name,labelname,field,numcomps,comps,bcFunc,numids,ids,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6073,15 +6058,13 @@ PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], co
 
 .seealso: DMAddBoundary(), DMGetBoundary()
 @*/
-PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
+PETSC_DEPRECATED("Use DMGetDS(), PetscDSGetNumBoundary()") PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 {
-  DMBoundary b = dm->boundary->next;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(numBd, 2);
-  *numBd = 0;
-  while (b) {++(*numBd); b = b->next;}
+  ierr = PetscDSGetNumBoundary(dm->prob,numBd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6114,59 +6097,13 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 
 .seealso: DMAddBoundary()
 @*/
-PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+PETSC_DEPRECATED("Use DMGetDS(), PetscDSGetBoundary()") PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
-  DMBoundary b    = dm->boundary->next;
-  PetscInt   n    = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  while (b) {
-    if (n == bd) break;
-    b = b->next;
-    ++n;
-  }
-  if (!b) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
-  if (isEssential) {
-    PetscValidPointer(isEssential, 3);
-    *isEssential = b->essential;
-  }
-  if (name) {
-    PetscValidPointer(name, 4);
-    *name = b->name;
-  }
-  if (labelname) {
-    PetscValidPointer(labelname, 5);
-    *labelname = b->labelname;
-  }
-  if (field) {
-    PetscValidPointer(field, 6);
-    *field = b->field;
-  }
-  if (numcomps) {
-    PetscValidPointer(numcomps, 7);
-    *numcomps = b->numcomps;
-  }
-  if (comps) {
-    PetscValidPointer(comps, 8);
-    *comps = b->comps;
-  }
-  if (func) {
-    PetscValidPointer(func, 9);
-    *func = b->func;
-  }
-  if (numids) {
-    PetscValidPointer(numids, 10);
-    *numids = b->numids;
-  }
-  if (ids) {
-    PetscValidPointer(ids, 11);
-    *ids = b->ids;
-  }
-  if (ctx) {
-    PetscValidPointer(ctx, 12);
-    *ctx = b->ctx;
-  }
+  ierr = PetscDSGetBoundary(dm->prob,bd,isEssential,name,labelname,field,numcomps,comps,func,numids,ids,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
