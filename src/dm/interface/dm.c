@@ -6057,12 +6057,28 @@ PETSC_DEPRECATED("Use DMGetDS(), PetscDSGetBoundary()") PetscErrorCode DMGetBoun
 #define __FUNCT__ "DMPopulateBoundary"
 static PetscErrorCode DMPopulateBoundary(DM dm)
 {
+  DMBoundary last;
   DSBoundary dsbound;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dm->boundary) PetscFunctionReturn(0);
   dsbound = dm->prob->boundary;
+  if (dm->boundary) {
+    DMBoundary next = dm->boundary;
+
+    /* quick check to see if the PetscDS has changed */
+    if (next->dsboundary == dsbound) PetscFunctionReturn(0);
+    /* the PetscDS has changed: tear down and rebuild */
+    while (next) {
+      DMBoundary b = next;
+
+      next = b->next;
+      ierr = PetscFree(b);CHKERRQ(ierr);
+    }
+    dm->boundary = NULL;
+  }
+
+  last = NULL;
   while (dsbound) {
     DMBoundary dmbound;
 
@@ -6070,9 +6086,9 @@ static PetscErrorCode DMPopulateBoundary(DM dm)
     dmbound->dsboundary = dsbound;
     ierr = DMGetLabel(dm, dsbound->labelname, &(dmbound->label));CHKERRQ(ierr);
     if (!dmbound->label) PetscInfo2(dm, "DSBoundary %s wants label %s, which is not in this dm.\n",dsbound->name,dsbound->labelname);CHKERRQ(ierr);
-    dmbound->next = dm->boundary;
-    dm->boundary  = dmbound;
-    dsbound = dsbound->next;
+    /* push on the back instead of the front so that it is in the same order as in the PetscDS */
+    if (last) last->next = dmbound;
+    last = dmbound;
   }
   PetscFunctionReturn(0);
 }
