@@ -105,6 +105,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
     PetscInt       *sperm, *vsize, *voff, v;
 
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+    ierr = ISSort(valueIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
     ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
     ierr = PetscCalloc3(numCells,&sperm,numValues,&vsize,numValues+1,&voff);CHKERRQ(ierr);
