@@ -2684,6 +2684,52 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscBool *isEssentia
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDSCopyBoundary"
+PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
+{
+  DSBoundary     b, next, *lastnext;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(probA, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(probB, PETSCDS_CLASSID, 2);
+  if (probA == probB) PetscFunctionReturn(0);
+  next = probB->boundary;
+  while (next) {
+    DSBoundary b = next;
+
+    next = b->next;
+    ierr = PetscFree(b->comps);CHKERRQ(ierr);
+    ierr = PetscFree(b->ids);CHKERRQ(ierr);
+    ierr = PetscFree(b->name);CHKERRQ(ierr);
+    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
+    ierr = PetscFree(b);CHKERRQ(ierr);
+  }
+  lastnext = &(probB->boundary);
+  for (b = probA->boundary; b; b = b->next) {
+    DSBoundary bNew;
+
+    ierr = PetscNew(&bNew);
+    bNew->numcomps = b->numcomps;
+    ierr = PetscMalloc1(bNew->numcomps, &bNew->comps);CHKERRQ(ierr);
+    ierr = PetscMemcpy(bNew->comps, b->comps, bNew->numcomps*sizeof(PetscInt));CHKERRQ(ierr);
+    bNew->numids = b->numids;
+    ierr = PetscMalloc1(bNew->numids, &bNew->ids);CHKERRQ(ierr);
+    ierr = PetscMemcpy(bNew->ids, b->ids, bNew->numids*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscStrallocpy(b->labelname,(char **) &(bNew->labelname));CHKERRQ(ierr);
+    ierr = PetscStrallocpy(b->name,(char **) &(bNew->name));CHKERRQ(ierr);
+    bNew->ctx       = b->ctx;
+    bNew->essential = b->essential;
+    bNew->field     = b->field;
+    bNew->func      = b->func;
+
+    *lastnext = bNew;
+    lastnext = &(bNew->next);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDSCopyEquations"
 /*@
   PetscDSCopyEquations - Copy all pointwise function pointers to the new problem
