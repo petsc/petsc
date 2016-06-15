@@ -46,10 +46,10 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   }
 
   if (linesearch->norms) {
-    if (!linesearch->ops->vinorm) VecNormBegin(F, NORM_2, &linesearch->fnorm);
+    if (!linesearch->ops->vinorm) {ierr = VecNormBegin(F, NORM_2, &linesearch->fnorm);CHKERRQ(ierr);}
     ierr = VecNormBegin(Y, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
     ierr = VecNormBegin(W, NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
-    if (!linesearch->ops->vinorm) VecNormEnd(F, NORM_2, &linesearch->fnorm);
+    if (!linesearch->ops->vinorm) {ierr = VecNormEnd(F, NORM_2, &linesearch->fnorm);CHKERRQ(ierr);}
     ierr = VecNormEnd(Y, NORM_2, &linesearch->ynorm);CHKERRQ(ierr);
     ierr = VecNormEnd(W, NORM_2, &linesearch->xnorm);CHKERRQ(ierr);
 
