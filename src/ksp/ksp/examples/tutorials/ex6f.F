@@ -211,7 +211,7 @@
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
 ! Set the exact solution; compute the right-hand-side vector
-      val = 1.0*count
+      val = 1.0*real(count)
       call VecSet(u,val,ierr)
       call MatMult(A,u,b,ierr)
 

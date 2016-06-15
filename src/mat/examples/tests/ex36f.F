@@ -122,7 +122,7 @@
 
       do 10, j=1,n
         do 20, i=1,m
-          X(i,j) = 1.0/(i+j-1)
+          X(i,j) = 1.0/real(i+j-1)
  20     continue
  10   continue
       return

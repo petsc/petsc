@@ -46,7 +46,7 @@
      &     ierr)
 
       do 10, i=0,n-1
-        xd = i - 5.0
+        xd = real(i) - 5.0
         yd = xd*xd
         call PetscDrawLGAddPoint(lg,xd,yd,ierr)
  10   continue

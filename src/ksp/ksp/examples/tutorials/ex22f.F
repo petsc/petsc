@@ -82,7 +82,7 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,ierr)
-      h    = 1.0/((mx-1)*(my-1)*(mz-1))
+      h    = 1.0/real((mx-1)*(my-1)*(mz-1))
 
       call VecSet(b,h,ierr)
       return
@@ -119,9 +119,9 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,ierr)
 
-      Hx = 1.0 / (mx-1)
-      Hy = 1.0 / (my-1)
-      Hz = 1.0 / (mz-1)
+      Hx = 1.0 / real(mx-1)
+      Hy = 1.0 / real(my-1)
+      Hz = 1.0 / real(mz-1)
       HxHydHz = Hx*Hy/Hz
       HxHzdHy = Hx*Hz/Hy
       HyHzdHx = Hy*Hz/Hx

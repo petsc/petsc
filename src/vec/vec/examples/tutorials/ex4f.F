@@ -65,7 +65,7 @@
 
        do 10 i=1,n
           loc(i) = i-1
-          xwork(i) = 10.0*i
+          xwork(i) = 10.0*real(i)
   10   continue
 
 !  Set vector values.  Note that we set multiple entries at once.
@@ -99,8 +99,8 @@
 !  Modify vector data
 
        do 30 i=1,n
-          xx_a(i) = 100.0*i
-          yy_a(i) = 1000.0*i
+          xx_a(i) = 100.0*real(i)
+          yy_a(i) = 1000.0*real(i)
   30   continue
 
 !  Restore vectors
