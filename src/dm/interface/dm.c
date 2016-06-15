@@ -782,6 +782,9 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (dm->prob) {
+    ierr = PetscDSSetFromOptions(dm->prob);CHKERRQ(ierr);
+  }
   if (dm->sf) {
     ierr = PetscSFSetFromOptions(dm->sf);CHKERRQ(ierr);
   }

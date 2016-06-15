@@ -1118,47 +1118,9 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
 PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMBoundary     b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Handle boundary conditions */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) dm), NULL, "Boundary condition options", "");CHKERRQ(ierr);
-  for (b = dm->boundary; b; b = b->next) {
-    DSBoundary dsb = b->dsboundary;
-    char       optname[1024];
-    PetscInt   ids[1024], len = 1024, i;
-    PetscBool  flg;
-
-    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s", dsb->name);CHKERRQ(ierr);
-    ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray(optname, "List of boundary IDs", "", ids, &len, &flg);CHKERRQ(ierr);
-    if (flg) {
-      DMLabel label;
-
-      ierr = DMGetLabel(dm, dsb->labelname, &label);CHKERRQ(ierr);
-      for (i = 0; i < len; ++i) {
-        PetscBool has;
-
-        ierr = DMLabelHasValue(label, ids[i], &has);CHKERRQ(ierr);
-        if (!has) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Boundary id %D is not present in the label %s", ids[i], dsb->name);
-      }
-      dsb->numids = len;
-      ierr = PetscFree(dsb->ids);CHKERRQ(ierr);
-      ierr = PetscMalloc1(len, &dsb->ids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(dsb->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
-    }
-    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", dsb->name);CHKERRQ(ierr);
-    ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
-    if (flg) {
-      dsb->numcomps = len;
-      ierr = PetscFree(dsb->comps);CHKERRQ(ierr);
-      ierr = PetscMalloc1(len, &dsb->comps);CHKERRQ(ierr);
-      ierr = PetscMemcpy(dsb->comps, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* Handle viewing */
   ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);

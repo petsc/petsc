@@ -221,6 +221,7 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 @*/
 PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 {
+  DSBoundary     b;
   const char    *defaultType;
   char           name[256];
   PetscBool      flg;
@@ -236,6 +237,30 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   ierr = PetscDSRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) prob);CHKERRQ(ierr);
+  for (b = prob->boundary; b; b = b->next) {
+    char       optname[1024];
+    PetscInt   ids[1024], len = 1024;
+    PetscBool  flg;
+
+    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s", b->name);CHKERRQ(ierr);
+    ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray(optname, "List of boundary IDs", "", ids, &len, &flg);CHKERRQ(ierr);
+    if (flg) {
+      b->numids = len;
+      ierr = PetscFree(b->ids);CHKERRQ(ierr);
+      ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
+      ierr = PetscMemcpy(b->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
+    }
+    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
+    ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
+    if (flg) {
+      b->numcomps = len;
+      ierr = PetscFree(b->comps);CHKERRQ(ierr);
+      ierr = PetscMalloc1(len, &b->comps);CHKERRQ(ierr);
+      ierr = PetscMemcpy(b->comps, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
+    }
+  }
   ierr = PetscOptionsFList("-petscds_type", "Discrete System", "PetscDSSetType", PetscDSList, defaultType, name, 256, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDSSetType(prob, name);CHKERRQ(ierr);
