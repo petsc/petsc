@@ -3109,7 +3109,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectSetName(*dm,"Mesh");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)(*dm),"Mesh");CHKERRQ(ierr);
   /* Setup test partitioning */
   if (user->testPartition) {
     PetscInt         triSizes_n2[2]       = {4, 4};
@@ -3170,10 +3170,11 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
   const PetscInt id  = 1;
   PetscInt       comp;
-  PetscDS        prob;
+  Parameter      *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   switch (user->solType) {
   case SOLKX:
     ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_kx);CHKERRQ(ierr);
@@ -3287,14 +3288,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Create discretization of auxiliary fields */
   ierr = PetscMalloc1(numAux, &feAux);CHKERRQ(ierr);
   ierr = PetscBagGetNames(user->bag, auxFieldNames);CHKERRQ(ierr);
-  ierr = PetscDSCreate(PetscObjectComm((PetscObect)dm),&probAux);CHKERRQ(ierr);
+  ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {
     ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, NULL, 0, &feAux[f]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feAux[f], auxFieldNames[f]);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux[f], q);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);
   }
-  ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
@@ -3302,9 +3302,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
     DM      dmAux;
-    PetscDS probAux;
 
-    ierr = DMSetProb(cdm, prob);CHKERRQ(ierr);
+    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(cdm, dmAux);CHKERRQ(ierr);
     ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
@@ -3317,7 +3316,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {ierr = PetscFEDestroy(&feAux[f]);CHKERRQ(ierr);}
-  ierr = PetscdDSDestroy(&probAux);CHKERRQ(ierr);
+  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
   ierr = PetscFree(feAux);CHKERRQ(ierr);
   {
     PetscObject  pressure;
