@@ -4,8 +4,9 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'v5.2.0'
-    self.download         = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.0.tar.gz','git://https://github.com/xiaoyeli/superlu']
+    self.gitcommit        = '7e10c8a' #maint/v5.2.1+ from june-16-2016
+    self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
+    self.downloaddirname  = 'superlu'
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
     self.liblist          = [['libsuperlu.a']]
@@ -35,5 +36,17 @@ class Configure(config.package.CMakePackage):
     args.append('-Denable_tests=0')
     #  CMake in SuperLU should set this; but like many other packages it does not
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
+
+    # Add in fortran mangling flag
+    if self.blasLapack.mangling == 'underscore':
+      mangledef = '-DAdd_'
+    elif self.blasLapack.mangling == 'caps':
+      mangledef = '-DUpCase'
+    else:
+      mangledef = '-DNoChange'
+    for place,item in enumerate(args):
+      if item.find('CMAKE_C_FLAGS') >= 0 or item.find('CMAKE_CXX_FLAGS') >= 0:
+        args[place]=item[:-1]+' '+mangledef+'"'
+
     return args
 
