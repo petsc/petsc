@@ -144,7 +144,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscTestFile"
-/*@
+/*@C
    PetscTestFile - checks for the existence of a file
 
    Not Collective
@@ -181,7 +181,7 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscTestDirectory"
-/*@
+/*@C
    PetscTestDirectory - checks for the existence of a directory
 
    Not Collective
@@ -219,7 +219,7 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLs"
-/*@
+/*@C
    PetscLs - produce a listing of the files in a directory
 
    Collective on MPI_Comm
