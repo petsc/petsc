@@ -2855,6 +2855,8 @@ PetscErrorCode  SNESReset(SNES snes)
   ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
   ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);
 
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   snes->nwork       = snes->nvwork = 0;
   snes->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
