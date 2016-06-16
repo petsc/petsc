@@ -2402,7 +2402,7 @@ runex182:
 	   ${RM} -f ex182.tmp
 
 runex182_2:
-	-@${MPIEXEC} -n 2 ./ex182 -info ex182info ; sort -b ex182info.* | grep malloc > ex182.tmp ; \
+	-@${MPIEXEC} -n 2 ./ex182 -info ex182info ; grep -h malloc ex182info.* | sort -b > ex182.tmp ; \
 	   ${DIFF} output/ex182_2.out ex182.tmp || printf "${PWD}\nPossible problem with ex182_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp  ex182info.*
 
@@ -2412,7 +2412,7 @@ runex182_3:
 	   ${RM} -f ex182.tmp
 
 runex182_4:
-	-@${MPIEXEC} -n 2 ./ex182 -info ex182info -mat_type baij ; sort -b ex182info.* | grep malloc > ex182.tmp ; \
+	-@${MPIEXEC} -n 2 ./ex182 -info ex182info -mat_type baij ;  grep -h malloc ex182info.* | sort -b > ex182.tmp ; \
 	   ${DIFF} output/ex182_4.out ex182.tmp || printf "${PWD}\nPossible problem with ex182_4, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp ex182info.*
 
@@ -2422,7 +2422,7 @@ runex182_5:
 	   ${RM} -f ex182.tmp
 
 runex182_6:
-	-@${MPIEXEC} -n 2 ./ex182 -info ex182info -mat_type sbaij ; sort -b ex182info.* | grep malloc > ex182.tmp ; \
+	-@${MPIEXEC} -n 2 ./ex182 -info ex182info -mat_type sbaij ; grep -h malloc ex182info.* | sort -b > ex182.tmp ; \
 	    ${DIFF} output/ex182_6.out ex182.tmp || printf "${PWD}\nPossible problem with ex182_6, diffs above\n=========================================\n"; \
 	   ${RM} -f ex182.tmp ex182info.*
 
