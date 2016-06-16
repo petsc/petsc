@@ -630,6 +630,11 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_bcgsl:
+	-@${MPIEXEC} -n 2 ./ex19 -ksp_type bcgsl -ksp_monitor_short -da_refine 2 -ksp_bcgsl_ell 3 -snes_view > ex19_bcgsl.tmp 2>&1; \
+	   if (${DIFF} output/ex19_bcgsl.out ex19_bcgsl.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_bcgsl, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_bcgsl.tmp
 runex19_cgs:
 	-@${MPIEXEC} -n 1 ./ex19  -da_refine 1 -ksp_monitor_short -ksp_type cgs > ex19_cgs.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cgs.out ex19_cgs.tmp) then true; \
