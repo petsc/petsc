@@ -20,6 +20,22 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
   return 0;
 }
 
+/*@C
+   PetscLogObjectMemory - Adds to an object a count of additional amount of memory that is used by the object.
+
+   Not collective.
+
+   Input Parameters:
++  obj  - the PETSc object
+-  mem  - the amount of memory that is being added to the object
+
+   Level: developer
+
+   Developer Notes: Currently we do not always do a good job of associating all memory allocations with an object. 
+
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
+
+@*/
 PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
 {
   if (!p) return 0;
