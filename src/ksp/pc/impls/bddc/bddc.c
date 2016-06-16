@@ -1472,7 +1472,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     PC_IS* pcis = (PC_IS*)pc->data;
 
     if (pcbddc->user_ChangeOfBasisMatrix || pcbddc->use_change_of_basis || !computesubschurs) pcbddc->benign_change_explicit = PETSC_TRUE;
-    /* detect local saddle point and change the basis in pcbddc->local_mat */
+    /* detect local saddle point and change the basis in pcbddc->local_mat (TODO: reuse case) */
     ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
     /* pop B0 mat from local mat */
     ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
@@ -1518,6 +1518,13 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computeconstraintsmatrix = PETSC_TRUE;
     if (pcbddc->adaptive_selection && !pcbddc->use_deluxe_scaling && !pcbddc->mat_graph->twodim) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute the adaptive primal space for a problem with 3D edges without deluxe scaling");
+    }
+    if (pcbddc->benign_compute_nonetflux && !oldcode) {
+      MatNullSpace nnfnnsp;
+
+      ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
+      ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&nnfnnsp);CHKERRQ(ierr);
     }
   }
 

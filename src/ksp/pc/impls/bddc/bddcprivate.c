@@ -4,6 +4,120 @@
 #include <petscblaslapack.h>
 #include <petsc/private/sfimpl.h>
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCComputeNoNetFlux"
+PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PCBDDCGraph graph, MatNullSpace *nnsp)
+{
+  PetscErrorCode         ierr;
+  ISLocalToGlobalMapping rmap;
+  IS                     *faces,*edges;
+  Vec                    p,v,quad_vec,*quad_vecs;
+  PetscScalar            *vals;
+  const PetscScalar      *array;
+  PetscInt               i,maxneighs,lmaxneighs,maxsize,nf,ne;
+
+  PetscFunctionBegin;
+  ierr = PCBDDCGraphGetCandidatesIS(graph,&nf,&faces,&ne,&edges,NULL);CHKERRQ(ierr);
+  if (graph->twodim) {
+    lmaxneighs = 2;
+  } else {
+    lmaxneighs = 1;
+    for (i=0;i<ne;i++) {
+      const PetscInt *idxs;
+      ierr = ISGetIndices(edges[i],&idxs);CHKERRQ(ierr);
+      lmaxneighs = PetscMax(lmaxneighs,graph->count[idxs[0]]);
+      ierr = ISRestoreIndices(edges[i],&idxs);CHKERRQ(ierr);
+    }
+    lmaxneighs++; /* graph count does not include self */
+  }
+  ierr = MPIU_Allreduce(&lmaxneighs,&maxneighs,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  maxsize = 0;
+  for (i=0;i<ne;i++) {
+    PetscInt nn;
+    ierr = ISGetLocalSize(edges[i],&nn);CHKERRQ(ierr);
+    maxsize = PetscMax(maxsize,nn);
+  }
+  for (i=0;i<nf;i++) {
+    PetscInt nn;
+    ierr = ISGetLocalSize(faces[i],&nn);CHKERRQ(ierr);
+    maxsize = PetscMax(maxsize,nn);
+  }
+  ierr = PetscMalloc1(maxsize,&vals);CHKERRQ(ierr);
+  /* create vectors to hold quadrature weights */
+  ierr = MatCreateVecs(A,&quad_vec,NULL);CHKERRQ(ierr);
+  ierr = VecSet(quad_vec,0.0);CHKERRQ(ierr);
+  ierr = MatGetLocalToGlobalMapping(A,&rmap,NULL);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(quad_vec,maxneighs,&quad_vecs);CHKERRQ(ierr);
+  for (i=0;i<maxneighs;i++) {
+    PetscInt first,last;
+
+    ierr = VecSetLocalToGlobalMapping(quad_vecs[i],rmap);CHKERRQ(ierr);
+    /* the near-null space fo BDDC carries information on quadrature weights,
+       and these can be collinear -> so cheat with MatNullSpaceCreate
+       and create a suitable set of basis vectors first */
+    ierr = VecGetOwnershipRange(quad_vecs[i],&first,&last);CHKERRQ(ierr);
+    if (i>=first && i < last) {
+      PetscScalar *data;
+      ierr = VecGetArray(quad_vecs[i],&data);CHKERRQ(ierr);
+      data[i-first] = 1.;
+      ierr = VecRestoreArray(quad_vecs[i],&data);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectStateIncrease((PetscObject)quad_vecs[i]);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&quad_vec);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),PETSC_FALSE,maxneighs,quad_vecs,nnsp);CHKERRQ(ierr);
+  /* compute local quad vec */
+  ierr = MatCreateVecs(divudotp,&v,&p);CHKERRQ(ierr);
+  ierr = VecSet(p,1.);CHKERRQ(ierr);
+  ierr = MatMultTranspose(divudotp,p,v);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(v,&array);CHKERRQ(ierr);
+  ierr = VecDestroy(&p);CHKERRQ(ierr);
+  for (i=0;i<nf;i++) {
+    const PetscInt    *idxs;
+    PetscInt          idx,nn,j;
+
+    ierr = ISGetIndices(faces[i],&idxs);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(faces[i],&nn);CHKERRQ(ierr);
+    for (j=0;j<nn;j++) vals[j] = array[idxs[j]];
+    ierr = PetscFindInt(PetscGlobalRank,graph->count[idxs[0]],graph->neighbours_set[idxs[0]],&idx);CHKERRQ(ierr);
+    idx = -(idx+1);
+    ierr = VecSetValuesLocal(quad_vecs[idx],nn,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(faces[i],&idxs);CHKERRQ(ierr);
+    ierr = ISDestroy(&faces[i]);CHKERRQ(ierr);
+  }
+  for (i=0;i<ne;i++) {
+    const PetscInt    *idxs;
+    PetscInt          idx,nn,j;
+
+    ierr = ISGetIndices(edges[i],&idxs);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(edges[i],&nn);CHKERRQ(ierr);
+    for (j=0;j<nn;j++) vals[j] = array[idxs[j]];
+    ierr = PetscFindInt(PetscGlobalRank,graph->count[idxs[0]],graph->neighbours_set[idxs[0]],&idx);CHKERRQ(ierr);
+    idx = -(idx+1);
+    ierr = VecSetValuesLocal(quad_vecs[idx],nn,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(edges[i],&idxs);CHKERRQ(ierr);
+    ierr = ISDestroy(&edges[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(edges);CHKERRQ(ierr);
+  ierr = PetscFree(faces);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(v,&array);CHKERRQ(ierr);
+  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  ierr = PetscFree(vals);CHKERRQ(ierr);
+
+  /* assemble near null space */
+  for (i=0;i<maxneighs;i++) {
+    ierr = VecAssemblyBegin(quad_vecs[i]);CHKERRQ(ierr);
+  }
+  for (i=0;i<maxneighs;i++) {
+    ierr = VecAssemblyEnd(quad_vecs[i]);CHKERRQ(ierr);
+    ierr = VecNormalize(quad_vecs[i],NULL);CHKERRQ(ierr);
+  }
+  ierr = VecDestroyVecs(maxneighs,&quad_vecs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCComputeLocalTopologyInfo"
 PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
@@ -531,7 +645,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     ierr = VecAssemblyEnd(pcis->vec2_N);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_N,&vec3_N);CHKERRQ(ierr);
     ierr = VecSet(vec3_N,0.);CHKERRQ(ierr);
-    ierr = MatISGetLocalMat(pc->mat,&A);CHKERRQ(ierr);
+    ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
     ierr = MatMult(A,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
     ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
     if (PetscAbsScalar(vals[0]) > 1.e-1) {
@@ -821,83 +935,18 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     have_null = PETSC_FALSE;
   }
 
-  /* no-net-flux */
-  if (pcbddc->benign_compute_nonetflux) {
-    Mat_IS*                matis = (Mat_IS*)(pc->pmat->data);
-    MatNullSpace           near_null_space;
-    ISLocalToGlobalMapping rmap;
-    Vec                    quad_vec;
-    PetscScalar            *pvals;
-    PetscInt               i,np,*dummyins;
-    IS                     isused = NULL;
-    PetscBool              participate = PETSC_TRUE;
-
-    /* create vector to hold quadrature weights */
-    ierr = MatCreateVecs(pc->pmat,&quad_vec,NULL);CHKERRQ(ierr);
-    ierr = VecSet(quad_vec,0.0);CHKERRQ(ierr);
-    ierr = MatGetLocalToGlobalMapping(pc->pmat,&rmap,NULL);CHKERRQ(ierr);
-    ierr = VecSetLocalToGlobalMapping(quad_vec,rmap);CHKERRQ(ierr);
-
-    /* compute B^{(i)T} * 1_p */
-    np = 0;
+  /* Prepare matrix to compute no-net-flux */
+  if (pcbddc->benign_compute_nonetflux && !pcbddc->divudotp) {
+    Mat A;
+    IS  isused = NULL;
     if (pressures) {
       isused = pressures;
     } else {
       isused = zerodiag;
     }
-    if (isused) {
-      ierr = ISGetLocalSize(isused,&np);CHKERRQ(ierr);
-    }
-    ierr = PetscMalloc1(np,&pvals);CHKERRQ(ierr);
-    for (i=0;i<np;i++) pvals[i] = 1.;
-    ierr = VecSet(matis->x,0.);CHKERRQ(ierr);
-    if (np) {
-      const PetscInt *pidxs;
-
-      if (isused) {
-        ierr = ISGetIndices(isused,&pidxs);CHKERRQ(ierr);
-      }
-      ierr = VecSetValues(matis->x,np,pidxs,pvals,INSERT_VALUES);CHKERRQ(ierr);
-      if (isused) {
-        ierr = ISRestoreIndices(isused,&pidxs);CHKERRQ(ierr);
-      }
-    }
-    ierr = VecAssemblyBegin(matis->x);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(matis->x);CHKERRQ(ierr);
-    ierr = MatMult(matis->A,matis->x,matis->y);CHKERRQ(ierr);
-    ierr = PetscFree(pvals);CHKERRQ(ierr);
-    if (!isused) participate = PETSC_FALSE;
-    /* decide which of the sharing ranks (per dof) has to insert the values (should just be a matter of having a different orientation) */
-    ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
-    for (i=0;i<matis->sf->nroots;i++) matis->sf_rootdata[i] = -1;
-    for (i=0;i<matis->sf->nleaves;i++)
-      if (participate) matis->sf_leafdata[i] = PetscGlobalRank;
-      else  matis->sf_leafdata[i] = -1;
-
-    ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_MAX);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPI_MAX);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
-    ierr = VecGetArray(matis->y,&pvals);CHKERRQ(ierr);
-    for (i=0;i<matis->sf->nleaves;i++) {
-      if (PetscGlobalRank != matis->sf_leafdata[i]) {
-        pvals[i] = 0.;
-      }
-    }
-    ierr = PetscMalloc1(matis->sf->nleaves,&dummyins);CHKERRQ(ierr);
-    for (i=0;i<matis->sf->nleaves;i++) dummyins[i] = i;
-    ierr = VecSetValuesLocal(quad_vec,matis->sf->nleaves,dummyins,pvals,ADD_VALUES);CHKERRQ(ierr);
-    ierr = VecRestoreArray(matis->y,&pvals);CHKERRQ(ierr);
-    ierr = PetscFree(dummyins);CHKERRQ(ierr);
-
-    /* assembly quadrature vec and attach near null space to pmat */
-    ierr = VecAssemblyBegin(quad_vec);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(quad_vec);CHKERRQ(ierr);
-    ierr = VecNormalize(quad_vec,NULL);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)pc),PETSC_FALSE,1,&quad_vec,&near_null_space);CHKERRQ(ierr);
-    ierr = VecDestroy(&quad_vec);CHKERRQ(ierr);
-    ierr = MatSetNearNullSpace(pc->pmat,near_null_space);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&near_null_space);CHKERRQ(ierr);
+    if (!isused) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Don't know how to extract div u dot p! Please provide the pressure field");
+    ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(A,isused,NULL,MAT_INITIAL_MATRIX,&pcbddc->divudotp);CHKERRQ(ierr);
   }
 
   /* change of basis and p0 dofs */
@@ -1566,6 +1615,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   ierr = MatDestroy(&pcbddc->switch_static_change);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->work_change);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->divudotp);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   for (i=0;i<pcbddc->n_local_subs;i++) {
     ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
@@ -4871,6 +4921,7 @@ PetscErrorCode PCBDDCSubsetNumbering(IS subset, IS subset_mult, PetscInt *N_n, I
   PetscFunctionReturn(0);
 }
 
+/* this implements stabilized Gram-Schmidt */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCOrthonormalizeVecs"
 PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
@@ -4880,12 +4931,12 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* this implements stabilized Gram-Schmidt */
   ierr = PetscMalloc1(n,&alphas);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
     ierr = VecNormalize(vecs[i],NULL);CHKERRQ(ierr);
-    if (i<n) { ierr = VecMDot(vecs[i],n-i-1,&vecs[i+1],&alphas[i+1]);CHKERRQ(ierr); }
-    for (j=i+1;j<n;j++) { ierr = VecAXPY(vecs[j],PetscConj(-alphas[j]),vecs[i]);CHKERRQ(ierr); }
+    ierr = VecMDot(vecs[i],n-i-1,&vecs[i+1],alphas);CHKERRQ(ierr);
+    for (j=0;j<n-i-1;j++) alphas[j] = PetscConj(-alphas[j]);
+    ierr = VecMAXPY(vecs[j],n-i-1,alphas,vecs+i);CHKERRQ(ierr);
   }
   ierr = PetscFree(alphas);CHKERRQ(ierr);
   PetscFunctionReturn(0);

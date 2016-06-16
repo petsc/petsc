@@ -60,6 +60,7 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 PetscErrorCode MatDetectDisconnectedComponents(Mat,PetscBool,PetscInt*,IS*[]);
 PetscErrorCode MatSeqAIJCompress(Mat,Mat*);
 PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers,Vec,Vec,PetscBool,PetscBool);
+PetscErrorCode PCBDDCComputeNoNetFlux(Mat,Mat,PCBDDCGraph,MatNullSpace*);
 
 /* benign subspace trick */
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);

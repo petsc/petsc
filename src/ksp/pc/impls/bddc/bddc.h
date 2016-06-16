@@ -111,6 +111,7 @@ typedef struct {
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
   PetscInt            vertex_size;
+  Mat                 divudotp;
 
   /* local disconnected subdomains */
   PetscBool detect_disconnected;
