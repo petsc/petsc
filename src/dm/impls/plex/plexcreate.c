@@ -267,9 +267,12 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numEdges, numEdges + numVertices);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, 2);CHKERRQ(ierr);
   for (v = numEdges; v < numEdges+numVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, 2);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
@@ -903,6 +906,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFace
   PetscValidLogicalCollectiveInt(boundary,dim,2);
   ierr = DMSetType(boundary, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(boundary, dim-1);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(boundary, dim);CHKERRQ(ierr);
   switch (dim) {
   case 2:
   {

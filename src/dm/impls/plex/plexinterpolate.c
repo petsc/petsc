@@ -576,6 +576,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
   ierr = DMGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
+  if (coordSectionA == coordSectionB) PetscFunctionReturn(0);
   if (!coordSectionB) {
     PetscInt dim;
 
