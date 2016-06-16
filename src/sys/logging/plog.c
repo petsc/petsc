@@ -20,6 +20,22 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
   return 0;
 }
 
+/*@C
+   PetscLogObjectMemory - Adds to an object a count of additional amount of memory that is used by the object.
+
+   Not collective.
+
+   Input Parameters:
++  obj  - the PETSc object
+-  mem  - the amount of memory that is being added to the object
+
+   Level: developer
+
+   Developer Notes: Currently we do not always do a good job of associating all memory allocations with an object. 
+
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
+
+@*/
 PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
 {
   if (!p) return 0;
@@ -430,11 +446,11 @@ PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogRegister(stageLog, sname, stage);CHKERRQ(ierr);
   /* Copy events already changed in the main stage, this sucks */
-  ierr = EventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
   for (event = 0; event < stageLog->eventLog->numEvents; event++) {
-    ierr = EventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event],&stageLog->stageInfo[*stage].eventLog->eventInfo[event]);CHKERRQ(ierr);
+    ierr = PetscEventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event],&stageLog->stageInfo[*stage].eventLog->eventInfo[event]);CHKERRQ(ierr);
   }
-  ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
+  ierr = PetscClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -727,12 +743,12 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
   PetscFunctionBegin;
   *event = PETSC_DECIDE;
   ierr   = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  ierr   = EventRegLogGetEvent(stageLog->eventLog, name, event);CHKERRQ(ierr);
+  ierr   = PetscEventRegLogGetEvent(stageLog->eventLog, name, event);CHKERRQ(ierr);
   if (*event > 0) PetscFunctionReturn(0);
-  ierr   = EventRegLogRegister(stageLog->eventLog, name, classid, event);CHKERRQ(ierr);
+  ierr   = PetscEventRegLogRegister(stageLog->eventLog, name, classid, event);CHKERRQ(ierr);
   for (stage = 0; stage < stageLog->numStages; stage++) {
-    ierr = EventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
-    ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
+    ierr = PetscEventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
+    ierr = PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -773,7 +789,7 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
-  ierr = EventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -813,7 +829,7 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
-  ierr = EventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -843,9 +859,9 @@ PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActiv
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   for (stage = 0; stage < stageLog->numStages; stage++) {
     if (isActive) {
-      ierr = EventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
+      ierr = PetscEventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
     } else {
-      ierr = EventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
+      ierr = PetscEventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -875,7 +891,7 @@ PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
-  ierr = EventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -903,7 +919,7 @@ PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
-  ierr = EventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid);CHKERRQ(ierr);
+  ierr = PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1085,7 +1101,7 @@ PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  ierr = EventRegLogGetEvent(stageLog->eventLog, name, event);CHKERRQ(ierr);
+  ierr = PetscEventRegLogGetEvent(stageLog->eventLog, name, event);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2045,7 +2061,7 @@ PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass)
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscClassRegLogRegister(stageLog->classLog, name, *oclass);CHKERRQ(ierr);
   for (stage = 0; stage < stageLog->numStages; stage++) {
-    ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
+    ierr = PetscClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);

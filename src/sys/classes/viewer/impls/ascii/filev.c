@@ -1050,10 +1050,12 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
     if (dtype == PETSC_CHAR)         ret = fscanf(fd, "%c",  &(((char*)data)[i]));
     else if (dtype == PETSC_STRING)  ret = fscanf(fd, "%s",  &(((char*)data)[i]));
 #if PETSC_USE_64BIT_INDICES
-#if (PETSC_SIZEOF_LONG_LONG == 8)
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_MPI_INT64_T)
     else if (dtype == PETSC_INT)     ret = fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
-#else
+#elif (PETSC_SIZEOF_LONG_LONG == 8)
     else if (dtype == PETSC_INT)     ret = fscanf(fd, "%lld",  &(((PetscInt*)data)[i]));
+#elif defined(PETSC_HAVE___INT64)
+    else if (dtype == PETSC_INT)     ret = fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
 #endif
 #else
     else if (dtype == PETSC_INT)     ret = fscanf(fd, "%d",  &(((PetscInt*)data)[i]));

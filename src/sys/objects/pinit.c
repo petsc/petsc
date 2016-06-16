@@ -1442,7 +1442,7 @@ PetscErrorCode  PetscFinalize(void)
 
   PetscInitializeCalled = PETSC_FALSE;
   PetscFinalizeCalled   = PETSC_TRUE;
-  PetscFunctionReturn(ierr);
+  PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_MISSING_LAPACK_lsame_)

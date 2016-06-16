@@ -125,6 +125,24 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetType"
+/*@C
+  TSAdaptSetType - sets the type of time-step adaption to be used by the TS ODE integrator
+
+  Logically collective on TSAdapt
+
+  Input Parameters:
++   adapt - the TS adapt object, usually obtained with TSGetAdapt()
+-   type - the type of adapter to use: TSADAPTBASIC "basic",  TSADAPTNONE  "none", TSADAPTCFL   "cfl" (deprecated)
+
+  Options Database:
+.   -ts_adapt_type <type> - basic, none, cfl
+
+  Level: intermediate
+
+  Notes: only none and basic are currently supported
+
+.seealso: TSAdaptType, TSCreate(), TSSolve(), TSGetAdapt(), TSAdapt, TSAdaptChoose(), TSAdaptSetFromOptions(), TSSetFromOptions()
+@*/
 PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 {
   PetscBool      match;

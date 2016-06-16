@@ -3975,11 +3975,11 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         ierr = TSPreStep(ts);CHKERRQ(ierr);
       }
       ierr = TSStep(ts);CHKERRQ(ierr);
-      ierr = TSEventHandler(ts);CHKERRQ(ierr);
+      if (ts->vec_costintegral && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
+        ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
+      }
+      ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (!ts->steprollback) {
-        if (ts->vec_costintegral && ts->costintegralfwd) {
-          ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
-        }
         ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }

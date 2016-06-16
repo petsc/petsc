@@ -208,7 +208,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
 
    Developer Notes: this must match petsc/finclude/petscsnes.h
 
-       The string versions of these are in SNESConvergedReason, if you change any value here you must
+       The string versions of these are in SNESConvergedReasons, if you change any value here you must
      also adjust that array.
 
    Each reason has its own manual page.
