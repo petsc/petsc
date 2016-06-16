@@ -406,7 +406,6 @@ PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->variableCoefficient) {
   case COEFF_NONE:
     ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);

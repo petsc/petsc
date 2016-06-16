@@ -1740,8 +1740,7 @@ int main(int argc, char **argv)
 
   /* set up BCs, functions, tags */
   ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = (*mod->setupbc)(prob,phys);CHKERRQ(ierr);
+
   mod->errorIndicator = ErrorIndicator_Simple;
 
   {
@@ -1769,26 +1768,7 @@ int main(int argc, char **argv)
   if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
   ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
 
-  {
-    char      convType[256];
-    PetscBool flg;
-
-    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-    ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
-    if (flg) {
-      DM dmConv;
-
-      ierr = DMConvert(dm,convType,&dmConv);CHKERRQ(ierr);
-      if (dmConv) {
-        ierr = DMViewFromOptions(dmConv, NULL, "-dm_conv_view");CHKERRQ(ierr);
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
-        dm   = dmConv;
-        ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-      }
-    }
-  }
-
+  ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&prob);CHKERRQ(ierr);
   ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
@@ -1819,6 +1799,29 @@ int main(int argc, char **argv)
   ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
   ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
+  ierr = (*mod->setupbc)(prob,phys);CHKERRQ(ierr);
+  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
+  ierr = DMSetDS(dm,prob);CHKERRQ(ierr);
+  ierr = PetscDSDestroy(&prob);CHKERRQ(ierr);
+  {
+    char      convType[256];
+    PetscBool flg;
+
+    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format","ex12",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();
+    if (flg) {
+      DM dmConv;
+
+      ierr = DMConvert(dm,convType,&dmConv);CHKERRQ(ierr);
+      if (dmConv) {
+        ierr = DMViewFromOptions(dmConv, NULL, "-dm_conv_view");CHKERRQ(ierr);
+        ierr = DMDestroy(&dm);CHKERRQ(ierr);
+        dm   = dmConv;
+        ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+      }
+    }
+  }
 
   ierr = initializeTS(dm, user, &ts);CHKERRQ(ierr);
 
