@@ -30,7 +30,6 @@ PETSC_EXTERN const char DMSwarmField_pid[];
 PETSC_EXTERN const char DMSwarmField_rank[];
 PETSC_EXTERN const char DMSwarmPICField_coor[];
 
-
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM,const char[],Vec*);
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM,const char[],Vec*);
 PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM,const char[],Vec*);

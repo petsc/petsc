@@ -45,7 +45,7 @@ struct  _p_DataEx {
 
 extern const char *status_names[];
 
-DataEx DataExCreate(MPI_Comm comm,const PetscInt count);
+PetscErrorCode DataExCreate(MPI_Comm comm,const PetscInt count, DataEx *);
 PetscErrorCode DataExView(DataEx d);
 PetscErrorCode DataExDestroy(DataEx d);
 PetscErrorCode DataExTopologyInitialize(DataEx d);
