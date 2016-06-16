@@ -20,6 +20,9 @@ ex2: ex2.o   chkopts
 ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_DM_LIB}
 	${RM} -f ex3.o
+ex4: ex4.o   chkopts
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
+	${RM} -f ex4.o
 
 #-------------------------------------------------------------------------------
 runex1:
@@ -36,6 +39,10 @@ runex3:
 	-@${MPIEXEC} -n 1 ./ex3 > ex3_0.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_0.out ex3_0.tmp || printf "${PWD}\nPossible problem with ex3_0, diffs above\n==========================================\n"; \
 	   ${RM} -f ex3_0.tmp
+runex4:
+	-@${MPIEXEC} -n 1 ./ex4 > ex4_0.tmp 2>&1;	  \
+	   ${DIFF} output/ex4_0.out ex4_0.tmp || printf "${PWD}\nPossible problem with ex4_0, diffs above\n==========================================\n"; \
+	   ${RM} -f ex4_0.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_C_X	  =
