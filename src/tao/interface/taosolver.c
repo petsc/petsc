@@ -173,9 +173,12 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   TaoSetObjectiveRoutine(),
   TaoSetGradientRoutine(), and (if using 2nd order method) TaoSetHessianRoutine().
 
+  You should call TaoGetConvergedReason() or run with -tao_converged_reason to determine if the optimization algorithm actually succeeded or
+  why it failed.
+
   Level: beginner
 
-.seealso: TaoCreate(), TaoSetObjectiveRoutine(), TaoSetGradientRoutine(), TaoSetHessianRoutine()
+.seealso: TaoCreate(), TaoSetObjectiveRoutine(), TaoSetGradientRoutine(), TaoSetHessianRoutine(), TaoGetConvergedReason()
  @*/
 PetscErrorCode TaoSolve(Tao tao)
 {
