@@ -2930,6 +2930,34 @@ PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],
    Verify that all processes in the communicator have called this from the same line of code
  */
 PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,const char*,const char *);
+
+/*MC
+   MPIU_Allreduce - a PETSc replacement for MPI_Allreduce() that tries to determine if the call from all the MPI processes occur from the
+                    same place in the PETSc code. This helps to detect bugs where different MPI processes follow different code paths
+                    resulting in inconsistent and incorrect calls to MPI_Allreduce().
+
+   Collective on MPI_Comm
+
+   Synopsis:
+     #include <petscsys.h>
+     PetscErrorCode MPIU_Allreduce(void *indata,void *outdata,PetscMPIInt count,MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
+
+   Input Parameters:
++  indata - pointer to the input data to be reduced
+.  count - the number of MPI data items in indata and outdata
+.  datatype - the MPI datatype, for example MPI_INT
+.  op - the MPI operation, for example MPI_SUM
+-  comm - the MPI communicator on which the operation occurs
+
+   Output Parameter:
+.  outdata - the reduced values
+
+   Notes: In optimized mode this directly calls MPI_Allreduce()
+
+   Level: developer
+
+.seealso: MPI_Allreduce()
+M*/
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) (PetscAllreduceBarrierCheck(fcomm,c,__LINE__,__FUNCT__,__FILE__) || MPI_Allreduce(a,b,c,d,e,fcomm))
 #else
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)

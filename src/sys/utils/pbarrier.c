@@ -12,6 +12,9 @@ static int hash(const char *str)
   return hash;
 }
 
+/*
+   This is used by MPIU_Allreduce() to insure that all callers originated from the same place in the PETSc code
+*/
 PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm comm,PetscMPIInt ctn,int line,const char *func,const char *file)
 {
   PetscMPIInt err;
