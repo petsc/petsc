@@ -8,6 +8,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.PACKAGE      = 'MATLAB_ENGINE'
     self.package      = 'matlab-engine'
+    self.hastests     = 1
     return
 
   def setupDependencies(self, framework):
@@ -18,6 +19,12 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
+    if self.framework.clArgDB.has_key('with-matlabengine-lib'):
+      self.lib = self.argDB['with-matlabengine-lib']
+      self.framework.packages.append(self)
+      self.found = 1
+      return
+
     if self.matlab.matlab_arch == 'mac':
       matlab_dl = [' -L'+os.path.join(self.matlab.matlab,'sys','os','mac'),' -ldl']
     else:
