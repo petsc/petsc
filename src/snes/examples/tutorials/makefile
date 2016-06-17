@@ -239,7 +239,7 @@ ex74f: ex74f.o  chkopts
 ex77: ex77.o  chkopts
 	-${CLINKER} -o ex77 ex77.o ${PETSC_SNES_LIB}
 	${RM} ex77.o
-#--------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
@@ -630,6 +630,11 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_parms:
+	-@${MPIEXEC} -n 2 ./ex19  -pc_type parms -ksp_monitor_short -snes_view  > ex19_parms.tmp 2>&1; \
+	   if (${DIFF} output/ex19_parms.out ex19_parms.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_parms, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_parms.tmp
 runex19_cgs:
 	-@${MPIEXEC} -n 1 ./ex19  -da_refine 1 -ksp_monitor_short -ksp_type cgs > ex19_cgs.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cgs.out ex19_cgs.tmp) then true; \
@@ -1241,7 +1246,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 runex19_greedy_coloring \
-                                 runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi runex19_composite_gs_newton ex19.rm \
+                                 runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi runex19_composite_gs_newton runex19_parms ex19.rm \
                                  ex20.PETSc runex20 ex20.rm ex22.PETSc runex22 ex22.rm \
                                  ex35.PETSc runex35 runex35_2  runex35_7 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm \
