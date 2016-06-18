@@ -50,7 +50,7 @@ PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 
   PetscFunctionBegin;
   PetscValidPointer(ctx, 2);
-  ierr = PetscMalloc(sizeof(struct _DMInterpolationInfo), ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
 
   (*ctx)->comm   = comm;
   (*ctx)->dim    = -1;

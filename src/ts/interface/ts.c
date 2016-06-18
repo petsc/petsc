@@ -6178,7 +6178,7 @@ PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6287,7 +6287,7 @@ PetscErrorCode  TSSetJacobianMatlab(TS ts,Mat A,Mat B,const char *func,mxArray *
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6360,7 +6360,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6438,7 +6438,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
       char      **displaynames;
       PetscBool flg;
       ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
-      ierr = PetscMalloc((dim+1)*sizeof(char*),&displaynames);CHKERRQ(ierr);
+      ierr = PetscMalloc1(dim+1,&displaynames);CHKERRQ(ierr);
       ierr = PetscMemzero(displaynames,(dim+1)*sizeof(char*));CHKERRQ(ierr);
       ierr = PetscOptionsGetStringArray(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",displaynames,&dim,&flg);CHKERRQ(ierr);
       if (flg) {

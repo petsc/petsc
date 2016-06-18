@@ -769,8 +769,7 @@ PetscErrorCode PreCheckCreate(MPI_Comm comm,PreCheck *precheck)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscMalloc(sizeof(struct _n_PreCheck),precheck);CHKERRQ(ierr);
-  ierr = PetscMemzero(*precheck,sizeof(struct _n_PreCheck));CHKERRQ(ierr);
+  ierr = PetscNew(precheck);CHKERRQ(ierr);
 
   (*precheck)->comm  = comm;
   (*precheck)->angle = 10.;     /* only active if angle is less than 10 degrees */

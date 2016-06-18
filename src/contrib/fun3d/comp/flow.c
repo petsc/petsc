@@ -11,8 +11,8 @@ typedef struct {
   PetscViewer viewer;
 } MonitorCtx;
 
-#define ICALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(PetscInt),y);CHKERRQ(ierr);
-#define FCALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(PetscScalar),y);CHKERRQ(ierr);
+#define ICALLOC(size,y) ierr = PetscMalloc1(PetscMax(size,1),y);CHKERRQ(ierr);
+#define FCALLOC(size,y) ierr = PetscMalloc1(PetscMax(size,1),y);CHKERRQ(ierr);
 
 typedef struct {
   Vec      qnew, qold, func;

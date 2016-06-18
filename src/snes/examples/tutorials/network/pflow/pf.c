@@ -457,7 +457,7 @@ int main(int argc,char ** argv)
       numEdges = pfdata->nbranch;
       numVertices = pfdata->nbus;
 
-      ierr = PetscMalloc(2*numEdges*sizeof(int),&edges);CHKERRQ(ierr);
+      ierr = PetscMalloc1(2*numEdges,&edges);CHKERRQ(ierr);
       ierr = GetListofEdges(pfdata->nbranch,pfdata->branch,edges);CHKERRQ(ierr);
     }
     PetscLogStagePop();

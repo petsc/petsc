@@ -618,7 +618,7 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
     }
     ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
     ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscInt)*(N-n), &(is->nonlocal));CHKERRQ(ierr);
+    ierr = PetscMalloc1(N-n, &(is->nonlocal));CHKERRQ(ierr);
     ierr = PetscMemcpy(is->nonlocal, is->total, sizeof(PetscInt)*is->local_offset);CHKERRQ(ierr);
     ierr = PetscMemcpy(is->nonlocal+is->local_offset, is->total+is->local_offset+n, sizeof(PetscInt)*(N - is->local_offset - n));CHKERRQ(ierr);
     *indices = is->nonlocal;

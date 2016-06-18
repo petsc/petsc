@@ -410,7 +410,7 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
-  ierr = PetscMalloc(sizeof(GroupList), &groupNode);CHKERRQ(ierr);
+  ierr = PetscNew(&groupNode);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char**) &groupNode->name);CHKERRQ(ierr);
 
   groupNode->next = hdf5->groups;

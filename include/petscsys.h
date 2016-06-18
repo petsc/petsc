@@ -559,7 +559,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 
 /*MC
-   PetscMalloc - Allocates memory, One should use PetscMalloc1() or PetscCalloc1() usually instead of this
+   PetscMalloc - Allocates memory, One should use PetscNew(), PetscMalloc1() or PetscCalloc1() usually instead of this
 
    Synopsis:
     #include <petscsys.h>
