@@ -29,19 +29,18 @@
       Vec              xvec,bvec,uvec
       Mat              Amat
       KSP              ksp
-      PC               pc
       PetscErrorCode   ierr
       PetscViewer viewer
       PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
       PetscInt ki,kj,lint,nel,ll,j1,i1,ndf
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
-      PetscMPIInt npe,mype
-      PetscScalar::ss(4,4),res(4),val
-      PetscReal::shp(3,9),sg(3,9),flux(2)
+      PetscMPIInt size,rank
+      PetscScalar::ss(4,4),val
+      PetscReal::shp(3,9),sg(3,9)
       PetscReal::thk,a1,a2
       PetscReal, external :: ex54_psi
-      PetscReal::norm,tol,theta,eps,h,x,y,xsj
+      PetscReal::theta,eps,h,x,y,xsj
       PetscReal::coord(2,4),dd(2,2),ev(3),blb(2)
 
       common /ex54_theta/ theta
@@ -49,8 +48,8 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,npe,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,mype,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 set parameters
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,8 +67,8 @@
       call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
      &                         '-epsilon',eps,flg,ierr)
       ki = 2
-      call PetscOptionsGetRealArray(PETSC_NULL_PETSC,                     &
-     &           OBJECT_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
+      call PetscOptionsGetRealArray(PETSC_NULL_OBJECT,                     &
+     &           PETSC_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
       if ( .not. flg ) then
          blb(1) = 0.d0
          blb(2) = 0.d0
@@ -91,7 +90,7 @@
 !  be specified at runtime.
       call MatCreate(PETSC_COMM_WORLD,Amat,ierr)
       call MatSetSizes( Amat,PETSC_DECIDE, PETSC_DECIDE, M, M, ierr )
-      if ( npe == 1 ) then
+      if ( size == 1 ) then
          call MatSetType( Amat, MATAIJ, ierr )
       else
          call MatSetType( Amat, MATMPIAIJ, ierr )
@@ -232,29 +231,29 @@ c     Compute tangent
          call VecView(uvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         if ( mype == 0 ) then
+         if ( rank == 0 ) then
             open(1,file='ex54f.m', FORM='formatted')
-            write (1,*) 'A = PetscBinaryRead('Amat');'
+            write (1,*) 'A = PetscBinaryRead(''Amat'');'
             write (1,*) '[m n] = size(A);'
             write (1,*) 'mm = sqrt(m);'
-            write (1,*) 'b = PetscBinaryRead('Bvec');'
-            write (1,*) 'x = PetscBinaryRead('Xvec');'
-            write (1,*) 'r = PetscBinaryRead('Rvec');'
+            write (1,*) 'b = PetscBinaryRead(''Bvec'');'
+            write (1,*) 'x = PetscBinaryRead(''Xvec'');'
+            write (1,*) 'r = PetscBinaryRead(''Rvec'');'
             write (1,*) 'bb = reshape(b,mm,mm);'
             write (1,*) 'xx = reshape(x,mm,mm);'
             write (1,*) 'rr = reshape(r,mm,mm);'
 c            write (1,*) 'imagesc(bb')'
 c            write (1,*) 'title('RHS'),'
             write (1,*) 'figure,'
-            write (1,*) 'imagesc(xx')'
+            write (1,*) 'imagesc(xx'')'
             write (1,2002) eps,theta*57.2957795
             write (1,*) 'figure,'
-            write (1,*) 'imagesc(rr')'
-            write (1,*) 'title('Residual'),'
+            write (1,*) 'imagesc(rr'')'
+            write (1,*) 'title(''Residual''),'
             close(1)
          endif
       endif
- 2002 format('title('Solution: esp=',d9.3,', theta=',g8.3,''),')
+ 2002 format('title(''Solution: esp='',d9.3,'', theta='',g8.3,''),')
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
