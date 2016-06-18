@@ -947,6 +947,11 @@ runex19_draw:
           ${DIFF} output/ex19_draw.out ex19_draw.tmp || printf "${PWD}\nPossible problem with ex19_draw, diffs above\n=========================================\n"; \
           ${RM} ex19_draw.tmp
 
+runex19_drawports:
+	-@${MPIEXEC} -n 1 ./ex19 -draw_ports -snes_monitor_solution draw  -da_refine 1 > ex19_draw.tmp 2>&1; \
+          ${DIFF} output/ex19_draw.out ex19_draw.tmp || printf "${PWD}\nPossible problem with ex19_drawports, diffs above\n=========================================\n"; \
+          ${RM} ex19_draw.tmp
+
 runex18:
 	-@${MPIEXEC} -n 1 ./ex18 -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view > ex18_1.tmp 2>&1; \
 	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
@@ -1260,7 +1265,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_PARMETIS          = ex56.PETSc runex56 ex56.rm
-TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
+TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 runex19_drawports ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
