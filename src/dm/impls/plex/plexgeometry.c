@@ -563,7 +563,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (ltype == DM_POINTLOCATION_NEAREST && !hash) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location only supported with grid hashing.");
+  if (ltype == DM_POINTLOCATION_NEAREST && !hash) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location only supported with grid hashing. Use -dm_plex_hash_location to enable it.");
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
   ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF),PETSC_COMM_SELF,&result);CHKERRQ(ierr);
