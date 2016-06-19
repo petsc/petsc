@@ -7,6 +7,21 @@
 #define _PETSCHEAD_H
 #include <petscsys.h>
 
+/* These are used internally by PETSc ASCII IO routines*/
+#include <stdarg.h>
+PETSC_EXTERN PetscErrorCode PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
+PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list);
+PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+PETSC_EXTERN PetscErrorCode PetscVFPrintf_Matlab(FILE*,const char[],va_list);
+#endif
+
+#if defined(PETSC_HAVE_CLOSURES)
+PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char*));
+#endif
+
+
 #if defined(PETSC_HAVE_CUDA)
 #include <cuda.h>
 #include <cublas_v2.h>
