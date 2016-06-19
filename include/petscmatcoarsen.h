@@ -83,9 +83,8 @@ PETSC_EXTERN PetscErrorCode PetscCDGetMIS(PetscCoarsenData*,IS*);
 PETSC_EXTERN PetscErrorCode PetscCDGetMat(const PetscCoarsenData*,Mat*);
 PETSC_EXTERN PetscErrorCode PetscCDSetMat(PetscCoarsenData*,Mat);
 
-typedef PetscCDIntNd *PetscCDPos;
-PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData*,PetscInt,PetscCDPos*);
-PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData*,PetscInt,PetscCDPos*);
+PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData*,PetscInt,PetscCDIntNd**);
+PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData*,PetscInt,PetscCDIntNd**);
 PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const PetscInt,PetscInt*,IS**);
 
 

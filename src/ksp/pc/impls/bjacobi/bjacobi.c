@@ -640,18 +640,19 @@ static PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#include <petsc/private/kspimpl.h>  
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Singleblock"
 static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
 {
-  PetscErrorCode ierr;
-  PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
-  KSP            subksp = jac->ksp[0];
+  PetscErrorCode     ierr;
+  PC_BJacobi         *jac = (PC_BJacobi*)pc->data;
+  KSP                subksp = jac->ksp[0];
+  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   ierr = KSPSetUp(subksp);CHKERRQ(ierr);
-  if (subksp->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+  ierr = KSPGetConvergedReason(subksp,&reason);CHKERRQ(ierr);
+  if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;
   }
   PetscFunctionReturn(0);
@@ -914,14 +915,16 @@ static PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
 #define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Multiblock"
 static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 {
-  PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
-  PetscErrorCode ierr;
-  PetscInt       i,n_local = jac->n_local;
+  PC_BJacobi         *jac = (PC_BJacobi*)pc->data;
+  PetscErrorCode     ierr;
+  PetscInt           i,n_local = jac->n_local;
+  KSPConvergedReason reason;
 
   PetscFunctionBegin;
   for (i=0; i<n_local; i++) {
     ierr = KSPSetUp(jac->ksp[i]);CHKERRQ(ierr);
-    if (jac->ksp[i]->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    ierr = KSPGetConvergedReason(jac->ksp[i],&reason);CHKERRQ(ierr);
+    if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
       pc->failedreason = PC_SUBPC_ERROR;
     }
   }
@@ -1190,6 +1193,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PetscErrorCode       ierr;
   PetscScalar          *yarray;
   const PetscScalar    *xarray;
+  KSPConvergedReason   reason;
 
   PetscFunctionBegin;
   /* place x's and y's local arrays into xsub and ysub */
@@ -1202,8 +1206,8 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   ierr = PetscLogEventBegin(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
-
-  if (jac->ksp[0]->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+  ierr = KSPGetConvergedReason(jac->ksp[0],&reason);CHKERRQ(ierr);
+  if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;
   }
 
@@ -1214,7 +1218,6 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#include <petsc/private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_BJacobi_Multiproc"
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
@@ -1248,8 +1251,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     subcomm         = PetscSubcommChild(mpjac->psubcomm);
 
     /* Get matrix blocks of pmat */
-    if (!pc->pmat->ops->getmultiprocblock) SETERRQ(PetscObjectComm((PetscObject)pc->pmat),PETSC_ERR_SUP,"No support for the requested operation");
-    ierr = (*pc->pmat->ops->getmultiprocblock)(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
+    ierr = MatGetMultiProcBlock(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
     ierr = PetscMalloc1(1,&jac->ksp);CHKERRQ(ierr);
@@ -1297,9 +1299,9 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrix blocks, then get new matrix blocks */
       if (mpjac->submats) {ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);}
-      ierr = (*pc->pmat->ops->getmultiprocblock)(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
+      ierr = MatGetMultiProcBlock(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
     } else {
-      ierr = (*pc->pmat->ops->getmultiprocblock)(pc->pmat,subcomm,MAT_REUSE_MATRIX,&mpjac->submats);CHKERRQ(ierr);
+      ierr = MatGetMultiProcBlock(pc->pmat,subcomm,MAT_REUSE_MATRIX,&mpjac->submats);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(jac->ksp[0],mpjac->submats,mpjac->submats);CHKERRQ(ierr);
   }

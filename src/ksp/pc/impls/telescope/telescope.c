@@ -3,8 +3,6 @@
 #include <petsc/private/pcimpl.h>
 #include <petscksp.h> /*I "petscksp.h" I*/
 #include <petscdm.h> /*I "petscdm.h" I*/
-#include <petscsys.h>
-
 #include "../src/ksp/pc/impls/telescope/telescope.h"
 
 /*

@@ -3,7 +3,6 @@
  */
 
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
-#include <petsc/private/kspimpl.h>
 
 #if defined(PETSC_HAVE_TRIANGLE)
 #define REAL PetscReal
@@ -304,10 +303,10 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
       ierr = PetscCDEmptyAt(agg_lists_1,mm,&ise);CHKERRQ(ierr);
       if (!ise) {
         const PetscInt lid = mm;
-        /* for (clid_iterator=0;clid_iterator<nselected_1;clid_iterator++) { */
-        PetscScalar  AA[3][3];
-        PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
-        PetscCDPos   pos;
+        PetscScalar    AA[3][3];
+        PetscBLASInt   N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
+        PetscCDIntNd   *pos;
+
         ierr = PetscCDGetHeadPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);
         while (pos) {
           PetscInt flid;

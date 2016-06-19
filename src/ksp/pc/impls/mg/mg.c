@@ -699,9 +699,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (!mglevels[i]->smoothd->dm->x) {
         Vec *vecs;
         ierr = KSPCreateVecs(mglevels[i]->smoothd,1,&vecs,0,NULL);CHKERRQ(ierr);
-
         mglevels[i]->smoothd->dm->x = vecs[0];
-
         ierr = PetscFree(vecs);CHKERRQ(ierr);
       }
       ierr = PCMGGetRestriction(pc,i+1,&R);CHKERRQ(ierr);

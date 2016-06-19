@@ -129,7 +129,7 @@ PetscErrorCode PetscCDIntNdGetID(const PetscCDIntNd *a_this, PetscInt *a_gid)
  */
 #undef __FUNCT__
 #define __FUNCT__ "PetscCDGetHeadPos"
-PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, PetscCDPos *pos)
+PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd **pos)
 {
   PetscFunctionBegin;
   if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"a_idx >= ail->size: a_idx=%d.",a_idx);
@@ -141,7 +141,7 @@ PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, Pe
  */
 #undef __FUNCT__
 #define __FUNCT__ "PetscCDGetNextPos"
-PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *ail, PetscInt l_idx, PetscCDPos *pos)
+PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *ail, PetscInt l_idx, PetscCDIntNd **pos)
 {
   PetscFunctionBegin;
   if (!(*pos)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"NULL input position.");
@@ -737,10 +737,11 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
       /* deal with deleted ghost on first pass */
       if (size>1 && sub_it != n_sub_its-1) {
 #define REQ_BF_SIZE 100
-        PetscCDPos  pos;  PetscBool ise = PETSC_FALSE;
-        PetscInt    nSend1, **sbuffs1,nSend2;
-        MPI_Request *sreqs2[REQ_BF_SIZE],*rreqs2[REQ_BF_SIZE];
-        MPI_Status  status;
+        PetscCDIntNd *pos;
+        PetscBool    ise = PETSC_FALSE;
+        PetscInt     nSend1, **sbuffs1,nSend2;
+        MPI_Request  *sreqs2[REQ_BF_SIZE],*rreqs2[REQ_BF_SIZE];
+        MPI_Status   status;
 
         /* send request */
         for (proc=0,nSend1=0; proc<size; proc++) {
@@ -1028,9 +1029,9 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
 
   /* make fake matrix */
   if (size>1) {
-    Mat        mat;
-    PetscCDPos pos;
-    PetscInt   gid, NN, MM, jj = 0, mxsz = 0;
+    Mat          mat;
+    PetscCDIntNd *pos;
+    PetscInt     gid, NN, MM, jj = 0, mxsz = 0;
 
     for (kk=0; kk<nloc; kk++) {
       ierr = PetscCDSizeAt(agg_llists, kk, &jj);CHKERRQ(ierr);

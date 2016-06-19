@@ -3,10 +3,10 @@
  */
 
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
+/*  Next line needed to deactivate KSP_Solve logging */
 #include <petsc/private/kspimpl.h>
-#include <petsc/private/dmimpl.h>
-
 #include <petscblaslapack.h>
+#include <petscdm.h>
 
 typedef struct {
   PetscInt  nsmooths;
@@ -366,7 +366,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
 
   /* set lid_state */
   for (lid = 0; lid < nloc; lid++) {
-    PetscCDPos pos;
+    PetscCDIntNd *pos;
     ierr = PetscCDGetHeadPos(aggs_2,lid,&pos);CHKERRQ(ierr);
     if (pos) {
       PetscInt gid1;
@@ -381,7 +381,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
   for (lid=kk=0; lid<nloc; lid++) {
     NState state = lid_state[lid];
     if (IS_SELECTED(state)) {
-      PetscCDPos pos;
+      PetscCDIntNd *pos;
       ierr = PetscCDGetHeadPos(aggs_2,lid,&pos);CHKERRQ(ierr);
       while (pos) {
         PetscInt gid1;
@@ -439,7 +439,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
           lid_parent_gid[lidj] = (PetscScalar)(lid+my0); /* send this if sgid is not local */
           if (sgid >= my0 && sgid < Iend) {       /* I'm stealing this local from a local sgid */
             PetscInt   hav=0,slid=sgid-my0,gidj=lidj+my0;
-            PetscCDPos pos,last=NULL;
+            PetscCDIntNd *pos,*last=NULL;
             /* looking for local from local so id_llist_2 works */
             ierr = PetscCDGetHeadPos(aggs_2,slid,&pos);CHKERRQ(ierr);
             while (pos) {
@@ -478,7 +478,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
             lid_parent_gid[lid] = (PetscScalar)statej; /* send who selected */
             if (sgidold>=my0 && sgidold<Iend) { /* this was mine */
               PetscInt   hav=0,oldslidj=sgidold-my0;
-              PetscCDPos pos,last=NULL;
+              PetscCDIntNd *pos,*last=NULL;
               /* remove from 'oldslidj' list */
               ierr = PetscCDGetHeadPos(aggs_2,oldslidj,&pos);CHKERRQ(ierr);
               while (pos) {
@@ -560,7 +560,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     for (lid=0; lid<nloc; lid++) {
       NState state = lid_state[lid];
       if (IS_SELECTED(state)) {
-        PetscCDPos pos,last=NULL;
+        PetscCDIntNd *pos,*last=NULL;
         /* look for deleted ghosts and see if they moved */
         ierr = PetscCDGetHeadPos(aggs_2,lid,&pos);CHKERRQ(ierr);
         while (pos) {
@@ -586,9 +586,10 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     for (cpid = 0; cpid < nghost_2; cpid++) {
       PetscInt sgid_new = (PetscInt)PetscRealPart(cpcol_2_parent[cpid]);
       if (sgid_new >= my0 && sgid_new < Iend) { /* this is mine */
-        PetscInt   gid     = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
-        PetscInt   slid_new=sgid_new-my0,hav=0;
-        PetscCDPos pos;
+        PetscInt     gid     = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
+        PetscInt     slid_new=sgid_new-my0,hav=0;
+        PetscCDIntNd *pos;
+
         /* search for this gid to see if I have it */
         ierr = PetscCDGetHeadPos(aggs_2,slid_new,&pos);CHKERRQ(ierr);
         while (pos) {
@@ -717,7 +718,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
   MPI_Comm        comm;
   PetscMPIInt     rank;
   PetscReal       *out_data;
-  PetscCDPos      pos;
+  PetscCDIntNd    *pos;
   PCGAMGHashTable fgid_flid;
 
 /* #define OUT_AGGS */

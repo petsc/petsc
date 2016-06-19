@@ -1,8 +1,6 @@
 
 #include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
-#include <petsc/private/kspimpl.h>
 #include <petscdm.h>
-
 
 const char *const PCFieldSplitSchurPreTypes[] = {"SELF","SELFP","A11","USER","FULL","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
 const char *const PCFieldSplitSchurFactTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactType","PC_FIELDSPLIT_SCHUR_FACT_",0};

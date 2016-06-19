@@ -1735,4 +1735,7 @@ PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscInt,PetscInt*,I
 
 PETSC_EXTERN PetscErrorCode MatPreallocatorPreallocate(Mat,PetscBool,Mat);
 
+PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
+
 #endif
