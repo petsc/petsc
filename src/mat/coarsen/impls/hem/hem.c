@@ -103,22 +103,22 @@ PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, Pe
   PetscFunctionReturn(0);
 }
 
-/* PetscLLNSetID
+/* PetscCDIntNdSetID
  */
 #undef __FUNCT__
-#define __FUNCT__ "PetscLLNSetID"
-PetscErrorCode PetscLLNSetID(PetscCDIntNd *a_this, PetscInt a_id)
+#define __FUNCT__ "PetscCDIntNdSetID"
+PetscErrorCode PetscCDIntNdSetID(PetscCDIntNd *a_this, PetscInt a_id)
 {
   PetscFunctionBegin;
   a_this->gid = a_id;
   PetscFunctionReturn(0);
 }
 
-/* PetscLLNGetID
+/* PetscCDIntNdGetID
  */
 #undef __FUNCT__
-#define __FUNCT__ "PetscLLNGetID"
-PetscErrorCode PetscLLNGetID(const PetscCDIntNd *a_this, PetscInt *a_gid)
+#define __FUNCT__ "PetscCDIntNdGetID"
+PetscErrorCode PetscCDIntNdGetID(const PetscCDIntNd *a_this, PetscInt *a_gid)
 {
   PetscFunctionBegin;
   *a_gid = a_this->gid;
@@ -396,7 +396,7 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
       ierr = PetscMalloc1(a_bs*lsz, &idxs);CHKERRQ(ierr);
       for (lsz = 0, n=ail->array[ii]; n; n = n->next) {
         PetscInt gid;
-        ierr = PetscLLNGetID(n, &gid);CHKERRQ(ierr);
+        ierr = PetscCDIntNdGetID(n, &gid);CHKERRQ(ierr);
         for (jj=0; jj<a_bs; lsz++,jj++) idxs[lsz] = a_bs*gid + jj;
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_loc[kk++]);CHKERRQ(ierr);
@@ -766,10 +766,10 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             ierr = PetscCDGetHeadPos(deleted_list,proc,&pos);CHKERRQ(ierr);
             while (pos) {
               PetscInt lid0, cpid, gid;
-              ierr  = PetscLLNGetID(pos, &cpid);CHKERRQ(ierr);
+              ierr  = PetscCDIntNdGetID(pos, &cpid);CHKERRQ(ierr);
               gid   = (PetscInt)PetscRealPart(cpcol_gid[cpid]);
               ierr  = PetscCDGetNextPos(deleted_list,proc,&pos);CHKERRQ(ierr);
-              ierr  = PetscLLNGetID(pos, &lid0);CHKERRQ(ierr);
+              ierr  = PetscCDIntNdGetID(pos, &lid0);CHKERRQ(ierr);
               ierr  = PetscCDGetNextPos(deleted_list,proc,&pos);CHKERRQ(ierr);
               *pt++ = gid; *pt++ = lid0;
             }
@@ -831,7 +831,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
             ierr = PetscCDGetHeadPos(agg_llists,lid1,&pos);CHKERRQ(ierr);
             while (pos) {
               PetscInt gid;
-              ierr   = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
+              ierr   = PetscCDIntNdGetID(pos, &gid);CHKERRQ(ierr);
               ierr   = PetscCDGetNextPos(agg_llists,lid1,&pos);CHKERRQ(ierr);
               *pt2++ = gid;
             }
@@ -1046,7 +1046,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
       ierr = PetscCDGetHeadPos(agg_llists,kk,&pos);CHKERRQ(ierr);
       while (pos) {
         PetscInt gid1;
-        ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
+        ierr = PetscCDIntNdGetID(pos, &gid1);CHKERRQ(ierr);
         ierr = PetscCDGetNextPos(agg_llists,kk,&pos);CHKERRQ(ierr);
 
         if (gid1 < my0 || gid1 >= my0+nloc) {

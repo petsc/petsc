@@ -311,7 +311,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
         ierr = PetscCDGetHeadPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);
         while (pos) {
           PetscInt flid;
-          ierr = PetscLLNGetID(pos, &flid);CHKERRQ(ierr);
+          ierr = PetscCDIntNdGetID(pos, &flid);CHKERRQ(ierr);
           ierr = PetscCDGetNextPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);
 
           if (flid < nFineLoc) {  /* could be a ghost */

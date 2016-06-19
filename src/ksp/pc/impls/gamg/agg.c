@@ -371,7 +371,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     if (pos) {
       PetscInt gid1;
 
-      ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
+      ierr = PetscCDIntNdGetID(pos, &gid1);CHKERRQ(ierr);
       if (gid1 != lid+my0) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gid1 %D != lid %D + my0 %D",gid1,lid,my0);
       lid_state[lid] = gid1;
     }
@@ -385,7 +385,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
       ierr = PetscCDGetHeadPos(aggs_2,lid,&pos);CHKERRQ(ierr);
       while (pos) {
         PetscInt gid1;
-        ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
+        ierr = PetscCDIntNdGetID(pos, &gid1);CHKERRQ(ierr);
         ierr = PetscCDGetNextPos(aggs_2,lid,&pos);CHKERRQ(ierr);
 
         if (gid1 >= my0 && gid1 < Iend) lid_parent_gid[gid1-my0] = (PetscScalar)(lid + my0);
@@ -444,7 +444,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
             ierr = PetscCDGetHeadPos(aggs_2,slid,&pos);CHKERRQ(ierr);
             while (pos) {
               PetscInt gid;
-              ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
+              ierr = PetscCDIntNdGetID(pos, &gid);CHKERRQ(ierr);
               if (gid == gidj) {
                 if (!last) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"last cannot be null");
                 ierr = PetscCDRemoveNextNode(aggs_2, slid, last);CHKERRQ(ierr);
@@ -483,7 +483,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
               ierr = PetscCDGetHeadPos(aggs_2,oldslidj,&pos);CHKERRQ(ierr);
               while (pos) {
                 PetscInt gid;
-                ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
+                ierr = PetscCDIntNdGetID(pos, &gid);CHKERRQ(ierr);
                 if (lid+my0 == gid) {
                   /* id_llist_2[lastid] = id_llist_2[flid];   /\* remove lid from oldslidj list *\/ */
                   if (!last) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"last cannot be null");
@@ -565,7 +565,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
         ierr = PetscCDGetHeadPos(aggs_2,lid,&pos);CHKERRQ(ierr);
         while (pos) {
           PetscInt gid;
-          ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
+          ierr = PetscCDIntNdGetID(pos, &gid);CHKERRQ(ierr);
 
           if (gid < my0 || gid >= Iend) {
             ierr = PCGAMGHashTableFind(&gid_cpid, gid, &cpid);CHKERRQ(ierr);
@@ -593,7 +593,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
         ierr = PetscCDGetHeadPos(aggs_2,slid_new,&pos);CHKERRQ(ierr);
         while (pos) {
           PetscInt gidj;
-          ierr = PetscLLNGetID(pos, &gidj);CHKERRQ(ierr);
+          ierr = PetscCDIntNdGetID(pos, &gidj);CHKERRQ(ierr);
           ierr = PetscCDGetNextPos(aggs_2,slid_new,&pos);CHKERRQ(ierr);
 
           if (gidj == gid) { hav = 1; break; }
@@ -785,7 +785,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
       ierr  = PetscCDGetHeadPos(agg_llists,lid,&pos);CHKERRQ(ierr);
       while (pos) {
         PetscInt gid1;
-        ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
+        ierr = PetscCDIntNdGetID(pos, &gid1);CHKERRQ(ierr);
         ierr = PetscCDGetNextPos(agg_llists,lid,&pos);CHKERRQ(ierr);
 
         if (gid1 >= my0 && gid1 < Iend) flid = gid1 - my0;

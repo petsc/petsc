@@ -3,6 +3,7 @@
 #define __MATIMPL_H
 
 #include <petscmat.h>
+#include <petscmatcoarsen.h>
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscBool MatRegisterAllCalled;
@@ -451,30 +452,6 @@ struct _p_MatCoarsen {
   IS               perm;
   PetscCoarsenData *agg_lists;
 };
-
-PETSC_EXTERN PetscErrorCode PetscCDCreate(PetscInt,PetscCoarsenData**);
-PETSC_EXTERN PetscErrorCode PetscCDDestroy(PetscCoarsenData*);
-PETSC_EXTERN PetscErrorCode PetscLLNSetID(PetscCDIntNd*,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscLLNGetID(const PetscCDIntNd*,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscCDAppendID(PetscCoarsenData*,PetscInt,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDAppendRemove(PetscCoarsenData*,PetscInt,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDAppendNode(PetscCoarsenData*,PetscInt,PetscCDIntNd*);
-PETSC_EXTERN PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData*,PetscInt,PetscCDIntNd*);
-PETSC_EXTERN PetscErrorCode PetscCDRemoveAllAt(PetscCoarsenData*,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDSizeAt(const PetscCoarsenData*,PetscInt,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData*,PetscInt,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscCDSetChuckSize(PetscCoarsenData*,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDPrint(const PetscCoarsenData*,MPI_Comm);
-PETSC_EXTERN PetscErrorCode PetscCDGetMIS(PetscCoarsenData*,IS*);
-PETSC_EXTERN PetscErrorCode PetscCDGetMat(const PetscCoarsenData*,Mat*);
-PETSC_EXTERN PetscErrorCode PetscCDSetMat(PetscCoarsenData*,Mat);
-
-typedef PetscCDIntNd *PetscCDPos;
-PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData*,PetscInt,PetscCDPos*);
-PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData*,PetscInt,PetscCDPos*);
-PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const PetscInt,PetscInt*,IS**);
-/* PetscErrorCode PetscCDSetRemovedIS( PetscCoarsenData *ail, MPI_Comm, const PetscInt, PetscInt[] ); */
-/* PetscErrorCode PetscCDGetRemovedIS( PetscCoarsenData *ail, IS * ); */
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently
