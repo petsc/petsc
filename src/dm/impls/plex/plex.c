@@ -104,7 +104,6 @@ PetscErrorCode VecView_Plex_Draw(Vec v, PetscViewer viewer)
   DM                 dm;
   PetscDraw          draw, popup;
   DM                 cdm;
-  DMLabel            markers;
   PetscSection       coordSection;
   Vec                coordinates;
   const PetscScalar *coords, *array;
@@ -149,7 +148,7 @@ PetscErrorCode VecView_Plex_Draw(Vec v, PetscViewer viewer)
 
   ierr = VecGetArrayRead(v, &array);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *coords = NULL, *a;
+    PetscScalar *coords = NULL, *a = NULL;
     PetscInt     numCoords, color;
 
     ierr = DMPlexPointGlobalRead(dm, c, array, &a);CHKERRQ(ierr);
@@ -750,7 +749,6 @@ PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 {
   PetscDraw          draw;
   DM                 cdm;
-  DMLabel            markers;
   PetscSection       coordSection;
   Vec                coordinates;
   const PetscScalar *coords;
