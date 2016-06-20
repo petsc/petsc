@@ -32,7 +32,8 @@
       PetscErrorCode   ierr
       PetscViewer viewer
       PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
-      PetscInt ki,kj,lint,nel,ll,j1,i1,ndf
+      PetscInt ki,kj,lint,nel,ll,j1,i1,ndf,f4
+      PetscInt f2,f9,f6
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
       PetscMPIInt size,rank
@@ -52,7 +53,11 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 set parameters
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      f4 = 4
+      f2 = 2
+      f9 = 9
+      f6 = 6
       ne = 9
       call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
      &                        '-ne',ne,flg,ierr)
@@ -95,7 +100,7 @@
       else
          call MatSetType( Amat, MATMPIAIJ, ierr )
       endif
-      call MatMPIAIJSetPreallocation(Amat,9,PETSC_NULL_INTEGER,6,
+      call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,
      &     PETSC_NULL_INTEGER, ierr)
       call MatSetFromOptions( Amat, ierr )
       call MatSetUp( Amat, ierr )
@@ -112,7 +117,8 @@
       thk = 1.d0              ! thickness
       nel = 4                   ! nodes per element (quad)
       ndf = 1
-      call int2d(2,lint,sg)
+      call int2d(f2,sg)
+      lint = 4
       ix = 0
       do geq=Istart,Iend-1,1
          qj = geq/(ne+1); qi = mod(geq,(ne+1))
@@ -125,9 +131,9 @@
 ! form stiff
             ss = 0.d0
             do ll = 1,lint
-               call shp2dquad(sg(1,ll),sg(2,ll),coord,shp,xsj,2)
+               call shp2dquad(sg(1,ll),sg(2,ll),coord,shp,xsj,f2)
                xsj = xsj*sg(3,ll)*thk
-               call thfx2d(ev,coord,shp,dd,2,2,4,ex54_psi)
+               call thfx2d(ev,coord,shp,dd,f2,f2,f4,ex54_psi)
                j1 = 1
                do kj = 1,nel
                   a1 = (dd(1,1)*shp(1,kj) + dd(1,2)*shp(2,kj))*xsj
@@ -147,7 +153,7 @@ c     Compute tangent
             idx(1) = geq; idx(2) = geq+1; idx(3) = geq+(ne+1)+1
             idx(4) = geq+(ne+1)
             if ( qj > 0 ) then
-               call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
+               call MatSetValues(Amat,f4,idx,f4,idx,ss,ADD_VALUES,ierr)
             else                !     a BC
                do ki=1,4,1
                   do kj=1,4,1
@@ -160,7 +166,7 @@ c     Compute tangent
                      endif
                   enddo
                enddo
-               call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
+               call MatSetValues(Amat,f4,idx,f4,idx,ss,ADD_VALUES,ierr)
             endif               ! BC
          endif                  ! add element
          if ( qj > 0 ) then      ! set rhs
@@ -276,7 +282,7 @@ c     Compute thermal gradient and flux
 
       implicit  none
 
-      integer   ndm,ndf,nel,i
+      PetscInt   ndm,ndf,nel,i
       PetscReal ev(2),xl(ndm,nel),shp(3,*),dir
       PetscReal xx,yy,psi,cs,sn,c2,s2,dd(2,2)
 
@@ -330,9 +336,11 @@ c                     shp(3,i) = N_i
 c         xsj       - Jacobian determinant at point
 c-----[--.----+----.----+----.-----------------------------------------]
       implicit  none
-      integer   ndm
-      real*8    xo,xs,xt, yo,ys,yt, xsm,xsp,xtm,xtp, ysm,ysp,ytm,ytp
-      real*8    s,t, xsj,xsj1, sh,th,sp,tp,sm,tm, xl(ndm,4),shp(3,4)
+      PetscInt  ndm
+      PetscReal xo,xs,xt, yo,ys,yt, xsm,xsp,xtm
+      PetscReal xtp, ysm,ysp,ytm,ytp
+      PetscReal s,t, xsj,xsj1, sh,th,sp,tp,sm
+      PetscReal tm, xl(ndm,4),shp(3,4)
 
 c     Set up interpolations
 
@@ -403,7 +411,7 @@ c     Compute shape functions
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     int2d
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      subroutine int2d(l,lint,sg)
+      subroutine int2d(l,sg)
 c-----[--.----+----.----+----.-----------------------------------------]
 c     Purpose: Form Gauss points and weights for two dimensions
 
@@ -415,8 +423,8 @@ c     lint    - Total number of points
 c     sg(3,*) - Array of points and weights
 c-----[--.----+----.----+----.-----------------------------------------]
       implicit  none
-      integer   l,i,lint,lr(9),lz(9)
-      real*8    g,third,sg(3,*)
+      PetscInt   l,i,lint,lr(9),lz(9)
+      PetscReal    g,third,sg(3,*)
       data      lr/-1,1,1,-1,0,1,0,-1,0/,lz/-1,-1,1,1,-1,0,1,0,0/
       data      third / 0.3333333333333333d0 /
 
