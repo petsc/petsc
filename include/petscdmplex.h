@@ -231,6 +231,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRestoreClosureIndices(DM, PetscSection, PetscS
 PETSC_EXTERN PetscErrorCode DMPlexMatSetClosureRefined(DM, PetscSection, PetscSection, DM, PetscSection, PetscSection, Mat, PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM, PetscSection, PetscSection, DM, PetscSection, PetscSection, PetscInt, PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexCreateClosureIndex(DM, PetscSection);
+PETSC_EXTERN PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM, PetscSection);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromFile(MPI_Comm, const char[], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateExodus(MPI_Comm, PetscInt, PetscBool, DM *);

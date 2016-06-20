@@ -334,6 +334,14 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                      {'numProcs': 1, 'args': '-filename %(meshes)s/Rect-tri3.exo -dm_view ::ascii_info_detail', 'requires': ['exodusii']},
                                                                      {'numProcs': 2, 'args': '-filename %(meshes)s/Rect-tri3.exo -dm_view ::ascii_info_detail', 'requires': ['exodusii']},
                                                                      ],
+                        'src/dm/impls/plex/examples/tutorials/ex6': [# Spectral ordering
+                                                                     {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -order 2'},
+                                                                     {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -order 3'},
+                                                                     {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -order 5'},
+                                                                     {'numProcs': 1, 'args': '-num_fields 1 -num_components 2 -order 2'},
+                                                                     {'numProcs': 1, 'args': '-num_fields 2 -num_components 1,1 -order 2,2'},
+                                                                     {'numProcs': 1, 'args': '-num_fields 2 -num_components 1,2 -order 2,3'},
+                                                                     ],
                         'src/snes/examples/tutorials/ex5':   [# MISSING ALL TESTS FROM MAKEFILE
                                                                # MSM tests
                                                                {'num': 'asm_0', 'numProcs': 1, 'args': './ex5 -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu'},
