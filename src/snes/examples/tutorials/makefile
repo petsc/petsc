@@ -1253,6 +1253,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm
+TESTEXAMPLES_PARMS             = ex19.PETSc runex19_parms ex19.rm
 TESTEXAMPLES_PARMETIS          = ex56.PETSc runex56 ex56.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
