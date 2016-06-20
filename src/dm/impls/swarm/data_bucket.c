@@ -712,7 +712,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
    */
   /* read file contents */
   fgets(dummy,99,fp);
-  fscanf(fp, "%D\n",&L);
+  fscanf(fp, "%d\n",&L);
   fscanf(fp, "%zu\n",&atomic_size);
   fgets(registeration_function,4999,fp);
   strL = strlen(registeration_function);
