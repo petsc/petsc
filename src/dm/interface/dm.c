@@ -4460,6 +4460,7 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
       ierr = PetscSectionGetDof(section, v, &dd);CHKERRQ(ierr);
       if (dd) {d = dd; break;}
     }
+    if (d < 0) d = PETSC_DEFAULT;
     ierr = DMSetCoordinateDim(dm, d);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
