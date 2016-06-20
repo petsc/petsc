@@ -26,7 +26,7 @@ typedef enum {RUN_FULL, RUN_TEST} RunType;
 
 typedef struct {
   RunType runType;  /* Whether to run tests, or solve the full problem */
-  PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 } AppCtx;
 
 #undef __FUNCT__
@@ -183,17 +183,17 @@ void g3_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     -\div \kappa(a) \grad u + f = -6 (x + y) + 6 (x + y) = 0
 */
-PetscErrorCode quadratic_u_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
   return 0;
 }
-PetscErrorCode linear_a_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *a, void *ctx)
+PetscErrorCode linear_a_2d(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *a, void *ctx)
 {
   *a = x[0] + x[1];
   return 0;
 }
-PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *l, void *ctx)
+PetscErrorCode zero(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *l, void *ctx)
 {
   *l = 0.0;
   return 0;
@@ -288,22 +288,22 @@ int main(int argc, char **argv)
   ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions(snes, u, user.exactFuncs, NULL);CHKERRQ(ierr);
   if (user.runType == RUN_FULL) {
-    PetscErrorCode (*initialGuess[3])(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+    PetscErrorCode (*initialGuess[3])(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
     PetscReal        error;
 
     initialGuess[0] = zero;
     initialGuess[1] = zero;
     initialGuess[2] = zero;
-    ierr = DMProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     ierr = VecViewFromOptions(u, NULL, "-initial_vec_view");CHKERRQ(ierr);
-    ierr = DMComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial L_2 Error: %g\n", error);CHKERRQ(ierr);}
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
-    ierr = DMComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Final L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "Final L_2 Error: %g\n", error);CHKERRQ(ierr);}
   }
