@@ -200,13 +200,13 @@ PetscErrorCode DataExTopologyInitialize(DataEx d)
   PetscFunctionBegin;
   d->topology_status = DEOBJECT_INITIALIZED;
   d->n_neighbour_procs = 0;
-  if (d->neighbour_procs         )  {ierr = PetscFree(d->neighbour_procs);            d->neighbour_procs          = NULL;}
-  if (d->messages_to_be_sent     )  {ierr = PetscFree(d->messages_to_be_sent);        d->messages_to_be_sent      = NULL;}
-  if (d->message_offsets         )  {ierr = PetscFree(d->message_offsets);            d->message_offsets          = NULL;}
-  if (d->messages_to_be_recvieved)  {ierr = PetscFree(d->messages_to_be_recvieved);   d->messages_to_be_recvieved = NULL;}
-  if (d->pack_cnt                )  {ierr = PetscFree(d->pack_cnt);                   d->pack_cnt                 = NULL;}
-  if (d->send_tags)                 {ierr = PetscFree(d->send_tags);                  d->send_tags                = NULL;}
-  if (d->recv_tags)                 {ierr = PetscFree(d->recv_tags);                  d->recv_tags                = NULL;}
+  ierr = PetscFree(d->neighbour_procs);CHKERRQ(ierr);
+  ierr = PetscFree(d->messages_to_be_sent);CHKERRQ(ierr);
+  ierr = PetscFree(d->message_offsets);CHKERRQ(ierr);
+  ierr = PetscFree(d->messages_to_be_recvieved);CHKERRQ(ierr);
+  ierr = PetscFree(d->pack_cnt);CHKERRQ(ierr);
+  ierr = PetscFree(d->send_tags);CHKERRQ(ierr);
+  ierr = PetscFree(d->recv_tags);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
