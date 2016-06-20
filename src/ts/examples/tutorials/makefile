@@ -688,7 +688,7 @@ runex35_2:
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 
-runex40: runex40_a runex40_b runex40_c runex40_d
+runex40: runex40_a runex40_b runex40_c runex40_d runex40_e
 
 runex40_a:
 	-@${MPIEXEC} -n 1 ./ex40 -snes_stol 1e-4 > ex40.tmp 2>&1; \
@@ -710,7 +710,12 @@ runex40_d:
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
-runex41: runex41_a runex41_b runex41_c runex41_d
+runex40_e:
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type bdf -ts_bdf_adapt -ts_adapt_dt_max 0.025 -ts_max_steps 1500 > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_e, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
+runex41: runex41_a runex41_b runex41_c runex41_d runex41_e
 
 runex41_a:
 	-@${MPIEXEC} -n 2 ./ex41 -snes_stol 1e-4 > ex41.tmp 2>&1; \
@@ -730,6 +735,11 @@ runex41_c:
 runex41_d:
 	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_d, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
+runex41_e:
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type bdf -ts_bdf_adapt -ts_adapt_dt_max 0.015 -ts_max_steps 3000 > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_e, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex42:
