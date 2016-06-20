@@ -661,12 +661,12 @@ runex19_kaczmarz:
 	   else  printf "${PWD}\nPossible problem with ex19_kaczmarz, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_kaczmarz.tmp
 runex19_cgne:
-	-@${MPIEXEC} -n 1 ./ex19 -da_refine 2 -pc_type lu -ksp_type cgne -ksp_monitor_short -ksp_converged_reason -ksp_view -ksp_norm_type unpreconditioned > ex19_cgne.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 2 -pc_type lu -ksp_type cgne -ksp_monitor_short -ksp_converged_reason -ksp_view -ksp_norm_type unpreconditioned |grep -v HERMITIAN > ex19_cgne.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cgne.out ex19_cgne.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_cgne, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_cgne.tmp
 runex19_cgne_2:
-	-@${MPIEXEC} -n 1 ./ex19 -pc_type jacobi -ksp_type cgne -ksp_monitor_short -ksp_converged_reason -ksp_view > ex19_cgne_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -pc_type jacobi -ksp_type cgne -ksp_monitor_short -ksp_converged_reason -ksp_view |grep -v HERMITIAN > ex19_cgne_2.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cgne_2.out ex19_cgne_2.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_cgne_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_cgne_2.tmp
