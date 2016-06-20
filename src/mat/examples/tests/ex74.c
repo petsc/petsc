@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   Vec            x,y,b,s1,s2;
   Mat            A;                    /* linear system matrix */
-  Mat            sA,sB,sC;             /* symmetric part of the matrices */
+  Mat            sA,sB,sFactor;        /* symmetric matrices */
   PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,k1,k2,col[3],lf,block, row,Ii,J,n1,inc;
   PetscReal      norm1,norm2,rnorm,tol=PETSC_SMALL;
   PetscScalar    neg_one = -1.0,four=4.0,value[3];
@@ -301,23 +301,23 @@ int main(int argc,char **args)
     if (lf==-1) {  /* Cholesky factor of sB (duplicate sA) */
       factinfo.fill = 5.0;
 
-      ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr);
+      ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sFactor);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(sFactor,sB,perm,&factinfo);CHKERRQ(ierr);
     } else if (!doIcc) break;
     else {       /* incomplete Cholesky factor */
       factinfo.fill   = 5.0;
       factinfo.levels = lf;
 
-      ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_ICC,&sC);CHKERRQ(ierr);
-      ierr = MatICCFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr);
+      ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_ICC,&sFactor);CHKERRQ(ierr);
+      ierr = MatICCFactorSymbolic(sFactor,sB,perm,&factinfo);CHKERRQ(ierr);
     }
-    ierr = MatCholeskyFactorNumeric(sC,sB,&factinfo);CHKERRQ(ierr);
-    /* MatView(sC, PETSC_VIEWER_DRAW_WORLD); */
+    ierr = MatCholeskyFactorNumeric(sFactor,sB,&factinfo);CHKERRQ(ierr);
+    /* MatView(sFactor, PETSC_VIEWER_DRAW_WORLD); */
 
     /* test MatGetDiagonal on numeric factor */
     /*
     if (lf == -1) {
-      ierr = MatGetDiagonal(sC,s1);CHKERRQ(ierr);
+      ierr = MatGetDiagonal(sFactor,s1);CHKERRQ(ierr);
       printf(" in ex74.c, diag: \n");
       ierr = VecView(s1,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
@@ -327,8 +327,8 @@ int main(int argc,char **args)
 
     /* test MatForwardSolve() and MatBackwardSolve() */
     if (lf == -1) {
-      ierr = MatForwardSolve(sC,b,s1);CHKERRQ(ierr);
-      ierr = MatBackwardSolve(sC,s1,s2);CHKERRQ(ierr);
+      ierr = MatForwardSolve(sFactor,b,s1);CHKERRQ(ierr);
+      ierr = MatBackwardSolve(sFactor,s1,s2);CHKERRQ(ierr);
       ierr = VecAXPY(s2,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_2,&norm2);CHKERRQ(ierr);
       if (10*norm1 < norm2) {
@@ -337,8 +337,8 @@ int main(int argc,char **args)
     }
 
     /* test MatSolve() */
-    ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
-    ierr = MatDestroy(&sC);CHKERRQ(ierr);
+    ierr = MatSolve(sFactor,b,y);CHKERRQ(ierr);
+    ierr = MatDestroy(&sFactor);CHKERRQ(ierr);
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);

@@ -578,9 +578,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   allowzeropivot = PetscNot(A->erroriffailure);
 
-  for (i=0; i<mbs; i++) {
-    jl[i] = mbs; il[0] = 0;
-  }
+  il[0] = 0;
+  for (i=0; i<mbs; i++) jl[i] = mbs; 
+  
   ierr = PetscMalloc3(bs2,&dk,bs2,&uik,bs,&work);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs,&pivots);CHKERRQ(ierr);
 
@@ -744,9 +744,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
   PetscFunctionBegin;
   ierr = PetscCalloc1(bs2*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) {
-    jl[i] = mbs; il[0] = 0;
-  }
+  il[0] = 0;
+  for (i=0; i<mbs; i++) jl[i] = mbs; 
+  
   ierr = PetscMalloc3(bs2,&dk,bs2,&uik,bs,&work);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs,&pivots);CHKERRQ(ierr);
   allowzeropivot = PetscNot(A->erroriffailure);
@@ -884,9 +884,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
             row i of U */
   ierr = PetscCalloc1(4*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) {
-    jl[i] = mbs; il[0] = 0;
-  }
+  il[0] = 0;
+  for (i=0; i<mbs; i++) jl[i] = mbs; 
+  
   ierr = ISGetIndices(perm,&perm_ptr);CHKERRQ(ierr);
 
   /* check permutation */
@@ -1059,9 +1059,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
             row i of U */
   ierr = PetscCalloc1(4*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) {
-    jl[i] = mbs; il[0] = 0;
-  }
+  il[0] = 0;
+  for (i=0; i<mbs; i++) jl[i] = mbs; 
+  
   ai = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */
@@ -1217,8 +1217,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C,Mat A,const Mat
 
   do {
     sctx.newshift = PETSC_FALSE;
+    il[0] = 0;
     for (i=0; i<mbs; i++) {
-      rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
+      rtmp[i] = 0.0; jl[i] = mbs; 
     }
 
     for (k = 0; k<mbs; k++) {
@@ -1495,8 +1496,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat C
 
   do {
     sctx.newshift = PETSC_FALSE;
+    il[0] = 0;
     for (i=0; i<mbs; i++) {
-      rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
+      rtmp[i] = 0.0; jl[i] = mbs; 
     }
 
     for (k = 0; k<mbs; k++) {

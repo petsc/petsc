@@ -4,7 +4,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['https://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.gz']
+    self.download        = ['http://downloads.sourceforge.net/project/boost/boost/1.61.0/boost_1_61_0.tar.gz']
     self.includes        = ['boost/multi_index_container.hpp']
     self.liblist         = []
     self.cxx             = 1

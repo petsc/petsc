@@ -23,9 +23,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
   allowzeropivot = PetscNot(A->erroriffailure);
   ierr = PetscCalloc1(25*mbs,&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) {
-    jl[i] = mbs; il[0] = 0;
-  }
+  il[0] = 0;
+  for (i=0; i<mbs; i++) jl[i] = mbs; 
+  
   ierr = PetscMalloc2(25,&dk,25,&uik);CHKERRQ(ierr);
   ai   = a->i; aj = a->j; aa = a->a;
 
