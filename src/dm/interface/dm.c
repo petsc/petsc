@@ -6015,7 +6015,7 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
   DMAddBoundary - Add a boundary condition to the model
 
   Input Parameters:
-+ dm          - The mesh object
++ dm          - The DM, with a PetscDS that matches the problem being constrained
 . isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
 . name        - The BC name
 . labelname   - The label defining constrained points
