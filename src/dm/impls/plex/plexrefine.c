@@ -6275,10 +6275,7 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
       ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
       /* Ensure refined label is created with same number of strata as
        * original (even if no entries here). */
-      if (!numPoints) {
-        ierr = DMLabelSetValue(labelNew, 0, values[val]);CHKERRQ(ierr);
-        ierr = DMLabelClearValue(labelNew, 0, values[val]);CHKERRQ(ierr);
-      }
+      ierr = DMLabelAddStratum(labelNew, values[val]);CHKERRQ(ierr);
       for (n = 0; n < numPoints; ++n) {
         const PetscInt p = points[n];
         switch (refiner) {
