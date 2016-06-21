@@ -315,7 +315,8 @@ instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg
 
 \section{Formatted Comments for Documentation and Fortran Interfaces}
 
-PETSc uses formatted comments and the Sowing packages to generate documentation (manual pages) and the fortran interfaces. Documentation for Sowing and the formating may be found at \href{http://www.cs.uiuc.edu/homes/wgropp/projects/software/sowing/doctext.pdf}{http://www.cs.uiuc.edu/homes/wgropp/projects/software/sowing/doctext.pdf}.
+PETSc uses formatted comments and the Sowing packages to generate documentation (manual pages) and the Fortran interfaces. 
+Documentation for Sowing and the formatting may be found at \href{http://wgropp.cs.illinois.edu/projects/software/sowing/}{http://wgropp.cs.illinois.edu/projects/software/sowing/}; in particular, see the documentation for \trl{doctext}.
 
 \begin{verbatim}
 /*@     indicates a formatted comment of a function that will be used for
@@ -337,6 +338,31 @@ PETSc uses formatted comments and the Sowing packages to generate documentation 
 Functions that take char* or function pointer arguments must have the C symbol since the Fortran interface generator cannot handle them so the Fortran interface for them must be created manually.
 
 The Fortran interface files go into the three directories depending on how they are created: ftn-auto, ftn-custom, ftn-f90.
+
+\subsection{Man Page Format}
+Each function, typedef, class, macro, enum, etc. in the public API should include the following data, correctly formatted in 
+a block (see above) to generate complete man pages and Fortran interfaces with Sowing. 
+All entries below should be separated by blank lines.
+\begin{itemize}
+  \item The items name, followed by a dash and brief (one-sentence) description
+  \item (Optional for simple items) A longer description of the function. This should include literature references if relevant.
+  \item If documenting a function, a description of the function's ``collectivity'' (whether all ranks in an MPI communicator need to participate)
+    \begin{itemize}
+    \item \trl{Not Collective} if the function need not be called on all MPI ranks
+    \item \trl{Collective [on XXX]} if the function is a collective operation [with respect to the data of class \trl{XXX}]
+    \item \trl{Logically Collective [on XXX]} if the function is collective but does not require any actual synchronization (say, setting class parameters uniformly).
+    \end{itemize}
+  \item If documenting a function with input parameters, a list of input parameter descriptions in an \trl{Input Parameters: } section
+  \item If documenting a function with output parameters, a list of output parameter descriptions in an \trl{Output Parameters: } section
+  \item If documenting a function which interacts with the options database, a list of options database keys in an \trl{Options Database Keys: } section
+  \item (Optional) a \trl{Notes: } section. In-depth discussion, technical caveats, special cases, and so on should be listed here. 
+    If it is ambiguous whether returned pointers need to be freed by the user or not, this information should be mentioned here.
+  \item (If applicable) a \trl{Fortran Notes: } section, detailing any relevant differences in calling or using the item.
+  \item \trl{Level: } followed by \trl{beginner}, \trl{intermediate}, \trl{advanced}, or \trl{developer}
+  \item (Optional) a list of \trl{Concepts: }
+  \item (Optional) a list of \trl{Keywords: }
+  \item The \trl{.seealso: } keyword and a list of related man pages. These man pages should usually also point back to this man page.
+\end{itemize}
 
 % -----------------------------------------------------------------------------------
 \chapter{The PETSc Kernel}
