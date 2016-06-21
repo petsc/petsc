@@ -612,6 +612,7 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
   ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   ierr = MatView(a->A,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -728,17 +729,40 @@ PetscErrorCode MatSetValuesBlockedLocal_IS(Mat A,PetscInt m,const PetscInt *rows
 #define __FUNCT__ "MatZeroRows_IS"
 PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  PetscInt       n_l = 0, *rows_l = NULL;
+  Mat_IS         *matis = (Mat_IS*)A->data;
+  PetscInt       nr,nl,len,i;
+  PetscInt       *lrows;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (x && b) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support");
-  if (n) {
-    ierr = PetscMalloc1(n,&rows_l);CHKERRQ(ierr);
-    ierr = ISGlobalToLocalMappingApply(A->rmap->mapping,IS_GTOLM_DROP,n,rows,&n_l,rows_l);CHKERRQ(ierr);
+  /* get locally owned rows */
+  ierr = MatZeroRowsMapLocal_Private(A,n,rows,&len,&lrows);CHKERRQ(ierr);
+  /* fix right hand side if needed */
+  if (x && b) {
+    const PetscScalar *xx;
+    PetscScalar       *bb;
+
+    ierr = VecGetArrayRead(x, &xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b, &bb);CHKERRQ(ierr);
+    for (i=0;i<len;++i) bb[lrows[i]] = diag*xx[lrows[i]];
+    ierr = VecRestoreArrayRead(x, &xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(b, &bb);CHKERRQ(ierr);
   }
-  ierr = MatZeroRowsLocal(A,n_l,rows_l,diag,x,b);CHKERRQ(ierr);
-  ierr = PetscFree(rows_l);CHKERRQ(ierr);
+  /* get rows associated to the local matrices */
+  if (!matis->sf) { /* setup SF if not yet created and allocate rootdata and leafdata */
+    ierr = MatISComputeSF_Private(A);CHKERRQ(ierr);
+  }
+  ierr = MatGetSize(matis->A,&nl,NULL);CHKERRQ(ierr);
+  ierr = PetscMemzero(matis->sf_leafdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(matis->sf_rootdata,A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=0;i<len;i++) matis->sf_rootdata[lrows[i]] = 1;
+  ierr = PetscFree(lrows);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nl,&lrows);CHKERRQ(ierr);
+  for (i=0,nr=0;i<nl;i++) if (matis->sf_leafdata[i]) lrows[nr++] = i;
+  ierr = MatZeroRowsLocal(A,nr,lrows,diag,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscFree(lrows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -749,11 +773,10 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscScalar    *array;
 
   PetscFunctionBegin;
   if (x && b) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support");
-  {
+  if (diag != 0.) {
     /*
        Set up is->x as a "counting vector". This is in order to MatMult_IS
        work properly in the interface nodes.
@@ -773,14 +796,17 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
   } else {
     is->pure_neumann = PETSC_FALSE;
 
-    ierr = VecGetArray(is->y,&array);CHKERRQ(ierr);
     ierr = MatZeroRows(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      ierr = MatSetValue(is->A,rows[i],rows[i],diag/(array[rows[i]]),INSERT_VALUES);CHKERRQ(ierr);
+    if (diag != 0.) {
+      const PetscScalar *array;
+      ierr = VecGetArrayRead(is->y,&array);CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+        ierr = MatSetValue(is->A,rows[i],rows[i],diag/(array[rows[i]]),INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = VecRestoreArrayRead(is->y,&array);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecRestoreArray(is->y,&array);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

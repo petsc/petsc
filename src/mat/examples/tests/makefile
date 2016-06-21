@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR		 = src/mat/examples/tests/
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
-                ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c ex27.c ex28.c ex29.c \
+                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex27.c ex28.c ex29.c \
                 ex30.c ex31.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
                 ex40.c ex41.c ex42.c ex43.c ex44.c ex45.c ex47.c ex48.c \
                 ex49.c ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex56.c \
@@ -120,6 +120,10 @@ ex21: ex21.o chkopts
 ex22: ex22.o chkopts
 	-${CLINKER} -o ex22 ex22.o ${PETSC_MAT_LIB}
 	${RM} ex22.o
+
+ex23: ex23.o chkopts
+	-${CLINKER} -o ex23 ex23.o ${PETSC_MAT_LIB}
+	${RM} ex23.o
 
 ex24: ex24.o chkopts
 	-${CLINKER} -o ex24 ex24.o ${PETSC_MAT_LIB}
@@ -1142,6 +1146,16 @@ runex22:
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex22_1.tmp
+runex23:
+	-@${MPIEXEC} -n 1  ./ex23 > ex23_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex23_1.out ex23_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex23_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex23_1.tmp
+runex23_2:
+	-@${MPIEXEC} -n 4  ./ex23 > ex23_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex23_2.out ex23_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex23_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex23_2.tmp
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 > ex29_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
