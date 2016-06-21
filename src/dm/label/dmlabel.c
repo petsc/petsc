@@ -808,6 +808,43 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelSetStratumIS"
+PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
+{
+  PetscInt       v, numStrata;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  numStrata = label->numStrata;
+  for (v = 0; v < numStrata; v++) {
+    if (label->stratumValues[v] == value) break;
+  }
+  if (v >= numStrata) {ierr = DMLabelAddStratum(label,value);CHKERRQ(ierr);}
+  if (is == label->points[v]) PetscFunctionReturn(0);
+  ierr = DMLabelClearStratum(label,value);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&(label->stratumSizes[v]));CHKERRQ(ierr);
+  label->stratumValues[v] = value;
+  label->validIS[v] = PETSC_TRUE;
+  ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
+  ierr = ISDestroy(&(label->points[v]));CHKERRQ(ierr);
+  if (label->bt) {
+    const PetscInt *points;
+    PetscInt p;
+
+    ierr = ISGetIndices(is,&points);CHKERRQ(ierr);
+    for (p = 0; p < label->stratumSizes[v]; ++p) {
+      const PetscInt point = points[p];
+
+      if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %D is not in [%D, %D)", point, label->pStart, label->pEnd);
+      ierr = PetscBTSet(label->bt, point - label->pStart);CHKERRQ(ierr);
+    }
+  }
+  label->points[v] = is;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelClearStratum"
 PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 {
@@ -819,20 +856,20 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
     if (label->stratumValues[v] == value) break;
   }
   if (v >= label->numStrata) PetscFunctionReturn(0);
-  if (label->bt && label->validIS[v]) {
-    PetscInt       i;
-    const PetscInt *points;
-
-    ierr = ISGetIndices(label->points[v], &points);CHKERRQ(ierr);
-    for (i = 0; i < label->stratumSizes[v]; ++i) {
-      const PetscInt point = points[i];
-
-      if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %D is not in [%D, %D)", point, label->pStart, label->pEnd);
-      ierr = PetscBTClear(label->bt, point - label->pStart);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(label->points[v], &points);CHKERRQ(ierr);
-  }
   if (label->validIS[v]) {
+    if (label->bt) {
+      PetscInt       i;
+      const PetscInt *points;
+
+      ierr = ISGetIndices(label->points[v], &points);CHKERRQ(ierr);
+      for (i = 0; i < label->stratumSizes[v]; ++i) {
+        const PetscInt point = points[i];
+
+        if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %D is not in [%D, %D)", point, label->pStart, label->pEnd);
+        ierr = PetscBTClear(label->bt, point - label->pStart);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(label->points[v], &points);CHKERRQ(ierr);
+    }
     ierr = ISDestroy(&(label->points[v]));CHKERRQ(ierr);
     label->stratumSizes[v] = 0;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,0,NULL,PETSC_OWN_POINTER,&(label->points[v]));CHKERRQ(ierr);
