@@ -32,6 +32,7 @@ struct _ISOps {
   PetscErrorCode (*oncomm)(IS,MPI_Comm,PetscCopyMode,IS*);
   PetscErrorCode (*setblocksize)(IS,PetscInt);
   PetscErrorCode (*contiguous)(IS,PetscInt,PetscInt,PetscInt*,PetscBool*);
+  PetscErrorCode (*locate)(IS,PetscInt,PetscInt *);
 };
 
 struct _p_IS {
