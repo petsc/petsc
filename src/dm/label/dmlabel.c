@@ -487,12 +487,9 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
   for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) {
       if (label->validIS[v]) {
-        const PetscInt *points;
         PetscInt i;
 
-        ierr = ISGetIndices(label->points[v],&points);CHKERRQ(ierr);
-        ierr = PetscFindInt(point, label->stratumSizes[v], points, &i);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(label->points[v],&points);CHKERRQ(ierr);
+        ierr = ISLocate(label->points[v],point,&i);CHKERRQ(ierr);
         if (i >= 0) {
           *contains = PETSC_TRUE;
           break;
@@ -583,12 +580,9 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
   *value = label->defaultValue;
   for (v = 0; v < label->numStrata; ++v) {
     if (label->validIS[v]) {
-      const PetscInt *points;
       PetscInt i;
 
-      ierr = ISGetIndices(label->points[v],&points);CHKERRQ(ierr);
-      ierr = PetscFindInt(point, label->stratumSizes[v], points, &i);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(label->points[v],&points);CHKERRQ(ierr);
+      ierr = ISLocate(label->points[v],point,&i);CHKERRQ(ierr);
       if (i >= 0) {
         *value = label->stratumValues[v];
         break;
