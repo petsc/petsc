@@ -712,7 +712,11 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
    */
   /* read file contents */
   fgets(dummy,99,fp);
+#ifdef PETSC_USE_64BIT_INDICES
+  fscanf(fp, "%lld\n",&L);
+#else
   fscanf(fp, "%d\n",&L);
+#endif
   fscanf(fp, "%zu\n",&atomic_size);
   fgets(registeration_function,4999,fp);
   strL = strlen(registeration_function);
@@ -817,7 +821,11 @@ PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[],DataBucke
   if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file with name %s", filename);
   /* read header */
   ierr = _DataBucketViewAscii_HeaderRead_v00(fp);CHKERRQ(ierr);
+#ifdef PETSC_USE_64BIT_INDICES
+  fscanf(fp,"%lld\n%lld\n%lld\n",&L,&buffer,&nfields);
+#else
   fscanf(fp,"%d\n%d\n%d\n",&L,&buffer,&nfields);
+#endif
   ierr = DataBucketCreate(&db);CHKERRQ(ierr);
   for (f = 0; f < nfields; ++f) {
     ierr = _DataBucketRegisterFieldFromFile(fp,db);CHKERRQ(ierr);
