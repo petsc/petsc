@@ -167,7 +167,6 @@ static PetscErrorCode ISLocate_General(IS is,PetscInt key,PetscInt *location)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ISGetIndices_General"
 static PetscErrorCode ISGetIndices_General(IS in,const PetscInt *idx[])
