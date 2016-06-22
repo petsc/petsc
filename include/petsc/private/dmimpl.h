@@ -5,6 +5,7 @@
 
 #include <petscdm.h>
 #include <petsc/private/petscimpl.h>
+#include <petsc/private/petscdsimpl.h>
 
 PETSC_EXTERN PetscBool DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
@@ -142,30 +143,12 @@ typedef struct _n_DMLabelLinkList *DMLabelLinkList;
 typedef struct _n_Boundary *DMBoundary;
 
 struct _n_Boundary {
-  const char *name;
-  const char *labelname;
+  DSBoundary  dsboundary;
   DMLabel     label;
-  PetscBool   essential;
-  PetscInt    field;
-  PetscInt    numcomps;
-  PetscInt   *comps;
-  void      (*func)();
-  PetscInt    numids;
-  PetscInt   *ids;
-  void       *ctx;
   DMBoundary  next;
 };
 
-struct _n_DMBoundaryLinkList {
-  PetscInt   refct;
-  DMBoundary next;
-};
-
-typedef struct _n_DMBoundaryLinkList *DMBoundaryLinkList;
-
 PETSC_EXTERN PetscErrorCode DMDestroyLabelLinkList(DM);
-PETSC_EXTERN PetscErrorCode DMBoundaryDestroy(DMBoundaryLinkList*);
-PETSC_EXTERN PetscErrorCode DMBoundaryDuplicate(DMBoundaryLinkList,DMBoundaryLinkList*);
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
@@ -223,7 +206,7 @@ struct _p_DM {
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscDS                 prob;
-  DMBoundaryLinkList      boundary;          /* List of boundary conditions */
+  DMBoundary              boundary;          /* List of boundary conditions */
   /* Output structures */
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */

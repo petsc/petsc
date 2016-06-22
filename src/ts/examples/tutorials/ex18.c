@@ -690,6 +690,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "SetupBC"
 static PetscErrorCode SetupBC(DM dm, AppCtx *user)
 {
+  PetscDS        prob;
   DMLabel        label;
   PetscBool      check;
   PetscErrorCode ierr;
@@ -748,18 +749,19 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
     user->initialGuess[1] = user->exactFuncs[1];
   }
   /* Set BC */
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   if (label) {
     const PetscInt id = 1;
 
-    ierr = DMAddBoundary(dm, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   }
   ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
-    ierr = DMAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 1, 0, NULL, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, PETSC_FALSE, "outflow", "Face Sets", 1, 0, NULL, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "inflow",  "Face Sets", 1, 0, NULL, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "outflow", "Face Sets", 1, 0, NULL, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -389,8 +389,6 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
     ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
     ierr = DMSetPeriodicity(*pforest,maxCell,L,bd);CHKERRQ(ierr);
   }
-  ierr = DMBoundaryDestroy(&(*pforest)->boundary);CHKERRQ(ierr);
-  ierr = DMBoundaryDuplicate(dm->boundary, &(*pforest)->boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2191,9 +2189,6 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
     dmB->defaultSF = dmA->defaultSF;
     if (dmA->map) {ierr = PetscLayoutReference(dmA->map,&dmB->map);CHKERRQ(ierr);}
   }
-  dmA->boundary->refct++;
-  ierr          = DMBoundaryDestroy(&(dmB->boundary));CHKERRQ(ierr);
-  dmB->boundary = dmA->boundary;
   PetscFunctionReturn(0);
 }
 

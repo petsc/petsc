@@ -275,5 +275,9 @@ PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, 
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakFormArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetRefCoordArrays(PetscDS, PetscReal **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
+PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, PetscBool, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(), PetscInt, const PetscInt *, void *);
+PETSC_EXTERN PetscErrorCode PetscDSGetNumBoundary(PetscDS, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, PetscBool *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
+PETSC_EXTERN PetscErrorCode PetscDSCopyBoundary(PetscDS, PetscDS);
 
 #endif

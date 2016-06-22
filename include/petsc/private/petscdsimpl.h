@@ -7,6 +7,22 @@
 PETSC_EXTERN PetscBool      PetscDSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscDSRegisterAll(void);
 
+typedef struct _n_DSBoundary *DSBoundary;
+
+struct _n_DSBoundary {
+  const char *name;
+  const char *labelname;
+  PetscBool   essential;
+  PetscInt    field;
+  PetscInt    numcomps;
+  PetscInt   *comps;
+  void      (*func)();
+  PetscInt    numids;
+  PetscInt   *ids;
+  void       *ctx;
+  DSBoundary  next;
+};
+
 typedef struct _PetscDSOps *PetscDSOps;
 struct _PetscDSOps {
   PetscErrorCode (*setfromoptions)(PetscDS);
@@ -49,6 +65,7 @@ struct _p_PetscDS {
   PetscReal   *x;                      /* Workspace for computing real coordinates */
   PetscScalar *f0, *f1;                /* Point evaluations of weak form residual integrands */
   PetscScalar *g0, *g1, *g2, *g3;      /* Point evaluations of weak form Jacobian integrands */
+  DSBoundary   boundary;               /* Linked list of boundary conditions */
 };
 
 typedef struct {

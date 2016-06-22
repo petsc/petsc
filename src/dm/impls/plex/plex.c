@@ -5608,12 +5608,12 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     PetscInt  field;
     PetscBool isEssential;
 
-    ierr = DMGetBoundary(dm, bd, &isEssential, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(dm->prob, bd, &isEssential, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     if (isFE[field] && isEssential) ++numBC;
   }
   /* Add ghost cell boundaries for FVM */
@@ -5638,13 +5638,13 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscInt        bd2, field, numComps, numValues;
     PetscBool       isEssential, duplicate = PETSC_FALSE;
 
-    ierr = DMGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(dm->prob, bd, &isEssential, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (!isFE[field]) continue;
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     /* Only want to modify label once */
     for (bd2 = 0; bd2 < bd; ++bd2) {
       const char *bdname;
-      ierr = DMGetBoundary(dm, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(dm->prob, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
       if (duplicate) break;
     }

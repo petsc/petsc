@@ -1,5 +1,6 @@
 static char help[] = "Create a mesh, refine and coarsen simultaneously, and transfer a field\n\n";
 
+#include <petscds.h>
 #include <petscdmplex.h>
 #include <petscdmforest.h>
 #include <petscoptions.h>
@@ -145,10 +146,12 @@ int main(int argc, char **argv)
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   }
   {
+    PetscDS  prob;
     PetscInt comps[] = {0};
     PetscInt ids[]   = {1, 2, 3, 4, 5, 6};
 
-    ierr = DMAddBoundary(base,PETSC_TRUE, "bc", "marker", 0, 1, comps, useFV ? (void(*)()) bc_func_fv : (void(*)()) funcs[0], 2 * dim, ids, useFV ? (void *) &bcCtx : NULL);CHKERRQ(ierr);
+    ierr = DMGetDS(base,&prob);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob,PETSC_TRUE, "bc", "marker", 0, 1, comps, useFV ? (void(*)()) bc_func_fv : (void(*)()) funcs[0], 2 * dim, ids, useFV ? (void *) &bcCtx : NULL);CHKERRQ(ierr);
   }
   ierr = AddIdentityLabel(base);CHKERRQ(ierr);
   ierr = DMViewFromOptions(base,NULL,"-dm_base_view");CHKERRQ(ierr);
@@ -158,7 +161,6 @@ int main(int argc, char **argv)
   ierr = DMSetType(preForest,(dim == 2) ? DMP4EST : DMP8EST);CHKERRQ(ierr);
   ierr = DMGetDS(base,&ds);CHKERRQ(ierr);
   ierr = DMSetDS(preForest,ds);CHKERRQ(ierr);
-  ierr = DMCopyBoundary(base,preForest);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(preForest,base);CHKERRQ(ierr);
   ierr = DMForestSetMinimumRefinement(preForest,1);CHKERRQ(ierr);
   ierr = DMForestSetInitialRefinement(preForest,1);CHKERRQ(ierr);

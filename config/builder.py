@@ -818,6 +818,8 @@ class MakeParser(object):
         if not r in targets:
           raise RuntimeError('Could not find rule:',r)
         else:
+          if not targets[r][1]:
+            continue
           try:
             run = self.parseAction(targets[r][1])
             regressionParameters[exc].append(run)

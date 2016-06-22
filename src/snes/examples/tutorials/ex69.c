@@ -3109,7 +3109,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectSetName(*dm,"Mesh");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)(*dm),"Mesh");CHKERRQ(ierr);
   /* Setup test partitioning */
   if (user->testPartition) {
     PetscInt         triSizes_n2[2]       = {4, 4};
@@ -3166,13 +3166,15 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupProblem"
-static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
-  PetscDS        prob;
+  const PetscInt id  = 1;
+  PetscInt       comp;
+  Parameter      *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   switch (user->solType) {
   case SOLKX:
     ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_kx);CHKERRQ(ierr);
@@ -3209,6 +3211,14 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
+  comp = 1;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  comp = 0;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wallR", "markerRight",  0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  comp = 1;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  comp = 0;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3259,10 +3269,9 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm = dm;
   const PetscInt  dim = user->dim;
-  const PetscInt  id  = 1;
   PetscFE         fe[2], *feAux;
   PetscQuadrature q;
-  PetscDS         prob;
+  PetscDS         prob, probAux = NULL;
   Parameter      *ctx;
   PetscInt        numAux = user->solType == SOLKX ? 3 : 5, order, comp, f;
   const char     *auxFieldNames[5];
@@ -3279,43 +3288,35 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Create discretization of auxiliary fields */
   ierr = PetscMalloc1(numAux, &feAux);CHKERRQ(ierr);
   ierr = PetscBagGetNames(user->bag, auxFieldNames);CHKERRQ(ierr);
+  ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {
     ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, NULL, 0, &feAux[f]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feAux[f], auxFieldNames[f]);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux[f], q);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);
   }
-  ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
+  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
     DM      dmAux;
-    PetscDS probAux;
 
-    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-
+    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(cdm, dmAux);CHKERRQ(ierr);
-    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
-    for (f = 0; f < numAux; ++f) {ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);}
+    ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) cdm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
     ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
     ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
 
-    ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    comp = 1;
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
-    comp = 0;
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallR", "markerRight",  0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
-    comp = 1;
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
-    comp = 0;
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {ierr = PetscFEDestroy(&feAux[f]);CHKERRQ(ierr);}
+  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
   ierr = PetscFree(feAux);CHKERRQ(ierr);
   {
     PetscObject  pressure;

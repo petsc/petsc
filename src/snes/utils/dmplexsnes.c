@@ -1392,7 +1392,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
     PetscObject     obj;
     PetscClassId    id;
 
-    ierr = DMGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(dm->prob, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if ((id != PETSCFE_CLASSID) || isEssential) continue;
@@ -2171,7 +2171,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     PetscObject     obj;
     PetscClassId    id;
 
-    ierr = DMGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(dm->prob, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if ((id != PETSCFE_CLASSID) || isEssential) continue;
@@ -2495,7 +2495,7 @@ PetscErrorCode DMPlexSNESComputeJacobianActionFEM(DM dm, Vec X, Vec Y, Vec Z, vo
 
   Input Parameters:
 + dm - The DM object
-. boundaryctx - the user context that will be passed to pointwise evaluation of boundary values (see DMAddBoundary())
+. boundaryctx - the user context that will be passed to pointwise evaluation of boundary values (see PetscDSAddBoundary())
 . residualctx - the user context that will be passed to pointwise evaluation of finite element residual computations (see PetscDSSetResidual())
 - jacobianctx - the user context that will be passed to pointwise evaluation of finite element Jacobian construction (see PetscDSSetJacobian())
 
