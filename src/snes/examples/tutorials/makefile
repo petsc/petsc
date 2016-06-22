@@ -665,11 +665,6 @@ runex19_cgne:
 	   if (${DIFF} output/ex19_cgne.out ex19_cgne.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_cgne, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_cgne.tmp
-runex19_cgne_2:
-	-@${MPIEXEC} -n 1 ./ex19 -pc_type jacobi -ksp_type cgne -ksp_monitor_short -ksp_converged_reason -ksp_view |grep -v HERMITIAN > ex19_cgne_2.tmp 2>&1; \
-	   if (${DIFF} output/ex19_cgne_2.out ex19_cgne_2.tmp) then true; \
-	   else  printf "${PWD}\nPossible problem with ex19_cgne_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex19_cgne_2.tmp
 runex19_2:
 	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
@@ -1256,7 +1251,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 runex19_greedy_coloring \
-                                 runex19_cgne runex19_cgne_2 \
+                                 runex19_cgne  \
                                  runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi runex19_composite_gs_newton ex19.rm \
                                  ex20.PETSc runex20 ex20.rm ex22.PETSc runex22 ex22.rm \
                                  ex35.PETSc runex35 runex35_2  runex35_7 ex35.rm \
