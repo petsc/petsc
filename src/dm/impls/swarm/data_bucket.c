@@ -713,7 +713,11 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
   /* read file contents */
   fgets(dummy,99,fp);
 #ifdef PETSC_USE_64BIT_INDICES
+# if (PETSC_SIZEOF_LONG_LONG == 8)
   fscanf(fp, "%lld\n",&L);
+# else
+  fscanf(fp, "%ld\n",&L);
+# endif
 #else
   fscanf(fp, "%d\n",&L);
 #endif
@@ -822,7 +826,11 @@ PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[],DataBucke
   /* read header */
   ierr = _DataBucketViewAscii_HeaderRead_v00(fp);CHKERRQ(ierr);
 #ifdef PETSC_USE_64BIT_INDICES
+# if (PETSC_SIZEOF_LONG_LONG == 8)
   fscanf(fp,"%lld\n%lld\n%lld\n",&L,&buffer,&nfields);
+# else
+  fscanf(fp,"%ld\n%ld\n%ld\n",&L,&buffer,&nfields);
+# endif
 #else
   fscanf(fp,"%d\n%d\n%d\n",&L,&buffer,&nfields);
 #endif
