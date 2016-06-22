@@ -435,6 +435,7 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 
   PetscFunctionBegin;
   if (is->ops->locate) {
+    ierr = (*is->ops->locate)(is,key,location);CHKERRQ(ierr);
   } else {
     PetscInt       numIdx;
     PetscBool      sorted;

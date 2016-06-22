@@ -47,12 +47,18 @@ static PetscErrorCode ISLocate_Block(IS is,PetscInt key,PetscInt *location)
   numIdx /= bs;
   bkey    = key / bs;
   mkey    = key % bs;
+  if (mkey < 0) {
+    bkey--;
+    mkey += bs;
+  }
   if (sub->sorted) {
     ierr = PetscFindInt(bkey,numIdx,sub->idx,location);CHKERRQ(ierr);
   } else {
+    const PetscInt *idx = sub->idx;
+
     *location = -1;
     for (i = 0; i < numIdx; i++) {
-      if (i == key) {
+      if (idx[i] == bkey) {
         *location = i;
         break;
       }

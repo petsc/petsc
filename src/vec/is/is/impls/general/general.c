@@ -156,9 +156,11 @@ static PetscErrorCode ISLocate_General(IS is,PetscInt key,PetscInt *location)
   ierr = PetscLayoutGetSize(is->map,&numIdx);CHKERRQ(ierr);
   if (sub->sorted) {ierr =  PetscFindInt(key,numIdx,sub->idx,location);CHKERRQ(ierr);}
   else {
+    const PetscInt *idx = sub->idx;
+
     *location = -1;
     for (i = 0; i < numIdx; i++) {
-      if (i == key) {
+      if (idx[i] == key) {
         *location = i;
         PetscFunctionReturn(0);
       }
