@@ -61,22 +61,22 @@
       ne = 9
       call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
      &                        '-ne',ne,flg,ierr)
-      h = 2.d0/ne
+      h = 2.0/ne
       M = (ne+1)*(ne+1)
-      theta = 90.d0
+      theta = 90.0
 !     theta is input in degrees
       call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
      &                         '-theta',theta,flg,ierr)
       theta = theta / 57.2957795
-      eps = 1.d0
+      eps = 1.0
       call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
      &                         '-epsilon',eps,flg,ierr)
       ki = 2
       call PetscOptionsGetRealArray(PETSC_NULL_OBJECT,                     &
      &           PETSC_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
       if ( .not. flg ) then
-         blb(1) = 0.d0
-         blb(2) = 0.d0
+         blb(1) = 0.0
+         blb(2) = 0.0
       else if ( ki .ne. 2 ) then
          print *, 'error: ', ki,                                            &
      &        ' arguments read for -blob_center.  Needs to be two.'
@@ -85,7 +85,7 @@
      &                         '-out_matlab',out_matlab,flg,ierr)
       if (.not.flg) out_matlab = PETSC_FALSE;
 
-      ev(1) = 1.d0
+      ev(1) = 1.0
       ev(2) = eps*ev(1)
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Compute the matrix and right-hand-side vector that define
@@ -114,7 +114,7 @@
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C (as set here in the array "col").
-      thk = 1.d0              ! thickness
+      thk = 1.0              ! thickness
       nel = 4                   ! nodes per element (quad)
       ndf = 1
       call int2d(f2,sg)
@@ -122,14 +122,14 @@
       ix = 0
       do geq=Istart,Iend-1,1
          qj = geq/(ne+1); qi = mod(geq,(ne+1))
-         x = h*qi - 1.d0; y = h*qj - 1.d0 ! lower left corner (-1,-1)
+         x = h*qi - 1.0; y = h*qj - 1.0 ! lower left corner (-1,-1)
          if ( qi < ne .and. qj < ne ) then
             coord(1,1) = x;   coord(2,1) = y
             coord(1,2) = x+h; coord(2,2) = y
             coord(1,3) = x+h; coord(2,3) = y+h
             coord(1,4) = x;   coord(2,4) = y+h
 ! form stiff
-            ss = 0.d0
+            ss = 0.0
             do ll = 1,lint
                call shp2dquad(sg(1,ll),sg(2,ll),coord,shp,xsj,f2)
                xsj = xsj*sg(3,ll)*thk
@@ -159,9 +159,9 @@ c     Compute tangent
                   do kj=1,4,1
                      if (ki<3 .or. kj<3 ) then
                         if ( ki==kj ) then
-                           ss(ki,kj) = .1d0*ss(ki,kj)
+                           ss(ki,kj) = .1*ss(ki,kj)
                         else
-                           ss(ki,kj) = 0.d0
+                           ss(ki,kj) = 0.0
                         endif
                      endif
                   enddo
@@ -171,8 +171,8 @@ c     Compute tangent
          endif                  ! add element
          if ( qj > 0 ) then      ! set rhs
 
-            val = h*h*exp(-1.d2*((x+h/2)-blb(1))**2)*
-     &           exp(-1.d2*((y+h/2)-blb(2))**2)
+            val = h*h*exp(-100.*((x+h/2)-blb(1))**2)*
+     &           exp(-100*((y+h/2)-blb(2))**2)
             call VecSetValues(bvec,1,geq,val,INSERT_VALUES,ierr)
          endif
       enddo
@@ -230,7 +230,7 @@ c     Compute tangent
          call PetscViewerDestroy(viewer,ierr)
 
          call MatMult(Amat,xvec,uvec,ierr)
-         val = -1.d0
+         val = -1.0
          call VecAXPY(uvec,val,bvec,ierr)
          call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Rvec',
      &        FILE_MODE_WRITE,viewer,ierr)
@@ -286,15 +286,9 @@ c     Compute thermal gradient and flux
       PetscReal ev(2),xl(ndm,nel),shp(3,*),dir
       PetscReal xx,yy,psi,cs,sn,c2,s2,dd(2,2)
 
-c      temp     = 0.0d0
-c      gradt(1) = 0.0d0
-c      gradt(2) = 0.0d0
-      xx       = 0.0d0
-      yy       = 0.0d0
+      xx       = 0.0
+      yy       = 0.0
       do i = 1,nel
-c        gradt(1) = gradt(1) + shp(1,i)*ul(1,i)
-c        gradt(2) = gradt(2) + shp(2,i)*ul(1,i)
-c        temp     = temp     + shp(3,i)*ul(1,i)
         xx       = xx       + shp(3,i)*xl(1,i)
         yy       = yy       + shp(3,i)*xl(2,i)
       end do
@@ -344,12 +338,12 @@ c-----[--.----+----.----+----.-----------------------------------------]
 
 c     Set up interpolations
 
-      sh = 0.5d0*s
-      th = 0.5d0*t
-      sp = 0.5d0 + sh
-      tp = 0.5d0 + th
-      sm = 0.5d0 - sh
-      tm = 0.5d0 - th
+      sh = 0.5*s
+      th = 0.5*t
+      sp = 0.5 + sh
+      tp = 0.5 + th
+      sm = 0.5 - sh
+      tm = 0.5 - th
       shp(3,1) =   sm*tm
       shp(3,2) =   sp*tm
       shp(3,3) =   sp*tp
@@ -370,11 +364,11 @@ c     Compute jacobian (times 16)
 
 c     Divide jacobian by 16 (multiply by .0625)
 
-      xsj = 0.0625d0*xsj1
-      if (xsj1.eq.0.0d0) then
-         xsj1 = 1.0d0
+      xsj = 0.0625*xsj1
+      if (xsj1.eq.0.0) then
+         xsj1 = 1.0
       else
-         xsj1 = 1.0d0/xsj1
+         xsj1 = 1.0/xsj1
       endif
 
 c     Divide functions by jacobian
@@ -426,7 +420,7 @@ c-----[--.----+----.----+----.-----------------------------------------]
       PetscInt   l,i,lint,lr(9),lz(9)
       PetscReal    g,third,sg(3,*)
       data      lr/-1,1,1,-1,0,1,0,-1,0/,lz/-1,-1,1,1,-1,0,1,0,0/
-      data      third / 0.3333333333333333d0 /
+      data      third / 0.3333333333333333 /
 
 c     Set number of total points
 
@@ -437,7 +431,7 @@ c     2x2 integration
       do i = 1,4
          sg(1,i) = g*lr(i)
          sg(2,i) = g*lz(i)
-         sg(3,i) = 1.d0
+         sg(3,i) = 1.0
       end do
 
       end
@@ -452,7 +446,7 @@ c     2x2 integration
       ex54_psi = theta
       if ( theta < 0. ) then     ! circular
          if (y==0) then
-            ex54_psi = 2.d0*atan(1.d0)
+            ex54_psi = 2.0*atan(1.0)
          else
             ex54_psi = atan(-x/y)
          endif
