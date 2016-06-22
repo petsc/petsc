@@ -155,6 +155,7 @@ PetscErrorCode VecDuplicate_MPICUDA(Vec win,Vec *v)
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
   /* change type_name appropriately */
+  ierr = VecCUDAAllocateCheck(*v);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)(*v),VECMPICUDA);CHKERRQ(ierr);
 
   ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);

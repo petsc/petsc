@@ -5037,21 +5037,21 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
   if (a != (PetscScalar)1.0) {
     ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUSP)
+    if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
+      mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+    }
+#elif defined(PETSC_HAVE_VIENNACL)
+    if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+      mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+    }
+#elif defined(PETSC_HAVE_VECCUDA)
+    if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+      mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+    }
+#endif
   }
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#elif defined(PETSC_HAVE_VIENNACL)
-  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
