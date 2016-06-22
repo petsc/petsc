@@ -1347,9 +1347,11 @@ runex54_Classical:
        ${RM} -f ex.tmp
 
 runex54f:
-	-@${MPIEXEC} -n 4 ./ex54f -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
-         ${DIFF} output/ex54f.out ex.tmp || printf "${PWD}\nPossible problem with ex54f.out, diffs above\n======================================\n"; \
-        ${RM} -f ex.tmp
+	-@x="bad"; ${MPIEXEC}  -n 4 ./ex54f -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_levels_esteig_ksp_type cg  > ex54f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex54f.out ex54f_1.tmp > /dev/null 2>&1) then x='good'; fi ;\
+	   if (${DIFF} output/ex54f_1_alt.out ex54f_1.tmp > /dev/null 2>&1) then x='good'; fi; \
+	   if [ "$$x" = "bad" ]; then ${DIFF} output/ex54f.out ex54f_1.tmp ; ${DIFF} output/ex54f_1_alt.out ex54f_1.tmp ; printf "${PWD}\nPossible problem with ex54f_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex54f_1.tmp
 
 runex55_geo:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_levels_esteig_ksp_type cg -ksp_type cg -ksp_norm_type unpreconditioned > ex.tmp 2>&1;	  \
