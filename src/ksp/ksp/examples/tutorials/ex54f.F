@@ -78,7 +78,7 @@
          blb(1) = 0.d0
          blb(2) = 0.d0
       else if ( ki .ne. 2 ) then
-         print *, 'error: ', ki,
+         print *, 'error: ', ki,                                            &
      &        ' arguments read for -blob_center.  Needs to be two.'
       endif
       call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
