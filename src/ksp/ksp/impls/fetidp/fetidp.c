@@ -217,8 +217,6 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   /* FETI-DP as it is implemented needs exact local solvers */
   ierr = KSPSetTolerances(pcbddc->ksp_R,PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,1000);CHKERRQ(ierr);
   ierr = KSPSetNormType(pcbddc->ksp_R,KSP_NORM_DEFAULT);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(pcbddc->ksp_D,PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,1000);CHKERRQ(ierr);
-  ierr = KSPSetNormType(pcbddc->ksp_D,KSP_NORM_DEFAULT);CHKERRQ(ierr);
   /* if the primal space is changed, setup F */
   if (pcbddc->new_primal_space) {
     Mat F; /* the FETI-DP matrix */
