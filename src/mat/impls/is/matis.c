@@ -1158,7 +1158,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->destroy                 = MatDestroy_IS;
   A->ops->setlocaltoglobalmapping = MatSetLocalToGlobalMapping_IS;
   A->ops->setvalues               = MatSetValues_IS;
-  A->ops->setvalues               = MatSetValuesBlocked_IS;
+  A->ops->setvaluesblocked        = MatSetValuesBlocked_IS;
   A->ops->setvalueslocal          = MatSetValuesLocal_IS;
   A->ops->setvaluesblockedlocal   = MatSetValuesBlockedLocal_IS;
   A->ops->zerorows                = MatZeroRows_IS;
