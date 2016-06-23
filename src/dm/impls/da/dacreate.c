@@ -333,15 +333,15 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
   switch (dim) {
     case 1:
       *nranks = 3;
-      //if (st == DMDA_STENCIL_STAR) { *nranks = 3; }
+      /* if (st == DMDA_STENCIL_STAR) { *nranks = 3; } */
       break;
     case 2:
       *nranks = 9;
-      //if (st == DMDA_STENCIL_STAR) { *nranks = 5; }
+      /* if (st == DMDA_STENCIL_STAR) { *nranks = 5; } */
       break;
     case 3:
       *nranks = 27;
-      //if (st == DMDA_STENCIL_STAR) { *nranks = 7; }
+      /* if (st == DMDA_STENCIL_STAR) { *nranks = 7; } */
       break;
     default:
       break;

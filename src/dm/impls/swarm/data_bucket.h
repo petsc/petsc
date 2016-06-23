@@ -87,9 +87,9 @@ PetscErrorCode DataBucketCopyPoint(const DataBucket xb,const PetscInt pid_x,cons
 PetscErrorCode DataBucketCreateFromSubset(DataBucket DBIn,const PetscInt N,const PetscInt list[],DataBucket *DB);
 PetscErrorCode DataBucketZeroPoint(const DataBucket db,const PetscInt index);
 
-//PetscErrorCode DataBucketLoadFromFile(const char filename[],DataBucketViewType type,DataBucket *db);
+/* PetscErrorCode DataBucketLoadFromFile(const char filename[],DataBucketViewType type,DataBucket *db); */
 PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[],DataBucketViewType type,DataBucket *db);
-//PetscErrorCode DataBucketView(DataBucket db,const char filename[],DataBucketViewType type);
+/* PetscErrorCode DataBucketView(DataBucket db,const char filename[],DataBucketViewType type); */
 PetscErrorCode DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type);
 
 PetscErrorCode DataBucketAddPoint(DataBucket db);

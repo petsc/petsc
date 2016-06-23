@@ -39,9 +39,9 @@ struct  _p_DataEx {
 
 
 /* OBJECT_STATUS */
-//#define OBJECT_INITIALIZED    0
-//#define OBJECT_FINALIZED      1
-//#define OBJECT_STATE_UNKNOWN  2
+/* #define OBJECT_INITIALIZED    0 */
+/* #define OBJECT_FINALIZED      1 */
+/* #define OBJECT_STATE_UNKNOWN  2 */
 
 extern const char *status_names[];
 
