@@ -100,7 +100,7 @@
       else
          call MatSetType( Amat, MATMPIAIJ, ierr )
       endif
-      call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,
+      call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,        &
      &     PETSC_NULL_INTEGER, ierr)
       call MatSetFromOptions( Amat, ierr )
       call MatSetUp( Amat, ierr )
@@ -171,7 +171,7 @@ c     Compute tangent
          endif                  ! add element
          if ( qj > 0 ) then      ! set rhs
 
-            val = h*h*exp(-100.*((x+h/2)-blb(1))**2)*
+            val = h*h*exp(-100.*((x+h/2)-blb(1))**2)*                            &
      &           exp(-100*((y+h/2)-blb(2))**2)
             call VecSetValues(bvec,1,geq,val,INSERT_VALUES,ierr)
          endif
@@ -214,17 +214,17 @@ c     Compute tangent
 !                      output
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       if ( out_matlab ) then
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',                &
      &        FILE_MODE_WRITE,viewer,ierr)
          call MatView(Amat,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Bvec',
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Bvec',                &
      &        FILE_MODE_WRITE,viewer,ierr)
          call VecView(bvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Xvec',
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Xvec',                &
      &        FILE_MODE_WRITE,viewer,ierr)
          call VecView(xvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
@@ -232,7 +232,7 @@ c     Compute tangent
          call MatMult(Amat,xvec,uvec,ierr)
          val = -1.0
          call VecAXPY(uvec,val,bvec,ierr)
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Rvec',
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Rvec',                &
      &        FILE_MODE_WRITE,viewer,ierr)
          call VecView(uvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
