@@ -686,16 +686,60 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
 PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
   Mat_IS         *is = (Mat_IS*)mat->data;
-  PetscInt       rows_l[2048],cols_l[2048];
   PetscErrorCode ierr;
+#if defined(PETSC_USE_DEBUG)
+  PetscInt       i,zm,zn;
+#endif
+  PetscInt       rows_l[2048],cols_l[2048];
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
   if (m > 2048 || n > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
+  /* count negative indices */
+  for (i=0,zm=0;i<m;i++) if (rows[i] < 0) zm++;
+  for (i=0,zn=0;i<n;i++) if (cols[i] < 0) zn++;
 #endif
-  ierr = ISG2LMapApply(mat->rmap->mapping,m,rows,rows_l);CHKERRQ(ierr);
-  ierr = ISG2LMapApply(mat->cmap->mapping,n,cols,cols_l);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(mat->rmap->mapping,IS_GTOLM_MASK,m,rows,&m,rows_l);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(mat->cmap->mapping,IS_GTOLM_MASK,n,cols,&n,cols_l);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  /* count negative indices (should be the same as before) */
+  for (i=0;i<m;i++) if (rows_l[i] < 0) zm--;
+  for (i=0;i<n;i++) if (cols_l[i] < 0) zn--;
+  if (zm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the row indices can not be mapped! Maybe you should not use MATIS");
+  if (zn) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the column indices can not be mapped! Maybe you should not use MATIS");
+#endif
   ierr = MatSetValues(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetValuesBlocked_IS"
+PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols, const PetscScalar *values, InsertMode addv)
+{
+  Mat_IS         *is = (Mat_IS*)mat->data;
+  PetscErrorCode ierr;
+#if defined(PETSC_USE_DEBUG)
+  PetscInt       i,zm,zn;
+#endif
+  PetscInt       rows_l[2048],cols_l[2048];
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  if (m > 2048 || n > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
+  /* count negative indices */
+  for (i=0,zm=0;i<m;i++) if (rows[i] < 0) zm++;
+  for (i=0,zn=0;i<n;i++) if (cols[i] < 0) zn++;
+#endif
+  ierr = ISGlobalToLocalMappingApplyBlock(mat->rmap->mapping,IS_GTOLM_MASK,m,rows,&m,rows_l);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApplyBlock(mat->cmap->mapping,IS_GTOLM_MASK,n,cols,&n,cols_l);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  /* count negative indices (should be the same as before) */
+  for (i=0;i<m;i++) if (rows_l[i] < 0) zm--;
+  for (i=0;i<n;i++) if (cols_l[i] < 0) zn--;
+  if (zm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the row indices can not be mapped! Maybe you should not use MATIS");
+  if (zn) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the column indices can not be mapped! Maybe you should not use MATIS");
+#endif
+  ierr = MatSetValuesBlocked(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1038,7 +1082,9 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 .  MatSetOption()
 .  MatZeroRows()
 .  MatSetValues()
+.  MatSetValuesBlocked()
 .  MatSetValuesLocal()
+.  MatSetValuesBlockedLocal()
 .  MatScale()
 .  MatGetDiagonal()
 -  MatSetLocalToGlobalMapping()
@@ -1079,6 +1125,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->destroy                 = MatDestroy_IS;
   A->ops->setlocaltoglobalmapping = MatSetLocalToGlobalMapping_IS;
   A->ops->setvalues               = MatSetValues_IS;
+  A->ops->setvalues               = MatSetValuesBlocked_IS;
   A->ops->setvalueslocal          = MatSetValuesLocal_IS;
   A->ops->setvaluesblockedlocal   = MatSetValuesBlockedLocal_IS;
   A->ops->zerorows                = MatZeroRows_IS;
