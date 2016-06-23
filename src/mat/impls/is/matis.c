@@ -14,6 +14,22 @@ static PetscErrorCode MatISComputeSF_Private(Mat);
 static PetscErrorCode MatISZeroRowsLocal_Private(Mat,PetscInt,const PetscInt[],PetscScalar);
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCopy_IS"
+PetscErrorCode MatCopy_IS(Mat A,Mat B,MatStructure str)
+{
+  Mat_IS         *a = (Mat_IS*)A->data,*b;
+  PetscBool      ismatis;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATIS,&ismatis);CHKERRQ(ierr);
+  if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Need to be implemented");
+  b = (Mat_IS*)B->data;
+  ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMissingDiagonal_IS"
 PetscErrorCode MatMissingDiagonal_IS(Mat A,PetscBool  *missing,PetscInt *d)
 {
@@ -844,6 +860,7 @@ static PetscErrorCode MatISZeroRowsLocal_Private(Mat A,PetscInt n,const PetscInt
     ierr = VecScatterEnd(is->rctx,counter,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecDestroy(&counter);CHKERRQ(ierr);
   }
+
   if (!n) {
     is->pure_neumann = PETSC_TRUE;
   } else {
@@ -1100,6 +1117,9 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 .  MatSetValuesBlockedLocal()
 .  MatScale()
 .  MatGetDiagonal()
+.  MatMissingDiagonal()
+.  MatDuplicate()
+.  MatCopy()
 -  MatSetLocalToGlobalMapping()
 
    Options Database Keys:
@@ -1153,6 +1173,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->issymmetric             = MatIsSymmetric_IS;
   A->ops->duplicate               = MatDuplicate_IS;
   A->ops->missingdiagonal         = MatMissingDiagonal_IS;
+  A->ops->copy                    = MatCopy_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
