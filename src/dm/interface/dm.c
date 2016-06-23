@@ -6101,7 +6101,7 @@ static PetscErrorCode DMPopulateBoundary(DM dm)
 #define __FUNCT__ "DMIsBoundaryPoint"
 PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 {
-  DMBoundary     b = dm->boundary;
+  DMBoundary     b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6109,6 +6109,7 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
   PetscValidPointer(isBd, 3);
   *isBd = PETSC_FALSE;
   ierr = DMPopulateBoundary(dm);CHKERRQ(ierr);
+  b = dm->boundary;
   while (b && !(*isBd)) {
     DMLabel    label = b->label;
     DSBoundary dsb = b->dsboundary;
