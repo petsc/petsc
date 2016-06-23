@@ -32,7 +32,7 @@ cd ..
 
 echo "framework module PETSc [system] { header \"petsc.h\"  export *}" > module.map
 
-cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/PETSc PETSc
+cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/PETSc_framework PETSc
 install_name_tool -id /Library/Frameworks/PETSc-iOS/simulator/PETSc.framework/PETSc PETSc
 mkdir Resources
 cd Resources

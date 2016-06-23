@@ -5,7 +5,7 @@
 #include <petscdm.h> /*I "petscdm.h" I*/
 #include <petscsys.h>
 
-#include "telescope.h"
+#include "../src/ksp/pc/impls/telescope/telescope.h"
 
 /*
  PCTelescopeSetUp_default()

@@ -237,6 +237,9 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 #if defined(PETSC_HAVE_STDINT_H)
 #include <stdint.h>
 #endif
+#if defined (PETSC_HAVE_INTTYPES_H)
+#include <inttypes.h>
+#endif
 
 typedef short PetscShort;
 typedef char PetscChar;
@@ -251,24 +254,29 @@ typedef float PetscFloat;
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_MPI_INT64_T) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
 # define MPIU_INT64 MPI_INT64_T
+# define PetscInt64_FMT PRId64
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long PetscInt64;
 # define MPIU_INT64 MPI_LONG_LONG_INT
+# define PetscInt64_FMT "lld"
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 PetscInt64;
 # define MPIU_INT64 MPI_INT64_T
+# define PetscInt64_FMT "ld"
 #else
 #error "cannot determine PetscInt64 type"
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef PetscInt64 PetscInt;
 #define MPIU_INT MPIU_INT64
+#define PetscInt_FMT PetscInt64_FMT
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
+#define PetscInt_FMT "d"
 #endif
 
 /*MC

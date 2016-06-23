@@ -536,13 +536,18 @@ class Package(config.base.Configure):
                              '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
       try:
         gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
-        if self.gitcommit != 'HEAD':
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
       except:
-        raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
-                           '.\nPerhaps its a remote branch, if so - use: origin/'+self.gitcommit)
+        raise RuntimeError('Unable to locate commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\n If its a remote branch- use: origin/'+self.gitcommit)
+      if self.gitcommit != 'HEAD':
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
+        except:
+          raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+        except:
+          raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\nPerhaps its a git error!')
       # write a commit-tag file
       fd = open(os.path.join(self.packageDir,'pkg.gitcommit'),'w')
       fd.write(gitcommit_hash)
@@ -1206,8 +1211,6 @@ class GNUPackage(Package):
     else:
       args.append('--disable-shared')
 
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
-       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     return args
 
   def Install(self):
@@ -1225,6 +1228,8 @@ class GNUPackage(Package):
 
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
     args = self.formGNUConfigureArgs()
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')
@@ -1314,13 +1319,13 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS=on')
     else:
       args.append('-DBUILD_SHARED_LIBS=off')
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
-       args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     return args
 
   def Install(self):
     import os
     args = self.formCMakeConfigureArgs()
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')

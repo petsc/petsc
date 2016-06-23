@@ -7,7 +7,7 @@
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#include "telescope.h"
+#include "../src/ksp/pc/impls/telescope/telescope.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "_DMDADetermineRankFromGlobalIJK"

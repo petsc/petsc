@@ -7,6 +7,12 @@
 # See ./makeframework on how to use the framework:
 #
 #
+if [ ! -f include/petscversion.h ]; then
+    echo "Could not locate include/petscversion.h! Please invoke this script from top level PETSc source dir"
+    exit 1
+fi
+
+export PETSC_DIR=$PWD
 export PETSC_ARCH=arch-ios-simulator
 rm -rf ${PETSC_ARCH}
 ./systems/Apple/iOS/bin/arch-ios-simulator.py
