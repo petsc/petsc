@@ -14,6 +14,19 @@ static PetscErrorCode MatISComputeSF_Private(Mat);
 static PetscErrorCode MatISZeroRowsLocal_Private(Mat,PetscInt,const PetscInt[],PetscScalar);
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMissingDiagonal_IS"
+PetscErrorCode MatMissingDiagonal_IS(Mat A,PetscBool  *missing,PetscInt *d)
+{
+  Mat_IS         *a = (Mat_IS*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (d) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need to be implemented");
+  ierr = MatMissingDiagonal(a->A,missing,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatISComputeSF_Private"
 static PetscErrorCode MatISComputeSF_Private(Mat B)
 {
@@ -1139,6 +1152,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->ishermitian             = MatIsHermitian_IS;
   A->ops->issymmetric             = MatIsSymmetric_IS;
   A->ops->duplicate               = MatDuplicate_IS;
+  A->ops->missingdiagonal         = MatMissingDiagonal_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
