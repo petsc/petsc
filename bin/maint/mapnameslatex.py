@@ -19,7 +19,7 @@ tokens = (
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
     'LOR', 'LAND', 'LNOT',
-    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL','BEGIN{VERBATIM}','END{VERBATIM}',
+    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL','BEGIN{VERBATIM}','END{VERBATIM}','LSTINLINE','BEGIN{LSTLISTING}','END{LSTLISTING}'
 
     # Assignment (=, *=, /=, %=, +=, -=, <<=, >>=, &=, ^=, |=)
     'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
@@ -34,7 +34,7 @@ tokens = (
     # Conditional operator (?)
     'CONDOP',
 
-    # Delimeters ( ) [ ] { } , . ; :
+    # Delimiters ( ) [ ] { } , . ; :
     'LPAREN', 'RPAREN',
     'LBRACKET', 'RBRACKET',
     'LBRACE', 'RBRACE',
@@ -69,8 +69,11 @@ t_HREF             = r'\\href\{'
 t_FINDEX           = r'\\findex\{'
 t_SINDEX           = r'\\sindex\{'
 t_TRL              = r'\\trl\{'
+t_LSTINLINE        = r'\\lstinline\{'
 t_BVERB            = r'\\begin\{verbatim\}'
 t_EVERB            = r'\\end\{verbatim\}'
+t_BLSTLISTING      = r'\\begin\{lstlisting\}'
+t_ELSTLISTING      = r'\\end\{lstlisting\}'
 t_PLUS             = r'\+'
 t_MINUS            = r'-'
 t_TIMES            = r'\*'
@@ -234,6 +237,8 @@ if __name__ == "__main__":
     text     = ''
     bracket  = 0
     vbracket = 0
+    lstinline_bracket = 0
+    lstlisting_bracket = 0 
     while 1:
         token = lex.token()       # Get a token
         if not token: break        # No more tokens
@@ -245,20 +250,40 @@ if __name__ == "__main__":
             # verbatim environment disables bracket count
 	    if value == '\\begin{verbatim}':
                 vbracket = vbracket + 1;
+            # lstlisting environment disables bracket count
+	    if value == '\\begin{lstlisting}':
+                lstlisting_bracket = lstlisting_bracket + 1;
             # \href cannot be used in many places in Latex
-	    if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0:
+            if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{'] and vbracket == 0 and lstlisting_bracket == 0:
 		bracket = bracket + 1;
+            #We keep track of whether we are inside an inline listing
+            elif value in ['\\lstinline{'] and vbracket == 0 and lstlisting_bracket == 0:
+                lstinline_bracket = lstinline_bracket + 1
+                if lstinline_bracket > 1 :
+                    raise Exception('Nested \\lstinline detected')
             if bracket == 0 and vbracket == 0:
 		value = token.value
 		if mappedstring.has_key(value):
                     mvalue = mappedstring[value].replace('_','\\_')
-		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
+                    if lstlisting_bracket > 0 :
+                        # The listings escape character is hard-coded here and must match the latex source
+                        value = '$\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}$'
+                    elif lstinline_bracket > 0 :
+                        value = '}\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline{'+mvalue+'}}\\findex{'+value+'}\\lstinline{' #end and start a new inside href
+                    else :
+                        value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
 		value = token.value
-	    if token.value[0] == '}' and bracket and vbracket == 0:
+            if token.value[0] == '}' and lstinline_bracket > 0 :
+                if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0:
+                    raise Exception("Unexpected to have anything nested inside of lstinline")
+                lstinline_bracket = lstinline_bracket-1
+	    elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0:
 		bracket = bracket - 1;
-            if value == '\\end{verbatim}' and vbracket:
+            elif value == '\\end{verbatim}' and vbracket:
 	        vbracket = vbracket - 1;
+            elif value == '\\end{lstlisting}' and lstlisting_bracket:
+	        lstlisting_bracket = lstlisting_bracket - 1;
 
 	    text = text+value
 
