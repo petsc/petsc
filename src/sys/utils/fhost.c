@@ -80,6 +80,7 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
     ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
     if (l == nlen-1) PetscFunctionReturn(0);
     name[l++] = '.';
+    name[l]   = 0;
 #if defined(PETSC_HAVE_SYSINFO_3ARG)
     sysinfo(SI_SRPC_DOMAIN,name+l,nlen-l);
 #elif defined(PETSC_HAVE_GETDOMAINNAME)

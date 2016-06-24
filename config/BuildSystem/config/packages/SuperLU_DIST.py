@@ -4,8 +4,9 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v5.1.0'
-    self.download         = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_5.1.0.tar.gz','git://https://github.com/xiaoyeli/superlu_dist']
+    self.gitcommit         = '0b5369f' #maint/v5.1.0+ from june-16-2016
+    self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']
+    self.downloaddirname  = 'superlu_dist'
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
     self.liblist          = [['libsuperlu_dist.a']]
@@ -62,19 +63,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
     args.append('-DMPI_C_LIBRARIES:STRING=""')
 
-    # Remove -DAdd_ from superlu cflags
-    try:
-      import shutil
-      shutil.move(os.path.join(self.packageDir,'CMakeLists.txt'),
-                  os.path.join(self.packageDir,'CMakeLists.txt.orig'))
-      output,err,ret  = config.package.CMakePackage.executeShellCommand("sed -e 's/-DAdd_ //' %s > %s" % (os.path.join(self.packageDir,'CMakeLists.txt.orig'),
-                          os.path.join(self.packageDir,'CMakeLists.txt')))
-      output = output+err
-      self.log.write(output)
-    except RuntimeError, e:
-       raise RuntimeError('Error running sed on SuperLU_DIST CMakeLists.txt: '+str(e))
-
-    # Add in the correct flag
+    # Add in fortran mangling flag
     if self.blasLapack.mangling == 'underscore':
       mangledef = '-DAdd_'
     elif self.blasLapack.mangling == 'caps':
@@ -84,7 +73,6 @@ class Configure(config.package.CMakePackage):
     for place,item in enumerate(args):
       if item.find('CMAKE_C_FLAGS') >= 0 or item.find('CMAKE_CXX_FLAGS') >= 0:
         args[place]=item[:-1]+' '+mangledef+'"'
-
 
     return args
 
