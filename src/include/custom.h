@@ -174,7 +174,17 @@ PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 
 /* ---------------------------------------------------------------- */
 
-#if !defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUSP)
+
+PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayRead(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayReadWrite(Vec,PetscScalar**);
+
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayRead(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayReadWrite(Vec,PetscScalar**);
+
+#else
 
 #undef  __FUNCT__
 #define __FUNCT__ "VecCUSPGetCUDAArray"
