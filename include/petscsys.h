@@ -239,6 +239,9 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 #endif
 #if defined (PETSC_HAVE_INTTYPES_H)
 #include <inttypes.h>
+# if !defined(PRId64)
+# define PRId64 "ld"
+# endif
 #endif
 
 typedef short PetscShort;
@@ -254,7 +257,7 @@ typedef float PetscFloat;
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if defined(PETSC_HAVE_STDINT_H) && defined(PRId64) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
 # define MPIU_INT64 MPI_INT64_T
 # define PetscInt64_FMT PRId64
