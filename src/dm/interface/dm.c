@@ -5425,6 +5425,39 @@ PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *poin
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSetStratumIS"
+/*@C
+  DMGetStratumIS - Set the points in a label stratum
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DM object
+. name - The label name
+. value - The stratum value
+- points - The stratum points
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMLabelSetStratumIS(), DMGetStratumSize()
+@*/
+PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS points)
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(points, 4);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMLabelSetStratumIS(label, value, points);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMClearLabelStratum"
 /*@C
   DMClearLabelStratum - Remove all points from a stratum from a Sieve Label

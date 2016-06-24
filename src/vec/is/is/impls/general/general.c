@@ -145,6 +145,31 @@ nomatch:
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISLocate_General"
+static PetscErrorCode ISLocate_General(IS is,PetscInt key,PetscInt *location)
+{
+  IS_General     *sub = (IS_General*)is->data;
+  PetscInt       numIdx, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetSize(is->map,&numIdx);CHKERRQ(ierr);
+  if (sub->sorted) {ierr =  PetscFindInt(key,numIdx,sub->idx,location);CHKERRQ(ierr);}
+  else {
+    const PetscInt *idx = sub->idx;
+
+    *location = -1;
+    for (i = 0; i < numIdx; i++) {
+      if (idx[i] == key) {
+        *location = i;
+        PetscFunctionReturn(0);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISGetIndices_General"
 static PetscErrorCode ISGetIndices_General(IS in,const PetscInt *idx[])
 {
@@ -551,7 +576,8 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISToGeneral_General,
                                ISOnComm_General,
                                ISSetBlockSize_General,
-                               ISContiguousLocal_General};
+                               ISContiguousLocal_General,
+                               ISLocate_General};
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreateGeneral_Private"

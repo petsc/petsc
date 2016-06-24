@@ -72,6 +72,8 @@ PETSC_EXTERN PetscErrorCode ISSum(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISExpand(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISGetMinMax(IS,PetscInt*,PetscInt*);
 
+PETSC_EXTERN PetscErrorCode ISLocate(IS,PetscInt,PetscInt*);
+
 PETSC_EXTERN PetscErrorCode ISBlockGetIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISBlockRestoreIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISBlockGetLocalSize(IS,PetscInt *);

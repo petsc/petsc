@@ -18,10 +18,10 @@ struct _n_DMLabel {
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt    defaultValue;   /* Background value when no value explicitly given */
   PetscInt   *stratumValues;  /* Value of each stratum */
-  /* Basic sorted array storage */
-  PetscBool  *arrayValid;     /* The array storage is valid (no additions need to be merged in) */
+  /* Basic IS storage */
+  PetscBool  *validIS;        /* The IS is valid (no additions need to be merged in) */
   PetscInt   *stratumSizes;   /* Size of each stratum */
-  PetscInt  **points;         /* Points for each stratum, always sorted */
+  IS         *points;         /* Points for each stratum, always sorted */
   /* Hashtable for fast insertion */
   PetscHashI *ht;             /* Hash table for fast insertion */
   /* Index for fast search */

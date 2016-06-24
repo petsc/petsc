@@ -1937,6 +1937,26 @@ PetscErrorCode DMPlexStratify(DM dm)
     PetscInt numValues, maxValues = 0, v;
 
     ierr = DMLabelGetNumValues(label,&numValues);CHKERRQ(ierr);
+    for (v = 0; v < numValues; v++) {
+      IS pointIS;
+
+      ierr = DMLabelGetStratumIS(label, v, &pointIS);CHKERRQ(ierr);
+      if (pointIS) {
+        PetscInt  min, max, numPoints;
+        PetscInt  start;
+        PetscBool contig;
+
+        ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+        ierr = ISGetMinMax(pointIS, &min, &max);CHKERRQ(ierr);
+        ierr = ISContiguousLocal(pointIS,min,max+1,&start,&contig);CHKERRQ(ierr);
+        if (start == 0 && contig) {
+          ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+          ierr = ISCreateStride(PETSC_COMM_SELF,numPoints,min,1,&pointIS);CHKERRQ(ierr);
+          ierr = DMLabelSetStratumIS(label, v, pointIS);CHKERRQ(ierr);
+        }
+      }
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
     ierr = MPI_Allreduce(&numValues,&maxValues,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     for (v = numValues; v < maxValues; v++) {
       DMLabelAddStratum(label,v);CHKERRQ(ierr);
