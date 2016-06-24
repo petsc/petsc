@@ -4,17 +4,21 @@
 \usepackage{makeidx,xspace}
 \usepackage[bookmarksopen,colorlinks]{hyperref}
 \usepackage[all]{hypcap}
-\usepackage{color}
+\usepackage{xcolor}
 \input pdfcolor.tex
 
 \usepackage[pdftex]{graphicx}
+
+%\usepackage{times}
+\usepackage{tikz}
 \usepackage{../sty/verbatim}
 \usepackage{../sty/tpage}
 \usepackage{../sty/here}
 \usepackage{../sty/anlhelper}
 
 % trl is used to refer to URLs, command line arguments, and other "mentions"
-\usepackage[obeyspaces]{../sty/trl}
+%\usepackage[obeyspaces]{../sty/trl}
+\usepackage[hyphens,spaces,obeyspaces]{../sty/trl}
 
 % Listings are used to refer to literal C code
 %   see \lstset below
@@ -57,10 +61,13 @@
 \setlength{\textheight}{9.2in}
 \setlength{\topmargin}{-.8in}
 
-\newcommand{\findex}[1]{\index{FUNCTION #1}}
+\newcommand{\findex}[1]{\index{#1}}
 \newcommand{\sindex}[1]{\index{#1}}
+\newcommand{\A}{\mbox{\boldmath \(A\)}}
 \newcommand{\F}{\mbox{\boldmath \(F\)}}
+\newcommand{\J}{\mbox{\boldmath \(J\)}}
 \newcommand{\x}{\mbox{\boldmath \(x\)}}
+\newcommand{\bb}{\mbox{\boldmath \(b\)}}
 \newcommand{\rr}{\mbox{\boldmath \(r\)}}
 
 \usepackage{fancyhdr,lastpage}
