@@ -77,8 +77,8 @@ class Configure(config.base.Configure):
         rjobs.append('C_Complex')
         if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           for j in self.framework.packages:
-            if j.name.upper() in ['SUPERLU_DIST']:
-                ejobs.append(j.name.upper()+'_COMPLEX_DATAFILESPATH')
+            if j.PACKAGE in ['SUPERLU_DIST']:
+                ejobs.append(j.PACKAGE+'_COMPLEX_DATAFILESPATH')
       else:
         rjobs.append('C_NoComplex')
         if not self.scalartypes.precision == 'single':
@@ -91,7 +91,7 @@ class Configure(config.base.Configure):
             rjobs.append('Fortran_DATAFILESPATH')
           for j in self.framework.packages:
             if j.hastestsdatafiles:
-                ejobs.append(j.name.upper()+'_DATAFILESPATH')
+                ejobs.append(j.PACKAGE+'_DATAFILESPATH')
         if self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           rjobs.append('DOUBLEINT32')
           if hasattr(self.compilers, 'FC'):
@@ -101,18 +101,18 @@ class Configure(config.base.Configure):
       if self.scalartypes.scalartype.lower() != 'complex':
         for i in self.framework.packages:
           if i.hastests:
-            ejobs.append(i.name.upper())
+            ejobs.append(i.PACKAGE)
           # horrible python here
-          if i.name.upper() == 'MOAB':
+          if i.PACKAGE == 'MOAB':
             for j in self.framework.packages:
-              if j.name.upper() == 'HDF5':
+              if j.PACKAGE == 'HDF5':
                 ejobs.append('MOAB_HDF5')
       else:
         for i in self.framework.packages:
-          if i.name.upper() in ['FFTW','SUPERLU_DIST']:
-            jobs.append(i.name.upper()+ '_COMPLEX')
-          elif i.name.upper() in ['STRUMPACK']:
-            jobs.append(i.name.upper())
+          if i.PACKAGE in ['FFTW','SUPERLU_DIST']:
+            jobs.append(i.PACKAGE+ '_COMPLEX')
+          elif i.PACKAGE in ['STRUMPACK']:
+            jobs.append(i.PACKAGE)
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return
