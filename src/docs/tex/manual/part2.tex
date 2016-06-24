@@ -5787,66 +5787,12 @@ or  the option
       has not yet been created.
 \end{itemize}
 
-
-
+%------------------------------------------------------------------
 \cleardoublepage
 \chapter{High Level Support for Multigrid with KSPSetDM() and SNESSetDM()}
 \label{chapter_kspdm}
 
 This chapter needs to be written.
-
-
-\cleardoublepage
-\chapter{Using ADIFOR with PETSc}
-
-Automatic differentiation is an incredible technique to generate code
-that computes Jacobians and other derivatives directly from code
-that only evaluates the function.
-
-First one indicates the functions for which one needs Jacobians by adding
-where one lists the functions. In Fortran use
-\begin{tabbing}
-!     Process adifor: FormFunctionLocal
-\end{tabbing}
-Next one uses the call
-\begin{tabbing}
-  DMDASetSNESLocal(DM dm,\\
-   PetscErrorCode (*localfunction)(DMDALocalInfo *info,void *x,void *f,void* appctx),NULL,\\
-  ad\_localfunction,ad\_mf\_localfunction);
-\end{tabbing}
-where the names of the last two functions are obtained
-by prepending in Fortran, this is done by prepending a \trl{g_} and \trl{m_}.
-
-\section{Work arrays inside the local functions} In C you can call DMDAVecGetArray() to get
-work arrays (this is low overhead). In Fortran you can provide a \trl{FormFunctionLocal()}
-that had local arrays that have hardwired sizes that are large enough or somehow allocate
-space and pass it into an inner FormFunctionLocal() that is the one you differentiate; this
-second approach will require some hand massaging. For example,
-
-\begin{tabbing}
-  subroutine TrueFormFunctionLocal(info,x,f,ctx,ierr)\\
-  double precision x(gxs:gxe,gys:gye),f(xs:xe,ys:ye)\\
-  DMDA info(DMDA\_LOCAL\_INFO\_SIZE)\\
-  integer ctx\\
-  PetscErrorCode ierr\\
-  double precision work(gxs:gxe,gys:gye)\\
-
-  .... do the work ....\\
-
-
-  return\\
-
-  subroutine FormFunctionLocal(info,x,f,ctx,ierr)\\
-
-  double precision x(*),f(*)\\
-  DMDA info(DMDA\_LOCAL\_INFO\_SIZE)\\
-  PetscErrorCode ierr\\
-  integer ctx\\
-  double precision work(10000)\\
-
-  call TrueFormFunctionLocal(info,x,f,work,ctx,ierr)\\
-  return
-\end{tabbing}
 
 %------------------------------------------------------------------
 \cleardoublepage
