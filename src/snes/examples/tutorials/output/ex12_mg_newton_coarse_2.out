@@ -9670,6 +9670,3 @@ PC Object: 1 MPI processes
   1 SNES Function norm 3.968917043871e-13 
 Number of SNES iterations = 1
 L_2 Error: 1.89245
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-mg_levels_ksp_chebyshev_esteig_random (no value)
