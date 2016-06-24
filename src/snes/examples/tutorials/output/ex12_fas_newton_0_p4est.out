@@ -1,0 +1,174 @@
+0 SNES Function norm 3056.39 
+    0 SNES Function norm 3056.39 
+    1 SNES Function norm 862.722 
+      0 SNES Function norm 627.951 
+      1 SNES Function norm 371.278 
+      2 SNES Function norm 6312.55 
+      3 SNES Function norm 1812.96 
+      4 SNES Function norm 489.453 
+      5 SNES Function norm 114.642 
+      6 SNES Function norm 24.372 
+      7 SNES Function norm 6.63881 
+      8 SNES Function norm 1.71798 
+      9 SNES Function norm 0.274217 
+     10 SNES Function norm 0.0111577 
+     11 SNES Function norm 2.08581e-05 
+     12 SNES Function norm 7.421e-11 
+    0 SNES Function norm 3818.7 
+    1 SNES Function norm 1131.78 
+  1 SNES Function norm 1131.78 
+    0 SNES Function norm 1131.78 
+    1 SNES Function norm 335.695 
+      0 SNES Function norm 199.39 
+      1 SNES Function norm 4655.47 
+      2 SNES Function norm 2239.66 
+      3 SNES Function norm 649.248 
+      4 SNES Function norm 179.033 
+      5 SNES Function norm 44.0567 
+      6 SNES Function norm 8.68245 
+      7 SNES Function norm 0.938728 
+      8 SNES Function norm 0.0181412 
+      9 SNES Function norm 7.77116e-06 
+     10 SNES Function norm < 1.e-11
+    0 SNES Function norm 272.134 
+    1 SNES Function norm 80.9675 
+  2 SNES Function norm 80.9675 
+    0 SNES Function norm 80.9675 
+    1 SNES Function norm 24.1568 
+      0 SNES Function norm 24.2447 
+      1 SNES Function norm 53.4123 
+      2 SNES Function norm 98.7206 
+      3 SNES Function norm 29.5724 
+      4 SNES Function norm 7.94953 
+      5 SNES Function norm 1.85688 
+      6 SNES Function norm 0.285423 
+      7 SNES Function norm 0.0121028 
+      8 SNES Function norm 2.47144e-05 
+      9 SNES Function norm 1.039e-10 
+    0 SNES Function norm 65.2525 
+    1 SNES Function norm 19.8835 
+  3 SNES Function norm 19.8835 
+    0 SNES Function norm 19.8835 
+    1 SNES Function norm 6.32363 
+      0 SNES Function norm 4.48612 
+      1 SNES Function norm 8.32681 
+      2 SNES Function norm 2.3484 
+      3 SNES Function norm 0.411137 
+      4 SNES Function norm 0.039355 
+      5 SNES Function norm 0.00198628 
+      6 SNES Function norm 3.30195e-05 
+      7 SNES Function norm 5.79026e-08 
+      8 SNES Function norm < 1.e-11
+    0 SNES Function norm 10.7053 
+    1 SNES Function norm 3.18967 
+  4 SNES Function norm 3.18967 
+    0 SNES Function norm 3.18967 
+    1 SNES Function norm 0.896057 
+      0 SNES Function norm 0.760071 
+      1 SNES Function norm 0.621635 
+      2 SNES Function norm 0.145236 
+      3 SNES Function norm 0.0193407 
+      4 SNES Function norm 0.000573455 
+      5 SNES Function norm 3.06402e-06 
+      6 SNES Function norm 5.798e-10 
+    0 SNES Function norm 1.13366 
+    1 SNES Function norm 0.292147 
+  5 SNES Function norm 0.292147 
+    0 SNES Function norm 0.292147 
+    1 SNES Function norm 0.060416 
+      0 SNES Function norm 0.0425234 
+      1 SNES Function norm 0.00357501 
+      2 SNES Function norm 0.000319353 
+      3 SNES Function norm 1.46213e-05 
+      4 SNES Function norm 1.2485e-07 
+      5 SNES Function norm < 1.e-11
+    0 SNES Function norm 0.0481058 
+    1 SNES Function norm 0.00343035 
+  6 SNES Function norm 0.00343035 
+    0 SNES Function norm 0.00343035 
+    1 SNES Function norm 8.88616e-05 
+      0 SNES Function norm 5.84256e-05 
+      1 SNES Function norm 1.17616e-07 
+      2 SNES Function norm < 1.e-11
+    0 SNES Function norm 7.18617e-05 
+    1 SNES Function norm 2.04531e-07 
+  7 SNES Function norm 2.04531e-07 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 7
+SNES Object: 1 MPI processes
+  type: fas
+  FAS: type is MULTIPLICATIVE, levels=2, cycles=1
+      Not using Galerkin computed coarse grid function evaluation
+  Coarse grid solver -- level 0 -------------------------------
+    SNES Object: (fas_coarse_) 1 MPI processes
+      type: newtonls
+      maximum iterations=50, maximum function evaluations=10000
+      tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+      total number of linear solver iterations=2
+      total number of function evaluations=2
+      SNESLineSearch Object: (fas_coarse_) 1 MPI processes
+        type: basic
+        maxstep=1.000000e+08, minlambda=1.000000e-12
+        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+        maximum iterations=40
+      KSP Object: (fas_coarse_) 1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object: (fas_coarse_) 1 MPI processes
+        type: svd
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=102, cols=102
+          total: nonzeros=822, allocated nonzeros=822
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+  Down solver (pre-smoother) on level 1 -------------------------------
+    SNES Object: (fas_levels_1_) 1 MPI processes
+      type: newtonls
+      maximum iterations=1, maximum function evaluations=30000
+      tolerances: relative=0., absolute=0., solution=0.
+      total number of linear solver iterations=1
+      total number of function evaluations=2
+      norm schedule FINALONLY
+      SNESLineSearch Object: (fas_levels_1_) 1 MPI processes
+        type: bt
+          interpolation: cubic
+          alpha=1.000000e-04
+        maxstep=1.000000e+08, minlambda=1.000000e-12
+        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+        maximum iterations=40
+      KSP Object: (fas_levels_1_) 1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object: (fas_levels_1_) 1 MPI processes
+        type: svd
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=315, cols=315
+          total: nonzeros=2705, allocated nonzeros=2705
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  maximum iterations=10000, maximum function evaluations=30000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=0
+  total number of function evaluations=1
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=1
+Number of SNES iterations = 7
+L_2 Error: 0.00213189
