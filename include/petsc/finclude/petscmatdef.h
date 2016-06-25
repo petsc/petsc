@@ -127,6 +127,13 @@
 #define MATLOCALREF        'localref'
 #define MATNEST            'nest'
 #define MATPREALLOCATOR    'preallocator'
+
+!
+! MatMFFDType values
+!
+#define MATMFFD_DS 'ds'
+#define MATMFFD_WP 'wp'
+
 !
 ! MatSolverPackages
 !

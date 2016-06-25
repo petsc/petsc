@@ -76,11 +76,6 @@
 #define SNESMSVLTP51    'vltp51'
 #define SNESMSVLTP61    'vltp61'
 
-!
-! MatSNESMF
-!
-#define MATMFFD_DEFAULT 'ds'
-#define MATMFFD_WP 'wp'
 
 
 #endif
