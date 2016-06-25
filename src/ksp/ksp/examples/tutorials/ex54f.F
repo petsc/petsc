@@ -100,7 +100,7 @@
       else
          call MatSetType( Amat, MATMPIAIJ, ierr )
       endif
-      call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,        &
+      call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,                   &
      &     PETSC_NULL_INTEGER, ierr)
       call MatSetFromOptions( Amat, ierr )
       call MatSetUp( Amat, ierr )
@@ -138,9 +138,9 @@
                do kj = 1,nel
                   a1 = (dd(1,1)*shp(1,kj) + dd(1,2)*shp(2,kj))*xsj
                   a2 = (dd(2,1)*shp(1,kj) + dd(2,2)*shp(2,kj))*xsj
-c     Compute residual
-c                  p(j1) = p(j1) - a1*gradt(1) - a2*gradt(2)
-c     Compute tangent
+!     Compute residual
+!                  p(j1) = p(j1) - a1*gradt(1) - a2*gradt(2)
+!     Compute tangent
                   i1 = 1
                   do ki = 1,nel
                      ss(i1,j1) = ss(i1,j1) + a1*shp(1,ki) + a2*shp(2,ki)
@@ -278,7 +278,7 @@ c            write (1,*) 'title('RHS'),'
 
       subroutine thfx2d(ev,xl,shp,dd,ndm,ndf,nel,dir)
 
-c     Compute thermal gradient and flux
+!     Compute thermal gradient and flux
 
       implicit  none
 
@@ -293,7 +293,7 @@ c     Compute thermal gradient and flux
         yy       = yy       + shp(3,i)*xl(2,i)
       end do
       psi = dir(xx,yy)
-c     Compute thermal flux
+!     Compute thermal flux
       cs  = cos(psi)
       sn  = sin(psi)
       c2  = cs*cs
@@ -305,8 +305,8 @@ c     Compute thermal flux
       dd(1,2) = cs*(ev(1) - ev(2))
       dd(2,1) = dd(1,2)
 
-c      flux(1) = -dd(1,1)*gradt(1) - dd(1,2)*gradt(2)
-c      flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
+!      flux(1) = -dd(1,1)*gradt(1) - dd(1,2)*gradt(2)
+!      flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
 
       end
 
@@ -314,21 +314,21 @@ c      flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
 !     shp2dquad - shape functions - compute derivatives w/r natural coords.
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        subroutine shp2dquad(s,t,xl,shp,xsj,ndm)
-c-----[--.----+----.----+----.-----------------------------------------]
-c      Purpose: Shape function routine for 4-node isoparametric quads
-c
-c      Inputs:
-c         s,t       - Natural coordinates of point
-c         xl(ndm,*) - Nodal coordinates for element
-c         ndm       - Spatial dimension of mesh
+!-----[--.----+----.----+----.-----------------------------------------]
+!      Purpose: Shape function routine for 4-node isoparametric quads
+!
+!      Inputs:
+!         s,t       - Natural coordinates of point
+!         xl(ndm,*) - Nodal coordinates for element
+!         ndm       - Spatial dimension of mesh
 
-c      Outputs:
-c         shp(3,*)  - Shape functions and derivatives at point
-c                     shp(1,i) = dN_i/dx  or dN_i/dxi_1
-c                     shp(2,i) = dN_i/dy  or dN_i/dxi_2
-c                     shp(3,i) = N_i
-c         xsj       - Jacobian determinant at point
-c-----[--.----+----.----+----.-----------------------------------------]
+!      Outputs:
+!         shp(3,*)  - Shape functions and derivatives at point
+!                     shp(1,i) = dN_i/dx  or dN_i/dxi_1
+!                     shp(2,i) = dN_i/dy  or dN_i/dxi_2
+!                     shp(3,i) = N_i
+!         xsj       - Jacobian determinant at point
+!-----[--.----+----.----+----.-----------------------------------------]
       implicit  none
       PetscInt  ndm
       PetscReal xo,xs,xt, yo,ys,yt, xsm,xsp,xtm
@@ -336,7 +336,7 @@ c-----[--.----+----.----+----.-----------------------------------------]
       PetscReal s,t, xsj,xsj1, sh,th,sp,tp,sm
       PetscReal tm, xl(ndm,4),shp(3,4)
 
-c     Set up interpolations
+!     Set up interpolations
 
       sh = 0.5*s
       th = 0.5*t
@@ -349,7 +349,7 @@ c     Set up interpolations
       shp(3,3) =   sp*tp
       shp(3,4) =   sm*tp
 
-c     Set up natural coordinate functions (times 4)
+!     Set up natural coordinate functions (times 4)
 
       xo =  xl(1,1)-xl(1,2)+xl(1,3)-xl(1,4)
       xs = -xl(1,1)+xl(1,2)+xl(1,3)-xl(1,4) + xo*t
@@ -358,11 +358,11 @@ c     Set up natural coordinate functions (times 4)
       ys = -xl(2,1)+xl(2,2)+xl(2,3)-xl(2,4) + yo*t
       yt = -xl(2,1)-xl(2,2)+xl(2,3)+xl(2,4) + yo*s
 
-c     Compute jacobian (times 16)
+!     Compute jacobian (times 16)
 
       xsj1 = xs*yt - xt*ys
 
-c     Divide jacobian by 16 (multiply by .0625)
+!     Divide jacobian by 16 (multiply by .0625)
 
       xsj = 0.0625*xsj1
       if (xsj1.eq.0.0) then
@@ -371,14 +371,14 @@ c     Divide jacobian by 16 (multiply by .0625)
          xsj1 = 1.0/xsj1
       endif
 
-c     Divide functions by jacobian
+!     Divide functions by jacobian
 
       xs  = (xs+xs)*xsj1
       xt  = (xt+xt)*xsj1
       ys  = (ys+ys)*xsj1
       yt  = (yt+yt)*xsj1
 
-c     Multiply by interpolations
+!     Multiply by interpolations
 
       ytm =  yt*tm
       ysm =  ys*sm
@@ -389,7 +389,7 @@ c     Multiply by interpolations
       xtp =  xt*tp
       xsp =  xs*sp
 
-c     Compute shape functions
+!     Compute shape functions
 
       shp(1,1) = - ytm+ysm
       shp(1,2) =   ytm+ysp
@@ -406,27 +406,27 @@ c     Compute shape functions
 !     int2d
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       subroutine int2d(l,sg)
-c-----[--.----+----.----+----.-----------------------------------------]
-c     Purpose: Form Gauss points and weights for two dimensions
+!-----[--.----+----.----+----.-----------------------------------------]
+!     Purpose: Form Gauss points and weights for two dimensions
 
-c     Inputs:
-c     l       - Number of points/direction
+!     Inputs:
+!     l       - Number of points/direction
 
-c     Outputs:
-c     lint    - Total number of points
-c     sg(3,*) - Array of points and weights
-c-----[--.----+----.----+----.-----------------------------------------]
+!     Outputs:
+!     lint    - Total number of points
+!     sg(3,*) - Array of points and weights
+!-----[--.----+----.----+----.-----------------------------------------]
       implicit  none
       PetscInt   l,i,lint,lr(9),lz(9)
       PetscReal    g,third,sg(3,*)
       data      lr/-1,1,1,-1,0,1,0,-1,0/,lz/-1,-1,1,1,-1,0,1,0,0/
       data      third / 0.3333333333333333 /
 
-c     Set number of total points
+!     Set number of total points
 
       lint = l*l
 
-c     2x2 integration
+!     2x2 integration
       g = sqrt(third)
       do i = 1,4
          sg(1,i) = g*lr(i)
