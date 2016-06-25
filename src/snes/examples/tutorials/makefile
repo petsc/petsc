@@ -239,7 +239,7 @@ ex74f: ex74f.o  chkopts
 ex77: ex77.o  chkopts
 	-${CLINKER} -o ex77 ex77.o ${PETSC_SNES_LIB}
 	${RM} ex77.o
-#--------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
@@ -640,6 +640,11 @@ runex19_bcgsl:
 	   if (${DIFF} output/ex19_bcgsl.out ex19_bcgsl.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_bcgsl, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_bcgsl.tmp
+runex19_parms:
+	-@${MPIEXEC} -n 2 ./ex19  -pc_type parms -ksp_monitor_short -snes_view  > ex19_parms.tmp 2>&1; \
+	   if (${DIFF} output/ex19_parms.out ex19_parms.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_parms, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_parms.tmp
 runex19_cgs:
 	-@${MPIEXEC} -n 1 ./ex19  -da_refine 1 -ksp_monitor_short -ksp_type cgs > ex19_cgs.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cgs.out ex19_cgs.tmp) then true; \
@@ -1258,6 +1263,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm
+TESTEXAMPLES_PARMS             = ex19.PETSc runex19_parms ex19.rm
 TESTEXAMPLES_PARMETIS          = ex56.PETSc runex56 ex56.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
