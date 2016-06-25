@@ -194,8 +194,8 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     dpiold = dpi;
     ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);            /*     w <- Ap                          */
     ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);                    /*     dpi <- p'w                       */
+    KSPCheckDot(ksp,dpi);
     betaold = beta;
-    KSPCheckDot(ksp,beta);
 
     if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;

@@ -309,6 +309,7 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (array) {
     if (!vv->spptr) {
+      /* Cannot use PetscNew() here because spptr is void* */
       ierr = PetscMalloc(sizeof(Vec_CUDA),&vv->spptr);CHKERRQ(ierr);
       veccuda = (Vec_CUDA*)vv->spptr;
       err = cudaStreamCreate(&veccuda->stream);CHKERRCUDA(err);

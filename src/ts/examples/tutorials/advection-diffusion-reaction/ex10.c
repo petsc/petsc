@@ -125,7 +125,7 @@ int main(int argc,char **argv)
   /*
     dfil (thought of as a DOF by DOF 2d (row-oriented) array) repesents the nonzero coupling between degrees of
    freedom within a single grid point, i.e. the reaction and dissassociation interactions. */
-  ierr = PetscMalloc(DOF*DOF*sizeof(PetscInt),&dfill);CHKERRQ(ierr);
+  ierr = PetscMalloc1(DOF*DOF,&dfill);CHKERRQ(ierr);
   ierr = PetscMemzero(dfill,DOF*DOF*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = GetDfill(dfill,&ctx);CHKERRQ(ierr);
   ierr = DMDASetBlockFills(da,dfill,ofill);CHKERRQ(ierr);
@@ -949,7 +949,7 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
    c is never used except for computing offsets between variables which are used to fill the non-zero
    structure of the matrix
    */
-  ierr     = PetscMalloc(sizeof(Concentrations),&c);CHKERRQ(ierr);
+  ierr     = PetscNew(&c);CHKERRQ(ierr);
   c        = (Concentrations*)(((PetscScalar*)c)-1);
   ierr     = cHeVCreate(&cHeV);CHKERRQ(ierr);
   ierr     = cHeVInitialize(&c->He[1],cHeV);CHKERRQ(ierr);
@@ -1284,7 +1284,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHe);CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->Heda,1,ycoor);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(ctx->Heda,&ctx->He);CHKERRQ(ierr);
-  ierr = PetscMalloc(NHe*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(NHe*xm,&idx);CHKERRQ(ierr);
   cnt  = 0;
   for (xj=0; xj<NHe; xj++) {
     for (xi=xs; xi<xs+xm; xi++) {
@@ -1309,7 +1309,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NV);CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->Vda,1,ycoor);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(ctx->Vda,&ctx->V);CHKERRQ(ierr);
-  ierr = PetscMalloc(NV*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(NV*xm*,&idx);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(ctx->da,&ctx->He);CHKERRQ(ierr);
   ierr = PetscMalloc1(2*N*xm,&idx);CHKERRQ(ierr);
   cnt  = 0;
@@ -1336,7 +1336,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHeV[1]);CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->HeVda,1,ycoor);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(ctx->HeVda,&ctx->HeV);CHKERRQ(ierr);
-  ierr = PetscMalloc(NHeV[1]*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(NHeV[1]*xm,&idx);CHKERRQ(ierr);
   cnt  = 0;
   for (xj=0; xj<NHeV[1]; xj++) {
     for (xi=xs; xi<xs+xm; xi++) {

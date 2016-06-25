@@ -1,5 +1,6 @@
 
 #include <petscsys.h>        /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>
 #include <petscconfiginfo.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>

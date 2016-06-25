@@ -675,6 +675,11 @@ runex19_kaczmarz:
 	   if (${DIFF} output/ex19_kaczmarz.out ex19_kaczmarz.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_kaczmarz, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_kaczmarz.tmp
+runex19_cgne:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 2 -pc_type lu -ksp_type cgne -ksp_monitor_short -ksp_converged_reason -ksp_view -ksp_norm_type unpreconditioned |grep -v HERMITIAN > ex19_cgne.tmp 2>&1; \
+	   if (${DIFF} output/ex19_cgne.out ex19_cgne.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_cgne, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_cgne.tmp
 runex19_2:
 	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
@@ -950,6 +955,11 @@ runex19_greedy_coloring:
 runex19_draw:
 	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_galerkin -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd > ex19_draw.tmp 2>&1; \
           ${DIFF} output/ex19_draw.out ex19_draw.tmp || printf "${PWD}\nPossible problem with ex19_draw, diffs above\n=========================================\n"; \
+          ${RM} ex19_draw.tmp
+
+runex19_drawports:
+	-@${MPIEXEC} -n 1 ./ex19 -draw_ports -snes_monitor_solution draw  -da_refine 1 > ex19_draw.tmp 2>&1; \
+          ${DIFF} output/ex19_draw.out ex19_draw.tmp || printf "${PWD}\nPossible problem with ex19_drawports, diffs above\n=========================================\n"; \
           ${RM} ex19_draw.tmp
 
 runex18:
@@ -1256,6 +1266,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 runex19_greedy_coloring \
+                                 runex19_cgne  \
                                  runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi runex19_composite_gs_newton ex19.rm \
                                  ex20.PETSc runex20 ex20.rm ex22.PETSc runex22 ex22.rm \
                                  ex35.PETSc runex35 runex35_2  runex35_7 ex35.rm \
@@ -1265,7 +1276,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_PARMS             = ex19.PETSc runex19_parms ex19.rm
 TESTEXAMPLES_PARMETIS          = ex56.PETSc runex56 ex56.rm
-TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
+TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 runex19_drawports ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm

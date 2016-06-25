@@ -174,8 +174,8 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   
   /* Reorder the generator data structure according to bus numbers */
   genj=0; loadj=0;
-  ierr = PetscMalloc(pf->ngen*sizeof(struct _p_GEN),&newgen);CHKERRQ(ierr);
-  ierr = PetscMalloc(pf->nload*sizeof(struct _p_LOAD),&newload);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pf->ngen,&newgen);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pf->nload,&newload);CHKERRQ(ierr);
   for (i = 0; i < pf->nbus; i++) {
     for (j = 0; j < pf->bus[i].ngen; j++) {
       ierr = PetscMemcpy(&newgen[genj++],&pf->gen[pf->bus[i].gidx[j]],sizeof(struct _p_GEN));CHKERRQ(ierr);

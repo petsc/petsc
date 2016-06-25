@@ -824,9 +824,9 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   if (size == 1) {
     *nproc         = 0;
     *procs         = NULL;
-    ierr           = PetscMalloc(sizeof(PetscInt),numprocs);CHKERRQ(ierr);
+    ierr           = PetscNew(numprocs);CHKERRQ(ierr);
     (*numprocs)[0] = 0;
-    ierr           = PetscMalloc(sizeof(PetscInt*),indices);CHKERRQ(ierr);
+    ierr           = PetscNew(indices);CHKERRQ(ierr);
     (*indices)[0]  = NULL;
     /* save info for reuse */
     mapping->info_nproc = *nproc;

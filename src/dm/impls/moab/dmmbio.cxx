@@ -12,7 +12,7 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
   char           wopts_dbg[PETSC_MAX_PATH_LEN];
   PetscFunctionBegin;
 
-  ierr = PetscMalloc(PETSC_MAX_PATH_LEN,&wopts);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PETSC_MAX_PATH_LEN,&wopts);CHKERRQ(ierr);
   ierr = PetscMemzero(&wopts_par,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscMemzero(&wopts_parid,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscMemzero(&wopts_dbg,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);

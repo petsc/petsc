@@ -29,19 +29,19 @@
       Vec              xvec,bvec,uvec
       Mat              Amat
       KSP              ksp
-      PC               pc
       PetscErrorCode   ierr
       PetscViewer viewer
       PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
-      PetscInt ki,kj,lint,nel,ll,j1,i1,ndf
+      PetscInt ki,kj,lint,nel,ll,j1,i1,ndf,f4
+      PetscInt f2,f9,f6
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
-      PetscMPIInt npe,mype
-      PetscScalar::ss(4,4),res(4),val
-      PetscReal::shp(3,9),sg(3,9),flux(2)
+      PetscMPIInt size,rank
+      PetscScalar::ss(4,4),val
+      PetscReal::shp(3,9),sg(3,9)
       PetscReal::thk,a1,a2
       PetscReal, external :: ex54_psi
-      PetscReal::norm,tol,theta,eps,h,x,y,xsj
+      PetscReal::theta,eps,h,x,y,xsj
       PetscReal::coord(2,4),dd(2,2),ev(3),blb(2)
 
       common /ex54_theta/ theta
@@ -49,39 +49,43 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,npe,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,mype,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 set parameters
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      f4 = 4
+      f2 = 2
+      f9 = 9
+      f6 = 6
       ne = 9
       call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
      &                        '-ne',ne,flg,ierr)
-      h = 2.d0/ne
+      h = 2.0/ne
       M = (ne+1)*(ne+1)
-      theta = 90.d0
+      theta = 90.0
 !     theta is input in degrees
       call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
      &                         '-theta',theta,flg,ierr)
       theta = theta / 57.2957795
-      eps = 1.d0
+      eps = 1.0
       call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
      &                         '-epsilon',eps,flg,ierr)
       ki = 2
-      call PetscOptionsGetRealArray(PETSC_NULL_PETSC,                     &
-     &           OBJECT_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
+      call PetscOptionsGetRealArray(PETSC_NULL_OBJECT,                     &
+     &           PETSC_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
       if ( .not. flg ) then
-         blb(1) = 0.d0
-         blb(2) = 0.d0
+         blb(1) = 0.0
+         blb(2) = 0.0
       else if ( ki .ne. 2 ) then
-         print *, 'error: ', ki,
+         print *, 'error: ', ki,                                            &
      &        ' arguments read for -blob_center.  Needs to be two.'
       endif
       call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
      &                         '-out_matlab',out_matlab,flg,ierr)
       if (.not.flg) out_matlab = PETSC_FALSE;
 
-      ev(1) = 1.d0
+      ev(1) = 1.0
       ev(2) = eps*ev(1)
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Compute the matrix and right-hand-side vector that define
@@ -91,12 +95,12 @@
 !  be specified at runtime.
       call MatCreate(PETSC_COMM_WORLD,Amat,ierr)
       call MatSetSizes( Amat,PETSC_DECIDE, PETSC_DECIDE, M, M, ierr )
-      if ( npe == 1 ) then
+      if ( size == 1 ) then
          call MatSetType( Amat, MATAIJ, ierr )
       else
          call MatSetType( Amat, MATMPIAIJ, ierr )
       endif
-      call MatMPIAIJSetPreallocation(Amat,9,PETSC_NULL_INTEGER,6,
+      call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,                   &
      &     PETSC_NULL_INTEGER, ierr)
       call MatSetFromOptions( Amat, ierr )
       call MatSetUp( Amat, ierr )
@@ -110,32 +114,33 @@
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C (as set here in the array "col").
-      thk = 1.d0              ! thickness
+      thk = 1.0              ! thickness
       nel = 4                   ! nodes per element (quad)
       ndf = 1
-      call int2d(2,lint,sg)
+      call int2d(f2,sg)
+      lint = 4
       ix = 0
       do geq=Istart,Iend-1,1
          qj = geq/(ne+1); qi = mod(geq,(ne+1))
-         x = h*qi - 1.d0; y = h*qj - 1.d0 ! lower left corner (-1,-1)
+         x = h*qi - 1.0; y = h*qj - 1.0 ! lower left corner (-1,-1)
          if ( qi < ne .and. qj < ne ) then
             coord(1,1) = x;   coord(2,1) = y
             coord(1,2) = x+h; coord(2,2) = y
             coord(1,3) = x+h; coord(2,3) = y+h
             coord(1,4) = x;   coord(2,4) = y+h
 ! form stiff
-            ss = 0.d0
+            ss = 0.0
             do ll = 1,lint
-               call shp2dquad(sg(1,ll),sg(2,ll),coord,shp,xsj,2)
+               call shp2dquad(sg(1,ll),sg(2,ll),coord,shp,xsj,f2)
                xsj = xsj*sg(3,ll)*thk
-               call thfx2d(ev,coord,shp,dd,2,2,4,ex54_psi)
+               call thfx2d(ev,coord,shp,dd,f2,f2,f4,ex54_psi)
                j1 = 1
                do kj = 1,nel
                   a1 = (dd(1,1)*shp(1,kj) + dd(1,2)*shp(2,kj))*xsj
                   a2 = (dd(2,1)*shp(1,kj) + dd(2,2)*shp(2,kj))*xsj
-c     Compute residual
-c                  p(j1) = p(j1) - a1*gradt(1) - a2*gradt(2)
-c     Compute tangent
+!     Compute residual
+!                  p(j1) = p(j1) - a1*gradt(1) - a2*gradt(2)
+!     Compute tangent
                   i1 = 1
                   do ki = 1,nel
                      ss(i1,j1) = ss(i1,j1) + a1*shp(1,ki) + a2*shp(2,ki)
@@ -148,26 +153,26 @@ c     Compute tangent
             idx(1) = geq; idx(2) = geq+1; idx(3) = geq+(ne+1)+1
             idx(4) = geq+(ne+1)
             if ( qj > 0 ) then
-               call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
+               call MatSetValues(Amat,f4,idx,f4,idx,ss,ADD_VALUES,ierr)
             else                !     a BC
                do ki=1,4,1
                   do kj=1,4,1
                      if (ki<3 .or. kj<3 ) then
                         if ( ki==kj ) then
-                           ss(ki,kj) = .1d0*ss(ki,kj)
+                           ss(ki,kj) = .1*ss(ki,kj)
                         else
-                           ss(ki,kj) = 0.d0
+                           ss(ki,kj) = 0.0
                         endif
                      endif
                   enddo
                enddo
-               call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
+               call MatSetValues(Amat,f4,idx,f4,idx,ss,ADD_VALUES,ierr)
             endif               ! BC
          endif                  ! add element
          if ( qj > 0 ) then      ! set rhs
 
-            val = h*h*exp(-1.d2*((x+h/2)-blb(1))**2)*
-     &           exp(-1.d2*((y+h/2)-blb(2))**2)
+            val = h*h*exp(-100.*((x+h/2)-blb(1))**2)*                            &
+     &           exp(-100*((y+h/2)-blb(2))**2)
             call VecSetValues(bvec,1,geq,val,INSERT_VALUES,ierr)
          endif
       enddo
@@ -209,52 +214,52 @@ c     Compute tangent
 !                      output
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       if ( out_matlab ) then
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',                &
      &        FILE_MODE_WRITE,viewer,ierr)
          call MatView(Amat,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Bvec',
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Bvec',                &
      &        FILE_MODE_WRITE,viewer,ierr)
          call VecView(bvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Xvec',
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Xvec',                &
      &        FILE_MODE_WRITE,viewer,ierr)
          call VecView(xvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
          call MatMult(Amat,xvec,uvec,ierr)
-         val = -1.d0
+         val = -1.0
          call VecAXPY(uvec,val,bvec,ierr)
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Rvec',
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Rvec',                &
      &        FILE_MODE_WRITE,viewer,ierr)
          call VecView(uvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         if ( mype == 0 ) then
+         if ( rank == 0 ) then
             open(1,file='ex54f.m', FORM='formatted')
-            write (1,*) 'A = PetscBinaryRead('Amat');'
+            write (1,*) 'A = PetscBinaryRead(''Amat'');'
             write (1,*) '[m n] = size(A);'
             write (1,*) 'mm = sqrt(m);'
-            write (1,*) 'b = PetscBinaryRead('Bvec');'
-            write (1,*) 'x = PetscBinaryRead('Xvec');'
-            write (1,*) 'r = PetscBinaryRead('Rvec');'
+            write (1,*) 'b = PetscBinaryRead(''Bvec'');'
+            write (1,*) 'x = PetscBinaryRead(''Xvec'');'
+            write (1,*) 'r = PetscBinaryRead(''Rvec'');'
             write (1,*) 'bb = reshape(b,mm,mm);'
             write (1,*) 'xx = reshape(x,mm,mm);'
             write (1,*) 'rr = reshape(r,mm,mm);'
-c            write (1,*) 'imagesc(bb')'
-c            write (1,*) 'title('RHS'),'
+!            write (1,*) 'imagesc(bb')'
+!            write (1,*) 'title('RHS'),'
             write (1,*) 'figure,'
-            write (1,*) 'imagesc(xx')'
+            write (1,*) 'imagesc(xx'')'
             write (1,2002) eps,theta*57.2957795
             write (1,*) 'figure,'
-            write (1,*) 'imagesc(rr')'
-            write (1,*) 'title('Residual'),'
+            write (1,*) 'imagesc(rr'')'
+            write (1,*) 'title(''Residual''),'
             close(1)
          endif
       endif
- 2002 format('title('Solution: esp=',d9.3,', theta=',g8.3,''),')
+ 2002 format('title(''Solution: esp='',d9.3,'', theta='',g8.3,''),')
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
@@ -273,28 +278,22 @@ c            write (1,*) 'title('RHS'),'
 
       subroutine thfx2d(ev,xl,shp,dd,ndm,ndf,nel,dir)
 
-c     Compute thermal gradient and flux
+!     Compute thermal gradient and flux
 
       implicit  none
 
-      integer   ndm,ndf,nel,i
+      PetscInt   ndm,ndf,nel,i
       PetscReal ev(2),xl(ndm,nel),shp(3,*),dir
       PetscReal xx,yy,psi,cs,sn,c2,s2,dd(2,2)
 
-c      temp     = 0.0d0
-c      gradt(1) = 0.0d0
-c      gradt(2) = 0.0d0
-      xx       = 0.0d0
-      yy       = 0.0d0
+      xx       = 0.0
+      yy       = 0.0
       do i = 1,nel
-c        gradt(1) = gradt(1) + shp(1,i)*ul(1,i)
-c        gradt(2) = gradt(2) + shp(2,i)*ul(1,i)
-c        temp     = temp     + shp(3,i)*ul(1,i)
         xx       = xx       + shp(3,i)*xl(1,i)
         yy       = yy       + shp(3,i)*xl(2,i)
       end do
       psi = dir(xx,yy)
-c     Compute thermal flux
+!     Compute thermal flux
       cs  = cos(psi)
       sn  = sin(psi)
       c2  = cs*cs
@@ -306,8 +305,8 @@ c     Compute thermal flux
       dd(1,2) = cs*(ev(1) - ev(2))
       dd(2,1) = dd(1,2)
 
-c      flux(1) = -dd(1,1)*gradt(1) - dd(1,2)*gradt(2)
-c      flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
+!      flux(1) = -dd(1,1)*gradt(1) - dd(1,2)*gradt(2)
+!      flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
 
       end
 
@@ -315,40 +314,42 @@ c      flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
 !     shp2dquad - shape functions - compute derivatives w/r natural coords.
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        subroutine shp2dquad(s,t,xl,shp,xsj,ndm)
-c-----[--.----+----.----+----.-----------------------------------------]
-c      Purpose: Shape function routine for 4-node isoparametric quads
-c
-c      Inputs:
-c         s,t       - Natural coordinates of point
-c         xl(ndm,*) - Nodal coordinates for element
-c         ndm       - Spatial dimension of mesh
+!-----[--.----+----.----+----.-----------------------------------------]
+!      Purpose: Shape function routine for 4-node isoparametric quads
+!
+!      Inputs:
+!         s,t       - Natural coordinates of point
+!         xl(ndm,*) - Nodal coordinates for element
+!         ndm       - Spatial dimension of mesh
 
-c      Outputs:
-c         shp(3,*)  - Shape functions and derivatives at point
-c                     shp(1,i) = dN_i/dx  or dN_i/dxi_1
-c                     shp(2,i) = dN_i/dy  or dN_i/dxi_2
-c                     shp(3,i) = N_i
-c         xsj       - Jacobian determinant at point
-c-----[--.----+----.----+----.-----------------------------------------]
+!      Outputs:
+!         shp(3,*)  - Shape functions and derivatives at point
+!                     shp(1,i) = dN_i/dx  or dN_i/dxi_1
+!                     shp(2,i) = dN_i/dy  or dN_i/dxi_2
+!                     shp(3,i) = N_i
+!         xsj       - Jacobian determinant at point
+!-----[--.----+----.----+----.-----------------------------------------]
       implicit  none
-      integer   ndm
-      real*8    xo,xs,xt, yo,ys,yt, xsm,xsp,xtm,xtp, ysm,ysp,ytm,ytp
-      real*8    s,t, xsj,xsj1, sh,th,sp,tp,sm,tm, xl(ndm,4),shp(3,4)
+      PetscInt  ndm
+      PetscReal xo,xs,xt, yo,ys,yt, xsm,xsp,xtm
+      PetscReal xtp, ysm,ysp,ytm,ytp
+      PetscReal s,t, xsj,xsj1, sh,th,sp,tp,sm
+      PetscReal tm, xl(ndm,4),shp(3,4)
 
-c     Set up interpolations
+!     Set up interpolations
 
-      sh = 0.5d0*s
-      th = 0.5d0*t
-      sp = 0.5d0 + sh
-      tp = 0.5d0 + th
-      sm = 0.5d0 - sh
-      tm = 0.5d0 - th
+      sh = 0.5*s
+      th = 0.5*t
+      sp = 0.5 + sh
+      tp = 0.5 + th
+      sm = 0.5 - sh
+      tm = 0.5 - th
       shp(3,1) =   sm*tm
       shp(3,2) =   sp*tm
       shp(3,3) =   sp*tp
       shp(3,4) =   sm*tp
 
-c     Set up natural coordinate functions (times 4)
+!     Set up natural coordinate functions (times 4)
 
       xo =  xl(1,1)-xl(1,2)+xl(1,3)-xl(1,4)
       xs = -xl(1,1)+xl(1,2)+xl(1,3)-xl(1,4) + xo*t
@@ -357,27 +358,27 @@ c     Set up natural coordinate functions (times 4)
       ys = -xl(2,1)+xl(2,2)+xl(2,3)-xl(2,4) + yo*t
       yt = -xl(2,1)-xl(2,2)+xl(2,3)+xl(2,4) + yo*s
 
-c     Compute jacobian (times 16)
+!     Compute jacobian (times 16)
 
       xsj1 = xs*yt - xt*ys
 
-c     Divide jacobian by 16 (multiply by .0625)
+!     Divide jacobian by 16 (multiply by .0625)
 
-      xsj = 0.0625d0*xsj1
-      if (xsj1.eq.0.0d0) then
-         xsj1 = 1.0d0
+      xsj = 0.0625*xsj1
+      if (xsj1.eq.0.0) then
+         xsj1 = 1.0
       else
-         xsj1 = 1.0d0/xsj1
+         xsj1 = 1.0/xsj1
       endif
 
-c     Divide functions by jacobian
+!     Divide functions by jacobian
 
       xs  = (xs+xs)*xsj1
       xt  = (xt+xt)*xsj1
       ys  = (ys+ys)*xsj1
       yt  = (yt+yt)*xsj1
 
-c     Multiply by interpolations
+!     Multiply by interpolations
 
       ytm =  yt*tm
       ysm =  ys*sm
@@ -388,7 +389,7 @@ c     Multiply by interpolations
       xtp =  xt*tp
       xsp =  xs*sp
 
-c     Compute shape functions
+!     Compute shape functions
 
       shp(1,1) = - ytm+ysm
       shp(1,2) =   ytm+ysp
@@ -404,33 +405,33 @@ c     Compute shape functions
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     int2d
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      subroutine int2d(l,lint,sg)
-c-----[--.----+----.----+----.-----------------------------------------]
-c     Purpose: Form Gauss points and weights for two dimensions
+      subroutine int2d(l,sg)
+!-----[--.----+----.----+----.-----------------------------------------]
+!     Purpose: Form Gauss points and weights for two dimensions
 
-c     Inputs:
-c     l       - Number of points/direction
+!     Inputs:
+!     l       - Number of points/direction
 
-c     Outputs:
-c     lint    - Total number of points
-c     sg(3,*) - Array of points and weights
-c-----[--.----+----.----+----.-----------------------------------------]
+!     Outputs:
+!     lint    - Total number of points
+!     sg(3,*) - Array of points and weights
+!-----[--.----+----.----+----.-----------------------------------------]
       implicit  none
-      integer   l,i,lint,lr(9),lz(9)
-      real*8    g,third,sg(3,*)
+      PetscInt   l,i,lint,lr(9),lz(9)
+      PetscReal    g,third,sg(3,*)
       data      lr/-1,1,1,-1,0,1,0,-1,0/,lz/-1,-1,1,1,-1,0,1,0,0/
-      data      third / 0.3333333333333333d0 /
+      data      third / 0.3333333333333333 /
 
-c     Set number of total points
+!     Set number of total points
 
       lint = l*l
 
-c     2x2 integration
+!     2x2 integration
       g = sqrt(third)
       do i = 1,4
          sg(1,i) = g*lr(i)
          sg(2,i) = g*lz(i)
-         sg(3,i) = 1.d0
+         sg(3,i) = 1.0
       end do
 
       end
@@ -445,7 +446,7 @@ c     2x2 integration
       ex54_psi = theta
       if ( theta < 0. ) then     ! circular
          if (y==0) then
-            ex54_psi = 2.d0*atan(1.d0)
+            ex54_psi = 2.0*atan(1.0)
          else
             ex54_psi = atan(-x/y)
          endif

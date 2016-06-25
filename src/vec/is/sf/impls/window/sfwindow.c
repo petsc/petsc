@@ -82,7 +82,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
 
   /* Create new composite types for each send rank */
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr = PetscNew(&link);CHKERRQ(ierr);
   ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(nranks,&link->mine,nranks,&link->remote);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
@@ -234,7 +234,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
   ierr = MPI_Type_get_true_extent(unit,&lb_true,&bytes_true);CHKERRQ(ierr);
   if (lb != 0 || lb_true != 0) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
   if (bytes != bytes_true) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for unit type with modified extent, write petsc-maint@mcs.anl.gov if you want this feature");
-  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr = PetscNew(&link);CHKERRQ(ierr);
 
   link->bytes = bytes;
   link->addr  = array;

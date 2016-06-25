@@ -62,6 +62,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTCreate(PetscInt n)
   PetscFPT       _PetscFPTData;
 
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
+  /* Cannot use PetscNew() here because it is not yet defined in the include file chain */
   ierr          = PetscMalloc(sizeof(struct _n_PetscFPT),&_PetscFPTData);CHKERRQ(ierr);
   _PetscFPTData->tablesize = (3*n)/2 + 17;
   if (_PetscFPTData->tablesize < n) _PetscFPTData->tablesize = PETSC_MAX_INT/4; /* overflow */

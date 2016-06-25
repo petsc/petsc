@@ -4,7 +4,6 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 
-#include <petsc/private/matimpl.h>
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 
 /*
@@ -216,16 +215,16 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   PetscErrorCode ierr;
   Mat            A = pc->pmat;
   MatFactorError err;
+  PetscInt       nlocal;
   
   PetscFunctionBegin;
-  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Supported only for square matrices and square storage");
-
   ierr = MatInvertBlockDiagonal(A,&jac->diag);CHKERRQ(ierr);
   ierr = MatFactorGetError(A,&err);CHKERRQ(ierr);
   if (err) pc->failedreason = (PCFailedReason)err;
  
   ierr = MatGetBlockSize(A,&jac->bs);CHKERRQ(ierr);
-  jac->mbs = A->rmap->n/jac->bs;
+  ierr = MatGetLocalSize(A,&nlocal,NULL);CHKERRQ(ierr);
+  jac->mbs = nlocal/jac->bs;
   switch (jac->bs) {
   case 1:
     pc->ops->apply = PCApply_PBJacobi_1;

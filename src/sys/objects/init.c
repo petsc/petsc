@@ -7,6 +7,7 @@
 */
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petsc/private/petscimpl.h>
 #include <petscvalgrind.h>
 #include <petscviewer.h>
 

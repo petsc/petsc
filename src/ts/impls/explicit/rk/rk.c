@@ -316,8 +316,7 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   PetscInt        i,j;
 
   PetscFunctionBegin;
-  ierr     = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
-  ierr     = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
+  ierr     = PetscNew(&link);CHKERRQ(ierr);
   t        = &link->tab;
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
