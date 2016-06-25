@@ -251,26 +251,18 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
    Developer Notes:
    Supported combinations of norm and preconditioner side are set using KSPSetSupportedNorm().
 
-
    Level: advanced
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration(), KSPSetPCSide(), KSPGetPCSide()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration(), KSPSetPCSide(), KSPGetPCSide(), KSPNormType
 @*/
 PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ksp,normtype,2);
   ksp->normtype = ksp->normtype_set = normtype;
-  if (normtype == KSP_NORM_NONE) {
-    ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,0,0);CHKERRQ(ierr);
-    ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
- KSP convergence test is implicitly set to KSPConvergedSkip\n");CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

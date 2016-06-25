@@ -734,7 +734,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   *reason = KSP_CONVERGED_ITERATING;
 
   ierr = KSPGetNormType(ksp,&normtype);CHKERRQ(ierr);
-  if (normtype == KSP_NORM_NONE) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Use KSPConvergedSkip() with KSPNormType of KSP_NORM_NONE");
+  if (normtype == KSP_NORM_NONE) PetscFunctionReturn(0);
 
   if (!cctx) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPConvergedDefaultCreate()");
   if (!n) {
