@@ -154,6 +154,11 @@ struct _p_SNES {
   PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
   PetscBool   usersetbounds;     /* bounds have been set via SNESVISetVariableBounds(), rather than via computevariablebounds() callback. */
 
+  PetscBool   alwayscomputesfinalresidual;  /* Does SNESSolve_XXX always compute the value of the residual at the final
+                                             * solution and put it in vec_func?  Used inside SNESSolve_FAS to determine
+                                             * if the final residual must be computed before restricting or prolonging
+                                             * it. */
+
 };
 
 typedef struct _p_DMSNES *DMSNES;

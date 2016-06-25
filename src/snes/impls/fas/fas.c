@@ -409,6 +409,7 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
   SNESConvergedReason reason;
   Vec                 FPC;
   SNES                smoothd;
+  PetscBool           flg;
   SNES_FAS            *fas = (SNES_FAS*) snes->data;
 
   PetscFunctionBegin;
@@ -423,7 +424,12 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
     snes->reason = SNES_DIVERGED_INNER;
     PetscFunctionReturn(0);
   }
+
   ierr = SNESGetFunction(smoothd, &FPC, NULL, NULL);CHKERRQ(ierr);
+  ierr = SNESGetAlwaysComputesFinalResidual(smoothd, &flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = SNESComputeFunction(smoothd, X, FPC);CHKERRQ(ierr);
+  }
   ierr = VecCopy(FPC, F);CHKERRQ(ierr);
   if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -441,6 +447,7 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
   SNESConvergedReason reason;
   Vec                 FPC;
   SNES                smoothu;
+  PetscBool           flg;
   SNES_FAS            *fas = (SNES_FAS*) snes->data;
 
   PetscFunctionBegin;
@@ -455,6 +462,10 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
     PetscFunctionReturn(0);
   }
   ierr = SNESGetFunction(smoothu, &FPC, NULL, NULL);CHKERRQ(ierr);
+  ierr = SNESGetAlwaysComputesFinalResidual(smoothu, &flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = SNESComputeFunction(smoothu, X, FPC);CHKERRQ(ierr);
+  }
   ierr = VecCopy(FPC, F);CHKERRQ(ierr);
   if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -980,6 +991,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
     snes->max_funcs = 30000;
     snes->max_its   = 10000;
   }
+
+  snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
   ierr = PetscNewLog(snes,&fas);CHKERRQ(ierr);
 

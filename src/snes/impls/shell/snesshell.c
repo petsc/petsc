@@ -205,6 +205,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_FALSE;
 
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   ierr       = PetscNewLog(snes,&shell);CHKERRQ(ierr);
   snes->data = (void*) shell;
   ierr       = PetscObjectComposeFunction((PetscObject)snes,"SNESShellSetSolve_C",SNESShellSetSolve_Shell);CHKERRQ(ierr);

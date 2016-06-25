@@ -72,6 +72,54 @@ PetscErrorCode  SNESGetErrorIfNotConverged(SNES snes,PetscBool  *flag)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESSetAlwaysComputesFinalResidual"
+/*@
+    SNESSetAlwaysComputesFinalResidual - does the SNES always compute the residual at the final solution?
+
+   Logically Collective on SNES
+
+    Input Parameters:
++   snes - the shell SNES
+-   flg - is the residual computed?
+
+   Level: advanced
+
+.seealso: SNESGetAlwaysComputesFinalResidual()
+@*/
+PetscErrorCode  SNESSetAlwaysComputesFinalResidual(SNES snes, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->alwayscomputesfinalresidual = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetAlwaysComputesFinalResidual"
+/*@
+    SNESGetAlwaysComputesFinalResidual - does the SNES always compute the residual at the final solution?
+
+   Logically Collective on SNES
+
+    Input Parameter:
+.   snes - the shell SNES
+
+    Output Parameter:
+.   flg - is the residual computed?
+
+   Level: advanced
+
+.seealso: SNESSetAlwaysComputesFinalResidual()
+@*/
+PetscErrorCode  SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  *flg = snes->alwayscomputesfinalresidual;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFunctionDomainError"
 /*@
    SNESSetFunctionDomainError - tells SNES that the input vector to your SNESFunction is not
@@ -1541,6 +1589,9 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 
   snes->vizerotolerance = 1.e-8;
 
+  /* Set this to true if the implementation of SNESSolve_XXX does compute the residual at the final solution. */
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   ierr = PetscNewLog(snes,&kctx);CHKERRQ(ierr);
 
@@ -2803,6 +2854,8 @@ PetscErrorCode  SNESReset(SNES snes)
   ierr = MatDestroy(&snes->jacobian_pre);CHKERRQ(ierr);
   ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
   ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);
+
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
   snes->nwork       = snes->nvwork = 0;
   snes->setupcalled = PETSC_FALSE;

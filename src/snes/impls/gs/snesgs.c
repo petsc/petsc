@@ -375,6 +375,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_FALSE;
 
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   if (!snes->tolerancesset) {
     snes->max_its   = 10000;
     snes->max_funcs = 10000;

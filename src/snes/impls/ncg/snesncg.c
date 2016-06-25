@@ -497,6 +497,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
   snes->usespc  = PETSC_TRUE;
   snes->pcside  = PC_LEFT;
 
+  snes->alwayscomputesfinalresidual = PETSC_TRUE;
+
   if (!snes->tolerancesset) {
     snes->max_funcs = 30000;
     snes->max_its   = 10000;
