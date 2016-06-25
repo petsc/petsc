@@ -630,6 +630,16 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_ibcgs:
+	-@${MPIEXEC} -n 2 ./ex19 -ksp_type ibcgs -ksp_monitor_short -da_refine 2  -snes_view > ex19_ibcgs.tmp 2>&1; \
+	   if (${DIFF} output/ex19_ibcgs.out ex19_ibcgs.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_ibcgs, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_ibcgs.tmp
+runex19_bcgsl:
+	-@${MPIEXEC} -n 2 ./ex19 -ksp_type bcgsl -ksp_monitor_short -da_refine 2 -ksp_bcgsl_ell 3 -snes_view > ex19_bcgsl.tmp 2>&1; \
+	   if (${DIFF} output/ex19_bcgsl.out ex19_bcgsl.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_bcgsl, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_bcgsl.tmp
 runex19_cgs:
 	-@${MPIEXEC} -n 1 ./ex19  -da_refine 1 -ksp_monitor_short -ksp_type cgs > ex19_cgs.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cgs.out ex19_cgs.tmp) then true; \
@@ -1234,7 +1244,7 @@ TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  ex70.PETSc runex70 runex70_2 runex70_3 runex70_4 ex70.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc runex5_2 runex5_3 runex5_4 runex5_5_ls runex5_5_fas runex5_5_fas_monitor runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda runex5_6  ex5.rm \
                                  ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_nleqerr runex15_lag_pc ex15.rm ex16.PETSc runex16 runex16_2 runex16_3 ex16.rm ex18.PETSc runex18 ex18.rm ex21.PETSc runex21 ex21.rm \
-                                 ex19.PETSc runex19_cgs runex19_kaczmarz runex19 runex19_tfqmr runex19_tcqmr runex19_2 runex19_bcols1 runex19_2_bcols1 runex19_fdcoloring_wp runex19_fdcoloring_ds \
+                                 ex19.PETSc runex19_bcgsl runex19_cgs runex19_kaczmarz runex19 runex19_tfqmr runex19_tcqmr runex19_2 runex19_bcols1 runex19_2_bcols1 runex19_fdcoloring_wp runex19_fdcoloring_ds \
                                  runex19_ngmres_fas_gssecant runex19_ngs runex19_ngs_fd \
                                  runex19_fdcoloring_wp_bcols1 runex19_fdcoloring_ds_bcols1 \
                                  runex19_fdcoloring_wp_baij runex19_fdcoloring_ds_baij runex19_5 \
@@ -1253,7 +1263,7 @@ TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw rune
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 runex9_5 runex9_6 ex9.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 runex9_5 runex9_6 ex9.rm ex19.PETSc runex19_ibcgs ex19.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX_NOTSINGLE = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm  ex14.PETSc ex14.rm
