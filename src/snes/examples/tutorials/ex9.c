@@ -42,7 +42,6 @@ typedef struct {
 } ObsCtx;
 
 extern PetscErrorCode FormPsiAndExactSoln(DM);
-extern PetscErrorCode FormBounds(SNES,Vec,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,ObsCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,ObsCtx*);
 
@@ -54,7 +53,8 @@ int main(int argc,char **argv)
   ObsCtx              user;
   SNES                snes;
   DM                  da;
-  Vec                 u;     /* solution */
+  Vec                 u,     /* solution */
+                      Xu;    /* upper bound */
   DMDALocalInfo       info;
   PetscReal           error1,errorinf;
 
@@ -84,7 +84,12 @@ int main(int argc,char **argv)
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   ierr = SNESSetApplicationContext(snes,&user);CHKERRQ(ierr);
   ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);
-  ierr = SNESVISetComputeVariableBounds(snes,&FormBounds);CHKERRQ(ierr);
+
+  /* set upper and lower bound constraints for VI */
+  ierr = VecDuplicate(u,&Xu);CHKERRQ(ierr);
+  ierr = VecSet(Xu,PETSC_INFINITY);CHKERRQ(ierr);
+  ierr = SNESVISetVariableBounds(snes,user.psi,Xu);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xu);CHKERRQ(ierr);
 
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
   ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
@@ -153,22 +158,6 @@ PetscErrorCode FormPsiAndExactSoln(DM da) {
   ierr = DMDAVecRestoreArray(da, user->psi, &psi);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da, user->uexact, &uexact);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "FormBounds"
-/*  FormBounds() for call-back: tell SNESVI (variational inequality)
-  that we want u >= psi */
-PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
-  PetscErrorCode ierr;
-  ObsCtx         *user;
-
-  PetscFunctionBeginUser;
-  ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
-  ierr = VecCopy(user->psi,Xl);CHKERRQ(ierr);  /* u >= psi */
-  ierr = VecSet(Xu,PETSC_INFINITY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
