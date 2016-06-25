@@ -248,8 +248,8 @@
             write (1,*) 'bb = reshape(b,mm,mm);'
             write (1,*) 'xx = reshape(x,mm,mm);'
             write (1,*) 'rr = reshape(r,mm,mm);'
-c            write (1,*) 'imagesc(bb')'
-c            write (1,*) 'title('RHS'),'
+!            write (1,*) 'imagesc(bb')'
+!            write (1,*) 'title('RHS'),'
             write (1,*) 'figure,'
             write (1,*) 'imagesc(xx'')'
             write (1,2002) eps,theta*57.2957795
