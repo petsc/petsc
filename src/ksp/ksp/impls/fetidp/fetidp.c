@@ -98,8 +98,8 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp,PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCDestroy(&fetidp->innerbddc);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
+  ierr = PCDestroy(&fetidp->innerbddc);CHKERRQ(ierr);
   fetidp->innerbddc = pc;
   fetidp->userbddc = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -344,7 +344,7 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 
    This class implements the FETI-DP method [1].
    The preconditioning matrix for the KSP must be of type MATIS.
-   The FETI-DP linear system, which is automatically generated constructing an internal PCBDDC object, it is solved using an inner KSP object.
+   The FETI-DP linear system (automatically generated constructing an internal PCBDDC object) is solved using an inner KSP object.
 
    Options Database Keys:
 .   -ksp_fetidp_fullyredundant <false> : use a fully redundant set of Lagrange multipliers
