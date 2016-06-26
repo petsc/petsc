@@ -156,6 +156,7 @@ struct _FETIDPMat_ctx {
   Mat        B_Ddelta;
   VecScatter l2g_lambda;
   PC         pc;
+  PetscBool  fully_redundant;
 };
 typedef struct _FETIDPMat_ctx *FETIDPMat_ctx;
 
