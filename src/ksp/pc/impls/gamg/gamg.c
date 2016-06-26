@@ -537,7 +537,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         Parr[level1] = Prol11;
       } else Parr[level1] = NULL;
 
-      if (pc_gamg->use_aggs_in_gasm) {
+      if (pc_gamg->use_aggs_in_asm) {
         PetscInt bs;
         ierr = MatGetBlockSizes(Prol11, &bs, NULL);CHKERRQ(ierr);
         ierr = PetscCDGetASMBlocks(agg_lists, bs, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
@@ -605,25 +605,26 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* set defaults */
       ierr = KSPSetType(smoother, KSPCHEBYSHEV);CHKERRQ(ierr);
 
-      /* set blocks for GASM smoother that uses the 'aggregates' */
-      if (pc_gamg->use_aggs_in_gasm) {
+      /* set blocks for ASM smoother that uses the 'aggregates' */
+      if (pc_gamg->use_aggs_in_asm) {
         PetscInt sz;
         IS       *is;
 
         sz   = nASMBlocksArr[level];
         is   = ASMLocalIDsArr[level];
-        ierr = PCSetType(subpc, PCGASM);CHKERRQ(ierr);
-        ierr = PCGASMSetOverlap(subpc, 0);CHKERRQ(ierr);
+        ierr = PCSetType(subpc, PCASM);CHKERRQ(ierr);
+        ierr = PCASMSetOverlap(subpc, 1);CHKERRQ(ierr);
+        ierr = PCASMSetType(subpc,PC_ASM_BASIC);CHKERRQ(ierr);
         if (!sz) {
           IS       is;
           PetscInt my0,kk;
           ierr = MatGetOwnershipRange(Aarr[level], &my0, &kk);CHKERRQ(ierr);
           ierr = ISCreateGeneral(PETSC_COMM_SELF, 1, &my0, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
-          ierr = PCGASMSetSubdomains(subpc, 1, &is, NULL);CHKERRQ(ierr);
+          ierr = PCASMSetLocalSubdomains(subpc, 1, NULL, &is);CHKERRQ(ierr);
           ierr = ISDestroy(&is);CHKERRQ(ierr);
         } else {
           PetscInt kk;
-          ierr = PCGASMSetSubdomains(subpc, sz, is, NULL);CHKERRQ(ierr);
+          ierr = PCASMSetLocalSubdomains(subpc, sz, NULL, is);CHKERRQ(ierr);
           for (kk=0; kk<sz; kk++) {
             ierr = ISDestroy(&is[kk]);CHKERRQ(ierr);
           }
@@ -631,7 +632,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         }
         ASMLocalIDsArr[level] = NULL;
         nASMBlocksArr[level]  = 0;
-        ierr                  = PCGASMSetType(subpc, PC_GASM_BASIC);CHKERRQ(ierr);
       } else {
         ierr = PCSetType(subpc, PCSOR);CHKERRQ(ierr);
       }
@@ -895,7 +895,7 @@ static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
 
 
    Options Database Key:
-.  -pc_gamg_use_agg_gasm
+.  -pc_gamg_use_agg_asm
 
    Level: intermediate
 
@@ -921,7 +921,7 @@ static PetscErrorCode PCGAMGSetUseASMAggs_GAMG(PC pc, PetscBool n)
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  pc_gamg->use_aggs_in_gasm = n;
+  pc_gamg->use_aggs_in_asm = n;
   PetscFunctionReturn(0);
 }
 
@@ -1150,7 +1150,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
     }
     ierr = PetscOptionsBool("-pc_gamg_repartition","Repartion coarse grids","PCGAMGRepartitioning",pc_gamg->repart,&pc_gamg->repart,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseInterpolation",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_gamg_use_agg_gasm","Use aggregation agragates for GASM smoother","PCGAMGUseASMAggs",pc_gamg->use_aggs_in_gasm,&pc_gamg->use_aggs_in_gasm,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_use_agg_asm","Use aggregation agragates for ASM smoother","PCGAMGUseASMAggs",pc_gamg->use_aggs_in_asm,&pc_gamg->use_aggs_in_asm,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gamg_process_eq_limit","Limit (goal) on number of equations per process on coarse grids","PCGAMGSetProcEqLim",pc_gamg->min_eq_proc,&pc_gamg->min_eq_proc,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit","Limit on number of equations for the coarse grid","PCGAMGSetCoarseEqLim",pc_gamg->coarse_eq_limit,&pc_gamg->coarse_eq_limit,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_gamg_threshold","Relative threshold to use for dropping edges in aggregation graph","PCGAMGSetThreshold",pc_gamg->threshold,&pc_gamg->threshold,&flag);CHKERRQ(ierr);
@@ -1239,7 +1239,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNlevels_C",PCGAMGSetNlevels_GAMG);CHKERRQ(ierr);
   pc_gamg->repart           = PETSC_FALSE;
   pc_gamg->reuse_prol       = PETSC_FALSE;
-  pc_gamg->use_aggs_in_gasm = PETSC_FALSE;
+  pc_gamg->use_aggs_in_asm  = PETSC_FALSE;
   pc_gamg->min_eq_proc      = 50;
   pc_gamg->coarse_eq_limit  = 50;
   pc_gamg->threshold        = 0.;

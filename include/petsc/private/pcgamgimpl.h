@@ -23,7 +23,7 @@ typedef struct gamg_TAG {
   PetscInt  setup_count;
   PetscBool repart;
   PetscBool reuse_prol;
-  PetscBool use_aggs_in_gasm;
+  PetscBool use_aggs_in_asm;
   PetscInt  min_eq_proc;
   PetscInt  coarse_eq_limit;
   PetscReal threshold;      /* common quatity to many AMG methods so keep it up here */
