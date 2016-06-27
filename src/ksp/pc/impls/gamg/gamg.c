@@ -540,7 +540,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       if (pc_gamg->use_aggs_in_asm) {
         PetscInt bs;
         ierr = MatGetBlockSizes(Prol11, &bs, NULL);CHKERRQ(ierr);
-        ierr = PetscCDGetASMBlocks(agg_lists, bs, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
+        ierr = PetscCDGetASMBlocks(agg_lists, bs, Gmat, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
       }
 
       ierr = MatDestroy(&Gmat);CHKERRQ(ierr);
@@ -613,14 +613,12 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         sz   = nASMBlocksArr[level];
         is   = ASMLocalIDsArr[level];
         ierr = PCSetType(subpc, PCASM);CHKERRQ(ierr);
-        ierr = PCASMSetOverlap(subpc, 1);CHKERRQ(ierr);
+        ierr = PCASMSetOverlap(subpc, 0);CHKERRQ(ierr);
         ierr = PCASMSetType(subpc,PC_ASM_BASIC);CHKERRQ(ierr);
         if (!sz) {
           IS       is;
-          PetscInt my0,kk;
-          ierr = MatGetOwnershipRange(Aarr[level], &my0, &kk);CHKERRQ(ierr);
-          ierr = ISCreateGeneral(PETSC_COMM_SELF, 1, &my0, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
-          ierr = PCASMSetLocalSubdomains(subpc, 1, NULL, &is);CHKERRQ(ierr);
+          ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
+          ierr = PCASMSetLocalSubdomains(subpc, 1, &is, NULL);CHKERRQ(ierr);
           ierr = ISDestroy(&is);CHKERRQ(ierr);
         } else {
           PetscInt kk;
