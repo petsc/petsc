@@ -2490,6 +2490,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
 
       ierr  = DMPlexGetHeightStratum(plexC,0,&cStartC,&cEndC);CHKERRQ(ierr);
       ierr  = DMPlexGetHybridBounds(plexC,&cEndCInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+      cEndC = (cEndCInterior < 0) ? cEndC : cEndCInterior;
       ierr  = DMPforestGetCellCoveringSF(comm,p4estC,p4estF,cStartC,cEndC,pforestC->cLocalStart,&coveringSF);CHKERRQ(ierr);
       ierr  = PetscSFGetGraph(coveringSF,NULL,&nleaves,NULL,NULL);CHKERRQ(ierr);
       ierr  = PetscMalloc1(numClosureIndices*nleaves,&newClosurePointsC);CHKERRQ(ierr);
