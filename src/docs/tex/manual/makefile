@@ -24,6 +24,8 @@ manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part1tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part2.tex | \
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part2tmp.tex
+	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat acknowl.tex | \
+	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > acknowltmp.tex
 	${PDFLATEX} -halt-on-error manual1  ${GONULL}
 	-bibtex manual1 ${GONULL}
 	${PDFLATEX} -halt-on-error manual1  ${GONULL}
@@ -38,7 +40,7 @@ manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part
 # Now make the intro part ... note that this depends on latexing the manual
 	${CP} manual1.aux intro.aux
 	${PDFLATEX} -halt-on-error intro
-	${RM} part1tmp.tex part2tmp.tex
+	${RM} part1tmp.tex part2tmp.tex acknowltemp.tex
 #	${MAKE} rclean
 
 developers.pdf: chk_loc developers.tex
