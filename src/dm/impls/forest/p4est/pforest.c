@@ -4627,13 +4627,6 @@ static PetscErrorCode DMForestCreateCellSF_pforest(DM dm, PetscSF *cellSF)
     ierr = PetscFree2(mirror,mirrorPtrs);CHKERRQ(ierr);
     for (q = 0; q < nGhostPre; q++) mine[q] = q;
     for (; q < nLeaves; q++) mine[q] = (q - nGhostPre) + cLocalEnd;
-  } else {
-    PetscInt q;
-
-    for (q = 0; q < cEnd; q++) {
-      remote[q].rank  = rank;
-      remote[q].index = q;
-    }
   }
   ierr    = PetscSFCreate(PetscObjectComm((PetscObject)dm),&sf);CHKERRQ(ierr);
   ierr    = PetscSFSetGraph(sf,nRoots,nLeaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
