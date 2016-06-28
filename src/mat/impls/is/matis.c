@@ -71,7 +71,7 @@ static PetscErrorCode MatISComputeSF_Private(Mat B)
 
 .keywords: matrix
 
-.seealso: MatCreate(), MatCreateIS(), MatMPIAIJSetPreallocation(), MatISGetLocalMat()
+.seealso: MatCreate(), MatCreateIS(), MatMPIAIJSetPreallocation(), MatISGetLocalMat(), MATIS
 @*/
 PetscErrorCode  MatISSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -957,7 +957,7 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateIS"
 /*@
-    MatCreateIS - Creates a "process" unassmembled matrix, it is assembled on each
+    MatCreateIS - Creates a "process" unassembled matrix, assembled on each
        process but not across processes.
 
    Input Parameters:
@@ -972,10 +972,10 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
 
    Level: advanced
 
-   Notes: See MATIS for more details
-          m and n are NOT related to the size of the map, they are the size of the part of the vector owned
+   Notes: See MATIS for more details.
+          m and n are NOT related to the size of the map; they are the size of the part of the vector owned
           by that process. The sizes of rmap and cmap define the size of the local matrices.
-          If either rmap or cmap are NULL, than the matrix is assumed to be square
+          If either rmap or cmap are NULL, then the matrix is assumed to be square.
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
 @*/
@@ -1033,7 +1033,7 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 
   Level: advanced
 
-.seealso: Mat, MatISGetLocalMat(), MatSetLocalToGlobalMapping(), MatISSetPreallocation(), PCBDDC
+.seealso: Mat, MatISGetLocalMat(), MatSetLocalToGlobalMapping(), MatISSetPreallocation(), PCBDDC, MatCreateIS()
 
 M*/
 
