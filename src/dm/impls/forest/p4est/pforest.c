@@ -3234,8 +3234,8 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
         if (cStart <= point && point < cEnd) {
           ierr = DMPlexGetTransitiveClosure(plex,point,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
           for (l = 0; l < closureSize; l++) {
-            PetscInt qParent = closure[2 * l], q;
-            do {
+            PetscInt qParent = closure[2 * l], q, pp = p, pParent = p;
+            do { /* check parents of q */
               q = qParent;
               if (q == p) {
                 c = point;
@@ -3244,12 +3244,23 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
               ierr = DMPlexGetTreeParent(plex,q,&qParent,NULL);CHKERRQ(ierr);
             } while (qParent != q);
             if (c != -1) break;
+            ierr = DMPlexGetTreeParent(plex,pp,&pParent,NULL);CHKERRQ(ierr);
+            q = closure[2 * l];
+            while (pParent != pp) { /* check parents of p */
+              pp = pParent;
+              if (pp == q) {
+                c = point;
+                break;
+              }
+              ierr = DMPlexGetTreeParent(plex,pp,&pParent,NULL);CHKERRQ(ierr);
+            }
+            if (c != -1) break;
           }
           ierr = DMPlexRestoreTransitiveClosure(plex,point,PETSC_TRUE,NULL,&closure);CHKERRQ(ierr);
           if (l < closureSize) break;
         }
       }
-      if (s == starSize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %d in its closure",p);
+      if (c < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Failed to find cell with point %d in its closure",p);
       ierr = DMPlexRestoreTransitiveClosure(plex,p,PETSC_FALSE,NULL,&star);CHKERRQ(ierr);
 
       if (c < cLocalStart) {
