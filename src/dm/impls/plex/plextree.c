@@ -2247,7 +2247,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       }
     }
     ierr = PetscMalloc1(numPointsWithDofs,&pointsWithDofs);CHKERRQ(ierr);
-    for (l = 0, offset = 0; p < pEndF; p++) {
+    for (l = 0, offset = 0; l < nleaves; l++) {
       p = leaves ? leaves[l] : l;
       ierr = PetscSectionGetDof(globalFine,p,&dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(globalFine,p,&cdof);CHKERRQ(ierr);
