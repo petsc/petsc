@@ -14,6 +14,87 @@ static PetscErrorCode MatISComputeSF_Private(Mat);
 static PetscErrorCode MatISZeroRowsLocal_Private(Mat,PetscInt,const PetscInt[],PetscScalar);
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetLocalSubMatrix_IS"
+PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
+{
+  Mat                    lA,lsubmat;
+  ISLocalToGlobalMapping rl2g,cl2g;
+  IS                     is,isn;
+  const PetscInt         *rg,*rl;
+#if defined(PETSC_USE_DEBUG)
+  PetscInt               nrg;
+#endif
+  PetscInt               N,M,nrl,i,*idxs;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  /* extract local submatrix (it will complain if row and col exceed the local sizes) */
+  ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(lA,row,col,MAT_INITIAL_MATRIX,&lsubmat);CHKERRQ(ierr);
+  /* compute new l2g map for rows */
+  ierr = ISLocalToGlobalMappingGetIndices(A->rmap->mapping,&rg);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(row,&nrl);CHKERRQ(ierr);
+  ierr = ISGetIndices(row,&rl);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  ierr = ISLocalToGlobalMappingGetSize(A->rmap->mapping,&nrg);CHKERRQ(ierr);
+  for (i=0;i<nrl;i++) if (rl[i]>=nrg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row index %d -> %d greater than maximum possible %d\n",i,rl[i],nrg);
+#endif
+  ierr = PetscMalloc1(nrl,&idxs);CHKERRQ(ierr);
+  for (i=0;i<nrl;i++) idxs[i] = rg[rl[i]];
+  ierr = ISRestoreIndices(row,&rl);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(A->rmap->mapping,&rg);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),nrl,idxs,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  ierr = PetscFree(idxs);CHKERRQ(ierr);
+  ierr = ISRenumber(is,NULL,&M,&isn);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(isn,&rl2g);CHKERRQ(ierr);
+  ierr = ISDestroy(&isn);CHKERRQ(ierr);
+  /* compute new l2g map for columns */
+  if (col != row || A->rmap->mapping != A->cmap->mapping) {
+    const PetscInt *cg,*cl;
+#if defined(PETSC_USE_DEBUG)
+    PetscInt       ncg;
+#endif
+    PetscInt       ncl;
+
+    ierr = ISLocalToGlobalMappingGetIndices(A->cmap->mapping,&cg);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(col,&ncl);CHKERRQ(ierr);
+    ierr = ISGetIndices(col,&cl);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+    ierr = ISLocalToGlobalMappingGetSize(A->cmap->mapping,&ncg);CHKERRQ(ierr);
+    for (i=0;i<ncl;i++) if (cl[i]>=ncg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local column index %d -> %d greater than maximum possible %d\n",i,cl[i],ncg);
+#endif
+    ierr = PetscMalloc1(ncl,&idxs);CHKERRQ(ierr);
+    for (i=0;i<ncl;i++) idxs[i] = cg[cl[i]];
+    ierr = ISRestoreIndices(col,&cl);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(A->cmap->mapping,&cg);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),ncl,idxs,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+    ierr = PetscFree(idxs);CHKERRQ(ierr);
+    ierr = ISRenumber(is,NULL,&N,&isn);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(isn,&cl2g);CHKERRQ(ierr);
+    ierr = ISDestroy(&isn);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject)cl2g);CHKERRQ(ierr);
+    cl2g = rl2g;
+    N = M;
+  }
+  /* create the MATIS submatrix */
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),submat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*submat,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(*submat,MATIS);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*submat,rl2g,cl2g);CHKERRQ(ierr);
+  ierr = MatISSetLocalMat(*submat,lsubmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&lsubmat);CHKERRQ(ierr);
+  ierr = MatSetUp(*submat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCopy_IS"
 PetscErrorCode MatCopy_IS(Mat A,Mat B,MatStructure str)
 {
@@ -1174,6 +1255,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->duplicate               = MatDuplicate_IS;
   A->ops->missingdiagonal         = MatMissingDiagonal_IS;
   A->ops->copy                    = MatCopy_IS;
+  A->ops->getlocalsubmatrix       = MatGetLocalSubMatrix_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);

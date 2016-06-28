@@ -1,6 +1,6 @@
 
 static char help[] = "Tests the use of MatZeroRows() and MatZeroRowsLocal() for parallel MATIS matrices.\n\
-This example also tests the use of MatView(), MatDuplicate(), MatCopy() and and MatISGetMPIXAIJ() for MATIS";
+This example also tests the use of MatView(), MatDuplicate(), MatCopy(), MatGetLocalSubMatrix() and MatISGetMPIXAIJ() for MATIS";
 
 #include <petscmat.h>
 
@@ -12,7 +12,7 @@ int main(int argc,char **args)
 {
   Mat                    A,B,Bcheck;
   ISLocalToGlobalMapping cmap,rmap;
-  IS                     is;
+  IS                     is,rows,cols;
   PetscScalar            diag = 2.;
   PetscReal              error;
   PetscInt               n,m,i;
@@ -27,7 +27,7 @@ int main(int argc,char **args)
   m = n = 2*size;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  if (m < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be more than two");
+  if ((size > 1 && m < 4) || m < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be more than two");
   if (n < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be more than two");
 
   /* create a MATIS matrix */
@@ -54,6 +54,27 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /* test MatView */
   ierr = MatView(A,NULL);CHKERRQ(ierr);
+
+  /* test MatGetLocalSubMatrix */
+  if (size != 1) {
+    PetscInt st,len;
+    st = PetscMax(rank-1,0);
+    len = PetscMin(3,m-st);
+    ierr = ISCreateStride(PETSC_COMM_WORLD,len,st,1,&rows);CHKERRQ(ierr);
+    st = PetscMax(rank-1,0);
+    len = PetscMin(2,m-st);
+    ierr = ISCreateStride(PETSC_COMM_WORLD,len,st,1,&cols);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateStride(PETSC_COMM_WORLD,1,0,1,&rows);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_WORLD,1,1,1,&cols);CHKERRQ(ierr);
+  }
+  ierr = ISView(rows,NULL);CHKERRQ(ierr);
+  ierr = ISView(cols,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(A,rows,cols,&B);CHKERRQ(ierr);
+  ierr = ISDestroy(&rows);CHKERRQ(ierr);
+  ierr = ISDestroy(&cols);CHKERRQ(ierr);
+  ierr = MatView(B,NULL);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* Create a MPIAIJ matrix, same as A */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);

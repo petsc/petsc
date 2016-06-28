@@ -4,3 +4,17 @@ Mat Object: 1 MPI processes
     type: seqaij
 row 0: (0, 2.)  (1, -2.) 
 row 1: (0, -2.)  (1, 2.) 
+IS Object: 1 MPI processes
+  type: stride
+Index set is permutation
+Number of indices in (stride) set 1
+0 0
+IS Object: 1 MPI processes
+  type: stride
+Number of indices in (stride) set 1
+0 1
+Mat Object: 1 MPI processes
+  type: is
+  Mat Object: 1 MPI processes
+    type: seqaij
+row 0: (0, -2.) 
