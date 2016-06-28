@@ -3896,6 +3896,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   if (!pforest->plex) {
     ierr = DMCreate(comm,&newPlex);CHKERRQ(ierr);
     ierr = DMSetType(newPlex,DMPLEX);CHKERRQ(ierr);
+    ierr = DMSetMatType(newPlex,dm->mattype);CHKERRQ(ierr);
     ierr = PetscFree(newPlex->labels);CHKERRQ(ierr); /* share labels */
     dm->labels->refct++;
     newPlex->labels = dm->labels;
@@ -4154,7 +4155,7 @@ static PetscErrorCode DMCreateInterpolation_pforest(DM dmCoarse, DM dmFine, Mat 
 
   ierr = MatCreate(PetscObjectComm((PetscObject) dmFine), interpolation);CHKERRQ(ierr);
   ierr = MatSetSizes(*interpolation, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*interpolation, dmCoarse->mattype);CHKERRQ(ierr);
+  ierr = MatSetType(*interpolation, MATAIJ);CHKERRQ(ierr);
 
   ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
   if (cdm != dmCoarse) SETERRQ(PetscObjectComm((PetscObject)dmFine),PETSC_ERR_SUP,"Only interpolation from coarse DM for now");
@@ -4197,7 +4198,7 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
 
   ierr = MatCreate(PetscObjectComm((PetscObject) dmFine), injection);CHKERRQ(ierr);
   ierr = MatSetSizes(*injection, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*injection, dmCoarse->mattype);CHKERRQ(ierr);
+  ierr = MatSetType(*injection, MATAIJ);CHKERRQ(ierr);
 
   ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);
   if (cdm != dmCoarse) SETERRQ(PetscObjectComm((PetscObject)dmFine),PETSC_ERR_SUP,"Only injection to coarse DM for now");

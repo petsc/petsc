@@ -145,6 +145,9 @@ typedef struct {
   DM                   referenceTree;     /* reference tree to which child ID's refer */
   PetscErrorCode      (*getchildsymmetry)(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*);
 
+  /* MATIS support */
+  PetscSection         subdomainSection;
+
   /* Adjacency */
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
