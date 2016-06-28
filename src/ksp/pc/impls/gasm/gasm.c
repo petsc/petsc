@@ -286,12 +286,8 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
     * the number of MPI tasks.
     * For the following cases, we do not need to use HP
     * */
-   if(osm->N==PETSC_DETERMINE || osm->N>=size || osm->N==1){
-	  PetscFunctionReturn(0);
-   }
-   if(size%osm->N != 0){
-     SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"have to specify the total number of subdomains %d to be a factor of the number of processors %d \n",osm->N,size);
-   }
+   if(osm->N==PETSC_DETERMINE || osm->N>=size || osm->N==1) PetscFunctionReturn(0);
+   if(size%osm->N != 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"have to specify the total number of subdomains %D to be a factor of the number of processors %d \n",osm->N,size);
    nlocalsubdomains = size/osm->N;
    osm->n           = 1;
    ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
@@ -928,13 +924,14 @@ PetscErrorCode  PCGASMSetTotalSubdomains(PC pc,PetscInt N)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetSubdomains_GASM"
 static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois[])
 {
-  PC_GASM        *osm = (PC_GASM*)pc->data;
-  PetscErrorCode ierr;
-  PetscInt       i;
+  PC_GASM         *osm = (PC_GASM*)pc->data;
+  PetscErrorCode  ierr;
+  PetscInt        i;
 
   PetscFunctionBegin;
   if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more subdomains, got n = %D",n);
@@ -956,16 +953,9 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
        it will be ignored.  To avoid confusion later on (e.g., when viewing the PC), the overlap size is set to -1.
     */
     osm->overlap = -1;
-    if (!iis) {
-      ierr = PetscMalloc1(n,&osm->iis);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-	for (i=0; i<n; i++) {
-	  ierr = PetscObjectReference((PetscObject)ois[i]);CHKERRQ(ierr);
-	  osm->iis[i] = ois[i];
-	}
-      }
-    }
-  }
+    /* inner subdomains must be provided  */
+    if (!iis) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"inner indices have to be provided \n");
+  }/* end if */
   if (iis) {
     ierr = PetscMalloc1(n,&osm->iis);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -973,16 +963,35 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
       osm->iis[i] = iis[i];
     }
     if (!ois) {
-      ierr = PetscMalloc1(n,&osm->ois);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-	for (i=0; i<n; i++) {
-	  ierr = PetscObjectReference((PetscObject)iis[i]);CHKERRQ(ierr);
-	  osm->ois[i] = iis[i];
-	}
-      }
-      /* If necessary, osm->ois[i] will be expanded using the requested overlap size in PCSetUp_GASM(). */
+      osm->ois = PETSC_NULL;
+      /* if user does not provide outer indices, we will create the corresponding outer indices using  osm->overlap =1 in PCSetUp_GASM */
     }
   }
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt        j,rstart,rend,*covered,lsize;
+    const PetscInt  *indices;
+    /* check if the inner indices cover and only cover the local portion of the preconditioning matrix */
+    ierr = MatGetOwnershipRange(pc->pmat,&rstart,&rend);CHKERRQ(ierr);
+    ierr = PetscCalloc1(rend-rstart,&covered);CHKERRQ(ierr);
+    /* check if the current processor owns indices from others */
+    for (i=0; i<n; i++) {
+      ierr = ISGetIndices(osm->iis[i],&indices);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->iis[i],&lsize);CHKERRQ(ierr);
+      for (j=0; j<lsize; j++) {
+        if (indices[j]<rstart || indices[j]>=rend) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"inner subdomains can not own an index %d from other processors", indices[j]);
+        else if (covered[indices[j]-rstart]==1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"inner subdomains can not have an overlapping index %d ",indices[j]);
+        else covered[indices[j]-rstart] = 1;
+      }
+    ierr = ISRestoreIndices(osm->iis[i],&indices);CHKERRQ(ierr);
+    }
+    /* check if we miss any indices */
+    for (i=rstart; i<rend; i++) {
+      if (!covered[i-rstart]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"local entity %d was not covered by inner subdomains",i);
+    }
+    ierr = PetscFree(covered);CHKERRQ(ierr);
+  }
+#endif
   if (iis)  osm->user_subdomains = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1073,6 +1082,11 @@ static PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KS
     corrections is obtained (see PCGASMType for the use of inner/outer subdomains).
     Both inner and outer subdomains can extend over several processors.
     This processor's portion of a subdomain is known as a local subdomain.
+
+    Inner subdomains can not overlap with each other, do not have any entities from remote processors,
+    and  have to cover the entire local subdomain owned by the current processor. The index sets on each
+    process should be ordered such that the ith local subdomain is connected to the ith remote subdomain
+    on another MPI process.
 
     By default the GASM preconditioner uses 1 (local) subdomain per processor.
 
