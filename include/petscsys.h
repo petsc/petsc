@@ -238,6 +238,7 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 #include <stdint.h>
 #endif
 #if defined (PETSC_HAVE_INTTYPES_H)
+#define __STDC_FORMAT_MACROS /* required for using PRId64 from c++ */
 #include <inttypes.h>
 # if !defined(PRId64)
 # define PRId64 "ld"
