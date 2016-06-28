@@ -774,7 +774,7 @@ runex44_2:
 	   ${DIFF} output/ex44_2.out ex44_2.tmp || printf "${PWD}\nPossible problem with ex44_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex44_2.tmp
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm \
+TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
                             ex8.PETSc runex8 ex8.rm \
