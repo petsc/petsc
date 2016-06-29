@@ -544,7 +544,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
   Not Collective
 
   Input Parameters:
-+ mapa - pointer to first the map
++ mapa - pointer to the first map
 - mapb - pointer to the second map
 
   Output Parameters:
