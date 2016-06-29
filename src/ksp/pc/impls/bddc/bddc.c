@@ -1274,17 +1274,17 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
     pcbddc->benign_apply_coarse_only = PETSC_FALSE;
   }
-#if 0
-  if (pcbddc->dbg_flag && benign_correction_computed) {
+
+  /* dbg output */
+  if (pcbddc->dbg_flag && pcbddc->benign_have_null) {
     Vec v;
     ierr = VecDuplicate(pcis->vec1_global,&v);CHKERRQ(ierr);
     ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,v);CHKERRQ(ierr);
     ierr = PCBDDCBenignGetOrSetP0(pc,v,PETSC_TRUE);CHKERRQ(ierr);
-    PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)),"LEVEL %d: IS CORRECTION BENIGN?\n",pcbddc->current_level);
-    PetscScalarView(pcbddc->benign_n,pcbddc->benign_p0,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)));
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"LEVEL %d: IS CORRECTION BENIGN?\n",pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscScalarView(pcbddc->benign_n,pcbddc->benign_p0,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)));CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
   }
-#endif
 
   /* set initial guess if using PCG */
   if (x && pcbddc->use_exact_dirichlet_trick) {
