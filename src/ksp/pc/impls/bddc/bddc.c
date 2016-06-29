@@ -105,7 +105,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
   /* Nothing printed for the String viewer */
   /* ASCII viewer */
   if (isascii) {
-    PetscMPIInt   color,rank;
+    PetscMPIInt   color,rank,size;
     Petsc64bitInt loc[6],gsum[5],gmax[5],gmin[5],totbenign;
     PetscScalar   interface_size;
     PetscReal     ratio1=0.,ratio2=0.;
@@ -195,8 +195,9 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     if (pcbddc->coarse_ksp) color = 1;
     else color = 0;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
     ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)pc),&subcomm);CHKERRQ(ierr);
-    ierr = PetscSubcommSetNumber(subcomm,2);CHKERRQ(ierr);
+    ierr = PetscSubcommSetNumber(subcomm,PetscMin(size,2));CHKERRQ(ierr);
     ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank);CHKERRQ(ierr);
     ierr = PetscViewerGetSubViewer(viewer,PetscSubcommChild(subcomm),&subviewer);CHKERRQ(ierr);
     if (color == 1) {

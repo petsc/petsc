@@ -4775,6 +4775,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   }
 
   /* Setup of Graph */
+  pcbddc->mat_graph->commsizelimit = 0; /* don't use the COMM_SELF variant of the graph */
   ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,pcbddc->vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
 
   /* attach info on disconnected subdomains if present */
@@ -5877,6 +5878,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     restr = PETSC_TRUE;
     full_restr = PETSC_TRUE;
   }
+  if (!pcbddc->coarse_size) multilevel_allowed = multilevel_requested = restr = full_restr = PETSC_FALSE;
   ncoarse = PetscMax(1,ncoarse);
   if (!pcbddc->coarse_subassembling) {
     ierr = MatISGetSubassemblingPattern(t_coarse_mat_is,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);

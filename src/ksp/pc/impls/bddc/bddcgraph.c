@@ -594,7 +594,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   /* reset any previous search of connected components */
   ierr = PetscBTMemzero(graph->nvtxs,graph->touched);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)graph->l2gmap),&commsize);CHKERRQ(ierr);
-  if (commsize > 1) {
+  if (commsize > graph->commsizelimit) {
     PetscInt i;
     for (i=0;i<graph->nvtxs;i++) {
       if (graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK || !graph->count[i]) {
@@ -888,7 +888,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     for (i=0;i<graph->nvtxs;i++) {
       if (PetscRealPart(array[i]) > 0.1) {
-        if (commsize > 1) { /* dirichlet nodes treated as internal */
+        if (commsize > graph->commsizelimit) { /* dirichlet nodes treated as internal */
           ierr = PetscBTSet(graph->touched,i);CHKERRQ(ierr);
           graph->subset[i] = 0;
         }
@@ -969,8 +969,8 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
   }
 
-  /* mark interior nodes (if commsize > 1) as touched and belonging to partition number 0 */
-  if (commsize > 1) {
+  /* mark interior nodes (if commsize > graph->commsizelimit) as touched and belonging to partition number 0 */
+  if (commsize > graph->commsizelimit) {
     for (i=0;i<graph->nvtxs;i++) {
       if (!graph->count[i]) {
         ierr = PetscBTSet(graph->touched,i);CHKERRQ(ierr);
@@ -991,7 +991,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   total_counts = 0;
 
   /* allocated space for queues */
-  if (commsize == 1) {
+  if (commsize == graph->commsizelimit) {
     ierr = PetscMalloc2(graph->nvtxs+1,&graph->cptr,graph->nvtxs,&graph->queue);CHKERRQ(ierr);
   } else {
     PetscInt nused = graph->nvtxs - nodes_touched;
@@ -1205,6 +1205,7 @@ PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
   PetscFunctionBegin;
   ierr = PetscNew(&new_graph);CHKERRQ(ierr);
   new_graph->custom_minimal_size = 1;
+  new_graph->commsizelimit = 1;
   *graph = new_graph;
   PetscFunctionReturn(0);
 }

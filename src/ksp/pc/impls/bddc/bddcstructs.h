@@ -28,6 +28,7 @@ struct _PCBDDCGraph {
   PetscBool              has_dirichlet;
   IS                     dirdofs;
   IS                     dirdofsB;
+  PetscInt               commsizelimit;
   /* data for connected components */
   PetscInt               ncc;
   PetscInt               *cptr;

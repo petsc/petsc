@@ -189,10 +189,10 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   /* init data for scaling factors exchange */
   partial_sum = 0;
   ierr = PetscMalloc1(pcis->n_neigh,&ptrs_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pcis->n_neigh-1,&send_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pcis->n_neigh-1,&recv_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PetscMax(pcis->n_neigh-1,0),&send_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PetscMax(pcis->n_neigh-1,0),&recv_reqs);CHKERRQ(ierr);
   ierr = PetscMalloc1(pcis->n,&all_factors);CHKERRQ(ierr);
-  ptrs_buffer[0]=0;
+  if (pcis->n_neigh > 0) ptrs_buffer[0]=0;
   for (i=1;i<pcis->n_neigh;i++) {
     partial_sum += pcis->n_shared[i];
     ptrs_buffer[i] = ptrs_buffer[i-1]+pcis->n_shared[i];
@@ -219,7 +219,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = MPI_Irecv(&recv_buffer[ptrs_buffer[i-1]],buf_size,MPIU_SCALAR,neigh,0,comm,&recv_reqs[i-1]);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(pcis->vec1_N,(const PetscScalar**)&array);CHKERRQ(ierr);
-  ierr = MPI_Waitall((pcis->n_neigh-1),recv_reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  if (pcis->n_neigh > 0) {
+    ierr = MPI_Waitall(pcis->n_neigh-1,recv_reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  }
   /* put values in correct places */
   for (i=1;i<pcis->n_neigh;i++) {
     for (j=0;j<pcis->n_shared[i];j++) {
@@ -229,7 +231,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       all_factors[k][neigh_position]=recv_buffer[ptrs_buffer[i-1]+j];
     }
   }
-  ierr = MPI_Waitall((pcis->n_neigh-1),send_reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  if (pcis->n_neigh > 0) {
+    ierr = MPI_Waitall(pcis->n_neigh-1,send_reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  }
   ierr = PetscFree(send_reqs);CHKERRQ(ierr);
   ierr = PetscFree(recv_reqs);CHKERRQ(ierr);
   ierr = PetscFree(send_buffer);CHKERRQ(ierr);
