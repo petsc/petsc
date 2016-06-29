@@ -141,6 +141,14 @@ cdef extern from * nogil:
     int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat,PetscMat)
     int SNESComputeObjective(PetscSNES,PetscVec,PetscReal*)
 
+    ctypedef int (*PetscSNESNGSFunction)(PetscSNES,
+                                         PetscVec,
+                                         PetscVec,
+                                         void*) except PETSC_ERR_PYTHON
+    int SNESSetNGS(PetscSNES,PetscSNESNGSFunction,void*)
+    int SNESGetNGS(PetscSNES,PetscSNESNGSFunction*,void**)
+    int SNESComputeNGS(PetscSNES,PetscVec,PetscVec)
+
     int SNESSetNormSchedule(PetscSNES,PetscSNESNormSchedule)
     int SNESGetNormSchedule(PetscSNES,PetscSNESNormSchedule*)
 
@@ -302,6 +310,24 @@ cdef int SNES_Objective(
     (objective, args, kargs) = context
     obj = objective(Snes, Xvec, *args, **kargs)
     o[0] = asReal(obj)
+    return 0
+
+# -----------------------------------------------------------------------------
+
+cdef int SNES_NGS(
+    PetscSNES snes,
+    PetscVec  x,
+    PetscVec  b,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef SNES Snes = ref_SNES(snes)
+    cdef Vec  Xvec = ref_Vec(x)
+    cdef Vec  Bvec = ref_Vec(b)
+    cdef object context = Snes.get_attr('__ngs__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (ngs, args, kargs) = context
+    ngs(Snes, Xvec, Bvec, *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------

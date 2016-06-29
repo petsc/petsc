@@ -341,6 +341,23 @@ cdef class SNES(Object):
         CHKERR( SNESComputeObjective(self.snes, x.vec, &o) )
         return toReal(o)
 
+    def setNGS(self, ngs, args=None, kargs=None):
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
+        context = (ngs, args, kargs)
+        self.set_attr('__ngs__', context)
+        CHKERR( SNESSetNGS(self.snes, SNES_NGS, <void*>context) )
+
+    def getNGS(self):
+        CHKERR( SNESGetNGS(self.snes, NULL, NULL) )
+        cdef object ngs = self.get_attr('__ngs__')
+        return ngs
+
+    def computeNGS(self, Vec x not None, Vec b=None):
+        cdef PetscVec bvec = NULL
+        if b is not None: bvec = b.vec
+        CHKERR( SNESComputeNGS(self.snes, bvec, x.vec) )
+
     # --- tolerances and convergence ---
 
     def setTolerances(self, rtol=None, atol=None, stol=None, max_it=None):
