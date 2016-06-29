@@ -1491,7 +1491,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   DM                dm, gradDM, plex, cellDM, adaptedDM = NULL;
   Vec               cellGeom, faceGeom;
   PetscBool         isForest, computeGradient;
-  Vec               grad, locX;
+  Vec               grad, locGrad, locX;
   PetscInt          cStart, cEnd, cEndInterior, c, dim;
   PetscReal         minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2], minInd, maxInd, time;
   const PetscScalar *pointVals;
@@ -1516,10 +1516,14 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = DMGlobalToLocalEnd  (plex, sol, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(gradDM, &grad);CHKERRQ(ierr);
   ierr = DMPlexReconstructGradientsFVM(plex, locX, grad);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(gradDM, &locGrad);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(gradDM, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(gradDM, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
+  ierr = VecDestroy(&grad);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(plex,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
   cEnd = (cEndInterior < 0) ? cEnd : cEndInterior;
-  ierr = VecGetArrayRead(grad,&pointGrads);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(locGrad,&pointGrads);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
@@ -1553,7 +1557,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   }
   ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(grad,&pointGrads);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(locGrad,&pointGrads);CHKERRQ(ierr);
   ierr = VecDestroy(&grad);CHKERRQ(ierr);
   ierr = VecDestroy(&locX);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
