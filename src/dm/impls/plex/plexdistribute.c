@@ -753,7 +753,7 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexStratifyMigrationSF"
 /*@
-  DMPlexStratifyMigrationSF - Add partition overlap to a distributed non-overlapping DM.
+  DMPlexStratifyMigrationSF - Rearrange the leaves of a migration sf for stratification.
 
   Input Parameter:
 + dm          - The DM
@@ -773,6 +773,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   PetscInt           d, ldepth, depth, p, pStart, pEnd, nroots, nleaves;
   PetscInt          *pointDepths, *remoteDepths, *ilocal;
   PetscInt          *depthRecv, *depthShift, *depthIdx;
+  PetscInt           hybEnd[4];
   const PetscSFNode *iremote;
   PetscErrorCode     ierr;
 
@@ -788,22 +789,36 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   /* Before building the migration SF we need to know the new stratum offsets */
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, NULL, &iremote);CHKERRQ(ierr);
   ierr = PetscMalloc2(nroots, &pointDepths, nleaves, &remoteDepths);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm,&hybEnd[depth],&hybEnd[depth-1],&hybEnd[1],&hybEnd[0]);CHKERRQ(ierr);
   for (d = 0; d < depth+1; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-    for (p = pStart; p < pEnd; ++p) pointDepths[p] = d;
+    for (p = pStart; p < pEnd; ++p) {
+      if (hybEnd[d] >= 0 && p >= hybEnd[d]) { /* put in a separate value for hybrid points */
+        pointDepths[p] = 2 * d;
+      } else {
+        pointDepths[p] = 2 * d + 1;
+      }
+    }
   }
   for (p = 0; p < nleaves; ++p) remoteDepths[p] = -1;
   ierr = PetscSFBcastBegin(sf, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
   /* Count recevied points in each stratum and compute the internal strata shift */
-  ierr = PetscMalloc3(depth+1, &depthRecv, depth+1, &depthShift, depth+1, &depthIdx);CHKERRQ(ierr);
-  for (d = 0; d < depth+1; ++d) depthRecv[d] = 0;
+  ierr = PetscMalloc3(2*(depth+1), &depthRecv, 2*(depth+1), &depthShift, 2*(depth+1), &depthIdx);CHKERRQ(ierr);
+  for (d = 0; d < 2*(depth+1); ++d) depthRecv[d] = 0;
   for (p = 0; p < nleaves; ++p) depthRecv[remoteDepths[p]]++;
-  depthShift[depth] = 0;
-  for (d = 0; d < depth; ++d) depthShift[d] = depthRecv[depth];
-  for (d = 1; d < depth; ++d) depthShift[d] += depthRecv[0];
-  for (d = depth-2; d > 0; --d) depthShift[d] += depthRecv[d+1];
-  for (d = 0; d < depth+1; ++d) {depthIdx[d] = 0;}
+  depthShift[2*depth+1] = 0;
+  for (d = 0; d < 2*depth+1; ++d) depthShift[d] = depthRecv[2 * depth + 1];
+  for (d = 0; d < 2*depth; ++d) depthShift[d] += depthRecv[2 * depth];
+  depthShift[0] += depthRecv[1];
+  for (d = 2; d < 2*depth; ++d) depthShift[d] += depthRecv[1];
+  for (d = 2; d < 2*depth; ++d) depthShift[d] += depthRecv[0];
+  for (d = 2 * depth-1; d > 2; --d) {
+    PetscInt e;
+
+    for (e = d -1; e > 1; --e) depthShift[e] += depthRecv[d];
+  }
+  for (d = 0; d < 2*(depth+1); ++d) {depthIdx[d] = 0;}
   /* Derive a new local permutation based on stratified indices */
   ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
   for (p = 0; p < nleaves; ++p) {
@@ -1165,40 +1180,46 @@ PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalTo
 {
   DM_Plex        *mesh  = (DM_Plex*) dm->data;
   DM_Plex        *pmesh = (DM_Plex*) (dmParallel)->data;
-  MPI_Comm        comm;
-  const PetscInt *gpoints;
-  PetscInt        dim, depth, n, d;
+  PetscBool      *isHybrid, *isHybridParallel;
+  PetscInt        dim, depth, d;
+  PetscInt        pStart, pEnd, pStartP, pEndP;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(dmParallel, 4);
 
-  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-
-  /* Setup hybrid structure */
-  for (d = 0; d <= dim; ++d) {pmesh->hybridPointMax[d] = mesh->hybridPointMax[d];}
-  ierr = MPI_Bcast(pmesh->hybridPointMax, dim+1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetSize(renumbering, &n);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(renumbering, &gpoints);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    PetscInt pmax = pmesh->hybridPointMax[d], newmax = 0, pEnd, stratum[2], p;
+  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dmParallel,&pStartP,&pEndP);CHKERRQ(ierr);
+  ierr = PetscCalloc2(pEnd-pStart,&isHybrid,pEndP-pStartP,&isHybridParallel);CHKERRQ(ierr);
+  for (d = 0; d <= depth; d++) {
+    PetscInt hybridMax = (depth == 1 && d == 1) ? mesh->hybridPointMax[dim] : mesh->hybridPointMax[d];
 
-    if (pmax < 0) continue;
-    ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(dmParallel, d, NULL, &pEnd);CHKERRQ(ierr);
-    ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
-    for (p = 0; p < n; ++p) {
-      const PetscInt point = gpoints[p];
+    if (hybridMax >= 0) {
+      PetscInt sStart, sEnd, p;
 
-      if ((point >= stratum[0]) && (point < stratum[1]) && (point >= pmax)) ++newmax;
+      ierr = DMPlexGetDepthStratum(dm,d,&sStart,&sEnd);CHKERRQ(ierr);
+      for (p = hybridMax; p < sEnd; p++) isHybrid[p-pStart] = PETSC_TRUE;
     }
-    if (newmax > 0) pmesh->hybridPointMax[d] = pEnd - newmax;
-    else            pmesh->hybridPointMax[d] = -1;
   }
-  ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(migrationSF,MPIU_BOOL,isHybrid,isHybridParallel);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(migrationSF,MPIU_BOOL,isHybrid,isHybridParallel);CHKERRQ(ierr);
+  for (d = 0; d <= dim; d++) pmesh->hybridPointMax[d] = -1;
+  for (d = 0; d <= depth; d++) {
+    PetscInt sStart, sEnd, p, dd;
+
+    ierr = DMPlexGetDepthStratum(dmParallel,d,&sStart,&sEnd);CHKERRQ(ierr);
+    dd = (depth == 1 && d == 1) ? dim : d;
+    for (p = sStart; p < sEnd; p++) {
+      if (isHybridParallel[p-pStartP]) {
+        pmesh->hybridPointMax[dd] = p;
+        break;
+      }
+    }
+  }
+  ierr = PetscFree2(isHybrid,isHybridParallel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
