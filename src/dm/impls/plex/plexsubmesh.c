@@ -582,7 +582,7 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
       ierr = DMPlexGetSupport(dmNew, f, &cells);CHKERRQ(ierr);
       ierr = DMLabelGetValue(vtkLabel, cells[0], &vA);CHKERRQ(ierr);
       ierr = DMLabelGetValue(vtkLabel, cells[1], &vB);CHKERRQ(ierr);
-      if (!vA && !vB) {ierr = DMLabelSetValue(ghostLabel, f, 1);CHKERRQ(ierr);}
+      if (vA != 1 && vB != 1) {ierr = DMLabelSetValue(ghostLabel, f, 1);CHKERRQ(ierr);}
     }
   }
   if (0) {
