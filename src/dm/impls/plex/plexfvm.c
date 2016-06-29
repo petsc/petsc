@@ -122,7 +122,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMGetWorkArray(dm, dof, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
-  for (cell = dmGrad && lim ? cStart : cEnd; cell < cEndInterior; ++cell) {
+  for (cell = (dmGrad && lim) ? cStart : cEnd; cell < cEndInterior; ++cell) {
     const PetscInt        *faces;
     PetscScalar           *cx;
     PetscFVCellGeom       *cg;
