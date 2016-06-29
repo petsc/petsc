@@ -4278,7 +4278,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
         ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,0,rowIndices);CHKERRQ(ierr);
       }
       if (childId == -1) { /* no child interpolation: one nnz per */
-        ierr = VecSetValues(vecFine,numValues,rowIndices,pVal,ADD_VALUES);CHKERRQ(ierr);
+        ierr = VecSetValues(vecFine,numValues,rowIndices,pVal,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         PetscInt f;
 
@@ -4319,7 +4319,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
               rVal[i] += val;
             }
           }
-          ierr = VecSetValues(vecFine,numRows,&rowIndices[offsets[f]],rVal,ADD_VALUES);CHKERRQ(ierr);
+          ierr = VecSetValues(vecFine,numRows,&rowIndices[offsets[f]],rVal,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     }
@@ -4399,6 +4399,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
     ierr = PetscSectionGetDof(globalCoarse,p,&dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(globalCoarse,p,&cdof);CHKERRQ(ierr);
     if ((dof - cdof) <= 0) continue;
+    ierr = PetscSectionGetDof(localCoarse,p,&dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(globalCoarse,p,&gOff);CHKERRQ(ierr);
 
     rowOffsets[0] = 0;
@@ -4421,6 +4422,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
     ierr = PetscSectionGetDof(multiRootSec,p,&numLeaves);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(multiRootSec,p,&leafStart);CHKERRQ(ierr);
     leafEnd = leafStart + numLeaves;
+    for (l = 0; l < dof; l++) parentValues[l] = 0.;
     for (l = leafStart; l < leafEnd; l++) {
       PetscInt numIndices, childId, offset;
       const PetscScalar *childValues;
@@ -4434,7 +4436,9 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
       if (childId == -2) { /* skip */
         continue;
       } else if (childId == -1) { /* equivalent points: scatter */
-        ierr = VecSetValues(vecCoarse,numIndices,parentIndices,childValues,ADD_VALUES);CHKERRQ(ierr);
+        PetscInt m;
+
+        for (m = 0; m < numIndices; m++) parentValues[m] = childValues[m];
       } else {
         PetscInt parentId, f, lim;
 
@@ -4460,22 +4464,20 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
         }
         for (f = 0; f < lim; f++) {
           PetscScalar       *childMat   = &childrenMats[childId - pRefStart][f][0];
-          PetscInt          *rowIndices = &parentIndices[rowOffsets[f]];
-          PetscInt          m           = rowOffsets[f+1]-rowOffsets[f];
           PetscInt          n           = offsets[f+1]-offsets[f];
           PetscInt          i, j;
           const PetscScalar *colValues  = &childValues[offsets[f]];
 
-          for (i = 0; i < m; i++) {
+          for (i = rowOffsets[f]; i < rowOffsets[f + 1]; i++) {
             PetscScalar val = 0.;
             for (j = 0; j < n; j++) {
               val += childMat[n * i + j] * colValues[j];
             }
             parentValues[i] = val;
           }
-          ierr = VecSetValues(vecCoarse,m,rowIndices,parentValues,ADD_VALUES);CHKERRQ(ierr);
         }
       }
+      ierr = VecSetValues(vecCoarse,dof,parentIndices,parentValues,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscSectionDestroy(&multiRootSec);CHKERRQ(ierr);
@@ -4535,5 +4537,7 @@ PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, P
   if (sfOut) {
     ierr = DMPlexTransferVecTree_Inject(dmIn,vecIn,dmOut,vecOut,sfOut,cidsOut);CHKERRQ(ierr);
   }
+  ierr = VecAssemblyBegin(vecOut);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(vecOut);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
