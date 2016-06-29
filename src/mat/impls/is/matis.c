@@ -75,7 +75,7 @@ PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
     ierr = ISLocalToGlobalMappingCreateIS(isn,&cl2g);CHKERRQ(ierr);
     ierr = ISDestroy(&isn);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectReference((PetscObject)cl2g);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)rl2g);CHKERRQ(ierr);
     cl2g = rl2g;
     N = M;
   }
