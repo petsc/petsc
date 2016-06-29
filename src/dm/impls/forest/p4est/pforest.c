@@ -2198,7 +2198,7 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
 #undef __FUNCT__
 #define __FUNCT__ "DMPforestGetCellCoveringSF"
 /* Get an SF that broadcasts a coarse-cell covering of the local fine cells */
-static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, p4est_t *p4estF, PetscInt cStart, PetscInt cEnd, PetscInt cLocalStart, PetscSF *coveringSF)
+static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, p4est_t *p4estF, PetscInt cStart, PetscInt cEnd, PetscSF *coveringSF)
 {
   PetscInt       startF, endF, startC, endC, p, nLeaves;
   PetscSFNode    *leaves;
@@ -2270,7 +2270,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
     } else {
       lastCell = p4estC->local_num_quadrants;
     }
-    send[2*(p-startF)]   = firstCell + cLocalStart;
+    send[2*(p-startF)]   = firstCell;
     send[2*(p-startF)+1] = lastCell - firstCell;
     ierr                 = MPI_Isend(&send[2*(p-startF)],2,MPIU_INT,p,tag,comm,&sendReqs[p-startF]);CHKERRQ(ierr);
   }
@@ -2310,7 +2310,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm,p4est_t *p4estC, 
 /* closure points for locally-owned cells */
 static PetscErrorCode DMPforestGetCellSFNodes(DM dm, PetscInt numClosureIndices, PetscInt *numClosurePoints, PetscSFNode **closurePoints,PetscBool redirect)
 {
-  PetscInt          cStart, cEnd, cEndInterior;
+  PetscInt          cStart, cEnd;
   PetscInt          count, c;
   PetscMPIInt       rank;
   PetscInt          closureSize = -1;
@@ -2320,13 +2320,16 @@ static PetscErrorCode DMPforestGetCellSFNodes(DM dm, PetscInt numClosureIndices,
   const PetscInt    *ilocal;
   const PetscSFNode *iremote;
   DM                plex;
+  DM_Forest         *forest;
+  DM_Forest_pforest *pforest;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  forest            = (DM_Forest *) dm->data;
+  pforest           = (DM_Forest_pforest *) forest->data;
+  cStart            = pforest->cLocalStart;
+  cEnd              = pforest->cLocalEnd;
   ierr              = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr              = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr              = DMPlexGetHybridBounds(plex,&cEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
-  cEnd              = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr              = DMGetPointSF(dm,&pointSF);CHKERRQ(ierr);
   ierr              = PetscSFGetGraph(pointSF,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
   nleaves           = PetscMax(0,nleaves);
@@ -2491,7 +2494,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       ierr  = DMPlexGetHeightStratum(plexC,0,&cStartC,&cEndC);CHKERRQ(ierr);
       ierr  = DMPlexGetHybridBounds(plexC,&cEndCInterior,NULL,NULL,NULL);CHKERRQ(ierr);
       cEndC = (cEndCInterior < 0) ? cEndC : cEndCInterior;
-      ierr  = DMPforestGetCellCoveringSF(comm,p4estC,p4estF,cStartC,cEndC,pforestC->cLocalStart,&coveringSF);CHKERRQ(ierr);
+      ierr  = DMPforestGetCellCoveringSF(comm,p4estC,p4estF,pforestC->cLocalStart,pforestC->cLocalEnd,&coveringSF);CHKERRQ(ierr);
       ierr  = PetscSFGetGraph(coveringSF,NULL,&nleaves,NULL,NULL);CHKERRQ(ierr);
       ierr  = PetscMalloc1(numClosureIndices*nleaves,&newClosurePointsC);CHKERRQ(ierr);
       ierr  = PetscMalloc1(nleaves,&coverQuads);CHKERRQ(ierr);
@@ -2501,8 +2504,8 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         p4est_tree_t *tree = &(((p4est_tree_t*) p4estC->trees->array)[t]);
         PetscInt     q;
 
-        ierr = PetscMemcpy(&coverQuadsSend[pforestC->cLocalStart + count],tree->quadrants.array,tree->quadrants.elem_count * sizeof(p4est_quadrant_t));CHKERRQ(ierr);
-        for (q = 0; q < tree->quadrants.elem_count; q++) coverQuadsSend[pforestC->cLocalStart + count+q].p.which_tree = t;
+        ierr = PetscMemcpy(&coverQuadsSend[count],tree->quadrants.array,tree->quadrants.elem_count * sizeof(p4est_quadrant_t));CHKERRQ(ierr);
+        for (q = 0; q < tree->quadrants.elem_count; q++) coverQuadsSend[count+q].p.which_tree = t;
         count += tree->quadrants.elem_count;
       }
       ierr           = MPI_Type_create_struct(5,blockSizes,blockOffsets,blockTypes,&quadType);CHKERRQ(ierr);
@@ -2576,7 +2579,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
       p4est_quadrant_t *coarseQuads = treeQuads[t - fltF];
       p4est_quadrant_t *fineQuads   = (p4est_quadrant_t*) tree->quadrants.array;
       PetscInt         i, coarseCount = 0;
-      PetscInt         offset = cLocalStartF + tree->quadrants_offset;
+      PetscInt         offset = tree->quadrants_offset;
       sc_array_t       coarseQuadsArray;
 
       numCoarseQuads = treeQuadCounts[t - fltF];
@@ -2644,7 +2647,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
 
             if (levelDiff > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Recursive child ids not implemented");
             PetscStackCallP4estReturn(cid,p4est_quadrant_child_id,(quad));
-            ierr = DMPlexGetTransitiveClosure(plexF,c,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
+            ierr = DMPlexGetTransitiveClosure(plexF,c + cLocalStartF,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
             for (cl = 0; cl < P4EST_INSUL; cl++) {
               PetscInt p      = pointClosure[2 * cl];
               PetscInt point  = childClosures[cid][2 * cl];
@@ -2681,7 +2684,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                 cids[p - pStartF] = newcid;
               }
             }
-            ierr = DMPlexRestoreTransitiveClosure(plexF,c,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
+            ierr = DMPlexRestoreTransitiveClosure(plexF,c + cLocalStartF,PETSC_TRUE,NULL,&pointClosure);CHKERRQ(ierr);
           }
           p4est_qcoord_t coarseBound[2][P4EST_DIM] = {{quadCoarse->x,quadCoarse->y,
 #if defined(P4_TO_P8)
