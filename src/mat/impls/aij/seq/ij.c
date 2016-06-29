@@ -13,7 +13,7 @@
     IJ data for the Matrix.  Return 0 on success,row + 1 on failure
     at that row. Produces the ij for a symmetric matrix by using
     the lower triangular part of the matrix if lower_triangular is PETSC_TRUE;
-    it used the upper triangular otherwise;
+    it uses the upper triangular otherwise.
 
     Input Parameters:
 .   Matrix - matrix to convert
