@@ -41,6 +41,10 @@ ex5adj: ex5adj.o  chkopts
 	-${CLINKER} -o ex5adj ex5adj.o  ${PETSC_TS_LIB}
 	${RM} ex5adj.o
 
+ex6: ex6.o  chkopts
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_TS_LIB}
+	${RM} ex6.o
+
 ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_TS_LIB}
 	${RM} ex7.o
