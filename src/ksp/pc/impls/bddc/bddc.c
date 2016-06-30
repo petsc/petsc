@@ -214,7 +214,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDivergenceMat_BDDC"
-static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, ISLocalToGlobalMapping vl2l)
+static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, IS vl2l)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;
@@ -226,7 +226,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, ISLocalTo
   pcbddc->compute_nonetflux = PETSC_TRUE;
   if (vl2l) {
     ierr = PetscObjectReference((PetscObject)vl2l);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
+    ierr = ISDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
     pcbddc->divudotp_vl2l = vl2l;
   }
   PetscFunctionReturn(0);
@@ -241,7 +241,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, ISLocalTo
    Input Parameters:
 +  pc - the preconditioning context
 .  divudotp - the matrix (must be of type MATIS)
--  vl2l - optional ISLocalToGlobalMapping describing the local (to divudotp) to local (to pc->pmat) map for the velocities
+-  vl2l - optional IS describing the local (to divudotp) to local (to pc->pmat) map for the velocities
 
    Level: advanced
 
@@ -249,7 +249,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, ISLocalTo
 
 .seealso: PCBDDC
 @*/
-PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, ISLocalToGlobalMapping vl2l)
+PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, IS vl2l)
 {
   PetscBool      ismatis;
   PetscErrorCode ierr;
@@ -258,10 +258,10 @@ PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, ISLocalToGlobalMappin
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(divudotp,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,divudotp,2);
-  if (vl2l) PetscValidHeaderSpecific(divudotp,IS_LTOGM_CLASSID,3);
+  if (vl2l) PetscValidHeaderSpecific(divudotp,IS_CLASSID,3);
   ierr = PetscObjectTypeCompare((PetscObject)divudotp,MATIS,&ismatis);CHKERRQ(ierr);
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
-  ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,ISLocalToGlobalMapping),(pc,divudotp,vl2l));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,IS),(pc,divudotp,vl2l));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -1576,7 +1576,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (pcbddc->compute_nonetflux) {
       MatNullSpace nnfnnsp;
 
-      ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
+      ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
       ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nnfnnsp);CHKERRQ(ierr);
     }

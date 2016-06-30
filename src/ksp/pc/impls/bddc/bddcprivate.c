@@ -7,10 +7,10 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCComputeNoNetFlux"
-PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PCBDDCGraph graph, MatNullSpace *nnsp)
+PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, IS vl2l, PCBDDCGraph graph, MatNullSpace *nnsp)
 {
   Mat                    loc_divudotp;
-  Vec                    p,v,quad_vec,*quad_vecs;
+  Vec                    p,v,vins,quad_vec,*quad_vecs;
   ISLocalToGlobalMapping rmap;
   IS                     *faces,*edges;
   PetscScalar            *vals;
@@ -84,7 +84,12 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PCBDDCGraph graph, Ma
   ierr = MatCreateVecs(loc_divudotp,&v,&p);CHKERRQ(ierr);
   ierr = VecSet(p,1.);CHKERRQ(ierr);
   ierr = MatMultTranspose(loc_divudotp,p,v);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(v,&array);CHKERRQ(ierr);
+  if (vl2l) {
+    ierr = VecGetSubVector(v,vl2l,&vins);CHKERRQ(ierr);
+  } else {
+    vins = v;
+  }
+  ierr = VecGetArrayRead(vins,&array);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
   /* insert in global quadrature vecs */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
@@ -116,7 +121,10 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PCBDDCGraph graph, Ma
   }
   ierr = PetscFree(edges);CHKERRQ(ierr);
   ierr = PetscFree(faces);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(v,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vins,&array);CHKERRQ(ierr);
+  if (vl2l) {
+    ierr = VecRestoreSubVector(v,vl2l,&vins);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
 
@@ -1666,7 +1674,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   ierr = VecDestroy(&pcbddc->work_change);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->divudotp);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   for (i=0;i<pcbddc->n_local_subs;i++) {
     ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);

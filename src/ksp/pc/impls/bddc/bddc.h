@@ -112,9 +112,9 @@ typedef struct {
   PetscInt            vertex_size;
 
   /* no-net-flux */
-  PetscBool              compute_nonetflux;
-  Mat                    divudotp;
-  ISLocalToGlobalMapping divudotp_vl2l;
+  PetscBool compute_nonetflux;
+  Mat       divudotp;
+  IS        divudotp_vl2l;
 
   /* local disconnected subdomains */
   PetscBool detect_disconnected;
