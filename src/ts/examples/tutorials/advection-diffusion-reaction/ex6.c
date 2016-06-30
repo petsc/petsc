@@ -185,6 +185,11 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 }
 
 /* --------------------------------------------------------------------- */
+/*
+ Use Lax–Friedrichs method to evaluate F(x,t) = Xdot + a *  dU/dx
+
+ See https://en.wikipedia.org/wiki/Lax%E2%80%93Friedrichs_method
+ */
 #undef __FUNCT__
 #define __FUNCT__ "IFunction_LaxFriedrichs"
 PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
@@ -194,7 +199,7 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,vo
   PetscInt       mstart,mend,M,i,xm;
   DM             da;
   Vec            localX,Xold,localXold;
-  PetscScalar    *xarray,*f,*xoldarray,h,xave;
+  PetscScalar    *xarray,*f,*xoldarray,h,xave,c;
   PetscReal      dt;
 
   PetscFunctionBegin;
@@ -222,21 +227,23 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,vo
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* advection -- upwinding (appctx->a < 0) */
+  c = appctx->a*dt/h; /* Courant-Friedrichs-Lewy number (CFL number) */
+
   if (!mstart) {
-    xave = (xoldarray[M-1] + xoldarray[1])/2.0;
-    f[mstart] = (xarray[mstart] - xave)/dt + appctx->a * 0.5*(xoldarray[1] - xoldarray[M-1])/h;
+    xave = 0.5*(xoldarray[M-1] + xoldarray[1]);
+    f[mstart] = xarray[mstart] - xave + c*0.5*(xoldarray[1] - xoldarray[M-1]);
     mstart++;
   }
 
   if (mend == M) {
     mend--;
-    xave = (xoldarray[0] + xoldarray[mend-1])/2.0;
-    f[mend] = (xarray[mend] - xave)/dt + appctx->a * 0.5*(xoldarray[0] - xoldarray[mend-1])/h;
+    xave = 0.5*(xoldarray[0] + xoldarray[mend-1]);
+    f[mend] = xarray[mend] - xave + c*0.5*(xoldarray[0] - xoldarray[mend-1]);
   }
 
   for (i=mstart; i<mend; i++) {
-     xave = (xoldarray[i-1] + xoldarray[i+1])/2.0;
-    f[i] = (xarray[i] - xave)/dt + appctx->a * 0.5*(xoldarray[i+1] - xoldarray[i-1])/h;
+    xave = 0.5*(xoldarray[i-1] + xoldarray[i+1]);
+    f[i] = xarray[i] - xave + c*0.5*(xoldarray[i+1] - xoldarray[i-1]);
   }
 
   /* Restore vectors */
