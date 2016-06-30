@@ -4439,7 +4439,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
         PetscInt m;
 
         for (m = 0; m < numIndices; m++) parentValues[m] = childValues[m];
-      } else {
+      } else { /* contributions from children: sum with injectors from reference tree */
         PetscInt parentId, f, lim;
 
         ierr = DMPlexGetTreeParent(refTree,childId,&parentId,NULL);CHKERRQ(ierr);
@@ -4473,7 +4473,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
             for (j = 0; j < n; j++) {
               val += childMat[n * i + j] * colValues[j];
             }
-            parentValues[i] = val;
+            parentValues[i] += val;
           }
         }
       }
