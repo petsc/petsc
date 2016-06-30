@@ -6345,3 +6345,33 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMAdaptLabel"
+/*@C
+  DMAdaptLabel - Adapt a dm based on a label with values interpreted as coarsening and refining flags.  Specific implementations of DM maybe have
+                 specialized flags, but all implementations should accept flag values DM_ADAPT_KEEP, DM_ADAPT_REFINE, and DM_ADAPT_COARSEN.
+
+  Collective on dm
+
+  Input parameters:
++ dm - the pre-adaptation DM object
+- name - the name of the label in "dm" with the flags: "adapt" will be used in NULL is passed
+
+  Output parameters:
+. adaptedDM - the adapted DM object: may be NULL if an adapted DM could not be produced.
+
+  Level: intermediate
+@*/
+PetscErrorCode DMAdaptLabel(DM dm, const char name[], DM *adaptedDM)
+{
+  const char     *labelName = name ? name : "adapt";
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (name) PetscValidCharPointer(name,2);
+  PetscValidPointer(adaptedDM,3);
+  *adaptedDM = NULL;
+  ierr = PetscTryMethod((PetscObject)dm,"DMAdaptLabel_C",(DM,const char [], DM*),(dm,labelName,adaptedDM));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

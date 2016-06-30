@@ -74,6 +74,7 @@ PETSC_EXTERN PetscErrorCode DMGetWorkArray(DM,PetscInt,PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode DMRestoreWorkArray(DM,PetscInt,PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode DMRefine(DM,MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMCoarsen(DM,MPI_Comm,DM*);
+PETSC_EXTERN PetscErrorCode DMAdaptLabel(DM,const char[],DM*);
 PETSC_EXTERN PetscErrorCode DMGetCoarseDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetCoarseDM(DM,DM);
 PETSC_EXTERN PetscErrorCode DMGetFineDM(DM,DM*);
@@ -86,6 +87,9 @@ PETSC_EXTERN PetscErrorCode DMRestrict(DM,Mat,Vec,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMInterpolate(DM,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
 PETSC_STATIC_INLINE PetscErrorCode DMViewFromOptions(DM A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
+
+typedef enum {DM_ADAPT_KEEP = 0, DM_ADAPT_REFINE, DM_ADAPT_COARSEN, DM_ADAPT_RESERVED_COUNT} DMAdaptFlag;
+PETSC_EXTERN PetscErrorCode DMAdaptLabel(DM,const char[],DM*);
 
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);
