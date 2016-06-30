@@ -9,14 +9,15 @@
 #define __FUNCT__ "PCBDDCComputeNoNetFlux"
 PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PCBDDCGraph graph, MatNullSpace *nnsp)
 {
-  PetscErrorCode         ierr;
+  Mat                    loc_divudotp;
+  Vec                    p,v,quad_vec,*quad_vecs;
   ISLocalToGlobalMapping rmap;
   IS                     *faces,*edges;
-  Vec                    p,v,quad_vec,*quad_vecs;
   PetscScalar            *vals;
   const PetscScalar      *array;
   PetscInt               i,maxneighs,lmaxneighs,maxsize,nf,ne;
   PetscMPIInt            rank;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = PCBDDCGraphGetCandidatesIS(graph,&nf,&faces,&ne,&edges,NULL);CHKERRQ(ierr);
@@ -79,9 +80,10 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PCBDDCGraph graph, Ma
     ierr = PetscObjectStateIncrease((PetscObject)quad_vecs[i]);CHKERRQ(ierr);
   }
   /* compute local quad vec */
-  ierr = MatCreateVecs(divudotp,&v,&p);CHKERRQ(ierr);
+  ierr = MatISGetLocalMat(divudotp,&loc_divudotp);CHKERRQ(ierr);
+  ierr = MatCreateVecs(loc_divudotp,&v,&p);CHKERRQ(ierr);
   ierr = VecSet(p,1.);CHKERRQ(ierr);
-  ierr = MatMultTranspose(divudotp,p,v);CHKERRQ(ierr);
+  ierr = MatMultTranspose(loc_divudotp,p,v);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&array);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
   /* insert in global quadrature vecs */
@@ -944,25 +946,57 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   }
 
   /* Prepare matrix to compute no-net-flux */
-  if (pcbddc->benign_compute_nonetflux && !pcbddc->divudotp) {
-    Mat      A;
-    IS       isused = NULL;
-    PetscInt n;
+  if (pcbddc->compute_nonetflux && !pcbddc->divudotp) {
+    Mat                    A,loc_divudotp;
+    ISLocalToGlobalMapping rl2g,cl2g,l2gmap;
+    IS                     row,col,isused = NULL;
+    PetscInt               M,N,n,st,n_isused;
+
     if (pressures) {
       isused = pressures;
     } else {
       isused = zerodiag;
     }
+    ierr = MatGetLocalToGlobalMapping(pc->pmat,&l2gmap,NULL);CHKERRQ(ierr);
     ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&n,NULL);CHKERRQ(ierr);
     if (!isused && n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Don't know how to extract div u dot p! Please provide the pressure field");
-    if (n) {
-      ierr = MatGetSubMatrix(A,isused,NULL,MAT_INITIAL_MATRIX,&pcbddc->divudotp);CHKERRQ(ierr);
-    } else {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,0,0,1,NULL,&pcbddc->divudotp);CHKERRQ(ierr);
-      ierr = MatAssemblyBegin(pcbddc->divudotp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(pcbddc->divudotp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    n_isused = 0;
+    if (isused) {
+      ierr = ISGetLocalSize(isused,&n_isused);CHKERRQ(ierr);
     }
+    ierr = MPI_Scan(&n_isused,&st,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    st = st-n_isused;
+    if (n) {
+      const PetscInt *gidxs;
+
+      ierr = MatGetSubMatrix(A,isused,NULL,MAT_INITIAL_MATRIX,&loc_divudotp);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(l2gmap,&gidxs);CHKERRQ(ierr);
+      /* TODO: extend ISCreateStride with st = PETSC_DECIDE */
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),n_isused,st,1,&row);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),n,gidxs,PETSC_COPY_VALUES,&col);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreIndices(l2gmap,&gidxs);CHKERRQ(ierr);
+    } else {
+      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,0,0,1,NULL,&loc_divudotp);CHKERRQ(ierr);
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),n_isused,st,1,&row);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),0,NULL,PETSC_COPY_VALUES,&col);CHKERRQ(ierr);
+    }
+    ierr = MatGetSize(pc->pmat,NULL,&N);CHKERRQ(ierr);
+    ierr = ISGetSize(row,&M);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(row,&rl2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(col,&cl2g);CHKERRQ(ierr);
+    ierr = ISDestroy(&row);CHKERRQ(ierr);
+    ierr = ISDestroy(&col);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)pc),&pcbddc->divudotp);CHKERRQ(ierr);
+    ierr = MatSetType(pcbddc->divudotp,MATIS);CHKERRQ(ierr);
+    ierr = MatSetSizes(pcbddc->divudotp,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(pcbddc->divudotp,rl2g,cl2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+    ierr = MatISSetLocalMat(pcbddc->divudotp,loc_divudotp);CHKERRQ(ierr);
+    ierr = MatDestroy(&loc_divudotp);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(pcbddc->divudotp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(pcbddc->divudotp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
   /* change of basis and p0 dofs */
@@ -1632,6 +1666,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   ierr = VecDestroy(&pcbddc->work_change);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->divudotp);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   for (i=0;i<pcbddc->n_local_subs;i++) {
     ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
@@ -5881,7 +5916,15 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (!pcbddc->coarse_size) multilevel_allowed = multilevel_requested = restr = full_restr = PETSC_FALSE;
   ncoarse = PetscMax(1,ncoarse);
   if (!pcbddc->coarse_subassembling) {
-    ierr = MatISGetSubassemblingPattern(t_coarse_mat_is,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);
+    if (pcbddc->coarsening_ratio > 1) {
+      ierr = MatISGetSubassemblingPattern(t_coarse_mat_is,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);
+    } else {
+      PetscMPIInt size,rank;
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+      have_void = (active_procs == (PetscInt)size) ? PETSC_FALSE : PETSC_TRUE;
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),1,rank,1,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
+    }
   } else { /* if a subassembling pattern exists, then we can reuse the coarse ksp and compute the number of process involved */
     PetscInt    psum;
     PetscMPIInt size;
@@ -5973,14 +6016,15 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       nvecs = 1;
 
       if (pcbddc->divudotp) {
-        Mat      B;
+        Mat      B,loc_divudotp;
         Vec      v,p;
         IS       dummy;
         PetscInt np;
 
-        ierr = MatGetSize(pcbddc->divudotp,&np,NULL);CHKERRQ(ierr);
+        ierr = MatISGetLocalMat(pcbddc->divudotp,&loc_divudotp);CHKERRQ(ierr);
+        ierr = MatGetSize(loc_divudotp,&np,NULL);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF,np,0,1,&dummy);CHKERRQ(ierr);
-        ierr = MatGetSubMatrix(pcbddc->divudotp,dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+        ierr = MatGetSubMatrix(loc_divudotp,dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
         ierr = MatCreateVecs(B,&v,&p);CHKERRQ(ierr);
         ierr = VecSet(p,1.);CHKERRQ(ierr);
         ierr = MatMultTranspose(B,p,v);CHKERRQ(ierr);
@@ -6011,6 +6055,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = VecRestoreArray(vp[0],&arrayv);CHKERRQ(ierr);
       ierr = MatDenseRestoreArray(coarsedivudotp,&arraym);CHKERRQ(ierr);
       ierr = VecDestroy(&vp[0]);CHKERRQ(ierr);
+    } else {
+      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,0,0,1,NULL,&coarsedivudotp);CHKERRQ(ierr);
     }
   } else {
     ierr = MatISSubassemble(t_coarse_mat_is,pcbddc->coarse_subassembling,0,restr,full_restr,PETSC_FALSE,&coarse_mat_is,nis,isarray,0,NULL);CHKERRQ(ierr);
@@ -6158,12 +6204,37 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       pcbddc_coarse->coarse_eqs_per_proc = pcbddc->coarse_eqs_per_proc;
       pcbddc_coarse->benign_saddle_point = pcbddc->benign_have_null;
       if (pcbddc_coarse->benign_saddle_point) {
-        if (coarsedivudotp) {
-          ierr = MatDestroy(&pcbddc_coarse->divudotp);CHKERRQ(ierr);
-          pcbddc_coarse->divudotp = coarsedivudotp;
-          coarsedivudotp = NULL;
-        }
-        pcbddc_coarse->benign_compute_nonetflux = PETSC_TRUE;
+        Mat                    coarsedivudotp_is;
+        ISLocalToGlobalMapping l2gmap,rl2g,cl2g;
+        IS                     row,col;
+        const PetscInt         *gidxs;
+        PetscInt               n,st,M,N;
+
+        ierr = MatGetSize(coarsedivudotp,&n,NULL);CHKERRQ(ierr);
+        ierr = MPI_Scan(&n,&st,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)coarse_mat));CHKERRQ(ierr);
+        st = st-n;
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)coarse_mat),1,st,1,&row);CHKERRQ(ierr);
+        ierr = MatGetLocalToGlobalMapping(coarse_mat,&l2gmap,NULL);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingGetSize(l2gmap,&n);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingGetIndices(l2gmap,&gidxs);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)coarse_mat),n,gidxs,PETSC_COPY_VALUES,&col);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingRestoreIndices(l2gmap,&gidxs);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingCreateIS(row,&rl2g);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingCreateIS(col,&cl2g);CHKERRQ(ierr);
+        ierr = ISGetSize(row,&M);CHKERRQ(ierr);
+        ierr = MatGetSize(coarse_mat,&N,NULL);CHKERRQ(ierr);
+        ierr = ISDestroy(&row);CHKERRQ(ierr);
+        ierr = ISDestroy(&col);CHKERRQ(ierr);
+        ierr = MatCreate(PetscObjectComm((PetscObject)coarse_mat),&coarsedivudotp_is);CHKERRQ(ierr);
+        ierr = MatSetType(coarsedivudotp_is,MATIS);CHKERRQ(ierr);
+        ierr = MatSetSizes(coarsedivudotp_is,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+        ierr = MatSetLocalToGlobalMapping(coarsedivudotp_is,rl2g,cl2g);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+        ierr = MatISSetLocalMat(coarsedivudotp_is,coarsedivudotp);CHKERRQ(ierr);
+        ierr = MatDestroy(&coarsedivudotp);CHKERRQ(ierr);
+        ierr = PCBDDCSetDivergenceMat(pc_temp,coarsedivudotp_is,NULL);CHKERRQ(ierr);
+        ierr = MatDestroy(&coarsedivudotp_is);CHKERRQ(ierr);
         pcbddc_coarse->adaptive_userdefined = PETSC_TRUE;
         if (pcbddc->adaptive_threshold < 1.0) pcbddc_coarse->deluxe_zerorows = PETSC_TRUE;
       }

@@ -270,6 +270,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType,PetscErrorCode (*)(PC));
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalGetType(PC,PCGAMGClassicalType*);
 
+PETSC_EXTERN PetscErrorCode PCBDDCSetDivergenceMat(PC,Mat,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);

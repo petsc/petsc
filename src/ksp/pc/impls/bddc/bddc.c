@@ -78,9 +78,9 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_bddc_symmetric","Symmetric computation of primal basis functions","none",pcbddc->symmetric_primal,&pcbddc->symmetric_primal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_coarse_adj","Number of processors where to map the coarse adjacency list","none",pcbddc->coarse_adj_red,&pcbddc->coarse_adj_red,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_benign_trick","Apply the benign subspace trick to saddle point problems with discontinuous pressures","none",pcbddc->benign_saddle_point,&pcbddc->benign_saddle_point,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_benign_nonetflux","Automatic computation of no-net-flux quadrature weights","none",pcbddc->benign_compute_nonetflux,&pcbddc->benign_compute_nonetflux,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_benign_change","Compute the pressure change of basis explicitly","none",pcbddc->benign_change_explicit,&pcbddc->benign_change_explicit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_benign_compute_correction","Compute the benign correction during PreSolve","none",pcbddc->benign_compute_correction,&pcbddc->benign_compute_correction,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_nonetflux","Automatic computation of no-net-flux quadrature weights","none",pcbddc->compute_nonetflux,&pcbddc->compute_nonetflux,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_detect_disconnected","Detects disconnected subdomains","none",pcbddc->detect_disconnected,&pcbddc->detect_disconnected,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_eliminate_dirichlet","Whether or not we want to eliminate dirichlet dofs during presolve","none",pcbddc->eliminate_dirdofs,&pcbddc->eliminate_dirdofs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -119,7 +119,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Connectivity graph topological dimension: 3\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use vertices: %d (vertext size %d)\n",pcbddc->use_vertices,pcbddc->vertex_size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use vertices: %d (vertex size %d)\n",pcbddc->use_vertices,pcbddc->vertex_size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use edges: %d\n",pcbddc->use_edges);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use faces: %d\n",pcbddc->use_faces);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use true near null space: %d\n",pcbddc->use_nnsp_true);CHKERRQ(ierr);
@@ -148,7 +148,8 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Coarse eqs per proc (significant at the coarsest level): %d\n",pcbddc->coarse_eqs_per_proc);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Detect disconnected: %d\n",pcbddc->detect_disconnected);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick: %d (change explicit %d)\n",pcbddc->benign_saddle_point,pcbddc->benign_change_explicit);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick is active: %d (algebraic computation of no-net-flux %d)\n",pcbddc->benign_have_null,pcbddc->benign_compute_nonetflux);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick is active: %d\n",pcbddc->benign_have_null);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Algebraic computation of no-net-flux %d\n",pcbddc->compute_nonetflux);CHKERRQ(ierr);
 
     /* compute some numbers on the domain decomposition */
     ierr = VecSet(pcis->vec1_B,1.0);CHKERRQ(ierr);
@@ -210,7 +211,59 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetDivergenceMat_BDDC"
+static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, ISLocalToGlobalMapping vl2l)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)divudotp);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->divudotp);CHKERRQ(ierr);
+  pcbddc->divudotp = divudotp;
+  pcbddc->compute_nonetflux = PETSC_TRUE;
+  if (vl2l) {
+    ierr = PetscObjectReference((PetscObject)vl2l);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
+    pcbddc->divudotp_vl2l = vl2l;
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetDivergenceMat"
+/*@
+ PCBDDCSetDivergenceMat - Sets the linear operator representing \int_\Omega \div {\bf u} \cdot p dx
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioning context
+.  divudotp - the matrix (must be of type MATIS)
+-  vl2l - optional ISLocalToGlobalMapping describing the local (to divudotp) to local (to pc->pmat) map for the velocities
+
+   Level: advanced
+
+   Notes: It triggers the algebraic computation of no-net-flux condition
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, ISLocalToGlobalMapping vl2l)
+{
+  PetscBool      ismatis;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(divudotp,MAT_CLASSID,2);
+  PetscCheckSameComm(pc,1,divudotp,2);
+  if (vl2l) PetscValidHeaderSpecific(divudotp,IS_LTOGM_CLASSID,3);
+  ierr = PetscObjectTypeCompare((PetscObject)divudotp,MATIS,&ismatis);CHKERRQ(ierr);
+  if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
+  ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,ISLocalToGlobalMapping),(pc,divudotp,vl2l));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetChangeOfBasisMat_BDDC"
@@ -1277,12 +1330,12 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
 
   /* dbg output */
-  if (pcbddc->dbg_flag && pcbddc->benign_have_null) {
+  if (pcbddc->dbg_flag && benign_correction_computed) {
     Vec v;
     ierr = VecDuplicate(pcis->vec1_global,&v);CHKERRQ(ierr);
     ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,v);CHKERRQ(ierr);
     ierr = PCBDDCBenignGetOrSetP0(pc,v,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"LEVEL %d: IS CORRECTION BENIGN?\n",pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"LEVEL %d: is the correction benign?\n",pcbddc->current_level);CHKERRQ(ierr);
     ierr = PetscScalarView(pcbddc->benign_n,pcbddc->benign_p0,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)));CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
   }
@@ -1520,7 +1573,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (pcbddc->adaptive_selection && !pcbddc->use_deluxe_scaling && !pcbddc->mat_graph->twodim) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute the adaptive primal space for a problem with 3D edges without deluxe scaling");
     }
-    if (pcbddc->benign_compute_nonetflux) {
+    if (pcbddc->compute_nonetflux) {
       MatNullSpace nnfnnsp;
 
       ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
@@ -2012,6 +2065,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   /* free data created by PCIS */
   ierr = PCISDestroy(pc);CHKERRQ(ierr);
   /* remove functions */
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDivergenceMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesIS_C",NULL);CHKERRQ(ierr);
@@ -2540,6 +2594,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pc->ops->postsolve           = PCPostSolve_BDDC;
 
   /* composing function */
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDivergenceMat_C",PCBDDCSetDivergenceMat_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",PCBDDCSetChangeOfBasisMat_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",PCBDDCSetPrimalVerticesLocalIS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesIS_C",PCBDDCSetPrimalVerticesIS_BDDC);CHKERRQ(ierr);

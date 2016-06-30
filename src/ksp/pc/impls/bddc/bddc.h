@@ -61,7 +61,6 @@ typedef struct {
   PetscBool     benign_have_null;
   PetscBool     benign_skip_correction;
   PetscBool     benign_compute_correction;
-  PetscBool     benign_compute_nonetflux;
   Mat           benign_change;
   Mat           benign_original_mat;
   IS            *benign_zerodiag_subs;
@@ -111,7 +110,11 @@ typedef struct {
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
   PetscInt            vertex_size;
-  Mat                 divudotp;
+
+  /* no-net-flux */
+  PetscBool              compute_nonetflux;
+  Mat                    divudotp;
+  ISLocalToGlobalMapping divudotp_vl2l;
 
   /* local disconnected subdomains */
   PetscBool detect_disconnected;
