@@ -9927,7 +9927,7 @@ PetscErrorCode MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateRedundantMatrix"
-/*@C
+/*@
    MatCreateRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators.
 
    Collective on Mat
