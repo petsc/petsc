@@ -6,6 +6,10 @@
 #define isview_                                    ISVIEW
 #define isgetindices_                              ISGETINDICES
 #define isrestoreindices_                          ISRESTOREINDICES
+#define isgettotalindices_                         ISGETTOTALINDICES
+#define isrestoretotalindices_                     ISRESTORETOTALINDICES
+#define isgetnonlocalindices_                      ISGETNONLOCALINDICES
+#define isrestorenonlocalindices_                  ISRESTORENONLOCALINDICES
 #define islocaltoglobalmappinggetindices_          ISLOCALTOGLOBALMAPPINGGETINDICES
 #define islocaltoglobalmappingrestoreindices_      ISLOCALTOGLOBALMAPPINGRESTOREINDICES
 #define islocaltoglobalmappinggetblockindices_     ISLOCALTOGLOBALMAPPINGGETBLOCKINDICES
@@ -14,6 +18,10 @@
 #define isview_                                    isview
 #define isgetindices_                              isgetindices
 #define isrestoreindices_                          isrestoreindices
+#define isgettotalindices_                         isgettotalindices
+#define isrestoretotalindices_                     isrestoretotalindices
+#define isgetnonlocalindices_                      isgetnonlocalindices
+#define isrestorenonlocalindices_                  isrestorenonlocalindices
 #define islocaltoglobalmappinggetindices_          islocaltoglobalmappinggetindices
 #define islocaltoglobalmappingrestoreindices_      islocaltoglobalmappingrestoreindices
 #define islocaltoglobalmappinggetblockindices_     islocaltoglobalmappinggetblockindices
@@ -39,6 +47,34 @@ PETSC_EXTERN void PETSC_STDCALL isrestoreindices_(IS *x,PetscInt *fa,size_t *ia,
 {
   const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISRestoreIndices(*x,&lx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL isgettotalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  const PetscInt *lx;
+
+  *ierr = ISGetTotalIndices(*x,&lx); if (*ierr) return;
+  *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL isrestoretotalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
+  *ierr = ISRestoreTotalIndices(*x,&lx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL isgetnonlocalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  const PetscInt *lx;
+
+  *ierr = ISGetNonlocalIndices(*x,&lx); if (*ierr) return;
+  *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL isrestorenonlocalindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
+  *ierr = ISRestoreNonlocalIndices(*x,&lx);
 }
 
 PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetindices_(ISLocalToGlobalMapping *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)

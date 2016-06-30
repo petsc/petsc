@@ -9,10 +9,12 @@ typedef struct _p_SNES *SNES;
 #define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS
 #define matfdcoloringsetfunction_        MATFDCOLORINGSETFUNCTION
 #define matfdcoloringview_               MATFDCOLORINGVIEW
+#define matfdcoloingsettype_             MATFDCOLORINGSETTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matfdcoloringsetfunctionts_      matfdcoloringsetfunctionts
 #define matfdcoloringsetfunction_        matfdcoloringsetfunction
 #define matfdcoloringview_               matfdcoloringview
+#define matfdcoloingsettype_             matfdcoloringsettype
 #endif
 
 
@@ -64,3 +66,11 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer 
   *ierr = MatFDColoringView(*c,v);
 }
 
+PETSC_EXTERN void PETSC_STDCALL matfdcoloringsettype_(MatFDColoring *matfdcoloring,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = MatFDColoringSetType(*matfdcoloring,t);
+  FREECHAR(type,t);
+}
