@@ -1503,13 +1503,11 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = TSGetTime(ts,&time);CHKERRQ(ierr);
   ierr = VecGetDM(sol, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGeometryFVM(dm, &faceGeom, &cellGeom, NULL);CHKERRQ(ierr);
   ierr = PetscFVGetComputeGradients(fvm,&computeGradient);CHKERRQ(ierr);
   ierr = PetscFVSetComputeGradients(fvm,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGradientDM(dm,fvm,&gradDM);CHKERRQ(ierr);
   ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMPlexComputeGradientFVM(plex,fvm,faceGeom,cellGeom,&gradDM);CHKERRQ(ierr);
+  ierr = DMPlexGetDataFVM(plex, fvm, &cellGeom, &faceGeom, &gradDM);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(plex,&locX);CHKERRQ(ierr);
   ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, faceGeom, cellGeom, NULL);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(plex, sol, INSERT_VALUES, locX);CHKERRQ(ierr);
@@ -1531,7 +1529,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
     DMLabel adaptLabel;
 
     ierr = DMRemoveLabel(dm,"adapt",&adaptLabel);CHKERRQ(ierr);
-    ierr = PetscFree(adaptLabel);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
     ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);
   }
 
@@ -1558,7 +1556,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(locGrad,&pointGrads);CHKERRQ(ierr);
-  ierr = VecDestroy(&grad);CHKERRQ(ierr);
+  ierr = VecDestroy(&locGrad);CHKERRQ(ierr);
   ierr = VecDestroy(&locX);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   ierr = PetscFVSetComputeGradients(fvm,computeGradient);CHKERRQ(ierr);
