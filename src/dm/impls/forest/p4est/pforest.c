@@ -3913,6 +3913,9 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMGetLabel(base,"ghost",&ghostLabelBase);CHKERRQ(ierr);
   }
   if (!pforest->plex) {
+    PetscMPIInt size;
+
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = DMCreate(comm,&newPlex);CHKERRQ(ierr);
     ierr = DMSetType(newPlex,DMPLEX);CHKERRQ(ierr);
     ierr = PetscFree(newPlex->labels);CHKERRQ(ierr); /* share labels */
@@ -3945,7 +3948,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     leaves            = sc_array_new(sizeof(p4est_locidx_t));
     remotes           = sc_array_new(2 * sizeof(p4est_locidx_t));
 
-    PetscStackCallP4est(p4est_get_plex_data_ext,(pforest->forest,&pforest->ghost,&pforest->lnodes,ctype,(int)overlap,&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes,1));
+    PetscStackCallP4est(p4est_get_plex_data_ext,(pforest->forest,&pforest->ghost,&pforest->lnodes,ctype,(int)((size > 1) ? overlap : 0),&first_local_quad,points_per_dim,cone_sizes,cones,cone_orientations,coords,children,parents,childids,leaves,remotes,1));
 
     pforest->cLocalStart = (PetscInt) first_local_quad;
     pforest->cLocalEnd   = pforest->cLocalStart + (PetscInt) pforest->forest->local_num_quadrants;
