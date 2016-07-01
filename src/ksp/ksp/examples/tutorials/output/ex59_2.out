@@ -1,10 +1,8 @@
 ---------------------BDDC stats-------------------------------
-Number of degrees of freedom               :      342 
-Number of iterations                       :        3 
+Number of degrees of freedom               :      342
 Eigenvalues preconditioned operator        : 1.0e+00 1.3e+00
 --------------------------------------------------------------
 ------------------FETI-DP stats-------------------------------
-Number of degrees of freedom               :       31 
-Number of iterations                       :        3 
+Number of degrees of freedom               :       31
 Eigenvalues preconditioned operator        : 1.0e+00 1.3e+00
 --------------------------------------------------------------
