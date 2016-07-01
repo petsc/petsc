@@ -1497,6 +1497,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   const PetscScalar *pointVals;
   const PetscScalar *pointGrads;
   const PetscScalar *pointGeom;
+  DMLabel           adaptLabel = NULL;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -1525,14 +1526,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
-  if (isForest) {
-    DMLabel adaptLabel;
-
-    ierr = DMRemoveLabel(dm,"adapt",&adaptLabel);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
-    ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);
-  }
-
+  ierr = DMLabelCreate("adapt",&adaptLabel);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; c++) {
     PetscReal             errInd = 0.;
     const PetscScalar     *pointGrad;
@@ -1546,12 +1540,8 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
     ierr = (user->model->errorIndicator)(dim,cg->volume,user->model->physics->dof,pointVal,pointGrad,&errInd,user->model->errorCtx);CHKERRQ(ierr);
     minMaxInd[0] = PetscMin(minMaxInd[0],errInd);
     minMaxInd[1] = PetscMax(minMaxInd[1],errInd);
-    if (errInd > refineTol) {
-      if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_REFINE);CHKERRQ(ierr);}
-    }
-    if (errInd < coarsenTol) {
-      if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_COARSEN);CHKERRQ(ierr);}
-    }
+    if (errInd > refineTol)  {ierr = DMLabelSetValue(adaptLabel,c,DM_ADAPT_REFINE);CHKERRQ(ierr);}
+    if (errInd < coarsenTol) {ierr = DMLabelSetValue(adaptLabel,c,DM_ADAPT_COARSEN);CHKERRQ(ierr);}
   }
   ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
@@ -1565,20 +1555,16 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   minInd = minMaxIndGlobal[0];
   maxInd = -minMaxIndGlobal[1];
   ierr = PetscInfo2(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
-  if (maxInd > refineTol) { /* at least one cell is over the refinement threshold */
-    if (isForest) {
-      ierr = DMForestAdaptLabel(dm,"adapt",&adaptedDM);CHKERRQ(ierr);
-    }
-    else {
-      ierr = DMRefine(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
-    }
-  }
-  else if (isForest && minInd < coarsenTol) { /* at least one cell is under the coarsening threshold */
-    ierr = DMForestAdaptLabel(dm,"adapt",&adaptedDM);CHKERRQ(ierr);
+  if (maxInd > refineTol || minInd < coarsenTol) { /* at least one cell is over the refinement threshold */
+    ierr = DMAdaptLabel(dm,adaptLabel,&adaptedDM);CHKERRQ(ierr);
   }
   else if (maxInd < coarsenTol) { /* all cells are under the coarsening threshold */
     ierr = DMCoarsen(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
   }
+  else if (minInd > refineTol) { /* all cells are over the refinement threshold */
+    ierr = DMRefine(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
+  }
+  ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
   if (adaptedDM) {
     if (tsNew) {
       ierr = initializeTS(adaptedDM,user,tsNew);CHKERRQ(ierr);

@@ -6355,23 +6355,22 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
 
   Input parameters:
 + dm - the pre-adaptation DM object
-- name - the name of the label in "dm" with the flags: "adapt" will be used in NULL is passed
+- label - label with the flags
 
   Output parameters:
 . adaptedDM - the adapted DM object: may be NULL if an adapted DM could not be produced.
 
   Level: intermediate
 @*/
-PetscErrorCode DMAdaptLabel(DM dm, const char name[], DM *adaptedDM)
+PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *adaptedDM)
 {
-  const char     *labelName = name ? name : "adapt";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (name) PetscValidCharPointer(name,2);
+  PetscValidPointer(label,2);
   PetscValidPointer(adaptedDM,3);
   *adaptedDM = NULL;
-  ierr = PetscTryMethod((PetscObject)dm,"DMAdaptLabel_C",(DM,const char [], DM*),(dm,labelName,adaptedDM));CHKERRQ(ierr);
+  ierr = PetscTryMethod((PetscObject)dm,"DMAdaptLabel_C",(DM,DMLabel, DM*),(dm,label,adaptedDM));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

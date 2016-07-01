@@ -466,7 +466,7 @@ static int pforest_coarsen_flag_any(p4est_t * p4est, p4est_topidx_t which_tree, 
 
   if (quadrants[0]->level <= minLevel) return 0;
   for (i = 0; i < P4EST_CHILDREN; i++) {
-    if (quadrants[i]->p.user_int == DM_FOREST_COARSEN) {
+    if (quadrants[i]->p.user_int == DM_ADAPT_COARSEN) {
       any = PETSC_TRUE;
       break;
     }
@@ -483,7 +483,7 @@ static int pforest_coarsen_flag_all(p4est_t * p4est, p4est_topidx_t which_tree, 
 
   if (quadrants[0]->level <= minLevel) return 0;
   for (i = 0; i < P4EST_CHILDREN; i++) {
-    if (quadrants[i]->p.user_int != DM_FOREST_COARSEN) {
+    if (quadrants[i]->p.user_int != DM_ADAPT_COARSEN) {
       all = PETSC_FALSE;
       break;
     }
@@ -493,7 +493,7 @@ static int pforest_coarsen_flag_all(p4est_t * p4est, p4est_topidx_t which_tree, 
 
 static void pforest_init_keep(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
 {
-  quadrant->p.user_int = DM_FOREST_KEEP;
+  quadrant->p.user_int = DM_ADAPT_KEEP;
 }
 
 static int pforest_refine_uniform(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
@@ -511,7 +511,7 @@ static int pforest_refine_flag(p4est_t * p4est, p4est_topidx_t which_tree, p4est
 
   if ((PetscInt) quadrant->level >= maxLevel) return 0;
 
-  return (quadrant->p.user_int == DM_FOREST_REFINE);
+  return (quadrant->p.user_int == DM_ADAPT_REFINE);
 }
 
 #undef __FUNCT__
@@ -840,7 +840,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
   /* === Step 2: get the leaves of the forest === */
   if (adaptFrom) { /* start with the old forest */
-    const char        *adaptName;
     DMLabel           adaptLabel;
     PetscInt          defaultValue;
     PetscInt          numValues, numValuesGlobal, cLocalStart, count;
@@ -854,15 +853,13 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     cLocalStart = apforest->cLocalStart;
     ierr = DMForestGetComputeAdaptivitySF(dm,&computeAdaptSF);CHKERRQ(ierr);
     PetscStackCallP4estReturn(pforest->forest,p4est_copy,(apforest->forest, 0)); /* 0 indicates no data copying */
-    ierr = DMForestGetAdaptivityLabel(dm,&adaptName);CHKERRQ(ierr);
-    if (adaptName) {
-      ierr = DMGetLabel(adaptFrom,adaptName,&adaptLabel);CHKERRQ(ierr);
-      if (!adaptLabel) SETERRQ(PetscObjectComm((PetscObject)adaptFrom),PETSC_ERR_USER,"No adaptivity label found in pre-adaptation forest");
+    ierr = DMForestGetAdaptivityLabel(dm,&adaptLabel);CHKERRQ(ierr);
+    if (adaptLabel) {
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
       ierr = DMLabelGetNumValues(adaptLabel,&numValues);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&numValues,&numValuesGlobal,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)adaptFrom));CHKERRQ(ierr);
       ierr = DMLabelGetDefaultValue(adaptLabel,&defaultValue);CHKERRQ(ierr);
-      if (!numValuesGlobal && defaultValue == DM_FOREST_COARSEN) { /* uniform coarsen */
+      if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN) { /* uniform coarsen */
         ierr                          = DMForestGetMinimumRefinement(dm,&ctx.minLevel);CHKERRQ(ierr);
         pforest->forest->user_pointer = (void*) &ctx;
         PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_uniform,NULL));
@@ -872,7 +869,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         if (computeAdaptSF) {
           ierr = DMPforestComputeLocalCellTransferSF(PetscObjectComm((PetscObject)dm),pforest->forest,0,apforest->forest,apforest->cLocalStart,&coarseToPreFine,NULL);CHKERRQ(ierr);
         }
-      } else if (!numValuesGlobal && defaultValue == DM_FOREST_REFINE) { /* uniform refine */
+      } else if (!numValuesGlobal && defaultValue == DM_ADAPT_REFINE) { /* uniform refine */
         ierr                          = DMForestGetMaximumRefinement(dm,&ctx.maxLevel);CHKERRQ(ierr);
         pforest->forest->user_pointer = (void*) &ctx;
         PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_uniform,NULL));
@@ -1065,11 +1062,11 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       DM                coarseDM;
 
       ierr = DMForestTemplate(dm,MPI_COMM_NULL,&coarseDM);CHKERRQ(ierr);
-      ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_FOREST_COARSEN);CHKERRQ(ierr);
+      ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_ADAPT_COARSEN);CHKERRQ(ierr);
       ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);
       ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
-      ierr = DMLabelSetDefaultValue(coarsen,DM_FOREST_COARSEN);CHKERRQ(ierr);
-      ierr = DMForestSetAdaptivityLabel(coarseDM,"coarsen");CHKERRQ(ierr);
+      ierr = DMLabelSetDefaultValue(coarsen,DM_ADAPT_COARSEN);CHKERRQ(ierr);
+      ierr = DMForestSetAdaptivityLabel(coarseDM,coarsen);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
       if (forest->setfromoptionscalled) {
         ierr = DMSetFromOptions(coarseDM);CHKERRQ(ierr);
@@ -3069,9 +3066,9 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
 #define __FUNCT__ "DMPforestGetTransferSF"
 static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofPerDim[], PetscSF *sfAtoB, PetscSF *sfBtoA)
 {
-  DM                        adaptA, adaptB;
-  DMForestAdaptivityPurpose purpose;
-  PetscErrorCode            ierr;
+  DM             adaptA, adaptB;
+  DMAdaptFlag    purpose;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMForestGetAdaptivityForest(dmA,&adaptA);CHKERRQ(ierr);
@@ -3079,13 +3076,13 @@ static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofP
   /* it is more efficient when the coarser mesh is the first argument: reorder if we know one is coarser than the other */
   if (adaptA && adaptA->data == dmB->data) { /* dmA was adapted from dmB */
     ierr = DMForestGetAdaptivityPurpose(dmA,&purpose);CHKERRQ(ierr);
-    if (purpose == DM_FOREST_REFINE) {
+    if (purpose == DM_ADAPT_REFINE) {
       ierr = DMPforestGetTransferSF(dmB, dmA, dofPerDim, sfBtoA, sfAtoB);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   } else if (adaptB && adaptB->data == dmA->data) { /* dmB was adapted from dmA */
     ierr = DMForestGetAdaptivityPurpose(dmB,&purpose);CHKERRQ(ierr);
-    if (purpose == DM_FOREST_COARSEN) {
+    if (purpose == DM_ADAPT_COARSEN) {
       ierr = DMPforestGetTransferSF(dmB, dmA, dofPerDim, sfBtoA, sfAtoB);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
@@ -3496,10 +3493,10 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     PetscInt    pStart, pEnd, pStartA, pEndA;
     PetscInt    *values, *adaptValues;
     DMLabelLink next = adapt->labels->next;
-    const char  *adaptName;
+    DMLabel     adaptLabel;
     DM          adaptPlex;
 
-    ierr = DMForestGetAdaptivityLabel(dm,&adaptName);CHKERRQ(ierr);
+    ierr = DMForestGetAdaptivityLabel(dm,&adaptLabel);CHKERRQ(ierr);
     ierr = DMPforestGetPlex(adapt,&adaptPlex);CHKERRQ(ierr);
     ierr = DMPforestGetTransferSF(adapt,dm,dofPerDim,&transferForward,&transferBackward);CHKERRQ(ierr);
     ierr = DMPlexGetChart(plex,&pStart,&pEnd);CHKERRQ(ierr);
@@ -3539,9 +3536,9 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
     }
 #endif
     while (next) {
-      DMLabel    adaptLabel = next->label;
-      const char *name      = adaptLabel->name;
-      PetscBool  isDepth, isGhost, isVTK, isAdapt;
+      DMLabel    nextLabel = next->label;
+      const char *name     = nextLabel->name;
+      PetscBool  isDepth, isGhost, isVTK;
       DMLabel    label;
       PetscInt   p;
 
@@ -3560,8 +3557,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
         next = next->next;
         continue;
       }
-      ierr = PetscStrcmp(name,adaptName,&isAdapt);CHKERRQ(ierr);
-      if (isAdapt) {
+      if (nextLabel == adaptLabel) {
         next = next->next;
         continue;
       }
@@ -3569,7 +3565,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       ierr = DMGetLabel(dm,name,&label);CHKERRQ(ierr);
 
       for (p = pStartA; p < pEndA; p++) {
-        ierr = DMLabelGetValue(adaptLabel,p,&adaptValues[p]);CHKERRQ(ierr);
+        ierr = DMLabelGetValue(nextLabel,p,&adaptValues[p]);CHKERRQ(ierr);
       }
       for (p = pStart; p < pEnd; p++) values[p] = PETSC_MIN_INT;
 
@@ -4249,13 +4245,13 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
 #define __FUNCT__ _pforest_string(DMForestTransferVec_pforest)
 static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscBool useBCs, PetscReal time)
 {
-  DM                        adapt, plexIn, plexOut;
-  DM_Forest                 *forestIn, *forestAdapt;
-  PetscInt                  dofPerDim[] = {1, 1, 1, 1};
-  PetscSF                   inSF = NULL, outSF = NULL;
-  PetscInt                  *inCids = NULL, *outCids = NULL;
-  DMForestAdaptivityPurpose purpose;
-  PetscErrorCode            ierr;
+  DM             adapt, plexIn, plexOut;
+  DM_Forest      *forestIn, *forestAdapt;
+  PetscInt       dofPerDim[] = {1, 1, 1, 1};
+  PetscSF        inSF = NULL, outSF = NULL;
+  PetscInt       *inCids = NULL, *outCids = NULL;
+  DMAdaptFlag    purpose;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr        = DMForestGetAdaptivityForest(dmOut,&adapt);CHKERRQ(ierr);
@@ -4265,11 +4261,11 @@ static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, 
   if (forestAdapt != forestIn) SETERRQ(PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"Only support transfer from pre-adaptivity to post-adaptivity right now");
   ierr = DMForestGetAdaptivityPurpose(dmOut,&purpose);CHKERRQ(ierr);
   switch (purpose) {
-  case DM_FOREST_REFINE:
+  case DM_ADAPT_REFINE:
     ierr = DMPforestGetTransferSF_Internal(dmIn,dmOut,dofPerDim,&inSF,PETSC_TRUE,&inCids);CHKERRQ(ierr);
     ierr = PetscSFSetUp(inSF);CHKERRQ(ierr);
     break;
-  case DM_FOREST_COARSEN:
+  case DM_ADAPT_COARSEN:
     ierr = DMPforestGetTransferSF_Internal(dmOut,dmIn,dofPerDim,&outSF,PETSC_TRUE,&outCids);CHKERRQ(ierr);
     ierr = PetscSFSetUp(outSF);CHKERRQ(ierr);
     break;

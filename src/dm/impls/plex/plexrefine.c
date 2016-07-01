@@ -6955,3 +6955,11 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMAdaptLabel_Plex"
+PETSC_VISIBILITY_INTERNAL PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel label, DM *dmAdapted)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
