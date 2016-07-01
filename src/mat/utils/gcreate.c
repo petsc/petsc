@@ -85,8 +85,9 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
 
-  B->preallocated = PETSC_FALSE;
-  *A              = B;
+  B->congruentlayouts = -1;
+  B->preallocated     = PETSC_FALSE;
+  *A                  = B;
   PetscFunctionReturn(0);
 }
 

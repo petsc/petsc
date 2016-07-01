@@ -1874,7 +1874,13 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
   ierr = MatZeroRows_SeqBAIJ(l->B,len,lrows,0.0,NULL,NULL);CHKERRQ(ierr);
-  if ((diag != 0.0) && (l->A->rmap->N == l->A->cmap->N)) {
+  if (A->congruentlayouts == -1) { /* first time we compare rows and cols layouts */
+    PetscBool cong;
+    ierr = PetscLayoutCompare(A->rmap,A->cmap,&cong);CHKERRQ(ierr);
+    if (cong) A->congruentlayouts = 1;
+    else      A->congruentlayouts = 0;
+  }
+  if ((diag != 0.0) && A->congruentlayouts) {
     ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,diag,NULL,NULL);CHKERRQ(ierr);
   } else if (diag != 0.0) {
     ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,0.0,0,0);CHKERRQ(ierr);
