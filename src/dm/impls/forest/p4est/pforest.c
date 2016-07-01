@@ -466,6 +466,10 @@ static int pforest_coarsen_flag_any(p4est_t * p4est, p4est_topidx_t which_tree, 
 
   if (quadrants[0]->level <= minLevel) return 0;
   for (i = 0; i < P4EST_CHILDREN; i++) {
+    if (quadrants[i]->p.user_int == DM_ADAPT_KEEP) {
+      any = PETSC_FALSE;
+      break;
+    }
     if (quadrants[i]->p.user_int == DM_ADAPT_COARSEN) {
       any = PETSC_TRUE;
       break;
@@ -491,9 +495,9 @@ static int pforest_coarsen_flag_all(p4est_t * p4est, p4est_topidx_t which_tree, 
   return all ? 1 : 0;
 }
 
-static void pforest_init_keep(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
+static void pforest_init_determine(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
 {
-  quadrant->p.user_int = DM_ADAPT_KEEP;
+  quadrant->p.user_int = DM_ADAPT_DETERMINE;
 }
 
 static int pforest_refine_uniform(p4est_t * p4est, p4est_topidx_t which_tree, p4est_quadrant_t *quadrant)
@@ -918,9 +922,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
         pforest->forest->user_pointer = (void*) &ctx;
         if (adaptAny) {
-          PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_keep));
+          PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_any,pforest_init_determine));
         } else {
-          PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_all,pforest_init_keep));
+          PetscStackCallP4est(p4est_coarsen,(pforest->forest,0,pforest_coarsen_flag_all,pforest_init_determine));
         }
         PetscStackCallP4est(p4est_refine,(pforest->forest,0,pforest_refine_flag,NULL));
         pforest->forest->user_pointer = (void*) dm;
@@ -1063,10 +1067,10 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMForestTemplate(dm,MPI_COMM_NULL,&coarseDM);CHKERRQ(ierr);
       ierr = DMForestSetAdaptivityPurpose(coarseDM,DM_ADAPT_COARSEN);CHKERRQ(ierr);
-      ierr = DMCreateLabel(dm,"coarsen");CHKERRQ(ierr);
-      ierr = DMGetLabel(dm,"coarsen",&coarsen);CHKERRQ(ierr);
+      ierr = DMLabelCreate("coarsen",&coarsen);CHKERRQ(ierr);
       ierr = DMLabelSetDefaultValue(coarsen,DM_ADAPT_COARSEN);CHKERRQ(ierr);
       ierr = DMForestSetAdaptivityLabel(coarseDM,coarsen);CHKERRQ(ierr);
+      ierr = DMLabelDestroy(&coarsen);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
       if (forest->setfromoptionscalled) {
         ierr = DMSetFromOptions(coarseDM);CHKERRQ(ierr);

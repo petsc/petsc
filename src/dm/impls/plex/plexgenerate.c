@@ -1142,11 +1142,13 @@ static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cS
     PetscInt  *closure = NULL;
     PetscBool anyRefine  = PETSC_FALSE;
     PetscBool anyCoarsen = PETSC_FALSE;
+    PetscBool anyKeep    = PETSC_FALSE;
 
     ierr = DMPlexGetTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
     ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
 
     ierr = DMPlexComputeCellGeometryFVM(dm,c,&vol,NULL,NULL);CHKERRQ(ierr);
+    maxVolumes[c - cStart] = vol;
     for (i = 0; i < closureSize; i++) {
       PetscInt point = closure[2 * i], refFlag;
 
@@ -1159,6 +1161,9 @@ static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cS
         anyCoarsen = PETSC_TRUE;
         break;
       case DM_ADAPT_KEEP:
+        anyKeep = PETSC_TRUE;
+        break;
+      case DM_ADAPT_DETERMINE:
         break;
       default:
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlex does not support refinement flag %D\n",refFlag);
@@ -1168,10 +1173,10 @@ static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cS
     }
     if (anyRefine) {
       maxVolumes[c - cStart] = vol / refRatio;
+    } else if (anyKeep) {
+      maxVolumes[c - cStart] = vol;
     } else if (anyCoarsen) {
       maxVolumes[c - cStart] = vol * refRatio;
-    } else {
-      maxVolumes[c - cStart] = vol;
     }
   }
   PetscFunctionReturn(0);
@@ -1345,7 +1350,7 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmAdapted)
   }
   if (minFlag == maxFlag) {
     switch (minFlag) {
-    case DM_ADAPT_KEEP:
+    case DM_ADAPT_DETERMINE:
       *dmAdapted = NULL;
       break;
     case DM_ADAPT_REFINE:

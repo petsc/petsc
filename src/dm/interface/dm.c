@@ -6349,7 +6349,7 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
 #define __FUNCT__ "DMAdaptLabel"
 /*@C
   DMAdaptLabel - Adapt a dm based on a label with values interpreted as coarsening and refining flags.  Specific implementations of DM maybe have
-                 specialized flags, but all implementations should accept flag values DM_ADAPT_KEEP, DM_ADAPT_REFINE, and DM_ADAPT_COARSEN.
+                 specialized flags, but all implementations should accept flag values DM_ADAPT_DETERMINE, DM_ADAPT_KEEP, DM_ADAPT_REFINE, and DM_ADAPT_COARSEN.
 
   Collective on dm
 

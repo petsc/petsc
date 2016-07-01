@@ -424,7 +424,7 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
     if (forest->clearadaptivityforest) {ierr = (forest->clearadaptivityforest)(dm);CHKERRQ(ierr);}
   }
   switch (forest->adaptPurpose) {
-  case DM_ADAPT_KEEP:
+  case DM_ADAPT_DETERMINE:
     ierr          = PetscObjectReference((PetscObject)adapt);CHKERRQ(ierr);
     ierr          = DMDestroy(&(forest->adapt));CHKERRQ(ierr);
     forest->adapt = adapt;
@@ -467,7 +467,7 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   forest = (DM_Forest*) dm->data;
   switch (forest->adaptPurpose) {
-  case DM_ADAPT_KEEP:
+  case DM_ADAPT_DETERMINE:
     *adapt = forest->adapt;
     break;
   case DM_ADAPT_REFINE:
@@ -487,7 +487,7 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
 /*@
   DMForestSetAdaptivityPurpose - During the pre-setup phase, set whether the current DM is being adapted from its
   source (set with DMForestSetAdaptivityForest()) for the purpose of refinement (DM_ADAPT_REFINE), coarsening
-  (DM_ADAPT_COARSEN), or undefined (DM_ADAPT_KEEP).  This only matters for the purposes of reference counting:
+  (DM_ADAPT_COARSEN), or undefined (DM_ADAPT_DETERMINE).  This only matters for the purposes of reference counting:
   during DMDestroy(), cyclic references can be found between DMs only if the cyclic reference is due to a fine/coarse
   relationship (see DMSetFineDM()/DMSetCoarseDM()).  If the purpose is not refinement or coarsening, and the user does
   not maintain a reference to the post-adaptation forest (i.e., the one created by DMForestTemplate()), then this can
@@ -497,7 +497,7 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
 
   Input Parameters:
 + dm - the forest
-- purpose - the adaptivity purpose (DM_ADAPT_KEEP/DM_ADAPT_REFINE/DM_ADAPT_COARSEN)
+- purpose - the adaptivity purpose (DM_ADAPT_DETERMINE/DM_ADAPT_REFINE/DM_ADAPT_COARSEN)
 
   Level: advanced
 
@@ -531,7 +531,7 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
 /*@
   DMForestGetAdaptivityPurpose - Get whether the current DM is being adapted from its source (set with
   DMForestSetAdaptivityForest()) for the purpose of refinement (DM_ADAPT_REFINE), coarsening (DM_ADAPT_COARSEN), or
-  undefined (DM_ADAPT_KEEP).  This only matters for the purposes of reference counting: during DMDestroy(), cyclic
+  undefined (DM_ADAPT_DETERMINE).  This only matters for the purposes of reference counting: during DMDestroy(), cyclic
   references can be found between DMs only if the cyclic reference is due to a fine/coarse relationship (see
   DMSetFineDM()/DMSetCoarseDM()).  If the purpose is not refinement or coarsening, and the user does not maintain a
   reference to the post-adaptation forest (i.e., the one created by DMForestTemplate()), then this can cause a memory
@@ -543,7 +543,7 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
 . dm - the forest
 
   Output Parameter:
-. purpose - the adaptivity purpose (DM_ADAPT_KEEP/DM_ADAPT_REFINE/DM_ADAPT_COARSEN)
+. purpose - the adaptivity purpose (DM_ADAPT_DETERMINE/DM_ADAPT_REFINE/DM_ADAPT_COARSEN)
 
   Level: advanced
 
@@ -1310,8 +1310,8 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
 /*@C
   DMForestSetAdaptivityLabel - During the pre-setup phase, set the label of the pre-adaptation forest (see
   DMForestGetAdaptivityForest()) that holds the adaptation flags (refinement, coarsening, or some combination).  The
-  interpretation of the label values is up to the subtype of DMForest, but DM_ADAPT_KEEP, DM_ADAPT_REFINE, and
-  DM_ADAPT_COARSEN have been reserved as choices that should be accepted by all subtypes.
+  interpretation of the label values is up to the subtype of DMForest, but DM_ADAPT_DETERMINE, DM_ADAPT_KEEP,
+  DM_ADAPT_REFINE, and DM_ADAPT_COARSEN have been reserved as choices that should be accepted by all subtypes.
 
   Logically collective on dm
 
@@ -1341,8 +1341,8 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, DMLabel adaptLabel)
 /*@C
   DMForestGetAdaptivityLabel - Get the label of the pre-adaptation forest (see DMForestGetAdaptivityForest()) that
   holds the adaptation flags (refinement, coarsening, or some combination).  The interpretation of the label values is
-  up to the subtype of DMForest, but DM_ADAPT_KEEP, DM_ADAPT_REFINE, and DM_ADAPT_COARSEN have been reserved as
-  choices that should be accepted by all subtypes.
+  up to the subtype of DMForest, but DM_ADAPT_DETERMINE, DM_ADAPT_KEEP, DM_ADAPT_REFINE, and DM_ADAPT_COARSEN have
+  been reserved as choices that should be accepted by all subtypes.
 
   Not collective
 
@@ -1772,7 +1772,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->data                 = NULL;
   forest->setfromoptionscalled = PETSC_FALSE;
   forest->topology             = NULL;
+  forest->adapt                = NULL;
   forest->base                 = NULL;
+  forest->adaptPurpose         = PETSC_DETERMINE;
   forest->adjDim               = PETSC_DEFAULT;
   forest->overlap              = PETSC_DEFAULT;
   forest->minRefinement        = PETSC_DEFAULT;
@@ -1780,7 +1782,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->initRefinement       = PETSC_DEFAULT;
   forest->cStart               = PETSC_DETERMINE;
   forest->cEnd                 = PETSC_DETERMINE;
-  forest->cellSF               = 0;
+  forest->cellSF               = NULL;
   forest->adaptLabel           = NULL;
   forest->gradeFactor          = 2;
   forest->cellWeights          = NULL;
