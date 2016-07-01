@@ -18,3 +18,5 @@ Mat Object: 1 MPI processes
   Mat Object: 1 MPI processes
     type: seqaij
 row 0: (0, -2.) 
+[0] [0,2) Missing 0, row -1 (diag zero)
+[0] [0,2) Missing 0, row -1 (diag nonzero)

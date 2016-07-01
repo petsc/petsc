@@ -114,12 +114,29 @@ PetscErrorCode MatCopy_IS(Mat A,Mat B,MatStructure str)
 #define __FUNCT__ "MatMissingDiagonal_IS"
 PetscErrorCode MatMissingDiagonal_IS(Mat A,PetscBool  *missing,PetscInt *d)
 {
-  Mat_IS         *a = (Mat_IS*)A->data;
-  PetscErrorCode ierr;
+  Vec               v;
+  const PetscScalar *array;
+  PetscInt          i,n;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (d) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need to be implemented");
-  ierr = MatMissingDiagonal(a->A,missing,NULL);CHKERRQ(ierr);
+  *missing = PETSC_FALSE;
+  ierr = MatCreateVecs(A,NULL,&v);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(A,v);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(v,&array);CHKERRQ(ierr);
+  for (i=0;i<n;i++) if (array[i] == 0.) break;
+  ierr = VecRestoreArrayRead(v,&array);CHKERRQ(ierr);
+  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  if (i != n) *missing = PETSC_TRUE;
+  if (d) {
+    *d = -1;
+    if (*missing) {
+      PetscInt rstart;
+      ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
+      *d = i+rstart;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
