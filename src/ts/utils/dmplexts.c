@@ -125,8 +125,8 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   ierr = DMGetLocalVector(plex, &locF);CHKERRQ(ierr);
   ierr = VecZeroEntries(locF);CHKERRQ(ierr);
   ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, time, locX, NULL, time, locF, user);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(plex, locF, INSERT_VALUES, F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(plex, locF, INSERT_VALUES, F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(plex, locF, ADD_VALUES, F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(plex, locF, ADD_VALUES, F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(plex, &locF);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);

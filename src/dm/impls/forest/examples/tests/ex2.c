@@ -178,6 +178,8 @@ int main(int argc, char **argv)
   /* adapt */
   ierr = AddAdaptivityLabel(preForest,"adapt");CHKERRQ(ierr);
   ierr = DMForestTemplate(preForest,comm,&postForest);CHKERRQ(ierr);
+  ierr = DMForestSetMinimumRefinement(postForest,0);CHKERRQ(ierr);
+  ierr = DMForestSetInitialRefinement(postForest,0);CHKERRQ(ierr);
   ierr = DMForestSetAdaptivityLabel(postForest,"adapt");CHKERRQ(ierr);
   ierr = DMSetUp(postForest);CHKERRQ(ierr);
   ierr = DMViewFromOptions(postForest,NULL,"-dm_post_view");CHKERRQ(ierr);

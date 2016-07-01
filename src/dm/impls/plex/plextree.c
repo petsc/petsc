@@ -2234,9 +2234,12 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(fine,&globalFine);CHKERRQ(ierr);
   { /* winnow fine points that don't have global dofs out of the sf */
-    PetscInt dof, cdof, numPointsWithDofs, offset, *pointsWithDofs;
+    PetscInt dof, cdof, numPointsWithDofs, offset, *pointsWithDofs, nleaves, l;
+    const PetscInt *leaves;
 
-    for (p = pStartF, numPointsWithDofs = 0; p < pEndF; p++) {
+    ierr = PetscSFGetGraph(coarseToFine,NULL,&nleaves,&leaves,NULL);CHKERRQ(ierr);
+    for (l = 0, numPointsWithDofs = 0; l < nleaves; l++) {
+      p = leaves ? leaves[l] : l;
       ierr = PetscSectionGetDof(globalFine,p,&dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(globalFine,p,&cdof);CHKERRQ(ierr);
       if ((dof - cdof) > 0) {
@@ -2244,11 +2247,12 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       }
     }
     ierr = PetscMalloc1(numPointsWithDofs,&pointsWithDofs);CHKERRQ(ierr);
-    for (p = pStartF, offset = 0; p < pEndF; p++) {
+    for (l = 0, offset = 0; l < nleaves; l++) {
+      p = leaves ? leaves[l] : l;
       ierr = PetscSectionGetDof(globalFine,p,&dof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(globalFine,p,&cdof);CHKERRQ(ierr);
       if ((dof - cdof) > 0) {
-        pointsWithDofs[offset++] = p - pStartF;
+        pointsWithDofs[offset++] = l;
       }
     }
     ierr = PetscSFCreateEmbeddedLeafSF(coarseToFine, numPointsWithDofs, pointsWithDofs, &coarseToFineEmbedded);CHKERRQ(ierr);
@@ -4006,7 +4010,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   const PetscInt    *anchors;
   Mat               cMat;
   PetscInt          numFields;
-  PetscInt          pStartC, pEndC, pStartF, pEndF, p, cellStart, cellEnd;
+  PetscInt          pStartC, pEndC, pStartF, pEndF, p, cellStart, cellEnd, cellEndInterior;
   PetscInt          aStart, aEnd, cStart, cEnd;
   PetscInt          *maxChildIds;
   PetscInt          *offsets, *newOffsets, *offsetsCopy, *newOffsetsCopy, *rowOffsets, *numD, *numO;
@@ -4021,6 +4025,8 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   ierr = VecSetOption(vecFine,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetChart(coarse,&pStartC,&pEndC);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(coarse,0,&cellStart,&cellEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(coarse,&cellEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+  cellEnd = (cellEndInterior < 0) ? cellEnd : cellEndInterior;
   ierr = DMPlexGetChart(fine,&pStartF,&pEndF);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(fine,&globalFine);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(coarse,&dim);CHKERRQ(ierr);
@@ -4222,6 +4228,8 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(leafValuesSec,&leafStart,&leafEnd);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(fine,0,&cellStart,&cellEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(fine,&cellEndInterior,NULL,NULL,NULL);CHKERRQ(ierr);
+    cellEnd = (cellEndInterior < 0) ? cellEnd : cellEndInterior;
     for (p = leafStart; p < leafEnd; p++) {
       PetscInt          gDof, gcDof, gOff, lDof;
       PetscInt          numValues, pValOff;
@@ -4270,7 +4278,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
         ierr = DMPlexGetIndicesPoint_Internal(localFine,p,gOff,offsetsCopy,PETSC_FALSE,0,rowIndices);CHKERRQ(ierr);
       }
       if (childId == -1) { /* no child interpolation: one nnz per */
-        ierr = VecSetValues(vecFine,numValues,rowIndices,pVal,ADD_VALUES);CHKERRQ(ierr);
+        ierr = VecSetValues(vecFine,numValues,rowIndices,pVal,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         PetscInt f;
 
@@ -4305,13 +4313,13 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
             for (i = 0; i < numFVcomps; i++) {
               PetscScalar val = 0.;
 
-              for (j = 0; j < 3; j++) {
+              for (j = 0; j < dim; j++) {
                 val += gradient[dim * i + j] * diff[j];
               }
               rVal[i] += val;
             }
           }
-          ierr = VecSetValues(vecFine,numRows,&rowIndices[offsets[f]],rVal,ADD_VALUES);CHKERRQ(ierr);
+          ierr = VecSetValues(vecFine,numRows,&rowIndices[offsets[f]],rVal,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     }
@@ -4391,6 +4399,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
     ierr = PetscSectionGetDof(globalCoarse,p,&dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(globalCoarse,p,&cdof);CHKERRQ(ierr);
     if ((dof - cdof) <= 0) continue;
+    ierr = PetscSectionGetDof(localCoarse,p,&dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(globalCoarse,p,&gOff);CHKERRQ(ierr);
 
     rowOffsets[0] = 0;
@@ -4413,6 +4422,7 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
     ierr = PetscSectionGetDof(multiRootSec,p,&numLeaves);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(multiRootSec,p,&leafStart);CHKERRQ(ierr);
     leafEnd = leafStart + numLeaves;
+    for (l = 0; l < dof; l++) parentValues[l] = 0.;
     for (l = leafStart; l < leafEnd; l++) {
       PetscInt numIndices, childId, offset;
       const PetscScalar *childValues;
@@ -4426,8 +4436,10 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
       if (childId == -2) { /* skip */
         continue;
       } else if (childId == -1) { /* equivalent points: scatter */
-        ierr = VecSetValues(vecCoarse,numIndices,parentIndices,childValues,ADD_VALUES);CHKERRQ(ierr);
-      } else {
+        PetscInt m;
+
+        for (m = 0; m < numIndices; m++) parentValues[m] = childValues[m];
+      } else { /* contributions from children: sum with injectors from reference tree */
         PetscInt parentId, f, lim;
 
         ierr = DMPlexGetTreeParent(refTree,childId,&parentId,NULL);CHKERRQ(ierr);
@@ -4452,22 +4464,20 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
         }
         for (f = 0; f < lim; f++) {
           PetscScalar       *childMat   = &childrenMats[childId - pRefStart][f][0];
-          PetscInt          *rowIndices = &parentIndices[rowOffsets[f]];
-          PetscInt          m           = rowOffsets[f+1]-rowOffsets[f];
           PetscInt          n           = offsets[f+1]-offsets[f];
           PetscInt          i, j;
           const PetscScalar *colValues  = &childValues[offsets[f]];
 
-          for (i = 0; i < m; i++) {
+          for (i = rowOffsets[f]; i < rowOffsets[f + 1]; i++) {
             PetscScalar val = 0.;
             for (j = 0; j < n; j++) {
               val += childMat[n * i + j] * colValues[j];
             }
-            parentValues[i] = val;
+            parentValues[i] += val;
           }
-          ierr = VecSetValues(vecCoarse,m,rowIndices,parentValues,ADD_VALUES);CHKERRQ(ierr);
         }
       }
+      ierr = VecSetValues(vecCoarse,dof,parentIndices,parentValues,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscSectionDestroy(&multiRootSec);CHKERRQ(ierr);
@@ -4527,5 +4537,7 @@ PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, P
   if (sfOut) {
     ierr = DMPlexTransferVecTree_Inject(dmIn,vecIn,dmOut,vecOut,sfOut,cidsOut);CHKERRQ(ierr);
   }
+  ierr = VecAssemblyBegin(vecOut);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(vecOut);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
