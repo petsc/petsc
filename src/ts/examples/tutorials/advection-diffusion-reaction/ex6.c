@@ -230,15 +230,15 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,vo
   c = appctx->a*dt/h; /* Courant-Friedrichs-Lewy number (CFL number) */
 
   if (!mstart) {
-    xave = 0.5*(xoldarray[M-1] + xoldarray[1]);
-    f[mstart] = xarray[mstart] - xave + c*0.5*(xoldarray[1] - xoldarray[M-1]);
+    xave = 0.5*(xoldarray[-1] + xoldarray[1]);
+    f[mstart] = xarray[mstart] - xave + c*0.5*(xoldarray[1] - xoldarray[-1]);
     mstart++;
   }
 
   if (mend == M) {
     mend--;
-    xave = 0.5*(xoldarray[0] + xoldarray[mend-1]);
-    f[mend] = xarray[mend] - xave + c*0.5*(xoldarray[0] - xoldarray[mend-1]);
+    xave = 0.5*(xoldarray[mend+1] + xoldarray[mend-1]);
+    f[mend] = xarray[mend] - xave + c*0.5*(xoldarray[mend+1] - xoldarray[mend-1]);
   }
 
   for (i=mstart; i<mend; i++) {
