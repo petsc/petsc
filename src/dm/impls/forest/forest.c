@@ -1774,7 +1774,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->topology             = NULL;
   forest->adapt                = NULL;
   forest->base                 = NULL;
-  forest->adaptPurpose         = PETSC_DETERMINE;
+  forest->adaptPurpose         = DM_ADAPT_DETERMINE;
   forest->adjDim               = PETSC_DEFAULT;
   forest->overlap              = PETSC_DEFAULT;
   forest->minRefinement        = PETSC_DEFAULT;
