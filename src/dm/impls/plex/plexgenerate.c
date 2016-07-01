@@ -1126,8 +1126,60 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMRefine_Plex_Label"
+static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscReal maxVolumes[])
+{
+  PetscInt       dim, c;
+  PetscReal      refRatio;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr     = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  refRatio = (PetscReal) ((PetscInt) 1 << dim);
+  for (c = cStart; c < cEnd; c++) {
+    PetscReal vol;
+    PetscInt  i, closureSize = 0;
+    PetscInt  *closure = NULL;
+    PetscBool anyRefine  = PETSC_FALSE;
+    PetscBool anyCoarsen = PETSC_FALSE;
+
+    ierr = DMPlexGetTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+    ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+
+    ierr = DMPlexComputeCellGeometryFVM(dm,c,&vol,NULL,NULL);CHKERRQ(ierr);
+    for (i = 0; i < closureSize; i++) {
+      PetscInt point = closure[2 * i], refFlag;
+
+      ierr = DMLabelGetValue(adaptLabel,point,&refFlag);CHKERRQ(ierr);
+      switch (refFlag) {
+      case DM_ADAPT_REFINE:
+        anyRefine = PETSC_TRUE;
+        break;
+      case DM_ADAPT_COARSEN:
+        anyCoarsen = PETSC_TRUE;
+        break;
+      case DM_ADAPT_KEEP:
+        break;
+      default:
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlex does not support refinement flag %D\n",refFlag);
+        break;
+      }
+      if (anyRefine) break;
+    }
+    if (anyRefine) {
+      maxVolumes[c - cStart] = vol / refRatio;
+    } else if (anyCoarsen) {
+      maxVolumes[c - cStart] = vol * refRatio;
+    } else {
+      maxVolumes[c - cStart] = vol;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMRefine_Plex"
-PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
+static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adaptLabel, DM *dmRefined)
 {
   PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *);
   PetscReal        refinementLimit;
@@ -1170,7 +1222,9 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscInt c;
 
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      if (refinementFunc) {
+      if (adaptLabel) {
+        ierr = DMRefine_Plex_Label(dm,adaptLabel,cStart,cEnd,maxVolumes);CHKERRQ(ierr);
+      } else if (refinementFunc) {
         for (c = cStart; c < cEnd; ++c) {
           PetscReal vol, centroid[3];
           PetscReal maxVol;
@@ -1196,7 +1250,9 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscInt   c;
 
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      if (refinementFunc) {
+      if (adaptLabel) {
+        ierr = DMRefine_Plex_Label(dm,adaptLabel,cStart,cEnd,maxVolumes);CHKERRQ(ierr);
+      } else if (refinementFunc) {
         for (c = cStart; c < cEnd; ++c) {
           PetscReal vol, centroid[3];
 
@@ -1216,7 +1272,9 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscInt c;
 
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      if (refinementFunc) {
+      if (adaptLabel) {
+        ierr = DMRefine_Plex_Label(dm,adaptLabel,cStart,cEnd,maxVolumes);CHKERRQ(ierr);
+      } else if (refinementFunc) {
         for (c = cStart; c < cEnd; ++c) {
           PetscReal vol, centroid[3];
 
@@ -1238,6 +1296,72 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
   if (localized) {
     ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRefine_Plex"
+PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMRefine_Plex_Internal(dm,comm,NULL,dmRefined);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMAdaptLabel_Plex"
+PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmAdapted)
+{
+  PetscInt       defFlag, minFlag, maxFlag, numFlags, i;
+  const PetscInt *flags;
+  IS             flagIS;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetDefaultValue(adaptLabel,&defFlag);CHKERRQ(ierr);
+  minFlag = defFlag;
+  maxFlag = defFlag;
+  ierr = DMLabelGetValueIS(adaptLabel,&flagIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(flagIS,&numFlags);CHKERRQ(ierr);
+  ierr = ISGetIndices(flagIS,&flags);CHKERRQ(ierr);
+  for (i = 0; i < numFlags; i++) {
+    PetscInt flag = flags[i];
+
+    minFlag = PetscMin(minFlag,flag);
+    maxFlag = PetscMax(maxFlag,flag);
+  }
+  ierr = ISRestoreIndices(flagIS,&flags);CHKERRQ(ierr);
+  ierr = ISDestroy(&flagIS);CHKERRQ(ierr);
+  {
+    PetscInt minMaxFlag[2] = {minFlag, -maxFlag};
+    PetscInt minMaxFlagGlobal[2];
+
+    ierr = MPI_Allreduce(minMaxFlag,minMaxFlagGlobal,2,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    minFlag = minMaxFlagGlobal[0];
+    maxFlag = -minMaxFlagGlobal[1];
+  }
+  if (minFlag == maxFlag) {
+    switch (minFlag) {
+    case DM_ADAPT_KEEP:
+      *dmAdapted = NULL;
+      break;
+    case DM_ADAPT_REFINE:
+      ierr = DMPlexSetRefinementUniform(dm,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = DMRefine(dm,MPI_COMM_NULL,dmAdapted);CHKERRQ(ierr);
+      break;
+    case DM_ADAPT_COARSEN:
+      ierr = DMCoarsen(dm,MPI_COMM_NULL,dmAdapted);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlex does not support refinement flag %D\n",minFlag);
+      break;
+    }
+  } else {
+    ierr = DMPlexSetRefinementUniform(dm,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMRefine_Plex_Internal(dm,MPI_COMM_NULL,adaptLabel,dmAdapted);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
