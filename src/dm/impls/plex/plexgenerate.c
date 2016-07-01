@@ -1183,7 +1183,7 @@ static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cS
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMRefine_Plex"
+#define __FUNCT__ "DMRefine_Plex_Internal"
 static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adaptLabel, DM *dmRefined)
 {
   PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *);
