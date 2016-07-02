@@ -926,11 +926,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   } else {
     Mat Arhs = NULL,Brhs = NULL;
     if (rhsjacobian) {
-      if (ijacobian) {
-        ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
-      } else {
-        ierr = TSGetIJacobian(ts,&Arhs,&Brhs,NULL,NULL);CHKERRQ(ierr);
-      }
+      ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
       ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
     }
     if (Arhs == A) {           /* No IJacobian, so we only have the RHS matrix */
