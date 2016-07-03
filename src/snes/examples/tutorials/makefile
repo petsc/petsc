@@ -1256,7 +1256,7 @@ TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden \
                                  runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_5_nasm  \
-                                 ex5.rm ex7.PETSc runex7 ex7.rm\
+                                 ex5.rm \
                                  ex14.PETSc runex14 runex14_2 runex14_3 runex14_3_ds ex14.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
