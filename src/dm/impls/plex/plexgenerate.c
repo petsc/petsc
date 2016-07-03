@@ -1342,9 +1342,10 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmAdapted)
   ierr = ISRestoreIndices(flagIS,&flags);CHKERRQ(ierr);
   ierr = ISDestroy(&flagIS);CHKERRQ(ierr);
   {
-    PetscInt minMaxFlag[2] = {minFlag, -maxFlag};
-    PetscInt minMaxFlagGlobal[2];
+    PetscInt minMaxFlag[2], minMaxFlagGlobal[2];
 
+    minMaxFlag[0] = minFlag;
+    minMaxFlag[1] = -maxFlag;
     ierr = MPI_Allreduce(minMaxFlag,minMaxFlagGlobal,2,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     minFlag = minMaxFlagGlobal[0];
     maxFlag = -minMaxFlagGlobal[1];
