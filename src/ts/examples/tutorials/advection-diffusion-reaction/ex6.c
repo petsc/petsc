@@ -30,6 +30,7 @@ typedef struct {
 extern PetscErrorCode InitialConditions(TS,Vec,AppCtx*);
 extern PetscErrorCode Solution(TS,PetscReal,Vec,AppCtx*);
 extern PetscErrorCode IFunction_LaxFriedrichs(TS,PetscReal,Vec,Vec,Vec,void*);
+extern PetscErrorCode IFunction_LaxWendroff(TS,PetscReal,Vec,Vec,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -42,9 +43,13 @@ int main(int argc,char **argv)
   PetscReal      dt;
   DM             da;
   PetscInt       M;
+  PetscMPIInt    rank;
+  PetscBool      useLaxWendroff = PETSC_TRUE;
 
   /* Initialize program and set problem parameters */
-  ierr      = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  
   appctx.a  = -1.0;
   ierr      = PetscOptionsGetScalar(NULL,NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
   if (appctx.a >= 0) SETERRQ(PETSC_COMM_WORLD,1,"a > 0 is not supported for upwind scheme used in this example!");
@@ -59,16 +64,20 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
 
   /* Function evaluation */
-  ierr = TSSetIFunction(ts,NULL,IFunction_LaxFriedrichs,&appctx);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-useLaxWendroff",&useLaxWendroff,NULL);CHKERRQ(ierr);
+  if (useLaxWendroff) {
+    if (!rank) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"... Use Lax-Wendroff finite volume\n");CHKERRQ(ierr);
+    }
+    ierr = TSSetIFunction(ts,NULL,IFunction_LaxWendroff,&appctx);CHKERRQ(ierr);
+  } else {
+    if (!rank) { 
+      ierr = PetscPrintf(PETSC_COMM_SELF,"... Use Lax-LaxFriedrichs finite difference\n");CHKERRQ(ierr);
+    }
+    ierr = TSSetIFunction(ts,NULL,IFunction_LaxFriedrichs,&appctx);CHKERRQ(ierr);
+  }
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Customize timestepping solver:
-       - Set timestepping duration info
-     Then set runtime options, which can override these defaults.
-     For example,
-          -ts_max_steps <maxsteps> -ts_final_time <maxtime>
-     to override the defaults set by TSSetDuration().
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* Customize timestepping solver */
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dt   = -1.0/(appctx.a*M);
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
@@ -226,7 +235,7 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,vo
   ierr = DMDAVecGetArrayRead(da,localXold,&xoldarray);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
-  /* advection -- upwinding (appctx->a < 0) */
+  /* advection -- finite difference with upwind (appctx->a < 0) */
   c = appctx->a*dt/h; /* Courant-Friedrichs-Lewy number (CFL number) */
 
   if (!mstart) {
@@ -244,6 +253,79 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,vo
   for (i=mstart; i<mend; i++) {
     xave = 0.5*(xoldarray[i-1] + xoldarray[i+1]);
     f[i] = xarray[i] - xave + c*0.5*(xoldarray[i+1] - xoldarray[i-1]);
+  }
+
+  /* Restore vectors */
+  ierr = DMDAVecRestoreArrayRead(da,localX,&xarray);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localXold,&xoldarray);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localXold);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+ Use Lax Wendroff method to evaluate F(x,t) = Xdot + a *  dU/dx
+*/
+#undef __FUNCT__
+#define __FUNCT__ "IFunction_LaxWendroff"
+PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
+{
+  PetscErrorCode ierr;
+  AppCtx         *appctx=(AppCtx*)ctx;
+  PetscInt       mstart,mend,M,i,xm;
+  DM             da;
+  Vec            localX,Xold,localXold;
+  PetscScalar    *xarray,*f,*xoldarray,h,RFlux,LFlux,a, lambda;
+  PetscReal      dt;
+
+  PetscFunctionBegin;
+  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&Xold);CHKERRQ(ierr);
+
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&mstart,0,0,&xm,0,0);CHKERRQ(ierr);
+  h    = 1.0/M;
+  mend = mstart + xm;
+  /* printf(" mstart %d, xm %d\n",mstart,xm); */
+
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+
+  ierr = DMGetLocalVector(da,&localXold);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,Xold,INSERT_VALUES,localXold);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,Xold,INSERT_VALUES,localXold);CHKERRQ(ierr);
+
+  /* Get pointers to vector data */
+  ierr = DMDAVecGetArrayRead(da,localX,&xarray);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localXold,&xoldarray);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+
+  /* advection -- finite volume (appctx->a < 0 -- can be relaxed?) */
+  lambda = dt/h;
+  a = appctx->a;
+  //printf("c %f, lambda %f, a %f\n,",c,lambda,a);
+
+  if (!mstart) {
+    RFlux =  (0.5 * a * xoldarray[mstart+1] + xoldarray[mstart]) - (a*a*0.5*lambda) * (xoldarray[mstart+1] - xoldarray[mstart]);
+    LFlux =  (0.5 * a * xoldarray[M] + xoldarray[mstart]) - (a*a*0.5*lambda) * (xoldarray[mstart] - xoldarray[M]);
+    f[mstart] = xarray[mstart] - (xoldarray[mstart] - lambda * (RFlux - LFlux));    
+    mstart++;
+  }
+
+  if (mend == M) {
+    mend--;
+    RFlux =  (0.5 * a * xoldarray[0] + xoldarray[mend]) - (a*a*0.5*lambda) * (xoldarray[0] - xoldarray[mend]);
+    LFlux =  (0.5 * a * xoldarray[mend-1] + xoldarray[mend]) - (a*a*0.5*lambda) * (xoldarray[mend] - xoldarray[mend-1]);
+    f[mend] = xarray[mend] - (xoldarray[mend] - lambda * (RFlux - LFlux));
+  }
+
+  for (i=mstart; i<mend; i++) {
+    RFlux =  (0.5 * a * xoldarray[i+1] + xoldarray[i]) - (a*a*0.5*lambda) * (xoldarray[i+1] - xoldarray[i]);
+    LFlux =  (0.5 * a * xoldarray[i-1] + xoldarray[i]) - (a*a*0.5*lambda) * (xoldarray[i] - xoldarray[i-1]);
+    f[i] = xarray[i] - (xoldarray[i] - lambda * (RFlux - LFlux));
   }
 
   /* Restore vectors */
