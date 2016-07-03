@@ -1145,11 +1145,9 @@ static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cS
     PetscBool anyCoarsen = PETSC_FALSE;
     PetscBool anyKeep    = PETSC_FALSE;
 
-    ierr = DMPlexGetTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-    ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-
     ierr = DMPlexComputeCellGeometryFVM(dm,c,&vol,NULL,NULL);CHKERRQ(ierr);
     maxVolumes[c - cStart] = vol;
+    ierr = DMPlexGetTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
     for (i = 0; i < closureSize; i++) {
       PetscInt point = closure[2 * i], refFlag;
 
@@ -1172,6 +1170,7 @@ static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cS
       }
       if (anyRefine) break;
     }
+    ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
     if (anyRefine) {
       maxVolumes[c - cStart] = vol / refRatio;
     } else if (anyKeep) {
