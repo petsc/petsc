@@ -234,18 +234,6 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,vo
   /* advection -- finite difference with upwind (appctx->a < 0) */
   c = appctx->a*dt/h; /* Courant-Friedrichs-Lewy number (CFL number) */
 
-  if (!mstart) {
-    xave = 0.5*(xoldarray[-1] + xoldarray[1]);
-    f[mstart] = xarray[mstart] - xave + c*0.5*(xoldarray[1] - xoldarray[-1]);
-    mstart++;
-  }
-
-  if (mend == M) {
-    mend--;
-    xave = 0.5*(xoldarray[mend+1] + xoldarray[mend-1]);
-    f[mend] = xarray[mend] - xave + c*0.5*(xoldarray[mend+1] - xoldarray[mend-1]);
-  }
-
   for (i=mstart; i<mend; i++) {
     xave = 0.5*(xoldarray[i-1] + xoldarray[i+1]);
     f[i] = xarray[i] - xave + c*0.5*(xoldarray[i+1] - xoldarray[i-1]);
@@ -260,7 +248,7 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,vo
 }
 
 /*
- Use Lax Wendroff method to evaluate F(x,t) = Xdot + a *  dU/dx
+ Use Lax-Wendroff method to evaluate F(x,t) = Xdot + a *  dU/dx
 */
 #undef __FUNCT__
 #define __FUNCT__ "IFunction_LaxWendroff"
@@ -271,7 +259,7 @@ PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   PetscInt       mstart,mend,M,i,xm;
   DM             da;
   Vec            Xold,localXold;
-  PetscScalar    *xarray,*f,*xoldarray,h,RFlux,LFlux,a, lambda;
+  PetscScalar    *xarray,*f,*xoldarray,h,RFlux,LFlux,a,lambda;
   PetscReal      dt;
 
   PetscFunctionBegin;
@@ -297,26 +285,11 @@ PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   /* advection -- finite volume (appctx->a < 0 -- can be relaxed?) */
   lambda = dt/h;
   a = appctx->a;
-  //printf("c %f, lambda %f, a %f\n,",c,lambda,a);
-
-  if (!mstart) {
-    RFlux =  (0.5 * a * xoldarray[mstart+1] + xoldarray[mstart]) - (a*a*0.5*lambda) * (xoldarray[mstart+1] - xoldarray[mstart]);
-    LFlux =  (0.5 * a * xoldarray[M] + xoldarray[mstart]) - (a*a*0.5*lambda) * (xoldarray[mstart] - xoldarray[M]);
-    f[mstart] = xarray[mstart] - (xoldarray[mstart] - lambda * (RFlux - LFlux));    
-    mstart++;
-  }
-
-  if (mend == M) {
-    mend--;
-    RFlux =  (0.5 * a * xoldarray[0] + xoldarray[mend]) - (a*a*0.5*lambda) * (xoldarray[0] - xoldarray[mend]);
-    LFlux =  (0.5 * a * xoldarray[mend-1] + xoldarray[mend]) - (a*a*0.5*lambda) * (xoldarray[mend] - xoldarray[mend-1]);
-    f[mend] = xarray[mend] - (xoldarray[mend] - lambda * (RFlux - LFlux));
-  }
 
   for (i=mstart; i<mend; i++) {
-    RFlux =  (0.5 * a * xoldarray[i+1] + xoldarray[i]) - (a*a*0.5*lambda) * (xoldarray[i+1] - xoldarray[i]);
-    LFlux =  (0.5 * a * xoldarray[i-1] + xoldarray[i]) - (a*a*0.5*lambda) * (xoldarray[i] - xoldarray[i-1]);
-    f[i] = xarray[i] - (xoldarray[i] - lambda * (RFlux - LFlux));
+    RFlux = 0.5 * a * (xoldarray[i+1] + xoldarray[i]) - a*a*0.5*lambda * (xoldarray[i+1] - xoldarray[i]);
+    LFlux = 0.5 * a * (xoldarray[i-1] + xoldarray[i]) - a*a*0.5*lambda * (xoldarray[i] - xoldarray[i-1]);
+    f[i]  = xarray[i] - xoldarray[i] + lambda * (RFlux - LFlux);
   }
 
   /* Restore vectors */
