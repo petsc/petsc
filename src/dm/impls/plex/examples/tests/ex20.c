@@ -21,7 +21,6 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex20",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim","domain dimension",NULL,dim,&dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-nfaces","number of faces per dimension",NULL,nfaces,&nfaces,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate","interpolate between vertices and cells",NULL,interpolate,&interpolate,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD,dim,nfaces,interpolate,&dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-pre_adapt_dm_view");CHKERRQ(ierr);
