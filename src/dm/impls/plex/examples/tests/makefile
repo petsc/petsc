@@ -51,6 +51,10 @@ ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o ${PETSC_DM_LIB}
 	${RM} -f ex19.o
 
+ex20: ex20.o  chkopts
+	-${CLINKER} -o ex20 ex20.o ${PETSC_DM_LIB}
+	${RM} -f ex20.o
+
 
 #--------------------------------------------------------------------------
 runex1:
@@ -141,6 +145,12 @@ runex15_0:
            if (${DIFF} output/ex15_0_alt.out ex15_0.tmp > /dev/null 2>&1) then x='good'; fi; \
            if [ "$$x" = "bad" ]; then ${DIFF} output/ex15_0.out ex15_0.tmp ; ${DIFF} output/ex15_0_alt.out ex15_0.tmp ; printf "${PWD}\nPossible problem with ex15_0, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex15_0.tmp
+
+runex20_2d:
+	-@${MPIEXEC} -n 1 ./ex20 -dim 2
+
+runex20_3d:
+	-@${MPIEXEC} -n 1 ./ex20 -dim 3
 
 TESTEXAMPLES_C        = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm
 TESTEXAMPLES_HDF5     = ex15.PETSc runex15_0 ex15.rm
