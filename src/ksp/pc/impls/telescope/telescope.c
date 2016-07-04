@@ -186,7 +186,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat
     ierr = VecScatterBegin(sred->scatter,vecs[k],sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sred->scatter,vecs[k],sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (sub_vecs) {
-      /* copy vector entires into xred */
+      /* copy vector entries into xred */
       ierr = VecGetArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
       if (sub_vecs[k]) {
         ierr = VecGetOwnershipRange(sub_vecs[k],&st,&ed);CHKERRQ(ierr);
@@ -374,6 +374,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
   case TELESCOPE_DMPLEX: SETERRQ(comm,PETSC_ERR_SUP,"Supprt for DMPLEX is currently not available");
     break;
   default: SETERRQ(comm,PETSC_ERR_SUP,"Only supprt for repartitioning DMDA is provided");
+  default: SETERRQ(comm,PETSC_ERR_SUP,"Only support for repartitioning DMDA is provided");
     break;
   }
 
@@ -946,16 +947,16 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    PCTELESCOPE - Runs a KSP solver on a sub-group of processors. MPI processes not in the sub-communicator are idle during the solve.
 
    Options Database:
-+  -pc_telescope_reduction_factor <n> - factor to use communicator size by, for example if you are using 64 MPI processes and
-   use an n of 4, the new sub-communicator will be 4 defined with 64/4 processes
--  -pc_telescope_ignore_dm <false> - flag to indicate whether an attached DM should be ignored
++  -pc_telescope_reduction_factor <r> - factor to use communicator size by. e.g. with 64 MPI processes and r=4, the new sub-communicator will have 64/4 = 16 ranks.
+-  -pc_telescope_ignore_dm  - flag to indicate whether an attached DM should be ignored
+-  -pc_telescope_subcomm_type <interlaced,contiguous> - how to define the reduced communicator. see PetscSubcomm for more.
 
    Level: advanced
 
    Notes:
    The preconditioner is deemed telescopic as it only calls KSPSolve() on a single
    sub-communicator in contrast with PCREDUNDANT which calls KSPSolve() on N sub-communicators.
-   This means there will be MPI processes within c, which will be idle during the application of this preconditioner.
+   This means there will be MPI processes within c which will be idle during the application of this preconditioner.
 
    The default KSP is PREONLY. If a DM is attached to the PC, it is re-partitioned on the sub-communicator.
    Both the B mat operator and the right hand side vector are permuted into the new DOF ordering defined by the re-partitioned DM.
@@ -973,7 +974,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    Then KSPSolve() is executed on the c' communicator.
 
    The communicator used within the telescoping preconditioner is defined by a PetscSubcomm using the INTERLACED 
-   creation routine. We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
+   creation routine by default (this can be changed with -pc_telescope_subcomm_type). We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
 
    The telescoping preconditioner is aware of nullspaces which are attached to the only B operator.
    In case where B has a n nullspace attached, these nullspaces vectors are extract from B and mapped into
