@@ -1379,7 +1379,7 @@ runex55_NC:
         ${RM} -f ex.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg -pc_gamg_square_graph 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.5,0,1.05 -gamg_est_ksp_type cg -gamg_est_ksp_max_it 10 -pc_gamg_asm_use_agg -mg_levels_sub_pc_type lu -mg_levels_pc_asm_overlap 0 > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 13 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -pc_gamg_square_graph 1 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -gamg_est_ksp_type cg -gamg_est_ksp_max_it 10 -pc_gamg_asm_use_agg true -mg_levels_sub_pc_type lu -mg_levels_pc_asm_overlap 0 -pc_gamg_threshold 0.01 -pc_gamg_coarse_eq_limit 200 -pc_gamg_process_eq_limit 250 -pc_gamg_repartition true -pc_mg_cycle_type v > ex.tmp 2>&1; \
          ${DIFF} output/ex56_0.out ex.tmp || printf "${PWD}\nPossible problem with ex56_0.out, diffs above \n=========================================\n"; \
          ${RM} -f ex.tmp
 
@@ -1558,7 +1558,7 @@ runex63_2:
 	   if (${DIFF} output/ex63_2.out ex63_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex63_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex63_2.tmp
-	   
+
 runex64:
 	-@${MPIEXEC} -n 4 ./ex64  -ksp_monitor -pc_gasm_overlap  1  -sub_pc_type lu  -sub_pc_factor_mat_solver_package superlu_dist    -pc_gasm_total_subdomains 2 > ex64.tmp 2>&1;	  \
 	   if (${DIFF} output/ex64.out ex64.tmp) then true; \
