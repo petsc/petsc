@@ -811,7 +811,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
 
 #undef __FUNCT__
 #define __FUNCT__ "PCTelescopeMatNullSpaceCreate_dmda"
-PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat sub_mat)
+PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat sub_mat,PetscBool near)
 {
   PetscErrorCode   ierr;
   MatNullSpace     nullspace,sub_nullspace;
@@ -825,10 +825,18 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
 
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,&A,&B);CHKERRQ(ierr);
-  ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
+  if (near) {
+    ierr = MatGetNearNullSpace(B,&nullspace);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
+  }
   if (!nullspace) PetscFunctionReturn(0);
 
-  ierr = PetscInfo(pc,"PCTelescope: generating nullspace (DMDA)\n");CHKERRQ(ierr);
+  if (near) {
+    ierr = PetscInfo(pc,"PCTelescope: generating near nullspace (DMDA)\n");CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo(pc,"PCTelescope: generating nullspace (DMDA)\n");CHKERRQ(ierr);
+  }
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
   subcomm = PetscSubcommChild(sred->psubcomm);
   ierr = MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs);CHKERRQ(ierr);
@@ -869,13 +877,17 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   }
 
   if (isActiveRank(sred->psubcomm)) {
-    /* create new nullspace for redundant object */
+    /* create new (near) nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,&sub_nullspace);CHKERRQ(ierr);
-    sub_nullspace->remove = nullspace->remove;
-    sub_nullspace->rmctx = nullspace->rmctx;
+    if (nullspace->remove) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
+    if (nullspace->rmctx) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
 
     /* attach redundant nullspace to Bred */
-    ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
+    if (near) {
+      ierr = MatSetNearNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
+    }
     ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

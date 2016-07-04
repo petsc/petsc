@@ -20,12 +20,12 @@ struct _PC_Telescope {
   void              *dm_ctx;
   PetscErrorCode    (*pctelescope_setup_type)(PC,PC_Telescope);
   PetscErrorCode    (*pctelescope_matcreate_type)(PC,PC_Telescope,MatReuse,Mat*);
-  PetscErrorCode    (*pctelescope_matnullspacecreate_type)(PC,PC_Telescope,Mat);
+  PetscErrorCode    (*pctelescope_matnullspacecreate_type)(PC,PC_Telescope,Mat,PetscBool);
   PetscErrorCode    (*pctelescope_reset_type)(PC);
 };
 
-PetscBool isActiveRank(PetscSubcomm);
-DM private_PCTelescopeGetSubDM(PC_Telescope);
+ PetscBool isActiveRank(PetscSubcomm);
+ DM private_PCTelescopeGetSubDM(PC_Telescope);
 
 /* DMDA */
 typedef struct {
@@ -37,16 +37,16 @@ typedef struct {
   PetscInt        *start_i_re,*start_j_re,*start_k_re;
 } PC_Telescope_DMDACtx;
 
-PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,
+ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,
                                                PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,
                                                PetscMPIInt*,PetscMPIInt*,PetscMPIInt*,PetscMPIInt*);
 
-PetscErrorCode _DMDADetermineGlobalS0(PetscInt,PetscMPIInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+ PetscErrorCode _DMDADetermineGlobalS0(PetscInt,PetscMPIInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
-PetscErrorCode PCTelescopeSetUp_dmda(PC,PC_Telescope);
-PetscErrorCode PCTelescopeMatCreate_dmda(PC,PC_Telescope,MatReuse,Mat*);
-PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC,PC_Telescope,Mat);
-PetscErrorCode PCApply_Telescope_dmda(PC,Vec,Vec);
+ PetscErrorCode PCTelescopeSetUp_dmda(PC,PC_Telescope);
+ PetscErrorCode PCTelescopeMatCreate_dmda(PC,PC_Telescope,MatReuse,Mat*);
+ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC,PC_Telescope,Mat,PetscBool);
+ PetscErrorCode PCApply_Telescope_dmda(PC,Vec,Vec);
 PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason);
 PetscErrorCode PCReset_Telescope_dmda(PC);
 PetscErrorCode DMView_DMDAShort(DM,PetscViewer);
