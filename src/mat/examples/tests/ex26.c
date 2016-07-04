@@ -24,11 +24,11 @@ PetscErrorCode DumpCSR(Mat A,PetscInt shift,PetscBool symmetric,PetscBool compre
   ierr = PetscPrintf(PETSC_COMM_SELF,"===========================================================\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"CSR for %s: shift %d symmetric %d compressed %d\n",type,shift,symmetric,compressed);CHKERRQ(ierr);
   for (i=0;i<nr;i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%d:",i+shift);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%d:",i+shift);CHKERRQ(ierr);
     for (j=ia[i];j<ia[i+1];j++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF," %d",ja[j-shift]);
+      ierr = PetscPrintf(PETSC_COMM_SELF," %d",ja[j-shift]);CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
   }
   ierr = MatRestoreRowIJ(A,shift,symmetric,compressed,&nr,&ia,&ja,&done);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -119,9 +119,9 @@ int main(int argc,char **args)
   for (i=0;i<2;i++) {
     PetscInt shift = i;
     for (j=0;j<2;j++) {
-      PetscBool symmetric = j==0 ? PETSC_TRUE : PETSC_FALSE;
+      PetscBool symmetric = ((j>0) ? PETSC_FALSE : PETSC_TRUE);
       for (k=0;k<2;k++) {
-        PetscBool compressed = k==0 ? PETSC_TRUE : PETSC_FALSE;
+        PetscBool compressed = ((k>0) ? PETSC_FALSE : PETSC_TRUE);
         ierr = DumpCSR(A,shift,symmetric,compressed);CHKERRQ(ierr);
         ierr = DumpCSR(B,shift,symmetric,compressed);CHKERRQ(ierr);
         ierr = DumpCSR(C,shift,symmetric,compressed);CHKERRQ(ierr);
@@ -132,5 +132,5 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
