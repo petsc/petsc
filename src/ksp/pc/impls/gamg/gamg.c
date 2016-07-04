@@ -608,25 +608,25 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* set blocks for ASM smoother that uses the 'aggregates' */
       if (pc_gamg->use_aggs_in_asm) {
         PetscInt sz;
-        IS       *is;
+        IS       *iss;
 
         sz   = nASMBlocksArr[level];
-        is   = ASMLocalIDsArr[level];
+        iss   = ASMLocalIDsArr[level];
         ierr = PCSetType(subpc, PCASM);CHKERRQ(ierr);
         ierr = PCASMSetOverlap(subpc, 0);CHKERRQ(ierr);
         ierr = PCASMSetType(subpc,PC_ASM_BASIC);CHKERRQ(ierr);
         if (!sz) {
           IS       is;
           ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
-          ierr = PCASMSetLocalSubdomains(subpc, 1, &is, NULL);CHKERRQ(ierr);
+          ierr = PCASMSetLocalSubdomains(subpc, 1, NULL, &is);CHKERRQ(ierr);
           ierr = ISDestroy(&is);CHKERRQ(ierr);
         } else {
           PetscInt kk;
-          ierr = PCASMSetLocalSubdomains(subpc, sz, NULL, is);CHKERRQ(ierr);
+          ierr = PCASMSetLocalSubdomains(subpc, sz, NULL, iss);CHKERRQ(ierr);
           for (kk=0; kk<sz; kk++) {
-            ierr = ISDestroy(&is[kk]);CHKERRQ(ierr);
+            ierr = ISDestroy(&iss[kk]);CHKERRQ(ierr);
           }
-          ierr = PetscFree(is);CHKERRQ(ierr);
+          ierr = PetscFree(iss);CHKERRQ(ierr);
         }
         ASMLocalIDsArr[level] = NULL;
         nASMBlocksArr[level]  = 0;
