@@ -214,7 +214,7 @@ static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope s
     /* create new (near) nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,&sub_nullspace);CHKERRQ(ierr);
     if (nullspace->remove) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
-    if (nullspace->rmctx) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near ) nullspaces with PCTelescope");
+    if (nullspace->rmctx) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
 
     /* attach redundant (near) nullspace to Bred */
     if (near) {
@@ -991,9 +991,9 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    The communicator used within the telescoping preconditioner is defined by a PetscSubcomm using the INTERLACED 
    creation routine by default (this can be changed with -pc_telescope_subcomm_type). We run the sub KSP on only the ranks within the communicator which have a color equal to zero.
 
-   The telescoping preconditioner is aware of nullspaces which are attached to the only B operator.
-   In case where B has a n nullspace attached, these nullspaces vectors are extract from B and mapped into
-   a new nullspace (defined on the sub-communicator) which is attached to B' (the B operator which was scattered to c')
+   The telescoping preconditioner is aware of nullspaces and near nullspaces which are attached to the B operator.
+   In the case where B has a (near) nullspace attached, the (near) nullspace vectors are extract from B and mapped into
+   a new (near) nullspace, defined on the sub-communicator, which is attached to B' (the B operator which was scattered to c')
 
    The telescoping preconditioner is aware of an attached DM. In the event that the DM is of type DMDA (2D or 3D - 
    1D support for 1D DMDAs is not provided), a new DMDA is created on c' (e.g. it is re-partitioned), and this new DM 
