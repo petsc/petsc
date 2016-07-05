@@ -23,12 +23,14 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-nfaces","number of faces per dimension",NULL,nfaces,&nfaces,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD,dim,nfaces,interpolate,&dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)dm,"Pre Adaptation Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-pre_adapt_dm_view");CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMLabelCreate("adapt",&adaptLabel);CHKERRQ(ierr);
   ierr = DMLabelSetDefaultValue(adaptLabel,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   if (cEnd > cStart) {ierr = DMLabelSetValue(adaptLabel,cStart,DM_ADAPT_REFINE);CHKERRQ(ierr);}
   ierr = DMAdaptLabel(dm,adaptLabel,&dmAdapt);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)dmAdapt,"Post Adaptation Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dmAdapt,NULL,"-post_adapt_dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
