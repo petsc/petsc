@@ -22,11 +22,11 @@ PetscErrorCode DumpCSR(Mat A,PetscInt shift,PetscBool symmetric,PetscBool compre
   ierr = MatGetType(A,&type);CHKERRQ(ierr);
   ierr = MatGetRowIJ(A,shift,symmetric,compressed,&nr,&ia,&ja,&done);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"===========================================================\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"CSR for %s: shift %d symmetric %d compressed %d\n",type,shift,symmetric,compressed);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"CSR for %s: shift %D symmetric %D compressed %D\n",type,shift,(PetscInt)symmetric,(PetscInt)compressed);CHKERRQ(ierr);
   for (i=0;i<nr;i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%d:",i+shift);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%D:",i+shift);CHKERRQ(ierr);
     for (j=ia[i];j<ia[i+1];j++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF," %d",ja[j-shift]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF," %D",ja[j-shift]);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
   }
