@@ -148,13 +148,13 @@ runex15_0:
 
 runex20_2d:
 	-@${MPIEXEC} -n 1 ./ex20 -pre_adapt_dm_view ::ascii_info_detail -post_adapt_dm_view ::ascii_info_detail -dim 2 > ex20_2d.tmp 2>&1;\
-		if (${DIFF} output/ex20_2d.out ex20_2d.tmp > /dev/null 2>&1) then true ;\
+		if (${DIFF} output/ex20_2d.out ex20_2d.tmp) then true ;\
 		else printf "${PWD}\nPossible problem with runex20_2d, diffs above\n================================================================\n"; fi ;\
 		${RM} -f ex20_2d.tmp
 
 runex20_3d:
 	-@${MPIEXEC} -n 1 ./ex20 -pre_adapt_dm_view ::ascii_info_detail -post_adapt_dm_view ::ascii_info_detail -dim 3 > ex20_3d.tmp 2>&1;\
-		if (${DIFF} output/ex20_3d.out ex20_3d.tmp > /dev/null 2>&1) then true ;\
+		if (${DIFF} output/ex20_3d.out ex20_3d.tmp) then true ;\
 		else printf "${PWD}\nPossible problem with runex20_3d, diffs above\n================================================================\n"; fi ;\
 		${RM} -f ex20_3d.tmp
 
