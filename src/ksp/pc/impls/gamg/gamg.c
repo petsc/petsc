@@ -92,7 +92,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   }
 
   /* get number of PEs to make active 'new_size', reduce, can be any integer 1-P */
-  if (is_last && !pc_gamg->use_parallel_coarse_grid_solver) new_size = 1; 
+  if (is_last && !pc_gamg->use_parallel_coarse_grid_solver) new_size = 1;
   else {
     PetscInt ncrs_eq_glob;
     ierr     = MatGetSize(Cmat, &ncrs_eq_glob, NULL);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates of primal part accordingly */
       Mat adj;
 
-     ierr = PetscInfo3(pc,"Repartition: size (active): %D --> %D, neq = %D\n",*a_nactive_proc,new_size,ncrs_eq);CHKERRQ(ierr);
+     ierr = PetscInfo3(pc,"Repartition: size (active): %D --> %D, %D local equations\n",*a_nactive_proc,new_size,ncrs_eq);CHKERRQ(ierr);
 
       /* get 'adj' */
       if (cr_bs == 1) {
@@ -563,7 +563,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
     ierr = MatGetSize(Parr[level1], &M, &N);CHKERRQ(ierr); /* N is next M, a loop test variables */
-    /* PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s Parr size %d %d\n",rank,__FUNCT__,M,N); */
     if (is_last) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Is last ????????");
     if (N <= pc_gamg->coarse_eq_limit) is_last = PETSC_TRUE;
     ierr = pc_gamg->ops->createlevel(pc, Aarr[level], bs, &Parr[level1], &Aarr[level1], &nactivepe, NULL, is_last);CHKERRQ(ierr);
@@ -645,21 +644,23 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       Mat Lmat = Aarr[(level=pc_gamg->Nlevels-1)]; lidx = 0;
       ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
       ierr = KSPSetOperators(smoother, Lmat, Lmat);CHKERRQ(ierr);
-      ierr = KSPSetNormType(smoother, KSP_NORM_NONE);CHKERRQ(ierr);
-      ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
-      ierr = PCSetType(subpc, PCBJACOBI);CHKERRQ(ierr);
-      ierr = PCSetUp(subpc);CHKERRQ(ierr);
-      ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);
-      if (ii != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D is not one",ii);
-      ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
-      ierr = PCSetType(pc2, PCLU);CHKERRQ(ierr);
-      ierr = PCFactorSetShiftType(pc2,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(k2[0],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
-      ierr = KSPSetType(k2[0], KSPPREONLY);CHKERRQ(ierr);
-      /* This flag gets reset by PCBJacobiGetSubKSP(), but our BJacobi really does the same algorithm everywhere (and in
-       * fact, all but one process will have zero dofs), so we reset the flag to avoid having PCView_BJacobi attempt to
-       * view every subdomain as though they were different. */
-      ((PC_BJacobi*)subpc->data)->same_local_solves = PETSC_TRUE;
+      if (!pc_gamg->use_parallel_coarse_grid_solver) {
+        ierr = KSPSetNormType(smoother, KSP_NORM_NONE);CHKERRQ(ierr);
+        ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
+        ierr = PCSetType(subpc, PCBJACOBI);CHKERRQ(ierr);
+        ierr = PCSetUp(subpc);CHKERRQ(ierr);
+        ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);
+        if (ii != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D is not one",ii);
+        ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
+        ierr = PCSetType(pc2, PCLU);CHKERRQ(ierr);
+        ierr = PCFactorSetShiftType(pc2,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
+        ierr = KSPSetTolerances(k2[0],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
+        ierr = KSPSetType(k2[0], KSPPREONLY);CHKERRQ(ierr);
+        /* This flag gets reset by PCBJacobiGetSubKSP(), but our BJacobi really does the same algorithm everywhere (and in
+         * fact, all but one process will have zero dofs), so we reset the flag to avoid having PCView_BJacobi attempt to
+         * view every subdomain as though they were different. */
+        ((PC_BJacobi*)subpc->data)->same_local_solves = PETSC_TRUE;
+      }
     }
 
     /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
@@ -939,16 +940,16 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetUseParallelCoarseGridSolve"
 /*@
-   PCGAMGSetUseParallelCoarseGridSolve - Have the PCGAMG smoother on each level use the aggregates defined by the coarsening process as the subdomains for the additive Schwarz preconditioner.
+   PCGAMGSetUseParallelCoarseGridSolve - allow a parallel coarse grid solver
 
    Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
--  flg - PETSC_TRUE to use aggregates, PETSC_FALSE to not
+-  flg - PETSC_TRUE to not force coarse grid onto one processor
 
    Options Database Key:
-.  -pc_gamg_asm_use_agg
+.  -pc_gamg_use_parallel_coarse_grid_solver
 
    Level: intermediate
 
@@ -1213,7 +1214,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
     ierr = PetscOptionsBool("-pc_gamg_repartition","Repartion coarse grids","PCGAMGSetRepartition",pc_gamg->repart,&pc_gamg->repart,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseInterpolation",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_gamg_asm_use_agg","Use aggregation agragates for ASM smoother","PCGAMGASMSetUseAggs",pc_gamg->use_aggs_in_asm,&pc_gamg->use_aggs_in_asm,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-use_parallel_coarse_grid_solver","Use parallel coarse grid solver (otherwise put last grid on one process)","PCGAMGSetUseParallelCoarseGridSolve",pc_gamg->use_parallel_coarse_grid_solver,&pc_gamg->use_parallel_coarse_grid_solver,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_use_parallel_coarse_grid_solver","Use parallel coarse grid solver (otherwise put last grid on one process)","PCGAMGSetUseParallelCoarseGridSolve",pc_gamg->use_parallel_coarse_grid_solver,&pc_gamg->use_parallel_coarse_grid_solver,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gamg_process_eq_limit","Limit (goal) on number of equations per process on coarse grids","PCGAMGSetProcEqLim",pc_gamg->min_eq_proc,&pc_gamg->min_eq_proc,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit","Limit on number of equations for the coarse grid","PCGAMGSetCoarseEqLim",pc_gamg->coarse_eq_limit,&pc_gamg->coarse_eq_limit,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_gamg_threshold","Relative threshold to use for dropping edges in aggregation graph","PCGAMGSetThreshold",pc_gamg->threshold,&pc_gamg->threshold,&flag);CHKERRQ(ierr);

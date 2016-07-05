@@ -403,8 +403,7 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_bcs);CHKERRQ(ierr);
     *a_sz = kk + 1; /* out */
-  }
-  else {
+  } else {
     is_bcs=0;
     *a_sz = kk; /* out */
   }
