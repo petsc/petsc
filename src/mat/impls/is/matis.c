@@ -113,7 +113,7 @@ static PetscErrorCode MatGetSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse scall,
   ierr = VecGetLocalSize(rtest,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(rtest,&m,NULL);CHKERRQ(ierr);
   ierr = VecGetArrayRead(rtest,&array);CHKERRQ(ierr);
-  for (i=0;i<n;i++) if (array[i] != 0. && array[i] != 1.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Index %D counted %D times! Irow may not have duplicate entries",i+m,(PetscInt)array[i]);
+  for (i=0;i<n;i++) if (array[i] != 0. && array[i] != 1.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Index %D counted %D times! Irow may not have duplicate entries",i+m,(PetscInt)PetscRealPart(array[i]));
   ierr = VecRestoreArrayRead(rtest,&array);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irow,&idxs);CHKERRQ(ierr);
   ierr = ISGetLocalSize(icol,&n);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ static PetscErrorCode MatGetSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse scall,
   ierr = VecGetLocalSize(ltest,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(ltest,&m,NULL);CHKERRQ(ierr);
   ierr = VecGetArrayRead(ltest,&array);CHKERRQ(ierr);
-  for (i=0;i<n;i++) if (array[i] != 0. && array[i] != 1.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Index %D counted %D times! Icol may not have duplicate entries",i+m,(PetscInt)array[i]);
+  for (i=0;i<n;i++) if (array[i] != 0. && array[i] != 1.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Index %D counted %D times! Icol may not have duplicate entries",i+m,(PetscInt)PetscRealPart(array[i]));
   ierr = VecRestoreArrayRead(ltest,&array);CHKERRQ(ierr);
   ierr = ISRestoreIndices(icol,&idxs);CHKERRQ(ierr);
   ierr = VecDestroy(&rtest);CHKERRQ(ierr);
