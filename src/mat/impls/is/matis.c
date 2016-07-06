@@ -14,8 +14,223 @@ static PetscErrorCode MatISComputeSF_Private(Mat);
 static PetscErrorCode MatISZeroRowsLocal_Private(Mat,PetscInt,const PetscInt[],PetscScalar);
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscLayoutMapLocal_Private"
+static PetscErrorCode PetscLayoutMapLocal_Private(PetscLayout map,PetscInt N,const PetscInt idxs[],const PetscInt gidxs[], PetscInt *on,PetscInt **oidxs,PetscInt **ogidxs)
+{
+  PetscInt      *owners = map->range;
+  PetscInt       n      = map->n;
+  PetscSF        sf;
+  PetscInt      *lidxs,*work = NULL;
+  PetscSFNode   *ridxs;
+  PetscMPIInt    rank;
+  PetscInt       r, p = 0, len = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Create SF where leaves are input idxs and roots are owned idxs (code adapted from MatZeroRowsMapLocal_Private) */
+  ierr = MPI_Comm_rank(map->comm,&rank);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&lidxs);CHKERRQ(ierr);
+  for (r = 0; r < n; ++r) lidxs[r] = -1;
+  ierr = PetscMalloc1(N,&ridxs);CHKERRQ(ierr);
+  for (r = 0; r < N; ++r) {
+    const PetscInt idx = idxs[r];
+    if (idx < 0 || map->N <= idx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range [0,%D)",idx,map->N);
+    if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this idx too */
+      ierr = PetscLayoutFindOwner(map,idx,&p);CHKERRQ(ierr);
+    }
+    ridxs[r].rank = p;
+    ridxs[r].index = idxs[r] - owners[p];
+  }
+  ierr = PetscSFCreate(map->comm,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,n,N,NULL,PETSC_OWN_POINTER,ridxs,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,(PetscInt*)idxs,lidxs,MPI_LOR);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,(PetscInt*)idxs,lidxs,MPI_LOR);CHKERRQ(ierr);
+  if ((gidxs && ogidxs) || ogidxs) {
+    ierr = PetscMalloc1(n,&work);CHKERRQ(ierr);
+    if (!gidxs) { /* if gidxs is not provided, global indices are inferred */
+      PetscInt cum = 0,start,*work2;
+      ierr = PetscCalloc1(N,&work2);CHKERRQ(ierr);
+      for (r = 0; r < N; ++r) if (idxs[r] >=0) cum++;
+      ierr = MPI_Scan(&cum,&start,1,MPIU_INT,MPI_SUM,map->comm);CHKERRQ(ierr);
+      start -= cum;
+      cum = 0;
+      for (r = 0; r < N; ++r) if (idxs[r] >=0) work2[r] = start+cum++;
+      ierr = PetscSFReduceBegin(sf,MPIU_INT,work2,work,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf,MPIU_INT,work2,work,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscFree(work2);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFReduceBegin(sf,MPIU_INT,(PetscInt*)gidxs,work,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf,MPIU_INT,(PetscInt*)gidxs,work,MPIU_REPLACE);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  /* Compress and put in indices */
+  for (r = 0; r < n; ++r)
+    if (lidxs[r] >= 0) {
+      if (work) work[len] = work[r];
+      lidxs[len++] = r;
+    }
+  if (on) *on = len;
+  if (oidxs) *oidxs = lidxs;
+  if (ogidxs) *ogidxs = work;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatrix_IS"
+static PetscErrorCode MatGetSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse scall,Mat *newmat)
+{
+  Mat               locmat,newlocmat;
+  Mat_IS            *newmatis;
+#if defined(PETSC_USE_DEBUG)
+  Vec               rtest,ltest;
+  const PetscScalar *array;
+#endif
+  const PetscInt    *idxs;
+  PetscInt          i,m,n;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_REUSE_MATRIX) {
+    PetscBool ismatis;
+
+    ierr = PetscObjectTypeCompare((PetscObject)*newmat,MATIS,&ismatis);CHKERRQ(ierr);
+    if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)*newmat),PETSC_ERR_ARG_WRONG,"Cannot reuse matrix! Not of MATIS type");
+    newmatis = (Mat_IS*)(*newmat)->data;
+    if (!newmatis->getsub_ris) SETERRQ(PetscObjectComm((PetscObject)*newmat),PETSC_ERR_ARG_WRONG,"Cannot reuse matrix! Misses local row IS");
+    if (!newmatis->getsub_cis) SETERRQ(PetscObjectComm((PetscObject)*newmat),PETSC_ERR_ARG_WRONG,"Cannot reuse matrix! Misses local col IS");
+  }
+  /* irow and icol may not have duplicate entries */
+#if defined(PETSC_USE_DEBUG)
+  ierr = MatCreateVecs(mat,&ltest,&rtest);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(irow,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(irow,&idxs);CHKERRQ(ierr);
+  for (i=0;i<n;i++) {
+    ierr = VecSetValue(rtest,idxs[i],1.0,ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(rtest);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(rtest);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(rtest,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(rtest,&m,NULL);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(rtest,&array);CHKERRQ(ierr);
+  for (i=0;i<n;i++) if (array[i] != 0. && array[i] != 1.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Index %D counted %D times! Irow may not have duplicate entries",i+m,(PetscInt)array[i]);
+  ierr = VecRestoreArrayRead(rtest,&array);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(irow,&idxs);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(icol,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(icol,&idxs);CHKERRQ(ierr);
+  for (i=0;i<n;i++) {
+    ierr = VecSetValue(ltest,idxs[i],1.0,ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(ltest);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(ltest);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(ltest,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(ltest,&m,NULL);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(ltest,&array);CHKERRQ(ierr);
+  for (i=0;i<n;i++) if (array[i] != 0. && array[i] != 1.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Index %D counted %D times! Icol may not have duplicate entries",i+m,(PetscInt)array[i]);
+  ierr = VecRestoreArrayRead(ltest,&array);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(icol,&idxs);CHKERRQ(ierr);
+  ierr = VecDestroy(&rtest);CHKERRQ(ierr);
+  ierr = VecDestroy(&ltest);CHKERRQ(ierr);
+#endif
+  if (scall == MAT_INITIAL_MATRIX) {
+    Mat_IS                 *matis = (Mat_IS*)mat->data;
+    ISLocalToGlobalMapping rl2g;
+    IS                     is;
+    PetscInt               *lidxs,*lgidxs,*newgidxs;
+    PetscInt               i,m,n,ll,newloc;
+    MPI_Comm               comm;
+
+    ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(irow,&m);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(icol,&n);CHKERRQ(ierr);
+    ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
+    ierr = MatSetType(*newmat,MATIS);CHKERRQ(ierr);
+    ierr = MatSetSizes(*newmat,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    /* communicate irow to their owners in the layout */
+    ierr = ISGetIndices(irow,&idxs);CHKERRQ(ierr);
+    ierr = PetscLayoutMapLocal_Private(mat->rmap,m,idxs,NULL,&ll,&lidxs,&lgidxs);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(irow,&idxs);CHKERRQ(ierr);
+    if (!matis->sf) { /* setup SF if not yet created and allocate rootdata and leafdata */
+      ierr = MatISComputeSF_Private(mat);CHKERRQ(ierr);
+    }
+    ierr = PetscMemzero(matis->sf_rootdata,matis->sf_nroots*sizeof(PetscInt));CHKERRQ(ierr);
+    for (i=0;i<ll;i++) matis->sf_rootdata[lidxs[i]] = lgidxs[i]+1;
+    ierr = PetscFree(lidxs);CHKERRQ(ierr);
+    ierr = PetscFree(lgidxs);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+    for (i=0,newloc=0;i<matis->sf_nleaves;i++) if (matis->sf_leafdata[i]) newloc++;
+    ierr = PetscMalloc1(newloc,&newgidxs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(newloc,&lidxs);CHKERRQ(ierr);
+    for (i=0,newloc=0;i<matis->sf_nleaves;i++)
+      if (matis->sf_leafdata[i]) {
+        lidxs[newloc] = i;
+        newgidxs[newloc++] = matis->sf_leafdata[i]-1;
+      }
+    ierr = ISCreateGeneral(comm,newloc,newgidxs,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    /* local is to extract local submatrix */
+    newmatis = (Mat_IS*)(*newmat)->data;
+    ierr = ISCreateGeneral(comm,newloc,lidxs,PETSC_OWN_POINTER,&newmatis->getsub_ris);CHKERRQ(ierr);
+    if (mat->congruentlayouts == -1) { /* first time we compare rows and cols layouts */
+      PetscBool cong;
+      ierr = PetscLayoutCompare(mat->rmap,mat->cmap,&cong);CHKERRQ(ierr);
+      if (cong) mat->congruentlayouts = 1;
+      else      mat->congruentlayouts = 0;
+    }
+    if (mat->congruentlayouts && irow == icol) {
+      ierr = MatSetLocalToGlobalMapping(*newmat,rl2g,rl2g);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)newmatis->getsub_ris);CHKERRQ(ierr);
+      newmatis->getsub_cis = newmatis->getsub_ris;
+    } else {
+      ISLocalToGlobalMapping cl2g;
+
+      /* communicate icol to their owners in the layout */
+      ierr = ISGetIndices(icol,&idxs);CHKERRQ(ierr);
+      ierr = PetscLayoutMapLocal_Private(mat->cmap,n,idxs,NULL,&ll,&lidxs,&lgidxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(icol,&idxs);CHKERRQ(ierr);
+      ierr = PetscMemzero(matis->csf_rootdata,matis->csf_nroots*sizeof(PetscInt));CHKERRQ(ierr);
+      for (i=0;i<ll;i++) matis->csf_rootdata[lidxs[i]] = lgidxs[i]+1;
+      ierr = PetscFree(lidxs);CHKERRQ(ierr);
+      ierr = PetscFree(lgidxs);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(matis->csf,MPIU_INT,matis->csf_rootdata,matis->csf_leafdata);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(matis->csf,MPIU_INT,matis->csf_rootdata,matis->csf_leafdata);CHKERRQ(ierr);
+      for (i=0,newloc=0;i<matis->csf_nleaves;i++) if (matis->csf_leafdata[i]) newloc++;
+      ierr = PetscMalloc1(newloc,&newgidxs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(newloc,&lidxs);CHKERRQ(ierr);
+      for (i=0,newloc=0;i<matis->csf_nleaves;i++)
+        if (matis->csf_leafdata[i]) {
+          lidxs[newloc] = i;
+          newgidxs[newloc++] = matis->csf_leafdata[i]-1;
+        }
+      ierr = ISCreateGeneral(comm,newloc,newgidxs,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
+      ierr = ISDestroy(&is);CHKERRQ(ierr);
+      /* local is to extract local submatrix */
+      ierr = ISCreateGeneral(comm,newloc,lidxs,PETSC_OWN_POINTER,&newmatis->getsub_cis);CHKERRQ(ierr);
+      ierr = MatSetLocalToGlobalMapping(*newmat,rl2g,cl2g);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+    }
+    ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+  } else {
+    ierr = MatISGetLocalMat(*newmat,&newlocmat);CHKERRQ(ierr);
+  }
+  ierr = MatISGetLocalMat(mat,&locmat);CHKERRQ(ierr);
+  newmatis = (Mat_IS*)(*newmat)->data;
+  ierr = MatGetSubMatrix(locmat,newmatis->getsub_ris,newmatis->getsub_cis,scall,&newlocmat);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = MatISSetLocalMat(*newmat,newlocmat);CHKERRQ(ierr);
+    ierr = MatDestroy(&newlocmat);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetLocalSubMatrix_IS"
-PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
+static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
 {
   Mat                    lA,lsubmat;
   ISLocalToGlobalMapping rl2g,cl2g;
@@ -96,7 +311,7 @@ PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCopy_IS"
-PetscErrorCode MatCopy_IS(Mat A,Mat B,MatStructure str)
+static PetscErrorCode MatCopy_IS(Mat A,Mat B,MatStructure str)
 {
   Mat_IS         *a = (Mat_IS*)A->data,*b;
   PetscBool      ismatis;
@@ -112,7 +327,7 @@ PetscErrorCode MatCopy_IS(Mat A,Mat B,MatStructure str)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMissingDiagonal_IS"
-PetscErrorCode MatMissingDiagonal_IS(Mat A,PetscBool  *missing,PetscInt *d)
+static PetscErrorCode MatMissingDiagonal_IS(Mat A,PetscBool  *missing,PetscInt *d)
 {
   Vec               v;
   const PetscScalar *array;
@@ -153,10 +368,24 @@ static PetscErrorCode MatISComputeSF_Private(Mat B)
   ierr = MatGetLocalSize(B,&matis->sf_nroots,NULL);CHKERRQ(ierr);
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)B),&matis->sf);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetIndices(B->rmap->mapping,&gidxs);CHKERRQ(ierr);
-  /* PETSC_OWN_POINTER refers to ilocal which is NULL */
   ierr = PetscSFSetGraphLayout(matis->sf,B->rmap,matis->sf_nleaves,NULL,PETSC_OWN_POINTER,gidxs);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingRestoreIndices(B->rmap->mapping,&gidxs);CHKERRQ(ierr);
   ierr = PetscMalloc2(matis->sf_nroots,&matis->sf_rootdata,matis->sf_nleaves,&matis->sf_leafdata);CHKERRQ(ierr);
+  if (B->rmap->mapping != B->cmap->mapping) { /* setup SF for columns */
+    ierr = MatGetSize(matis->A,NULL,&matis->csf_nleaves);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(B,NULL,&matis->csf_nroots);CHKERRQ(ierr);
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)B),&matis->csf);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(B->cmap->mapping,&gidxs);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(matis->csf,B->cmap,matis->csf_nleaves,NULL,PETSC_OWN_POINTER,gidxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(B->cmap->mapping,&gidxs);CHKERRQ(ierr);
+    ierr = PetscMalloc2(matis->csf_nroots,&matis->csf_rootdata,matis->csf_nleaves,&matis->csf_leafdata);CHKERRQ(ierr);
+  } else {
+    matis->csf = matis->sf;
+    matis->csf_nleaves = matis->sf_nleaves;
+    matis->csf_nroots = matis->sf_nroots;
+    matis->csf_leafdata = matis->sf_leafdata;
+    matis->csf_rootdata = matis->sf_rootdata;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -588,7 +817,7 @@ PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatIsHermitian_IS"
-PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
+static PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   Mat_IS         *matis = (Mat_IS*)A->data;
@@ -602,7 +831,7 @@ PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatIsSymmetric_IS"
-PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool  *flg)
+static PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   Mat_IS         *matis = (Mat_IS*)A->data;
@@ -616,7 +845,7 @@ PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool  *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_IS"
-PetscErrorCode MatDestroy_IS(Mat A)
+static PetscErrorCode MatDestroy_IS(Mat A)
 {
   PetscErrorCode ierr;
   Mat_IS         *b = (Mat_IS*)A->data;
@@ -627,6 +856,12 @@ PetscErrorCode MatDestroy_IS(Mat A)
   ierr = VecScatterDestroy(&b->rctx);CHKERRQ(ierr);
   ierr = VecDestroy(&b->x);CHKERRQ(ierr);
   ierr = VecDestroy(&b->y);CHKERRQ(ierr);
+  ierr = ISDestroy(&b->getsub_ris);CHKERRQ(ierr);
+  ierr = ISDestroy(&b->getsub_cis);CHKERRQ(ierr);
+  if (b->sf != b->csf) {
+    ierr = PetscSFDestroy(&b->csf);CHKERRQ(ierr);
+    ierr = PetscFree2(b->csf_rootdata,b->csf_leafdata);CHKERRQ(ierr);
+  }
   ierr = PetscSFDestroy(&b->sf);CHKERRQ(ierr);
   ierr = PetscFree2(b->sf_rootdata,b->sf_leafdata);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
@@ -640,7 +875,7 @@ PetscErrorCode MatDestroy_IS(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_IS"
-PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
+static PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   Mat_IS         *is  = (Mat_IS*)A->data;
@@ -663,7 +898,7 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_IS"
-PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
+static PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 {
   Vec            temp_vec;
   PetscErrorCode ierr;
@@ -684,7 +919,7 @@ PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_IS"
-PetscErrorCode MatMultTranspose_IS(Mat A,Vec y,Vec x)
+static PetscErrorCode MatMultTranspose_IS(Mat A,Vec y,Vec x)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -706,7 +941,7 @@ PetscErrorCode MatMultTranspose_IS(Mat A,Vec y,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_IS"
-PetscErrorCode MatMultTransposeAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
+static PetscErrorCode MatMultTransposeAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 {
   Vec            temp_vec;
   PetscErrorCode ierr;
@@ -727,7 +962,7 @@ PetscErrorCode MatMultTransposeAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_IS"
-PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 {
   Mat_IS         *a = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -743,7 +978,7 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetLocalToGlobalMapping_IS"
-PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
+static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {
   PetscErrorCode ierr;
   PetscInt       nr,rbs,nc,cbs;
@@ -810,7 +1045,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValues_IS"
-PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols, const PetscScalar *values, InsertMode addv)
+static PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
   Mat_IS         *is = (Mat_IS*)mat->data;
   PetscErrorCode ierr;
@@ -841,7 +1076,7 @@ PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlocked_IS"
-PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols, const PetscScalar *values, InsertMode addv)
+static PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
   Mat_IS         *is = (Mat_IS*)mat->data;
   PetscErrorCode ierr;
@@ -872,7 +1107,7 @@ PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m,const PetscInt *rows, 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesLocal_IS"
-PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
+static PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
 {
   PetscErrorCode ierr;
   Mat_IS         *is = (Mat_IS*)A->data;
@@ -884,7 +1119,7 @@ PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlockedLocal_IS"
-PetscErrorCode MatSetValuesBlockedLocal_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
+static PetscErrorCode MatSetValuesBlockedLocal_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
 {
   PetscErrorCode ierr;
   Mat_IS         *is = (Mat_IS*)A->data;
@@ -896,7 +1131,7 @@ PetscErrorCode MatSetValuesBlockedLocal_IS(Mat A,PetscInt m,const PetscInt *rows
 
 #undef __FUNCT__
 #define __FUNCT__ "MatZeroRows_IS"
-PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
+static PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_IS         *matis = (Mat_IS*)A->data;
   PetscInt       nr,nl,len,i;
@@ -982,7 +1217,7 @@ static PetscErrorCode MatISZeroRowsLocal_Private(Mat A,PetscInt n,const PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyBegin_IS"
-PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
+static PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -994,7 +1229,7 @@ PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_IS"
-PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
+static PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -1006,7 +1241,7 @@ PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISGetLocalMat_IS"
-PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
+static PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
 {
   Mat_IS *is = (Mat_IS*)mat->data;
 
@@ -1048,7 +1283,7 @@ PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetLocalMat_IS"
-PetscErrorCode MatISSetLocalMat_IS(Mat mat,Mat local)
+static PetscErrorCode MatISSetLocalMat_IS(Mat mat,Mat local)
 {
   Mat_IS         *is = (Mat_IS*)mat->data;
   PetscInt       nrows,ncols,orows,ocols;
@@ -1098,7 +1333,7 @@ PetscErrorCode MatISSetLocalMat(Mat mat,Mat local)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatZeroEntries_IS"
-PetscErrorCode MatZeroEntries_IS(Mat A)
+static PetscErrorCode MatZeroEntries_IS(Mat A)
 {
   Mat_IS         *a = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -1110,7 +1345,7 @@ PetscErrorCode MatZeroEntries_IS(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatScale_IS"
-PetscErrorCode MatScale_IS(Mat A,PetscScalar a)
+static PetscErrorCode MatScale_IS(Mat A,PetscScalar a)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -1122,7 +1357,7 @@ PetscErrorCode MatScale_IS(Mat A,PetscScalar a)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_IS"
-PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
+static PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -1140,7 +1375,7 @@ PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_IS"
-PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
+static PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
 {
   Mat_IS         *a = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -1273,6 +1508,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->missingdiagonal         = MatMissingDiagonal_IS;
   A->ops->copy                    = MatCopy_IS;
   A->ops->getlocalsubmatrix       = MatGetLocalSubMatrix_IS;
+  A->ops->getsubmatrix            = MatGetSubMatrix_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);

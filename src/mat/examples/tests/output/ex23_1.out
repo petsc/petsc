@@ -3,7 +3,8 @@ Mat Object: 1 MPI processes
   Mat Object: (is_) 1 MPI processes
     type: seqaij
 row 0: (0, 2.)  (1, -2.) 
-row 1: (0, -2.)  (1, 2.) 
+row 1: (0, -4.)  (1, 4.) 
+Test MatGetLocalSubMatrix
 IS Object: 1 MPI processes
   type: stride
 Index set is permutation
@@ -18,5 +19,8 @@ Mat Object: 1 MPI processes
   Mat Object: 1 MPI processes
     type: seqaij
 row 0: (0, -2.) 
+Test MatISGetMPIXAIJ
+Test MatGetSubMatrix
+Test MatZeroRows
 [0] [0,2) Missing 0, row -1 (diag zero)
 [0] [0,2) Missing 0, row -1 (diag nonzero)
