@@ -54,7 +54,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscSc
   eta = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]);
 
   if ((xi >= -eps) && (eta >= -eps) && (xi + eta <= 2.0+eps)) *cell = c;
-  else *cell = -1;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   PetscFunctionReturn(0);
 }
 
@@ -116,7 +116,7 @@ static PetscErrorCode DMPlexLocatePoint_General_2D_Internal(DM dm, const PetscSc
     if ((cond1 || cond2)  && above) ++crossings;
   }
   if (crossings % 2) *cell = c;
-  else *cell = -1;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -140,7 +140,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
   zeta = invJ[2*embedDim+0]*(x - v0[0]) + invJ[2*embedDim+1]*(y - v0[1]) + invJ[2*embedDim+2]*(z - v0[2]);
 
   if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 2.0)) *cell = c;
-  else *cell = -1;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   PetscFunctionReturn(0);
 }
 
@@ -191,7 +191,7 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
     }
   }
   if (found) *cell = c;
-  else *cell = -1;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -588,8 +588,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     const PetscScalar *point = &a[p*bs];
     PetscInt           dbin[3], bin, cell = -1, cellOffset;
 
-    cells[p].rank  = -1;
-    cells[p].index = -1;
+    cells[p].rank  = 0;
+    cells[p].index = DMLOCATEPOINT_POINT_NOT_FOUND;
     if (hash) {
       ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
       /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
@@ -623,7 +623,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       PetscReal          cpoint[3], diff[3], dist, distMax = PETSC_MAX_REAL;
       PetscInt           dbin[3], bin, cellOffset, d;
 
-      if (cells[p].rank < 0) {
+      if (cells[p].index < 0) {
         ++numFound;
         ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells);CHKERRQ(ierr);
@@ -645,8 +645,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   }
   /* This code is only be relevant when interfaced to parallel point location */
   /* Check for highest numbered proc that claims a point (do we care?) */
-  if (numFound < numPoints) {
-    if (ltype == DM_POINTLOCATION_NEAREST) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Nearest point location does not support parallel point location.");
+  if (ltype == DM_POINTLOCATION_REMOVE && numFound < numPoints) {
     ierr = PetscMalloc1(numFound,&found);CHKERRQ(ierr);
     for (p = 0, numFound = 0; p < numPoints; p++) {
       if (cells[p].rank >= 0 && cells[p].index >= 0) {
@@ -2025,8 +2024,8 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   Input Arguments:
 + dm  - The DM
 . fvm - The PetscFV
-. faceGeometry - The face geometry from DMPlexGetFaceGeometryFVM()
-- cellGeometry - The face geometry from DMPlexGetCellGeometryFVM()
+. faceGeometry - The face geometry from DMPlexComputeFaceGeometryFVM()
+- cellGeometry - The face geometry from DMPlexComputeCellGeometryFVM()
 
   Output Parameters:
 + faceGeometry - The geometric factors for gradient calculation are inserted

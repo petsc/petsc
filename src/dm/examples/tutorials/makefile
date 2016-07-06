@@ -4,13 +4,20 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c  ex7.c ex8.c ex9.c ex10.c ex12.c ex15.c ex51.c ex65dm.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c  ex7.c ex8.c ex9.c ex10.c ex12.c ex15.c ex51.c ex65dm.c swarm_ex1.c
 EXAMPLESF       = ex11f90.F ex13f90aux.F90 ex13f90.F90
 MANSEC          = DM
 SUBMANSEC       = DMDA
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
+
+swarm_ex1: swarm_ex1.o   chkopts
+	-${CLINKER} -o swarm_ex1 swarm_ex1.o  ${PETSC_DM_LIB}
+swarm_ex2: swarm_ex2.o   chkopts
+	-${CLINKER} -o swarm_ex2 swarm_ex2.o  ${PETSC_DM_LIB}
+swarm_ex3: swarm_ex3.o   chkopts
+	-${CLINKER} -o swarm_ex3 swarm_ex3.o  ${PETSC_DM_LIB}
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}

@@ -1,0 +1,183 @@
+DMSWARM_PIC: Using method CellDM->LocatePoints
+  DMSWARM_PIC: Using method CellDM->GetNeigbors
+  0 SNES Function norm 17.8197 
+    0 KSP Residual norm 17.8197 
+    1 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_RTOL iterations 1
+  1 SNES Function norm < 1.e-11
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=1
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI processes
+    type: fgmres
+      GMRES: restart=10, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    right preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI processes
+    type: fieldsplit
+      FieldSplit with Schur preconditioner, factorization FULL
+      Preconditioner for the Schur complement formed from A11
+      Split info:
+      Split number 0 Defined by IS
+      Split number 1 Defined by IS
+      KSP solver for A00 block
+        KSP Object: (fieldsplit_velocity_) 1 MPI processes
+          type: gmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        PC Object: (fieldsplit_velocity_) 1 MPI processes
+          type: lu
+            LU: out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            matrix ordering: nd
+            factor fill ratio given 5., needed 2.3299
+              Factored matrix follows:
+                Mat Object: 1 MPI processes
+                  type: seqaij
+                  rows=1058, cols=1058, bs=2
+                  package used to perform factorization: petsc
+                  total: nonzeros=70540, allocated nonzeros=70540
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 529 nodes, limit used is 5
+          linear system matrix = precond matrix:
+          Mat Object: (fieldsplit_velocity_) 1 MPI processes
+            type: seqaij
+            rows=1058, cols=1058, bs=2
+            total: nonzeros=30276, allocated nonzeros=30276
+            total number of mallocs used during MatSetValues calls =0
+              using I-node routines: found 529 nodes, limit used is 5
+      KSP solver for S = A11 - A10 inv(A00) A01 
+        KSP Object: (fieldsplit_pressure_) 1 MPI processes
+          type: gmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        PC Object: (fieldsplit_pressure_) 1 MPI processes
+          type: jacobi
+          linear system matrix followed by preconditioner matrix:
+          Mat Object: (fieldsplit_pressure_) 1 MPI processes
+            type: schurcomplement
+            rows=169, cols=169
+              has attached null space
+              Schur complement A11 - A10 inv(A00) A01
+              A11
+                Mat Object: (fieldsplit_pressure_) 1 MPI processes
+                  type: seqaij
+                  rows=169, cols=169
+                  total: nonzeros=1369, allocated nonzeros=1369
+                  total number of mallocs used during MatSetValues calls =0
+                    has attached null space
+                    not using I-node routines
+              A10
+                Mat Object: 1 MPI processes
+                  type: seqaij
+                  rows=169, cols=1058
+                  total: nonzeros=6498, allocated nonzeros=6498
+                  total number of mallocs used during MatSetValues calls =0
+                    not using I-node routines
+              KSP of A00
+                KSP Object: (fieldsplit_velocity_) 1 MPI processes
+                  type: gmres
+                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    GMRES: happy breakdown tolerance 1e-30
+                  maximum iterations=10000, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                  left preconditioning
+                  using PRECONDITIONED norm type for convergence test
+                PC Object: (fieldsplit_velocity_) 1 MPI processes
+                  type: lu
+                    LU: out-of-place factorization
+                    tolerance for zero pivot 2.22045e-14
+                    matrix ordering: nd
+                    factor fill ratio given 5., needed 2.3299
+                      Factored matrix follows:
+                        Mat Object: 1 MPI processes
+                          type: seqaij
+                          rows=1058, cols=1058, bs=2
+                          package used to perform factorization: petsc
+                          total: nonzeros=70540, allocated nonzeros=70540
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 529 nodes, limit used is 5
+                  linear system matrix = precond matrix:
+                  Mat Object: (fieldsplit_velocity_) 1 MPI processes
+                    type: seqaij
+                    rows=1058, cols=1058, bs=2
+                    total: nonzeros=30276, allocated nonzeros=30276
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node routines: found 529 nodes, limit used is 5
+              A01
+                Mat Object: 1 MPI processes
+                  type: seqaij
+                  rows=1058, cols=169, rbs=2, cbs = 1
+                  total: nonzeros=6498, allocated nonzeros=6498
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 529 nodes, limit used is 5
+          Mat Object: (fieldsplit_pressure_) 1 MPI processes
+            type: seqaij
+            rows=169, cols=169
+            total: nonzeros=1369, allocated nonzeros=1369
+            total number of mallocs used during MatSetValues calls =0
+              has attached null space
+              not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI processes
+      type: seqaij
+      rows=1227, cols=1227
+      total: nonzeros=44641, allocated nonzeros=44641
+      total number of mallocs used during MatSetValues calls =0
+        has attached null space
+        using I-node routines: found 577 nodes, limit used is 5
+Number of SNES iterations = 1
+L_2 Error: 5.19e-11 [9.56e-13, 5.19e-11]
+Timestep: 0 Np: 144
+Timestep: 1 Np: 144
+Timestep: 2 Np: 144
+Timestep: 3 Np: 142
+Timestep: 4 Np: 139
+Timestep: 5 Np: 138
+Timestep: 6 Np: 135
+Timestep: 7 Np: 133
+Timestep: 8 Np: 132
+Timestep: 9 Np: 132
+Timestep: 10 Np: 130
+Timestep: 11 Np: 128
+Timestep: 12 Np: 128
+Timestep: 13 Np: 128
+Timestep: 14 Np: 126
+Timestep: 15 Np: 126
+Timestep: 16 Np: 125
+Timestep: 17 Np: 125
+Timestep: 18 Np: 124
+Timestep: 19 Np: 124
+Timestep: 20 Np: 123
+Timestep: 21 Np: 121
+Timestep: 22 Np: 120
+Timestep: 23 Np: 119
+Timestep: 24 Np: 118
+Timestep: 25 Np: 117
+Timestep: 26 Np: 115
+Timestep: 27 Np: 115
+Timestep: 28 Np: 114
+Timestep: 29 Np: 112

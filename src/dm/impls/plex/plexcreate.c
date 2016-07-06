@@ -1275,6 +1275,19 @@ static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetNeighors_Plex"
+static PetscErrorCode DMGetNeighors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
+{
+  PetscSF        sf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf, nranks, ranks, NULL, NULL, NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMInitialize_Plex"
 PetscErrorCode DMInitialize_Plex(DM dm)
 {
@@ -1316,6 +1329,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2diff                   = DMComputeL2Diff_Plex;
   dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
+  dm->ops->getneighbors                    = DMGetNeighors_Plex;
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",DMAdaptLabel_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -4918,15 +4918,14 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
-  PetscValidPointer(cellSF,3);
+  PetscValidPointer(cellSF,4);
   if (*cellSF) {
     PetscMPIInt result;
 
-    PetscValidHeaderSpecific(cellSF,PETSCSF_CLASSID,3);
+    PetscValidHeaderSpecific(*cellSF,PETSCSF_CLASSID,4);
     ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)v),PetscObjectComm((PetscObject)cellSF),&result);CHKERRQ(ierr);
     if (result != MPI_IDENT && result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"cellSF must have a communicator congruent to v's");
-  }
-  else {
+  } else {
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)v),cellSF);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
@@ -6374,3 +6373,36 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *adaptedDM)
   ierr = PetscTryMethod((PetscObject)dm,"DMAdaptLabel_C",(DM,DMLabel, DM*),(dm,label,adaptedDM));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetNeighbors"
+/*@C
+ DMGetNeighbors - Gets an array containing the MPI rank of all the processes neighbors
+
+ Not Collective
+
+ Input Parameter:
+ . dm    - The DM
+
+ Output Parameter:
+ . nranks - the number of neighbours
+ . ranks - the neighbors ranks
+
+ Notes:
+ Do not free the array, it is freed when the DM is destroyed.
+
+ Level: beginner
+
+ .seealso: DMDAGetNeighbors(), PetscSFGetRanks()
+@*/
+PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (!dm->ops->getneighbors) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMGetNeighbors",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->getneighbors)(dm,nranks,ranks);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

@@ -13,6 +13,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM);
 #if defined(PETSC_HAVE_MOAB)
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
 #endif
@@ -53,6 +54,7 @@ PetscErrorCode  DMRegisterAll()
   ierr = DMRegister(DMREDUNDANT,  DMCreate_Redundant);CHKERRQ(ierr);
   ierr = DMRegister(DMPLEX,       DMCreate_Plex);CHKERRQ(ierr);
   ierr = DMRegister(DMPATCH,      DMCreate_Patch);CHKERRQ(ierr);
+  ierr = DMRegister(DMSWARM,      DMCreate_Swarm);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MOAB)
   ierr = DMRegister(DMMOAB,       DMCreate_Moab);CHKERRQ(ierr);
 #endif
