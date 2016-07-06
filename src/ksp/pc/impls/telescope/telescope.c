@@ -149,34 +149,17 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatNullSpaceCreate_default"
-static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat sub_mat,PetscBool near)
+#define __FUNCT__ "PCTelescopeSubNullSpaceCreate_Telescope"
+static PetscErrorCode PCTelescopeSubNullSpaceCreate_Telescope(PC pc,PC_Telescope sred,MatNullSpace nullspace,MatNullSpace *sub_nullspace)
 {
   PetscErrorCode   ierr;
-  MatNullSpace     nullspace,sub_nullspace;
-  Mat              A,B;
   PetscBool        has_const;
-  PetscInt         i,k,n = 0;
   const Vec        *vecs;
   Vec              *sub_vecs = NULL;
+  PetscInt         i,k,n = 0;
   MPI_Comm         subcomm;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(pc,&A,&B);CHKERRQ(ierr);
-
-  /* If the "near" flag was provided, instead operate on the near nullspace */
-  if (near) {
-    ierr = MatGetNearNullSpace(B,&nullspace);CHKERRQ(ierr);
-  } else {
-    ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
-  }
-  if (!nullspace) PetscFunctionReturn(0);
-
-  if (near) {
-    ierr = PetscInfo(pc,"PCTelescope: generating near nullspace (default)\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo(pc,"PCTelescope: generating nullspace (default)\n");CHKERRQ(ierr);
-  }
   subcomm = PetscSubcommChild(sred->psubcomm);
   ierr = MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs);CHKERRQ(ierr);
 
@@ -212,18 +195,50 @@ static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope s
 
   if (isActiveRank(sred->psubcomm)) {
     /* create new (near) nullspace for redundant object */
-    ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,&sub_nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
     if (nullspace->remove) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
     if (nullspace->rmctx) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
+  }
+  PetscFunctionReturn(0);
+}
 
-    /* attach redundant (near) nullspace to Bred */
-    if (near) {
-      ierr = MatSetNearNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
-    } else {
-      ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeMatNullSpaceCreate_default"
+static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat sub_mat)
+{
+  PetscErrorCode   ierr;
+  Mat              B;
+
+  PetscFunctionBegin;
+  ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
+
+  /* Propagate the nullspace if it exists */
+  {
+    MatNullSpace nullspace,sub_nullspace;
+    ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
+    if (nullspace) {
+      ierr = PetscInfo(pc,"PCTelescope: generating nullspace (default)\n");CHKERRQ(ierr);
+      ierr = PCTelescopeSubNullSpaceCreate_Telescope(pc,sred,nullspace,&sub_nullspace);CHKERRQ(ierr);
+      if (isActiveRank(sred->psubcomm)) {
+        ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&sub_nullspace);CHKERRQ(ierr);
+      }
     }
-    ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&sub_nullspace);CHKERRQ(ierr);
+  }
+
+  /* Propagate the near nullspace if it exists */
+  {
+    MatNullSpace nearnullspace,sub_nearnullspace;
+    ierr = MatGetNearNullSpace(B,&nearnullspace);CHKERRQ(ierr);
+    if (nearnullspace) {
+      ierr = PetscInfo(pc,"PCTelescope: generating near nullspace (default)\n");CHKERRQ(ierr);
+      ierr = PCTelescopeSubNullSpaceCreate_Telescope(pc,sred,nearnullspace,&sub_nearnullspace);CHKERRQ(ierr);
+      if (isActiveRank(sred->psubcomm)) {
+        ierr = MatSetNearNullSpace(sub_mat,sub_nearnullspace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&sub_nearnullspace);CHKERRQ(ierr);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -402,9 +417,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       ierr = sred->pctelescope_matcreate_type(pc,sred,MAT_INITIAL_MATRIX,&sred->Bred);CHKERRQ(ierr);
     }
     if (sred->pctelescope_matnullspacecreate_type) {
-      /* Propagate attached nullspace and near nullspace, if they exist */
-      ierr = sred->pctelescope_matnullspacecreate_type(pc,sred,sred->Bred,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = sred->pctelescope_matnullspacecreate_type(pc,sred,sred->Bred,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = sred->pctelescope_matnullspacecreate_type(pc,sred,sred->Bred);CHKERRQ(ierr);
     }
   } else {
     if (sred->pctelescope_matcreate_type) {
