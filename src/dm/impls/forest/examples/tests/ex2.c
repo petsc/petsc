@@ -20,24 +20,23 @@ static PetscErrorCode AddIdentityLabel(DM dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "AddAdaptivityLabel"
-static PetscErrorCode AddAdaptivityLabel(DM forest,const char name[])
+#define __FUNCT__ "CreateAdaptivityLabel"
+static PetscErrorCode CreateAdaptivityLabel(DM forest,DMLabel *adaptLabel)
 {
-  DMLabel        adaptLabel,identLabel;
+  DMLabel        identLabel;
   PetscInt       cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMCreateLabel(forest,name);CHKERRQ(ierr);
-  ierr = DMGetLabel(forest,name,&adaptLabel);CHKERRQ(ierr);
-  ierr = DMLabelSetDefaultValue(adaptLabel,DM_FOREST_COARSEN);CHKERRQ(ierr);
+  ierr = DMLabelCreate("adapt",adaptLabel);CHKERRQ(ierr);
+  ierr = DMLabelSetDefaultValue(*adaptLabel,DM_ADAPT_COARSEN);CHKERRQ(ierr);
   ierr = DMGetLabel(forest,"identity",&identLabel);CHKERRQ(ierr);
   ierr = DMForestGetCellChart(forest,&cStart,&cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; c++) {
     PetscInt basePoint;
 
     ierr = DMLabelGetValue(identLabel,c,&basePoint);CHKERRQ(ierr);
-    if (!basePoint) {ierr = DMLabelSetValue(adaptLabel,c,DM_FOREST_REFINE);CHKERRQ(ierr);}
+    if (!basePoint) {ierr = DMLabelSetValue(*adaptLabel,c,DM_ADAPT_REFINE);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -99,6 +98,7 @@ int main(int argc, char **argv)
   PetscBool      useFV = PETSC_FALSE;
   PetscDS        ds;
   bc_func_ctx    bcCtx;
+  DMLabel        adaptLabel;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
@@ -176,11 +176,12 @@ int main(int argc, char **argv)
   ierr = PetscObjectGetReference((PetscObject)preForest,&preCount);CHKERRQ(ierr);
 
   /* adapt */
-  ierr = AddAdaptivityLabel(preForest,"adapt");CHKERRQ(ierr);
+  ierr = CreateAdaptivityLabel(preForest,&adaptLabel);CHKERRQ(ierr);
   ierr = DMForestTemplate(preForest,comm,&postForest);CHKERRQ(ierr);
   ierr = DMForestSetMinimumRefinement(postForest,0);CHKERRQ(ierr);
   ierr = DMForestSetInitialRefinement(postForest,0);CHKERRQ(ierr);
-  ierr = DMForestSetAdaptivityLabel(postForest,"adapt");CHKERRQ(ierr);
+  ierr = DMForestSetAdaptivityLabel(postForest,adaptLabel);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
   ierr = DMSetUp(postForest);CHKERRQ(ierr);
   ierr = DMViewFromOptions(postForest,NULL,"-dm_post_view");CHKERRQ(ierr);
 

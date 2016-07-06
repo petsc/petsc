@@ -24,7 +24,7 @@ typedef struct {
   DMForestTopology           topology;
   DM                         base;
   DM                         adapt;
-  DMForestAdaptivityPurpose  adaptPurpose;
+  DMAdaptFlag                adaptPurpose;
   PetscInt                   adjDim;
   PetscInt                   overlap;
   PetscInt                   minRefinement;
@@ -35,7 +35,7 @@ typedef struct {
   PetscSF                    cellSF;
   PetscSF                    preCoarseToFine;
   PetscSF                    coarseToPreFine;
-  char                       *adaptLabel;
+  DMLabel                    adaptLabel;
   DMForestAdaptivityStrategy adaptStrategy;
   PetscInt                   gradeFactor;
   PetscReal                  *cellWeights;
