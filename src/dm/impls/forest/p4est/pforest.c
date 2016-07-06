@@ -3615,6 +3615,12 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = PetscSFSetGraph(pointSF,pEnd - pStart,(PetscInt)leaves->elem_count,(PetscInt *)leaves->array,PETSC_COPY_VALUES,(PetscSFNode *)remotes->array,PETSC_COPY_VALUES);CHKERRQ(ierr);
     ierr = DMSetPointSF(newPlex,pointSF);CHKERRQ(ierr);
     ierr = DMSetPointSF(dm,pointSF);CHKERRQ(ierr);
+    {
+      DM coordDM;
+
+      ierr = DMGetCoordinateDM(newPlex,&coordDM);CHKERRQ(ierr);
+      ierr = DMSetPointSF(coordDM,pointSF);CHKERRQ(ierr);
+    }
     ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
     if (dm->maxCell) {
       const PetscReal *maxCell, *L;
