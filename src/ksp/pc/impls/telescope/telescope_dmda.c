@@ -889,6 +889,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
       ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
     }
     ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&sub_nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
