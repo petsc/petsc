@@ -1,10 +1,3 @@
-/*
- * eimex.c
- *
- *  Created on: Jun 21, 2012
- *      Written by Hong Zhang (zhang@vt.edu), Virginia Tech
- *                 Emil Constantinescu (emconsta@mcs.anl.gov), Argonne National Laboratory
- */
 /*MC
       EIMEX - Time stepping with Extrapolated IMEX methods.
 
