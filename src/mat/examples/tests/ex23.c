@@ -226,11 +226,13 @@ PetscErrorCode TestMatZeroRows(Mat A,Mat Afull, IS is, PetscScalar diag)
     ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
+    /*  test ZeroRows on MATIS */
+    ierr = MatZeroRowsIS(B,is,diag,x,b);CHKERRQ(ierr);
   } else {
+    /*  test ZeroRows on MATIS */
+    ierr = MatZeroRowsIS(B,is,diag,NULL,NULL);CHKERRQ(ierr);
     b = b2 = x = NULL;
   }
-  /*  test ZeroRows on MATIS */
-  ierr = MatZeroRowsIS(B,is,diag,x,b);CHKERRQ(ierr);
   if (square) {
     ierr = VecAXPY(b2,-1.,b);CHKERRQ(ierr);
     ierr = VecNorm(b2,NORM_INFINITY,&error);CHKERRQ(ierr);
