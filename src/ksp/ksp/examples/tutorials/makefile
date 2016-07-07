@@ -1407,19 +1407,19 @@ runex58_sbaij:
 	${RM} -f ex58.tmp
 
 runex59:
-	-@${MPIEXEC} -n 4 ./ex59 -nex 7 > ex59.tmp 2>&1;         \
-	${DIFF} output/ex59_1.out ex59.tmp || printf "${PWD}\nPossible problem with ex59, diffs above\n=========================================\n"; \
-	${RM} -f ex59.tmp
+	-@${MPIEXEC} -n 4 ./ex59 -nex 7 > ex59_1.tmp 2>&1;         \
+	${DIFF} output/ex59_1.out ex59_1.tmp || printf "${PWD}\nPossible problem with ex59, diffs above\n=========================================\n"; \
+	${RM} -f ex59_1.tmp
 runex59_2:
-	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 4 -physical_ksp_max_it 4 > ex59_2.tmp 2>&1;         \
+	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 > ex59_2.tmp 2>&1;         \
 	${DIFF} output/ex59_2.out ex59_2.tmp || printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; \
 	${RM} -f ex59_2.tmp
 runex59_3:
-	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -fluxes_ksp_max_it 4 -physical_ksp_max_it 4 > ex59_3.tmp 2>&1;         \
+	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 > ex59_3.tmp 2>&1;         \
 	${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; \
 	${RM} -f ex59_3.tmp
 runex59_approximate:
-	-@${MPIEXEC} -n 8 ./ex59 -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -ksp_max_it 25 -subdomain_mat_type aij -pc_bddc_switch_static -pc_bddc_dirichlet_approximate -pc_bddc_neumann_approximate -pc_bddc_dirichlet_pc_type gamg -pc_bddc_neumann_pc_type sor -pc_bddc_neumann_approximate_scale > ex59_approximate.tmp 2>&1;         \
+	-@${MPIEXEC} -n 8 ./ex59 -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -fluxes_ksp_max_it 20 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale > ex59_approximate.tmp 2>&1;         \
 	${DIFF} output/ex59_approximate.out ex59_approximate.tmp || printf "${PWD}\nPossible problem with ex59_approximate, diffs above\n=========================================\n"; \
 	${RM} -f ex59_approximate.tmp
 

@@ -1018,15 +1018,16 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
-  DomainData     dd;
-  PetscReal      norm,maxeig,mineig;
-  PetscScalar    scalar_value;
-  PetscInt       ndofs,its;
-  Mat            A                  =0,F=0;
-  KSP            KSPwithBDDC        =0,KSPwithFETIDP=0;
-  Vec            fetidp_solution_all=0,bddc_solution=0,bddc_rhs=0;
-  Vec            exact_solution     =0,fetidp_solution=0,fetidp_rhs=0;
+  PetscErrorCode     ierr;
+  DomainData         dd;
+  PetscReal          norm,maxeig,mineig;
+  PetscScalar        scalar_value;
+  PetscInt           ndofs,its;
+  Mat                A = NULL,F = NULL;
+  KSP                KSPwithBDDC = NULL,KSPwithFETIDP = NULL;
+  KSPConvergedReason reason;
+  Vec                fetidp_solution_all = NULL,bddc_solution = NULL,bddc_rhs = NULL;
+  Vec                exact_solution = NULL,fetidp_solution = NULL,fetidp_rhs = NULL;
 
   /* Init PETSc */
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -1071,6 +1072,7 @@ int main(int argc,char **args)
   /* test ksp with BDDC */
   ierr = KSPSolve(KSPwithBDDC,bddc_rhs,bddc_solution);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(KSPwithBDDC,&its);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(KSPwithBDDC,&reason);CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues(KSPwithBDDC,&maxeig,&mineig);CHKERRQ(ierr);
   if (dd.pure_neumann) {
     ierr = VecSum(bddc_solution,&scalar_value);CHKERRQ(ierr);
@@ -1081,10 +1083,16 @@ int main(int argc,char **args)
   ierr = VecAXPY(bddc_solution,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(bddc_solution,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"---------------------BDDC stats-------------------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",(double)mineig,(double)maxeig);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs);CHKERRQ(ierr);
+  if (reason < 0) {
+    ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its);CHKERRQ(ierr);
+    ierr = PetscPrintf(dd.gcomm,"Converged reason                           : %D\n",reason);CHKERRQ(ierr);
+  }
+  if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
+  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.);CHKERRQ(ierr);
+  if (norm > 1.e-1 || reason < 0) {
+    ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
+  }
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
   if (!dd.testkspfetidp) {
     /* assemble fetidp rhs on the space of Lagrange multipliers */
@@ -1104,6 +1112,7 @@ int main(int argc,char **args)
   }
   ierr = MatGetSize(F,&ndofs,NULL);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(KSPwithFETIDP,&its);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(KSPwithFETIDP,&reason);CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues(KSPwithFETIDP,&maxeig,&mineig);CHKERRQ(ierr);
   /* check FETIDP sol */
   if (dd.pure_neumann) {
@@ -1114,10 +1123,16 @@ int main(int argc,char **args)
   ierr = VecAXPY(fetidp_solution_all,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D \n",ndofs);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D \n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.2e %1.2e\n",(double)mineig,(double)maxeig);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs);CHKERRQ(ierr);
+  if (reason < 0) {
+    ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its);CHKERRQ(ierr);
+    ierr = PetscPrintf(dd.gcomm,"Converged reason                           : %D\n",reason);CHKERRQ(ierr);
+  }
+  if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
+  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.);CHKERRQ(ierr);
+  if (norm > 1.e-1 || reason < 0) {
+    ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
+  }
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
   /* Free workspace */
   ierr = VecDestroy(&exact_solution);CHKERRQ(ierr);
