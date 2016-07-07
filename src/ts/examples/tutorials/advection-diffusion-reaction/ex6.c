@@ -23,7 +23,7 @@ static char help[] ="Model Equations for Advection \n";
    application-provided call-back routines.
 */
 typedef struct {
-  PetscScalar a;   /* advection strength */
+  PetscReal a;   /* advection strength */
 } AppCtx;
 
 /* User-defined routines */
@@ -167,7 +167,8 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
 */
 PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 {
-  PetscScalar    *u,PI6,PI2,h,a=appctx->a;
+  PetscScalar    *u,PI6,PI2,h;
+  PetscReal      a=appctx->a;
   PetscErrorCode ierr;
   PetscInt       i,mstart,mend,xm,M;
   DM             da;
@@ -259,8 +260,8 @@ PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   PetscInt       mstart,mend,M,i,xm;
   DM             da;
   Vec            Xold,localXold;
-  PetscScalar    *xarray,*f,*xoldarray,h,RFlux,LFlux,a,lambda;
-  PetscReal      dt;
+  PetscScalar    *xarray,*f,*xoldarray,h,RFlux,LFlux,lambda;
+  PetscReal      dt,a;
 
   PetscFunctionBegin;
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
