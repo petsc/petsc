@@ -1120,7 +1120,7 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmet
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
   if (symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,0,&tia,&tja);CHKERRQ(ierr);
+    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,PETSC_TRUE,0,0,&tia,&tja);CHKERRQ(ierr);
     nz   = tia[n];
   } else {
     tia = a->i; tja = a->j;
@@ -1131,7 +1131,7 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmet
     /* malloc & create the natural set of indices */
     ierr = PetscMalloc1((n+1)*bs,ia);CHKERRQ(ierr);
     if (n) {
-      (*ia)[0] = 0;
+      (*ia)[0] = oshift;
       for (j=1; j<bs; j++) {
         (*ia)[j] = (tia[1]-tia[0])*bs+(*ia)[j-1];
       }
