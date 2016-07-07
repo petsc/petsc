@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR		 = src/mat/examples/tests/
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
-                ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c ex27.c ex28.c ex29.c \
+                ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c \
                 ex30.c ex31.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
                 ex40.c ex41.c ex42.c ex43.c ex44.c ex45.c ex47.c ex48.c \
                 ex49.c ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex56.c \
@@ -128,6 +128,10 @@ ex24: ex24.o chkopts
 ex25: ex25.o chkopts
 	-${CLINKER} -o ex25 ex25.o ${PETSC_MAT_LIB}
 	${RM} ex25.o
+
+ex26: ex26.o chkopts
+	-${CLINKER} -o ex26 ex26.o ${PETSC_MAT_LIB}
+	${RM} ex26.o
 
 ex27: ex27.o chkopts
 	-${CLINKER} -o ex27 ex27.o ${PETSC_MAT_LIB}
@@ -1142,6 +1146,16 @@ runex22:
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex22_1.tmp
+runex26:
+	-@${MPIEXEC} -n 1  ./ex26 > ex26_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex26_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex26_1.tmp
+runex26_2:
+	-@${MPIEXEC} -n 1  ./ex26 -bs 2 > ex26_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex26_2.out ex26_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex26_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex26_2.tmp
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 > ex29_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
@@ -2537,6 +2551,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  runex18_9 runex18_10 runex18_11 runex18_12 runex18_13 runex18_14 ex18.rm \
                                  ex19.PETSc runex19 ex19.rm ex20.PETSc runex20 \
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 ex16.rm \
+                                 ex26.PETSc runex26 runex26_2 ex26.rm \
                                  ex29.PETSc runex29 ex29.rm \
                                  ex45.PETSc ex45.rm ex55.PETSc runex55 runex55_2 ex55.rm \
                                  ex59.PETSc runex59 runex59_2 runex59_baij runex59_2_baij  runex59_sbaij runex59_2_sbaij ex59.rm\
