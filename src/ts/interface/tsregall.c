@@ -8,7 +8,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_CN(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS);
-PETSC_EXTERN PetscErrorCode TSCreate_GL(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_RK(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS);
@@ -44,7 +44,7 @@ PetscErrorCode  TSRegisterAll(void)
   ierr = TSRegister(TSBEULER,   TSCreate_BEuler);CHKERRQ(ierr);
   ierr = TSRegister(TSCN,       TSCreate_CN);CHKERRQ(ierr);
   ierr = TSRegister(TSPSEUDO,   TSCreate_Pseudo);CHKERRQ(ierr);
-  ierr = TSRegister(TSGL,       TSCreate_GL);CHKERRQ(ierr);
+  ierr = TSRegister(TSGLLE,     TSCreate_GLLE);CHKERRQ(ierr);
   ierr = TSRegister(TSSSP,      TSCreate_SSP);CHKERRQ(ierr);
   ierr = TSRegister(TSTHETA,    TSCreate_Theta);CHKERRQ(ierr);
   ierr = TSRegister(TSALPHA,    TSCreate_Alpha);CHKERRQ(ierr);
