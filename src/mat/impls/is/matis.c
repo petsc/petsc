@@ -137,7 +137,7 @@ static PetscErrorCode MatGetSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse scall,
     ISLocalToGlobalMapping rl2g;
     IS                     is;
     PetscInt               *lidxs,*lgidxs,*newgidxs;
-    PetscInt               i,m,n,ll,newloc;
+    PetscInt               ll,newloc;
     MPI_Comm               comm;
 
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
