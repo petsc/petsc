@@ -427,17 +427,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     PetscBool isseqaij;
     /* determine if we are dealing with hermitian positive definite problems */
 #if !defined(PETSC_USE_COMPLEX)
-    if (Ain->symmetric_set) {
-      sub_schurs->is_hermitian = Ain->symmetric;
-    }
+    if (Ain->symmetric_set) sub_schurs->is_hermitian = Ain->symmetric;
 #else
-    if (Ain->hermitian_set) {
-      sub_schurs->is_hermitian = Ain->hermitian;
-    }
+    if (Ain->hermitian_set) sub_schurs->is_hermitian = Ain->hermitian;
 #endif
-    if (Ain->spd_set) {
-      sub_schurs->is_posdef = Ain->spd;
-    }
+    if (Ain->spd_set) sub_schurs->is_posdef = Ain->spd;
 
     /* check */
     ierr = PetscObjectTypeCompare((PetscObject)Ain,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
@@ -451,30 +445,32 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         Vec         vec1,vec2,vec3;
 
         ierr = MatCreateVecs(Ain,&vec1,&vec2);CHKERRQ(ierr);
-        ierr = VecDuplicate(vec1,&vec3);CHKERRQ(ierr);
         ierr = VecSetRandom(vec1,NULL);CHKERRQ(ierr);
         ierr = MatMult(Ain,vec1,vec2);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-        ierr = MatMultTranspose(Ain,vec1,vec3);CHKERRQ(ierr);
-#else
-        ierr = MatMultHermitianTranspose(Ain,vec1,vec3);CHKERRQ(ierr);
-#endif
-        ierr = VecAXPY(vec3,-1.0,vec2);CHKERRQ(ierr);
-        ierr = VecNorm(vec3,NORM_INFINITY,&norm);CHKERRQ(ierr);
-        if (!Ain->hermitian_set) {
-          if (norm > PetscSqrtReal(PETSC_SMALL)) {
-            sub_schurs->is_hermitian = PETSC_FALSE;
-          } else {
-            sub_schurs->is_hermitian = PETSC_TRUE;
-          }
-        }
         if (!Ain->spd_set && !benign_trick) {
           ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
           if (PetscRealPart(val) > 0. && PetscAbsReal(PetscImaginaryPart(val)) < PETSC_SMALL) sub_schurs->is_posdef = PETSC_TRUE;
         }
+        if (!Ain->hermitian_set) {
+          ierr = VecDuplicate(vec1,&vec3);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+          ierr = MatMultTranspose(Ain,vec1,vec3);CHKERRQ(ierr);
+#else
+          ierr = MatMultHermitianTranspose(Ain,vec1,vec3);CHKERRQ(ierr);
+#endif
+          ierr = VecAXPY(vec3,-1.0,vec2);CHKERRQ(ierr);
+          ierr = VecNorm(vec3,NORM_INFINITY,&norm);CHKERRQ(ierr);
+          if (!Ain->hermitian_set) {
+            if (norm > PetscSqrtReal(PETSC_SMALL)) {
+              sub_schurs->is_hermitian = PETSC_FALSE;
+            } else {
+              sub_schurs->is_hermitian = PETSC_TRUE;
+            }
+          }
+          ierr = VecDestroy(&vec3);CHKERRQ(ierr);
+        }
         ierr = VecDestroy(&vec1);CHKERRQ(ierr);
         ierr = VecDestroy(&vec2);CHKERRQ(ierr);
-        ierr = VecDestroy(&vec3);CHKERRQ(ierr);
       } else {
         sub_schurs->is_hermitian = PETSC_TRUE;
         sub_schurs->is_posdef = PETSC_TRUE;
