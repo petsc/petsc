@@ -1,5 +1,5 @@
 
-#include <../src/ts/impls/implicit/gl/gl.h> /*I  "petscts.h" I*/
+#include <../src/ts/impls/implicit/glle/glle.h> /*I  "petscts.h" I*/
 
 static PetscFunctionList TSGLLEAdaptList;
 static PetscBool         TSGLLEAdaptPackageInitialized;
