@@ -53,8 +53,10 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
 
     ierr = PetscRandomGetValueReal(r, &p);CHKERRQ(ierr);
     ierr = DMLabelGetValue(label, (PetscInt) p, &val);CHKERRQ(ierr);
-    if (val < 0) ++user->size;
-    ierr = DMLabelSetValue(label, (PetscInt) p, i % user->numStrata);CHKERRQ(ierr);
+    if (val < 0) {
+      ++user->size;
+      ierr = DMLabelSetValue(label, (PetscInt) p, i % user->numStrata);CHKERRQ(ierr);
+    }
   }
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = DMLabelCreateIndex(label, user->pStart, user->pEnd);CHKERRQ(ierr);
@@ -87,6 +89,32 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
 };
 
 #undef __FUNCT__
+#define __FUNCT__ "TestClear"
+PetscErrorCode TestClear(DMLabel label, AppCtx *user)
+{
+  PetscInt       pStart = user->pStart, pEnd = user->pEnd, p;
+  PetscInt       defaultValue;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetDefaultValue(label,&defaultValue);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    PetscInt  val;
+    PetscBool hasPoint;
+
+    ierr = DMLabelGetValue(label,p,&val);CHKERRQ(ierr);
+    if (val != defaultValue) {
+      ierr = DMLabelClearValue(label,p,val);CHKERRQ(ierr);
+    }
+    ierr = DMLabelGetValue(label,p,&val);CHKERRQ(ierr);
+    ierr = DMLabelHasPoint(label,p,&hasPoint);CHKERRQ(ierr);
+    if (val != defaultValue) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected default value %D after clearing point %D, got %D",defaultValue,p,val);
+    if (hasPoint) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Label contains %D after clearing",p);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
@@ -99,6 +127,7 @@ int main(int argc, char **argv)
   ierr = DMLabelCreate("Test Label", &label);CHKERRQ(ierr);
   ierr = TestSetup(label, &user);CHKERRQ(ierr);
   ierr = TestLookup(label, &user);CHKERRQ(ierr);
+  ierr = TestClear(label,&user);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
