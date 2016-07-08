@@ -30,7 +30,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-fill", "The percentage of label chart to set", "ex6.c", options->fill, &options->fill, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TestSetup"
@@ -62,7 +62,7 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
   ierr = DMLabelCreateIndex(label, user->pStart, user->pEnd);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "Created label with chart [%d, %d) and set %d values\n", user->pStart, user->pEnd, user->size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TestLookup"
@@ -86,7 +86,7 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
   if (n != user->size) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %d does not match number set %d", n, user->size);
   /* Also put in timing code */
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TestClear"
