@@ -516,6 +516,8 @@ PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialGetTensor_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialSetTensor_C", NULL);CHKERRQ(ierr);
   ierr = PetscFree(poly->degrees);CHKERRQ(ierr);
   ierr = PetscFree(poly);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -748,9 +750,88 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSpacePolynomialSetTensor"
+/*@
+  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
+  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+
+  Input Parameters:
++ sp     - the function space object
+- tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+
+  Level: beginner
+
+.seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
+@*/
+PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  ierr = PetscTryMethod(sp,"PetscSpacePolynomialSetTensor_C",(PetscSpace,PetscBool),(sp,tensor));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpacePolynomialGetTensor"
+/*@
+  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
+  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+
+  Input Parameters:
+. sp     - the function space object
+
+  Output Parameters:
+. tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+
+  Level: beginner
+
+.seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
+@*/
+PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(tensor, 2);
+  ierr = PetscTryMethod(sp,"PetscSpacePolynomialGetTensor_C",(PetscSpace,PetscBool*),(sp,tensor));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpacePolynomialSetTensor_Polynomial"
+static PetscErrorCode PetscSpacePolynomialSetTensor_Polynomial(PetscSpace sp, PetscBool tensor)
+{
+  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
+
+  PetscFunctionBegin;
+  poly->tensor = tensor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpacePolynomialGetTensor_Polynomial"
+static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, PetscBool *tensor)
+{
+  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(tensor, 2);
+  *tensor = poly->tensor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSpaceInitialize_Polynomial"
 PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   sp->ops->setfromoptions = PetscSpaceSetFromOptions_Polynomial;
   sp->ops->setup          = PetscSpaceSetUp_Polynomial;
@@ -758,6 +839,8 @@ PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
   sp->ops->destroy        = PetscSpaceDestroy_Polynomial;
   sp->ops->getdimension   = PetscSpaceGetDimension_Polynomial;
   sp->ops->evaluate       = PetscSpaceEvaluate_Polynomial;
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialGetTensor_C", PetscSpacePolynomialGetTensor_Polynomial);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialSetTensor_C", PetscSpacePolynomialSetTensor_Polynomial);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -812,59 +895,6 @@ PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(sym, 2);
   *sym = poly->symmetric;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialSetTensor"
-/*@
-  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
-  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
-
-  Input Parameters:
-+ sp     - the function space object
-- tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
-
-  Level: beginner
-
-.seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
-@*/
-PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
-{
-  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  poly->tensor = tensor;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialGetTensor"
-/*@
-  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
-  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
-
-  Input Parameters:
-. sp     - the function space object
-
-  Output Parameters:
-. tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
-
-  Level: beginner
-
-.seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
-@*/
-PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
-{
-  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(tensor, 2);
-  *tensor = poly->tensor;
   PetscFunctionReturn(0);
 }
 
@@ -1484,6 +1514,59 @@ PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace sp, PetscInt order)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceLagrangeGetTensor"
+/*@
+  PetscDualSpaceLagrangeGetTensor - Get the tensor nature of the dual space
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. tensor - Whether the dual space has tensor layout (vs. simplicial)
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceLagrangeSetTensor(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *tensor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(tensor, 2);
+  ierr = PetscTryMethod(sp,"PetscDualSpaceLagrangeGetTensor_C",(PetscDualSpace,PetscBool *),(sp,tensor));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceLagrangeSetTensor"
+/*@
+  PetscDualSpaceLagrangeSetTensor - Set the tensor nature of the dual space
+
+  Not collective
+
+  Input Parameters:
++ sp - The PetscDualSpace
+- tensor - Whether the dual space has tensor layout (vs. simplicial)
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceLagrangeGetTensor(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tensor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  ierr = PetscTryMethod(sp,"PetscDualSpaceLagrangeSetTensor_C",(PetscDualSpace,PetscBool),(sp,tensor));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetFunctional"
 /*@
   PetscDualSpaceGetFunctional - Get the i-th basis functional in the dual space
@@ -1747,6 +1830,28 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceLagrangeGetTensor_Lagrange"
+static PetscErrorCode PetscDualSpaceLagrangeGetTensor_Lagrange(PetscDualSpace sp, PetscBool *tensor)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
+
+  PetscFunctionBegin;
+  *tensor = lag->tensorSpace;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceLagrangeSetTensor_Lagrange"
+static PetscErrorCode PetscDualSpaceLagrangeSetTensor_Lagrange(PetscDualSpace sp, PetscBool tensor)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
+
+  PetscFunctionBegin;
+  lag->tensorSpace = tensor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetDimension_SingleCell_Lagrange"
 static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt order, PetscInt *dim)
 {
@@ -1758,7 +1863,7 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
   PetscFunctionBegin;
   *dim = -1;                    /* Ensure that the compiler knows *dim is set. */
   ierr = DMGetDimension(sp->dm, &n);CHKERRQ(ierr);
-  if (lag->simplex || !lag->continuous) {
+  if (!lag->tensorSpace) {
     for (i = 1; i <= n; ++i) {
       D *= ((PetscReal) (order+i))/i;
     }
@@ -1775,7 +1880,7 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
 static PetscErrorCode PetscDualSpaceCreateHeightSubspace_Lagrange(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
-  PetscBool          continuous;
+  PetscBool          continuous, tensor;
   PetscInt           order;
   PetscErrorCode     ierr;
 
@@ -1799,9 +1904,11 @@ static PetscErrorCode PetscDualSpaceCreateHeightSubspace_Lagrange(PetscDualSpace
     ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
     if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Asked for dual space at height %d for dimension %d reference element\n",height,dim);}
     ierr = PetscDualSpaceDuplicate(sp,bdsp);CHKERRQ(ierr);
-    ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-height, lag->simplex, &K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-height, lag->simplexCell, &K);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetDM(*bdsp, K);CHKERRQ(ierr);
     ierr = DMDestroy(&K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceLagrangeGetTensor(sp,&tensor);CHKERRQ(ierr);
+    ierr = PetscDualSpaceLagrangeSetTensor(*bdsp,tensor);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetUp(*bdsp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1820,7 +1927,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   PetscReal          *qpoints, *qweights;
   PetscInt           *closure = NULL, closureSize, c;
   PetscInt            depth, dim, pdimMax, pMax = 0, *pStart, *pEnd, cell, coneSize, d, n, f = 0;
-  PetscBool           simplex;
+  PetscBool           simplex, tensorSpace;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1844,7 +1951,9 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
   }
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support cell-vertex meshes or interpolated meshes");
-  lag->simplex = simplex;
+  lag->simplexCell = simplex;
+  if (dim > 1 && !disc && lag->simplexCell == lag->tensorSpace) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Mismatching simplex/tensor cells and spaces only allowed for discontinuous elements");
+  tensorSpace = lag->tensorSpace;
   ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, sp->order, &pdimMax);CHKERRQ(ierr);
   pdimMax *= (pEnd[dim] - pStart[dim]);
   ierr = PetscMalloc1(pdimMax, &sp->functional);CHKERRQ(ierr);
@@ -1918,16 +2027,17 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           /* Faces */
 
           if (disc) continue;
-          if ( simplex && (order < 3)) continue;
-          if (!simplex && (order < 2)) continue;
+          if (!tensorSpace && (order < 3)) continue;
+          if ( tensorSpace && (order < 2)) continue;
           lag->numDof[depth-1] = 0;
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement faces");
         } else if ((p >= pStart[depth]) && (p < pEnd[depth])) {
           /* Cells */
-          PetscInt     orderEff = lag->continuous && order ? (simplex ? order-3 : order-2) : order;
-          PetscReal    denom    = order ? (lag->continuous ? order : (simplex ? order+3 : order+2)) : (simplex ? 3 : 2);
+          PetscInt     orderEff = lag->continuous && order ? (!tensorSpace ? order-3 : order-2) : order;
+          PetscReal    denom    = order ? (lag->continuous ? order : (!tensorSpace ? order+3 : order+2)) : (!tensorSpace ? 3 : 2);
+          PetscReal    numer    = (!simplex || !tensorSpace) ? 2. : (2./dim);
           PetscScalar *coords   = NULL;
-          PetscReal    dx = 2.0/denom, *v0, *J, *invJ, detJ;
+          PetscReal    dx = numer/denom, *v0, *J, *invJ, detJ;
           PetscInt    *ind, *tup;
           PetscInt     cdim, csize, d, d2, o;
 
@@ -1939,7 +2049,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
           ierr = PetscCalloc5(dim,&ind,dim,&tup,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
           ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
-          if (simplex || disc) {
+          if (!tensorSpace) {
             for (o = 0; o <= orderEff; ++o) {
               ierr = PetscMemzero(ind, dim*sizeof(PetscInt));CHKERRQ(ierr);
               while (ind[0] >= 0) {
@@ -2019,6 +2129,8 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
   ierr = PetscFree(lag);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetContinuity_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetContinuity_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetTensor_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetTensor_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2027,7 +2139,7 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
 PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpace *spNew)
 {
   PetscInt       order;
-  PetscBool      cont;
+  PetscBool      cont, tensor;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2037,6 +2149,8 @@ PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpac
   ierr = PetscDualSpaceSetOrder(*spNew, order);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeGetContinuity(sp, &cont);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeSetContinuity(*spNew, cont);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeGetTensor(sp, &tensor);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetTensor(*spNew, tensor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2044,14 +2158,17 @@ PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpac
 #define __FUNCT__ "PetscDualSpaceSetFromOptions_Lagrange"
 PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
 {
-  PetscBool      continuous, flg;
+  PetscBool      continuous, tensor, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceLagrangeGetContinuity(sp, &continuous);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeGetTensor(sp, &tensor);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"PetscDualSpace Lagrange Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscdualspace_lagrange_continuity", "Flag for continuous element", "PetscDualSpaceLagrangeSetContinuity", continuous, &continuous, &flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscDualSpaceLagrangeSetContinuity(sp, continuous);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-petscdualspace_lagrange_tensor", "Flag for tensor dual space", "PetscDualSpaceLagrangeSetContinuity", tensor, &tensor, &flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscDualSpaceLagrangeSetTensor(sp, tensor);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2242,13 +2359,16 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
   ierr     = PetscNewLog(sp,&lag);CHKERRQ(ierr);
   sp->data = lag;
 
-  lag->numDof     = NULL;
-  lag->simplex    = PETSC_TRUE;
-  lag->continuous = PETSC_TRUE;
+  lag->numDof      = NULL;
+  lag->simplexCell = PETSC_TRUE;
+  lag->tensorSpace = PETSC_FALSE;
+  lag->continuous  = PETSC_TRUE;
 
   ierr = PetscDualSpaceInitialize_Lagrange(sp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetContinuity_C", PetscDualSpaceLagrangeGetContinuity_Lagrange);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetContinuity_C", PetscDualSpaceLagrangeSetContinuity_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetTensor_C", PetscDualSpaceLagrangeGetTensor_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetTensor_C", PetscDualSpaceLagrangeSetTensor_Lagrange);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5976,6 +6096,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   PetscSpace      P;
   PetscDualSpace  Q;
   PetscInt        order;
+  PetscBool       tensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -5986,13 +6107,16 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialGetTensor(P, &tensor);CHKERRQ(ierr);
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
   ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetTensor(Q, tensor);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
   /* Create element */

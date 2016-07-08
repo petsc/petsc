@@ -67,7 +67,8 @@ struct _p_PetscDualSpace {
 
 typedef struct {
   PetscInt       *numDof;
-  PetscBool       simplex;
+  PetscBool       simplexCell;
+  PetscBool       tensorSpace;
   PetscBool       continuous;
   PetscInt        height;
   PetscDualSpace *subspaces;
