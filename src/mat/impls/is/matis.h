@@ -17,6 +17,7 @@ typedef struct {
   PetscInt   *sf_rootdata,*sf_leafdata;
   PetscInt   *csf_rootdata,*csf_leafdata;
   IS         getsub_ris,getsub_cis;     /* row and column ISs for MatGetSubMatrix and MAT_REUSE_MATRIX */
+  PetscBool  islocalref;                /* is a reference to a local submatrix? */
 } Mat_IS;
 
 PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat,Mat,PetscBool);

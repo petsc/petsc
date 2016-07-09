@@ -1165,7 +1165,7 @@ runex23_4:
 	-@${MPIEXEC} -n 6  ./ex23 -m 9 -n 12 > ex23_4.tmp 2>&1;   \
 	   if (${DIFF} output/ex23_4.out ex23_4.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex23_4, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex23_3.tmp
+	   ${RM} -f ex23_4.tmp
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 > ex29_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \

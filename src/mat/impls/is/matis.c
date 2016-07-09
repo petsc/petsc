@@ -10,8 +10,46 @@
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
+#define MATIS_MAX_ENTRIES_INSERTION 2048
+
 static PetscErrorCode MatISComputeSF_Private(Mat);
 static PetscErrorCode MatISZeroRowsLocal_Private(Mat,PetscInt,const PetscInt[],PetscScalar);
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetValuesLocal_SubMat_IS"
+static PetscErrorCode MatSetValuesLocal_SubMat_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *is = (Mat_IS*)A->data;
+  PetscInt       rows_l[MATIS_MAX_ENTRIES_INSERTION],cols_l[MATIS_MAX_ENTRIES_INSERTION];
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  if (m > MATIS_MAX_ENTRIES_INSERTION || n > MATIS_MAX_ENTRIES_INSERTION) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= %D: they are %D %D",MATIS_MAX_ENTRIES_INSERTION,m,n);
+#endif
+  ierr = ISLocalToGlobalMappingApply(A->rmap->mapping,m,rows,rows_l);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(A->cmap->mapping,n,cols,cols_l);CHKERRQ(ierr);
+  ierr = MatSetValues(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetValuesBlockedLocal_SubMat_IS"
+static PetscErrorCode MatSetValuesBlockedLocal_SubMat_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *is = (Mat_IS*)A->data;
+  PetscInt       rows_l[MATIS_MAX_ENTRIES_INSERTION],cols_l[MATIS_MAX_ENTRIES_INSERTION];
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  if (m > MATIS_MAX_ENTRIES_INSERTION || n > MATIS_MAX_ENTRIES_INSERTION) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column block indices must be <= %D: they are %D %D",MATIS_MAX_ENTRIES_INSERTION,m,n);
+#endif
+  ierr = ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,m,rows,rows_l);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,n,cols,cols_l);CHKERRQ(ierr);
+  ierr = MatSetValuesBlocked(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutMapLocal_Private"
@@ -225,87 +263,6 @@ static PetscErrorCode MatGetSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse scall,
   }
   ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatGetLocalSubMatrix_IS"
-static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
-{
-  Mat                    lA,lsubmat;
-  ISLocalToGlobalMapping rl2g,cl2g;
-  IS                     is,isn;
-  const PetscInt         *rg,*rl;
-#if defined(PETSC_USE_DEBUG)
-  PetscInt               nrg;
-#endif
-  PetscInt               N,M,nrl,i,*idxs;
-  PetscErrorCode         ierr;
-
-  PetscFunctionBegin;
-  /* extract local submatrix (it will complain if row and col exceed the local sizes) */
-  ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(lA,row,col,MAT_INITIAL_MATRIX,&lsubmat);CHKERRQ(ierr);
-  /* compute new l2g map for rows */
-  ierr = ISLocalToGlobalMappingGetIndices(A->rmap->mapping,&rg);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(row,&nrl);CHKERRQ(ierr);
-  ierr = ISGetIndices(row,&rl);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  ierr = ISLocalToGlobalMappingGetSize(A->rmap->mapping,&nrg);CHKERRQ(ierr);
-  for (i=0;i<nrl;i++) if (rl[i]>=nrg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row index %d -> %d greater than maximum possible %d\n",i,rl[i],nrg);
-#endif
-  ierr = PetscMalloc1(nrl,&idxs);CHKERRQ(ierr);
-  for (i=0;i<nrl;i++) idxs[i] = rg[rl[i]];
-  ierr = ISRestoreIndices(row,&rl);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreIndices(A->rmap->mapping,&rg);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),nrl,idxs,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = PetscFree(idxs);CHKERRQ(ierr);
-  ierr = ISRenumber(is,NULL,&M,&isn);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(isn,&rl2g);CHKERRQ(ierr);
-  ierr = ISDestroy(&isn);CHKERRQ(ierr);
-  /* compute new l2g map for columns */
-  if (col != row || A->rmap->mapping != A->cmap->mapping) {
-    const PetscInt *cg,*cl;
-#if defined(PETSC_USE_DEBUG)
-    PetscInt       ncg;
-#endif
-    PetscInt       ncl;
-
-    ierr = ISLocalToGlobalMappingGetIndices(A->cmap->mapping,&cg);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(col,&ncl);CHKERRQ(ierr);
-    ierr = ISGetIndices(col,&cl);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-    ierr = ISLocalToGlobalMappingGetSize(A->cmap->mapping,&ncg);CHKERRQ(ierr);
-    for (i=0;i<ncl;i++) if (cl[i]>=ncg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local column index %d -> %d greater than maximum possible %d\n",i,cl[i],ncg);
-#endif
-    ierr = PetscMalloc1(ncl,&idxs);CHKERRQ(ierr);
-    for (i=0;i<ncl;i++) idxs[i] = cg[cl[i]];
-    ierr = ISRestoreIndices(col,&cl);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(A->cmap->mapping,&cg);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),ncl,idxs,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-    ierr = PetscFree(idxs);CHKERRQ(ierr);
-    ierr = ISRenumber(is,NULL,&N,&isn);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreateIS(isn,&cl2g);CHKERRQ(ierr);
-    ierr = ISDestroy(&isn);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectReference((PetscObject)rl2g);CHKERRQ(ierr);
-    cl2g = rl2g;
-    N = M;
-  }
-  /* create the MATIS submatrix */
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),submat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*submat,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(*submat,MATIS);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*submat,rl2g,cl2g);CHKERRQ(ierr);
-  ierr = MatISSetLocalMat(*submat,lsubmat);CHKERRQ(ierr);
-  ierr = MatDestroy(&lsubmat);CHKERRQ(ierr);
-  ierr = MatSetUp(*submat);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1017,28 +974,30 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   ierr = MatAppendOptionsPrefix(is->A,"is_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
 
-  /* Create the local work vectors */
-  ierr = MatCreateVecs(is->A,&is->x,&is->y);CHKERRQ(ierr);
+  if (!is->islocalref) { /* setup scatters and local vectors for MatMult */
+    /* Create the local work vectors */
+    ierr = MatCreateVecs(is->A,&is->x,&is->y);CHKERRQ(ierr);
 
-  /* setup the global to local scatters */
-  ierr = MatCreateVecs(A,&cglobal,&rglobal);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,nr,0,1,&to);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyIS(rmapping,to,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(rglobal,from,is->y,to,&is->rctx);CHKERRQ(ierr);
-  if (rmapping != cmapping) {
+    /* setup the global to local scatters */
+    ierr = MatCreateVecs(A,&cglobal,&rglobal);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,nr,0,1,&to);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyIS(rmapping,to,&from);CHKERRQ(ierr);
+    ierr = VecScatterCreate(rglobal,from,is->y,to,&is->rctx);CHKERRQ(ierr);
+    if (rmapping != cmapping) {
+      ierr = ISDestroy(&to);CHKERRQ(ierr);
+      ierr = ISDestroy(&from);CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,nc,0,1,&to);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApplyIS(cmapping,to,&from);CHKERRQ(ierr);
+      ierr = VecScatterCreate(cglobal,from,is->x,to,&is->cctx);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject)is->rctx);CHKERRQ(ierr);
+      is->cctx = is->rctx;
+    }
+    ierr = VecDestroy(&rglobal);CHKERRQ(ierr);
+    ierr = VecDestroy(&cglobal);CHKERRQ(ierr);
     ierr = ISDestroy(&to);CHKERRQ(ierr);
     ierr = ISDestroy(&from);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,nc,0,1,&to);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(cmapping,to,&from);CHKERRQ(ierr);
-    ierr = VecScatterCreate(cglobal,from,is->x,to,&is->cctx);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectReference((PetscObject)is->rctx);CHKERRQ(ierr);
-    is->cctx = is->rctx;
   }
-  ierr = VecDestroy(&rglobal);CHKERRQ(ierr);
-  ierr = VecDestroy(&cglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1052,11 +1011,11 @@ static PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, 
 #if defined(PETSC_USE_DEBUG)
   PetscInt       i,zm,zn;
 #endif
-  PetscInt       rows_l[2048],cols_l[2048];
+  PetscInt       rows_l[MATIS_MAX_ENTRIES_INSERTION],cols_l[MATIS_MAX_ENTRIES_INSERTION];
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
-  if (m > 2048 || n > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
+  if (m > MATIS_MAX_ENTRIES_INSERTION || n > MATIS_MAX_ENTRIES_INSERTION) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= %D: they are %D %D",MATIS_MAX_ENTRIES_INSERTION,m,n);
   /* count negative indices */
   for (i=0,zm=0;i<m;i++) if (rows[i] < 0) zm++;
   for (i=0,zn=0;i<n;i++) if (cols[i] < 0) zn++;
@@ -1083,11 +1042,11 @@ static PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m,const PetscInt 
 #if defined(PETSC_USE_DEBUG)
   PetscInt       i,zm,zn;
 #endif
-  PetscInt       rows_l[2048],cols_l[2048];
+  PetscInt       rows_l[MATIS_MAX_ENTRIES_INSERTION],cols_l[MATIS_MAX_ENTRIES_INSERTION];
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
-  if (m > 2048 || n > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
+  if (m > MATIS_MAX_ENTRIES_INSERTION || n > MATIS_MAX_ENTRIES_INSERTION) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column block indices must be <= %D: they are %D %D",MATIS_MAX_ENTRIES_INSERTION,m,n);
   /* count negative indices */
   for (i=0,zm=0;i<m;i++) if (rows[i] < 0) zm++;
   for (i=0,zn=0;i<n;i++) if (cols[i] < 0) zn++;
@@ -1386,6 +1345,116 @@ static PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatAXPY_IS"
+static PetscErrorCode MatAXPY_IS(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  Mat_IS         *y = (Mat_IS*)Y->data;
+  Mat_IS         *x;
+#if defined(PETSC_USE_DEBUG)
+  PetscBool      ismatis;
+#endif
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  ierr = PetscObjectTypeCompare((PetscObject)X,MATIS,&ismatis);CHKERRQ(ierr);
+  if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_SUP,"Cannot call MatAXPY(Y,a,X,str) with X not of type MATIS");
+#endif
+  x = (Mat_IS*)X->data;
+  ierr = MatAXPY(y->A,a,x->A,str);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetLocalSubMatrix_IS"
+static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
+{
+  Mat                    lA;
+  Mat_IS                 *matis;
+  ISLocalToGlobalMapping rl2g,cl2g;
+  IS                     is;
+  const PetscInt         *rg,*rl;
+  PetscInt               nrg;
+  PetscInt               N,M,nrl,i,*idxs;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  ierr = ISLocalToGlobalMappingGetIndices(A->rmap->mapping,&rg);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(row,&nrl);CHKERRQ(ierr);
+  ierr = ISGetIndices(row,&rl);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(A->rmap->mapping,&nrg);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  for (i=0;i<nrl;i++) if (rl[i]>=nrg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row index %d -> %d greater than maximum possible %d\n",i,rl[i],nrg);
+#endif
+  ierr = PetscMalloc1(nrg,&idxs);CHKERRQ(ierr);
+  /* map from [0,nrl) to row */
+  for (i=0;i<nrl;i++) idxs[i] = rl[i];
+#if defined(PETSC_USE_DEBUG)
+  for (i=nrl;i<nrg;i++) idxs[i] = nrg;
+#else
+  for (i=nrl;i<nrg;i++) idxs[i] = -1;
+#endif
+  ierr = ISRestoreIndices(row,&rl);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(A->rmap->mapping,&rg);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),nrg,idxs,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  /* compute new l2g map for columns */
+  if (col != row || A->rmap->mapping != A->cmap->mapping) {
+    const PetscInt *cg,*cl;
+    PetscInt       ncg;
+    PetscInt       ncl;
+
+    ierr = ISLocalToGlobalMappingGetIndices(A->cmap->mapping,&cg);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(col,&ncl);CHKERRQ(ierr);
+    ierr = ISGetIndices(col,&cl);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(A->cmap->mapping,&ncg);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+    for (i=0;i<ncl;i++) if (cl[i]>=ncg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local column index %d -> %d greater than maximum possible %d\n",i,cl[i],ncg);
+#endif
+    ierr = PetscMalloc1(ncg,&idxs);CHKERRQ(ierr);
+    /* map from [0,ncl) to col */
+    for (i=0;i<ncl;i++) idxs[i] = cl[i];
+#if defined(PETSC_USE_DEBUG)
+    for (i=ncl;i<ncg;i++) idxs[i] = ncg;
+#else
+    for (i=ncl;i<ncg;i++) idxs[i] = -1;
+#endif
+    ierr = ISRestoreIndices(col,&cl);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(A->cmap->mapping,&cg);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),ncg,idxs,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject)rl2g);CHKERRQ(ierr);
+    cl2g = rl2g;
+  }
+  /* create the MATIS submatrix */
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),submat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*submat,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(*submat,MATIS);CHKERRQ(ierr);
+  matis = (*submat)->data;
+  matis->islocalref = PETSC_TRUE;
+  ierr = MatSetLocalToGlobalMapping(*submat,rl2g,cl2g);CHKERRQ(ierr);
+  ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
+  ierr = MatISSetLocalMat(*submat,lA);CHKERRQ(ierr);
+  ierr = MatSetUp(*submat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+  /* remove unsupported ops */
+  ierr = PetscMemzero((*submat)->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+  (*submat)->ops->destroy               = MatDestroy_IS;
+  (*submat)->ops->setvalueslocal        = MatSetValuesLocal_SubMat_IS;
+  (*submat)->ops->setvaluesblockedlocal = MatSetValuesBlockedLocal_SubMat_IS;
+  (*submat)->ops->assemblybegin         = MatAssemblyBegin_IS;
+  (*submat)->ops->assemblyend           = MatAssemblyEnd_IS;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateIS"
 /*@
     MatCreateIS - Creates a "process" unassembled matrix, assembled on each
@@ -1431,7 +1500,7 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 }
 
 /*MC
-   MATIS - MATIS = "is" - A matrix type to be used for using the non-overlapping domain decomposition type preconditioners (e.g. PCBDDC).
+   MATIS - MATIS = "is" - A matrix type to be used for using the non-overlapping domain decomposition methods (e.g. PCBDDC or KSPFETIDP).
    This stores the matrices in globally unassembled form. Each processor
    assembles only its local Neumann problem and the parallel matrix vector
    product is handled "implicitly".
@@ -1453,6 +1522,9 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 .  MatMissingDiagonal()
 .  MatDuplicate()
 .  MatCopy()
+.  MatAXPY()
+.  MatGetSubMatrix()
+.  MatGetLocalSubMatrix()
 -  MatSetLocalToGlobalMapping()
 
    Options Database Keys:
@@ -1467,7 +1539,7 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 
   Level: advanced
 
-.seealso: Mat, MatISGetLocalMat(), MatSetLocalToGlobalMapping(), MatISSetPreallocation(), PCBDDC, MatCreateIS()
+.seealso: Mat, MatISGetLocalMat(), MatSetLocalToGlobalMapping(), MatISSetPreallocation(), MatCreateIS(), PCBDDC, KSPFETIDP
 
 M*/
 
@@ -1509,6 +1581,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->copy                    = MatCopy_IS;
   A->ops->getlocalsubmatrix       = MatGetLocalSubMatrix_IS;
   A->ops->getsubmatrix            = MatGetSubMatrix_IS;
+  A->ops->axpy                    = MatAXPY_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);

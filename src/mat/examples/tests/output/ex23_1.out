@@ -1,26 +1,26 @@
+Test MatView
 Mat Object: 1 MPI processes
   type: is
   Mat Object: (is_) 1 MPI processes
     type: seqaij
 row 0: (0, 2.)  (1, -2.) 
 row 1: (0, -4.)  (1, 4.) 
+Test MatISGetMPIXAIJ
 Test MatGetLocalSubMatrix
+Test MatGetSubMatrix
+Test MatZeroRows (diag zero)
 IS Object: 1 MPI processes
   type: stride
 Index set is permutation
 Number of indices in (stride) set 1
 0 0
+Test MatMissingDiagonal
+[0] [0,2) Missing 1, row 0 (diag zero)
+Test MatZeroRows (diag nonzero)
 IS Object: 1 MPI processes
   type: stride
+Index set is permutation
 Number of indices in (stride) set 1
-0 1
-Mat Object: 1 MPI processes
-  type: is
-  Mat Object: 1 MPI processes
-    type: seqaij
-row 0: (0, -2.) 
-Test MatISGetMPIXAIJ
-Test MatGetSubMatrix
-Test MatZeroRows
-[0] [0,2) Missing 0, row -1 (diag zero)
+0 0
+Test MatMissingDiagonal
 [0] [0,2) Missing 0, row -1 (diag nonzero)
