@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   
   appctx.a  = -1.0;
-  ierr      = PetscOptionsGetScalar(NULL,NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetReal(NULL,NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
   if (appctx.a >= 0) SETERRQ(PETSC_COMM_WORLD,1,"a > 0 is not supported for upwind scheme used in this example!");
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -60, 1, 1,NULL,&da);CHKERRQ(ierr);
