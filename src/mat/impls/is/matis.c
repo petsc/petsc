@@ -1434,7 +1434,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
   ierr = MatCreate(PetscObjectComm((PetscObject)A),submat);CHKERRQ(ierr);
   ierr = MatSetSizes(*submat,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*submat,MATIS);CHKERRQ(ierr);
-  matis = (*submat)->data;
+  matis = (Mat_IS*)((*submat)->data);
   matis->islocalref = PETSC_TRUE;
   ierr = MatSetLocalToGlobalMapping(*submat,rl2g,cl2g);CHKERRQ(ierr);
   ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
