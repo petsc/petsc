@@ -659,7 +659,13 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
     if (label->stratumValues[v] == value) break;
   }
   if (v >= label->numStrata) PetscFunctionReturn(0);
-  if (label->validIS[v]) {ierr = DMLabelMakeInvalid_Private(label,v);CHKERRQ(ierr);}
+  if (label->validIS[v]) {
+    ierr = DMLabelMakeInvalid_Private(label,v);CHKERRQ(ierr);
+  }
+  if (label->bt) {
+    if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %D is not in [%D, %D)", point, label->pStart, label->pEnd);
+    ierr = PetscBTClear(label->bt, point - label->pStart);CHKERRQ(ierr);
+  }
   ierr = PetscHashIDelKey(label->ht[v], point);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

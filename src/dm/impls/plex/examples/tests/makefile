@@ -23,6 +23,10 @@ ex5: ex5.o  chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_DM_LIB}
 	${RM} -f ex5.o
 
+ex6: ex6.o  chkopts
+	-${CLINKER} -o ex6 ex6.o ${PETSC_DM_LIB}
+	${RM} -f ex6.o
+
 ex1f90: ex1f90.o  chkopts
 	-${FLINKER} -o ex1f90 ex1f90.o  ${PETSC_DM_LIB}
 	${RM} -f ex1f90.o
@@ -139,6 +143,12 @@ runex3_nonconforming_tensor_3_fv:
 	   else printf "${PWD}\nPossible problem with runex3_nonconforming_tensor_3_fv, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_nonconforming_tensor_3_fv.tmp
 
+runex6:
+	-@${MPIEXEC} -n 1 ./ex6 > ex6.tmp 2>&1;\
+	   if (${DIFF} output/ex6.out ex6.tmp) then true ;  \
+	   else printf "${PWD}\nPossible problem with runex6, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex6.tmp
+
 runex15_0:
 	-@${MPIEXEC} -n 2 ./ex15 -verbose -globaltonatural_sf_view > ex15_0.tmp 2>&1;\
           if (${DIFF} output/ex15_0.out ex15_0.tmp > /dev/null 2>&1) then x='good'; fi ;\
@@ -158,7 +168,7 @@ runex20_3d:
 		else printf "${PWD}\nPossible problem with runex20_3d, diffs above\n================================================================\n"; fi ;\
 		${RM} -f ex20_3d.tmp
 
-TESTEXAMPLES_C        = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm
+TESTEXAMPLES_C        = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm ex6.PETSc runex6 ex6.rm
 TESTEXAMPLES_HDF5     = ex15.PETSc runex15_0 ex15.rm
 TESTEXAMPLES_TRIANGLE = ex3.PETSc runex3_nonconforming_simplex_2 runex3_nonconforming_simplex_2_fv ex3.rm ex20.PETSc runex20_2d ex20.rm
 TESTEXAMPLES_CTETGEN  = ex1.PETSc runex1 runex1_2 runex1_test_shape ex1.rm ex3.PETSc runex3 runex3_nonconforming_simplex_3 runex3_nonconforming_simplex_3_fv ex3.rm ex20.PETSc runex20_3d ex20.rm
