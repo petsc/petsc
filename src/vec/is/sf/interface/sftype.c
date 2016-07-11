@@ -48,7 +48,15 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
     MPI_Datatype types[1];
     if (nints != 0 || naddrs != 0 || ntypes != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
     ierr   = MPI_Type_get_contents(a,0,0,1,ints,addrs,types);CHKERRQ(ierr);
-    *atype = types[0];
+    /* Recursively unwrap dupped types. */
+    ierr   = MPIPetsc_Type_unwrap(types[0],atype,flg);CHKERRQ(ierr);
+    if (*flg) {
+      /* If the recursive call returns a new type, then that means that atype[0] != types[0] and we're on the hook to
+       * free types[0].  Note that this case occurs if combiner(types[0]) is MPI_COMBINER_DUP, so we're safe to
+       * directly call MPI_Type_free rather than MPIPetsc_Type_free here. */
+      ierr = MPI_Type_free(&(types[0]));CHKERRQ(ierr);
+    }
+    /* In any case, it's up to the caller to free the returned type in this case. */
     *flg = PETSC_TRUE;
   } else *atype = a;
   PetscFunctionReturn(0);
