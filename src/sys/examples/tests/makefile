@@ -223,7 +223,8 @@ runex28:
 	   ${RM} -f ex28.tmp
 
 
-TESTEXAMPLES_C		       = ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex4.PETSc ex4.rm \
+                                 ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
                                  ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm
