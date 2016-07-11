@@ -168,6 +168,20 @@ static inline bool operator!=(const double& lhs, const PetscComplex& rhs) { retu
 #endif  /* PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND */
 #elif defined(PETSC_USE_REAL_DOUBLE)
 typedef complexlib::complex<double> PetscComplex;
+#if defined(PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND)
+static inline PetscComplex operator+(const PetscComplex& lhs, const PetscInt& rhs) { return lhs + double(rhs); }
+static inline PetscComplex operator+(const PetscInt& lhs, const PetscComplex& rhs) { return double(lhs) + rhs; }
+static inline PetscComplex operator-(const PetscComplex& lhs, const PetscInt& rhs) { return lhs - double(rhs); }
+static inline PetscComplex operator-(const PetscInt& lhs, const PetscComplex& rhs) { return double(lhs) - rhs; }
+static inline PetscComplex operator*(const PetscComplex& lhs, const PetscInt& rhs) { return lhs * double(rhs); }
+static inline PetscComplex operator*(const PetscInt& lhs, const PetscComplex& rhs) { return double(lhs) * rhs; }
+static inline PetscComplex operator/(const PetscComplex& lhs, const PetscInt& rhs) { return lhs / double(rhs); }
+static inline PetscComplex operator/(const PetscInt& lhs, const PetscComplex& rhs) { return double(lhs) / rhs; }
+static inline bool operator==(const PetscComplex& lhs, const PetscInt& rhs) { return lhs.imag() == double(0) && lhs.real() == double(rhs); }
+static inline bool operator==(const PetscInt& lhs, const PetscComplex& rhs) { return rhs.imag() == double(0) && rhs.real() == double(lhs); }
+static inline bool operator!=(const PetscComplex& lhs, const PetscInt& rhs) { return lhs.imag() != double(0) || lhs.real() != double(rhs); }
+static inline bool operator!=(const PetscInt& lhs, const PetscComplex& rhs) { return rhs.imag() != double(0) || rhs.real() != double(lhs); }
+#endif  /* PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND */
 #elif defined(PETSC_USE_REAL___FLOAT128)
 typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
