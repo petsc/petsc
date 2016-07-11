@@ -108,8 +108,18 @@ runex3_window:
 	  ${DIFF} output/ex3_window.out ex3.tmp || printf "${PWD}\nPossible problem with ex3_window, diffs above\n=========================================\n"; \
 	  ${RM} -f ex3.tmp
 
+runex3_basic_dupped:
+	-@${MPIEXEC} -n 1 ./ex3 -test_dupped_type -sf_type basic > ex3.tmp 2>&1; \
+	  ${DIFF} output/ex3_basic_dupped.out ex3.tmp || printf "${PWD}\nPossible problem with ex3_basic_dupped, diffs above\n=========================================\n"; \
+	  ${RM} -f ex3.tmp
+
+runex3_window_dupped:
+	-@${MPIEXEC} -n 1 ./ex3 -test_dupped_type -sf_type window > ex3.tmp 2>&1; \
+	  ${DIFF} output/ex3_window_dupped.out ex3.tmp || printf "${PWD}\nPossible problem with ex3_window_dupped, diffs above\n=========================================\n"; \
+	  ${RM} -f ex3.tmp
+
 TESTEXAMPLES_C		    = ex1.PETSc runex1_basic runex1_2_basic runex1_3_basic runex1_4_basic runex1_4_stride runex1_5_basic runex1_5_stride runex1_6_basic runex1_7_basic ex1.rm \
-                                ex2.PETSc runex2_basic runex2_window ex2.rm ex3.PETSc runex3_basic runex3_window ex3.rm
+                                ex2.PETSc runex2_basic runex2_window ex2.rm ex3.PETSc runex3_basic runex3_window runex3_basic_dupped runex3_window_dupped ex3.rm
 TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    =
 TESTEXAMPLES_FORTRAN_MPIUNI =
