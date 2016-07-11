@@ -38,7 +38,7 @@ f = x.duplicate()
 
 ts = PETSc.TS().create(comm=ode.comm)
 ts.setProblemType(ts.ProblemType.NONLINEAR)
-ts.setType(ts.Type.GL)
+ts.setType(ts.Type.GLLE)
 
 ts.setIFunction(ode.evalFunction, f)
 ts.setIJacobian(ode.evalJacobian, J)

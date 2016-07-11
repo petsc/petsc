@@ -12,7 +12,7 @@ class TSType(object):
     THETA    = S_(TSTHETA)
     ALPHA    = S_(TSALPHA)
     ALPHA2  = S_(TSALPHA2)
-    GL       = S_(TSGL)
+    GLLE     = S_(TSGLLE)
     SSP      = S_(TSSSP)
     ARKIMEX  = S_(TSARKIMEX)
     ROSW     = S_(TSROSW)
