@@ -118,10 +118,11 @@ int main(int argc,char **argv)
 */
 PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
 {
-  PetscScalar    *u,h;
+  PetscScalar    *u;
   PetscErrorCode ierr;
   PetscInt       i,mstart,mend,xm,M;
   DM             da;
+  PetscReal      h;
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&mstart,0,0,&xm,0,0);CHKERRQ(ierr);
@@ -144,7 +145,7 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
      directly into the array locations.  Alternatively, we could use
      VecSetValues() or VecSetValuesLocal().
   */
-  for (i=mstart; i<mend; i++) u[i] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
+  for (i=mstart; i<mend; i++) u[i] = PetscSinReal(PETSC_PI*i*6.*h) + 3.*PetscSinReal(PETSC_PI*i*2.*h);
 
   /* Restore vector */
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
@@ -167,8 +168,8 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
 */
 PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 {
-  PetscScalar    *u,PI6,PI2,h;
-  PetscReal      a=appctx->a;
+  PetscScalar    *u,PI6,PI2;
+  PetscReal      a=appctx->a,h;
   PetscErrorCode ierr;
   PetscInt       i,mstart,mend,xm,M;
   DM             da;
@@ -186,7 +187,7 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
   PI6 = PETSC_PI*6.;                 
   PI2 = PETSC_PI*2.;
   for (i=mstart; i<mend; i++) {
-    u[i] = PetscSinScalar(PI6*(i*h - a*t)) + 3.*PetscSinScalar(PI2*(i*h - a*t));
+    u[i] = PetscSinReal(PI6*(i*h - a*t)) + 3.*PetscSinReal(PI2*(i*h - a*t));
   }
 
   /* Restore vector */
