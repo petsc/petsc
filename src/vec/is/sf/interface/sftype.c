@@ -48,7 +48,15 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
     MPI_Datatype types[1];
     if (nints != 0 || naddrs != 0 || ntypes != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
     ierr   = MPI_Type_get_contents(a,0,0,1,ints,addrs,types);CHKERRQ(ierr);
-    *atype = types[0];
+    /* Recursively unwrap dupped types. */
+    ierr   = MPIPetsc_Type_unwrap(types[0],atype,flg);CHKERRQ(ierr);
+    if (*flg) {
+      /* If the recursive call returns a new type, then that means that atype[0] != types[0] and we're on the hook to
+       * free types[0].  Note that this case occurs if combiner(types[0]) is MPI_COMBINER_DUP, so we're safe to
+       * directly call MPI_Type_free rather than MPIPetsc_Type_free here. */
+      ierr = MPI_Type_free(&(types[0]));CHKERRQ(ierr);
+    }
+    /* In any case, it's up to the caller to free the returned type in this case. */
     *flg = PETSC_TRUE;
   } else *atype = a;
   PetscFunctionReturn(0);
@@ -87,8 +95,16 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *ma
     if (same) {
       ierr = PetscMemcmp(aaddrs,baddrs,aaddrcount*sizeof(aaddrs[0]),&same);CHKERRQ(ierr);
       if (same) {
-        /* This comparison should be recursive */
+        /* Check for identity first */
         ierr = PetscMemcmp(atypes,btypes,atypecount*sizeof(atypes[0]),&same);CHKERRQ(ierr);
+        if (!same) {
+          /* If the atype or btype were not predefined data types, then the types returned from MPI_Type_get_contents
+           * will merely be equivalent to the types used in the construction, so we must recursively compare. */
+          for (i=0; i<atypecount; i++) {
+            ierr = MPIPetsc_Type_compare(atypes[i],btypes[i],&same);CHKERRQ(ierr);
+            if (!same) break;
+          }
+        }
       }
     }
     for (i=0; i<atypecount; i++) {
@@ -133,9 +149,17 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a,MPI_Datatype b,PetscI
     MPI_Aint     *aaddrs;
     MPI_Datatype *atypes;
     PetscInt      i;
+    PetscBool     same;
     ierr = PetscMalloc3(aintcount,&aints,aaddrcount,&aaddrs,atypecount,&atypes);CHKERRQ(ierr);
     ierr = MPI_Type_get_contents(atype,aintcount,aaddrcount,atypecount,aints,aaddrs,atypes);CHKERRQ(ierr);
-    if (atypes[0] == btype) *n = aints[0];
+    /* Check for identity first. */
+    if (atypes[0] == btype) {
+      *n = aints[0];
+    } else {
+      /* atypes[0] merely has to be equivalent to the type used to create atype. */
+      ierr = MPIPetsc_Type_compare(atypes[0],btype,&same);CHKERRQ(ierr);
+      if (same) *n = aints[0];
+    }
     for (i=0; i<atypecount; i++) {
       ierr = MPIPetsc_Type_free(&(atypes[i]));CHKERRQ(ierr);
     }
