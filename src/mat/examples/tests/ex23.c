@@ -288,7 +288,7 @@ PetscErrorCode TestMatZeroRows(Mat A,Mat Afull, IS is, PetscScalar diag)
   ierr = MatMissingDiagonal(B,&miss,&d);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(B,&rst,&ren);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] [%D,%D) Missing %D, row %D (diag %s)\n",rank,rst,ren,miss,d,diagstr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] [%D,%D) Missing %d, row %D (diag %s)\n",rank,rst,ren,(int)miss,d,diagstr);CHKERRQ(ierr);
   ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
