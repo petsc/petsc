@@ -168,8 +168,8 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
 */
 PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 {
-  PetscScalar    *u,PI6,PI2;
-  PetscReal      a=appctx->a,h;
+  PetscScalar    *u;
+  PetscReal      a=appctx->a,h,PI6,PI2;
   PetscErrorCode ierr;
   PetscInt       i,mstart,mend,xm,M;
   DM             da;
@@ -184,7 +184,7 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /* u[i] = sin(6*PI*(x[i] - a*t)) + 3 * sin(2*PI*(x[i] - a*t)) */
-  PI6 = PETSC_PI*6.;                 
+  PI6 = PETSC_PI*6.;
   PI2 = PETSC_PI*2.;
   for (i=mstart; i<mend; i++) {
     u[i] = PetscSinReal(PI6*(i*h - a*t)) + 3.*PetscSinReal(PI2*(i*h - a*t));
