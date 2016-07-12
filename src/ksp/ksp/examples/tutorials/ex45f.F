@@ -75,9 +75,9 @@
      &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &                     PETSC_NULL_INTEGER,ierr)
 
-       Hx = 1.0 / (mx-1)
-       Hy = 1.0 / (my-1)
-       h=Hx*Hy
+       Hx = 1.0 / real(mx-1)
+       Hy = 1.0 / real(my-1)
+       h = Hx*Hy
        call VecSet(b,h,ierr)
        end subroutine
 
@@ -108,8 +108,8 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,ierr)
 
-      Hx = 1.0 / (mx-1)
-      Hy = 1.0 / (my-1)
+      Hx = 1.0 / real(mx-1)
+      Hy = 1.0 / real(my-1)
       HxdHy = Hx/Hy
       HydHx = Hy/Hx
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,            &
