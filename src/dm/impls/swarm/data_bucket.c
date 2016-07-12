@@ -151,7 +151,7 @@ PetscErrorCode DataBucketRegisterField(
                               size_t atomic_size, DataField *_gfield)
 {
   PetscBool val;
-  DataField *field,fp;
+  DataField fp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -166,8 +166,7 @@ PetscErrorCode DataBucketRegisterField(
   ierr = StringInList(field_name, db->nfields, (const DataField*) db->field, &val);CHKERRQ(ierr);
   if (val == PETSC_TRUE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field %s already exists. Cannot add same field twice",field_name);
   /* create new space for data */
-  field = (DataField *) realloc(db->field, sizeof(DataField)*(db->nfields+1));
-  db->field = field;
+  ierr = PetscRealloc(sizeof(DataField)*(db->nfields+1), &db->field);CHKERRQ(ierr);
   /* add field */
   ierr = DataFieldCreate(registeration_function, field_name, atomic_size, db->allocated, &fp);CHKERRQ(ierr);
   db->field[db->nfields] = fp;
@@ -246,21 +245,18 @@ PetscErrorCode DataFieldSetBlockSize(DataField df,PetscInt blocksize)
 #define __FUNCT__ "DataFieldSetSize"
 PetscErrorCode DataFieldSetSize(DataField df,const PetscInt new_L)
 {
-  void          *tmp_data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (new_L <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot set size of DataField to be <= 0");
   if (new_L == df->L) PetscFunctionReturn(0);
   if (new_L > df->L) {
-    tmp_data = realloc( df->data, df->atomic_size * (new_L) );
-    df->data = tmp_data;
+    ierr = PetscRealloc(df->atomic_size * (new_L), &df->data);CHKERRQ(ierr);
     /* init new contents */
     ierr = PetscMemzero(( ((char*)df->data)+df->L*df->atomic_size), (new_L-df->L)*df->atomic_size);CHKERRQ(ierr);
   } else {
     /* reallocate pointer list, add +1 in case new_L = 0 */
-    tmp_data = realloc( df->data, df->atomic_size * (new_L+1) );
-    df->data = tmp_data;
+    ierr = PetscRealloc(df->atomic_size * (new_L+1), &df->data);CHKERRQ(ierr);
   }
   df->L = new_L;
   PetscFunctionReturn(0);
@@ -693,7 +689,6 @@ PetscErrorCode _DataFieldViewBinary(DataField field,FILE *fp)
 PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
 {
   PetscBool      val;
-  DataField     *field;
   DataField      gfield;
   char           dummy[100];
   char           registeration_function[5000];
@@ -732,8 +727,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
   ierr = StringInList( field_name, db->nfields, (const DataField*)db->field, &val );CHKERRQ(ierr);
   if (val == PETSC_TRUE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot add same field twice");
   /* create new space for data */
-  field = (DataField *) realloc( db->field,     sizeof(DataField)*(db->nfields+1));
-  db->field     = field;
+  ierr = PetscRealloc(sizeof(DataField)*(db->nfields+1), &db->field);CHKERRQ(ierr);
   /* add field */
   ierr = DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );CHKERRQ(ierr);
   /* copy contents of file */

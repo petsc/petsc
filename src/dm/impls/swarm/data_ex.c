@@ -238,10 +238,7 @@ PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
     }
   }
   if (found == 0) { /* add it to list */
-    PetscMPIInt *tmp;
-
-    tmp = (PetscMPIInt*) realloc(d->neighbour_procs, sizeof(PetscMPIInt)*(d->n_neighbour_procs+1));
-    d->neighbour_procs = tmp;
+    ierr = PetscRealloc(sizeof(PetscMPIInt)*(d->n_neighbour_procs+1), &d->neighbour_procs);CHKERRQ(ierr);
     d->neighbour_procs[ d->n_neighbour_procs ] = proc_id;
     d->n_neighbour_procs++;
   }
