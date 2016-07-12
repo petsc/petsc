@@ -71,7 +71,7 @@ branches:
     - maint
     - master
     - next
-    - /^travis-ci\/.*$/
+    - /^ci\/.*$/
 
 addons:
   apt:
@@ -90,4 +90,4 @@ install:
   - make test       CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
 
 script:
-  - make alltests ALLTESTS_PRINT_PROGRESS=dot CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+  - make alltests ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND

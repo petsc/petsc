@@ -7,8 +7,8 @@ pipelines:
             - ./configure --with-clanguage=C++ --with-64-bit-indices=1 --with-scalar-type=complex --with-mpi=0
             - make all
             - make test
-            - make alltests ALLTESTS_PRINT_PROGRESS=dot
-    master: *default-step
-    next:   *default-step
-    pr*/*:  *default-step
-    ci/*:   *default-step
+            - make alltests ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot
+    master:  *default-step
+    next:    *default-step
+    pr*/*/*: *default-step
+    ci/*/*:  *default-step
