@@ -41,6 +41,17 @@ def addFileNameTags(filename):
   return
 
 def createTags(flist,etagfile,ctagfile):
+  # split up the flist into blocks of 1000 - and call etags on each chunk
+  nfiles = len(flist)
+  niter  = nfiles/1000
+  nrem   = nfiles%1000
+  blocks = [i*1000 for i in range(niter+1)]
+  if nrem: blocks.append(nfiles)
+  for i in range(len(blocks)-1):
+    createTagsBlock(flist[blocks[i]:blocks[i+1]],etagfile,ctagfile)
+  return
+
+def createTagsBlock(flist,etagfile,ctagfile):
   # error check for each parameter?
   frlist = [os.path.relpath(path,os.getcwd()) for path in flist]
 
