@@ -52,7 +52,6 @@ int main(int argc,char **argv)
   
   appctx.a  = -1.0;
   ierr      = PetscOptionsGetReal(NULL,NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
-  if (appctx.a >= 0) SETERRQ(PETSC_COMM_WORLD,1,"a > 0 is not supported for upwind scheme used in this example!");
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -60, 1, 1,NULL,&da);CHKERRQ(ierr);
 
@@ -79,7 +78,7 @@ int main(int argc,char **argv)
 
   /* Customize timestepping solver */
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  dt   = -1.0/(appctx.a*M);
+  dt = 1.0/(PetscAbsReal(appctx.a)*M);
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,100,100.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
@@ -233,7 +232,7 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,vo
   ierr = DMDAVecGetArrayRead(da,localXold,&xoldarray);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
-  /* advection -- finite difference with upwind (appctx->a < 0) */
+  /* advection */
   c = appctx->a*dt/h; /* Courant-Friedrichs-Lewy number (CFL number) */
 
   for (i=mstart; i<mend; i++) {
