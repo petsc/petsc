@@ -1773,6 +1773,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
             /* Evaluate coarse basis on contained point */
             ierr = PetscFEGetDimension(fe, &cpdim);CHKERRQ(ierr);
             ierr = PetscFEGetTabulation(fe, 1, x, &B, NULL, NULL);CHKERRQ(ierr);
+            ierr = PetscMemzero(elemMat, cpdim*Nc*Nc * sizeof(PetscScalar));CHKERRQ(ierr);
             /* Get elemMat entries by multiplying by weight */
             for (j = 0; j < cpdim; ++j) {
               for (c = 0; c < Nc; ++c) elemMat[(c*cpdim + j)*Nc + c] = B[j*Nc + c]*qweights[ccell];
@@ -1786,6 +1787,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           }
           /* Update interpolator */
           if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(cell, name, Nc, numCIndices, elemMat);CHKERRQ(ierr);}
+          if (numCIndices != cpdim*Nc) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of element matrix columns %D != %D*%D", numCIndices, cpdim, Nc);
           ierr = MatSetValues(In, Nc, &findices[i*Nc], numCIndices, cindices, elemMat, INSERT_VALUES);CHKERRQ(ierr);
           ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
         }

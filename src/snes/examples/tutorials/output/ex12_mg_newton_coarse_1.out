@@ -44,148 +44,148 @@ Labels:
             depth: 3 strata of sizes (25, 57, 33)
   0 SNES Function norm 3.538058091867e+00 
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 6.678249974455e-01 true resid norm 2.367810930252e+00 ||r(i)||/||b|| 6.692402636618e-01
-      1 KSP none resid norm 4.922273170361e-01 true resid norm 1.445286105654e+00 ||r(i)||/||b|| 4.084969969759e-01
+      0 KSP none resid norm 6.684008878137e-01 true resid norm 2.369800283865e+00 ||r(i)||/||b|| 6.698025364005e-01
+      1 KSP none resid norm 4.919051758707e-01 true resid norm 1.446688201971e+00 ||r(i)||/||b|| 4.088932867712e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 2.007457202754e-01 true resid norm 6.030479203873e-01 ||r(i)||/||b|| 8.073978060358e-01
-        1 KSP none resid norm 1.488872595846e-01 true resid norm 3.848179547538e-01 ||r(i)||/||b|| 5.152180479983e-01
+        0 KSP none resid norm 2.006682926493e-01 true resid norm 6.027789781385e-01 ||r(i)||/||b|| 8.070949415982e-01
+        1 KSP none resid norm 1.489042898201e-01 true resid norm 3.849081767997e-01 ||r(i)||/||b|| 5.153753759531e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 2.804355688894e-02 true resid norm 1.089539567234e-01 ||r(i)||/||b|| 1.458742873384e-01
-        1 KSP none resid norm 1.183730854601e-02 true resid norm 4.685868642866e-02 ||r(i)||/||b|| 6.273730384797e-02
+        0 KSP none resid norm 2.803659172817e-02 true resid norm 1.089283734442e-01 ||r(i)||/||b|| 1.458503736723e-01
+        1 KSP none resid norm 1.183265568178e-02 true resid norm 4.684835927731e-02 ||r(i)||/||b|| 6.272792377674e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 1.181266175233e-01 true resid norm 4.118557803752e-01 ||r(i)||/||b|| 1.164072973595e-01
-      1 KSP none resid norm 5.695141095482e-02 true resid norm 2.008742210657e-01 ||r(i)||/||b|| 5.677527498135e-02
-    0 KSP preconditioned resid norm 7.591474318796e+01 true resid norm 3.538058091867e+00 ||r(i)||/||b|| 1.000000000000e+00
+      0 KSP none resid norm 1.179419312846e-01 true resid norm 4.115874373194e-01 ||r(i)||/||b|| 1.163314526309e-01
+      1 KSP none resid norm 5.688491960167e-02 true resid norm 2.003837278370e-01 ||r(i)||/||b|| 5.663664152310e-02
+    0 KSP preconditioned resid norm 7.591474664354e+01 true resid norm 3.538058091867e+00 ||r(i)||/||b|| 1.000000000000e+00
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 2.600932756634e-02 true resid norm 1.054109757088e-01 ||r(i)||/||b|| 5.015760761382e-01
-      1 KSP none resid norm 1.485753693830e-02 true resid norm 5.130110852906e-02 ||r(i)||/||b|| 2.441055928430e-01
+      0 KSP none resid norm 2.596165875348e-02 true resid norm 1.052636894907e-01 ||r(i)||/||b|| 5.016308275402e-01
+      1 KSP none resid norm 1.482230329664e-02 true resid norm 5.111646579162e-02 ||r(i)||/||b|| 2.435939226532e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 4.022367920613e-03 true resid norm 1.353219622326e-02 ||r(i)||/||b|| 6.487427876067e-01
-        1 KSP none resid norm 2.707232094404e-03 true resid norm 7.368670214355e-03 ||r(i)||/||b|| 3.532591145552e-01
+        0 KSP none resid norm 4.025598735480e-03 true resid norm 1.354414366191e-02 ||r(i)||/||b|| 6.482555367636e-01
+        1 KSP none resid norm 2.708863498788e-03 true resid norm 7.375993488642e-03 ||r(i)||/||b|| 3.530329223834e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 5.283217688362e-04 true resid norm 2.312659469068e-03 ||r(i)||/||b|| 1.108704844354e-01
-        1 KSP none resid norm 2.367110148834e-04 true resid norm 9.350998177501e-04 ||r(i)||/||b|| 4.482932795603e-02
+        0 KSP none resid norm 5.289374265937e-04 true resid norm 2.315070017687e-03 ||r(i)||/||b|| 1.108048610841e-01
+        1 KSP none resid norm 2.367810134167e-04 true resid norm 9.359365904699e-04 ||r(i)||/||b|| 4.479619324609e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 7.068729931996e-03 true resid norm 2.879793165524e-02 ||r(i)||/||b|| 1.370289333099e-01
-      1 KSP none resid norm 3.566445005185e-03 true resid norm 1.373975264050e-02 ||r(i)||/||b|| 6.537773861018e-02
-    1 KSP preconditioned resid norm 1.943583402177e-01 true resid norm 2.101594966816e-01 ||r(i)||/||b|| 5.939967383937e-02
+      0 KSP none resid norm 7.055044246174e-03 true resid norm 2.876616185173e-02 ||r(i)||/||b|| 1.370842466634e-01
+      1 KSP none resid norm 3.554416039574e-03 true resid norm 1.367529784487e-02 ||r(i)||/||b|| 6.516920514540e-02
+    1 KSP preconditioned resid norm 1.943347598138e-01 true resid norm 2.098429436780e-01 ||r(i)||/||b|| 5.931020300668e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 1.889664716708e-03 true resid norm 8.128299872765e-03 ||r(i)||/||b|| 4.731126949027e-01
-      1 KSP none resid norm 1.020216051317e-03 true resid norm 3.844387252142e-03 ||r(i)||/||b|| 2.237649252096e-01
+      0 KSP none resid norm 1.886335612006e-03 true resid norm 8.113966379732e-03 ||r(i)||/||b|| 4.734820086334e-01
+      1 KSP none resid norm 1.016177806757e-03 true resid norm 3.825187951060e-03 ||r(i)||/||b|| 2.232148359639e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 1.661772046356e-04 true resid norm 6.982165063198e-04 ||r(i)||/||b|| 5.896565047296e-01
-        1 KSP none resid norm 8.015712275491e-05 true resid norm 2.397119204076e-04 ||r(i)||/||b|| 2.024410649851e-01
+        0 KSP none resid norm 1.663104252162e-04 true resid norm 6.985138419578e-04 ||r(i)||/||b|| 5.891021589146e-01
+        1 KSP none resid norm 8.012594404091e-05 true resid norm 2.398459394901e-04 ||r(i)||/||b|| 2.022776819490e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 2.280980779293e-05 true resid norm 1.115886563239e-04 ||r(i)||/||b|| 9.423864440305e-02
-        1 KSP none resid norm 9.352988326511e-06 true resid norm 3.887302695233e-05 ||r(i)||/||b|| 3.282897638984e-02
+        0 KSP none resid norm 2.286086392598e-05 true resid norm 1.118335704202e-04 ||r(i)||/||b|| 9.431652433548e-02
+        1 KSP none resid norm 9.360732456288e-06 true resid norm 3.895707616471e-05 ||r(i)||/||b|| 3.285503635734e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 5.407707035309e-04 true resid norm 2.295511386327e-03 ||r(i)||/||b|| 1.336116525184e-01
-      1 KSP none resid norm 2.767816524703e-04 true resid norm 1.096189541821e-03 ||r(i)||/||b|| 6.380438669505e-02
-    2 KSP preconditioned resid norm 6.009297547180e-03 true resid norm 1.718047298316e-02 ||r(i)||/||b|| 4.855904718651e-03
+      0 KSP none resid norm 5.395621249785e-04 true resid norm 2.290484996748e-03 ||r(i)||/||b|| 1.336588526807e-01
+      1 KSP none resid norm 2.755306464209e-04 true resid norm 1.090115540580e-03 ||r(i)||/||b|| 6.361255046430e-02
+    2 KSP preconditioned resid norm 5.997410947788e-03 true resid norm 1.713679977651e-02 ||r(i)||/||b|| 4.843560883273e-03
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 1.515182571380e-04 true resid norm 6.589655677921e-04 ||r(i)||/||b|| 4.657197872474e-01
-      1 KSP none resid norm 8.015230597447e-05 true resid norm 3.132940792271e-04 ||r(i)||/||b|| 2.214186280057e-01
+      0 KSP none resid norm 1.511419841120e-04 true resid norm 6.570589764017e-04 ||r(i)||/||b|| 4.661033634437e-01
+      1 KSP none resid norm 7.975114560246e-05 true resid norm 3.114673322136e-04 ||r(i)||/||b|| 2.209481589348e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 1.093828456906e-05 true resid norm 4.920706484284e-05 ||r(i)||/||b|| 5.779715595950e-01
-        1 KSP none resid norm 4.063447842907e-06 true resid norm 1.373534063226e-05 ||r(i)||/||b|| 1.613312290044e-01
+        0 KSP none resid norm 1.093752704076e-05 true resid norm 4.917556630612e-05 ||r(i)||/||b|| 5.774216972194e-01
+        1 KSP none resid norm 4.058433570605e-06 true resid norm 1.373276313762e-05 ||r(i)||/||b|| 1.612507184783e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 1.519668888578e-06 true resid norm 7.667080429821e-06 ||r(i)||/||b|| 9.005524811766e-02
-        1 KSP none resid norm 5.817552453398e-07 true resid norm 2.533771123078e-06 ||r(i)||/||b|| 2.976092258986e-02
+        0 KSP none resid norm 1.522669238098e-06 true resid norm 7.682661329009e-06 ||r(i)||/||b|| 9.021015266287e-02
+        1 KSP none resid norm 5.820790766815e-07 true resid norm 2.538812549938e-06 ||r(i)||/||b|| 2.981085042074e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 4.385761748398e-05 true resid norm 1.878076145374e-04 ||r(i)||/||b|| 1.327318551390e-01
-      1 KSP none resid norm 2.249173738783e-05 true resid norm 9.013269760620e-05 ||r(i)||/||b|| 6.370071943795e-02
-    3 KSP preconditioned resid norm 3.923500505401e-04 true resid norm 1.414940025819e-03 ||r(i)||/||b|| 3.999199530023e-04
+      0 KSP none resid norm 4.372185217044e-05 true resid norm 1.871642968445e-04 ||r(i)||/||b|| 1.327702860914e-01
+      1 KSP none resid norm 2.236988455668e-05 true resid norm 8.956818601106e-05 ||r(i)||/||b|| 6.353772531338e-02
+    3 KSP preconditioned resid norm 3.911413075613e-04 true resid norm 1.409685121230e-03 ||r(i)||/||b|| 3.984347019260e-04
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 1.245032147614e-05 true resid norm 5.424340498949e-05 ||r(i)||/||b|| 4.628563290170e-01
-      1 KSP none resid norm 6.538642258723e-06 true resid norm 2.595170735572e-05 ||r(i)||/||b|| 2.214446530545e-01
+      0 KSP none resid norm 1.240698653747e-05 true resid norm 5.402083626013e-05 ||r(i)||/||b|| 4.632031235961e-01
+      1 KSP none resid norm 6.500258869598e-06 true resid norm 2.578087952928e-05 ||r(i)||/||b|| 2.210588497652e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 8.319151550682e-07 true resid norm 3.774788361599e-06 ||r(i)||/||b|| 5.724388430667e-01
-        1 KSP none resid norm 2.894329117671e-07 true resid norm 1.044305311915e-06 ||r(i)||/||b|| 1.583667393496e-01
+        0 KSP none resid norm 8.309068484498e-07 true resid norm 3.768066763928e-06 ||r(i)||/||b|| 5.718898748854e-01
+        1 KSP none resid norm 2.888719017644e-07 true resid norm 1.043023650550e-06 ||r(i)||/||b|| 1.583025732786e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 1.147229235719e-07 true resid norm 5.868526033315e-07 ||r(i)||/||b|| 8.899498279673e-02
-        1 KSP none resid norm 4.358363555510e-08 true resid norm 1.957439537242e-07 ||r(i)||/||b|| 2.968416548781e-02
+        0 KSP none resid norm 1.148442193218e-07 true resid norm 5.875662852151e-07 ||r(i)||/||b|| 8.917655402377e-02
+        1 KSP none resid norm 4.356772585909e-08 true resid norm 1.959216362751e-07 ||r(i)||/||b|| 2.973556655878e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 3.622885644191e-06 true resid norm 1.552997004925e-05 ||r(i)||/||b|| 1.325164769456e-01
-      1 KSP none resid norm 1.859322435260e-06 true resid norm 7.495311962109e-06 ||r(i)||/||b|| 6.395713138383e-02
-    4 KSP preconditioned resid norm 3.095530054433e-05 true resid norm 1.171927477036e-04 ||r(i)||/||b|| 3.312346622373e-05
+      0 KSP none resid norm 3.607949534018e-06 true resid norm 1.545785035807e-05 ||r(i)||/||b|| 1.325437565509e-01
+      1 KSP none resid norm 1.847721816618e-06 true resid norm 7.443215882595e-06 ||r(i)||/||b|| 6.382205617507e-02
+    4 KSP preconditioned resid norm 3.083296346870e-05 true resid norm 1.166245077122e-04 ||r(i)||/||b|| 3.296285834884e-05
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 1.033602447800e-06 true resid norm 4.500722163331e-06 ||r(i)||/||b|| 4.612797652241e-01
-      1 KSP none resid norm 5.419586139042e-07 true resid norm 2.165891883628e-06 ||r(i)||/||b|| 2.219826204160e-01
+      0 KSP none resid norm 1.028910858030e-06 true resid norm 4.476882308920e-06 ||r(i)||/||b|| 4.615769921197e-01
+      1 KSP none resid norm 5.383455090699e-07 true resid norm 2.150109978931e-06 ||r(i)||/||b|| 2.216813461511e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 6.629560652788e-08 true resid norm 2.999272387355e-07 ||r(i)||/||b|| 5.681654018180e-01
-        1 KSP none resid norm 2.295434016526e-08 true resid norm 8.537818891317e-08 ||r(i)||/||b|| 1.617356703407e-01
+        0 KSP none resid norm 6.614210518314e-08 true resid norm 2.990737292007e-07 ||r(i)||/||b|| 5.676192691518e-01
+        1 KSP none resid norm 2.288995643081e-08 true resid norm 8.517907930386e-08 ||r(i)||/||b|| 1.616634362058e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 9.046607947455e-09 true resid norm 4.681230857547e-08 ||r(i)||/||b|| 8.867862160148e-02
-        1 KSP none resid norm 3.477211992222e-09 true resid norm 1.595372625803e-08 ||r(i)||/||b|| 3.022184756577e-02
+        0 KSP none resid norm 9.047298896715e-09 true resid norm 4.682453649773e-08 ||r(i)||/||b|| 8.886942111649e-02
+        1 KSP none resid norm 3.472494923833e-09 true resid norm 1.594998415227e-08 ||r(i)||/||b|| 3.027186096115e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 3.017678488370e-07 true resid norm 1.292279251765e-06 ||r(i)||/||b|| 1.324459160610e-01
-      1 KSP none resid norm 1.551076558657e-07 true resid norm 6.272809014309e-07 ||r(i)||/||b|| 6.429012421585e-02
-    5 KSP preconditioned resid norm 2.546636294224e-06 true resid norm 9.757033589246e-06 ||r(i)||/||b|| 2.757736966410e-06
+      0 KSP none resid norm 3.002048567303e-07 true resid norm 1.284753369862e-06 ||r(i)||/||b|| 1.324610644544e-01
+      1 KSP none resid norm 1.540185166782e-07 true resid norm 6.225097318338e-07 ||r(i)||/||b|| 6.418220309534e-02
+    5 KSP preconditioned resid norm 2.534204030316e-06 true resid norm 9.699101959916e-06 ||r(i)||/||b|| 2.741363117302e-06
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 8.631671890479e-08 true resid norm 3.753446520800e-07 ||r(i)||/||b|| 4.601111624903e-01
-      1 KSP none resid norm 4.530662876007e-08 true resid norm 1.816722014880e-07 ||r(i)||/||b|| 2.227004097584e-01
+      0 KSP none resid norm 8.583392734617e-08 true resid norm 3.729224008742e-07 ||r(i)||/||b|| 4.603546216946e-01
+      1 KSP none resid norm 4.497034187416e-08 true resid norm 1.802278213685e-07 ||r(i)||/||b|| 2.224825066299e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 5.399479295519e-09 true resid norm 2.430542086513e-08 ||r(i)||/||b|| 5.647945234023e-01
-        1 KSP none resid norm 1.880293725305e-09 true resid norm 7.118308388185e-09 ||r(i)||/||b|| 1.654109021952e-01
+        0 KSP none resid norm 5.381543242891e-09 true resid norm 2.421277846230e-08 ||r(i)||/||b|| 5.642554348829e-01
+        1 KSP none resid norm 1.873320625470e-09 true resid norm 7.094406667014e-09 ||r(i)||/||b|| 1.653283007304e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 7.298754015676e-10 true resid norm 3.812072080631e-09 ||r(i)||/||b|| 8.858260245324e-02
-        1 KSP none resid norm 2.848508204906e-10 true resid norm 1.327296979843e-09 ||r(i)||/||b|| 3.084291645486e-02
+        0 KSP none resid norm 7.292673180023e-10 true resid norm 3.809507609127e-09 ||r(i)||/||b|| 8.877689836485e-02
+        1 KSP none resid norm 2.842111638329e-10 true resid norm 1.325684502994e-09 ||r(i)||/||b|| 3.089379795546e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 2.525901860219e-08 true resid norm 1.080026257702e-07 ||r(i)||/||b|| 1.323935572807e-01
-      1 KSP none resid norm 1.301418010129e-08 true resid norm 5.272631448806e-08 ||r(i)||/||b|| 6.463383910892e-02
-    6 KSP preconditioned resid norm 2.122808267333e-07 true resid norm 8.157694980674e-07 ||r(i)||/||b|| 2.305698428024e-07
+      0 KSP none resid norm 2.510188847426e-08 true resid norm 1.072510629544e-07 ||r(i)||/||b|| 1.323962368497e-01
+      1 KSP none resid norm 1.291300822994e-08 true resid norm 5.229243548093e-08 ||r(i)||/||b|| 6.455247605637e-02
+    6 KSP preconditioned resid norm 2.110447532421e-07 true resid norm 8.100763700414e-07 ||r(i)||/||b|| 2.289607318499e-07
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 7.237592029863e-09 true resid norm 3.141835782579e-08 ||r(i)||/||b|| 4.590796227179e-01
-      1 KSP none resid norm 3.807984288858e-09 true resid norm 1.529623807551e-08 ||r(i)||/||b|| 2.235059911038e-01
+      0 KSP none resid norm 7.189671265180e-09 true resid norm 3.118068244441e-08 ||r(i)||/||b|| 4.592682897664e-01
+      1 KSP none resid norm 3.776968604135e-09 true resid norm 1.516502216951e-08 ||r(i)||/||b|| 2.233695111862e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 4.453690210599e-10 true resid norm 1.994484166193e-09 ||r(i)||/||b|| 5.621952678207e-01
-        1 KSP none resid norm 1.560443954545e-10 true resid norm 5.978211089769e-10 ||r(i)||/||b|| 1.685108381240e-01
+        0 KSP none resid norm 4.434830001174e-10 true resid norm 1.985138226854e-09 ||r(i)||/||b|| 5.616666908217e-01
+        1 KSP none resid norm 1.553292549167e-10 true resid norm 5.952630660488e-10 ||r(i)||/||b|| 1.684212373492e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 5.973893432312e-11 true resid norm 3.141983183753e-10 ||r(i)||/||b|| 8.856465784081e-02
-        1 KSP none resid norm 2.365355522846e-11 true resid norm 1.114816047343e-10 ||r(i)||/||b|| 3.142387976453e-02
+        0 KSP none resid norm 5.963987484179e-11 true resid norm 3.137128041267e-10 ||r(i)||/||b|| 8.876058612880e-02
+        1 KSP none resid norm 2.358205784538e-11 true resid norm 1.112556398736e-10 ||r(i)||/||b|| 3.147820450874e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 2.121510108055e-09 true resid norm 9.056392923230e-09 ||r(i)||/||b|| 1.323304505421e-01
-      1 KSP none resid norm 1.096405677225e-09 true resid norm 4.446690289666e-09 ||r(i)||/||b|| 6.497427115198e-02
-    7 KSP preconditioned resid norm 1.780428781198e-08 true resid norm 6.843770943216e-08 ||r(i)||/||b|| 1.934329727075e-08
+      0 KSP none resid norm 2.106170207476e-09 true resid norm 8.983523690527e-09 ||r(i)||/||b|| 1.323206305308e-01
+      1 KSP none resid norm 1.087088734445e-09 true resid norm 4.407476406170e-09 ||r(i)||/||b|| 6.491885335918e-02
+    7 KSP preconditioned resid norm 1.768420140802e-08 true resid norm 6.789208647579e-08 ||r(i)||/||b|| 1.918908189548e-08
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 6.087315979458e-10 true resid norm 2.637570159573e-09 ||r(i)||/||b|| 4.580955484779e-01
-      1 KSP none resid norm 3.212727494628e-10 true resid norm 1.291815000750e-09 ||r(i)||/||b|| 2.243635867478e-01
+      0 KSP none resid norm 6.040964361142e-10 true resid norm 2.614813251313e-09 ||r(i)||/||b|| 4.582298009531e-01
+      1 KSP none resid norm 3.184337157135e-10 true resid norm 1.279965764552e-09 ||r(i)||/||b|| 2.243060598011e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 3.704195310369e-11 true resid norm 1.650763987711e-10 ||r(i)||/||b|| 5.602378101123e-01
-        1 KSP none resid norm 1.304055101317e-11 true resid norm 5.038841605990e-11 ||r(i)||/||b|| 1.710086728241e-01
+        0 KSP none resid norm 3.685418444552e-11 true resid norm 1.641714120248e-10 ||r(i)||/||b|| 5.597223839681e-01
+        1 KSP none resid norm 1.296992784142e-11 true resid norm 5.013121181975e-11 ||r(i)||/||b|| 1.709162456782e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 4.937655541964e-12 true resid norm 2.610031762209e-11 ||r(i)||/||b|| 8.857949953288e-02
-        1 KSP none resid norm 1.979460705995e-12 true resid norm 9.409435875745e-12 ||r(i)||/||b|| 3.193383056974e-02
+        0 KSP none resid norm 4.925756382870e-12 true resid norm 2.603891397168e-11 ||r(i)||/||b|| 8.877649783488e-02
+        1 KSP none resid norm 1.972116843664e-12 true resid norm 9.383962183505e-12 ||r(i)||/||b|| 3.199347328282e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 1.786607931990e-10 true resid norm 7.614665438781e-10 ||r(i)||/||b|| 1.322521915860e-01
-      1 KSP none resid norm 9.265654576600e-11 true resid norm 3.760356188704e-10 ||r(i)||/||b|| 6.531020319913e-02
-    8 KSP preconditioned resid norm 1.498957426682e-09 true resid norm 5.757685636405e-09 ||r(i)||/||b|| 1.627357574948e-09
+      0 KSP none resid norm 1.771951782662e-10 true resid norm 7.545487914640e-10 ||r(i)||/||b|| 1.322299947610e-01
+      1 KSP none resid norm 9.180467337447e-11 true resid norm 3.725099947464e-10 ||r(i)||/||b|| 6.528006566434e-02
+    8 KSP preconditioned resid norm 1.487514860478e-09 true resid norm 5.706336091355e-09 ||r(i)||/||b|| 1.612844092207e-09
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 5.132602395725e-11 true resid norm 2.219656676283e-10 ||r(i)||/||b|| 4.571274848565e-01
-      1 KSP none resid norm 2.718384387762e-11 true resid norm 1.093769238441e-10 ||r(i)||/||b|| 2.252564490374e-01
+      0 KSP none resid norm 5.088617758417e-11 true resid norm 2.198257256600e-10 ||r(i)||/||b|| 4.572085118950e-01
+      1 KSP none resid norm 2.692561898422e-11 true resid norm 1.083121596712e-10 ||r(i)||/||b|| 2.252750045279e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 3.099069817570e-12 true resid norm 1.374861928090e-11 ||r(i)||/||b|| 5.588117923262e-01
-        1 KSP none resid norm 1.094690283104e-12 true resid norm 4.256529685074e-12 ||r(i)||/||b|| 1.730063895005e-01
+        0 KSP none resid norm 3.081009642631e-12 true resid norm 1.366320471130e-11 ||r(i)||/||b|| 5.583130891643e-01
+        1 KSP none resid norm 1.087934397594e-12 true resid norm 4.231613159925e-12 ||r(i)||/||b|| 1.729144124959e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 4.110020723941e-13 true resid norm 2.180111215603e-12 ||r(i)||/||b|| 8.861048742212e-02
-        1 KSP none resid norm 1.664440111063e-13 true resid norm 7.963658330662e-13 ||r(i)||/||b|| 3.236824072518e-02
+        0 KSP none resid norm 4.097264174682e-13 true resid norm 2.173326143775e-12 ||r(i)||/||b|| 8.880760105196e-02
+        1 KSP none resid norm 1.657252154562e-13 true resid norm 7.937445583112e-13 ||r(i)||/||b|| 3.243440947581e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 1.507908348703e-11 true resid norm 6.417242038447e-11 ||r(i)||/||b|| 1.321599751932e-01
-      1 KSP none resid norm 7.850017423993e-12 true resid norm 3.187417635865e-11 ||r(i)||/||b|| 6.564331424039e-02
-    9 KSP preconditioned resid norm 1.265724655909e-10 true resid norm 4.855662260124e-10 ||r(i)||/||b|| 1.372408856510e-10
+      0 KSP none resid norm 1.494131982555e-11 true resid norm 6.352598081873e-11 ||r(i)||/||b|| 1.321256603139e-01
+      1 KSP none resid norm 7.772597083754e-12 true resid norm 3.155861218815e-11 ||r(i)||/||b|| 6.563775041659e-02
+    9 KSP preconditioned resid norm 1.254956836226e-10 true resid norm 4.807997225355e-10 ||r(i)||/||b|| 1.358936767151e-10
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 4.336751143742e-12 true resid norm 1.871958102806e-11 ||r(i)||/||b|| 4.561651592887e-01
-      1 KSP none resid norm 2.305506635989e-12 true resid norm 9.281477822286e-12 ||r(i)||/||b|| 2.261742291610e-01
+      0 KSP none resid norm 4.295616499495e-12 true resid norm 1.852099977730e-11 ||r(i)||/||b|| 4.561941233729e-01
+      1 KSP none resid norm 2.282155823905e-12 true resid norm 9.186263272759e-12 ||r(i)||/||b|| 2.262685260611e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 2.604493254482e-13 true resid norm 1.150556561173e-12 ||r(i)||/||b|| 5.578101165246e-01
-        1 KSP none resid norm 9.219324854610e-14 true resid norm 3.601474397640e-13 ||r(i)||/||b|| 1.746058317515e-01
+        0 KSP none resid norm 2.587301375565e-13 true resid norm 1.142625791619e-12 ||r(i)||/||b|| 5.573204683580e-01
+        1 KSP none resid norm 9.154577302588e-14 true resid norm 3.578014579686e-13 ||r(i)||/||b|| 1.745191449351e-01
         Residual norms for mg_levels_1_ solve.
-        0 KSP none resid norm 3.439440232839e-14 true resid norm 1.828493577246e-13 ||r(i)||/||b|| 8.864859406372e-02
-        1 KSP none resid norm 1.403916310280e-14 true resid norm 6.751453574649e-14 ||r(i)||/||b|| 3.273223787751e-02
+        0 KSP none resid norm 3.426464957752e-14 true resid norm 1.821649679195e-13 ||r(i)||/||b|| 8.885171854509e-02
+        1 KSP none resid norm 1.397112760218e-14 true resid norm 6.725987041169e-14 ||r(i)||/||b|| 3.280628072155e-02
       Residual norms for mg_levels_2_ solve.
-      0 KSP none resid norm 1.275131307667e-12 true resid norm 5.419154123989e-12 ||r(i)||/||b|| 1.320558029838e-01
-      1 KSP none resid norm 6.664696784283e-13 true resid norm 2.707418424544e-12 ||r(i)||/||b|| 6.597529907545e-02
-   10 KSP preconditioned resid norm 1.079107474372e-11 true resid norm 4.103684958589e-11 ||r(i)||/||b|| 1.159869298931e-11
+      0 KSP none resid norm 1.262344866321e-12 true resid norm 5.359441381547e-12 ||r(i)||/||b|| 1.320093781233e-01
+      1 KSP none resid norm 6.594712333194e-13 true resid norm 2.679285606742e-12 ||r(i)||/||b|| 6.599397242750e-02
+   10 KSP preconditioned resid norm 1.060010968576e-11 true resid norm 4.059894423972e-11 ||r(i)||/||b|| 1.147492301866e-11
 KSP Object: 1 MPI processes
   type: richardson
     Richardson: damping factor=1.
@@ -230,7 +230,7 @@ PC Object: 1 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 1 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.0998531, max = 1.09838
+        Chebyshev: eigenvalue estimates:  min = 0.0998677, max = 1.09854
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_1_esteig_) 1 MPI processes
           type: gmres
@@ -240,10 +240,7 @@ PC Object: 1 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        Chebyshev: estimating eigenvalues using random right hand side
-        PetscRandom Object: (mg_levels_1_esteig_) 1 MPI processes
-          type: rander48
-        [0] Random type rander48, seed 305419896
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -263,7 +260,7 @@ PC Object: 1 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 1 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.0999503, max = 1.09945
+        Chebyshev: eigenvalue estimates:  min = 0.0998957, max = 1.09885
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_2_esteig_) 1 MPI processes
           type: gmres
@@ -273,10 +270,7 @@ PC Object: 1 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        Chebyshev: estimating eigenvalues using random right hand side
-        PetscRandom Object: (mg_levels_2_esteig_) 1 MPI processes
-          type: rander48
-        [0] Random type rander48, seed 305419896
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -300,6 +294,6 @@ PC Object: 1 MPI processes
     total: nonzeros=28606, allocated nonzeros=28606
     total number of mallocs used during MatSetValues calls =0
       not using I-node routines
-  1 SNES Function norm 4.103679775886e-11 
+  1 SNES Function norm 4.059892829802e-11 
 Number of SNES iterations = 1
 L_2 Error: 1.89245
