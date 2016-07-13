@@ -31,25 +31,10 @@ PETSC_EXTERN void PETSC_STDCALL dmdagetfieldname_(DM *da,PetscInt *nf,CHAR name 
 
 PETSC_EXTERN void PETSC_STDCALL  dmdagetcorners_(DM *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p, int *ierr )
 {
-  PetscInt Y,Z,N,P;
-
   CHKFORTRANNULLINTEGER(y);
   CHKFORTRANNULLINTEGER(z);
   CHKFORTRANNULLINTEGER(n);
   CHKFORTRANNULLINTEGER(p);
 
-  *ierr = DMDAGetCorners(*da,x,&Y,&Z,m,&N,&P);
-
-  if (y) {
-    *y = Y;
-  }
-  if (z) {
-    *z = Z;
-  }
-  if (n) {
-    *n = N;
-  }
-  if (p) {
-    *p = P;
-  }
+  *ierr = DMDAGetCorners(*da,x,y,z,m,n,p);
 }
