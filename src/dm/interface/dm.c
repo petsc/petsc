@@ -4954,7 +4954,7 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *
 PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 {
   PetscSection   section;
-  PetscBool      hasConstraints;
+  PetscBool      hasConstraints, ghasConstraints;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4962,7 +4962,8 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscValidPointer(odm,2);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionHasConstraints(section, &hasConstraints);CHKERRQ(ierr);
-  if (!hasConstraints) {
+  ierr = MPI_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  if (!ghasConstraints) {
     *odm = dm;
     PetscFunctionReturn(0);
   }
