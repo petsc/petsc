@@ -61,7 +61,7 @@
       ne = 9
       call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
      &                        '-ne',ne,flg,ierr)
-      h = 2.0/ne
+      h = 2.0/real(ne)
       M = (ne+1)*(ne+1)
       theta = 90.0
 !     theta is input in degrees
