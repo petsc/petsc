@@ -334,13 +334,20 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                      {'numProcs': 1, 'args': '-filename %(meshes)s/Rect-tri3.exo -dm_view ::ascii_info_detail', 'requires': ['exodusii']},
                                                                      {'numProcs': 2, 'args': '-filename %(meshes)s/Rect-tri3.exo -dm_view ::ascii_info_detail', 'requires': ['exodusii']},
                                                                      ],
-                        'src/dm/impls/plex/examples/tutorials/ex6': [# Spectral ordering
-                                                                     {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -order 2'},
-                                                                     {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -order 3'},
-                                                                     {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -order 5'},
-                                                                     {'numProcs': 1, 'args': '-num_fields 1 -num_components 2 -order 2'},
-                                                                     {'numProcs': 1, 'args': '-num_fields 2 -num_components 1,1 -order 2,2'},
-                                                                     {'numProcs': 1, 'args': '-num_fields 2 -num_components 1,2 -order 2,3'},
+                        'src/dm/impls/plex/examples/tutorials/ex6': [# Spectral ordering 2D 0-5
+                                                                     {'numProcs': 1, 'args': '-dim 2 -num_fields 1 -num_components 1 -order 2'},
+                                                                     {'numProcs': 1, 'args': '-dim 2 -num_fields 1 -num_components 1 -order 3'},
+                                                                     {'numProcs': 1, 'args': '-dim 2 -num_fields 1 -num_components 1 -order 5'},
+                                                                     {'numProcs': 1, 'args': '-dim 2 -num_fields 1 -num_components 2 -order 2'},
+                                                                     {'numProcs': 1, 'args': '-dim 2 -num_fields 2 -num_components 1,1 -order 2,2'},
+                                                                     {'numProcs': 1, 'args': '-dim 2 -num_fields 2 -num_components 1,2 -order 2,3'},
+                                                                     # Spectral ordering 3D 6-11
+                                                                     {'numProcs': 1, 'args': '-dim 3 -num_fields 1 -num_components 1 -order 2'},
+                                                                     {'numProcs': 1, 'args': '-dim 3 -num_fields 1 -num_components 1 -order 3'},
+                                                                     {'numProcs': 1, 'args': '-dim 3 -num_fields 1 -num_components 1 -order 5'},
+                                                                     {'numProcs': 1, 'args': '-dim 3 -num_fields 1 -num_components 2 -order 2'},
+                                                                     {'numProcs': 1, 'args': '-dim 3 -num_fields 2 -num_components 1,1 -order 2,2'},
+                                                                     {'numProcs': 1, 'args': '-dim 3 -num_fields 2 -num_components 1,2 -order 2,3'},
                                                                      ],
                         'src/snes/examples/tutorials/ex5':   [# MISSING ALL TESTS FROM MAKEFILE
                                                                # MSM tests
