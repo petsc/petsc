@@ -943,20 +943,22 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     if (section) {
-      PetscInt *ltog;
-      PetscInt pStart, pEnd, size, p, l;
+      const PetscInt *cdofs;
+      PetscInt       *ltog;
+      PetscInt        pStart, pEnd, size, p, l;
 
       ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
       ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
       ierr = PetscMalloc1(size, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
       for (p = pStart, l = 0; p < pEnd; ++p) {
-        PetscInt bdof, cdof, dof, off, c;
+        PetscInt bdof, cdof, dof, off, c, cind = 0;
 
         /* Should probably use constrained dofs */
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintIndices(section, p, &cdofs);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
-        ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
         /* If you have dofs, and constraints, and they are unequal, we set the blocksize to 1 */
         bdof = cdof && (dof-cdof) ? 1 : dof;
         if (dof) {
@@ -964,7 +966,8 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
           else if (bs != bdof) {bs = 1;}
         }
         for (c = 0; c < dof; ++c, ++l) {
-          ltog[l] = off+c;
+          if ((cind < cdof) && (c == cdofs[cind])) ltog[l] = off < 0 ? off-c : off+c;
+          else                                     ltog[l] = (off < 0 ? -(off+1) : off) + c;
         }
       }
       /* Must have same blocksize on all procs (some might have no points) */
