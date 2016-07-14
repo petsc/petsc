@@ -2,10 +2,10 @@ DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
   0 SNES Function norm 17.8197 
     0 KSP Residual norm 17.8197 
-    1 KSP Residual norm 5.07454e-05 
-    2 KSP Residual norm 2.127e-10 
+    1 KSP Residual norm 6.13491e-05 
+    2 KSP Residual norm 2.875e-10 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 2.127e-10 
+  1 SNES Function norm 2.875e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 2 MPI processes
   type: newtonls
@@ -103,7 +103,7 @@ SNES Object: 2 MPI processes
           Down solver (pre-smoother) on level 1 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
               type: chebyshev
-                Chebyshev: eigenvalue estimates:  min = 0.142125, max = 1.56337
+                Chebyshev: eigenvalue estimates:  min = 0.146777, max = 1.61455
                 Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                 KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 2 MPI processes
                   type: gmres
@@ -113,6 +113,7 @@ SNES Object: 2 MPI processes
                   tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using PRECONDITIONED norm type for convergence test
+                Chebyshev: estimating eigenvalues using noisy right hand side
               maximum iterations=2
               tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
@@ -235,7 +236,7 @@ SNES Object: 2 MPI processes
                   Down solver (pre-smoother) on level 1 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
                       type: chebyshev
-                        Chebyshev: eigenvalue estimates:  min = 0.142125, max = 1.56337
+                        Chebyshev: eigenvalue estimates:  min = 0.146777, max = 1.61455
                         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                         KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 2 MPI processes
                           type: gmres
@@ -245,6 +246,7 @@ SNES Object: 2 MPI processes
                           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
                           left preconditioning
                           using PRECONDITIONED norm type for convergence test
+                        Chebyshev: estimating eigenvalues using noisy right hand side
                       maximum iterations=2
                       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                       left preconditioning
@@ -291,7 +293,7 @@ SNES Object: 2 MPI processes
         has attached null space
         using I-node (on process 0) routines: found 240 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 1.36e-10 [1.13e-11, 1.36e-10]
+L_2 Error: 1.61e-10 [1.8e-11, 1.6e-10]
 Timestep: 0 Np: 64
 Timestep: 0 Np: 80
 Timestep: 1 Np: 64

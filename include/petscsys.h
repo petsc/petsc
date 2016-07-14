@@ -604,6 +604,34 @@ M*/
 #define PetscMalloc(a,b)  ((*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
 
 /*MC
+   PetscRealloc - Rellocates memory
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscRealloc(size_t m,void **result)
+
+   Not Collective
+
+   Input Parameters:
++  m - number of bytes to allocate
+-  result - initial memory allocated
+
+   Output Parameter:
+.  result - new memory allocated
+
+   Level: developer
+
+   Notes:
+   Memory is always allocated at least double aligned
+
+.seealso: PetscMalloc(), PetscFree(), PetscNew()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscRealloc(a,b)  ((*PetscTrRealloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
+
+/*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
 
    Synopsis:
@@ -1384,6 +1412,7 @@ M*/
 
 PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 

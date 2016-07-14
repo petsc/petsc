@@ -74,8 +74,50 @@ PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char f
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscReallocAlign"
+PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const char file[], void **result)
+{
+  if (!mem) {*result = NULL; return 0;}
+#if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
+  {
+    /*
+      Previous int tells us how many ints the pointer has been shifted from
+      the original address provided by the system malloc().
+    */
+    int shift = *(((int*)*result)-1) - SHIFT_CLASSID;
+    if (shift > PETSC_MEMALIGN-1) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
+    if (shift < 0) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
+    *result = (void*)(((int*)*result) - shift);
+  }
+#endif
+
+#if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
+  *result = realloc(*result, mem);
+#else
+  {
+    /*
+      malloc space for two extra chunks and shift ptr 1 + enough to get it PetscScalar aligned
+    */
+    int *ptr = (int *) realloc(*result, mem + 2*PETSC_MEMALIGN);
+    if (ptr) {
+      int shift    = (int)(((PETSC_UINTPTR_T) ptr) % PETSC_MEMALIGN);
+      shift        = (2*PETSC_MEMALIGN - shift)/sizeof(int);
+      ptr[shift-1] = shift + SHIFT_CLASSID;
+      ptr         += shift;
+      *result      = (void*)ptr;
+    } else {
+      *result      = NULL;
+    }
+  }
+#endif
+  if (!*result) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
+  return 0;
+}
+
 PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**) = PetscMallocAlign;
 PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[])           = PetscFreeAlign;
+PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**) = PetscReallocAlign;
 
 PetscBool petscsetmallocvisited = PETSC_FALSE;
 
