@@ -197,7 +197,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
 
   Output Parameters:
 + childOrientB - if not NULL, set to the new oreintation for describing the child
-. childB - if not NULL, the new childID for describing the child
+- childB - if not NULL, the new childID for describing the child
 
   Level: developer
 
@@ -4471,13 +4471,48 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexTransferVecTree"
-PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscSF sfIn, PetscSF sfOut, PetscInt *cidsIn, PetscInt *cidsOut, PetscBool useBCs, PetscReal time)
+/*@
+  DMPlexTransferVecTree - transfer a vector between two meshes that differ from each other by refinement/coarsening
+  that can be represented by a common reference tree used by both.  This routine can be used for a combination of
+  coarsening and refinement at the same time.
+
+  collective
+
+  Input Parameters:
++ dmIn        - The DMPlex mesh for the input vector
+. vecIn       - The input vector
+. sfRefine    - A star forest indicating points in the mesh dmIn (roots in the star forest) that are parents to points in
+                the mesh dmOut (leaves in the star forest), i.e. where dmOut is more refined than dmIn
+. sfCoarsen   - A star forest indicating points in the mesh dmOut (roots in the star forest) that are parents to points in
+                the mesh dmIn (leaves in the star forest), i.e. where dmOut is more coarsened than dmIn
+. cidsRefine  - The childIds of the points in dmOut.  These childIds relate back to the reference tree: childid[j] = k implies
+                that mesh point j of dmOut was refined from a point in dmIn just as the mesh point k in the reference
+                tree was refined from its parent.  childid[j] = -1 indicates that the point j in dmOut is exactly
+                equivalent to its root in dmIn, so no interpolation is necessary.  childid[j] = -2 indicates that this
+                point j in dmOut is not a leaf of sfRefine.
+. cidsCoarsen - The childIds of the points in dmIn.  These childIds relate back to the reference tree: childid[j] = k implies
+                that mesh point j of dmIn coarsens to a point in dmOut just as the mesh point k in the reference
+                tree coarsens to its parent.  childid[j] = -2 indicates that point j in dmOut is not a leaf in sfCoarsen.
+. useBCs      - PETSC_TRUE indicates that boundary values should be inserted into vecIn before transfer.
+- time        - Used if boundary values are time dependent.
+
+  Output Parameters:
+. vecOut      - Using interpolation and injection operators calculated on the reference tree, the transfered
+                projection of vecIn from dmIn to dmOut.  Note that any field discretized with a PetscFV finite volume
+                method that uses gradient reconstruction will use reconstructed gradients when interpolating from
+                coarse points to fine points.
+
+  Level: developer
+
+.seealso(): DMPlexSetReferenceTree(), DMPlexGetReferenceTree(), PetscFVGetComputeGradients()
+@*/
+PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscSF sfRefine, PetscSF sfCoarsen, PetscInt *cidsRefine, PetscInt *cidsCoarsen, PetscBool useBCs, PetscReal time)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecSet(vecOut,0.0);CHKERRQ(ierr);
-  if (sfIn) {
+  if (sfRefine) {
     Vec vecInLocal;
     DM  dmGrad = NULL;
     Vec faceGeom = NULL, cellGeom = NULL, grad = NULL;
@@ -4509,14 +4544,14 @@ PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, P
       ierr = DMGetGlobalVector(dmGrad,&grad);CHKERRQ(ierr);
       ierr = DMPlexReconstructGradientsFVM(dmIn,vecInLocal,grad);CHKERRQ(ierr);
     }
-    ierr = DMPlexTransferVecTree_Interpolate(dmIn,vecInLocal,dmOut,vecOut,sfIn,cidsIn,grad,cellGeom);CHKERRQ(ierr);
+    ierr = DMPlexTransferVecTree_Interpolate(dmIn,vecInLocal,dmOut,vecOut,sfRefine,cidsRefine,grad,cellGeom);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmIn,&vecInLocal);CHKERRQ(ierr);
     if (dmGrad) {
       ierr = DMRestoreGlobalVector(dmGrad,&grad);CHKERRQ(ierr);
     }
   }
-  if (sfOut) {
-    ierr = DMPlexTransferVecTree_Inject(dmIn,vecIn,dmOut,vecOut,sfOut,cidsOut);CHKERRQ(ierr);
+  if (sfCoarsen) {
+    ierr = DMPlexTransferVecTree_Inject(dmIn,vecIn,dmOut,vecOut,sfCoarsen,cidsCoarsen);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(vecOut);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vecOut);CHKERRQ(ierr);
