@@ -1185,21 +1185,21 @@ runex48_5:
 	   ${RM} -f ex48_5.tmp;
 
 runex56:
-	-@${MPIEXEC} -n 1 ./ex56 -ne 2 -alpha 1.e-3 -two_solves false -dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -snes_max_it 5 -ksp_type cg -ksp_rtol 1.e-8 -pc_type jacobi -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 100 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.0 -ksp_converged_reason -snes_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -petscpartitioner_type chaco -mat_block_size 3 -dm_view hdf5:ex56.h5 -vec_view hdf5:ex56.h5::append > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex56 -ne 1 -alpha 1. -two_solves true -ex56_dm_refine 3 -petscspace_poly_tensor -petscspace_order 1 -snes_max_it 10 -ksp_max_it 50 -ksp_type cg -ksp_rtol 1.e-6 -snes_rtol 1.e-6 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 100 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -petscpartitioner_type chaco -mat_block_size 3 -dm_view hdf5:ex56.h5 -ex56_vec_view hdf5:ex56.h5::append -ksp_norm_type unpreconditioned > ex.tmp 2>&1; \
 	   ${DIFF} output/ex56_0.out ex.tmp || printf "${PWD}\nPossible problem with ex56_0.out, diffs above \n=========================================\n"; \
-	   ${RM} -f ex.tmp
-	   ${PETSC_DIR}/bin/petsc_gen_xdmf.py ex56.h5
+#	   ${RM} -f ex.tmp
+	${PETSC_DIR}/bin/petsc_gen_xdmf.py ex56.h5
 
 runex56_hypre:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -mat_block_size 3 -petscpartitioner_type parmetis > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 3 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -mat_block_size 3 -petscpartitioner_type parmetis > ex.tmp 2>&1; \
          ${DIFF} output/ex56_hypre.out ex.tmp || printf "${PWD}\nPossible problem with ex56_hypre.out, diffs above \n=========================================\n"; \
 #         ${RM} -f ex.tmp
 #runex56_p4est:
-#	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 100 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -ksp_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mat_block_size 3 -petscpartitioner_type parmetis -dm_type p4est > ex.tmp 2>&1; \
+#	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 3 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 100 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -ksp_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mat_block_size 3 -petscpartitioner_type parmetis -dm_type p4est > ex.tmp 2>&1; \
 #         ${DIFF} output/ex56_p4est.out ex.tmp || printf "${PWD}\nPossible problem with ex56_p4est.out, diffs above \n=========================================\n"; \
          ${RM} -f ex.tmp
 runex56_ml:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short  -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type parmetis -use_mat_nearnullspace  > ex.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 2 -alpha 1.e-3 -two_solves true -dm_refine 3 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short  -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type parmetis -use_mat_nearnullspace  > ex.tmp 2>&1;	\
          ${DIFF} output/ex56_ml.out ex.tmp || printf "${PWD}\nPossible problem with ex56_ml.out, diffs above\n=========================================\n"; \
         ${RM} -f ex.tmp
 runex58:

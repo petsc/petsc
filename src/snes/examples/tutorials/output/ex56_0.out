@@ -1,22 +1,37 @@
-	[0]main 300/100 eqs in vector
-    0 KSP Residual norm 64.2019 
-    1 KSP Residual norm 0.709728 
-    2 KSP Residual norm 0.0375644 
-    3 KSP Residual norm 0.00276169 
-    4 KSP Residual norm 0.00021727 
-    5 KSP Residual norm 1.39118e-05 
-    6 KSP Residual norm 8.73385e-07 
-    7 KSP Residual norm 6.09274e-08 
+	[0]main 1944 equations in vector, 648 vertices
+	[0]main 729 local equations
+  0 SNES Function norm 0.125242 
+    0 KSP Residual norm 0.125242 
+    1 KSP Residual norm 0.0478381 
+    2 KSP Residual norm 0.00687324 
+    3 KSP Residual norm 0.00052795 
+    4 KSP Residual norm 4.50029e-05 
+    5 KSP Residual norm 4.09087e-06 
+    6 KSP Residual norm 3.64318e-07 
+    7 KSP Residual norm 3.13372e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 7
-    0 KSP Residual norm 0.000642019 
-    1 KSP Residual norm 7.09728e-06 
-    2 KSP Residual norm 3.75644e-07 
-    3 KSP Residual norm 2.76169e-08 
-    4 KSP Residual norm 2.1727e-09 
-    5 KSP Residual norm 1.391e-10 
+  1 SNES Function norm 3.13372e-08 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  0 SNES Function norm 3.13372e-08 
+    0 KSP Residual norm 3.13372e-08 
+    1 KSP Residual norm 3.42272e-09 
+    2 KSP Residual norm 2.489e-10 
+    3 KSP Residual norm 2.249e-11 
+    4 KSP Residual norm < 1.e-11
+    5 KSP Residual norm < 1.e-11
     6 KSP Residual norm < 1.e-11
-    7 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 7
+  Linear solve converged due to CONVERGED_RTOL iterations 6
+  1 SNES Function norm < 1.e-11
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  0 SNES Function norm < 1.e-11
     0 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 0
-[0]main emax=9.9984E-01
+    1 KSP Residual norm < 1.e-11
+    2 KSP Residual norm < 1.e-11
+    3 KSP Residual norm < 1.e-11
+    4 KSP Residual norm < 1.e-11
+    5 KSP Residual norm < 1.e-11
+    6 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_RTOL iterations 6
+  1 SNES Function norm < 1.e-11
+Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 1
+[0]main emax=9.9567E-01
