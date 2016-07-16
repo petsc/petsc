@@ -404,22 +404,33 @@ runex11_euler:
 #[-dm_plex_convert_type p4est]
 
 runex11_advect:
-	${MPIEXEC} -n 4 ./ex11 \
+	-@${MPIEXEC} -n 4 ./ex11 \
 		-physics advect -advect_sol_type bump_cavity -advect_bump_center 0.,0.5 -advect_bump_radius 0.25 -advect_bump_type cos -ufv_cfl 10 \
 		-petscfv_type leastsquares -petscfv_compute_gradients 1 -petsclimiter_type minmod \
 		-monitor solution,error -ufv_vtk_interval 10 \
 		-f -grid_bounds -1.,1.,-1.,1. -bc_outflow 1,2,3,4 -grid_size 64,64 \
 		-ts_ssp_type rks2 -ts_ssp_nstages 10 -ts_final_time 1.
 
+
 runex11_advect_p4est:
-	${MPIEXEC} -n 4 ./ex11 \
+	-@${MPIEXEC} -n 4 ./ex11 \
 		-physics advect -advect_sol_type bump_cavity -advect_bump_center 0.,0.5 -advect_bump_radius 0.25 -advect_bump_type cos -ufv_cfl 10 \
 		-petscfv_type leastsquares -petscfv_compute_gradients 1 -petsclimiter_type minmod \
-		-monitor solution,error -ufv_vtk_interval 10 \
+		-monitor solution,error \
 		-f -grid_bounds -1.,1.,-1.,1. -bc_outflow 1,2,3,4 \
 			-dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 4 \
 		-ts_ssp_type rks2 -ts_ssp_nstages 10 -ts_final_time 1. \
 		-ufv_use_amr -ufv_refine_tol 1.e-2 -ufv_coarsen_tol 1.e-4
+
+runex11_advect_p4est_fine:
+	-@${MPIEXEC} -n 4 ./ex11 \
+		-physics advect -advect_sol_type bump_cavity -advect_bump_center 0.,0.5 -advect_bump_radius 0.25 -advect_bump_type cos -ufv_cfl 10 \
+		-petscfv_type leastsquares -petscfv_compute_gradients 1 -petsclimiter_type minmod \
+		-monitor solution,error \
+		-f -grid_bounds -1.,1.,-1.,1. -bc_outflow 1,2,3,4 \
+			-dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 7 -dm_forest_minimum_refinement 3 -dm_forest_initial_refinement 4 \
+		-ts_ssp_type rks2 -ts_ssp_nstages 10 -ts_final_time 1. \
+		-ufv_use_amr -ufv_refine_tol 2.5e-3 -ufv_coarsen_tol 2.5e-5
 
 runex11_euler_p4est:
 	-@${MPIEXEC} -n 4 ./ex11 -ufv_vtk_interval 1 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 \
