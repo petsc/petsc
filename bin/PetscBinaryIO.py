@@ -177,7 +177,8 @@ class PetscBinaryIO(object):
     _classid = {1211216:'Mat',
                 1211214:'Vec',
                 1211218:'IS',
-                1211219:'Bag'}
+                1211219:'Bag',
+                1211213:'Real'}
 
     def __init__(self, precision=None, indices=None, complexscalars=None):
         if (precision is None) or (indices is None) or (complexscalars is None):
@@ -226,6 +227,18 @@ class PetscBinaryIO(object):
             name = 'f'
 
         self._scalartype = '>{0}{1}'.format(name, nbyte)
+
+    @decorate_with_conf
+    def readReal(self, fh):
+        """Reads a single real from a binary file handle, must be called after readObjectType()."""
+
+        try:
+            vals = np.fromfile(fh, dtype=self._scalartype, count=1)
+        except MemoryError:
+            raise IOError('Inconsistent or invalid real data in file')
+        if (len(vals) is 0):
+            raise IOError('Inconsistent or invalid real data in file')
+        return vals
 
     @decorate_with_conf
     def readVec(self, fh):
@@ -430,6 +443,8 @@ class PetscBinaryIO(object):
                     objects.append(self.readIS(fid))
                 elif objecttype == 'Mat':
                     objects.append(self.readMat(fid,mattype))
+                elif objecttype == 'Real':
+                    objects.append(self.readReal(fid))
                 elif objecttype == 'Bag':
                     raise NotImplementedError('Bag Reader not yet implemented')
         except DoneWithFile:
