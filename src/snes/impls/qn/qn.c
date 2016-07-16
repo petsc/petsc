@@ -19,7 +19,6 @@ typedef struct {
   PetscScalar       *dXdFmat;             /* A matrix of values for dX_i dot dF_j */
   PetscViewer       monitor;
   PetscReal         powell_gamma;         /* Powell angle restart condition */
-  PetscReal         powell_downhill;      /* Powell descent restart condition */
   PetscReal         scaling;              /* scaling of H0 */
   SNESQNType        type;                 /* the type of quasi-newton method used */
   SNESQNScaleType   scale_type;           /* the type of scaling used */
@@ -50,7 +49,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
     ierr = VecAXPY(U[k],-1.0,X);CHKERRQ(ierr);
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "scaling vector %d of %d by lambda: %14.12e \n",k,l,lambda[k]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "scaling vector %D of %D by lambda: %14.12e \n",k,l,(double)lambda[k]);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
   }
@@ -81,7 +80,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
 
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d and %d, gdot: %14.12e\n",k,j,PetscRealPart(gdot));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %D and %D, gdot: %14.12e\n",k,j,(double)PetscRealPart(gdot));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
   }
@@ -95,7 +94,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
     b = -(1.-lambda[k])*udot/(unorm-lambda[k]*udot);
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d: a: %14.12e b: %14.12e \n",k,a,b);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %D: a: %14.12e b: %14.12e \n",k,(double)a,(double)b);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
     ierr = VecAXPBY(Y,b,a,U[k]);CHKERRQ(ierr);
@@ -105,7 +104,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   k = it%l;
   if (qn->monitor) {
     ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(qn->monitor, "setting vector %d of %d\n",k,l);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(qn->monitor, "setting vector %D of %D\n",k,l);CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -163,7 +162,7 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
       ierr = VecAXPY(Y,-(1.-qn->lambda[k])*PetscRealPart(gdot)/PetscRealPart(udot),T[j]);CHKERRQ(ierr);
       if (qn->monitor) {
         ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %d k: %d gdot: %14.12e\n", it, k, PetscRealPart(gdot));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %D k: %D gdot: %14.12e\n", it, k, (double)PetscRealPart(gdot));CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
       }
     }
@@ -239,7 +238,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
     }
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %d k: %d alpha:        %14.12e\n", it, k, PetscRealPart(alpha[k]));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %D k: %D alpha:        %14.12e\n", it, k, (double)PetscRealPart(alpha[k]));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
     ierr = VecAXPY(Y,-alpha[k],dF[k]);CHKERRQ(ierr);
@@ -274,7 +273,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
     ierr = VecAXPY(Y, (alpha[k] - beta[k]), dX[k]);CHKERRQ(ierr);
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %d k: %d alpha - beta: %14.12e\n", it, k, PetscRealPart(alpha[k] - beta[k]));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %D k: %D alpha - beta: %14.12e\n", it, k, (double)PetscRealPart(alpha[k] - beta[k]));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
   }
@@ -388,6 +387,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       ierr = VecDotEnd(Y,Y,&ff);CHKERRQ(ierr);
       ierr = VecDotEnd(W,Y,&xf);CHKERRQ(ierr);
       qn->scaling = PetscRealPart(xf)/PetscRealPart(ff);
+      if (qn->monitor) {
+        ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(qn->monitor, "Shanno scaling %D %g\n", i,(double)qn->scaling);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+      }
     }
     switch (qn->type) {
     case SNES_QN_BADBROYDEN:
@@ -452,8 +456,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       ierr = VecCopy(F, D);CHKERRQ(ierr);
     }
     powell = PETSC_FALSE;
-    if (qn->restart_type == SNES_QN_RESTART_POWELL) {
-      /* check restart by Powell's Criterion: |F^T H_0 Fold| > 0.2 * |Fold^T H_0 Fold| */
+    if (qn->restart_type == SNES_QN_RESTART_POWELL && i_r > 1) {
+      /* check restart by Powell's Criterion: |F^T H_0 Fold| > powell_gamma * |Fold^T H_0 Fold| */
       if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
         ierr = MatMult(snes->jacobian_pre,Dold,W);CHKERRQ(ierr);
       } else {
@@ -473,7 +477,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     if (powell || periodic) {
       if (qn->monitor) {
         ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(qn->monitor, "restart! |%14.12e| > %4.2f*|%14.12e| or i_r = %d\n", PetscRealPart(DolddotD), qn->powell_gamma, PetscRealPart(DolddotDold), i_r);CHKERRQ(ierr);
+        if (powell) {
+          ierr = PetscViewerASCIIPrintf(qn->monitor, "Powell restart! |%14.12e| > %6.4f*|%14.12e| i_r = %D\n", (double)PetscRealPart(DolddotD), (double)qn->powell_gamma, (double)PetscRealPart(DolddotDold),i_r);CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(qn->monitor, "Periodic restart! i_r = %D\n", i_r);CHKERRQ(ierr);
+        }  
         ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
       }
       i_r = -1;
@@ -597,7 +605,6 @@ static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES QN options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_qn_m","Number of past states saved for L-BFGS methods","SNESQN",qn->m,&qn->m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_qn_powell_gamma","Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_qn_powell_downhill","Powell descent tolerance",        "SNESQN", qn->powell_downhill, &qn->powell_downhill, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_qn_monitor",         "Monitor for the QN methods",      "SNESQN", monflg, &monflg, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_qn_single_reduction", "Aggregate reductions",           "SNESQN", qn->singlereduction, &qn->singlereduction, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_qn_scale_type","Scaling type","SNESQNSetScaleType",SNESQNScaleTypes,(PetscEnum)stype,(PetscEnum*)&stype,&flg);CHKERRQ(ierr);
@@ -637,7 +644,7 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  QN type is %s, restart type is %s, scale type is %s\n",SNESQNTypes[qn->type],SNESQNRestartTypes[qn->restart_type],SNESQNScaleTypes[qn->scale_type]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Stored subspace size: %d\n", qn->m);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Stored subspace size: %D\n", qn->m);CHKERRQ(ierr);
     if (qn->singlereduction) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using the single reduction variant.\n");CHKERRQ(ierr);
     }
@@ -792,7 +799,7 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 
 +     -snes_qn_m <m> - Number of past states saved for the L-Broyden methods.
 +     -snes_qn_restart_type <powell,periodic,none> - set the restart type
-.     -snes_qn_powell_angle - Angle condition for restart.
+.     -snes_qn_powell_gamma - Angle condition for restart.
 .     -snes_qn_powell_descent - Descent condition for restart.
 .     -snes_qn_type <lbfgs,broyden,badbroyden> - QN type
 .     -snes_qn_scale_type <shanno,none,linesearch,jacobian> - scaling performed on inner Jacobian
