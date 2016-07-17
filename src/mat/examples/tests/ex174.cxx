@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscViewer    view;
   char           file[2][PETSC_MAX_PATH_LEN];
   PetscBool      flg,flgB,isElemental,isDense,isAij,isSbaij;
-  PetscScalar    one = 1.0,*Earray;
+  PetscScalar    one = 1.0,*Earray,alpha,beta;
   PetscMPIInt    rank,size;
   PetscReal      vl,vu,norm;
   PetscInt       M,N,m;
@@ -27,8 +27,10 @@ int main(int argc,char **args)
   El::Pencil       eigtype = El::AXBX;
   El::UpperOrLower uplo    = El::UPPER;
   El::SortType     sort    = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
-  El::HermitianEigSubset<PetscElemScalar>       subset;
+  El::HermitianEigSubset<PetscElemScalar> subset;
   El::HermitianEigCtrl<PetscElemScalar>   ctrl;
+
+  El::Orientation  orientation = El::NORMAL;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -119,6 +121,7 @@ int main(int argc,char **args)
   subset.lowerBound  = vl;
   subset.upperBound  = vu;
   ierr = MatElementalHermitianGenDefEig(eigtype,uplo,Ae,Be,&We,&Xe,sort,subset,ctrl);CHKERRQ(ierr);
+  //if (!rank) printf(" Eigenvalues:\n");
   //ierr = MatView(We,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check || A*X - B*X*We || */
@@ -150,8 +153,16 @@ int main(int argc,char **args)
     ierr = VecDestroy(&eval);CHKERRQ(ierr);
     ierr = MatDestroy(&EVAL);CHKERRQ(ierr);
     ierr = MatDestroy(&X);CHKERRQ(ierr);
-
   } 
+
+  /* Test MatElementalSyrk(): Be = alpha*Ae*Ae^T + beta*Be */
+  if (!rank) printf(" Test MatElementalSyrk(): Be = alpha*Ae*Ae^T + beta*Be\n");
+  alpha = 2.0;
+  beta  = 1.0;
+  ierr = MatElementalSyrk(uplo,orientation,alpha,Ae,beta,Be,PETSC_FALSE);CHKERRQ(ierr);
+  //if (!rank) printf(" Test MatElementalSyrk(), Be = Ae * Ae^T: \n");
+  //ierr = MatView(Be,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   if (!isElemental) {
     ierr = MatDestroy(&Ae);CHKERRQ(ierr);
     ierr = MatDestroy(&Be);CHKERRQ(ierr);

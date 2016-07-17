@@ -348,9 +348,12 @@ static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatElementalSyrk_Elemental"
-PetscErrorCode MatElementalSyrk_Elemental()
+PetscErrorCode MatElementalSyrk_Elemental(El::UpperOrLower uplo,El::Orientation orientation,PetscScalar alpha,Mat A,PetscScalar beta,Mat C,PetscBool conjugate)
 {
+  Mat_Elemental  *a=(Mat_Elemental*)A->data,*c=(Mat_Elemental*)C->data;
+
   PetscFunctionBegin;
+  El::Syrk(uplo,orientation,alpha,*a->emat,beta,*c->emat,conjugate);
   PetscFunctionReturn(0);
 }
 
@@ -358,7 +361,7 @@ PetscErrorCode MatElementalSyrk_Elemental()
 #define __FUNCT__ "MatElementalSyrk"
 /*@
   MatElementalSyrk - Symmetric rank-K update: 
-    updates C:= αAAT+βC or C:= αATA+βC, depending upon whether orientation is set to NORMAL or TRANSPOSE, respectively. Only the triangle of C specified by the uplo parameter is modified.
+    updates C:= αAAT + βC or C:= αATA + βC, depending upon whether orientation is set to NORMAL or TRANSPOSE, respectively. Only the triangle of C specified by the uplo parameter is modified.
 
    Logically Collective on Mat
 
@@ -370,7 +373,10 @@ PetscErrorCode MatElementalSyrk_Elemental()
 @*/
 PetscErrorCode MatElementalSyrk(El::UpperOrLower uplo,El::Orientation orientation,PetscScalar alpha,Mat A,PetscScalar beta,Mat C,PetscBool conjugate)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatElementalSyrk_C",(El::UpperOrLower,El::Orientation,PetscScalar,Mat,PetscScalar,Mat,PetscBool),(uplo,orientation,alpha,A,beta,C,conjugate));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1264,7 +1270,6 @@ PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::U
   El::DistMatrix<PetscElemScalar,El::VR,El::STAR> w( *a->grid ); /* holding eigenvalues */
   El::DistMatrix<PetscElemScalar>                 X( *a->grid ); /* holding eigenvectors */
   El::HermitianGenDefEig(eigtype,uplo,*a->emat,*b->emat,w,X,sort,subset,ctrl);
-  /* El::Print(w, "Eigenvalues"); */
 
   /* Wrap w and X into PETSc's MATMATELEMENTAL matrices */
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
