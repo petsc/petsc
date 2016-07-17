@@ -12,7 +12,7 @@ static char help[] = "Tests MatConvert(), MatLoad(), MatElementalHermitianGenDef
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,Ae,B,Be,X,Xe,We,C1,C2,EVAL;
+  Mat            A,Ae,B,Be,Ce,X,Xe,We,C1,C2,EVAL;
   Vec            eval;
   PetscErrorCode ierr;
   PetscViewer    view;
@@ -155,12 +155,18 @@ int main(int argc,char **args)
     ierr = MatDestroy(&X);CHKERRQ(ierr);
   } 
 
-  /* Test MatElementalSyrk(): Be = alpha*Ae*Ae^T + beta*Be */
-  if (!rank) printf(" Test MatElementalSyrk(): Be = alpha*Ae*Ae^T + beta*Be\n");
+  /* Test MatElementalSyrk(): Ce = alpha*Ae*Ae^T + beta*Ce */
   alpha = 2.0;
   beta  = 1.0;
+  ierr = MatDuplicate(Be,MAT_COPY_VALUES,&Ce);CHKERRQ(ierr);
+  ierr = MatElementalSyrk(uplo,orientation,alpha,Ae,beta,Ce,PETSC_FALSE);CHKERRQ(ierr);
+  //if (!rank) printf(" Test MatElementalSyrk(), Ce = alpha * Ae * Ae^T + beta * Ce: \n");
+  //ierr = MatView(Ce,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ce);CHKERRQ(ierr);
+
+   /* Test MatElementalHerk(): Be = alpha*Ae*Ae^H + beta*Be */
   ierr = MatElementalSyrk(uplo,orientation,alpha,Ae,beta,Be,PETSC_FALSE);CHKERRQ(ierr);
-  //if (!rank) printf(" Test MatElementalSyrk(), Be = Ae * Ae^T: \n");
+  //if (!rank) printf(" Test MatElementalHerk(), Be = alpha * Ae * Ae^H + beta * Be: \n");
   //ierr = MatView(Be,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   if (!isElemental) {
