@@ -1,4 +1,3 @@
-
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
     This stores the matrices in globally unassembled form. Each processor
@@ -514,7 +513,36 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
         }
       }
     }
-  } else { /* TODO: this could be optimized using MatGetRowIJ */
+  } else if (matis->A->ops->getrowij) {
+    const PetscInt *ii,*jj,*jptr;
+    PetscBool      done;
+    ierr = MatGetRowIJ(matis->A,0,PETSC_FALSE,PETSC_FALSE,&local_rows,&ii,&jj,&done);CHKERRQ(ierr);
+    if (!done) SETERRQ1(PetscObjectComm((PetscObject)(matis->A)),PETSC_ERR_PLIB,"Error in MatGetRowIJ called from %s\n",__FUNCT__);
+    jptr = jj;
+    for (i=0;i<local_rows;i++) {
+      PetscInt index_row = global_indices_r[i];
+      for (j=0;j<ii[i+1]-ii[i];j++,jptr++) {
+        PetscInt owner = row_ownership[index_row];
+        PetscInt index_col = global_indices_c[*jptr];
+        if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
+          my_dnz[i] += 1;
+        } else { /* offdiag block */
+          my_onz[i] += 1;
+        }
+        /* same as before, interchanging rows and cols */
+        if (issbaij && index_col != index_row) {
+          owner = row_ownership[index_col];
+          if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1] ) {
+            my_dnz[*jptr] += 1;
+          } else {
+            my_onz[*jptr] += 1;
+          }
+        }
+      }
+    }
+    ierr = MatRestoreRowIJ(matis->A,0,PETSC_FALSE,PETSC_FALSE,&local_rows,&ii,&jj,&done);CHKERRQ(ierr);
+    if (!done) SETERRQ1(PetscObjectComm((PetscObject)(matis->A)),PETSC_ERR_PLIB,"Error in MatRestoreRowIJ called from %s\n",__FUNCT__);
+  } else { /* loop over rows and use MatGetRow */
     for (i=0;i<local_rows;i++) {
       const PetscInt *cols;
       PetscInt       ncols,index_row = global_indices_r[i];
@@ -549,13 +577,13 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   /* Reduce my_dnz and my_onz */
   if (maxreduce) {
     ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,my_dnz,dnz,MPI_MAX);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,my_dnz,dnz,MPI_MAX);CHKERRQ(ierr);
     ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,my_onz,onz,MPI_MAX);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,my_dnz,dnz,MPI_MAX);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,my_onz,onz,MPI_MAX);CHKERRQ(ierr);
   } else {
     ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,my_dnz,dnz,MPI_SUM);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,my_dnz,dnz,MPI_SUM);CHKERRQ(ierr);
     ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,my_onz,onz,MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,my_dnz,dnz,MPI_SUM);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,my_onz,onz,MPI_SUM);CHKERRQ(ierr);
   }
   ierr = PetscFree2(my_dnz,my_onz);CHKERRQ(ierr);
@@ -685,13 +713,13 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     PetscBool done;
 
     ierr = MatGetRowIJ(local_mat,0,PETSC_FALSE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&done);CHKERRQ(ierr);
-    if (!done) SETERRQ1(PetscObjectComm((PetscObject)local_mat),PETSC_ERR_PLIB,"Error in MatRestoreRowIJ called in %s\n",__FUNCT__);
+    if (!done) SETERRQ1(PetscObjectComm((PetscObject)local_mat),PETSC_ERR_PLIB,"Error in MatGetRowIJ called from %s\n",__FUNCT__);
     ierr = MatSeqAIJGetArray(local_mat,&array);CHKERRQ(ierr);
     for (i=0;i<nvtxs;i++) {
       ierr = MatSetValuesLocal(*M,1,&i,xadj[i+1]-xadj[i],adjncy+xadj[i],array+xadj[i],ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = MatRestoreRowIJ(local_mat,0,PETSC_FALSE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&done);CHKERRQ(ierr);
-    if (!done) SETERRQ1(PetscObjectComm((PetscObject)local_mat),PETSC_ERR_PLIB,"Error in MatRestoreRowIJ called in %s\n",__FUNCT__);
+    if (!done) SETERRQ1(PetscObjectComm((PetscObject)local_mat),PETSC_ERR_PLIB,"Error in MatRestoreRowIJ called from %s\n",__FUNCT__);
     ierr = MatSeqAIJRestoreArray(local_mat,&array);CHKERRQ(ierr);
   } else { /* very basic values insertion for all other matrix types */
     PetscInt i;
