@@ -269,6 +269,9 @@ int main(int argc,char **args)
     /* Plex Distribute mesh over processes */
     ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
     if (distdm) {
+      const char *prefix;
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)distdm,prefix);CHKERRQ(ierr);
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = distdm;
     }
