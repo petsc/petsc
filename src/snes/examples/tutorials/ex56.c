@@ -65,7 +65,7 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   rad = PetscSqrtReal(rad);
   if (rad>0.25) {
     mu *= s_soft_alpha;
-    /* lambda *= s_soft_alpha; */ /* we could keep the bulk the same like rubberish */
+    lambda *= s_soft_alpha; /* we could keep the bulk the same like rubberish */
   }
   for (i=0,trace=0; i < dim; ++i) {
     trace += PetscRealPart(u_x[i*dim+i]);
@@ -95,7 +95,7 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   rad = PetscSqrtReal(rad);
   if (rad>0.25) {
     mu *= s_soft_alpha;
-    /* lambda *= s_soft_alpha; */ /* we could keep the bulk the same like rubberish */
+    lambda *= s_soft_alpha; /* we could keep the bulk the same like rubberish */
   }
   if (1) {
     g3[0] += lambda;
@@ -179,11 +179,11 @@ int main(int argc,char **args)
   PetscLogStage  stage[7];
   PetscBool      two_solves=PETSC_FALSE,test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
   Vec            xx,bb;
-  PetscInt       i,ne=7,dim=3,cells[3]={1,1,1};
+  PetscInt       i,ne=2,dim=3,cells[3]={1,1,1};
   DM             dm,distdm,newdm;
   PetscBool      flg;
   char           convType[256];
-
+  PetscReal      Lx;
   PetscFunctionBeginUser;
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
@@ -197,6 +197,8 @@ int main(int argc,char **args)
       for (i=0; i<dim; i++) cells[i] = ne; /* this can be generalized now */
       /* cells[0] = ne; */
     }
+    Lx = 1.; /* or ne for rod */
+    ierr = PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-log_stages","Log stages of solve separately","",log_stages,&log_stages,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-two_solves","solve additional variant of the problem","",two_solves,&two_solves,NULL);CHKERRQ(ierr);
@@ -221,11 +223,12 @@ int main(int argc,char **args)
   /* create DM, Plex calls DMSetup */
   ierr = MaybeLogStagePush(stage[6]);CHKERRQ(ierr);
   ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
+  /* ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr); */
   ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_");CHKERRQ(ierr);
   if (1) {
     PetscInt dimEmbed, i;
     PetscInt nCoords;
-    PetscScalar *coords,bounds[] = {0,ne,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
+    PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
     Vec coordinates;
     ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
@@ -238,11 +241,37 @@ int main(int argc,char **args)
       PetscScalar *coord = &coords[i];
       for (j = 0; j < dimEmbed; j++) {
         coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
-        /* PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s c[%d,%d]=%g\n",rank,__FUNCT__,i,j,coord[j]); */
       }
     }
     ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
+  /* convert to p4est, and distribute */
+  ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+  if (flg) {
+    ierr = DMConvert(dm,convType,&newdm);CHKERRQ(ierr);
+    if (newdm) {
+      const char *prefix;
+      PetscBool isForest;
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
+      ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
+      if (isForest) {
+      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = newdm;
+    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
+  }
+  else {
+    /* Plex Distribute mesh over processes */
+    ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
+    if (distdm) {
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = distdm;
+    }
   }
   {
     DMLabel         label;
@@ -280,7 +309,7 @@ int main(int argc,char **args)
           for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v*dim+d]);
           faceCoord /= Nv;
           for (b = 0; b < 2; ++b) {
-            if (PetscAbs(faceCoord - b*ne) < PETSC_SMALL) {
+            if (PetscAbs(faceCoord - b*Lx) < PETSC_SMALL) {
               ierr = DMSetLabelValue(dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
             }
           }
@@ -293,34 +322,7 @@ int main(int argc,char **args)
     ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
     ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   }
-  ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
-  /* convert to p4est, and distribute */
-  ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-  if (flg) {
-    ierr = DMConvert(dm,convType,&newdm);CHKERRQ(ierr);
-    if (newdm) {
-      const char *prefix;
-      PetscBool isForest;
-      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
-      ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
-      if (isForest) {
-      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = newdm;
-    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
-  }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr); /* refinement done here in Plex, p4est */
-  if (!flg) {
-    /* Plex Distribute mesh over processes */
-    ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
-    if (distdm) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = distdm;
-    }
-  }
   /* snes */
   ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
@@ -337,8 +339,6 @@ int main(int argc,char **args)
 
     ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, 2, &fe);CHKERRQ(ierr); /* elasticity */
     ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
-    /* ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr); */
-    /* ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr); */
     ierr = PetscFECreateDefault(dm, dim-1, dim, PETSC_FALSE, NULL, -1, &feBd);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feBd, "bc");CHKERRQ(ierr);
     /* FEM prob */
@@ -362,7 +362,7 @@ int main(int argc,char **args)
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   }
-  /* ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr); */  /* ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr); */
+  /* ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr); */
   /* vecs & mat */
   ierr = DMCreateGlobalVector(dm,&xx);CHKERRQ(ierr);
   ierr = VecDuplicate(xx, &bb);CHKERRQ(ierr);
@@ -385,8 +385,6 @@ int main(int argc,char **args)
   ierr = DMPlexSetSNESLocalFEM(dm,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes, Amat, Amat, NULL, NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  /* ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexSNESComputeResidualFEM,NULL);CHKERRQ(ierr); */
-  /* ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))DMPlexSNESComputeJacobianFEM,NULL);CHKERRQ(ierr); */
   ierr = DMSetUp(dm);CHKERRQ(ierr); /* plex only, needed ??? */
   ierr = MaybeLogStagePop();CHKERRQ(ierr);
   ierr = MaybeLogStagePush(stage[0]);CHKERRQ(ierr);
@@ -451,10 +449,10 @@ int main(int argc,char **args)
     ierr = KSPComputeExtremeSingularValues(ksp, &emax, &emin);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s emax=%10.4E\n",0,__FUNCT__,emax);CHKERRQ(ierr);
   }
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   if (1) { /* p4est might need this */
     PetscViewer       viewer = NULL;
     PetscViewerFormat fmt;
-    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(comm,NULL,"-ex56_vec_view",&viewer,&fmt,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerPushFormat(viewer,fmt);CHKERRQ(ierr);
