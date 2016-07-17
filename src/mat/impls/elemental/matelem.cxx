@@ -347,6 +347,34 @@ static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatElementalSyrk_Elemental"
+PetscErrorCode MatElementalSyrk_Elemental()
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatElementalSyrk"
+/*@
+  MatElementalSyrk - Symmetric rank-K update: 
+    updates C:= αAAT+βC or C:= αATA+βC, depending upon whether orientation is set to NORMAL or TRANSPOSE, respectively. Only the triangle of C specified by the uplo parameter is modified.
+
+   Logically Collective on Mat
+
+   Level: beginner
+
+   References:
+.      Elemental Users' Guide
+
+@*/
+PetscErrorCode MatElementalSyrk(El::UpperOrLower uplo,El::Orientation orientation,PetscScalar alpha,Mat A,PetscScalar beta,Mat C,PetscBool conjugate)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_Elemental"
 static PetscErrorCode MatMatMultNumeric_Elemental(Mat A,Mat B,Mat C)
 {
@@ -1149,6 +1177,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefEig_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalSyrk_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1248,7 +1277,6 @@ PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::U
   ierr = MatAssemblyEnd(*evec,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   x = (Mat_Elemental*)(*evec)->data;
-  //delete x->emat; //-- memory leak???
   *x->emat = X;
   
   ierr = MatCreate(comm,&EVAL);CHKERRQ(ierr);
@@ -1259,30 +1287,8 @@ PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::U
   ierr = MatAssemblyBegin(EVAL,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(EVAL,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   e         = (Mat_Elemental*)EVAL->data;
-  *e->emat = w; //-- memory leak???
+  *e->emat = w; 
   *evals   = EVAL;
-
-#if defined(MV)
-  /* Test correctness norm = || - A*X + B*X*w || */
-  {
-    PetscElemScalar alpha,beta;
-    El::DistMatrix<PetscElemScalar> Y(*a->grid); //tmp matrix
-    alpha = 1.0; beta=0.0;
-    El::Gemm(El::NORMAL,El::NORMAL,alpha,*b->emat,X,beta,Y); //Y = B*X
-    El::DiagonalScale(El::RIGHT,El::NORMAL, w, Y); //Y = Y*w
-    alpha = -1.0; beta=1.0;
-    El::Gemm(El::NORMAL,El::NORMAL,alpha,*a->emat,X,beta,Y); //Y = - A*X + B*X*w
-
-    PetscElemScalar norm = El::FrobeniusNorm(Y);
-    if ((*a->grid).Rank()==0) printf("  norm (- A*X + B*X*w) = %g\n",norm);
-  }
-
-  {
-    PetscMPIInt rank;
-    ierr = MPI_Comm_rank(comm,&rank);
-    printf("w: [%d] [%d, %d %d] %d; X: %d %d\n",rank,w.DistRank(),w.ColRank(),w.RowRank(),w.LocalHeight(),X.LocalHeight(),X.LocalWidth());   
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1525,6 +1531,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefEig_C",MatElementalHermitianGenDefEig_Elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalSyrk_C",MatElementalSyrk_Elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
