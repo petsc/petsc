@@ -519,8 +519,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
 
   /* allocate extra workspace needed only for GETRI */
-  Bwork = NULL;
-  pivots = NULL;
   if (local_size && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
     PetscScalar lwork;
 
@@ -532,6 +530,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
     ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
     ierr = PetscMalloc2(B_lwork,&Bwork,B_N,&pivots);CHKERRQ(ierr);
+  } else {
+    Bwork = NULL;
+    pivots = NULL;
   }
 
   /* prepare parallel matrices for summing up properly schurs on subsets */
