@@ -395,17 +395,9 @@ static PetscErrorCode  PetscPrintExeSpecs(PetscViewer viewer)
   ierr = PetscViewerXMLPutString(   viewer, "date"        , "Started at"   , date);CHKERRQ(ierr);
   ierr = PetscViewerXMLPutString(   viewer, "petscrelease", "Petsc Release", version);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-#  if defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_FORTRAN_KERNELS)
-  sprintf(buildoptions, "Debug, ComplexC++Kernels");
-#  else
   sprintf(buildoptions, "Debug");
-#  endif
 #else
-#  if defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_FORTRAN_KERNELS)
-  sprintf(buildoptions, "ComplexC++Kernels");
-#  else
-  sprintf(buildoptions, "");
-#  endif
+  buildoptions[0] = 0.
 #endif
   ierr = PetscStrlen(buildoptions,&len);CHKERRQ(ierr);
   if (len) {
