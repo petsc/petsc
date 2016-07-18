@@ -44,6 +44,8 @@ row 7: (0, -8.)  (6, -8.)  (7, 16.)
 Test MatISGetMPIXAIJ
 Test MatGetLocalSubMatrix
 Test MatGetSubMatrix
+Test MatDiagonalSet
+Test MatShift
 Test MatZeroRows (diag zero)
 IS Object: 4 MPI processes
   type: stride

@@ -15,6 +15,36 @@ static PetscErrorCode MatISComputeSF_Private(Mat);
 static PetscErrorCode MatISZeroRowsLocal_Private(Mat,PetscInt,const PetscInt[],PetscScalar);
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDiagonalSet_IS"
+PetscErrorCode  MatDiagonalSet_IS(Mat A,Vec D,InsertMode insmode)
+{
+  Mat_IS         *is = (Mat_IS*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!D) { /* this code branch is used by MatShift_IS */
+    ierr = VecSet(is->y,1.);CHKERRQ(ierr);
+  } else {
+    ierr = VecScatterBegin(is->rctx,D,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(is->rctx,D,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  }
+  ierr = VecPointwiseDivide(is->y,is->y,is->counter);CHKERRQ(ierr);
+  ierr = MatDiagonalSet(is->A,is->y,insmode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatShift_IS"
+PetscErrorCode  MatShift_IS(Mat A,PetscScalar a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDiagonalSet_IS(A,NULL,ADD_VALUES);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSetValuesLocal_SubMat_IS"
 static PetscErrorCode MatSetValuesLocal_SubMat_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
 {
@@ -841,6 +871,7 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   ierr = VecScatterDestroy(&b->rctx);CHKERRQ(ierr);
   ierr = VecDestroy(&b->x);CHKERRQ(ierr);
   ierr = VecDestroy(&b->y);CHKERRQ(ierr);
+  ierr = VecDestroy(&b->counter);CHKERRQ(ierr);
   ierr = ISDestroy(&b->getsub_ris);CHKERRQ(ierr);
   ierr = ISDestroy(&b->getsub_cis);CHKERRQ(ierr);
   if (b->sf != b->csf) {
@@ -977,6 +1008,7 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   /* Destroy any previous data */
   ierr = VecDestroy(&is->x);CHKERRQ(ierr);
   ierr = VecDestroy(&is->y);CHKERRQ(ierr);
+  ierr = VecDestroy(&is->counter);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&is->rctx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&is->cctx);CHKERRQ(ierr);
   ierr = MatDestroy(&is->A);CHKERRQ(ierr);
@@ -1021,6 +1053,16 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
       ierr = PetscObjectReference((PetscObject)is->rctx);CHKERRQ(ierr);
       is->cctx = is->rctx;
     }
+
+    /* interface counter vector (local) */
+    ierr = VecDuplicate(is->y,&is->counter);CHKERRQ(ierr);
+    ierr = VecSet(is->y,1.);CHKERRQ(ierr);
+    ierr = VecScatterBegin(is->rctx,is->y,rglobal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(is->rctx,is->y,rglobal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(is->rctx,rglobal,is->counter,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(is->rctx,rglobal,is->counter,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    /* free workspace */
     ierr = VecDestroy(&rglobal);CHKERRQ(ierr);
     ierr = VecDestroy(&cglobal);CHKERRQ(ierr);
     ierr = ISDestroy(&to);CHKERRQ(ierr);
@@ -1165,22 +1207,6 @@ static PetscErrorCode MatISZeroRowsLocal_Private(Mat A,PetscInt n,const PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (diag != 0.) {
-    /*
-       Set up is->x as a "counting vector". This is in order to MatMult_IS
-       work properly in the interface nodes.
-    */
-    Vec counter;
-    ierr = MatCreateVecs(A,NULL,&counter);CHKERRQ(ierr);
-    ierr = VecSet(counter,0.);CHKERRQ(ierr);
-    ierr = VecSet(is->y,1.);CHKERRQ(ierr);
-    ierr = VecScatterBegin(is->rctx,is->y,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(is->rctx,is->y,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(is->rctx,counter,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(is->rctx,counter,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecDestroy(&counter);CHKERRQ(ierr);
-  }
-
   if (!n) {
     is->pure_neumann = PETSC_TRUE;
   } else {
@@ -1190,11 +1216,11 @@ static PetscErrorCode MatISZeroRowsLocal_Private(Mat A,PetscInt n,const PetscInt
     ierr = MatZeroRows(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
     if (diag != 0.) {
       const PetscScalar *array;
-      ierr = VecGetArrayRead(is->y,&array);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(is->counter,&array);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         ierr = MatSetValue(is->A,rows[i],rows[i],diag/(array[rows[i]]),INSERT_VALUES);CHKERRQ(ierr);
       }
-      ierr = VecRestoreArrayRead(is->y,&array);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(is->counter,&array);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1610,6 +1636,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->getlocalsubmatrix       = MatGetLocalSubMatrix_IS;
   A->ops->getsubmatrix            = MatGetSubMatrix_IS;
   A->ops->axpy                    = MatAXPY_IS;
+  A->ops->diagonalset             = MatDiagonalSet_IS;
+  A->ops->shift                   = MatShift_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);

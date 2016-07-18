@@ -10,6 +10,7 @@ typedef struct {
   VecScatter cctx;                      /* column scatter */
   VecScatter rctx;                      /* row scatter */
   Vec        x,y;                       /* work space for matrix vector product */
+  Vec        counter;                   /* counter vector */
   PetscBool  pure_neumann;
   PetscSF    sf,csf;                    /* SFs for rows and cols */
   PetscInt   sf_nroots,sf_nleaves;
