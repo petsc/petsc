@@ -46,7 +46,6 @@ Test MatGetLocalSubMatrix
 Test MatGetSubMatrix
 Test MatDiagonalSet
 Test MatShift
-Test MatZeroRows (diag zero)
 IS Object: 4 MPI processes
   type: stride
 [0] Number of indices in (stride) set 3
@@ -59,26 +58,29 @@ IS Object: 4 MPI processes
 [2] Number of indices in (stride) set 0
 [3] Index set is permutation
 [3] Number of indices in (stride) set 0
-Test MatMissingDiagonal
-[0] [0,2) Missing 0, row -1 (diag zero)
-[1] [2,4) Missing 0, row -1 (diag zero)
-[2] [4,6) Missing 1, row 4 (diag zero)
-[3] [6,8) Missing 1, row 6 (diag zero)
 Test MatZeroRows (diag nonzero)
-IS Object: 4 MPI processes
-  type: stride
-[0] Number of indices in (stride) set 3
-[0] 0 4
-[0] 1 5
-[0] 2 6
-[1] Index set is permutation
-[1] Number of indices in (stride) set 0
-[2] Index set is permutation
-[2] Number of indices in (stride) set 0
-[3] Index set is permutation
-[3] Number of indices in (stride) set 0
+Test MatZeroRowsColumns (diag nonzero)
 Test MatMissingDiagonal
 [0] [0,2) Missing 0, row -1 (diag nonzero)
 [1] [2,4) Missing 0, row -1 (diag nonzero)
 [2] [4,6) Missing 0, row -1 (diag nonzero)
 [3] [6,8) Missing 0, row -1 (diag nonzero)
+IS Object: 4 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 3
+[0] 0 4
+[0] 1 5
+[0] 2 6
+[1] Index set is permutation
+[1] Number of indices in (stride) set 0
+[2] Index set is permutation
+[2] Number of indices in (stride) set 0
+[3] Index set is permutation
+[3] Number of indices in (stride) set 0
+Test MatZeroRows (diag zero)
+Test MatZeroRowsColumns (diag zero)
+Test MatMissingDiagonal
+[0] [0,2) Missing 0, row -1 (diag zero)
+[1] [2,4) Missing 0, row -1 (diag zero)
+[2] [4,6) Missing 1, row 4 (diag zero)
+[3] [6,8) Missing 1, row 6 (diag zero)

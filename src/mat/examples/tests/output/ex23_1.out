@@ -10,19 +10,21 @@ Test MatGetLocalSubMatrix
 Test MatGetSubMatrix
 Test MatDiagonalSet
 Test MatShift
-Test MatZeroRows (diag zero)
 IS Object: 1 MPI processes
   type: stride
 Index set is permutation
 Number of indices in (stride) set 1
 0 0
-Test MatMissingDiagonal
-[0] [0,2) Missing 1, row 0 (diag zero)
 Test MatZeroRows (diag nonzero)
-IS Object: 1 MPI processes
-  type: stride
-Index set is permutation
-Number of indices in (stride) set 1
-0 0
+Test MatZeroRowsColumns (diag nonzero)
 Test MatMissingDiagonal
 [0] [0,2) Missing 0, row -1 (diag nonzero)
+IS Object: 1 MPI processes
+  type: stride
+Index set is permutation
+Number of indices in (stride) set 1
+0 0
+Test MatZeroRows (diag zero)
+Test MatZeroRowsColumns (diag zero)
+Test MatMissingDiagonal
+[0] [0,2) Missing 1, row 0 (diag zero)
