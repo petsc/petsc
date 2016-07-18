@@ -1511,7 +1511,7 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    VecGetLocalVector - Maps the local portion of a vector into a
    vector.
 
@@ -1561,7 +1561,7 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec w)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    VecRestoreLocalVector - Unmaps the local portion of a vector
    previously mapped into a vector using VecGetLocalVector().
 
