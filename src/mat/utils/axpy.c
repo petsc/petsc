@@ -171,7 +171,11 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
   if (Y->factortype) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(Y,1);
 
-  ierr = (*Y->ops->shift)(Y,a);CHKERRQ(ierr);
+  if (Y->ops->shift) {
+    ierr = (*Y->ops->shift)(Y,a);CHKERRQ(ierr);
+  } else {
+    ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
+  }
 
 #if defined(PETSC_HAVE_CUSP)
   if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
