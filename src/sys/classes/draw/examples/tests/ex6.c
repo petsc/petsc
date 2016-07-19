@@ -6,6 +6,10 @@ static char help[] = "Demonstrates named colormaps\n";
 
 typedef PetscReal (*Function)(PetscReal,PetscReal);
 
+typedef struct {
+  Function function;
+} FunctionCtx;
+
 #define Exp PetscExpReal
 #define Pow PetscPowReal
 static PetscReal Peaks(PetscReal x,PetscReal y)
@@ -20,7 +24,7 @@ static PetscReal Peaks(PetscReal x,PetscReal y)
 static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
 {
   int            i,j,w,h;
-  Function       function = (Function)ctx;
+  Function       function = ((FunctionCtx*)ctx)->function;
   PetscReal      min = PETSC_MAX_REAL, max = PETSC_MIN_REAL;
   MPI_Comm       comm = PetscObjectComm((PetscObject)draw);
   PetscMPIInt    size,rank;
@@ -55,8 +59,10 @@ int main(int argc,char **argv)
 {
   char           title[64],cmap[32] = "";
   PetscDraw      draw;
+  FunctionCtx    ctx;
   PetscErrorCode ierr;
 
+  ctx.function = Peaks;
   ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-draw_cmap",cmap,sizeof(cmap),NULL);CHKERRQ(ierr);
   ierr = PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap);CHKERRQ(ierr);
@@ -65,7 +71,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)draw,"Peaks");CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetCoordinates(draw,-3,-3,+3,+3);CHKERRQ(ierr);
-  ierr = PetscDrawZoom(draw,DrawFunction,(void*)Peaks);CHKERRQ(ierr);
+  ierr = PetscDrawZoom(draw,DrawFunction,&ctx);CHKERRQ(ierr);
   ierr = PetscDrawSave(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
