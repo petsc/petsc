@@ -261,6 +261,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
 
   if ((*tj)->ops->destroy) {ierr = (*(*tj)->ops->destroy)((*tj));CHKERRQ(ierr);}
+  ierr = PetscViewerDestroy(&(*tj)->monitor);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -366,6 +367,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
   ierr = PetscObjectOptionsBegin((PetscObject)tj);CHKERRQ(ierr);
   ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,tj,ts);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_trajectory_monitor","Print checkpointing schedules","TSTrajectorySetMonitor",tj->monitor ? PETSC_TRUE:PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = TSTrajectorySetMonitor(tj,flg);CHKERRQ(ierr);}
   /* Handle specific TS options */
   if (tj->ops->setfromoptions) {
     ierr = (*tj->ops->setfromoptions)(PetscOptionsObject,tj);CHKERRQ(ierr);
