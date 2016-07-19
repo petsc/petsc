@@ -109,6 +109,8 @@ typedef struct {
   HYPRE_IJMatrix alpha_Poisson;
   HYPRE_IJMatrix beta_Poisson;
   PetscBool      ams_beta_is_zero;
+  PetscBool      ams_beta_is_zero_part;
+  PetscInt       ams_proj_freq;
 } PC_HYPRE;
 
 #undef __FUNCT__
@@ -258,6 +260,9 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
                                if (hierr && hierr != HYPRE_ERROR_CONV) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
                                if (hierr) hypre__global_error = 0;);
 
+  if (jac->setup == HYPRE_AMSSetup && jac->ams_beta_is_zero_part) {
+    PetscStackCall("HYPRE_AMSProjectOutGradients",ierr = HYPRE_AMSProjectOutGradients(jac->hsolver,jxv);CHKERRQ(ierr););
+  }
   HYPREReplacePointer(jac->b,(PetscScalar*)sbv,bv);
   HYPREReplacePointer(jac->x,sxv,xv);
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
@@ -910,6 +915,10 @@ static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PetscOptionItems *PetscOptionsO
                                                                     jac->as_amg_beta_opts[3],       /* AMG interp_type */
                                                                     jac->as_amg_beta_opts[4]));     /* AMG Pmax */
   }
+  ierr = PetscOptionsInt("-pc_hypre_ams_projection_frequency","Frequency at which a projection onto the compatible subspace for problems with zero conductivity regions is performed","None",jac->ams_proj_freq,&jac->ams_proj_freq,&flag);CHKERRQ(ierr);
+  if (flag) { /* override HYPRE's default only if the options is used */
+    PetscStackCallStandard(HYPRE_AMSSetProjectionFrequency,(jac->hsolver,jac->ams_proj_freq));
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -956,6 +965,11 @@ static PetscErrorCode PCView_HYPRE_AMS(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE AMS:     boomerAMG interpolation type %d\n",jac->as_amg_beta_opts[3]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE AMS:     boomerAMG max nonzero elements in interpolation rows %d\n",jac->as_amg_beta_opts[4]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE AMS:     boomerAMG strength threshold %g\n",jac->as_amg_beta_theta);CHKERRQ(ierr);
+      if (jac->ams_beta_is_zero_part) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE AMS:     compatible subspace projection frequency %d (-1 HYPRE uses default)\n",jac->ams_proj_freq);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE AMS: scalar Poisson solver not used (zero-conductivity everywhere) \n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1213,7 +1227,6 @@ static PetscErrorCode PCHYPRESetBetaPoissonMatrix_HYPRE_AMS(PC pc, Mat A)
     jac->ams_beta_is_zero = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
-  jac->ams_beta_is_zero = PETSC_FALSE;
   /* throw away any matrix if already set */
   if (jac->beta_Poisson) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->beta_Poisson));
   ierr = MatHYPRE_IJMatrixCreate(A,&jac->beta_Poisson);CHKERRQ(ierr);
@@ -1536,7 +1549,6 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->as_amg_alpha_opts[4] = 4;
     jac->as_amg_alpha_theta   = 0.25;
     /* Scalar Poisson AMG solver parameters: coarsen type, agg_levels, relax_type, interp_type, Pmax */
-    jac->ams_beta_is_zero = PETSC_FALSE;
     jac->as_amg_beta_opts[0] = 10;
     jac->as_amg_beta_opts[1] = 1;
     jac->as_amg_beta_opts[2] = 6;
@@ -1563,6 +1575,9 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
                                                                     jac->as_amg_beta_theta,
                                                                     jac->as_amg_beta_opts[3],       /* AMG interp_type */
                                                                     jac->as_amg_beta_opts[4]));     /* AMG Pmax */
+    /* Zero conductivity */
+    jac->ams_beta_is_zero      = PETSC_FALSE;
+    jac->ams_beta_is_zero_part = PETSC_FALSE;
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_HYPRE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetDiscreteGradient_C",PCHYPRESetDiscreteGradient_HYPRE);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetEdgeConstantVectors_C",PCHYPRESetEdgeConstantVectors_HYPRE_AMS);CHKERRQ(ierr);

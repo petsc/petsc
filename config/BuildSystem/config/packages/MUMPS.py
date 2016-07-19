@@ -8,7 +8,8 @@ class Configure(config.package.Package):
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_5.0.1-p1.tar.gz']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
-                            ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a']]
+                            ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a'],
+                            ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a','libmpiseq.a']]
     self.functions        = ['dmumps_c']
     self.includes         = ['dmumps_c.h']
     #
@@ -30,19 +31,22 @@ class Configure(config.package.Package):
     self.blasLapack   = framework.require('config.packages.BlasLapack',self)
     self.mpi          = framework.require('config.packages.MPI',self)
     self.metis        = framework.require('config.packages.metis',self)
+    self.parmetis     = framework.require('config.packages.parmetis',self)
+    self.ptscotch     = framework.require('config.packages.PTScotch',self)
+    self.scalapack    = framework.require('config.packages.scalapack',self)
     if self.argDB['with-mumps-serial']:
       self.deps       = [self.blasLapack]
       self.odeps      = [self.metis]
     else:
-      self.scalapack  = framework.require('config.packages.scalapack',self)
       self.deps       = [self.scalapack,self.mpi,self.blasLapack]
-      self.parmetis   = framework.require('config.packages.parmetis',self)
-      self.ptscotch   = framework.require('config.packages.PTScotch',self)
       self.odeps      = [self.metis,self.parmetis,self.ptscotch]
     return
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
+    if self.argDB['with-'+self.package] or self.argDB['download-'+self.package]:
+      if self.mpi.usingMPIUni and not self.argDB['with-mumps-serial']:
+        raise RuntimeError('Since you are building without MPI you must use --with-mumps-serial to install the correct MUMPS.')
     if self.argDB['with-mumps-serial']:
       if not self.mpi.usingMPIUni:
         raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
@@ -57,8 +61,6 @@ class Configure(config.package.Package):
       raise RuntimeError('Cannot install '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
     if not self.compilers.FortranDefineCompilerOption:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
-    if self.argDB['with-mumps-serial']:
-      raise RuntimeError('Cannot automatically install the serial version of MUMPS.')
     g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     g.write('LPORDDIR   = $(topdir)/PORD/lib/\n')
     g.write('IPORD      = -I$(topdir)/PORD/include/\n')
@@ -94,7 +96,7 @@ class Configure(config.package.Package):
     g.write('RM = /bin/rm -f\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTC    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
+    g.write('OPTC    = ' + self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.write('OUTC = -o \n')
     self.setCompilers.popLanguage()
     if not self.compilers.fortranIsF90:
@@ -119,15 +121,22 @@ class Configure(config.package.Package):
     g.write('LIBEXT  = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n')
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+'\n')
-    g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
-    g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n') #PARALLE LIBRARIES USED by MUMPS
+    if not self.argDB['with-mumps-serial']:
+      g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
+      g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n')
+    else:
+      g.write('INCPAR  = -I../libseq\n')
     g.write('INCSEQ  = -I$(topdir)/libseq\n')
     g.write('LIBSEQ  =  $(LAPACK) -L$(topdir)/libseq -lmpiseq\n')
     g.write('LIBBLAS = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('OPTL    = -O -I.\n')
     g.write('INCS = $(INCPAR)\n')
     g.write('LIB = $(LIBPAR)\n')
-    g.write('LIBSEQNEEDED =\n')
+    if self.argDB['with-mumps-serial']:
+      g.write('LIBSEQNEEDED = libseqneeded\n')
+      g.write('LIBS = $(LIBSEQ)\n')
+    else:
+      g.write('LIBSEQNEEDED =\n')
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:
@@ -141,7 +150,9 @@ class Configure(config.package.Package):
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing Mumps; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.* '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f include/*.* '+includeDir+'/.', timeout=2500, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.* '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f include/*.* '+includeDir+'/.', timeout=50, log = self.log)
+        if self.argDB['with-mumps-serial']:
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+'cp -f libseq/libmpiseq.a '+libDir+'/. ', timeout=25, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'Makefile.inc')

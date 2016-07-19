@@ -13,6 +13,8 @@ PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
 PETSC_EXTERN PetscClassId DM_CLASSID;
 
+#define DMLOCATEPOINT_POINT_NOT_FOUND -367
+
 /*J
     DMType - String with the name of a PETSc DM
 
@@ -34,6 +36,7 @@ typedef const char* DMType;
 #define DMFOREST    "forest"
 #define DMP4EST     "p4est"
 #define DMP8EST     "p8est"
+#define DMSWARM     "swarm"
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
@@ -87,6 +90,9 @@ PETSC_EXTERN PetscErrorCode DMInterpolate(DM,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
 PETSC_STATIC_INLINE PetscErrorCode DMViewFromOptions(DM A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
+typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_REFINE, DM_ADAPT_COARSEN, DM_ADAPT_RESERVED_COUNT} DMAdaptFlag;
+PETSC_EXTERN PetscErrorCode DMAdaptLabel(DM,DMLabel,DM*);
+
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateAggregates(DM,DM,Mat*);
@@ -118,12 +124,13 @@ PETSC_EXTERN PetscErrorCode DMGetCoordinates(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
-PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,PetscSF*);
+PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,DMPointLocationType,PetscSF*);
 PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal**,const PetscReal**,const DMBoundaryType**);
 PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[],const PetscReal[],const DMBoundaryType[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate(DM, const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinates(DM);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalized(DM,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMGetNeighbors(DM,PetscInt*,const PetscMPIInt**);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
@@ -228,6 +235,7 @@ PETSC_EXTERN PetscErrorCode DMGetLabelSize(DM, const char[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetLabelIdIS(DM, const char[], IS *);
 PETSC_EXTERN PetscErrorCode DMGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetStratumIS(DM, const char [], PetscInt, IS *);
+PETSC_EXTERN PetscErrorCode DMSetStratumIS(DM, const char [], PetscInt, IS);
 PETSC_EXTERN PetscErrorCode DMClearLabelStratum(DM, const char[], PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetLabelOutput(DM, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);

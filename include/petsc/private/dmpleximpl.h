@@ -120,6 +120,7 @@ typedef struct {
   char                *tetgenOpts;
   char                *triangleOpts;
   PetscPartitioner     partitioner;
+  PetscBool            remeshBd;
 
   /* Submesh */
   DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
@@ -143,6 +144,9 @@ typedef struct {
   PetscInt            *children;          /* point to children */
   DM                   referenceTree;     /* reference tree to which child ID's refer */
   PetscErrorCode      (*getchildsymmetry)(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*);
+
+  /* MATIS support */
+  PetscSection         subdomainSection;
 
   /* Adjacency */
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
@@ -203,7 +207,6 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems
 PETSC_INTERN PetscErrorCode DMPlexLabelComplete_Internal(DM,DMLabel,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM,DM,const char *,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM,DM,PetscSF,PetscInt *,Mat);
-PETSC_EXTERN PetscErrorCode DMPlexTransferVecTree(DM,Vec,DM,Vec,PetscSF,PetscSF,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorTree(DM,DM,PetscSF,PetscInt *,Mat);
 PETSC_EXTERN PetscErrorCode DMPlexAnchorsModifyMat(DM,PetscSection,PetscInt,PetscInt,const PetscInt*,const PetscScalar*,PetscInt*,PetscInt*,PetscInt**,PetscScalar**,PetscInt*,PetscBool);
 PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,PetscInt,PetscInt []);
@@ -212,6 +215,7 @@ PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM,PetscInt,const PetscSc
 
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
+PETSC_INTERN PetscErrorCode DMPlexRemesh_Internal(DM, Vec, const char[], PetscBool, DM *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DihedralInvert"
@@ -248,6 +252,7 @@ PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscInt, PetscInt, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscInt, PetscInt, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlex_Invert2D_Internal"

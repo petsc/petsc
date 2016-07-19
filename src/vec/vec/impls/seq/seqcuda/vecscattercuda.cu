@@ -179,7 +179,7 @@ class Max {
 
 /* Sequential general to sequential general GPU kernel */
 template<class OPERATOR>
-__global__ void VecScatterCUDA_SGtoSG_kernel(PetscInt n,PetscInt *xind,PetscScalar *x,PetscInt *yind,PetscScalar *y,OPERATOR OP) {
+__global__ void VecScatterCUDA_SGtoSG_kernel(PetscInt n,PetscInt *xind,const PetscScalar *x,PetscInt *yind,PetscScalar *y,OPERATOR OP) {
   const int tidx = blockIdx.x*blockDim.x + threadIdx.x;
   const int grid_size = gridDim.x * blockDim.x;
   for (int i = tidx; i < n; i += grid_size) {
@@ -189,7 +189,7 @@ __global__ void VecScatterCUDA_SGtoSG_kernel(PetscInt n,PetscInt *xind,PetscScal
 
 /* Sequential general to sequential strided GPU kernel */
 template<class OPERATOR>
-__global__ void VecScatterCUDA_SGtoSS_kernel(PetscInt n,PetscInt *xind,PetscScalar *x,PetscInt toFirst,PetscInt toStep,PetscScalar *y,OPERATOR OP) {
+__global__ void VecScatterCUDA_SGtoSS_kernel(PetscInt n,PetscInt *xind,const PetscScalar *x,PetscInt toFirst,PetscInt toStep,PetscScalar *y,OPERATOR OP) {
   const int tidx = blockIdx.x*blockDim.x + threadIdx.x;
   const int grid_size = gridDim.x * blockDim.x;
   for (int i = tidx; i < n; i += grid_size) {
@@ -199,7 +199,7 @@ __global__ void VecScatterCUDA_SGtoSS_kernel(PetscInt n,PetscInt *xind,PetscScal
 
 /* Sequential strided to sequential strided GPU kernel */
 template<class OPERATOR>
-__global__ void VecScatterCUDA_SStoSS_kernel(PetscInt n,PetscInt fromFirst,PetscInt fromStep,PetscScalar *x,PetscInt toFirst,PetscInt toStep,PetscScalar *y,OPERATOR OP) {
+__global__ void VecScatterCUDA_SStoSS_kernel(PetscInt n,PetscInt fromFirst,PetscInt fromStep,const PetscScalar *x,PetscInt toFirst,PetscInt toStep,PetscScalar *y,OPERATOR OP) {
   const int tidx = blockIdx.x*blockDim.x + threadIdx.x;
   const int grid_size = gridDim.x * blockDim.x;
   for (int i = tidx; i < n; i += grid_size) {
@@ -209,7 +209,7 @@ __global__ void VecScatterCUDA_SStoSS_kernel(PetscInt n,PetscInt fromFirst,Petsc
 
 /* Sequential strided to sequential general GPU kernel */
 template<class OPERATOR>
-__global__ void VecScatterCUDA_SStoSG_kernel(PetscInt n,PetscInt fromFirst,PetscInt fromStep,PetscScalar *x,PetscInt *yind,PetscScalar *y,OPERATOR OP) {
+__global__ void VecScatterCUDA_SStoSG_kernel(PetscInt n,PetscInt fromFirst,PetscInt fromStep,const PetscScalar *x,PetscInt *yind,PetscScalar *y,OPERATOR OP) {
   const int tidx = blockIdx.x*blockDim.x + threadIdx.x;
   const int grid_size = gridDim.x * blockDim.x;
   for (int i = tidx; i < n; i += grid_size) {
@@ -218,7 +218,7 @@ __global__ void VecScatterCUDA_SStoSG_kernel(PetscInt n,PetscInt fromFirst,Petsc
 }
 
 template<class OPERATOR>
-void VecScatterCUDA_StoS_Dispatcher(PetscScalar *xarray,PetscScalar *yarray,PetscCUDAIndices ci,ScatterMode mode,OPERATOR OP) {
+void VecScatterCUDA_StoS_Dispatcher(const PetscScalar *xarray,PetscScalar *yarray,PetscCUDAIndices ci,ScatterMode mode,OPERATOR OP) {
 
   PetscInt                   nBlocks=0,nThreads=128;
   VecScatterCUDAIndices_StoS stos_scatter = (VecScatterCUDAIndices_StoS)ci->scatter;
@@ -258,7 +258,8 @@ void VecScatterCUDA_StoS_Dispatcher(PetscScalar *xarray,PetscScalar *yarray,Pets
 PetscErrorCode VecScatterCUDA_StoS(Vec x,Vec y,PetscCUDAIndices ci,InsertMode addv,ScatterMode mode)
 {
   PetscErrorCode             ierr;
-  PetscScalar                *xarray,*yarray;
+  const PetscScalar          *xarray;
+  PetscScalar                *yarray;
   VecScatterCUDAIndices_StoS stos_scatter = (VecScatterCUDAIndices_StoS)ci->scatter;
   cudaError_t                err;
 

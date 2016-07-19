@@ -70,6 +70,7 @@ typedef const char* KSPType;
 #define KSPPIPEGCR    "pipegcr"
 #define KSPTSIRM      "tsirm"
 #define KSPCGLS       "cgls"
+#define KSPFETIDP     "fetidp"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId KSP_CLASSID;
@@ -149,8 +150,7 @@ PETSC_EXTERN PetscErrorCode KSPRichardsonSetScale(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSet(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetUseRandom(KSP,PetscBool);
-PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetRandom(KSP,PetscRandom);
+PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigGetKSP(KSP,KSP*);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP,PetscInt,PetscReal[],PetscReal[],PetscInt *);
@@ -213,6 +213,9 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void*,PetscErrorCode(*)(void*));
 
+PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP,PC*);
+PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP,PC);
+PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP,KSP*);
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 
@@ -539,6 +542,20 @@ M*/
 
      Notes: This can happen with the PCICC preconditioner, use -pc_factor_shift_positive_definite to force
   the PCICC preconditioner to generate a positive definite preconditioner
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_DIVERGED_PCSETUP_FAILED - It was not possible to build the requested preconditioner. This is usually due to a 
+     zero pivot in a factorization. It can also result from a failure in a subpreconditioner inside a nested preconditioner
+     such as PCFIELDSPLIT.
+
+   Level: beginner
+
+    Notes: Run with -ksp_error_if_not_converged to stop the program when the error is detected and print an error message with details.
+
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 

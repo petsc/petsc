@@ -3,6 +3,7 @@
 #define __MATIMPL_H
 
 #include <petscmat.h>
+#include <petscmatcoarsen.h>
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscBool MatRegisterAllCalled;
@@ -226,8 +227,6 @@ PETSC_EXTERN MatBaseName MatBaseNameList;
 */
 PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat, MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
-PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
-PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
 #if defined(PETSC_USE_DEBUG)
@@ -383,6 +382,7 @@ struct _p_Mat {
   MatNullSpace           nullsp;           /* null space (operator is singular) */
   MatNullSpace           transnullsp;      /* null space of transpose of operator */
   MatNullSpace           nearnullsp;       /* near null space to be used by multigrid methods */
+  PetscInt               congruentlayouts; /* are the rows and columns layouts congruent? */
   PetscBool              preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
   PetscBool              symmetric,hermitian,structurally_symmetric,spd;
@@ -408,6 +408,12 @@ struct _p_Mat {
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
 PETSC_INTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,Mat,MatStructure);
+
+/*
+    Utility for MatZeroRows
+*/
+PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat,PetscInt,const PetscInt*,PetscInt*,PetscInt**);
+
 /*
     Object for partitioning graphs
 */
@@ -451,30 +457,6 @@ struct _p_MatCoarsen {
   IS               perm;
   PetscCoarsenData *agg_lists;
 };
-
-PETSC_EXTERN PetscErrorCode PetscCDCreate(PetscInt,PetscCoarsenData**);
-PETSC_EXTERN PetscErrorCode PetscCDDestroy(PetscCoarsenData*);
-PETSC_EXTERN PetscErrorCode PetscLLNSetID(PetscCDIntNd*,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscLLNGetID(const PetscCDIntNd*,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscCDAppendID(PetscCoarsenData*,PetscInt,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDAppendRemove(PetscCoarsenData*,PetscInt,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDAppendNode(PetscCoarsenData*,PetscInt,PetscCDIntNd*);
-PETSC_EXTERN PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData*,PetscInt,PetscCDIntNd*);
-PETSC_EXTERN PetscErrorCode PetscCDRemoveAllAt(PetscCoarsenData*,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDSizeAt(const PetscCoarsenData*,PetscInt,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData*,PetscInt,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscCDSetChuckSize(PetscCoarsenData*,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCDPrint(const PetscCoarsenData*,MPI_Comm);
-PETSC_EXTERN PetscErrorCode PetscCDGetMIS(PetscCoarsenData*,IS*);
-PETSC_EXTERN PetscErrorCode PetscCDGetMat(const PetscCoarsenData*,Mat*);
-PETSC_EXTERN PetscErrorCode PetscCDSetMat(PetscCoarsenData*,Mat);
-
-typedef PetscCDIntNd *PetscCDPos;
-PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData*,PetscInt,PetscCDPos*);
-PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData*,PetscInt,PetscCDPos*);
-PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const PetscInt,PetscInt*,IS**);
-/* PetscErrorCode PetscCDSetRemovedIS( PetscCoarsenData *ail, MPI_Comm, const PetscInt, PetscInt[] ); */
-/* PetscErrorCode PetscCDGetRemovedIS( PetscCoarsenData *ail, IS * ); */
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently

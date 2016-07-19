@@ -8,6 +8,10 @@ try:
 except ImportError:
   from md5 import new as new_md5
 
+class FakePETScDir:
+  def __init__(self):
+    self.dir = 'UNKNOWN'
+
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -97,9 +101,15 @@ class Package(config.base.Configure):
     self.libraries       = framework.require('config.libraries', self)
     self.programs        = framework.require('config.programs', self)
     self.sourceControl   = framework.require('config.sourceControl',self)
-    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
-    self.petscdir        = framework.require('PETSc.options.petscdir', self.setCompilers)
-    self.petscclone      = framework.require('PETSc.options.petscclone',self.setCompilers)
+    try:
+      import PETSc.options
+      self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+      self.petscdir        = framework.require('PETSc.options.petscdir', self.setCompilers)
+      self.petscclone      = framework.require('PETSc.options.petscclone',self.setCompilers)
+      self.havePETSc       = True
+    except ImportError:
+      self.havePETSc       = False
+      self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
     if not self.isMPI and not self.package == 'make':
@@ -536,13 +546,18 @@ class Package(config.base.Configure):
                              '.\nTo use previous git snapshot - use: --download-'+self.package+'gitcommit=HEAD')
       try:
         gitcommit_hash,err,ret = config.base.Configure.executeShellCommand([self.sourceControl.git, 'rev-parse', self.gitcommit], cwd=self.packageDir, log = self.log)
-        if self.gitcommit != 'HEAD':
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
       except:
-        raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+
-                           '.\nPerhaps its a remote branch, if so - use: origin/'+self.gitcommit)
+        raise RuntimeError('Unable to locate commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\n If its a remote branch- use: origin/'+self.gitcommit)
+      if self.gitcommit != 'HEAD':
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'stash'], cwd=self.packageDir, log = self.log)
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'clean', '-f', '-d', '-x'], cwd=self.packageDir, log = self.log)
+        except:
+          raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
+        try:
+          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+        except:
+          raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\nPerhaps its a git error!')
       # write a commit-tag file
       fd = open(os.path.join(self.packageDir,'pkg.gitcommit'),'w')
       fd.write(gitcommit_hash)
@@ -581,6 +596,11 @@ class Package(config.base.Configure):
     '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
     import retrieval
 
+    if self.havePETSc:
+      isClone = self.petscclone.isClone
+    else:
+      isClone = True
+
     retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     retriever.setup()
     retriever.saveLog()
@@ -599,7 +619,7 @@ class Package(config.base.Configure):
       if git_urls:
         if not hasattr(self.sourceControl, 'git'):
           self.logPrint('Git not found - skipping giturls: '+str(git_urls)+'\n')
-        elif (self.petscclone.isClone) or self.framework.clArgDB.has_key('with-git'):
+        elif isClone or self.framework.clArgDB.has_key('with-git'):
           download_urls = git_urls+download_urls
         else:
           download_urls = download_urls+git_urls
@@ -836,9 +856,13 @@ class Package(config.base.Configure):
     return self.rmArgs(args,rejects)
 
   def checkSharedLibrariesEnabled(self):
+    if self.havePETSc:
+      useShared = self.sharedLibraries.useShared
+    else:
+      useShared = True
     if self.framework.clArgDB.has_key('download-'+self.package+'-shared') and self.argDB['download-'+self.package+'-shared']:
       raise RuntimeError(self.package+' cannot use download-'+self.package+'-shared=1. This flag can only be used to disable '+self.package+' shared libraries')
-    if not self.sharedLibraries.useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
+    if not useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
       return False
     else:
       return True
@@ -1206,8 +1230,6 @@ class GNUPackage(Package):
     else:
       args.append('--disable-shared')
 
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
-       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     return args
 
   def Install(self):
@@ -1225,6 +1247,8 @@ class GNUPackage(Package):
 
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
     args = self.formGNUConfigureArgs()
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-configure-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')
@@ -1314,13 +1338,13 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS=on')
     else:
       args.append('-DBUILD_SHARED_LIBS=off')
-    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
-       args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     return args
 
   def Install(self):
     import os
     args = self.formCMakeConfigureArgs()
+    if self.download and self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments']:
+       args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')

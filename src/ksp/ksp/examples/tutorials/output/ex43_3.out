@@ -1,26 +1,26 @@
   Residual norms for stokes_ solve.
   0 KSP Residual norm 0.00454925 
-  1 KSP Residual norm 0.00448497 
-  2 KSP Residual norm 0.00422229 
-  3 KSP Residual norm 0.00344459 
-  4 KSP Residual norm 0.00274557 
-  5 KSP Residual norm 0.00224997 
-  6 KSP Residual norm 0.00190515 
-  7 KSP Residual norm 0.00142908 
-  8 KSP Residual norm 0.00104305 
-  9 KSP Residual norm 0.000922675 
- 10 KSP Residual norm 0.000846683 
- 11 KSP Residual norm 0.000694187 
- 12 KSP Residual norm 0.000517029 
- 13 KSP Residual norm 0.000437923 
- 14 KSP Residual norm 0.000340909 
- 15 KSP Residual norm 0.000231052 
- 16 KSP Residual norm 0.000127722 
- 17 KSP Residual norm 8.49558e-05 
- 18 KSP Residual norm 6.9969e-05 
- 19 KSP Residual norm 5.5701e-05 
- 20 KSP Residual norm 4.66091e-05 
- 21 KSP Residual norm 3.71995e-05 
+  1 KSP Residual norm 0.00448574 
+  2 KSP Residual norm 0.0042344 
+  3 KSP Residual norm 0.00347837 
+  4 KSP Residual norm 0.00278754 
+  5 KSP Residual norm 0.00229155 
+  6 KSP Residual norm 0.00194789 
+  7 KSP Residual norm 0.00147009 
+  8 KSP Residual norm 0.00106257 
+  9 KSP Residual norm 0.000935249 
+ 10 KSP Residual norm 0.000858945 
+ 11 KSP Residual norm 0.00070996 
+ 12 KSP Residual norm 0.000526951 
+ 13 KSP Residual norm 0.000439754 
+ 14 KSP Residual norm 0.00034197 
+ 15 KSP Residual norm 0.000234347 
+ 16 KSP Residual norm 0.00013141 
+ 17 KSP Residual norm 8.75883e-05 
+ 18 KSP Residual norm 7.28291e-05 
+ 19 KSP Residual norm 5.80678e-05 
+ 20 KSP Residual norm 4.81612e-05 
+ 21 KSP Residual norm 3.78921e-05 
 KSP Object: (stokes_) 4 MPI processes
   type: gcr
     GCR: restart = 60 
@@ -82,7 +82,7 @@ PC Object: (stokes_) 4 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (stokes_mg_levels_1_) 4 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.306009, max = 1.68305
+        Chebyshev: eigenvalue estimates:  min = 0.305926, max = 1.68259
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object: (stokes_mg_levels_1_esteig_) 4 MPI processes
           type: gmres
@@ -92,6 +92,7 @@ PC Object: (stokes_) 4 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -146,7 +147,7 @@ PC Object: (stokes_) 4 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (stokes_mg_levels_2_) 4 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.291297, max = 1.60213
+        Chebyshev: eigenvalue estimates:  min = 0.291447, max = 1.60296
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object: (stokes_mg_levels_2_esteig_) 4 MPI processes
           type: gmres
@@ -156,6 +157,7 @@ PC Object: (stokes_) 4 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -210,7 +212,7 @@ PC Object: (stokes_) 4 MPI processes
   Down solver (pre-smoother) on level 3 -------------------------------
     KSP Object: (stokes_mg_levels_3_) 4 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.356152, max = 1.95884
+        Chebyshev: eigenvalue estimates:  min = 0.345997, max = 1.90298
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object: (stokes_mg_levels_3_esteig_) 4 MPI processes
           type: gmres
@@ -220,6 +222,7 @@ PC Object: (stokes_) 4 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=1
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning

@@ -279,6 +279,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 
   snes->pcside = PC_LEFT;
 
+  snes->alwayscomputesfinalresidual = PETSC_TRUE;
+
   ierr       = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
 

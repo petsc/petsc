@@ -11,11 +11,13 @@
     Description:
     Take the data in the row-oriented sparse storage and build the
     IJ data for the Matrix.  Return 0 on success,row + 1 on failure
-    at that row. Produces the ij for a symmetric matrix by only using
-    the lower triangular part of the matrix.
+    at that row. Produces the ij for a symmetric matrix by using
+    the lower triangular part of the matrix if lower_triangular is PETSC_TRUE;
+    it uses the upper triangular otherwise.
 
     Input Parameters:
 .   Matrix - matrix to convert
+.   lower_triangular - symmetrize the lower triangular part
 .   shiftin - the shift for the original matrix (0 or 1)
 .   shiftout - the shift required for the ordering routine (0 or 1)
 
@@ -29,7 +31,7 @@
     symmetric structure.  It is required since those routines call
     SparsePak routines that expect a symmetric  matrix.
 */
-PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,PetscInt shiftin,PetscInt shiftout,PetscInt **iia,PetscInt **jja)
+PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,PetscBool lower_triangular,PetscInt shiftin,PetscInt shiftout,PetscInt **iia,PetscInt **jja)
 {
   PetscErrorCode ierr;
   PetscInt       *work,*ia,*ja,*j,i,nz,row,col;
@@ -48,7 +50,11 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
     j  = aj + ai[row] + shiftin;
     while (nz--) {
       col = *j++ + shiftin;
-      if (col > row) break;
+      if (lower_triangular) {
+        if (col > row) break;
+      } else {
+        if (col < row) break;
+      }
       if (col != row) ia[row+1]++;
       ia[col+1]++;
     }
@@ -72,7 +78,11 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
     j  = aj + ai[row] + shiftin;
     while (nz--) {
       col = *j++ + shiftin;
-      if (col > row) break;
+      if (lower_triangular) {
+        if (col > row) break;
+      } else {
+        if (col < row) break;
+      }
       if (col != row) ja[work[col]++] = row + shiftout;
       ja[work[row]++] = col + shiftout;
     }

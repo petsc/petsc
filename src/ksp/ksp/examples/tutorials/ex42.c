@@ -58,7 +58,7 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   PetscInt       mx,my,mz,sex,sey,sez;
 
   PetscFunctionBeginUser;
-  ierr = PetscMalloc(sizeof(struct _p_CellProperties),&cells);CHKERRQ(ierr);
+  ierr = PetscNew(&cells);CHKERRQ(ierr);
 
   ierr = DMDAGetElementCorners(da_stokes,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
 

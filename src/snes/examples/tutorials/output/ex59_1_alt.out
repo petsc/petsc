@@ -1,0 +1,11 @@
+  0 SNES Function norm 847.764 
+  1 SNES Function norm 18.6959 
+  2 SNES Function norm 1.02188 
+  3 SNES Function norm 0.274437 
+  4 SNES Function norm 0.0952872 
+  5 SNES Function norm 0.0763301 
+  6 SNES Function norm 0.0763177 
+  7 SNES Function norm 0.0763177 
+Nonlinear solve did not converge due to DIVERGED_LINE_SEARCH iterations 7
+SNES iterations = 7
+

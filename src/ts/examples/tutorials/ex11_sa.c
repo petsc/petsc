@@ -283,7 +283,7 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
-static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Advect(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Advect *advect;
   PetscErrorCode ierr;
@@ -327,8 +327,8 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOp
   {
     const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
     /* Register "canned" boundary conditions and defaults for where to apply. */
-    ierr = DMAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, PETSC_TRUE, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
     /* Initial/transient solution with default boundary conditions */
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys);CHKERRQ(ierr);
     /* Register "canned" functionals */
@@ -450,7 +450,7 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
-static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_SW(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_SW     *sw;
   PetscErrorCode ierr;
@@ -470,7 +470,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOption
 
   {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = DMAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
@@ -632,7 +632,7 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Euler"
-static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Euler(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Euler   *eu;
   PetscErrorCode  ierr;
@@ -655,7 +655,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOpt
   phys->maxspeed = 1.0;
   {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = DMAddBoundary(dm, PETSC_TRUE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wall", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
@@ -823,7 +823,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMSetUp(sdm);CHKERRQ(ierr);
   /* Set cones and supports */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(PetscMax(maxConeSize, maxSupportSize) * sizeof(PetscInt), &newpoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PetscMax(maxConeSize, maxSupportSize), &newpoints);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     const PetscInt *points, *orientations;
@@ -1528,14 +1528,16 @@ int main(int argc, char **argv)
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {
-    PetscErrorCode (*physcreate)(DM,Model,Physics);
+    PetscDS          prob;
+    PetscErrorCode (*physcreate)(PetscDS,Model,Physics);
     char             physname[256]  = "advect";
 
     ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
-    ierr = (*physcreate)(dm,mod,phys);CHKERRQ(ierr);
+    ierr = DMGetDS(dm,&prob);CHKERRQ(ierr);
+    ierr = (*physcreate)(prob,mod,phys);CHKERRQ(ierr);
     mod->maxspeed = phys->maxspeed;
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;

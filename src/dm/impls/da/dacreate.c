@@ -318,6 +318,37 @@ static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, P
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMGetNeighbors_DA"
+static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
+{
+  PetscErrorCode ierr;
+  PetscInt dim;
+  DMDAStencilType st;
+  
+  PetscFunctionBegin;
+  ierr = DMDAGetNeighbors(dm,ranks);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&st);CHKERRQ(ierr);
+
+  switch (dim) {
+    case 1:
+      *nranks = 3;
+      /* if (st == DMDA_STENCIL_STAR) { *nranks = 3; } */
+      break;
+    case 2:
+      *nranks = 9;
+      /* if (st == DMDA_STENCIL_STAR) { *nranks = 5; } */
+      break;
+    case 3:
+      *nranks = 27;
+      /* if (st == DMDA_STENCIL_STAR) { *nranks = 7; } */
+      break;
+    default:
+      break;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
    DMDA = "da" - A DM object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
          In the global representation of the vector each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
@@ -430,6 +461,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->projectfunctionlocal        = DMProjectFunctionLocal_DA;
   da->ops->computel2diff               = DMComputeL2Diff_DA;
   da->ops->computel2gradientdiff       = DMComputeL2GradientDiff_DA;
+  da->ops->getneighbors                = DMGetNeighbors_DA;
   PetscFunctionReturn(0);
 }
 

@@ -30,15 +30,8 @@ PETSC_EXTERN PetscErrorCode DMForestGetBaseCoordinateMapping(DM, PetscErrorCode(
 PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityForest(DM, DM);
 PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityForest(DM, DM *);
 
-/* reserve some adaptivity types */
-enum {DM_FOREST_KEEP = 0,
-      DM_FOREST_REFINE,
-      DM_FOREST_COARSEN,
-      DM_FOREST_RESERVED_ADAPTIVITY_COUNT};
-
-typedef PetscInt DMForestAdaptivityPurpose;
-PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityPurpose(DM, DMForestAdaptivityPurpose);
-PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityPurpose(DM, DMForestAdaptivityPurpose*);
+PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityPurpose(DM, DMAdaptFlag);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityPurpose(DM, DMAdaptFlag*);
 
 /* what we consider adjacent, for the purposes of cell grading, overlap, etc. */
 PETSC_EXTERN PetscErrorCode DMForestSetAdjacencyDimension(DM, PetscInt);
@@ -63,8 +56,8 @@ PETSC_EXTERN PetscErrorCode DMForestGetCellSF(DM, PetscSF *);
 
 
 /* flag each cell with an adaptivity count: should match the cell section */
-PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityLabel(DM, const char *);
-PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityLabel(DM, const char **);
+PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityLabel(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityLabel(DM, DMLabel*);
 
 /*J
     DMForestAdaptivityStrategy - String with the name of a PETSc DMForest adaptivity strategy
@@ -88,7 +81,9 @@ PETSC_EXTERN PetscErrorCode DMForestGetComputeAdaptivitySF(DM, PetscBool *);
 
 PETSC_EXTERN PetscErrorCode DMForestGetAdaptivitySF(DM, PetscSF *, PetscSF *);
 
-PETSC_EXTERN PetscErrorCode DMForestTransferVec(DM, Vec, DM, Vec);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivitySuccess(DM, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode DMForestTransferVec(DM, Vec, DM, Vec, PetscBool, PetscReal);
 
 /* for a quadtree/octree mesh, this is the x:1 condition: 1 indicates a uniform mesh,
  *                                                        2 indicates typical 2:1,

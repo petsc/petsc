@@ -734,7 +734,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   *reason = KSP_CONVERGED_ITERATING;
 
   ierr = KSPGetNormType(ksp,&normtype);CHKERRQ(ierr);
-  if (normtype == KSP_NORM_NONE) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Use KSPConvergedSkip() with KSPNormType of KSP_NORM_NONE");
+  if (normtype == KSP_NORM_NONE) PetscFunctionReturn(0);
 
   if (!cctx) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPConvergedDefaultCreate()");
   if (!n) {
@@ -1027,16 +1027,20 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetWorkVecs"
-/*
+/*@C
   KSPSetWorkVecs - Sets a number of work vectors into a KSP object
 
+  Collective on KSP
+
   Input Parameters:
-. ksp  - iterative context
-. nw   - number of work vectors to allocate
++ ksp  - iterative context
+- nw   - number of work vectors to allocate
 
-   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
+  Level: developer
 
- */
+  Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
+
+@*/
 PetscErrorCode KSPSetWorkVecs(KSP ksp,PetscInt nw)
 {
   PetscErrorCode ierr;
@@ -1144,7 +1148,7 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (ksp->dm) {                /* Move the DMSNES context over to the new DM unless the new DM already has one */
-    if (ksp->dm->dmksp && ksp->dmAuto && !dm->dmksp) {
+    if (ksp->dm->dmksp && !dm->dmksp) {
       DMKSP kdm;
       ierr = DMCopyDMKSP(ksp->dm,dm);CHKERRQ(ierr);
       ierr = DMGetDMKSP(ksp->dm,&kdm);CHKERRQ(ierr);

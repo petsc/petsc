@@ -923,6 +923,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   snes->ops->setfromoptions  = SNESSetFromOptions_Composite;
   snes->ops->view            = SNESView_Composite;
 
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   snes->data = (void*)jac;
   jac->type  = SNES_COMPOSITE_ADDITIVEOPTIMAL;
   jac->Fes   = NULL;

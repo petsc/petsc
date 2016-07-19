@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c \
                 ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
-                ex22.c ex23.c ex24.c ex27.c ex28.c ex29.c
+                ex22.c ex23.c ex24.c ex27.c ex28.c ex29.c ex30.c ex31.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
@@ -114,6 +114,12 @@ ex28: ex28.o chkopts
 ex29: ex29.o chkopts
 	-${CLINKER} -o ex29 ex29.o  ${PETSC_SYS_LIB}
 	${RM} -f ex29.o
+ex30: ex30.o chkopts
+	-${CLINKER} -o ex30 ex30.o  ${PETSC_SYS_LIB}
+	${RM} -f ex30.o
+ex31: ex31.o chkopts
+	-${CLINKER} -o ex31 ex31.o  ${PETSC_SYS_LIB}
+	${RM} -f ex31.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(PETSC ERROR)" ex1.tmp1 | egrep "(main|CreateError|Error Created)" | cut -f1,2,3,4,5 -d" " > ex1.tmp;\
@@ -129,10 +135,12 @@ runex1f:
 	   ${RM} -f ex1f.tmp1 ex1f.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1 ./ex2 > ex2.tmp1 2>&1; egrep "(Caught signal number 11 SEGV)" ex2.tmp1  > ex2.tmp;\
-	if (${DIFF} output/ex2_1.out ex2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex2.tmp1 ex2.tmp
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex2 > ex2.tmp1 2>&1; egrep "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" ex2.tmp1  > ex2.tmp;\
+           if (${DIFF} output/ex2_1.out ex2.tmp > /dev/null 2>&1) then x='good'; fi ;\
+           if (${DIFF} output/ex2_1_alt.out ex2.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$$x" = "bad" ]; then ${DIFF} output/ex2_1.out ex2.tmp ; ${DIFF} output/ex2_1_alt.out ex2.tmp ; printf "${PWD}\nPossible problem with ex2_1, diffs above\n=============\
+============================\n"; fi; \
+           ${RM} -f ex2.tmp1 ex2.tmp
 
 #  Since this test produces very different information on different machines there is no way to automate
 #  the checking of the output to see if it is correct; hence this is not in the nightly tests, though it would be nice if we could add it
@@ -219,9 +227,15 @@ runex28:
 	-@${MPIEXEC} -n 1 ./ex28 > ex28.tmp 2>&1;   \
 	   ${DIFF} output/ex28.out ex28.tmp || echo  ${PWD} "\nPossible problem with ex28, diffs above \n========================================="; \
 	   ${RM} -f ex28.tmp
+runex31:
+	-@${MPIEXEC} -n 1 ./ex31 > ex31.tmp 2>&1;   \
+           echo ~/somefile > ex31-sh.tmp  2>&1;   \
+           echo ${PWD}/someotherfile >> ex31-sh.tmp  2>&1;   \
+	   ${DIFF} ex31-sh.tmp ex31.tmp || echo  ${PWD} "\nPossible problem with ex31, diffs above \n========================================="; \
+	   ${RM} -f ex31.tmp ex31-sh.tmp
 
-
-TESTEXAMPLES_C		       = ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex4.PETSc ex4.rm \
+                                 ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
                                  ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm
@@ -233,7 +247,7 @@ TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_COMPLEX   = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm
-TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm
+TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm
 TESTEXAMPLES_13		       = ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm ex12.PETSc ex12.rm \
                                  ex14.PETSc ex14.rm
 

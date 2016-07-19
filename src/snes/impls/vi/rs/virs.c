@@ -773,7 +773,7 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 .  1. - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSetType(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 
 M*/
 #undef __FUNCT__
@@ -794,6 +794,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
 
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
+
+  snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
   ierr                = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data          = (void*)vi;

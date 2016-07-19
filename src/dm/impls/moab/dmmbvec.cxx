@@ -581,7 +581,7 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::ParallelComm *pcomm,char** 
 
   PetscFunctionBegin;
   const char*       PVEC_PREFIX      = "__PETSC_VEC_";
-  ierr = PetscMalloc(PETSC_MAX_PATH_LEN, tag_name);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PETSC_MAX_PATH_LEN, tag_name);CHKERRQ(ierr);
 
   /* Check to see if there are any PETSc vectors defined */
   moab::Interface  *mbiface = pcomm->get_moab();

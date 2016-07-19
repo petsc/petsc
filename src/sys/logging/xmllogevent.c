@@ -9,8 +9,8 @@
 #include <petsc/private/logimpl.h>
 #include <petsctime.h>
 #include <petscviewer.h>
-#include "xmllogevent.h"
-#include "xmlviewer.h"
+#include "../src/sys/logging/xmllogevent.h"
+#include "../src/sys/logging/xmlviewer.h"
 
 #if defined(PETSC_USE_LOG)
 
@@ -333,14 +333,16 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
   PetscFunctionBegin;
   /* Find the nested event */
   ierr = PetscLogEventFindNestedTimer(nstEvent, &entry);CHKERRQ(ierr);
-  if (entry>=nNestedEvents || nestedEvents[entry].nstEvent != nstEvent) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event %d had unbalanced begin/end pairs",nstEvent);
+  if (entry>=nNestedEvents) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event %d larger than number of events %d",entry,nNestedEvents);
+  if (nestedEvents[entry].nstEvent != nstEvent) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event %d had unbalanced begin/end pairs does not match %d",entry,nstEvent);
   dftEventsSorted = nestedEvents[entry].dftEventsSorted;
   nParents        = nestedEvents[entry].nParents;
 
   /* Find the current default timer among the 'dftEvents' of this event */
   ierr = PetscLogEventFindDefaultTimer( dftParentActive, dftEventsSorted, nParents, &pentry);CHKERRQ(ierr); 
 
-  if (pentry>=nParents || dftEventsSorted[pentry] != dftParentActive) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Active parent is %d, but we seem to be closing %d",dftParentActive,dftEventsSorted[pentry]);
+  if (pentry>=nParents) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Entry %d is larger than number of parents %d",pentry,nParents);
+  if (dftEventsSorted[pentry] != dftParentActive) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Active parent is %d, but we seem to be closing %d",dftParentActive,dftEventsSorted[pentry]);
 
   /* Stop the default timer and update the dftParentActive */
   ierr = PetscLogEventEndDefault(dftParentActive,t,o1,o2,o3,o4);CHKERRQ(ierr);

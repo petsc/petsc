@@ -66,15 +66,28 @@ J*/
 PETSC_EXTERN PetscClassId TAO_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoList;
 
-/*  Convergence flags.
-    Be sure to check that these match the flags in
-    include/petsc/finclude/petsctao.h
-*/
+/*E
+    TaoConvergedReason - reason a TAO method was said to have converged or diverged
+
+   Level: beginner
+
+   The two most common reasons for divergence are
+$   1) an incorrectly coded or computed gradient or Hessian
+$   2) failure or lack of convergence in the linear system (in this case we recommend
+$      testing with -pc_type lu to eliminate the linear solver as the cause of the problem).
+
+   Developer Notes: this must match petsc/finclude/petsctao.h
+
+       The string versions of these are in TAOConvergedReasons, if you change any value here you must
+     also adjust that array.
+
+.seealso: TAOSolve(), TaoGetConvergedReason(), KSPConvergedReason, SNESConvergedReason, TSConvergedReason
+E*/
 typedef enum {/* converged */
-  TAO_CONVERGED_GATOL          =  3, /* ||g(X)|| < gatol */
-  TAO_CONVERGED_GRTOL          =  4, /* ||g(X)|| / f(X)  < grtol */
-  TAO_CONVERGED_GTTOL          =  5, /* ||g(X)|| / ||g(X0)|| < gttol */
-  TAO_CONVERGED_STEPTOL        =  6, /* step size small */
+  TAO_CONVERGED_GATOL         =  3, /* ||g(X)|| < gatol */
+  TAO_CONVERGED_GRTOL         =  4, /* ||g(X)|| / f(X)  < grtol */
+  TAO_CONVERGED_GTTOL         =  5, /* ||g(X)|| / ||g(X0)|| < gttol */
+  TAO_CONVERGED_STEPTOL       =  6, /* step size small */
   TAO_CONVERGED_MINF          =  7, /* F < F_min */
   TAO_CONVERGED_USER          =  8, /* User defined */
   /* diverged */
@@ -88,7 +101,6 @@ typedef enum {/* converged */
   TAO_CONTINUE_ITERATING      =  0} TaoConvergedReason;
 
 PETSC_EXTERN const char **TaoConvergedReasons;
-
 
 PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);

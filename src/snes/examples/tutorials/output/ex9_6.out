@@ -1,53 +1,53 @@
 setup done: grid  Mx,My = 81,81  with spacing  dx,dy = 0.0500,0.0500
   0 SNES Function norm 8.91139 
-    0 KSP Residual norm 7.66854 
-    1 KSP Residual norm 0.0817114 
-    2 KSP Residual norm 0.0014303 
-    3 KSP Residual norm 4.09214e-05 
+    0 KSP Residual norm 7.66838 
+    1 KSP Residual norm 0.0855604 
+    2 KSP Residual norm 0.00147261 
+    3 KSP Residual norm 4.02632e-05 
   1 SNES Function norm 1.79664 
-    0 KSP Residual norm 3.66508 
-    1 KSP Residual norm 0.0254715 
-    2 KSP Residual norm 0.000698771 
-    3 KSP Residual norm 1.52442e-05 
+    0 KSP Residual norm 3.66486 
+    1 KSP Residual norm 0.0256337 
+    2 KSP Residual norm 0.000698574 
+    3 KSP Residual norm 1.50355e-05 
   2 SNES Function norm 0.965357 
-    0 KSP Residual norm 2.0992 
-    1 KSP Residual norm 0.0107506 
-    2 KSP Residual norm 0.000332135 
-    3 KSP Residual norm 7.30506e-06 
+    0 KSP Residual norm 2.09921 
+    1 KSP Residual norm 0.010811 
+    2 KSP Residual norm 0.000336569 
+    3 KSP Residual norm 7.32146e-06 
   3 SNES Function norm 0.602599 
-    0 KSP Residual norm 1.33076 
-    1 KSP Residual norm 0.00851554 
-    2 KSP Residual norm 0.000224731 
-    3 KSP Residual norm 4.94949e-06 
+    0 KSP Residual norm 1.33072 
+    1 KSP Residual norm 0.0085465 
+    2 KSP Residual norm 0.000224369 
+    3 KSP Residual norm 4.90542e-06 
   4 SNES Function norm 0.37491 
-    0 KSP Residual norm 0.826408 
-    1 KSP Residual norm 0.00409587 
-    2 KSP Residual norm 0.000122243 
-    3 KSP Residual norm 2.85825e-06 
+    0 KSP Residual norm 0.826413 
+    1 KSP Residual norm 0.00411738 
+    2 KSP Residual norm 0.000124072 
+    3 KSP Residual norm 2.84879e-06 
   5 SNES Function norm 0.215489 
-    0 KSP Residual norm 0.419143 
-    1 KSP Residual norm 0.00291159 
-    2 KSP Residual norm 8.03321e-05 
-    3 KSP Residual norm 1.69582e-06 
+    0 KSP Residual norm 0.41911 
+    1 KSP Residual norm 0.00292809 
+    2 KSP Residual norm 8.03589e-05 
+    3 KSP Residual norm 1.69054e-06 
   6 SNES Function norm 0.110008 
-    0 KSP Residual norm 0.145017 
-    1 KSP Residual norm 0.00102091 
-    2 KSP Residual norm 2.75348e-05 
-    3 KSP Residual norm 5.21408e-07 
+    0 KSP Residual norm 0.144991 
+    1 KSP Residual norm 0.00101012 
+    2 KSP Residual norm 2.76287e-05 
+    3 KSP Residual norm 5.30273e-07 
   7 SNES Function norm 0.0509393 
-    0 KSP Residual norm 0.06307 
-    1 KSP Residual norm 0.000503537 
-    2 KSP Residual norm 1.32709e-05 
-    3 KSP Residual norm 3.31102e-07 
+    0 KSP Residual norm 0.0630681 
+    1 KSP Residual norm 0.00050114 
+    2 KSP Residual norm 1.32608e-05 
+    3 KSP Residual norm 3.33183e-07 
   8 SNES Function norm 0.00699757 
-    0 KSP Residual norm 0.00485744 
-    1 KSP Residual norm 3.93063e-05 
-    2 KSP Residual norm 1.07492e-06 
-    3 KSP Residual norm 2.17717e-08 
-  9 SNES Function norm 9.21939e-08 
-    0 KSP Residual norm 2.17718e-08 
-    1 KSP Residual norm 8.694e-10 
-    2 KSP Residual norm 2.238e-11 
+    0 KSP Residual norm 0.00485817 
+    1 KSP Residual norm 3.88895e-05 
+    2 KSP Residual norm 1.07055e-06 
+    3 KSP Residual norm 2.16788e-08 
+  9 SNES Function norm 9.18511e-08 
+    0 KSP Residual norm 2.16788e-08 
+    1 KSP Residual norm 8.553e-10 
+    2 KSP Residual norm 2.212e-11 
     3 KSP Residual norm < 1.e-11
     4 KSP Residual norm < 1.e-11
  10 SNES Function norm < 1.e-11

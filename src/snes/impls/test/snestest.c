@@ -208,6 +208,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
 
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   ierr                = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data          = (void*)neP;
   neP->complete_print = PETSC_FALSE;

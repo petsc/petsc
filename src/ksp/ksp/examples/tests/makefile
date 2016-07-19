@@ -511,10 +511,10 @@ runex26_ml_2:
 	   else printf "${PWD}\nPossible problem with ex26_ml_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex26_2.tmp
 runex26_ml_3:
-	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode -pc_mg_type ADDITIVE -ksp_max_it 7 > ex26_2.tmp 2>&1; \
-	if (${DIFF} output/ex26_ml_3.out ex26_2.tmp) then true; \
+	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode -pc_mg_type ADDITIVE -ksp_max_it 7 > ex26_3.tmp 2>&1; \
+	if (${DIFF} output/ex26_ml_3.out ex26_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex26_ml_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex26_2.tmp
+	   ${RM} -f ex26_3.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex27:
 	-@${MPIEXEC} -n 1 ./ex27 -f ${DATAFILESPATH}/matrices/small > ex27.tmp 2>&1; \

@@ -120,8 +120,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* Default type of lagrange multipliers is non-redundant */
-  fully_redundant = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-fetidp_fullyredundant",&fully_redundant,NULL);CHKERRQ(ierr);
+  fully_redundant = fetidpmat_ctx->fully_redundant;
 
   /* Evaluate local and global number of lagrange multipliers */
   ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
@@ -175,8 +174,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = ISLocalToGlobalMappingApplyIS(pcis->mapping,subset_n,&subset);CHKERRQ(ierr);
   ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,partial_sum,aux_local_numbering_2,PETSC_OWN_POINTER,&subset_mult);CHKERRQ(ierr);
-  ierr = PCBDDCSubsetNumbering(subset,subset_mult,&fetidpmat_ctx->n_lambda,&subset_n);CHKERRQ(ierr);
+  ierr = ISRenumber(subset,subset_mult,&fetidpmat_ctx->n_lambda,&subset_n);CHKERRQ(ierr);
   ierr = ISDestroy(&subset);CHKERRQ(ierr);
+
 #if defined(PETSC_USE_DEBUG)
   ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);

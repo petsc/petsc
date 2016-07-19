@@ -59,7 +59,7 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
     b = a = 0; \
   } else { \
     while((n > 0) && (a[n-1] == ' ')) n--; \
-    *ierr = PetscMalloc((n+1)*sizeof(char),&b); \
+    *ierr = PetscMalloc1(n+1,&b); \
     if (*ierr) return; \
     *ierr = PetscStrncpy(b,a,n+1); \
     if (*ierr) return; \
@@ -71,7 +71,7 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 #define FIXRETURNCHAR(flg,a,n)               \
 if (flg) {                                   \
   int __i;                                   \
-  for (__i=0; __i<n && a[__i] != 0; __i++) ; \
+  for (__i=0; __i<n && a[__i] != 0; __i++) {};  \
   for (; __i<n; __i++) a[__i] = ' ' ; \
 }
 

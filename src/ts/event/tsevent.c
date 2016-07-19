@@ -121,7 +121,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
                context is desired)
 
    Calling sequence of eventhandler:
-   PetscErrorCode EventHandler(TS ts,PetscReal t,Vec U,PetscScalar fvalue[],void* ctx)
+   PetscErrorCode PetscEventHandler(TS ts,PetscReal t,Vec U,PetscScalar fvalue[],void* ctx)
 
    Input Parameters:
 +  ts  - the TS context

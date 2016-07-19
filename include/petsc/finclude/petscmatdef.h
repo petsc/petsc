@@ -127,11 +127,19 @@
 #define MATLOCALREF        'localref'
 #define MATNEST            'nest'
 #define MATPREALLOCATOR    'preallocator'
+
+!
+! MatMFFDType values
+!
+#define MATMFFD_DS 'ds'
+#define MATMFFD_WP 'wp'
+
 !
 ! MatSolverPackages
 !
 #define MATSOLVERSUPERLU      'superlu'
 #define MATSOLVERSUPERLU_DIST 'superlu_dist'
+#define MATSOLVERSTRUMPACK    'strumpack'
 #define MATSOLVERUMFPACK      'umfpack'
 #define MATSOLVERCHOLMOD      'cholmod'
 #define MATSOLVERCLIQUE       'clique'

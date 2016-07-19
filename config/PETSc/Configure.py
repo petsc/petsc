@@ -68,6 +68,8 @@ class Configure(config.base.Configure):
       utilityObj.precisionProvider           = self.scalartypes
       utilityObj.indexProvider               = self.indexTypes
       setattr(self, utilityName.lower(), utilityObj)
+      return utilityObj
+    return None
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
@@ -101,7 +103,14 @@ class Configure(config.base.Configure):
       self.registerPythonFile(utility,'config.utilities')
 
     for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
-      self.registerPythonFile(package,'config.packages')
+      obj = self.registerPythonFile(package,'config.packages')
+      if obj:
+        obj.archProvider                = self.framework.requireModule(obj.archProvider, obj)
+        obj.languageProvider            = self.framework.requireModule(obj.languageProvider, obj)
+        obj.installDirProvider          = self.framework.requireModule(obj.installDirProvider, obj)
+        obj.externalPackagesDirProvider = self.framework.requireModule(obj.externalPackagesDirProvider, obj)
+        obj.precisionProvider           = self.framework.requireModule(obj.precisionProvider, obj)
+        obj.indexProvider               = self.framework.requireModule(obj.indexProvider, obj)
 
     # Force blaslapack and opencl to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.options.scalarTypes', self.f2cblaslapack)
@@ -133,7 +142,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf','inttypes'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',

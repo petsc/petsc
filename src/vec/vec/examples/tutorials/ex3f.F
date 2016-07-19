@@ -60,7 +60,7 @@
 !   - Each processor needs to insert only elements that it owns locally.
       ione = 1
       do 100 i=istart,iend-1
-         v = 1.0*i
+         v = 1.0*real(i)
          call VecSetValues(x,ione,i,v,INSERT_VALUES,ierr)
  100  continue
 

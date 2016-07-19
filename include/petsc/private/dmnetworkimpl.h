@@ -5,7 +5,7 @@
 #include <petscdmnetwork.h> /*I      "petscdmnetwork.h"    I*/
 #include "petsc/private/dmimpl.h"
 
-#define MAX_DATA_AT_POINT 14
+#define MAX_DATA_AT_POINT 36
 
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {

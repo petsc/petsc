@@ -116,8 +116,8 @@
 !  Fill up the array rho[] with the function rho(x,y) = x; fill the
 !  right-hand-side b[] and the solution with a known problem for testing.
 
-      hx = 1.0/(m+1)
-      hy = 1.0/(n+1)
+      hx = 1.0/real(m+1)
+      hy = 1.0/real(n+1)
       y  = hy
       do 20 j=1,n
          x = hx

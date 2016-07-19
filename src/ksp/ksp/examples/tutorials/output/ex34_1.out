@@ -1,8 +1,8 @@
   0 KSP Residual norm 1.00731 
-  1 KSP Residual norm 0.0404643 
-  2 KSP Residual norm 0.00265093 
-  3 KSP Residual norm 8.88845e-05 
-  4 KSP Residual norm 3.67089e-06 
+  1 KSP Residual norm 0.0395698 
+  2 KSP Residual norm 0.00251194 
+  3 KSP Residual norm 8.59967e-05 
+  4 KSP Residual norm 3.46182e-06 
 KSP Object: 1 MPI processes
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -48,7 +48,7 @@ PC Object: 1 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 1 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.0999031, max = 1.09893
+        Chebyshev: eigenvalue estimates:  min = 0.0998964, max = 1.09886
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_1_esteig_) 1 MPI processes
           type: gmres
@@ -58,6 +58,7 @@ PC Object: 1 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -78,7 +79,7 @@ PC Object: 1 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 1 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.0998792, max = 1.09867
+        Chebyshev: eigenvalue estimates:  min = 0.0995188, max = 1.09471
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_2_esteig_) 1 MPI processes
           type: gmres
@@ -88,6 +89,7 @@ PC Object: 1 MPI processes
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -113,7 +115,7 @@ PC Object: 1 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached null space
       not using I-node routines
-Residual norm 3.67089e-06
+Residual norm 3.46182e-06
 Error norm 0.0208755
 Error norm 0.00618518
 Error norm 0.000197005

@@ -33,7 +33,8 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
   if (!v->spptr) {
     ierr = PetscMalloc(sizeof(Vec_CUDA),&v->spptr);CHKERRQ(ierr);
     veccuda = (Vec_CUDA*)v->spptr;
-    err = cudaMalloc((void **) &veccuda->GPUarray, sizeof(PetscScalar) * ((PetscBLASInt)v->map->n));CHKERRCUDA(err);
+    err = cudaMalloc((void**)&veccuda->GPUarray_allocated,sizeof(PetscScalar)*((PetscBLASInt)v->map->n));CHKERRCUDA(err);
+    veccuda->GPUarray = veccuda->GPUarray_allocated;
     err = cudaStreamCreate(&stream);CHKERRCUDA(err);
     veccuda->stream = stream;
     veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
@@ -139,11 +140,11 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
 */
 PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci)
 {
-  PetscScalar    *varray;
-  PetscErrorCode ierr;
-  cudaError_t    err;
-  PetscScalar    *cpuPtr, *gpuPtr;
-  Vec_Seq        *s;
+  const PetscScalar *varray, *gpuPtr;
+  PetscErrorCode    ierr;
+  cudaError_t       err;
+  PetscScalar       *cpuPtr;
+  Vec_Seq           *s;
   VecScatterCUDAIndices_PtoP ptop_scatter = (VecScatterCUDAIndices_PtoP)ci->scatter;
 
   PetscFunctionBegin;
@@ -181,12 +182,13 @@ M*/
 #define __FUNCT__ "VecAYPX_SeqCUDA"
 PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
 {
-  PetscScalar    *xarray,*yarray;
-  PetscErrorCode ierr;
-  PetscBLASInt   one=1,bn;
-  PetscScalar    sone=1.0;
-  cublasStatus_t cberr;
-  cudaError_t    err;
+  const PetscScalar *xarray;
+  PetscScalar       *yarray;
+  PetscErrorCode    ierr;
+  PetscBLASInt      one=1,bn;
+  PetscScalar       sone=1.0;
+  cublasStatus_t    cberr;
+  cudaError_t       err;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
@@ -212,10 +214,11 @@ PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
 #define __FUNCT__ "VecAXPY_SeqCUDA"
 PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
 {
-  PetscScalar    *xarray,*yarray;
-  PetscErrorCode ierr;
-  PetscBLASInt   one=1,bn;
-  cublasStatus_t cberr;
+  const PetscScalar *xarray;
+  PetscScalar       *yarray;
+  PetscErrorCode    ierr;
+  PetscBLASInt      one=1,bn;
+  cublasStatus_t    cberr;
 
   PetscFunctionBegin;
   if (alpha != (PetscScalar)0.0) {
@@ -235,10 +238,12 @@ PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
 #define __FUNCT__ "VecPointwiseDivide_SeqCUDA"
 PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
 {
-  PetscInt                        n = xin->map->n;
-  PetscScalar                     *warray=NULL,*xarray=NULL,*yarray=NULL;
-  thrust::device_ptr<PetscScalar> wptr,xptr,yptr;
-  PetscErrorCode                  ierr;
+  PetscInt                              n = xin->map->n;
+  const PetscScalar                     *xarray=NULL,*yarray=NULL;
+  PetscScalar                           *warray=NULL;
+  thrust::device_ptr<const PetscScalar> xptr,yptr;
+  thrust::device_ptr<PetscScalar>       wptr;
+  PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArrayWrite(win,&warray);CHKERRQ(ierr);
@@ -264,11 +269,12 @@ PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
 #define __FUNCT__ "VecWAXPY_SeqCUDA"
 PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 {
-  PetscScalar    *xarray=NULL,*yarray=NULL,*warray=NULL;
-  PetscErrorCode ierr;
-  PetscBLASInt   one=1,bn;
-  cublasStatus_t cberr;
-  cudaError_t    err;
+  const PetscScalar *xarray=NULL,*yarray=NULL;
+  PetscScalar       *warray=NULL;
+  PetscErrorCode    ierr;
+  PetscBLASInt      one=1,bn;
+  cublasStatus_t    cberr;
+  cudaError_t       err;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(win->map->n,&bn);CHKERRQ(ierr);
@@ -344,10 +350,10 @@ PetscErrorCode VecMAXPY_SeqCUDA(Vec xin, PetscInt nv,const PetscScalar *alpha,Ve
 #define __FUNCT__ "VecDot_SeqCUDA"
 PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscScalar    *xarray,*yarray;
-  PetscErrorCode ierr;
-  PetscBLASInt   one=1,bn;
-  cublasStatus_t cberr;
+  const PetscScalar *xarray,*yarray;
+  PetscErrorCode    ierr;
+  PetscBLASInt      one=1,bn;
+  cublasStatus_t    cberr;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
@@ -572,12 +578,13 @@ __global__ void VecMDot_SeqCUDA_kernel8(const PetscScalar *x,const PetscScalar *
 #define __FUNCT__ "VecMDot_SeqCUDA"
 PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n = xin->map->n,current_y_index = 0;
-  PetscScalar    *group_results_gpu,*xptr,*y0ptr,*y1ptr,*y2ptr,*y3ptr,*y4ptr,*y5ptr,*y6ptr,*y7ptr;
+  PetscErrorCode    ierr;
+  PetscInt          i,n = xin->map->n,current_y_index = 0;
+  const PetscScalar *xptr,*y0ptr,*y1ptr,*y2ptr,*y3ptr,*y4ptr,*y5ptr,*y6ptr,*y7ptr;
+  PetscScalar       *group_results_gpu;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscInt       j;
-  PetscScalar    group_results_cpu[MDOT_WORKGROUP_NUM * 8]; // we process at most eight vectors in one kernel
+  PetscInt          j;
+  PetscScalar       group_results_cpu[MDOT_WORKGROUP_NUM * 8]; // we process at most eight vectors in one kernel
 #endif
   cudaError_t    cuda_ierr;
   PetscBLASInt   one=1,bn;
@@ -804,10 +811,10 @@ PetscErrorCode VecScale_SeqCUDA(Vec xin,PetscScalar alpha)
 #define __FUNCT__ "VecTDot_SeqCUDA"
 PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscScalar    *xarray,*yarray;
-  PetscErrorCode ierr;
-  PetscBLASInt   one=1,bn;
-  cublasStatus_t cberr;
+  const PetscScalar *xarray,*yarray;
+  PetscErrorCode    ierr;
+  PetscBLASInt      one=1,bn;
+  cublasStatus_t    cberr;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
@@ -827,9 +834,10 @@ PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecCopy_SeqCUDA"
 PetscErrorCode VecCopy_SeqCUDA(Vec xin,Vec yin)
 {
-  PetscScalar    *xarray,*yarray;
-  PetscErrorCode ierr;
-  cudaError_t    err;
+  const PetscScalar *xarray;
+  PetscScalar       *yarray;
+  PetscErrorCode    ierr;
+  cudaError_t       err;
 
   PetscFunctionBegin;
   if (xin != yin) {
@@ -899,12 +907,13 @@ PetscErrorCode VecSwap_SeqCUDA(Vec xin,Vec yin)
 #define __FUNCT__ "VecAXPBY_SeqCUDA"
 PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
-  PetscErrorCode ierr;
-  PetscScalar    a = alpha,b = beta;
-  PetscScalar    *xarray,*yarray;
-  PetscBLASInt   one = 1, bn;
-  cublasStatus_t cberr;
-  cudaError_t    err;
+  PetscErrorCode    ierr;
+  PetscScalar       a = alpha,b = beta;
+  const PetscScalar *xarray;
+  PetscScalar       *yarray;
+  PetscBLASInt      one = 1, bn;
+  cublasStatus_t    cberr;
+  cudaError_t       err;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(yin->map->n,&bn);CHKERRQ(ierr);
@@ -964,10 +973,12 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
 #define __FUNCT__ "VecPointwiseMult_SeqCUDA"
 PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
 {
-  PetscInt                        n = win->map->n;
-  PetscScalar                     *warray,*xarray,*yarray;
-  thrust::device_ptr<PetscScalar> wptr,xptr,yptr;
-  PetscErrorCode ierr;
+  PetscInt                              n = win->map->n;
+  const PetscScalar                     *xarray,*yarray;
+  PetscScalar                           *warray;
+  thrust::device_ptr<const PetscScalar> xptr,yptr;
+  thrust::device_ptr<PetscScalar>       wptr;
+  PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArrayReadWrite(win,&warray);CHKERRQ(ierr);
@@ -998,7 +1009,7 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
   PetscErrorCode    ierr;
   PetscInt          n = xin->map->n;
   PetscBLASInt      one = 1, bn;
-  PetscScalar       *xarray;
+  const PetscScalar *xarray;
   cublasStatus_t    cberr;
   cudaError_t       err;
 
@@ -1033,9 +1044,9 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
 #define __FUNCT__ "VecDotNorm2_SeqCUDA"
 PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
 {
-  PetscErrorCode                         ierr;
-  PetscReal                              n=s->map->n;
-  PetscScalar                            *sarray,*tarray;
+  PetscErrorCode    ierr;
+  PetscReal         n=s->map->n;
+  const PetscScalar *sarray,*tarray;
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArrayRead(s,&sarray);CHKERRQ(ierr);
@@ -1058,9 +1069,12 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
 
   PetscFunctionBegin;
   if (v->spptr) {
-    err = cudaFree(((Vec_CUDA*)v->spptr)->GPUarray);CHKERRCUDA(err);
-    ((Vec_CUDA*)v->spptr)->GPUarray = NULL;
-    err = cudaStreamDestroy(((Vec_CUDA*)v->spptr)->stream);CHKERRCUDA(err);
+    if (((Vec_CUDA*)v->spptr)->GPUarray_allocated) {
+      err = cudaFree(((Vec_CUDA*)v->spptr)->GPUarray_allocated);CHKERRCUDA(err);
+    }
+    if (((Vec_CUDA*)v->spptr)->stream) {
+      err = cudaStreamDestroy(((Vec_CUDA*)v->spptr)->stream);CHKERRCUDA(err);
+    }
     ierr = PetscFree(v->spptr);CHKERRQ(ierr);
   }
   ierr = VecDestroy_SeqCUDA_Private(v);CHKERRQ(ierr);
@@ -1297,7 +1311,7 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayReadWrite(Vec v, PetscScalar **a)
 
 .seealso: VecCUDARestoreArrayRead(), VecCUDAGetArrayReadWrite(), VecCUDAGetArrayWrite(), VecGetArray(), VecGetArrayRead()
 @*/
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, PetscScalar **a)
+PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
 {
   PetscErrorCode ierr;
 
@@ -1330,7 +1344,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, PetscScalar **a)
 
 .seealso: VecCUDAGetArrayRead(), VecCUDAGetArrayWrite(), VecCUDAGetArrayReadWrite(), VecGetArray(), VecRestoreArray(), VecGetArrayRead()
 @*/
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, PetscScalar **a)
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

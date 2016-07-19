@@ -1,15 +1,15 @@
 0 SNES Function norm 17.3771 
     0 SNES Function norm 17.3771 
     1 SNES Function norm 0.000129932 
-      0 SNES Function norm 0.000142967 
-      1 SNES Function norm 1.13097e-09 
-        0 SNES Function norm 1.24035e-09 
+      0 SNES Function norm 0.000142642 
+      1 SNES Function norm 1.38974e-09 
+        0 SNES Function norm 1.54472e-09 
         1 SNES Function norm < 1.e-11
-      0 SNES Function norm 8.446e-10 
+      0 SNES Function norm 9.758e-10 
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.000305678 
-    1 SNES Function norm 2.18417e-09 
-  1 SNES Function norm 2.18417e-09 
+    0 SNES Function norm 0.00035202 
+    1 SNES Function norm 2.8436e-09 
+  1 SNES Function norm 2.8436e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: fas
@@ -78,7 +78,7 @@ SNES Object: 1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=84
+      total number of linear solver iterations=86
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_2_) 1 MPI processes
@@ -115,4 +115,4 @@ SNES Object: 1 MPI processes
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=1
 Number of SNES iterations = 1
-L_2 Error: 2.06317e-10
+L_2 Error: 3.12806e-10

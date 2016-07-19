@@ -1,0 +1,14 @@
+pipelines:
+  branches:
+    maint: &default-step
+      - step:
+          script:
+            - sudo apt-get -yq --no-install-suggests --no-install-recommends --force-yes install gfortran libblas-dev liblapack-dev
+            - ./configure --with-clanguage=C++ --with-64-bit-indices=1 --with-scalar-type=complex --with-mpi=0
+            - make all
+            - make test
+            - make alltests ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot
+    master:  *default-step
+    next:    *default-step
+    pr*/*/*: *default-step
+    ci/*/*:  *default-step

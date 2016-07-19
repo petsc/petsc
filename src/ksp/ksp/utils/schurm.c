@@ -9,8 +9,6 @@ typedef struct {
   MatSchurComplementAinvType ainvtype;
 } Mat_SchurComplement;
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateVecs_SchurComplement"
 PetscErrorCode MatCreateVecs_SchurComplement(Mat N,Vec *right,Vec *left)

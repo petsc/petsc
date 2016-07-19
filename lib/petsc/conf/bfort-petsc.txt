@@ -153,12 +153,12 @@ nativeptr VecScatterCUSPIndices_StoS
 # of PETSc
 nativeptr AOData
 nativeptr AOData2dGrid
-nativeptr ClassPerfLog
-nativeptr ClassRegLog
+nativeptr PetscClassPerfLog
+nativeptr PetscClassRegLog
 nativeptr DA
 nativeptr DMMG
-nativeptr EventPerfLog
-nativeptr EventRegLog
+nativeptr PetscEventPerfLog
+nativeptr PetscEventRegLog
 nativeptr IntStack
 nativeptr ISMapping
 nativeptr MatSNESMFCtx

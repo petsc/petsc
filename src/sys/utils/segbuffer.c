@@ -64,7 +64,7 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes,size_t expected,PetscSegBuf
   struct _PetscSegBufferLink *head;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(struct _n_PetscSegBuffer),seg);CHKERRQ(ierr);
+  ierr = PetscNew(seg);CHKERRQ(ierr);
   ierr = PetscMalloc(offsetof(struct _PetscSegBufferLink,u)+expected*unitbytes,&head);CHKERRQ(ierr);
   ierr = PetscMemzero(head,offsetof(struct _PetscSegBufferLink,u));CHKERRQ(ierr);
 

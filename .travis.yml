@@ -1,0 +1,93 @@
+# http://travis-ci.org/petsc/petsc
+
+#notifications:
+#  email: false
+
+language: cpp
+compiler: gcc
+
+os: linux
+sudo: false
+#sudo: required
+#dist: trusty
+
+env:
+
+  global:
+    - FC=gfortran
+    - BLASLAPACK=
+
+  matrix:
+
+    - INT64=0  SCALAR=real     PRECISION=single
+    - INT64=0  SCALAR=real     PRECISION=double
+    - INT64=0  SCALAR=complex  PRECISION=single
+    - INT64=0  SCALAR=complex  PRECISION=double
+
+    - INT64=1  SCALAR=real     PRECISION=single
+    - INT64=1  SCALAR=real     PRECISION=double
+    - INT64=1  SCALAR=complex  PRECISION=single
+    - INT64=1  SCALAR=complex  PRECISION=double
+
+    - INT64=0  SCALAR=complex  PRECISION=single  LANGUAGE=C++
+    - INT64=0  SCALAR=complex  PRECISION=double  LANGUAGE=C++
+    - INT64=1  SCALAR=complex  PRECISION=single  LANGUAGE=C++
+    - INT64=1  SCALAR=complex  PRECISION=double  LANGUAGE=C++
+
+    - INT64=0  SCALAR=real     PRECISION=__float128 BLASLAPACK="--download-f2cblaslapack=1"
+    - INT64=0  SCALAR=complex  PRECISION=__float128 BLASLAPACK="--download-f2cblaslapack=1"
+    - INT64=1  SCALAR=real     PRECISION=__float128 BLASLAPACK="--download-f2cblaslapack=1"
+    - INT64=1  SCALAR=complex  PRECISION=__float128 BLASLAPACK="--download-f2cblaslapack=1"
+
+matrix:
+
+  include:
+
+    - env:
+      compiler: clang
+      os: osx
+    - env: INT64=1 SCALAR=complex LANGUAGE=C++
+      compiler: clang
+      os: osx
+
+    - env: MPI=mpich
+      compiler: clang
+      os: osx
+    - env: MPI=mpich INT64=1 SCALAR=complex LANGUAGE=C++
+      compiler: clang
+      os: osx
+
+    - env: MPI=openmpi
+      compiler: clang
+      os: osx
+    - env: MPI=openmpi INT64=1 SCALAR=complex LANGUAGE=C++
+      compiler: clang
+      os: osx
+
+git:
+  depth: 3
+branches:
+  only:
+    - maint
+    - master
+    - next
+    - /^ci\/.*$/
+
+addons:
+  apt:
+    packages:
+      - gfortran
+      - libblas-dev
+      - liblapack-dev
+
+before_install:
+  - if [[ -n "$MPI" && "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ -n "$MPI" && "$TRAVIS_OS_NAME" == "osx" ]]; then brew install $MPI; fi
+  - if [[ -n "$MPI" ]]; then export CC=mpicc CXX=mpicxx FC=mpif90; fi
+install:
+  - ./configure --with-cc=$CC --with-cxx=$CXX --with-fc=$FC --with-clanguage=${LANGUAGE:-C} --with-64-bit-indices=${INT64:-0} --with-scalar-type=${SCALAR:-real} --with-precision=${PRECISION:-double} --with-mpi=${MPI:-0} $BLASLAPACK
+  - make MAKE_NP=2  CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+  - make test       CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+
+script:
+  - make alltests ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND

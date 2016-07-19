@@ -14,10 +14,7 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.compilerFlags   = framework.require('config.compilerFlags', self)
-    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
-    self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
-    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     return
 
   def formCMakeConfigureArgs(self):
@@ -30,10 +27,10 @@ class Configure(config.package.CMakePackage):
       args.append('-DSHARED=1')
     if self.compilerFlags.debugging:
       args.append('-DDEBUG=1')
-    if self.indexTypes.integerSize == 64:
+    if self.getDefaultIndexSize() == 64:
       args.append('-DMETIS_USE_LONGINDEX=1')
-    if self.scalartypes.precision == 'double':
+    if self.getDefaultPrecision() == 'double':
       args.append('-DMETIS_USE_DOUBLEPRECISION=1')
-    elif self.scalartypes.precision == 'quad':
+    elif self.getDefaultPrecision() == 'quad':
       raise RuntimeError('METIS cannot be built with quad precision')
     return args

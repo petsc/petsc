@@ -1049,15 +1049,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
   for (i=0; i<num; i++) {
     if (dtype == PETSC_CHAR)         ret = fscanf(fd, "%c",  &(((char*)data)[i]));
     else if (dtype == PETSC_STRING)  ret = fscanf(fd, "%s",  &(((char*)data)[i]));
-#if PETSC_USE_64BIT_INDICES
-#if (PETSC_SIZEOF_LONG_LONG == 8)
-    else if (dtype == PETSC_INT)     ret = fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
-#else
-    else if (dtype == PETSC_INT)     ret = fscanf(fd, "%lld",  &(((PetscInt*)data)[i]));
-#endif
-#else
-    else if (dtype == PETSC_INT)     ret = fscanf(fd, "%d",  &(((PetscInt*)data)[i]));
-#endif
+    else if (dtype == PETSC_INT)     ret = fscanf(fd, "%" PetscInt_FMT,  &(((PetscInt*)data)[i]));
     else if (dtype == PETSC_ENUM)    ret = fscanf(fd, "%d",  &(((int*)data)[i]));
     else if (dtype == PETSC_FLOAT)   ret = fscanf(fd, "%f",  &(((float*)data)[i]));
     else if (dtype == PETSC_DOUBLE)  ret = fscanf(fd, "%lg", &(((double*)data)[i]));

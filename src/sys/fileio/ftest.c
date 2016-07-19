@@ -144,6 +144,20 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscTestFile"
+/*@C
+   PetscTestFile - checks for the existence of a file
+
+   Not Collective
+
+   Input Parameter:
++  fname - the filename
+-  mode - either 'r', 'w', or 'x'
+
+   Output Parameter:
+.  flg - the file exists and satisfies the mode
+
+.seealso: PetscTestDirectory(), PetscLs()
+@*/
 PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 {
   uid_t          fuid;
@@ -167,7 +181,21 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscTestDirectory"
-PetscErrorCode  PetscTestDirectory(const char fname[],char mode,PetscBool  *flg)
+/*@C
+   PetscTestDirectory - checks for the existence of a directory
+
+   Not Collective
+
+   Input Parameter:
++  dirname - the directory name
+-  mode - either 'r', 'w', or 'x'
+
+   Output Parameter:
+.  flg - the directory exists and satisfies the mode
+
+.seealso: PetscTestFile(), PetscLs()
+@*/
+PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *flg)
 {
   uid_t          fuid;
   gid_t          fgid;
@@ -177,21 +205,37 @@ PetscErrorCode  PetscTestDirectory(const char fname[],char mode,PetscBool  *flg)
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
-  if (!fname) PetscFunctionReturn(0);
+  if (!dirname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);CHKERRQ(ierr);
+  ierr = PetscGetFileStat(dirname, &fuid, &fgid, &fmode,&exists);CHKERRQ(ierr);
   if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a directory */
   if (!S_ISDIR(fmode)) PetscFunctionReturn(0);
 
-  ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);CHKERRQ(ierr);
+  ierr = PetscTestOwnership(dirname, mode, fuid, fgid, fmode, flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLs"
-PetscErrorCode  PetscLs(MPI_Comm comm,const char libname[],char found[],size_t tlen,PetscBool  *flg)
+/*@C
+   PetscLs - produce a listing of the files in a directory
+
+   Collective on MPI_Comm
+
+   Input Parameter:
++  comm - the MPI communicator
+.  dirname - the directory name
+-  tlen - the length of the buffer found[]
+
+   Output Parameter:
++  found - listing of files
+-  flg - the directory exists
+
+.seealso: PetscTestFile(), PetscLs()
+@*/
+PetscErrorCode  PetscLs(MPI_Comm comm,const char dirname[],char found[],size_t tlen,PetscBool  *flg)
 {
   PetscErrorCode ierr;
   size_t         len;
@@ -200,7 +244,7 @@ PetscErrorCode  PetscLs(MPI_Comm comm,const char libname[],char found[],size_t t
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(program,"ls ");CHKERRQ(ierr);
-  ierr = PetscStrcat(program,libname);CHKERRQ(ierr);
+  ierr = PetscStrcat(program,dirname);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,NULL,program,"r",&fp);CHKERRQ(ierr);
 #else
@@ -213,7 +257,7 @@ PetscErrorCode  PetscLs(MPI_Comm comm,const char libname[],char found[],size_t t
     ierr = PetscStrlen(found,&len);CHKERRQ(ierr);
     f    = fgets(found+len,tlen-len,fp);
   }
-  if (*flg) {ierr = PetscInfo2(0,"ls on %s gives \n%s\n",libname,found);CHKERRQ(ierr);}
+  if (*flg) {ierr = PetscInfo2(0,"ls on %s gives \n%s\n",dirname,found);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPClose(comm,fp,NULL);CHKERRQ(ierr);
 #else

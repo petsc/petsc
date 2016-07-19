@@ -157,7 +157,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
     i_last = i_here + result->row_nnz[i];
     if (result->row_nnz[i]>0) {
       if (*n_alloc_used > i_here || i_last > n_alloc) {
-        ierr = PetscMemcpy((void*) &icol_rescue[n_rescue], (void*) result->icols[i], result->row_nnz[i] * sizeof(int));CHKERRQ(ierr);
+        ierr = PetscMemcpy((void*) &icol_rescue[n_rescue], (void*) result->icols[i], result->row_nnz[i] * sizeof(PetscInt));CHKERRQ(ierr);
         ierr = PetscMemcpy((void*) &val_rescue[n_rescue], (void*) result->values[i], result->row_nnz[i] * sizeof(PetscScalar));CHKERRQ(ierr);
 
         n_rescue += result->row_nnz[i];
@@ -179,7 +179,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
 
         Allocate new icol-data, copy old contents */
     ierr = PetscMalloc1(n_alloc, &result->alloc_icol);CHKERRQ(ierr);
-    ierr = PetscMemcpy(result->alloc_icol, alloc_icol_old, n_copy*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMemcpy(result->alloc_icol, alloc_icol_old, n_copy*sizeof(PetscInt));CHKERRQ(ierr);
 
     /* Update administration, Reset pointers to new arrays  */
     result->n_alloc_icol = n_alloc;
@@ -225,7 +225,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
 
     if (result->row_nnz[i]>0) {
       if (*n_alloc_used > i_here || i_last > n_alloc) {
-        ierr = PetscMemcpy((void*) result->icols[i],  (void*) &icol_rescue[n_rescue], result->row_nnz[i] * sizeof(int));CHKERRQ(ierr);
+        ierr = PetscMemcpy((void*) result->icols[i],  (void*) &icol_rescue[n_rescue], result->row_nnz[i] * sizeof(PetscInt));CHKERRQ(ierr);
         ierr = PetscMemcpy((void*) result->values[i], (void*) &val_rescue[n_rescue],result->row_nnz[i] * sizeof(PetscScalar));CHKERRQ(ierr);
 
         n_rescue += result->row_nnz[i];
@@ -310,7 +310,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
   retval.block_data   = PETSC_TRUE;
 
   ierr       = spbas_allocate_pattern(&retval, do_values);CHKERRQ(ierr);
-  ierr       = PetscMemzero((void*) retval.row_nnz, nrows*sizeof(int));CHKERRQ(ierr);
+  ierr       = PetscMemzero((void*) retval.row_nnz, nrows*sizeof(PetscInt));CHKERRQ(ierr);
   ierr       = spbas_allocate_data(&retval);CHKERRQ(ierr);
   retval.nnz = 0;
 
@@ -318,11 +318,10 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
   ierr = PetscMalloc1(nrows, &val);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrows, &lvec);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrows, &max_row_nnz);CHKERRQ(ierr);
-  if (!(diag && val && lvec && max_row_nnz)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Allocation error in spbas_incomplete_cholesky\n");
 
   ierr = PetscMemzero((void*) val, nrows*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero((void*) lvec, nrows*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero((void*) max_row_nnz, nrows*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero((void*) max_row_nnz, nrows*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Check correct format of sparseness pattern */
   if (pattern.col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Error in spbas_incomplete_cholesky: must have diagonal offsets in pattern\n");

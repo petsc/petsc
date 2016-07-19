@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   AppCtx         user;                         /* user-defined work context */
   PetscInt       its;                          /* iterations for convergence */
   MatFDColoring  matfdcoloring = NULL;
-  PetscBool      matrix_free = PETSC_FALSE,coloring = PETSC_FALSE;
+  PetscBool      matrix_free = PETSC_FALSE,coloring = PETSC_FALSE, coloring_ds = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
 
@@ -122,9 +122,12 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
      -fdcoloring : using finite differences with coloring to compute the Jacobian
 
+     Note one can use -matfd_coloring wp or ds the only reason for the -fdcoloring_ds option
+     below is to test the call to MatFDColoringSetType().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsGetBool(NULL,NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-fdcoloring",&coloring,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fdcoloring_ds",&coloring_ds,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     ierr = DMSetMatType(user.da,MATAIJ);CHKERRQ(ierr);
     ierr = DMCreateMatrix(user.da,&J);CHKERRQ(ierr);
@@ -133,6 +136,9 @@ int main(int argc,char **argv)
       ierr = DMCreateColoring(user.da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
+      if (coloring_ds) {
+        ierr = MatFDColoringSetType(matfdcoloring,MATMFFD_DS);CHKERRQ(ierr);
+      }
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);

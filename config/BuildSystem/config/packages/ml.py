@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['git://https://bitbucket.org/petsc/pkg-ml.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-p3.tar.gz']
-    self.gitcommit         = 'v6.2-p3'
+    self.gitcommit         = 'v6.2-p4'
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-ml.git','https://bitbucket.org/petsc/pkg-ml/get/'+self.gitcommit+'.tar.gz']
     self.functions         = ['ML_Set_PrintLevel']
     self.includes          = ['ml_include.h']
     self.liblist           = [['libml.a']]
@@ -18,12 +18,12 @@ class Configure(config.package.GNUPackage):
                                  # essentially impossible to use ML's 64 bit integer mode with PETSc's --with-64-bit-indices
     self.needsMath         = 1   # ml test needs the system math library
     self.hastests          = 1
+    self.downloaddirname   = 'petsc-pkg-ml'
     return
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.languages  = framework.require('PETSc.options.languages',   self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]
     return
@@ -38,7 +38,7 @@ class Configure(config.package.GNUPackage):
     # Now specify -L ml-lib-path only to the first library
     alllibs[0] = os.path.join(dir,alllibs[0])
     import config.setCompilers
-    if self.languages.clanguage == 'C':
+    if self.getDefaultLanguage() == 'C':
       alllibs.extend(self.compilers.cxxlibs)
     return [alllibs]
 
@@ -48,9 +48,10 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-ml-aztecoo')
     args.append('--disable-ml-examples')
     args.append('--disable-tests')
+    args.append('--enable-libcheck')
 
     self.framework.pushLanguage('C')
-    args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    args.append('--with-cflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.mpi.include)+'"')
     self.framework.popLanguage()
 
@@ -63,7 +64,7 @@ class Configure(config.package.GNUPackage):
 
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+      args.append('--with-cxxflags="'+self.removeWarningFlags(self.framework.getCompilerFlags())+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
       self.framework.popLanguage()
     else:
       raise RuntimeError('Error: ML requires C++ compiler. None specified')

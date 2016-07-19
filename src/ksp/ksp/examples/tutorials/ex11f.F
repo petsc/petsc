@@ -133,7 +133,7 @@
          call PetscRandomSetFromOptions(rctx,ierr)
          call PetscRandomSetInterval(rctx,czero,cone,ierr)
       endif
-      h2 = 1.0/((n+1)*(n+1))
+      h2 = 1.0/real((n+1)*(n+1))
 
       one = 1
       do 10, II=Istart,Iend-1

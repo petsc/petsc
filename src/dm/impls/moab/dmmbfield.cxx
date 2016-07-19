@@ -193,7 +193,7 @@ PetscErrorCode DMMoabSetFieldNames(DM dm,PetscInt numFields,const char* fields[]
 
   /* now re-allocate and assign field names  */
   dmmoab->numFields = numFields;
-  ierr = PetscMalloc(numFields*sizeof(char*),&dmmoab->fieldNames);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numFields,&dmmoab->fieldNames);CHKERRQ(ierr);
   if (fields) {
     for(i=0; i<dmmoab->numFields; i++) {
       ierr = PetscStrallocpy(fields[i], (char**) &dmmoab->fieldNames[i]);CHKERRQ(ierr);

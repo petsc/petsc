@@ -432,7 +432,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateComposite"
-/*@C
+/*@
    MatCreateComposite - Creates a matrix as the sum of zero or more matrices
 
   Collective on MPI_Comm
@@ -530,7 +530,7 @@ PetscErrorCode  MatCompositeAddMat(Mat mat,Mat smat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCompositeSetType"
-/*@C
+/*@
    MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product
 
   Collective on MPI_Comm

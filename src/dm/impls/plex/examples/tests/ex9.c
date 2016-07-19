@@ -5,6 +5,7 @@ static char help[] = "Performance tests for DMPlex query operations\n\n";
 typedef struct {
   PetscInt  dim;             /* The topological mesh dimension */
   PetscBool cellSimplex;     /* Flag for simplices */
+  PetscBool spectral;        /* Flag for spectral element layout */
   PetscBool interpolate;     /* Flag for mesh interpolation */
   PetscReal refinementLimit; /* Maximum volume of a refined cell */
   PetscInt  numFields;       /* The number of section fields */
@@ -30,6 +31,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscFunctionBegin;
   options->dim               = 2;
   options->cellSimplex       = PETSC_TRUE;
+  options->spectral          = PETSC_FALSE;
   options->interpolate       = PETSC_FALSE;
   options->refinementLimit   = 0.0;
   options->numFields         = 0;
@@ -45,6 +47,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex9.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cellSimplex", "Flag for simplices", "ex9.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-spectral", "Flag for spectral element layout", "ex9.c", options->spectral, &options->spectral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "ex9.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The maximum volume of a refined cell", "ex9.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_fields", "The number of section fields", "ex9.c", options->numFields, &options->numFields, NULL);CHKERRQ(ierr);
@@ -58,6 +61,15 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscMalloc1(len, &options->numDof);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex9.c", options->numDof, &len, &flg);CHKERRQ(ierr);
   if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %d should be %d", len, (options->dim+1) * PetscMax(1, options->numFields));
+
+  /* We are specifying the scalar dof, so augment it for multiple components */
+  {
+    PetscInt f, d;
+
+    for (f = 0; f < options->numFields; ++f) {
+      for (d = 0; d <= options->dim; ++d) options->numDof[f*(options->dim+1)+d] *= options->numComponents[f];
+    }
+  }
 
   ierr = PetscOptionsBool("-reuse_array", "Pass in user allocated array to VecGetClosure()", "ex9.c", options->reuseArray, &options->reuseArray, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-errors", "Treat failures as errors", "ex9.c", options->errors, &options->errors, NULL);CHKERRQ(ierr);
@@ -229,6 +241,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
     ierr = DMDestroy(newdm);CHKERRQ(ierr);
     *newdm = idm;
   }
+  ierr = DMSetFromOptions(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -312,7 +325,7 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestVecClosure"
-static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
+static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpectral, AppCtx *user)
 {
   PetscSection       s;
   Vec                v;
@@ -327,16 +340,27 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
 
   PetscFunctionBegin;
   if (useIndex) {
-    ierr = PetscLogStageRegister("DMPlex Vector Closure with Index Test", &stage);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister("VecClosureInd", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+    if (useSpectral) {
+      ierr = PetscLogStageRegister("DMPlex Vector Closure with Index Test", &stage);CHKERRQ(ierr);
+      ierr = PetscLogEventRegister("VecClosureInd", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+    } else {
+      ierr = PetscLogStageRegister("DMPlex Vector Spectral Closure with Index Test", &stage);CHKERRQ(ierr);
+      ierr = PetscLogEventRegister("VecClosureSpecInd", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+    }
   } else {
-    ierr = PetscLogStageRegister("DMPlex Vector Closure Test", &stage);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister("VecClosure", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+    if (useSpectral) {
+      ierr = PetscLogStageRegister("DMPlex Vector Spectral Closure Test", &stage);CHKERRQ(ierr);
+      ierr = PetscLogEventRegister("VecClosureSpec", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+    } else {
+      ierr = PetscLogStageRegister("DMPlex Vector Closure Test", &stage);CHKERRQ(ierr);
+      ierr = PetscLogEventRegister("VecClosure", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+    }
   }
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
   if (useIndex) {ierr = DMPlexCreateClosureIndex(dm, s);CHKERRQ(ierr);}
+  if (useSpectral) {ierr = DMPlexCreateSpectralClosurePermutation(dm, s);CHKERRQ(ierr);}
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &v);CHKERRQ(ierr);
@@ -344,7 +368,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
   for (i = 0; i < user->iterations; ++i) {
     for (c = cStart; c < cEnd; ++c) {
       PetscScalar *closure     = userArray;
-      PetscInt     closureSize = 64;;
+      PetscInt     closureSize = 64;
 
       ierr = DMPlexVecGetClosure(dm, s, v, c, &closureSize, &closure);CHKERRQ(ierr);
       if (!user->reuseArray) {ierr = DMPlexVecRestoreClosure(dm, s, v, c, &closureSize, &closure);CHKERRQ(ierr);}
@@ -359,7 +383,12 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (eventInfo.time > maxTimePerRun * numRuns) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "VecClosures: %d Average time per cone: %gs standard: %gs\n", numRuns, eventInfo.time/numRuns, maxTimePerRun);
+    const char *title = "VecClosures";
+    const char *titleIndex = "VecClosures with Index";
+    const char *titleSpec = "VecClosures Spectral";
+    const char *titleSpecIndex = "VecClosures Spectral with Index";
+
+    ierr = PetscPrintf(PETSC_COMM_SELF, "%s: %d Average time per vector closure: %gs standard: %gs\n", useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, eventInfo.time/numRuns, maxTimePerRun);
     if (user->errors) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
   }
   PetscFunctionReturn(0);
@@ -391,8 +420,12 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_SELF, &user, &dm);CHKERRQ(ierr);
   ierr = TestCone(dm, &user);CHKERRQ(ierr);
   ierr = TestTransitiveClosure(dm, &user);CHKERRQ(ierr);
-  ierr = TestVecClosure(dm, PETSC_FALSE, &user);CHKERRQ(ierr);
-  ierr = TestVecClosure(dm, PETSC_TRUE,  &user);CHKERRQ(ierr);
+  ierr = TestVecClosure(dm, PETSC_FALSE, PETSC_FALSE, &user);CHKERRQ(ierr);
+  ierr = TestVecClosure(dm, PETSC_TRUE,  PETSC_FALSE, &user);CHKERRQ(ierr);
+  if (!user.cellSimplex && user.spectral) {
+    ierr = TestVecClosure(dm, PETSC_FALSE, PETSC_TRUE,  &user);CHKERRQ(ierr);
+    ierr = TestVecClosure(dm, PETSC_TRUE,  PETSC_TRUE,  &user);CHKERRQ(ierr);
+  }
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = CleanupContext(&user);CHKERRQ(ierr);
   ierr = PetscFinalize();

@@ -1,5 +1,5 @@
 /*
-    Defines the operations for the X PetscDraw implementation.
+    Defines the operations for the TikZ PetscDraw implementation.
 */
 
 #include <petsc/private/drawimpl.h>         /*I  "petscsys.h" I*/
@@ -55,8 +55,7 @@ static PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-static const char *TikZColors[] = { "white",  "black", "red",  "green", "cyan",   "blue", "magenta", 0, 0, "orange",
-                                    "violet", "brown", "pink", 0,       "yellow", 0};
+static const char *TikZColors[] = {"white","black","red","green","cyan","blue","magenta",0,0,"orange","violet","brown","pink",0,"yellow",0};
 
 PETSC_STATIC_INLINE const char *TikZColorMap(int cl)
 {

@@ -926,11 +926,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   } else {
     Mat Arhs = NULL,Brhs = NULL;
     if (rhsjacobian) {
-      if (ijacobian) {
-        ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
-      } else {
-        ierr = TSGetIJacobian(ts,&Arhs,&Brhs,NULL,NULL);CHKERRQ(ierr);
-      }
+      ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
       ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
     }
     if (Arhs == A) {           /* No IJacobian, so we only have the RHS matrix */
@@ -3975,11 +3971,11 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         ierr = TSPreStep(ts);CHKERRQ(ierr);
       }
       ierr = TSStep(ts);CHKERRQ(ierr);
-      ierr = TSEventHandler(ts);CHKERRQ(ierr);
+      if (ts->vec_costintegral && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
+        ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
+      }
+      ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (!ts->steprollback) {
-        if (ts->vec_costintegral && ts->costintegralfwd) {
-          ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
-        }
         ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
@@ -6178,7 +6174,7 @@ PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6287,7 +6283,7 @@ PetscErrorCode  TSSetJacobianMatlab(TS ts,Mat A,Mat B,const char *func,mxArray *
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6360,7 +6356,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6438,7 +6434,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
       char      **displaynames;
       PetscBool flg;
       ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
-      ierr = PetscMalloc((dim+1)*sizeof(char*),&displaynames);CHKERRQ(ierr);
+      ierr = PetscMalloc1(dim+1,&displaynames);CHKERRQ(ierr);
       ierr = PetscMemzero(displaynames,(dim+1)*sizeof(char*));CHKERRQ(ierr);
       ierr = PetscOptionsGetStringArray(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",displaynames,&dim,&flg);CHKERRQ(ierr);
       if (flg) {

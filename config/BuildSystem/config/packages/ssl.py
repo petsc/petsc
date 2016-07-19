@@ -20,6 +20,10 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.deps = []
 
+  def getSearchDirectories(self):
+    '''macOS no longer provides openssl include files. On macOS brew puts them in the second location listed here'''
+    return ['',os.path.join('/usr','local','opt','openssl')]
+
   def configureLibrary(self):
     if 'with-ios' in self.argDB and self.argDB['with-ios']: 
       self.found = 0

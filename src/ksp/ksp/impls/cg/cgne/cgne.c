@@ -44,6 +44,9 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
     /* get space to store tridiagonal matrix for Lanczos */
     ierr = PetscMalloc4(maxit+1,&cgP->e,maxit+1,&cgP->d,maxit+1,&cgP->ee,maxit+1,&cgP->dd);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+
+    ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
+    ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
   PetscFunctionReturn(0);
 }
@@ -102,12 +105,12 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   } else {
     ierr = VecCopy(T,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
-  ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
   if (transpose_pc) {
-    ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+    ierr = KSP_PCApplyTranspose(ksp,R,T);CHKERRQ(ierr);
   } else {
-    ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
   }
+  ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
 
   if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- z'*z       */
@@ -115,6 +118,7 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
+    KSPCheckDot(ksp,beta);
     dp   = PetscSqrtReal(PetscAbsScalar(beta));
   } else dp = 0.0;
   ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
@@ -127,6 +131,7 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   do {
     ksp->its = i+1;
     ierr     = VecXDot(Z,R,&beta);CHKERRQ(ierr); /*     beta <- r'z     */
+    KSPCheckDot(ksp,beta);
     if (beta == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
       ierr        = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
@@ -153,17 +158,18 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     ierr    = KSP_MatMult(ksp,Amat,P,T);CHKERRQ(ierr);
     ierr    = KSP_MatMultTranspose(ksp,Amat,T,Z);CHKERRQ(ierr);
     ierr    = VecXDot(P,Z,&dpi);CHKERRQ(ierr);    /*     dpi <- z'p      */
+    KSPCheckDot(ksp,dpi);
     a       = beta/dpi;                            /*     a = beta/p'z    */
     if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
     ierr = VecAXPY(X,a,P);CHKERRQ(ierr);           /*     x <- x + ap     */
     ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                       /*     r <- r - az     */
     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-      ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
       if (transpose_pc) {
-        ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+        ierr = KSP_PCApplyTranspose(ksp,R,T);CHKERRQ(ierr);
       } else {
-        ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+        ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
       }
+      ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
       ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
@@ -180,10 +186,11 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     if (ksp->reason) break;
     if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
       if (transpose_pc) {
-        ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+        ierr = KSP_PCApplyTranspose(ksp,R,T);CHKERRQ(ierr);
       } else {
-        ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+        ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
       }
+      ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
     }
     i++;
   } while (i<ksp->max_it);

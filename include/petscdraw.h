@@ -227,7 +227,6 @@ typedef struct {
   PetscReal *yr;
   PetscDraw draw;
   PetscReal port_xl,port_yl,port_xr,port_yr;   /* original port of parent PetscDraw */
-
 } PetscDrawViewPorts;
 PETSC_EXTERN PetscErrorCode PetscDrawViewPortsCreate(PetscDraw,PetscInt,PetscDrawViewPorts**);
 PETSC_EXTERN PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw,PetscInt,PetscInt,PetscDrawViewPorts**);
@@ -346,7 +345,7 @@ PETSC_EXTERN PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler);
   if (_Petsc_isdrawx) { \
     _Petsc_ierr = PetscMemcpy(&_Petsc_jmpbuf,&PetscXIOErrorHandlerJumpBuf,sizeof(_Petsc_jmpbuf));CHKERRQ(_Petsc_ierr); \
     _Petsc_xioerrhdl = PetscSetXIOErrorHandler(PetscXIOErrorHandlerJump); \
-    if (setjmp(PetscXIOErrorHandlerJumpBuf)) {_Petsc_xioerr_local = PETSC_TRUE; {_Petsc_ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(_Petsc_ierr);} \
+    if (setjmp(PetscXIOErrorHandlerJumpBuf)) {_Petsc_xioerr_local = PETSC_TRUE; do {_Petsc_ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(_Petsc_ierr);} \
   } do {} while(0)
 
 #define PetscDrawCollectiveEnd(draw) 0; \

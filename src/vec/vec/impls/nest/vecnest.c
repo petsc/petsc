@@ -92,7 +92,7 @@ static PetscErrorCode VecDuplicate_Nest(Vec x,Vec *y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(Vec)*bx->nb,&sub);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bx->nb,&sub);CHKERRQ(ierr);
   for (i=0; i<bx->nb; i++) {
     ierr = VecDuplicate(bx->v[i],&sub[i]);CHKERRQ(ierr);
   }
@@ -1251,8 +1251,7 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECNEST);CHKERRQ(ierr);
 
   /* allocate and set pointer for implememtation data */
-  ierr = PetscMalloc(sizeof(Vec_Nest),&s);CHKERRQ(ierr);
-  ierr = PetscMemzero(s,sizeof(Vec_Nest));CHKERRQ(ierr);
+  ierr = PetscNew(&s);CHKERRQ(ierr);
   V->data          = (void*)s;
   s->setup_called  = PETSC_FALSE;
   s->nb            = -1;

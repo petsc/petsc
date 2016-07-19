@@ -125,6 +125,24 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetType"
+/*@C
+  TSAdaptSetType - sets the approach used for the error adapter, currently there is only TSADAPTBASIC and TSADAPTNONE
+
+  Logicially Collective on TSAdapt
+
+  Input Parameter:
++ adapt - the TS error adapter, most likely obtained with TSGetAdapt()
+- type - either  TSADAPTBASIC or TSADAPTNONE
+
+  Options Database:
+.  -ts_adapt_type basic or none - to setting the adapter type
+
+  Level: intermediate
+
+.keywords: TSAdapt, create
+
+.seealso: TSGetAdapt(), TSAdaptDestroy(), TSAdaptType, TSAdaptGetType()
+@*/
 PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 {
   PetscBool      match;
@@ -711,6 +729,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->dt_max             = 1e50;
   adapt->scale_solve_failed = 0.25;
   adapt->wnormtype          = NORM_2;
+  ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
 
   *inadapt = adapt;
   PetscFunctionReturn(0);

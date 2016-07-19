@@ -3,9 +3,9 @@
 
 #include <petscsys.h>
 
-typedef struct _Space *PetscFreeSpaceList;
+typedef struct _n_PetscFreeSpaceList *PetscFreeSpaceList;
 
-struct _Space {
+struct _n_PetscFreeSpaceList {
   PetscFreeSpaceList more_space;
   PetscInt           *array;
   PetscInt           *array_head;

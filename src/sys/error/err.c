@@ -252,10 +252,11 @@ static const char *PetscErrorStrings[] = {
   /*89 */ "Object Type not set: http://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset"
   /*90 */ "  ",
   /*   */ "  ",
-  /*92 */ "See http://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
+  /*   */ "  ",
+  /*93 */ "See http://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
   /*   */ "You cannot overwrite this option since that will conflict with other previously set options",
   /*   */ "  ",
-  /*95 */ "  ",
+  /*96 */ "  ",
 };
 
 #undef __FUNCT__

@@ -131,9 +131,9 @@ def chkenable():
 def argsAddDownload(value,deps = [],options = []):
   # Adds --download-value to args if the command line DOES NOT already has --with-value or --download-value in it
   # this is to prevent introducing conflicting arguments to ones that already exist
-  for i in sys.argv:
-    if i.startswith('--with-'+value): return
-    if i.startswith('--download-'+value) and not i.startswith('--download-'+value+'-commit'): return
+  for opt in sys.argv[1:]:
+    optname = opt.split('=')[0].strip('-')
+    if optname in ['download-'+value,'with-'+value,'with-'+value+'-dir','with-'+value+'-include','with-'+value+'-lib']: return
   sys.argv.append('--download-'+value)
   for i in deps:
     argsAddDownload(i)
@@ -200,8 +200,7 @@ def chksynonyms():
 
     argsAddDownload('hypre')
 
-    argsAddDownload('trilinos',['boost'],['--with-cxx-dialect=C++11'])
-    argsAddDownload('xsdktrilinos')
+    argsAddDownload('trilinos',['boost','xsdktrilinos'],['--with-cxx-dialect=C++11'])
 
 
 def chkwinf90():
@@ -338,17 +337,18 @@ def print_final_timestamp(framework):
   return
 
 def petsc_configure(configure_options):
-  try:
+  if 'PETSC_DIR' in os.environ:
     petscdir = os.environ['PETSC_DIR']
-    sys.path.append(os.path.join(petscdir,'bin'))
-    import petscnagupgrade
-    file     = os.path.join(petscdir,'.nagged')
-    if not petscnagupgrade.naggedtoday(file):
-      petscnagupgrade.currentversion(petscdir)
-  except:
-    pass
-  if petscdir.find(' ') > -1:
-    raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
+    if petscdir.find(' ') > -1:
+      raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
+    try:
+      sys.path.append(os.path.join(petscdir,'bin'))
+      import petscnagupgrade
+      file     = os.path.join(petscdir,'.nagged')
+      if not petscnagupgrade.naggedtoday(file):
+        petscnagupgrade.currentversion(petscdir)
+    except:
+      pass
   print '==============================================================================='
   print '             Configuring PETSc to compile on your system                       '
   print '==============================================================================='

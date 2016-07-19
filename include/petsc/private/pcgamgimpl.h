@@ -2,6 +2,7 @@
 #define __GAMG_IMPL
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/pcmgimpl.h>                    /*I "petscksp.h" I*/
+#include <petscmatcoarsen.h>                           /*I "petscmatcoarsen.h" I*/
 
 struct _PCGAMGOps {
   PetscErrorCode (*graph)(PC, Mat, Mat*);

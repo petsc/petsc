@@ -1700,7 +1700,7 @@ PetscErrorCode MatSetStencil(Mat mat,PetscInt dim,const PetscInt dims[],const Pe
    in the matrix.
 
    Each time an entry is set within a sparse matrix via MatSetValues(),
-   internal searching must be done to determine where to place the the
+   internal searching must be done to determine where to place the
    data in the matrix storage space.  By instead inserting blocks of
    entries via MatSetValuesBlocked(), the overhead of matrix assembly is
    reduced.
@@ -4284,7 +4284,14 @@ PetscErrorCode MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType f
   MatCheckPreallocated(mat,1);
 
   ierr = MatSolverPackageGet(type,((PetscObject)mat)->type_name,ftype,&foundpackage,&foundmtype,&conv);CHKERRQ(ierr);
-  if (!foundpackage) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate solver package %s. Perhaps you must ./configure with --download-%s",type,type);
+  if (!foundpackage) {
+    if (type) {
+      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate solver package %s. Perhaps you must ./configure with --download-%s",type,type);
+    } else {
+      SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate a solver package. Perhaps you must ./configure with --download-<package>");
+    }
+  }
+  
   if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
   if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
@@ -9980,7 +9987,7 @@ PetscErrorCode MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateRedundantMatrix"
-/*@C
+/*@
    MatCreateRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators.
 
    Collective on Mat

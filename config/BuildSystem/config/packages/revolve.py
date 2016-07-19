@@ -15,7 +15,6 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.petscdir = framework.require('PETSc.options.petscdir',self.setCompilers)
     return
 
   def Install(self):
@@ -35,7 +34,7 @@ class Configure(config.package.Package):
     g.write('PREFIX           = '+self.installDir+'\n')
 
     g.write('CXX              = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CXXFLAGS         = '+self.setCompilers.getCompilerFlags()+'\n')
+    g.write('CXXFLAGS         = '+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
 
     self.framework.popLanguage()

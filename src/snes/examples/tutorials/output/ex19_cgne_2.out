@@ -1,0 +1,245 @@
+lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
+    0 KSP Residual norm 0.329737 
+    1 KSP Residual norm 0.313164 
+    2 KSP Residual norm 0.0475228 
+    3 KSP Residual norm 0.0527513 
+    4 KSP Residual norm 0.0336081 
+    5 KSP Residual norm 0.0589036 
+    6 KSP Residual norm 0.0371174 
+    7 KSP Residual norm 0.0311859 
+    8 KSP Residual norm 0.0315337 
+    9 KSP Residual norm 0.0238384 
+   10 KSP Residual norm 0.0121624 
+   11 KSP Residual norm 0.0121032 
+   12 KSP Residual norm 0.0136556 
+   13 KSP Residual norm 0.00871402 
+   14 KSP Residual norm 0.00808783 
+   15 KSP Residual norm 0.00215891 
+   16 KSP Residual norm 0.00581555 
+   17 KSP Residual norm 0.00776632 
+   18 KSP Residual norm 0.019159 
+   19 KSP Residual norm 0.00328485 
+   20 KSP Residual norm 0.00412157 
+   21 KSP Residual norm 0.00308695 
+   22 KSP Residual norm 0.00522533 
+   23 KSP Residual norm 0.00699751 
+   24 KSP Residual norm 0.00966341 
+   25 KSP Residual norm 0.00273529 
+   26 KSP Residual norm 0.00376275 
+   27 KSP Residual norm 0.00365193 
+   28 KSP Residual norm 0.0008234 
+   29 KSP Residual norm 0.00137171 
+   30 KSP Residual norm 0.000483122 
+   31 KSP Residual norm 0.000999703 
+   32 KSP Residual norm 0.000507456 
+   33 KSP Residual norm 0.00116562 
+   34 KSP Residual norm 0.000212525 
+   35 KSP Residual norm 0.000132465 
+   36 KSP Residual norm 0.000419669 
+   37 KSP Residual norm 0.000199309 
+   38 KSP Residual norm 0.000345409 
+   39 KSP Residual norm 0.000207211 
+   40 KSP Residual norm 0.000488192 
+   41 KSP Residual norm 0.000219208 
+   42 KSP Residual norm 0.000341406 
+   43 KSP Residual norm 0.000110854 
+   44 KSP Residual norm 8.48481e-05 
+   45 KSP Residual norm 0.000169257 
+   46 KSP Residual norm 0.000175205 
+   47 KSP Residual norm 3.60377e-05 
+   48 KSP Residual norm 0.000129896 
+   49 KSP Residual norm 0.000105173 
+   50 KSP Residual norm 6.34783e-05 
+   51 KSP Residual norm 5.05072e-05 
+   52 KSP Residual norm 6.76429e-05 
+   53 KSP Residual norm 2.43593e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 53
+KSP Object: 1 MPI processes
+  type: cgne
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: jacobi
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=64, cols=64, bs=4
+    total: nonzeros=1024, allocated nonzeros=1024
+    total number of mallocs used during MatSetValues calls =0
+      using I-node routines: found 16 nodes, limit used is 5
+    0 KSP Residual norm 9.8805e-05 
+    1 KSP Residual norm 8.19186e-05 
+    2 KSP Residual norm 1.90045e-05 
+    3 KSP Residual norm 2.40209e-05 
+    4 KSP Residual norm 6.07153e-06 
+    5 KSP Residual norm 9.60261e-06 
+    6 KSP Residual norm 5.79382e-06 
+    7 KSP Residual norm 2.35168e-05 
+    8 KSP Residual norm 1.43291e-05 
+    9 KSP Residual norm 2.31894e-05 
+   10 KSP Residual norm 1.53585e-05 
+   11 KSP Residual norm 1.46354e-05 
+   12 KSP Residual norm 1.38503e-05 
+   13 KSP Residual norm 1.50412e-05 
+   14 KSP Residual norm 8.43848e-06 
+   15 KSP Residual norm 8.84509e-06 
+   16 KSP Residual norm 1.61505e-05 
+   17 KSP Residual norm 6.49552e-06 
+   18 KSP Residual norm 4.63784e-06 
+   19 KSP Residual norm 4.61956e-06 
+   20 KSP Residual norm 3.88109e-06 
+   21 KSP Residual norm 4.70298e-06 
+   22 KSP Residual norm 3.80683e-06 
+   23 KSP Residual norm 4.46884e-06 
+   24 KSP Residual norm 2.14323e-06 
+   25 KSP Residual norm 1.68311e-06 
+   26 KSP Residual norm 1.10435e-06 
+   27 KSP Residual norm 1.87473e-06 
+   28 KSP Residual norm 1.16712e-06 
+   29 KSP Residual norm 1.24929e-06 
+   30 KSP Residual norm 5.27343e-07 
+   31 KSP Residual norm 2.77839e-07 
+   32 KSP Residual norm 2.61303e-07 
+   33 KSP Residual norm 3.13361e-07 
+   34 KSP Residual norm 1.63141e-07 
+   35 KSP Residual norm 2.13578e-07 
+   36 KSP Residual norm 7.8339e-07 
+   37 KSP Residual norm 8.58461e-08 
+   38 KSP Residual norm 9.14491e-08 
+   39 KSP Residual norm 1.01323e-07 
+   40 KSP Residual norm 6.90381e-08 
+   41 KSP Residual norm 3.11927e-07 
+   42 KSP Residual norm 1.29601e-07 
+   43 KSP Residual norm 7.96694e-08 
+   44 KSP Residual norm 4.31165e-08 
+   45 KSP Residual norm 1.95467e-07 
+   46 KSP Residual norm 6.59884e-08 
+   47 KSP Residual norm 7.61762e-08 
+   48 KSP Residual norm 3.91827e-08 
+   49 KSP Residual norm 9.64272e-08 
+   50 KSP Residual norm 9.35972e-08 
+   51 KSP Residual norm 1.17549e-08 
+   52 KSP Residual norm 3.98126e-08 
+   53 KSP Residual norm 7.25575e-09 
+   54 KSP Residual norm 7.15814e-09 
+   55 KSP Residual norm 1.78358e-08 
+   56 KSP Residual norm 9.72379e-09 
+   57 KSP Residual norm 2.41943e-08 
+   58 KSP Residual norm 7.28349e-09 
+   59 KSP Residual norm 5.6578e-09 
+   60 KSP Residual norm 3.58275e-09 
+   61 KSP Residual norm 2.46854e-09 
+   62 KSP Residual norm 6.4442e-09 
+   63 KSP Residual norm 1.72792e-08 
+   64 KSP Residual norm 3.14399e-09 
+   65 KSP Residual norm 2.17434e-09 
+   66 KSP Residual norm 7.996e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 66
+KSP Object: 1 MPI processes
+  type: cgne
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: jacobi
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=64, cols=64, bs=4
+    total: nonzeros=1024, allocated nonzeros=1024
+    total number of mallocs used during MatSetValues calls =0
+      using I-node routines: found 16 nodes, limit used is 5
+    0 KSP Residual norm 8.088e-10 
+    1 KSP Residual norm 1.41572e-09 
+    2 KSP Residual norm 3.34909e-09 
+    3 KSP Residual norm 5.927e-10 
+    4 KSP Residual norm 1.17104e-09 
+    5 KSP Residual norm 1.08557e-09 
+    6 KSP Residual norm 1.60593e-09 
+    7 KSP Residual norm 5.946e-10 
+    8 KSP Residual norm 7.734e-10 
+    9 KSP Residual norm 3.367e-10 
+   10 KSP Residual norm 4.901e-10 
+   11 KSP Residual norm 6.654e-10 
+   12 KSP Residual norm 1.05178e-09 
+   13 KSP Residual norm 5.620e-10 
+   14 KSP Residual norm 5.390e-10 
+   15 KSP Residual norm 2.426e-10 
+   16 KSP Residual norm 3.058e-10 
+   17 KSP Residual norm 4.040e-10 
+   18 KSP Residual norm 2.678e-10 
+   19 KSP Residual norm 2.477e-10 
+   20 KSP Residual norm 2.816e-10 
+   21 KSP Residual norm 3.991e-10 
+   22 KSP Residual norm 2.129e-10 
+   23 KSP Residual norm 2.696e-10 
+   24 KSP Residual norm 2.945e-10 
+   25 KSP Residual norm 2.758e-10 
+   26 KSP Residual norm 9.453e-11 
+   27 KSP Residual norm 1.158e-10 
+   28 KSP Residual norm 4.044e-10 
+   29 KSP Residual norm 2.067e-10 
+   30 KSP Residual norm 5.540e-11 
+   31 KSP Residual norm 1.947e-11 
+   32 KSP Residual norm 3.533e-11 
+   33 KSP Residual norm 3.764e-11 
+   34 KSP Residual norm 2.536e-11 
+   35 KSP Residual norm 2.083e-11 
+   36 KSP Residual norm 5.355e-11 
+   37 KSP Residual norm 1.906e-11 
+   38 KSP Residual norm 1.004e-11 
+   39 KSP Residual norm 1.078e-11 
+   40 KSP Residual norm 1.423e-11 
+   41 KSP Residual norm 2.065e-11 
+   42 KSP Residual norm 2.426e-11 
+   43 KSP Residual norm 1.079e-11 
+   44 KSP Residual norm < 1.e-11
+   45 KSP Residual norm < 1.e-11
+   46 KSP Residual norm < 1.e-11
+   47 KSP Residual norm < 1.e-11
+   48 KSP Residual norm 2.996e-11 
+   49 KSP Residual norm < 1.e-11
+   50 KSP Residual norm < 1.e-11
+   51 KSP Residual norm < 1.e-11
+   52 KSP Residual norm < 1.e-11
+   53 KSP Residual norm < 1.e-11
+   54 KSP Residual norm < 1.e-11
+   55 KSP Residual norm < 1.e-11
+   56 KSP Residual norm < 1.e-11
+   57 KSP Residual norm < 1.e-11
+   58 KSP Residual norm < 1.e-11
+   59 KSP Residual norm < 1.e-11
+   60 KSP Residual norm < 1.e-11
+   61 KSP Residual norm < 1.e-11
+   62 KSP Residual norm < 1.e-11
+   63 KSP Residual norm < 1.e-11
+   64 KSP Residual norm < 1.e-11
+   65 KSP Residual norm < 1.e-11
+   66 KSP Residual norm < 1.e-11
+   67 KSP Residual norm < 1.e-11
+   68 KSP Residual norm < 1.e-11
+   69 KSP Residual norm < 1.e-11
+   70 KSP Residual norm < 1.e-11
+   71 KSP Residual norm < 1.e-11
+   72 KSP Residual norm < 1.e-11
+   73 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_RTOL iterations 73
+KSP Object: 1 MPI processes
+  type: cgne
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: jacobi
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=64, cols=64, bs=4
+    total: nonzeros=1024, allocated nonzeros=1024
+    total number of mallocs used during MatSetValues calls =0
+      using I-node routines: found 16 nodes, limit used is 5
+Number of SNES iterations = 3

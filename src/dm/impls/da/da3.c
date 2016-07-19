@@ -213,7 +213,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   if (stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR || bz == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INDICES)
-  if (((Petsc64bitInt) M)*((Petsc64bitInt) N)*((Petsc64bitInt) P)*((Petsc64bitInt) dof) > (Petsc64bitInt) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
+  if (((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
 #endif
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

@@ -1,7 +1,6 @@
 
 #include <petsc/private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
 #include <petscmat.h>
-#include <petsc/private/matimpl.h>
 
 extern PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM,ISColoringType,ISColoring*);
 extern PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM,ISColoringType,ISColoring*);
@@ -563,7 +562,7 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
   ierr = PetscObjectGetOptionsPrefix((PetscObject)A,&prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)Anatural,prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)Anatural,((PetscObject)A)->name);CHKERRQ(ierr);
-  ierr = (Anatural->ops->view)(Anatural,viewer);CHKERRQ(ierr);
+  ierr = MatView(Anatural,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -576,7 +575,7 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   PetscErrorCode ierr;
   Mat            Anatural,Aapp;
   AO             ao;
-  PetscInt       rstart,rend,*app,i;
+  PetscInt       rstart,rend,*app,i,m,n,M,N;
   IS             is;
   MPI_Comm       comm;
 
@@ -588,7 +587,9 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   /* Load the matrix in natural ordering */
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&Anatural);CHKERRQ(ierr);
   ierr = MatSetType(Anatural,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSetSizes(Anatural,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatSetSizes(Anatural,m,n,M,N);CHKERRQ(ierr);
   ierr = MatLoad(Anatural,viewer);CHKERRQ(ierr);
 
   /* Map natural ordering to application ordering and create IS */

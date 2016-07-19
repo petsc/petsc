@@ -25,13 +25,13 @@ int main(int argc,char **argv)
   }
 
   /* Take care of paging effects */
-  ierr = PetscMalloc(100,&dummy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(100,&dummy);CHKERRQ(ierr);
   ierr = PetscFree(dummy);CHKERRQ(ierr);
   ierr = PetscTime(&x);CHKERRQ(ierr);
 
   /* Do all mallocs */
   for (i=0; i< 1000; i++) {
-    ierr = PetscMalloc(rand1[i],&arr[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rand1[i],&arr[i]);CHKERRQ(ierr);
   }
 
   ierr = PetscTime(&x);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
 
   /* Do some mallocs */
   for (i=0; i< 1000; i+=2) {
-    ierr = PetscMalloc(rand2[i],&arr[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rand2[i],&arr[i]);CHKERRQ(ierr);
   }
   ierr = PetscTime(&y);CHKERRQ(ierr);
 

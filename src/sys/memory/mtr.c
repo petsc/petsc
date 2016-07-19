@@ -15,8 +15,10 @@
 */
 extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
 extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
+extern PetscErrorCode  PetscReallocAlign(size_t,int,const char[],const char[],void**);
 extern PetscErrorCode  PetscTrMallocDefault(size_t,int,const char[],const char[],void**);
 extern PetscErrorCode  PetscTrFreeDefault(void*,int,const char[],const char[]);
+extern PetscErrorCode  PetscTrReallocDefault(size_t,int,const char[],const char[],void**);
 
 
 #define CLASSID_VALUE  ((PetscClassId) 0xf0e0d0c9)
@@ -74,6 +76,7 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
 
   PetscFunctionBegin;
   ierr = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
+  PetscTrRealloc = PetscTrReallocDefault;
 
   TRallocated       = 0;
   TRfrags           = 0;
@@ -315,6 +318,133 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
 
   if (head->next) head->next->prev = head->prev;
   ierr = PetscFreeAlign(a,line,function,file);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscTrReallocDefault"
+/*
+  PetscTrReallocDefault - Realloc with tracing.
+
+  Input Parameters:
++ len      - number of bytes to allocate
+. lineno   - line number where used.  Use __LINE__ for this
+. function - function calling routine. Use __FUNCT__ for this
+. filename - file name where used.  Use __FILE__ for this
+- result   - double aligned pointer to initial storage.
+
+  Output Parameter:
+. result - double aligned pointer to requested storage, or null if not available.
+
+  Level: developer
+
+.seealso: PetscTrMallocDefault(), PetscTrFreeDefault()
+*/
+PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function[], const char filename[], void **result)
+{
+  char           *a = (char *) *result;
+  TRSPACE        *head;
+  char           *ahead, *inew;
+  PetscClassId   *nend;
+  size_t         nsize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Do not try to handle empty blocks */
+  if (!len) {*result = NULL; PetscFunctionReturn(0);}
+
+  if (TRdebugLevel) {ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);}
+
+  ahead = a;
+  a     = a - sizeof(TrSPACE);
+  head  = (TRSPACE *) a;
+  inew  = a;
+
+  if (head->classid != CLASSID_VALUE) {
+    (*PetscErrorPrintf)("PetscTrReallocDefault() called from %s() line %d in %s\n",function,lineno,filename);
+    (*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\nmay be block not allocated with PetscMalloc()\n",a);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Bad location or corrupted memory");
+  }
+  nend = (PetscClassId *)(ahead + head->size);
+  if (*nend != CLASSID_VALUE) {
+    if (*nend == ALREADY_FREED) {
+      (*PetscErrorPrintf)("PetscTrReallocDefault() called from %s() line %d in %s\n",function,lineno,filename);
+      (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p was already freed\n",head->id,(PetscLogDouble)head->size,a + sizeof(TrSPACE));
+      if (head->lineno > 0 && head->lineno < 50000 /* sanity check */) {
+        (*PetscErrorPrintf)("Block freed in %s() line %d in %s\n",head->functionname,head->lineno,head->filename);
+      } else {
+        (*PetscErrorPrintf)("Block allocated in %s() line %d in %s\n",head->functionname,-head->lineno,head->filename);
+      }
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Memory already freed");
+    } else {
+      /* Damaged tail */
+      (*PetscErrorPrintf)("PetscTrReallocDefault() called from %s() line %d in %s\n",function,lineno,filename);
+      (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p is corrupted (probably write past end of array)\n",head->id,(PetscLogDouble)head->size,a);
+      (*PetscErrorPrintf)("Block allocated in %s() line %d in %s\n",head->functionname,head->lineno,head->filename);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Corrupted memory");
+    }
+  }
+
+  TRallocated -= head->size;
+  TRfrags--;
+  if (head->prev) head->prev->next = head->next;
+  else TRhead = head->next;
+  if (head->next) head->next->prev = head->prev;
+
+  nsize = (len + (PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1);
+  ierr  = PetscReallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscClassId),lineno,function,filename,(void**)&inew);CHKERRQ(ierr);
+
+  head  = (TRSPACE*)inew;
+  inew += sizeof(TrSPACE);
+
+  if (TRhead) TRhead->prev = head;
+  head->next   = TRhead;
+  TRhead       = head;
+  head->prev   = NULL;
+  head->size   = nsize;
+  head->id     = TRid;
+  head->lineno = lineno;
+
+  head->filename                 = filename;
+  head->functionname             = function;
+  head->classid                  = CLASSID_VALUE;
+  *(PetscClassId*)(inew + nsize) = CLASSID_VALUE;
+
+  TRallocated += nsize;
+  if (TRallocated > TRMaxMem) TRMaxMem = TRallocated;
+  TRfrags++;
+
+#if defined(PETSC_USE_DEBUG)
+  if (PetscStackActive()) {
+    ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
+    /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
+    head->stack.line[head->stack.currentsize-2] = lineno;
+  } else {
+    head->stack.currentsize = 0;
+  }
+#endif
+
+  /*
+         Allow logging of all mallocs made
+  */
+  if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax && len >= PetscLogMallocThreshold) {
+    if (!PetscLogMalloc) {
+      PetscLogMallocLength = (size_t*)malloc(PetscLogMallocMax*sizeof(size_t));
+      if (!PetscLogMallocLength) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+
+      PetscLogMallocFile = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
+      if (!PetscLogMallocFile) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+
+      PetscLogMallocFunction = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
+      if (!PetscLogMallocFunction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+    }
+    PetscLogMallocLength[PetscLogMalloc]     = nsize;
+    PetscLogMallocFile[PetscLogMalloc]       = filename;
+    PetscLogMallocFunction[PetscLogMalloc++] = function;
+  }
+  *result = (void*)inew;
   PetscFunctionReturn(0);
 }
 

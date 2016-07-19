@@ -53,7 +53,7 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   (*map)->bs     = -1;
   (*map)->n      = -1;
   (*map)->N      = -1;
-  (*map)->range  = 0;
+  (*map)->range  = NULL;
   (*map)->rstart = 0;
   (*map)->rend   = 0;
   PetscFunctionReturn(0);
@@ -536,3 +536,38 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscLayoutCompare"
+/*@
+  PetscLayoutCompare - Compares two layouts
+
+  Not Collective
+
+  Input Parameters:
++ mapa - pointer to the first map
+- mapb - pointer to the second map
+
+  Output Parameters:
+. congruent - PETSC_TRUE if the two layouts are congruent, PETSC_FALSE otherwise
+
+  Level: beginner
+
+  Notes:
+
+.seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutGetLocalSize(), PetscLayoutGetBlockSize(),
+          PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutSetUp()
+@*/
+PetscErrorCode PetscLayoutCompare(PetscLayout mapa,PetscLayout mapb,PetscBool *congruent)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    sizea,sizeb;
+
+  PetscFunctionBegin;
+  *congruent = PETSC_FALSE;
+  ierr = MPI_Comm_size(mapa->comm,&sizea);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(mapb->comm,&sizeb);CHKERRQ(ierr);
+  if (mapa->N == mapb->N && mapa->range && mapb->range && sizea == sizeb) {
+    ierr = PetscMemcmp(mapa->range,mapb->range,(sizea+1)*sizeof(PetscInt),congruent);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

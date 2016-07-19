@@ -393,6 +393,45 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFDColoringSetType"
+/*@C
+   MatFDColoringSetType - Sets the approach for computing the finite difference parameter
+
+   Collective on MatFDColoring
+
+   Input Parameters:
++  coloring - the coloring context
+-  type - either MATMFFD_WP or MATMFFD_DS
+
+   Options Database Keys:
+.  -mat_fd_type - "wp" or "ds"
+
+   Note: It is goofy that the argument type is MatMFFDType since the MatFDColoring actually computes the matrix entries
+         but the process of computing the entries is the same as as with the MatMFFD operation so we should reuse the names instead of
+         introducing another one.
+
+   Level: intermediate
+
+.keywords: Mat, finite differences, parameters
+
+.seealso: MatFDColoringCreate(), MatFDColoringView(), MatFDColoringSetParameters()
+
+@*/
+PetscErrorCode  MatFDColoringSetType(MatFDColoring matfd,MatMFFDType type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
+  /*
+     It is goofy to handle the strings this way but currently there is no code to free a dynamically created matfd->htype
+     and this function is being provided as patch for a release so it shouldn't change the implementaton
+  */
+  if (type[0] == 'w' && type[1] == 'p') matfd->htype = "wp";
+  else if (type[0] == 'd' && type[1] == 's') matfd->htype = "ds";
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",type);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringViewFromOptions"
 PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char prefix[],const char optionname[])
 {

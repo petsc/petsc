@@ -1,6 +1,6 @@
 
 /*
-        Provides an interface to the SuperLU_DIST_2.2 sparse solver
+        Provides an interface to the SuperLU_DIST sparse solver
 */
 
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -50,6 +50,34 @@ typedef struct {
   PetscBool              CleanUpSuperLU_Dist;  /* Flag to clean up (non-global) SuperLU objects during Destroy */
 } Mat_SuperLU_DIST;
 
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSuperluDistGetDiagU_SuperLU_DIST"
+PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
+{
+  Mat_SuperLU_DIST  *lu= (Mat_SuperLU_DIST*)F->data;
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+  PetscStackCall("SuperLU_DIST:pzGetDiagU",pzGetDiagU(F->rmap->N,&lu->LUstruct,&lu->grid,(doublecomplex*)diagU));
+#else
+  PetscStackCall("SuperLU_DIST:pdGetDiagU",pdGetDiagU(F->rmap->N,&lu->LUstruct,&lu->grid,diagU));
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSuperluDistGetDiagU"
+PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  ierr = PetscTryMethod(F,"MatSuperluDistGetDiagU_C",(Mat,PetscScalar*),(F,diagU));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SuperLU_DIST"
 static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
@@ -81,6 +109,10 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
   ierr = PetscFree(A->data);CHKERRQ(ierr);
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSuperluDistGetDiagU_C",NULL);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -559,8 +591,6 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   B->ops->view             = MatView_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_SuperLU_DIST;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_aij_superlu_dist);CHKERRQ(ierr);
-
   B->factortype = MAT_FACTOR_LU;
 
   /* set solvertype */
@@ -694,6 +724,9 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   lu->options.Fact         = DOFACT;
   lu->matsolve_iscalled    = PETSC_FALSE;
   lu->matmatsolve_iscalled = PETSC_FALSE;
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSuperluDistGetDiagU_C",MatSuperluDistGetDiagU_SuperLU_DIST);CHKERRQ(ierr);
 
   *F = B;
   PetscFunctionReturn(0);

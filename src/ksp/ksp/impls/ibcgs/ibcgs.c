@@ -286,7 +286,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
 
 /*MC
-     KSPIBCGS - Implements the IBiCGStab (Improved Stabilized version of BiConjugate Gradient Squared) method
+     KSPIBCGS - Implements the IBiCGStab (Improved Stabilized version of BiConjugate Gradient) method
             in an alternative form to have only a single global reduction operation instead of the usual 3 (or 4)
 
    Options Database Keys:

@@ -228,7 +228,10 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
     }
   }
 #endif
-  if (flg) type = PETSC_DRAW_NULL;
+  if (flg) {
+    ierr = PetscStrcmp(type,"tikz",&flg);CHKERRQ(ierr);
+    if (!flg) type = PETSC_DRAW_NULL;
+  }
 
   ierr =  PetscFunctionListFind(PetscDrawList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);

@@ -179,7 +179,7 @@ int main(int argc,char **args)
     if (isSymmetric) {
       ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     } else {
-      PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric \n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric \n");CHKERRQ(ierr);
     }
     ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
   }

@@ -71,6 +71,12 @@ runex3:
 	-@${MPIEXEC} -n 1 ./ex3
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4
+runex4_db:
+	-@${MPIEXEC} -n 1 ./ex4 -draw_double_buffer 0
+runex4_dv:
+	-@${MPIEXEC} -n 1 ./ex4 -draw_virtual
+runex4_df:
+	-@${MPIEXEC} -n 1 ./ex4 -draw_fast
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap hue
 	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap gray
@@ -91,7 +97,8 @@ runex11:
 runex12:
 	-@${MPIEXEC} -n 1 ./ex12
 
-TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm \
+TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
+                            ex4.PETSc runex4 runex4_db runex4_dv runex4_df ex4.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex9.PETSc runex9 ex9.rm \
                             ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_FORTRAN	  = ex4f.PETSc ex4f.rm ex5f.PETSc ex5f.rm
