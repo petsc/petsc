@@ -1630,7 +1630,7 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetStride_Memory"
-PETSC_UNUSED static PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,TS ts,PetscInt stride)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,PetscInt stride)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
@@ -1641,7 +1641,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetMaxCpsRAM_Memory"
-PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsRAM_Memory(TSTrajectory tj,TS ts,PetscInt max_cps_ram)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsRAM_Memory(TSTrajectory tj,PetscInt max_cps_ram)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
@@ -1652,7 +1652,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsRAM_Memory(TSTrajectory 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectorySetMaxCpsDisk_Memory"
-PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsDisk_Memory(TSTrajectory tj,TS ts,PetscInt max_cps_disk)
+PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsDisk_Memory(TSTrajectory tj,PetscInt max_cps_disk)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
