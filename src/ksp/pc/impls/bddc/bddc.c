@@ -239,7 +239,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, IS vl2l)
    Input Parameters:
 +  pc - the preconditioning context
 .  divudotp - the matrix (must be of type MATIS)
--  vl2l - optional IS describing the local (to divudotp) to local (to pc->pmat) map for the velocities
+-  vl2l - optional IS describing the local (wrt the local mat in divudotp) to local (wrt the local mat in pc->pmat) map for the velocities
 
    Level: advanced
 
@@ -1484,6 +1484,12 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     PetscBool ismatis;
     ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&ismatis);CHKERRQ(ierr);
     if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"When the static switch is one, the iteration matrix should be of type MATIS");
+  }
+
+  if (pcbddc->compute_nonetflux) {
+    pcbddc->use_vertices = PETSC_TRUE;
+    pcbddc->use_edges = PETSC_TRUE;
+    pcbddc->use_faces = PETSC_TRUE;
   }
 
   /* Get stdout for dbg */
