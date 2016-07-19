@@ -4,7 +4,6 @@
 #include <petscblaslapack.h>
 #include <petsc/private/sfimpl.h>
 
-
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCComputeNoNetFlux"
 PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, IS vl2l, PCBDDCGraph graph, MatNullSpace *nnsp)
@@ -91,6 +90,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, IS vl2l, PCBDDCGraph 
   }
   ierr = VecGetArrayRead(vins,&array);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
+
   /* insert in global quadrature vecs */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
   for (i=0;i<nf;i++) {
@@ -358,12 +358,8 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     PetscScalar        *work;
     PCBDDCReuseSolvers reuse = pcbddc->sub_schurs ? pcbddc->sub_schurs->reuse_solver : NULL;
 
-    if (pcbddc->benign_original_mat) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Benign original mat has not been restored");
-    }
-    if (!pcbddc->benign_change || !pcbddc->benign_n || pcbddc->benign_change_explicit) {
-      PetscFunctionReturn(0);
-    }
+    if (pcbddc->benign_original_mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Benign original mat has not been restored");
+    if (!pcbddc->benign_change || !pcbddc->benign_n || pcbddc->benign_change_explicit) PetscFunctionReturn(0);
     ierr = PetscMalloc1(pcis->n,&work);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&A_IB);CHKERRQ(ierr);
     ierr = MatSetSizes(A_IB,pcis->n-pcis->n_B,pcis->n_B,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -666,9 +662,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
     ierr = MatMult(A,pcis->vec1_N,vec3_N);CHKERRQ(ierr);
     ierr = VecDot(vec3_N,pcis->vec2_N,&vals[0]);CHKERRQ(ierr);
-    if (PetscAbsScalar(vals[0]) > 1.e-1) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %1.6e (should be numerically 0.)",PetscAbsScalar(vals[0]));
-    }
+    if (PetscAbsScalar(vals[0]) > 1.e-1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! b(v_I,p_0) = %1.6e (should be numerically 0.)",PetscAbsScalar(vals[0]));
     ierr = PetscFree(vals);CHKERRQ(ierr);
     ierr = VecDestroy(&vec3_N);CHKERRQ(ierr);
 
@@ -678,11 +672,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
     for (i=0;i<pcis->n_B;i++) count[idxs[i]]++;
     ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
     ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
-    for (i=0;i<nz;i++) {
-      if (count[idxs[i]]) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! pressure dof %d is an interface dof",idxs[i]);
-      }
-    }
+    for (i=0;i<nz;i++) if (count[idxs[i]]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Benign trick can not be applied! pressure dof %d is an interface dof",idxs[i]);
     ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
     ierr = PetscFree(count);CHKERRQ(ierr);
   }
@@ -694,11 +684,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
   for (i=0;i<pcbddc->benign_n;i++) pcbddc->benign_p0[i] = 1;
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
-  for (i=0;i<pcbddc->benign_n;i++) {
-    if ((PetscInt)PetscRealPart(pcbddc->benign_p0[i]) != -PetscGlobalRank-i) {
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %1.4e at %d instead of %1.4e\n",pcbddc->benign_p0[i],i,-PetscGlobalRank-i);CHKERRQ(ierr);
-    }
-  }
+  for (i=0;i<pcbddc->benign_n;i++) if ((PetscInt)PetscRealPart(pcbddc->benign_p0[i]) != -PetscGlobalRank-i) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %1.4e at %d instead of %1.4e\n",pcbddc->benign_p0[i],i,-PetscGlobalRank-i);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1823,9 +1809,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PetscScalar     one=1.0,m_one=-1.0;
 
   PetscFunctionBegin;
-  if (!pcbddc->symmetric_primal && pcbddc->benign_n) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Non-symmetric primal basis computation with benign trick not yet implemented");
-  }
+  if (!pcbddc->symmetric_primal && pcbddc->benign_n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Non-symmetric primal basis computation with benign trick not yet implemented");
 
   /* Set Non-overlapping dimensions */
   n_vertices = pcbddc->n_vertices;
@@ -3120,9 +3104,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   if (dirichlet) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     if (pcbddc->benign_n && !pcbddc->benign_change_explicit) {
-      if (!sub_schurs || !sub_schurs->reuse_solver) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented\n");
-      }
+      if (!sub_schurs || !sub_schurs->reuse_solver) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented\n");
       if (pcbddc->dbg_flag) {
         Mat    A_IIn;
 
@@ -3484,11 +3466,8 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
       ierr = MatNullSpaceRemove(nullsp,rhs);CHKERRQ(ierr);
     }
     if (applytranspose) {
-      if (pcbddc->benign_apply_coarse_only) {
-        SETERRQ(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),PETSC_ERR_SUP,"Not yet implemented");
-      } else {
-        ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
-      }
+      if (pcbddc->benign_apply_coarse_only) SETERRQ(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),PETSC_ERR_SUP,"Not yet implemented");
+      ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
     } else {
       if (pcbddc->benign_apply_coarse_only && isbddc) { /* need just to apply the coarse preconditioner during presolve */
         PC        coarse_pc;
@@ -4575,9 +4554,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       if (pcbddc->use_deluxe_scaling) {
         PCBDDCSubSchurs sub_schurs=pcbddc->sub_schurs;
 
-        if (pcbddc->use_change_of_basis && pcbddc->adaptive_userdefined) {
-          SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot mix automatic change of basis, adaptive selection and user-defined constraints");CHKERRQ(ierr);
-        }
+        if (pcbddc->use_change_of_basis && pcbddc->adaptive_userdefined) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot mix automatic change of basis, adaptive selection and user-defined constraints");CHKERRQ(ierr);
         if (sub_schurs && sub_schurs->S_Ej_all) {
           Mat                    S_new,tmat;
           IS                     is_all_N,is_V_Sall = NULL;
@@ -4788,9 +4765,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   ierr = PCBDDCGraphInit(pcbddc->mat_graph,pcis->mapping,N);CHKERRQ(ierr);
 
   /* Check validity of the csr graph passed in by the user */
-  if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
-  }
+  if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
 
   /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
   if ( (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) && pcbddc->use_local_adj) {
