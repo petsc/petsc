@@ -103,7 +103,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
   /* ASCII viewer */
   if (isascii) {
     PetscMPIInt   color,rank,size;
-    Petsc64bitInt loc[6],gsum[5],gmax[5],gmin[5],totbenign;
+    PetscInt64    loc[6],gsum[5],gmax[5],gmin[5],totbenign;
     PetscScalar   interface_size;
     PetscReal     ratio1=0.,ratio2=0.;
     Vec           counter;
