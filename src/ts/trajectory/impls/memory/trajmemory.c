@@ -55,7 +55,6 @@ typedef struct _TJScheduler {
   PetscBool     recompute;
   PetscBool     skip_trajectory;
   PetscBool     save_stack;
-  MPI_Comm      comm;
   PetscInt      max_cps_ram;  /* maximum checkpoints in RAM */
   PetscInt      max_cps_disk; /* maximum checkpoints on disk */
   PetscInt      stride;
@@ -166,7 +165,7 @@ static PetscErrorCode StackResize(Stack *stack,PetscInt newsize)
 static PetscErrorCode StackPush(Stack *stack,StackElement e)
 {
   PetscFunctionBegin;
-  if (stack->top+1 >= stack->stacksize) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",stack->stacksize);
+  if (stack->top+1 >= stack->stacksize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",stack->stacksize);
   stack->container[++stack->top] = e;
   PetscFunctionReturn(0);
 }
@@ -176,7 +175,7 @@ static PetscErrorCode StackPush(Stack *stack,StackElement e)
 static PetscErrorCode StackPop(Stack *stack,StackElement *e)
 {
   PetscFunctionBegin;
-  if (stack->top == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_MEMC,"Empty stack");
+  if (stack->top == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Empty stack");
   *e = stack->container[stack->top--];
   PetscFunctionReturn(0);
 }
@@ -631,7 +630,7 @@ static PetscErrorCode SetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscRe
     ierr = StackTop(stack,&e);CHKERRQ(ierr);
     e->timenext = ts->ptime;
   }
-  if (stepnum < stack->top) SETERRQ(tjsch->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+  if (stepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
   ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
   ierr = StackPush(stack,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -879,7 +878,7 @@ static PetscErrorCode ApplyRevolve(SchedulerType stype,RevolveCTX *rctx,PetscInt
   if (stype == REVOLVE_ONLINE && whattodo == 7) whattodo = 2;
   if (!toplevel) printwhattodo(whattodo,rctx,shift);
   else printwhattodo2(whattodo,rctx,shift);
-  if (whattodo == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"Error in the Revolve library");
+  if (whattodo == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in the Revolve library");
   if (whattodo == 1) { /* advance some time steps */
     if (stype == REVOLVE_ONLINE && rctx->capo >= total_steps-1) {
       revolve_turn(total_steps,&rctx->capo,&rctx->fine);
@@ -937,7 +936,7 @@ static PetscErrorCode SetTrajROF(TS ts,TJScheduler *tjsch,PetscInt stepnum,Petsc
   if (stack->solution_only && stepnum == tjsch->total_steps) PetscFunctionReturn(0);
   ierr = ApplyRevolve(tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,stepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1) {
-    if (stepnum < stack->top) SETERRQ(tjsch->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+    if (stepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1017,7 +1016,7 @@ static PetscErrorCode SetTrajRON(TS ts,TJScheduler *tjsch,PetscInt stepnum,Petsc
       ierr        = TSGetPrevTime(ts,&timeprev);CHKERRQ(ierr);
       e->timeprev = timeprev;
     } else {
-      if (stepnum < stack->top) SETERRQ(tjsch->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+      if (stepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
       ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
       ierr = StackPush(stack,e);CHKERRQ(ierr);
     }
@@ -1106,7 +1105,7 @@ static PetscErrorCode SetTrajTLR(TS ts,TJScheduler *tjsch,PetscInt stepnum,Petsc
   }
   ierr = ApplyRevolve(tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,localstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1) {
-    if (localstepnum < stack->top) SETERRQ(tjsch->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+    if (localstepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1256,7 +1255,7 @@ static PetscErrorCode SetTrajTLTR(TS ts,TJScheduler *tjsch,PetscInt stepnum,Pets
   if (!stack->solution_only && localstepnum == 0 && stepnum != tjsch->total_steps && !tjsch->recompute) PetscFunctionReturn(0);
   ierr = ApplyRevolve(tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,localstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1) {
-    if (localstepnum < stack->top) SETERRQ(tjsch->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+    if (localstepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1425,7 +1424,7 @@ static PetscErrorCode SetTrajRMS(TS ts,TJScheduler *tjsch,PetscInt stepnum,Petsc
   if (stack->solution_only && stepnum == tjsch->total_steps) PetscFunctionReturn(0);
   ierr = ApplyRevolve(tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,stepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1){
-    if (stepnum < stack->top) SETERRQ(tjsch->comm,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+    if (stepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   } else if (store == 2) {
@@ -1688,7 +1687,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_cps_ram;
 
   if (tjsch->stride > 1) { /* two level mode */
-    if (tjsch->save_stack && tjsch->max_cps_disk > 1 && tjsch->max_cps_disk <= tjsch->max_cps_ram) SETERRQ(tjsch->comm,PETSC_ERR_ARG_INCOMP,"The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
+    if (tjsch->save_stack && tjsch->max_cps_disk > 1 && tjsch->max_cps_disk <= tjsch->max_cps_ram) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
     if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) tjsch->stype = TWO_LEVEL_REVOLVE; /* use revolve_offline for each stride */
     if (tjsch->max_cps_disk > 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) tjsch->stype = TWO_LEVEL_TWO_REVOLVE;  /* use revolve_offline for each stride */
     if (tjsch->max_cps_disk <= 1 && (tjsch->max_cps_ram >= tjsch->stride || tjsch->max_cps_ram == -1)) tjsch->stype = TWO_LEVEL_NOREVOLVE; /* can also be handled by TWO_LEVEL_REVOLVE */
@@ -1704,7 +1703,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 
   if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
 #ifndef PETSC_HAVE_REVOLVE
-    SETERRQ(tjsch->comm,PETSC_ERR_SUP,"revolve is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-revolve.");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"revolve is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-revolve.");
 #else
     switch (tjsch->stype) {
       case TWO_LEVEL_REVOLVE:
@@ -1763,7 +1762,6 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   }
 
   tjsch->recompute = PETSC_FALSE;
-  tjsch->comm      = PetscObjectComm((PetscObject)ts);
   ierr = TSGetStages(ts,&numY,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = StackCreate(stack,stack->stacksize,numY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
