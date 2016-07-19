@@ -541,7 +541,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   ierr = ISLocalToGlobalMappingApplyIS(sub_schurs->l2gmap,all_subsets_n,&all_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets_n);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm_n,sub_schurs->n_subs,auxnum2,PETSC_OWN_POINTER,&all_subsets_mult);CHKERRQ(ierr);
-  ierr = PCBDDCSubsetNumbering(all_subsets,all_subsets_mult,&global_size,&all_subsets_n);CHKERRQ(ierr);
+  ierr = ISRenumber(all_subsets,all_subsets_mult,&global_size,&all_subsets_n);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets_mult);CHKERRQ(ierr);
   ierr = ISGetLocalSize(all_subsets_n,&i);CHKERRQ(ierr);
