@@ -284,6 +284,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory,TS);
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegister(const char[],PetscErrorCode (*)(TSTrajectory,TS));
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetUp(TSTrajectory,TS);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetMonitor(TSTrajectory,PetscBool);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS,PetscInt*,Vec**,Vec**);

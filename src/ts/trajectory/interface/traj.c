@@ -319,7 +319,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 
 .seealso: TSTrajectorySetType()
 @*/
-static PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
+PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 {
   PetscErrorCode ierr;
 
