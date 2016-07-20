@@ -3556,6 +3556,41 @@ PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscSection sectio
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetPointDualSpaceFEM"
+PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field, PetscDualSpace *dspace)
+{
+  PetscDS        prob;
+  PetscInt       depth, Nf, h;
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  prob    = dm->prob;
+  Nf      = prob->Nf;
+  label   = dm->depthLabel;
+  *dspace = NULL;
+  if (field < Nf) {
+    PetscObject disc = prob->disc[field];
+
+    if (disc->classid == PETSCFE_CLASSID) {
+      PetscDualSpace dsp;
+
+      ierr = PetscFEGetDualSpace((PetscFE)disc,&dsp);CHKERRQ(ierr);
+      ierr = DMLabelGetNumValues(label,&depth);CHKERRQ(ierr);
+      ierr = DMLabelGetValue(label,point,&h);CHKERRQ(ierr);
+      h    = depth - 1 - h;
+      if (h) {
+        ierr = PetscDualSpaceGetHeightSubspace(dsp,h,dspace);CHKERRQ(ierr);
+      } else {
+        *dspace = dsp;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexVecGetClosure_Depth1_Static"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
