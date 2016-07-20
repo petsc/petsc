@@ -397,7 +397,7 @@ static PetscErrorCode  PetscPrintExeSpecs(PetscViewer viewer)
 #if defined(PETSC_USE_DEBUG)
   sprintf(buildoptions, "Debug");
 #else
-  buildoptions[0] = 0.
+  buildoptions[0] = 0;
 #endif
   ierr = PetscStrlen(buildoptions,&len);CHKERRQ(ierr);
   if (len) {
