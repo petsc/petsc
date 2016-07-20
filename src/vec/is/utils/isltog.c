@@ -1370,7 +1370,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingRestoreIndices"
 /*@C
-   ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with ISLocalToGlobalMappingRestoreIndices()
+   ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with ISLocalToGlobalMappingGetIndices()
 
    Not Collective
 
