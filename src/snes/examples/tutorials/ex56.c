@@ -224,58 +224,6 @@ int main(int argc,char **args)
   ierr = MaybeLogStagePush(stage[6]);CHKERRQ(ierr);
   ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
   /* ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr); */
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_");CHKERRQ(ierr);
-  if (1) {
-    PetscInt dimEmbed, i;
-    PetscInt nCoords;
-    PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
-    Vec coordinates;
-    ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
-    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
-    for (i = 0; i < nCoords; i += dimEmbed) {
-      PetscInt j;
-      PetscScalar *coord = &coords[i];
-      for (j = 0; j < dimEmbed; j++) {
-        coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
-      }
-    }
-    ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
-    ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
-  /* convert to p4est, and distribute */
-  ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-  if (flg) {
-    ierr = DMConvert(dm,convType,&newdm);CHKERRQ(ierr);
-    if (newdm) {
-      const char *prefix;
-      PetscBool isForest;
-      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
-      ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
-      if (isForest) {
-      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = newdm;
-    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
-  }
-  else {
-    /* Plex Distribute mesh over processes */
-    ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
-    if (distdm) {
-      const char *prefix;
-      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)distdm,prefix);CHKERRQ(ierr);
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = distdm;
-    }
-  }
   {
     DMLabel         label;
     IS              is;
@@ -325,6 +273,58 @@ int main(int argc,char **args)
     ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
     ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   }
+  if (1) {
+    PetscInt dimEmbed, i;
+    PetscInt nCoords;
+    PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
+    Vec coordinates;
+    ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
+    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
+    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
+    for (i = 0; i < nCoords; i += dimEmbed) {
+      PetscInt j;
+      PetscScalar *coord = &coords[i];
+      for (j = 0; j < dimEmbed; j++) {
+        coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
+      }
+    }
+    ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
+    ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
+  /* convert to p4est, and distribute */
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+  if (flg) {
+    ierr = DMConvert(dm,convType,&newdm);CHKERRQ(ierr);
+    if (newdm) {
+      const char *prefix;
+      PetscBool isForest;
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
+      ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
+      if (isForest) {
+      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = newdm;
+    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
+  }
+  else {
+    /* Plex Distribute mesh over processes */
+    ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
+    if (distdm) {
+      const char *prefix;
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)distdm,prefix);CHKERRQ(ierr);
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = distdm;
+    }
+  }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr); /* refinement done here in Plex, p4est */
   /* snes */
   ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
@@ -335,7 +335,7 @@ int main(int argc,char **args)
     const PetscInt components[] = {0,1,2};
     const PetscInt Nfid = 1, Npid = 1;
     const PetscInt fid[] = {1}; /* The fixed faces (x=0) */
-    const PetscInt pid[] = {2}; /* The faces with loading (x=1) */
+    const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
     PetscFE         feBd,fe;
     PetscDS         prob;
     DM              cdm = dm;
