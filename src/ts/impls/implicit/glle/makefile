@@ -3,12 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = gl.c gladapt.c
+SOURCEC  = glle.c glleadapt.c
 SOURCEF  =
-SOURCEH  = gl.h
+SOURCEH  = glle.h
 LIBBASE  = libpetscts
 MANSEC   = TS
-LOCDIR   = src/ts/impls/implicit/gl/
+LOCDIR   = src/ts/impls/implicit/glle/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

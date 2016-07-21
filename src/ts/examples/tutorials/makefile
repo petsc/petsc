@@ -444,6 +444,12 @@ runex12:
 	   ${DIFF} output/ex12_1.out ex12_1.tmp || printf "${PWD}\nPossible problem with ex12_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex12_1.tmp
 
+runex12_2:
+	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_type glle \
+	   -ts_monitor -ksp_monitor_short > ex12_2.tmp 2>&1; \
+	   ${DIFF} output/ex12_2.out ex12_2.tmp || printf "${PWD}\nPossible problem with ex12_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex12_2.tmp
+
 runex13:
 	-@${MPIEXEC} -n 1 ./ex13 -ts_max_steps 5 -ts_monitor > ex13.tmp 2>&1; \
 	   ${DIFF} output/ex13_1.out ex13.tmp || printf "${PWD}\nPossible problem with ex13, diffs above\n=========================================\n"; \
@@ -647,6 +653,12 @@ runex22_3:
 	-@${MPIEXEC} -n 2 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_final_time .1  -ts_adapt_type none > ex22_3.tmp 2>&1; \
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || printf "${PWD}\nPossible problem with ex22_3, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22_3.tmp
+
+runex22_4:
+	-@${MPIEXEC} -n 2 ./ex22 -ts_type eimex -da_grid_x 200 -ts_eimex_order_adapt true -ts_dt 0.001 -ts_monitor > ex22_4.tmp 2>&1; \
+	   ${DIFF} output/ex22_4.out ex22_4.tmp || printf "${PWD}\nPossible problem with ex22_4, diffs above\n=========================================\n";  \
+	   ${RM} -f ex22_4.tmp
+
 runex22f:
 	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || printf "${PWD}\nPossible problem with ex22f_1, diffs above\n=========================================\n";  \
@@ -815,12 +827,12 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 r
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
                             ex8.PETSc runex8 ex8.rm \
-                            ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
+                            ex12.PETSc runex12_2 ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_5 ex15.rm \
                             ex16adj.PETSc runex16adj runex16adj_2 ex16adj.rm \
                             ex17.PETSc runex17 ex17.rm \
                             ex19.PETSc ex19.rm \
-                            ex22.PETSc runex22_2 runex22_3 ex22.rm \
+                            ex22.PETSc runex22_2 runex22_3 runex22_4 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
                             ex31.PETSc ex31.rm \
                             ex40.PETSc runex40 ex40.rm \

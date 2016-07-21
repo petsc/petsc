@@ -3,10 +3,10 @@
 
 #include <petsc/private/tsimpl.h>
 
-typedef enum {TSGLERROR_FORWARD,TSGLERROR_BACKWARD} TSGLErrorDirection;
+typedef enum {TSGLLEERROR_FORWARD,TSGLLEERROR_BACKWARD} TSGLLEErrorDirection;
 
-typedef struct _TSGLScheme *TSGLScheme;
-struct _TSGLScheme {
+typedef struct _TSGLLEScheme *TSGLLEScheme;
+struct _TSGLLEScheme {
   PetscInt    p;                /* order of the method */
   PetscInt    q;                /* stage-order of the method */
   PetscInt    r;                /* number of items carried between stages */
@@ -32,22 +32,22 @@ struct _TSGLScheme {
   PetscBool fsal;               /* First Same As Last: X[1] = h*Ydot[s-1] (and stiffly accurate) */
 };
 
-typedef struct TS_GL {
-  TSGLAcceptFunction Accept;    /* Decides whether to accept a given time step, given estimates of local truncation error */
-  TSGLAdapt          adapt;
+typedef struct TS_GLLE {
+  TSGLLEAcceptFunction Accept;    /* Decides whether to accept a given time step, given estimates of local truncation error */
+  TSGLLEAdapt          adapt;
 
-  /* These names are only stored so that they can be printed in TSView_GL() without making these schemes full-blown
+  /* These names are only stored so that they can be printed in TSView_GLLE() without making these schemes full-blown
    objects (the implementations I'm thinking of do not have state and I'm lazy). */
   char accept_name[256];
 
   /* specific to the family of GL method */
-  PetscErrorCode (*EstimateHigherMoments)(TSGLScheme,PetscReal,Vec*,Vec*,Vec*); /* Provide local error estimates */
-  PetscErrorCode (*CompleteStep)(TSGLScheme,PetscReal,TSGLScheme,PetscReal,Vec*,Vec*,Vec*);
-  PetscErrorCode (*Destroy)(struct TS_GL*);
-  PetscErrorCode (*View)(struct TS_GL*,PetscViewer);
+  PetscErrorCode (*EstimateHigherMoments)(TSGLLEScheme,PetscReal,Vec*,Vec*,Vec*); /* Provide local error estimates */
+  PetscErrorCode (*CompleteStep)(TSGLLEScheme,PetscReal,TSGLLEScheme,PetscReal,Vec*,Vec*,Vec*);
+  PetscErrorCode (*Destroy)(struct TS_GLLE*);
+  PetscErrorCode (*View)(struct TS_GLLE*,PetscViewer);
   char       type_name[256];
   PetscInt   nschemes;
-  TSGLScheme *schemes;
+  TSGLLEScheme *schemes;
 
   Vec       *X;                 /* Items to carry between steps */
   Vec       *Xold;              /* Values of these items at the last step */
@@ -67,12 +67,12 @@ typedef struct TS_GL {
   PetscInt           current_scheme;
   PetscInt           max_order,min_order,start_order;
   PetscBool          extrapolate;   /* use extrapolation to produce initial Newton iterate? */
-  TSGLErrorDirection error_direction; /* TSGLERROR_FORWARD or TSGLERROR_BACKWARD */
+  TSGLLEErrorDirection error_direction; /* TSGLLEERROR_FORWARD or TSGLLEERROR_BACKWARD */
 
   PetscInt max_step_rejections;
 
   PetscBool setupcalled;
   void      *data;
-} TS_GL;
+} TS_GLLE;
 
 #endif
