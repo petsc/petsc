@@ -1423,7 +1423,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    VecGetLocalVectorRead - Maps the local portion of a vector into a
    vector.  You must call VecRestoreLocalVectorRead() when the local
    vector is no longer needed.
@@ -1477,7 +1477,7 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    VecRestoreLocalVectorRead - Unmaps the local portion of a vector
    previously mapped into a vector using VecGetLocalVectorRead().
 

@@ -111,8 +111,16 @@ PetscErrorCode  SNESLineSearchMonitor(SNESLineSearch ls)
 @*/
 PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(SNESLineSearch,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscBool      identical;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,SNESLINESEARCH_CLASSID,1);
+  for (i=0; i<ls->numbermonitors;i++) {
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))f,mctx,monitordestroy,(PetscErrorCode (*)(void))ls->monitorftns[i],ls->monitorcontext[i],ls->monitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
+  }
   if (ls->numbermonitors >= MAXSNESLSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   ls->monitorftns[ls->numbermonitors]          = f;
   ls->monitordestroy[ls->numbermonitors]   = monitordestroy;
