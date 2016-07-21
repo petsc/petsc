@@ -257,7 +257,7 @@ runex3_2:
 	   ${DIFF} output/ex3_1.out ex3_2.tmp || printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_2.tmp
 runex3_3:                       # IMEX IJacobian for constant RHS Jacobian
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason > ex3_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason | ${SED} "s/ATOL/RTOL/g" > ex3_3.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_3.out ex3_3.tmp || printf "${PWD}\nPossible problem with ex3_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_3.tmp
 runex3_4:                       # non-IMEX IJacobian with constant RHS Jacobian
