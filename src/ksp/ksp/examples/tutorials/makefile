@@ -1592,7 +1592,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex51.PETSc runex51 ex51.rm \
                                  ex53.PETSc runex53 ex53.rm \
                                  ex54.PETSc runex54 runex54_Classical ex54.rm ex55.PETSc runex55 runex55_Classical runex55_NC ex55.rm\
-                                 ex56.PETSc runex56_nns runex56 ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm \
+                                 ex56.PETSc runex56_nns ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
                                  ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm ex65.PETSc runex65 ex65.rm
@@ -1629,6 +1629,7 @@ TESTEXAMPLES_17		                = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_18		                = ex2.PETSc runex2_6 ex2.rm
 TESTEXAMPLES_SPAI	                = ex10.PETSc runex10_14 ex10.rm
 TESTEXAMPLES_HYPRE	                = ex49.PETSc runex49_hypre_nullspace ex49.rm
+TESTEXAMPLES_PARMETIS	                = ex56.PETSc runex56 ex56.rm
 TESTEXAMPLES_HYPRE_DATAFILESPATH        = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut ex10.rm
 TESTEXAMPLES_LUSOL	                = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS                      = ex53.PETSc runex53 runex53_2 ex53.rm \
