@@ -1552,6 +1552,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 #else
   snes->deltatol          = 1.e-12;
 #endif
+  snes->divtol            = 1.e4;
+  snes->rnorm0            = 0;
   snes->nfuncs            = 0;
   snes->numFailures       = 0;
   snes->maxFailures       = 1;
