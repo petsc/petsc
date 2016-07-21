@@ -1112,11 +1112,12 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
 
    Level: advanced
     If the number of smoothing steps is changed in this call then the PCMGGetSmoothUp() will be called and now the
-   up smoother will no longer share the same KSP object as the down smoother.
+   up smoother will no longer share the same KSP object as the down smoother. Use PCMGSetNumberSmooth() to set the same
+   number of smoothing steps for pre and post smoothing.
 
 .keywords: MG, smooth, down, pre-smoothing, steps, multigrid
 
-.seealso: PCMGSetNumberSmoothUp()
+.seealso: PCMGSetNumberSmoothUp(), PCMGSetNumberSmooth()
 @*/
 PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
 {
@@ -1167,11 +1168,13 @@ PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
     there is no separate smooth up on the coarsest grid.
 
     If the number of smoothing steps is changed in this call then the PCMGGetSmoothUp() will be called and now the 
-   up smoother will no longer share the same KSP object as the down smoother.
+   up smoother will no longer share the same KSP object as the down smoother. Use PCMGSetNumberSmooth() to set the same
+   number of smoothing steps for pre and post smoothing.
+
 
 .keywords: MG, smooth, up, post-smoothing, steps, multigrid
 
-.seealso: PCMGSetNumberSmoothDown()
+.seealso: PCMGSetNumberSmoothDown(), PCMGSetNumberSmooth()
 @*/
 PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 {
@@ -1198,6 +1201,55 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
     ierr = KSPSetTolerances(mglevels[i]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
 
     mg->default_smoothu = n;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCMGSetNumberSmooth"
+/*@
+   PCMGSetNumberSmooth - Sets the number of pre and post-smoothing steps to use
+   on all levels. Use PCMGSetSmoothUp() and PCMGSetSmoothDown() set different numbers of
+   pre ad post-smoothing steps
+
+   Logically Collective on PC
+
+   Input Parameters:
++  mg - the multigrid context
+-  n - the number of smoothing steps
+
+   Options Database Key:
++  -mg_levels_ksp_max_it <n> - Sets number of pre and post-smoothing steps
+.  -pc_mg_smooth_down <n> - Sets number of pre-smoothing steps (if setting different pre and post amounts)
+-  -pc_mg_smooth_up <n> - Sets number of post-smoothing steps (if setting different pre and post amounts)
+
+   Level: advanced
+
+   Notes: this does not set a value on the coarsest grid, since we assume that
+    there is no separate smooth up on the coarsest grid.
+
+.keywords: MG, smooth, up, post-smoothing, steps, multigrid
+
+.seealso: PCMGSetNumberSmoothDown(), PCMGSetNumberSmoothUp()
+@*/
+PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
+  PetscInt       i,levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
+  levels = mglevels[0]->levels;
+
+  for (i=1; i<levels; i++) {
+    ierr = KSPSetTolerances(mglevels[i]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
+    mg->default_smoothu = n;
+    mg->default_smoothd = n;
   }
   PetscFunctionReturn(0);
 }
