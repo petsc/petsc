@@ -115,6 +115,24 @@ cdef class DM(Object):
         CHKERR( DMCreateLocalVector(self.dm, &vl.vec) )
         return vl
 
+    def getGlobalVec(self):
+        cdef Vec vg = Vec()
+        CHKERR( DMGetGlobalVector(self.dm, &vg.vec) )
+        PetscINCREF(vg.obj)
+        return vg
+
+    def restoreGlobalVec(self, Vec vg not None):
+        CHKERR( DMRestoreGlobalVector(self.dm, &vg.vec) )
+
+    def getLocalVec(self):
+        cdef Vec vl = Vec()
+        CHKERR( DMGetLocalVector(self.dm, &vl.vec) )
+        PetscINCREF(vl.obj)
+        return vl
+
+    def restoreLocalVec(self, Vec vl not None):
+        CHKERR( DMRestoreLocalVector(self.dm, &vl.vec) )
+
     def globalToLocal(self, Vec vg not None, Vec vl not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DMGlobalToLocalBegin(self.dm, vg.vec, im, vl.vec) )
