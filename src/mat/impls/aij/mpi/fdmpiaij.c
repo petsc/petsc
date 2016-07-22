@@ -378,7 +378,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscBool              isBAIJ;
   PetscInt               bcols=c->bcols;
   MPI_Comm               comm;
-  PetscMPIInt            tag,nrecvs,proc;
+  PetscMPIInt            tag,nrecvs,nsends,proc;
   MPI_Request            *rwaits = NULL,*swaits = NULL;
   MPI_Status             status;
 #if defined(PETSC_USE_CTABLE)
@@ -509,20 +509,20 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
       ierr = PetscMalloc2(nrecvs,&rwaits,nrecvs,&swaits);CHKERRQ(ierr);
 
-      j=0;
+      nrecvs = 0;
       for (proc=0; proc<size; proc++) {
-        if (proc == rank) continue;
+        if (proc == rank || ncolsonproc[proc] == 0 ) continue;
         /* printf("[%d] Irecv %d from [%d] \n",rank,ncolsonproc[proc],proc); */
-        ierr = MPI_Irecv(cols_new+disp[proc],ncolsonproc[proc],MPIU_INT,proc,tag,comm,rwaits+j);CHKERRQ(ierr);
-        j++;
+        ierr = MPI_Irecv(cols_new+disp[proc],ncolsonproc[proc],MPIU_INT,proc,tag,comm,rwaits+nrecvs);CHKERRQ(ierr);
+        nrecvs++;
       }
 
-      j=0;
+      nsends = 0;
       for (proc=0; proc<size; proc++) {
-        if (proc == rank) continue;
+        if (proc == rank || n == 0) continue;
         /* printf("[%d] Isend %d is to [%d] \n",rank,n,proc); */
-        ierr = MPI_Isend((void*)is,n,MPIU_INT,proc,tag,comm,swaits+j);CHKERRQ(ierr);
-        j++;
+        ierr = MPI_Isend((void*)is,n,MPIU_INT,proc,tag,comm,swaits+nsends);CHKERRQ(ierr);
+        nsends++;
       }
  
       for (j=0; j<ncolsonproc[rank]; j++) {
@@ -533,7 +533,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       while (j--) {
         ierr = MPI_Waitany(nrecvs,rwaits,&k,&status);CHKERRQ(ierr);
       }
-      ierr = MPI_Waitall(nrecvs,swaits,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+      if (nsends) {ierr = MPI_Waitall(nrecvs,swaits,MPI_STATUSES_IGNORE);CHKERRQ(ierr);}
       ierr = PetscFree2(rwaits,swaits);CHKERRQ(ierr);
 
       /******************/
