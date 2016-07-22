@@ -41,6 +41,10 @@ cdef extern from * nogil:
     int DMSetVecType(PetscDM,PetscVecType)
     int DMCreateLocalVector(PetscDM,PetscVec*)
     int DMCreateGlobalVector(PetscDM,PetscVec*)
+    int DMGetLocalVector(PetscDM,PetscVec*)
+    int DMRestoreLocalVector(PetscDM,PetscVec*)
+    int DMGetGlobalVector(PetscDM,PetscVec*)
+    int DMRestoreGlobalVector(PetscDM,PetscVec*)
     int DMSetMatType(PetscDM,PetscMatType)
     int DMCreateMatrix(PetscDM,PetscMat*)
 
