@@ -364,7 +364,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
 PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode         ierr;
-  PetscMPIInt            size,*ncolsonproc,*disp,nn;
+  PetscMPIInt            size,*ncolsonproc,*disp,nn,rank;
   PetscInt               i,n,nrows,nrows_i,j,k,m,ncols,col,*rowhit,cstart,cend,colb;
   const PetscInt         *is,*A_ci,*A_cj,*B_ci,*B_cj,*row=NULL,*ltog=NULL;
   PetscInt               nis=iscoloring->n,nctot,*cols,*cols_new;
@@ -377,6 +377,10 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   MatEntry2              *Jentry2;
   PetscBool              isBAIJ;
   PetscInt               bcols=c->bcols;
+  MPI_Comm               comm;
+  PetscMPIInt            tag,nrecvs,proc;
+  MPI_Request            *rwaits = NULL,*swaits = NULL;
+  MPI_Status             status;
 #if defined(PETSC_USE_CTABLE)
   PetscTable             colmap=NULL;
 #else
@@ -384,8 +388,8 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 #endif
 
   PetscFunctionBegin;
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (ctype == IS_COLORING_GHOSTED) {
     if (!map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
@@ -498,44 +502,38 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr = PetscMalloc1(nctot+1,&cols);CHKERRQ(ierr);
       
       /****************** non-scalable !!! *********************/
-      //ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+      /* ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr); */
       cols_new = cols;
-      
-      MPI_Comm    comm;
-      PetscMPIInt tag,nrecvs = size-1,proc,jj;
-      MPI_Request *rwaits = NULL,*swaits = NULL;
-      MPI_Status  status;
 
-      ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+      nrecvs = size-1;
       ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
       ierr = PetscMalloc2(nrecvs,&rwaits,nrecvs,&swaits);CHKERRQ(ierr);
 
-      jj=0;
+      j=0;
       for (proc=0; proc<size; proc++) {
         if (proc == rank) continue;
-        //printf("[%d] Irecv %d from [%d] \n",rank,ncolsonproc[proc],proc);
-        ierr = MPI_Irecv(cols_new+disp[proc],ncolsonproc[proc],MPIU_INT,proc,tag,comm,rwaits+jj);CHKERRQ(ierr);
-        jj++;
+        /* printf("[%d] Irecv %d from [%d] \n",rank,ncolsonproc[proc],proc); */
+        ierr = MPI_Irecv(cols_new+disp[proc],ncolsonproc[proc],MPIU_INT,proc,tag,comm,rwaits+j);CHKERRQ(ierr);
+        j++;
       }
 
-      jj=0;
+      j=0;
       for (proc=0; proc<size; proc++) {
         if (proc == rank) continue;
-        //printf("[%d] Isend %d is to [%d] \n",rank,n,proc);
-        ierr = MPI_Isend((void*)is,n,MPIU_INT,proc,tag,comm,swaits+jj);CHKERRQ(ierr);
-        jj++;
+        /* printf("[%d] Isend %d is to [%d] \n",rank,n,proc); */
+        ierr = MPI_Isend((void*)is,n,MPIU_INT,proc,tag,comm,swaits+j);CHKERRQ(ierr);
+        j++;
       }
  
-      for (jj=0; jj<ncolsonproc[rank]; jj++) {
-        cols_new[disp[rank] + jj] = is[jj];
+      for (j=0; j<ncolsonproc[rank]; j++) {
+        cols_new[disp[rank] + j] = is[j];
       }
 
-      PetscInt ii=nrecvs;
-      while (ii--) {
-        ierr = MPI_Waitany(nrecvs,rwaits,&jj,&status);CHKERRQ(ierr);
+      j = nrecvs;
+      while (j--) {
+        ierr = MPI_Waitany(nrecvs,rwaits,&k,&status);CHKERRQ(ierr);
       }
       ierr = MPI_Waitall(nrecvs,swaits,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-
       ierr = PetscFree2(rwaits,swaits);CHKERRQ(ierr);
 
       /******************/
