@@ -384,6 +384,9 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 #endif
 
   PetscFunctionBegin;
+  PetscMPIInt rank;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
+
   if (ctype == IS_COLORING_GHOSTED) {
     if (!map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
     ierr = ISLocalToGlobalMappingGetIndices(map,&ltog);CHKERRQ(ierr);
@@ -476,11 +479,16 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       /* Determine nctot, the total (parallel) number of columns of this color */
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
       ierr = PetscMalloc2(size,&ncolsonproc,size,&disp);CHKERRQ(ierr);
-
+      
       /* ncolsonproc[j]: local ncolumns on proc[j] of this color */
+      PetscInt ncolsonproc_max=0;
       ierr  = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
       ierr  = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-      nctot = 0; for (j=0; j<size; j++) nctot += ncolsonproc[j];
+      nctot = 0; 
+      for (j=0; j<size; j++) {
+        nctot += ncolsonproc[j];
+        if (ncolsonproc_max < ncolsonproc[j]) ncolsonproc_max = ncolsonproc[j];
+      }
       if (!nctot) {
         ierr = PetscInfo(mat,"Coloring of matrix has some unneeded colors with no corresponding rows\n");CHKERRQ(ierr);
       }
@@ -492,7 +500,47 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
       /* Get cols, the complete list of columns for this color on each process */
       ierr = PetscMalloc1(nctot+1,&cols);CHKERRQ(ierr);
+      
+      /****************** non-scalable !!! *********************/
+      //printf("[%d] nctot %d; ncolsonproc_max %d\n",rank,nctot,ncolsonproc_max);
       ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+
+      PetscMPIInt cols_new[ncolsonproc_max];
+      MPI_Comm    comm;
+      PetscMPIInt tag,nrecvs = size-1,proc,jj;
+      MPI_Request *rwaits = NULL,*swaits = NULL;
+      MPI_Status  status;
+
+      ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+      ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+      ierr = PetscMalloc2(nrecvs,&rwaits,nrecvs,&swaits);CHKERRQ(ierr);
+
+      jj=0;
+      for (proc=0; proc<size; proc++) {
+        if (proc == rank) continue;
+        //printf("[%d] Irecv %d from [%d] \n",rank,ncolsonproc[proc],proc);
+        ierr = MPI_Irecv(cols_new,ncolsonproc[proc],MPIU_INT,proc,tag,comm,rwaits+jj);CHKERRQ(ierr);
+        jj++;
+      }
+
+      jj=0;
+      for (proc=0; proc<size; proc++) {
+        if (proc == rank) continue;
+        //printf("[%d] Isend %d is to [%d] \n",rank,n,proc);
+        ierr = MPI_Isend((void*)is,n,MPIU_INT,proc,tag,comm,swaits+jj);CHKERRQ(ierr);
+        jj++;
+      }
+      
+      PetscInt ii=nrecvs;
+      while (ii--) {
+        ierr = MPI_Waitany(nrecvs,rwaits,&jj,&status);CHKERRQ(ierr);
+        printf("[%d] wait [%d] \n",rank,status.MPI_SOURCE);
+      }
+      ierr = MPI_Waitall(nrecvs,swaits,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+
+      ierr = PetscFree2(rwaits,swaits);CHKERRQ(ierr);
+
+      /******************/
       ierr = PetscFree2(ncolsonproc,disp);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED) {
       /* Determine local number of columns of this color on this process, including ghost points */
@@ -546,6 +594,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         }
       }
     }
+    ierr = PetscFree(cols);CHKERRQ(ierr);
     c->nrows[i] = nrows_i;
 
     if (c->htype[0] == 'd') {
@@ -566,7 +615,6 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         }
       }
     }
-    ierr = PetscFree(cols);CHKERRQ(ierr);
   }
 
   if (bcols > 1) { /* reorder Jentry for faster MatFDColoringApply() */
