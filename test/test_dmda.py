@@ -123,6 +123,28 @@ class BaseTestDA(object):
         vg2 = self.da.createGlobalVec()
         self.da.localToGlobal(vl2,vg2)
 
+    def testGetVec(self):
+        vg = self.da.getGlobalVec()
+        vl = self.da.getLocalVec()
+        vg.set(1.0)
+        self.assertEqual(vg.max()[1], 1.0)
+        self.assertEqual(vg.min()[1], 1.0)
+        self.da.globalToLocal(vg,vl)
+        self.assertEqual(vl.max()[1], 1.0)
+        self.assertTrue (vl.min()[1] in (1.0, 0.0))
+        vl.set(2.0)
+        NONE = PETSc.DM.BoundaryType.NONE
+        s = self.da.stencil_width
+        btype = self.da.boundary_type
+        psize = self.da.proc_sizes
+        for b, p in zip(btype, psize):
+            if b != NONE and p == 1: return
+        self.da.localToGlobal(vl,vg)
+        self.assertEqual(vg.max()[1], 2.0)
+        self.assertTrue (vg.min()[1] in (2.0, 0.0))
+        self.da.restoreGlobalVec(vg)
+        self.da.restoreLocalVec(vl)
+
     def testGetOther(self):
         ao = self.da.getAO()
         lgmap = self.da.getLGMap()
