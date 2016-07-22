@@ -1,18 +1,19 @@
 #requirespackage 'PETSC_HAVE_VIENNACL'
-#requiresdefine 'PETSC_HAVE_VIENNACL_NO_CUDA'
+#requiresdefine 'PETSC_HAVE_CUDA'
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECXX= mpiaijviennacl.cxx
+SOURCECU = vecviennaclcuda.cu
 SOURCEF  =
-SOURCEH  =
-LIBBASE  = libpetscmat
+SOURCEH  = viennaclvecimpl.h
+LIBBASE  = libpetscvec
+MANSEC   = Vec
+LOCDIR   = src/vec/vec/impls/seq/seqviennaclcuda/
 DIRS     =
-MANSEC   = Mat
-LOCDIR   = src/mat/impls/aij/mpi/mpiviennacl/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
+
