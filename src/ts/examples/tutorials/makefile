@@ -445,7 +445,7 @@ runex12:
 	   ${RM} -f ex12_1.tmp
 
 runex12_2:
-	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_type glle \
+	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 0.11 -ts_dt 1e-1 -ts_type glle \
 	   -ts_monitor -ksp_monitor_short > ex12_2.tmp 2>&1; \
 	   ${DIFF} output/ex12_2.out ex12_2.tmp || printf "${PWD}\nPossible problem with ex12_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex12_2.tmp
