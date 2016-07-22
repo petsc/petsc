@@ -367,7 +367,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscMPIInt            size,*ncolsonproc,*disp,nn;
   PetscInt               i,n,nrows,nrows_i,j,k,m,ncols,col,*rowhit,cstart,cend,colb;
   const PetscInt         *is,*A_ci,*A_cj,*B_ci,*B_cj,*row=NULL,*ltog=NULL;
-  PetscInt               nis=iscoloring->n,nctot,*cols;
+  PetscInt               nis=iscoloring->n,nctot,*cols,*cols_new;
   IS                     *isa;
   ISLocalToGlobalMapping map=mat->cmap->mapping;
   PetscInt               ctype=c->ctype,*spidxA,*spidxB,nz,bs,bs2,spidx;
@@ -479,16 +479,12 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       /* Determine nctot, the total (parallel) number of columns of this color */
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
       ierr = PetscMalloc2(size,&ncolsonproc,size,&disp);CHKERRQ(ierr);
-      
+
       /* ncolsonproc[j]: local ncolumns on proc[j] of this color */
-      PetscInt ncolsonproc_max=0;
       ierr  = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
       ierr  = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-      nctot = 0; 
-      for (j=0; j<size; j++) {
-        nctot += ncolsonproc[j];
-        if (ncolsonproc_max < ncolsonproc[j]) ncolsonproc_max = ncolsonproc[j];
-      }
+      nctot = 0;
+      for (j=0; j<size; j++) nctot += ncolsonproc[j];
       if (!nctot) {
         ierr = PetscInfo(mat,"Coloring of matrix has some unneeded colors with no corresponding rows\n");CHKERRQ(ierr);
       }
@@ -502,10 +498,9 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr = PetscMalloc1(nctot+1,&cols);CHKERRQ(ierr);
       
       /****************** non-scalable !!! *********************/
-      //printf("[%d] nctot %d; ncolsonproc_max %d\n",rank,nctot,ncolsonproc_max);
-      ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-
-      PetscMPIInt cols_new[ncolsonproc_max];
+      //ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+      cols_new = cols;
+      
       MPI_Comm    comm;
       PetscMPIInt tag,nrecvs = size-1,proc,jj;
       MPI_Request *rwaits = NULL,*swaits = NULL;
@@ -519,7 +514,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       for (proc=0; proc<size; proc++) {
         if (proc == rank) continue;
         //printf("[%d] Irecv %d from [%d] \n",rank,ncolsonproc[proc],proc);
-        ierr = MPI_Irecv(cols_new,ncolsonproc[proc],MPIU_INT,proc,tag,comm,rwaits+jj);CHKERRQ(ierr);
+        ierr = MPI_Irecv(cols_new+disp[proc],ncolsonproc[proc],MPIU_INT,proc,tag,comm,rwaits+jj);CHKERRQ(ierr);
         jj++;
       }
 
@@ -530,11 +525,14 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         ierr = MPI_Isend((void*)is,n,MPIU_INT,proc,tag,comm,swaits+jj);CHKERRQ(ierr);
         jj++;
       }
-      
+ 
+      for (jj=0; jj<ncolsonproc[rank]; jj++) {
+        cols_new[disp[rank] + jj] = is[jj];
+      }
+
       PetscInt ii=nrecvs;
       while (ii--) {
         ierr = MPI_Waitany(nrecvs,rwaits,&jj,&status);CHKERRQ(ierr);
-        printf("[%d] wait [%d] \n",rank,status.MPI_SOURCE);
       }
       ierr = MPI_Waitall(nrecvs,swaits,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
 
