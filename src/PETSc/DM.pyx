@@ -122,6 +122,7 @@ cdef class DM(Object):
         return vg
 
     def restoreGlobalVec(self, Vec vg not None):
+        CHKERR( PetscObjectDereference(<PetscObject>vg.vec) ) 
         CHKERR( DMRestoreGlobalVector(self.dm, &vg.vec) )
 
     def getLocalVec(self):
@@ -131,6 +132,7 @@ cdef class DM(Object):
         return vl
 
     def restoreLocalVec(self, Vec vl not None):
+        CHKERR( PetscObjectDereference(<PetscObject>vl.vec) ) 
         CHKERR( DMRestoreLocalVector(self.dm, &vl.vec) )
 
     def globalToLocal(self, Vec vg not None, Vec vl not None, addv=None):
