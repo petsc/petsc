@@ -360,6 +360,78 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MarkRowsForCol_private"
+PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscMPIInt rank,Mat mat,ISColoring iscoloring,MatFDColoring c,PetscInt nctot,PetscInt *cols,const PetscInt *ltog,
+                                      const PetscInt *A_ci,const PetscInt *A_cj,PetscInt *spidxA,PetscInt *spidxB,PetscScalar *A_val,
+                                      const PetscInt *B_ci,const PetscInt *B_cj,PetscScalar *B_val,
+                                      PetscInt *rowhit,PetscScalar **valaddrhit,PetscTable colmap,PetscInt *nrows_i_out)
+{
+  PetscErrorCode         ierr;
+  PetscInt               ctype=c->ctype;
+  PetscInt               j,col,nrows,k,spidx,colb,nrows_i;
+  const PetscInt         *row=NULL;
+  PetscInt               cstart,cend,bs;
+
+  PetscFunctionBegin;
+  //printf(" \n[%d] MarkRows nctot %d\n",rank,nctot);
+  bs        = 1; /* only bs=1 is supported for non MPIBAIJ matrix */
+  cstart    = mat->cmap->rstart/bs;
+  cend      = mat->cmap->rend/bs;
+
+  nrows_i = 0;
+  for (j=0; j<nctot; j++) { /* loop over columns*/
+    if (ctype == IS_COLORING_GHOSTED) {
+      col = ltog[cols[j]];
+    } else {
+      col = cols[j];
+    }
+
+    if (col >= cstart && col < cend) { /* column is in A, diagonal block of mat */
+      row      = A_cj + A_ci[col-cstart];
+      nrows    = A_ci[col-cstart+1] - A_ci[col-cstart];
+      nrows_i += nrows;
+
+      /* loop over columns of A marking them in rowhit */
+      for (k=0; k<nrows; k++) {
+        /* set valaddrhit for part A */
+        spidx            = bs*bs*spidxA[A_ci[col-cstart] + k];
+        valaddrhit[*row] = &A_val[spidx];
+        rowhit[*row]   = col - cstart + 1; /* local column index */
+        //printf("[%d] MarkRows valaddrhit[%d] %p, rowhit %d\n",rank,*row, valaddrhit[*row],rowhit[*row] );
+        row++;
+      }
+    } else { /* column is in B, off-diagonal block of mat */
+#if defined(PETSC_USE_CTABLE)
+      ierr = PetscTableFind(colmap,col+1,&colb);CHKERRQ(ierr);
+      colb--;
+#else
+      colb = colmap[col] - 1; /* local column index */
+#endif
+      if (colb == -1) {
+        nrows = 0;
+      } else {
+        colb  = colb/bs;
+        row   = B_cj + B_ci[colb];
+        nrows = B_ci[colb+1] - B_ci[colb];
+      }
+      nrows_i += nrows;
+
+      /* loop over columns of B marking them in rowhit */
+      for (k=0; k<nrows; k++) {
+        /* set valaddrhit for part B */
+        spidx            = bs*bs*spidxB[B_ci[colb] + k];
+        valaddrhit[*row] = &B_val[spidx];
+        rowhit[*row]   = colb + 1 + cend - cstart; /* local column index */
+        //printf("[%d] valaddrhit[%d] %p, rowhit %d\n",rank,*row, valaddrhit[*row],rowhit[*row] );
+        row++;
+      }
+    }
+  } 
+  *nrows_i_out = nrows_i;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetUp_MPIXAIJ"
 PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
@@ -549,7 +621,14 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
     bs2     = bs*bs;
     nrows_i = 0;
+
+    /********** new ********/
+    ierr = MarkRowsForCol_private(rank,mat,iscoloring,c,nctot,cols,ltog,A_ci,A_cj,spidxA,spidxB,A_val,B_ci,B_cj,B_val,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
+#if 0
+    ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
+    //printf("  \n[%d] nctot %d\n",rank,nctot);
     for (j=0; j<nctot; j++) { /* loop over columns*/
+
       if (ctype == IS_COLORING_GHOSTED) {
         col = ltog[cols[j]];
       } else {
@@ -559,12 +638,15 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         row      = A_cj + A_ci[col-cstart];
         nrows    = A_ci[col-cstart+1] - A_ci[col-cstart];
         nrows_i += nrows;
+
         /* loop over columns of A marking them in rowhit */
         for (k=0; k<nrows; k++) {
           /* set valaddrhit for part A */
           spidx            = bs2*spidxA[A_ci[col-cstart] + k];
           valaddrhit[*row] = &A_val[spidx];
-          rowhit[*row++]   = col - cstart + 1; /* local column index */
+          rowhit[*row]   = col - cstart + 1; /* local column index */
+          //printf("[%d] valaddrhit[%d] %p, rowhit %d\n",rank,*row, valaddrhit[*row],rowhit[*row] );
+          row++;
         }
       } else { /* column is in B, off-diagonal block of mat */
 #if defined(PETSC_USE_CTABLE)
@@ -581,15 +663,20 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
           nrows = B_ci[colb+1] - B_ci[colb];
         }
         nrows_i += nrows;
+
         /* loop over columns of B marking them in rowhit */
         for (k=0; k<nrows; k++) {
           /* set valaddrhit for part B */
           spidx            = bs2*spidxB[B_ci[colb] + k];
           valaddrhit[*row] = &B_val[spidx];
-          rowhit[*row++]   = colb + 1 + cend - cstart; /* local column index */
+          rowhit[*row]   = colb + 1 + cend - cstart; /* local column index */
+          //printf("[%d] valaddrhit[%d] %p, rowhit %d\n",rank,*row, valaddrhit[*row],rowhit[*row] );
+          row++;
         }
       }
-    }
+    } //endif loop
+    /********************************** */
+#endif
     ierr = PetscFree(cols);CHKERRQ(ierr);
     c->nrows[i] = nrows_i;
 
