@@ -103,10 +103,20 @@ PetscErrorCode VecScatterCUDAIndicesCreate_PtoP(PetscInt ns,PetscInt *sendIndice
   ptop_scatter = new struct _p_VecScatterCUDAIndices_PtoP;
 
   /* this calculation assumes that the input indices are sorted */
-  ptop_scatter->ns = sendIndices[ns-1]-sendIndices[0]+1;
-  ptop_scatter->sendLowestIndex = sendIndices[0];
-  ptop_scatter->nr = recvIndices[nr-1]-recvIndices[0]+1;
-  ptop_scatter->recvLowestIndex = recvIndices[0];
+  if (sendIndices) {
+    ptop_scatter->ns = sendIndices[ns-1]-sendIndices[0]+1;
+    ptop_scatter->sendLowestIndex = sendIndices[0];
+  } else {
+    ptop_scatter->ns = 0;
+    ptop_scatter->sendLowestIndex = 0;
+  }
+  if (recvIndices) {
+    ptop_scatter->nr = recvIndices[nr-1]-recvIndices[0]+1;
+    ptop_scatter->recvLowestIndex = recvIndices[0];
+  } else {
+    ptop_scatter->nr = 0;
+    ptop_scatter->recvLowestIndex = 0;
+  }
 
   /* assign indices */
   cci->scatter = (VecScatterCUDAIndices_PtoP)ptop_scatter;

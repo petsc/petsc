@@ -255,6 +255,16 @@ runex4_cusp2:
 	   if (${DIFF} output/ex4_1.out ex4_cusp_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex4_cusp2, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex4_cusp_2.tmp
+runex4_cuda:
+	-@${MPIEXEC} -n 1 ./ex4 -vec_type cuda > ex4_cuda_1.tmp 2>&1;\
+           if (${DIFF} output/ex4_1.out ex4_cuda_1.tmp) then true; \
+           else printf "${PWD}\nPossible problem with with ex4_cuda, diffs above\n=========================================\n"; fi;\
+           ${RM} -f ex4_cuda_1.tmp
+runex4_cuda2:
+	-@${MPIEXEC} -n 2 ./ex4 -vec_type cuda > ex4_cuda_2.tmp 2>&1;\
+	   if (${DIFF} output/ex4_1.out ex4_cuda_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex4_cuda2, diffs above\n=========================================\n"; fi;\
+	   ${RM} -f ex4_cuda_2.tmp
 runex5:
 	-@${MPIEXEC} -n 2 ./ex5 > ex5_1.tmp 2>&1;\
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -383,6 +393,10 @@ runex28:
 	-@${MPIEXEC} -n 3 ./ex28
 runex28_2:
 	-@${MPIEXEC} -n 3 ./ex28 -splitreduction_async
+runex28_cuda:
+	-@${MPIEXEC} -n 3 ./ex28 -vec_type cuda
+runex28_2_cuda:
+	-@${MPIEXEC} -n 3 ./ex28 -splitreduction_async -vec_type cuda
 runex29:
 	-@${MPIEXEC} -n 3 ./ex29 -n 126 > ex29_1.tmp 2>&1;\
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
@@ -477,10 +491,20 @@ runex43:
 	   ${DIFF} output/ex43_1.out ex43_1.tmp || printf "${PWD}\nPossible problem with ex43, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_1.tmp
 
+runex43_cuda:
+	-@${MPIEXEC} -n 1 ./ex43 -vec_type cuda > ex43_1_cuda.tmp 2>&1;\
+	   ${DIFF} output/ex43_1.out ex43_1_cuda.tmp || printf "${PWD}\nPossible problem with ex43_cuda, diffs above\n=========================================\n"; \
+	   ${RM} -f ex43_1_cuda.tmp
+
 runex44:
 	-@${MPIEXEC} -n 1 ./ex44 -vec_type cusp > ex44.tmp 2>&1;\
 	   ${DIFF} output/ex44.out ex44.tmp || printf "${PWD}\nPossible problem with ex44, diffs above\n=========================================\n"; \
 	   ${RM} -f ex44.tmp
+
+runex44_cuda:
+	-@${MPIEXEC} -n 1 ./ex44 -vec_type cuda > ex44_cuda.tmp 2>&1;\
+	   ${DIFF} output/ex44_cuda.out ex44_cuda.tmp || printf "${PWD}\nPossible problem with ex44_cuda, diffs above\n=========================================\n"; \
+	   ${RM} -f ex44_cuda.tmp
 
 runex45:
 	-@${MPIEXEC} -n 2 ./ex45  > ex45.tmp 2>&1;\
@@ -539,5 +563,7 @@ TESTEXAMPLES_C_X_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc r
 TESTEXAMPLES_CUSP           = ex44.PETSc runex44 ex44.rm \
                               ex4.PETSc runex4_cusp runex4_cusp2 ex4.rm 
 TESTEXAMPLES_HDF5         = ex47.PETSc runex47 ex47.rm
+TESTEXAMPLES_VECCUDA        = ex4.PETSc runex4_cuda runex4_cuda2 ex4.rm ex28.PETSc runex28_cuda runex28_2_cuda ex28.rm \
+			      ex43.PETSc runex43_cuda ex43.rm ex44.PETSc runex44_cuda ex44.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
