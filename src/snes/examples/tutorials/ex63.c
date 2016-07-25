@@ -1,6 +1,7 @@
-static char help[] = "Stokes Problem in 2d and 3d with simplicial finite elements.\n\
+static char help[] = "Stokes Problem in 2d and 3d with DMSwarm particles.\n\
 We solve the Stokes problem in a rectangular\n\
-domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
+domain with simplicial finite elements,\n\
+using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 /*
 The isoviscous Stokes problem, which we discretize using the finite
