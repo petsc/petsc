@@ -544,8 +544,8 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           PetscInt faceL   = firstXFace + (fz*numYEdges+fy)*numXVertices +   fx;
           PetscInt faceR   = firstXFace + (fz*numYEdges+fy)*numXVertices + ((fx+1)%numXVertices);
                             /* B,  T,  F,  K,  R,  L */
-          PetscInt ornt[8] = {-4,  0,  0, -1,  0, -4}; /* ??? */
-          PetscInt cone[8];
+          PetscInt ornt[6] = {-4,  0,  0, -1,  0, -4}; /* ??? */
+          PetscInt cone[6];
 
           /* no boundary twisting in 3D */
           cone[0] = faceB; cone[1] = faceT; cone[2] = faceF; cone[3] = faceK; cone[4] = faceR; cone[5] = faceL;
@@ -964,7 +964,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
+  PetscValidPointer(dm, 7);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   PetscValidLogicalCollectiveInt(*dm,dim,2);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
