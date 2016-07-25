@@ -1636,7 +1636,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
   PetscValidPointer(subdms,3);
   if (dm->ops->createddscatters) {
     ierr = (*dm->ops->createddscatters)(dm,n,subdms,iscat,oscat,gscat);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionLocalScatter implementation defined");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionScatter implementation defined");
   PetscFunctionReturn(0);
 }
 
@@ -3966,6 +3966,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   ierr = DMGetCoordinates(dmc,&ccoords);CHKERRQ(ierr);
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(dmc_coord,&ccoords);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)ccoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateInjection(dmc_coord,dm_coord,&inject);CHKERRQ(ierr);
     ierr = MatRestrict(inject,coords,ccoords);CHKERRQ(ierr);
     ierr = MatDestroy(&inject);CHKERRQ(ierr);
@@ -3990,6 +3991,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
   ierr = DMGetCoordinates(subdm,&ccoords);CHKERRQ(ierr);
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(subdm_coord,&ccoords);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)ccoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(subdm_coord,&clcoords);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)clcoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateDomainDecompositionScatters(dm_coord,1,&subdm_coord,NULL,&scat_i,&scat_g);CHKERRQ(ierr);
