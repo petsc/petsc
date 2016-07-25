@@ -7,14 +7,15 @@ typedef struct {
   PetscInt      debug;             /* The debugging level */
   PetscLogEvent createMeshEvent;
   /* Domain and mesh definition */
-  PetscInt      dim;                          /* The topological mesh dimension */
-  PetscBool     interpolate;                  /* Generate intermediate mesh elements */
-  PetscReal     refinementLimit;              /* The largest allowable cell volume */
-  PetscBool     cellSimplex;                  /* Use simplices or hexes */
-  char          filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
-  PetscBool     testPartition;                /* Use a fixed partitioning for testing */
-  PetscInt      overlap;                      /* The cell overlap to use during partitioning */
-  PetscBool     testShape;                    /* Test the cell shape quality */
+  PetscInt      dim;                            /* The topological mesh dimension */
+  PetscBool     interpolate;                    /* Generate intermediate mesh elements */
+  PetscReal     refinementLimit;                /* The largest allowable cell volume */
+  PetscBool     cellSimplex;                    /* Use simplices or hexes */
+  char          filename[PETSC_MAX_PATH_LEN];   /* Import mesh from file */
+  char          bdfilename[PETSC_MAX_PATH_LEN]; /* Import mesh boundaryfrom file */
+  PetscBool     testPartition;                  /* Use a fixed partitioning for testing */
+  PetscInt      overlap;                        /* The cell overlap to use during partitioning */
+  PetscBool     testShape;                      /* Test the cell shape quality */
 } AppCtx;
 
 #undef __FUNCT__
@@ -30,6 +31,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementLimit   = 0.0;
   options->cellSimplex       = PETSC_TRUE;
   options->filename[0]       = '\0';
+  options->bdfilename[0]     = '\0';
   options->testPartition     = PETSC_FALSE;
   options->overlap           = PETSC_FALSE;
   options->testShape         = PETSC_FALSE;
@@ -41,6 +43,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex1.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex1.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-bd_filename", "The mesh boundary file", "ex1.c", options->bdfilename, options->bdfilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex1.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex1.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_shape", "Report cell shape qualities (Jacobian condition numbers)", "ex1.c", options->testShape, &options->testShape, NULL);CHKERRQ(ierr);
@@ -59,6 +62,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscReal      refinementLimit = user->refinementLimit;
   PetscBool      cellSimplex     = user->cellSimplex;
   const char    *filename        = user->filename;
+  const char    *bdfilename      = user->bdfilename;
   PetscInt       triSizes_n2[2]  = {4, 4};
   PetscInt       triPoints_n2[8] = {3, 5, 6, 7, 0, 1, 2, 4};
   PetscInt       triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
@@ -66,7 +70,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       quadSizes[2]    = {2, 2};
   PetscInt       quadPoints[4]   = {2, 3, 0, 1};
   const PetscInt cells[3]        = {2, 2, 2};
-  size_t         len;
+  size_t         len, bdlen;
   PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
 
@@ -75,7 +79,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+  ierr = PetscStrlen(bdfilename, &bdlen);CHKERRQ(ierr);
   if (len)              {ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);}
+  else if (bdlen)       {
+    DM boundary;
+
+    ierr = DMPlexCreateFromFile(comm, bdfilename, interpolate, &boundary);CHKERRQ(ierr);
+    ierr = DMPlexGenerate(boundary, NULL, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMDestroy(&boundary);CHKERRQ(ierr);
+  }
   else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);}
   else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
   {
