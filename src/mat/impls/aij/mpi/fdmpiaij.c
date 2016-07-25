@@ -361,13 +361,14 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "MarkRowsForCol_private"
-PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscMPIInt rank,Mat mat,ISColoring iscoloring,MatFDColoring c,PetscInt nctot,PetscInt *cols,const PetscInt *ltog,
-                                      const PetscInt *A_ci,const PetscInt *A_cj,PetscInt *spidxA,PetscInt *spidxB,PetscScalar *A_val,
-                                      const PetscInt *B_ci,const PetscInt *B_cj,PetscScalar *B_val,
-                                      PetscInt *rowhit,PetscScalar **valaddrhit,PetscTable colmap,PetscInt *nrows_i_out)
+PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscInt nctot,PetscInt *cols,
+                                   Mat mat,ISColoring iscoloring,MatFDColoring c,const PetscInt *ltog,
+                                   const PetscInt *A_ci,const PetscInt *A_cj,PetscScalar *A_val,
+                                   const PetscInt *B_ci,const PetscInt *B_cj,PetscScalar *B_val,PetscInt *spidxA,PetscInt *spidxB,
+                                   PetscInt *rowhit,PetscScalar **valaddrhit,PetscTable colmap,PetscInt *nrows_i_out)
 {
   PetscErrorCode         ierr;
-  PetscInt               ctype=c->ctype;
+  PetscInt               ctype=c->ctype,m;
   PetscInt               j,col,nrows,k,spidx,colb,nrows_i;
   const PetscInt         *row=NULL;
   PetscInt               cstart,cend,bs;
@@ -375,9 +376,11 @@ PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscMPIInt rank,Mat m
   PetscFunctionBegin;
   //printf(" \n[%d] MarkRows nctot %d\n",rank,nctot);
   bs        = 1; /* only bs=1 is supported for non MPIBAIJ matrix */
+  m         = mat->rmap->n/bs;
   cstart    = mat->cmap->rstart/bs;
   cend      = mat->cmap->rend/bs;
 
+  ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
   nrows_i = 0;
   for (j=0; j<nctot; j++) { /* loop over columns*/
     if (ctype == IS_COLORING_GHOSTED) {
@@ -618,14 +621,13 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
 
     /* Mark all rows affect by these columns */
+    /********** new ********/
+    ierr = MarkRowsForCol_private(nctot,cols,mat,iscoloring,c,ltog,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
+#if 0
     ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
     bs2     = bs*bs;
     nrows_i = 0;
 
-    /********** new ********/
-    ierr = MarkRowsForCol_private(rank,mat,iscoloring,c,nctot,cols,ltog,A_ci,A_cj,spidxA,spidxB,A_val,B_ci,B_cj,B_val,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
-#if 0
-    ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
     //printf("  \n[%d] nctot %d\n",rank,nctot);
     for (j=0; j<nctot; j++) { /* loop over columns*/
 
