@@ -22,7 +22,12 @@ class Configure(config.package.GNUPackage):
     self.mpi       = framework.require('config.packages.MPI', self)
     self.hdf5      = framework.require('config.packages.hdf5', self)
     self.netcdf    = framework.require('config.packages.netcdf', self)
-    self.odeps     = [self.mpi, self.hdf5, self.netcdf]
+    self.metis     = framework.require('config.packages.metis',self)
+    self.parmetis  = framework.require('config.packages.parmetis',self)
+    self.ptscotch  = framework.require('config.packages.PTScotch',self)
+    self.zoltan    = framework.require('config.packages.Zoltan', self)
+    #self.odeps     = [self.mpi, self.hdf5, self.netcdf, self.metis, self.parmetis, self.ptscotch, self.zoltan]
+    self.odeps     = [self.mpi, self.hdf5, self.netcdf, self.metis]
     return
 
   def gitPreReqCheck(self):
@@ -42,7 +47,14 @@ class Configure(config.package.GNUPackage):
       args.append('--with-netcdf="'+self.netcdf.directory+'"')
     else:
       args.append('--without-netcdf')
+    if self.metis.found:
+      args.append('--with-metis="'+self.metis.directory+'"')
+    if self.parmetis.found:
+      args.append('--with-parmetis="'+self.parmetis.directory+'"')
+    if self.ptscotch.found:
+      args.append('--with-scotch="'+self.ptscotch.directory+'"')
+    if self.zoltan.found:
+      args.append('--with-zoltan="'+self.zoltan.directory+'"')
+
     return args
-
-
 
