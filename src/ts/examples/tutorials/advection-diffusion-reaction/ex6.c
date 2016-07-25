@@ -196,7 +196,7 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 
 /* --------------------------------------------------------------------- */
 /*
- Use Lax–Friedrichs method to evaluate F(x,t) = fdot + a *  df/du
+ Use Lax–Friedrichs method to evaluate F(u,t) = du/dt + a *  du/dx
 
  See https://en.wikipedia.org/wiki/Lax%E2%80%93Friedrichs_method
  */
@@ -249,7 +249,7 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,vo
 }
 
 /*
- Use Lax-Wendroff method to evaluate F(x,t) = fdot + a *  df/du
+ Use Lax-Wendroff method to evaluate F(u,t) = du/dt + a *  du/dx
 */
 #undef __FUNCT__
 #define __FUNCT__ "IFunction_LaxWendroff"
