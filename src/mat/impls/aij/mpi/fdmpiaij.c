@@ -373,7 +373,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
 #undef __FUNCT__
 #define __FUNCT__ "MarkRowsForCol_private"
 PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscInt nctot,PetscInt *cols,
-                                   Mat mat,ISColoring iscoloring,MatFDColoring c,const PetscInt *ltog,
+                                   Mat mat,ISColoring iscoloring,MatFDColoring c,const PetscInt *ltog,PetscInt bs,
                                    const PetscInt *A_ci,const PetscInt *A_cj,PetscScalar *A_val,
                                    const PetscInt *B_ci,const PetscInt *B_cj,PetscScalar *B_val,PetscInt *spidxA,PetscInt *spidxB,
                                    PetscInt *rowhit,PetscScalar **valaddrhit,PetscTable colmap,PetscInt *nrows_i_out)
@@ -382,12 +382,12 @@ PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscInt nctot,PetscIn
   PetscInt               ctype=c->ctype;
   PetscInt               j,col,nrows,k,spidx,colb,nrows_i;
   const PetscInt         *row=NULL;
-  PetscInt               cstart,cend,bs;
+  PetscInt               cstart,cend;
+  PetscBool              isBAIJ;
 
   PetscFunctionBegin;
-  bs        = 1; /* only bs=1 is supported for non MPIBAIJ matrix */
-  cstart    = mat->cmap->rstart/bs;
-  cend      = mat->cmap->rend/bs;
+  cstart = mat->cmap->rstart/bs;
+  cend   = mat->cmap->rend/bs;
 
   nrows_i = *nrows_i_out;
   for (j=0; j<nctot; j++) { /* loop over columns*/
@@ -603,7 +603,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
 
       /* MarkRowsForCol for is in this proc */
-      ierr = MarkRowsForCol_private(ncolsonproc[rank],(PetscInt *)is,mat,iscoloring,c,ltog,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
+      ierr = MarkRowsForCol_private(ncolsonproc[rank],(PetscInt *)is,mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
 
       j = nrecvs;
       while (j--) {
@@ -611,7 +611,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
         /* MarkRowsForCol for received cols */
         proc = status.MPI_SOURCE;
-        ierr = MarkRowsForCol_private(ncolsonproc[proc],cols+disp[proc],mat,iscoloring,c,ltog,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
+        ierr = MarkRowsForCol_private(ncolsonproc[proc],cols+disp[proc],mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
       }
       if (nsends) {ierr = MPI_Waitall(nrecvs,swaits,MPI_STATUSES_IGNORE);CHKERRQ(ierr);}
 
@@ -628,7 +628,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
 
       /* Mark all rows affect by these columns */
-      ierr  = MarkRowsForCol_private(nctot,cols,mat,iscoloring,c,ltog,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
+      ierr  = MarkRowsForCol_private(nctot,cols,mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
 
     c->nrows[i] = nrows_i;
