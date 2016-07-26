@@ -391,6 +391,8 @@ PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscInt nctot,PetscIn
 #endif
 
   PetscFunctionBegin;
+  if (!nctot) PetscFunctionReturn(0);
+
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
   if (isBAIJ) {
     Mat_MPIBAIJ *baij=(Mat_MPIBAIJ*)mat->data;
@@ -425,6 +427,7 @@ PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscInt nctot,PetscIn
       }
     } else { /* column is in B, off-diagonal block of mat */
 #if defined(PETSC_USE_CTABLE)
+      if (col > mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"col %d > N %d",col,mat->cmap->N);
       ierr = PetscTableFind(colmap,col+1,&colb);CHKERRQ(ierr);
       colb--;
 #else
