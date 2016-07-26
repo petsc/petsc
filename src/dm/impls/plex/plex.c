@@ -2946,6 +2946,79 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
     if (numComp) {
       for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldComponents(*section, f, numComp[f]);CHKERRQ(ierr);
+        if (isFE[f]) {
+          PetscFE           fe;
+          PetscDualSpace    dspace;
+          const PetscInt    ***perms;
+          const PetscScalar ***flips;
+          const PetscInt    *numDof;
+
+          ierr = DMGetField(dm,f,(PetscObject *) &fe);CHKERRQ(ierr);
+          ierr = PetscFEGetDualSpace(fe,&dspace);CHKERRQ(ierr);
+          ierr = PetscDualSpaceGetSymmetries(dspace,&perms,&flips);CHKERRQ(ierr);
+          ierr = PetscDualSpaceGetNumDof(dspace,&numDof);CHKERRQ(ierr);
+          if (perms || flips) {
+            DM               K;
+            DMLabel          depthLabel;
+            PetscInt         depth, h;
+            PetscSectionSym  sym;
+
+            ierr = PetscDualSpaceGetDM(dspace,&K);CHKERRQ(ierr);
+            ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
+            ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+            ierr = PetscSectionSymCreateLabel(PetscObjectComm((PetscObject)*section),depthLabel,&sym);CHKERRQ(ierr);
+            for (h = 0; h <= depth; h++) {
+              PetscDualSpace    hspace;
+              PetscInt          kStart, kEnd;
+              PetscInt          kConeSize;
+              const PetscInt    **perms0 = NULL;
+              const PetscScalar **flips0 = NULL;
+
+              ierr = PetscDualSpaceGetHeightSubspace(dspace,h,&hspace);CHKERRQ(ierr);
+              ierr = DMPlexGetHeightStratum(K,h,&kStart,&kEnd);CHKERRQ(ierr);
+              if (!hspace) continue;
+              ierr = PetscDualSpaceGetSymmetries(hspace,&perms,&flips);CHKERRQ(ierr);
+              if (perms) perms0 = perms[0];
+              if (flips) flips0 = flips[0];
+              if (!(perms0 || flips0)) continue;
+              ierr = DMPlexGetConeSize(K,kStart,&kConeSize);CHKERRQ(ierr);
+              if (numComp[f] == 1) {
+                ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numDof[depth - h],-kConeSize,kConeSize,PETSC_USE_POINTER,perms0 ? &perms0[-kConeSize] : NULL,flips0 ? &flips0[-kConeSize] : NULL);CHKERRQ(ierr);
+              } else {
+                PetscInt    **fieldPerms = NULL, o;
+                PetscScalar **fieldFlips = NULL;
+
+                ierr = PetscCalloc1(2 * kConeSize,&fieldPerms);CHKERRQ(ierr);
+                ierr = PetscCalloc1(2 * kConeSize,&fieldFlips);CHKERRQ(ierr);
+                for (o = -kConeSize; o < kConeSize; o++) {
+                  if (perms0 && perms0[o]) {
+                    PetscInt r, s;
+
+                    ierr = PetscMalloc1(numComp[f] * numDof[depth - h],&fieldPerms[o+kConeSize]);CHKERRQ(ierr);
+                    for (r = 0; r < numDof[depth - h]; r++) {
+                      for (s = 0; s < numComp[f]; s++) {
+                        fieldPerms[o+kConeSize][r * numComp[f] + s] = numComp[f] * perms0[o][r] + s;
+                      }
+                    }
+                  }
+                  if (flips0 && flips0[o]) {
+                    PetscInt r, s;
+
+                    ierr = PetscMalloc1(numComp[f] * numDof[depth - h],&fieldFlips[o+kConeSize]);CHKERRQ(ierr);
+                    for (r = 0; r < numDof[depth - h]; r++) {
+                      for (s = 0; s < numComp[f]; s++) {
+                        fieldFlips[o+kConeSize][r * numComp[f] + s] = flips0[o][r];
+                      }
+                    }
+                  }
+                }
+                ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numComp[f] * numDof[depth - h],-kConeSize,kConeSize,PETSC_OWN_POINTER,(const PetscInt **) fieldPerms,(const PetscScalar **)fieldFlips);CHKERRQ(ierr);
+              }
+            }
+            ierr = PetscSectionSetFieldSym(*section,f,sym);CHKERRQ(ierr);
+            ierr = PetscSectionSymDestroy(&sym);CHKERRQ(ierr);
+          }
+        }
       }
     }
   }
