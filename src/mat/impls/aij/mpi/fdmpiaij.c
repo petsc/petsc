@@ -376,7 +376,7 @@ PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscInt nctot,PetscIn
                                    Mat mat,ISColoring iscoloring,MatFDColoring c,const PetscInt *ltog,PetscInt bs,
                                    const PetscInt *A_ci,const PetscInt *A_cj,PetscScalar *A_val,
                                    const PetscInt *B_ci,const PetscInt *B_cj,PetscScalar *B_val,PetscInt *spidxA,PetscInt *spidxB,
-                                   PetscInt *rowhit,PetscScalar **valaddrhit,PetscTable colmap,PetscInt *nrows_i_out)
+                                   PetscInt *rowhit,PetscScalar **valaddrhit,PetscInt *nrows_i_out)
 {
   PetscErrorCode         ierr;
   PetscInt               ctype=c->ctype;
@@ -384,8 +384,22 @@ PETSC_STATIC_INLINE PetscErrorCode MarkRowsForCol_private(PetscInt nctot,PetscIn
   const PetscInt         *row=NULL;
   PetscInt               cstart,cend;
   PetscBool              isBAIJ;
+  #if defined(PETSC_USE_CTABLE)
+  PetscTable             colmap=NULL;
+#else
+  PetscInt               *colmap=NULL;     /* local col number of off-diag col */
+#endif
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
+  if (isBAIJ) {
+    Mat_MPIBAIJ *baij=(Mat_MPIBAIJ*)mat->data;
+    colmap = baij->colmap;
+  } else {
+    Mat_MPIAIJ *aij=(Mat_MPIAIJ*)mat->data;
+    colmap = aij->colmap;
+  }
+
   cstart = mat->cmap->rstart/bs;
   cend   = mat->cmap->rend/bs;
 
@@ -460,11 +474,6 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscMPIInt            tag,nrecvs,nsends,proc;
   MPI_Request            *rwaits = NULL,*swaits = NULL;
   MPI_Status             status;
-#if defined(PETSC_USE_CTABLE)
-  PetscTable             colmap=NULL;
-#else
-  PetscInt               *colmap=NULL;     /* local col number of off-diag col */
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -486,7 +495,6 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     if (!baij->colmap) {
       ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
     }
-    colmap = baij->colmap;
     ierr = MatGetColumnIJ_SeqBAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatGetColumnIJ_SeqBAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
 
@@ -512,7 +520,6 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
        - creates aij->colmap which maps global column number to local number in part B */
       ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
     }
-    colmap = aij->colmap;
     ierr = MatGetColumnIJ_SeqAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatGetColumnIJ_SeqAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
 
@@ -603,7 +610,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
 
       /* MarkRowsForCol for is in this proc */
-      ierr = MarkRowsForCol_private(ncolsonproc[rank],(PetscInt *)is,mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
+      ierr = MarkRowsForCol_private(ncolsonproc[rank],(PetscInt *)is,mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,&nrows_i);CHKERRQ(ierr);
 
       j = nrecvs;
       while (j--) {
@@ -611,7 +618,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
         /* MarkRowsForCol for received cols */
         proc = status.MPI_SOURCE;
-        ierr = MarkRowsForCol_private(ncolsonproc[proc],cols+disp[proc],mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
+        ierr = MarkRowsForCol_private(ncolsonproc[proc],cols+disp[proc],mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,&nrows_i);CHKERRQ(ierr);
       }
       if (nsends) {ierr = MPI_Waitall(nrecvs,swaits,MPI_STATUSES_IGNORE);CHKERRQ(ierr);}
 
@@ -628,7 +635,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
 
       /* Mark all rows affect by these columns */
-      ierr  = MarkRowsForCol_private(nctot,cols,mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,colmap,&nrows_i);CHKERRQ(ierr);
+      ierr  = MarkRowsForCol_private(nctot,cols,mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,&nrows_i);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
 
     c->nrows[i] = nrows_i;
