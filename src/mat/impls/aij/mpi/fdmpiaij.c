@@ -604,7 +604,11 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       nsends = 0;
       for (proc=0; proc<size; proc++) {
         if (proc == rank || n == 0) continue;
-        ierr = MPI_Isend((void*)is,n,MPIU_INT,proc,tag,comm,swaits+nsends);CHKERRQ(ierr);
+        for (j=0; j<n; j++) {
+          if (is[j] < 0 || is[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"[%d] is %d is wrong",rank,is[j]);
+        }
+        ierr = MPI_Isend((PetscInt *)is,n,MPIU_INT,proc,tag,comm,swaits+nsends);CHKERRQ(ierr);
+        /* ierr = MPI_Isend((void*)is,n,MPIU_INT,proc,tag,comm,swaits+nsends);CHKERRQ(ierr); */
         nsends++;
       }
  
@@ -621,6 +625,9 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
         /* MarkRowsForCol for received cols */
         proc = status.MPI_SOURCE;
+        for (k=0; k<ncolsonproc[proc]; k++) {
+          if (*(cols+disp[proc]+k) < 0 || *(cols+disp[proc]+k) >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"is %d recved from [%d] is wrong",*(cols+disp[proc]+k),proc);
+        }
         ierr = MarkRowsForCol_private(ncolsonproc[proc],cols+disp[proc],mat,iscoloring,c,ltog,bs,A_ci,A_cj,A_val,B_ci,B_cj,B_val,spidxA,spidxB,rowhit,valaddrhit,&nrows_i);CHKERRQ(ierr);
       }
       if (nsends) {ierr = MPI_Waitall(nrecvs,swaits,MPI_STATUSES_IGNORE);CHKERRQ(ierr);}
