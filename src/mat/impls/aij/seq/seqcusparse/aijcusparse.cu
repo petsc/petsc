@@ -1359,11 +1359,10 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
       } catch(char *ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
       }
-      ierr = WaitForGPU();CHKERRCUDA(ierr);
-
-      A->valid_GPU_matrix = PETSC_CUDA_BOTH;
       cusparsestruct->nonzerostate = A->nonzerostate;
     }
+    ierr = WaitForGPU();CHKERRCUDA(ierr);
+    A->valid_GPU_matrix = PETSC_CUDA_BOTH;
     ierr = PetscLogEventEnd(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
