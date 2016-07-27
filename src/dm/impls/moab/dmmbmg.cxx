@@ -23,26 +23,26 @@
 
 .keywords: DMMoab, create, refinement
 @*/
-PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees)
+PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegrees)
 {
   DM_Moab        *dmmoab;
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
-  PetscInt *pdegrees,i;
+  PetscInt *pdegrees, i;
   std::vector<moab::EntityHandle> hsets;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!ldegrees) {
-    ierr = PetscMalloc1(nlevels,&pdegrees);CHKERRQ(ierr);
-    for (i=0; i<nlevels; i++) pdegrees[i]=2; /* default = Degree 2 refinement */
+    ierr = PetscMalloc1(nlevels, &pdegrees);CHKERRQ(ierr);
+    for (i = 0; i < nlevels; i++) pdegrees[i] = 2; /* default = Degree 2 refinement */
   }
-  else pdegrees=ldegrees;
+  else pdegrees = ldegrees;
 
   /* initialize set level refinement data for hierarchy */
-  dmmoab->nhlevels=nlevels;
+  dmmoab->nhlevels = nlevels;
 
   /* Instantiate the nested refinement class */
 #ifdef MOAB_HAVE_MPI
@@ -51,20 +51,20 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
   dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core*>(dmmoab->mbiface), NULL, dmmoab->fileset);
 #endif
 
-  ierr = PetscMalloc1(nlevels+1,&dmmoab->hsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlevels + 1, &dmmoab->hsets);CHKERRQ(ierr);
 
   /* generate the mesh hierarchy */
-  merr = dmmoab->hierarchy->generate_mesh_hierarchy(nlevels, pdegrees, hsets);MBERRNM(merr);
+  merr = dmmoab->hierarchy->generate_mesh_hierarchy(nlevels, pdegrees, hsets); MBERRNM(merr);
 
 #ifdef MOAB_HAVE_MPI
   if (dmmoab->pcomm->size() > 1) {
-    merr = dmmoab->hierarchy->exchange_ghosts(hsets, dmmoab->nghostrings);MBERRNM(merr);
+    merr = dmmoab->hierarchy->exchange_ghosts(hsets, dmmoab->nghostrings); MBERRNM(merr);
   }
 #endif
 
   /* copy the mesh sets for nested refinement hierarchy */
-  for (i=0; i<=nlevels; i++)
-    dmmoab->hsets[i]=hsets[i];
+  for (i = 0; i <= nlevels; i++)
+    dmmoab->hsets[i] = hsets[i];
 
   hsets.clear();
   if (!ldegrees) {
@@ -92,16 +92,16 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
 
 .keywords: DMMoab, generate, refinement
 @*/
-PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm,PetscInt nlevels,DM dmf[])
+PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM dmf[])
 {
   PetscErrorCode  ierr;
   PetscInt        i;
 
   PetscFunctionBegin;
 
-  ierr = DMRefine(dm,PetscObjectComm((PetscObject)dm),&dmf[0]);CHKERRQ(ierr);
-  for (i=1; i<nlevels; i++) {
-    ierr = DMRefine(dmf[i-1],PetscObjectComm((PetscObject)dm),&dmf[i]);CHKERRQ(ierr);
+  ierr = DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]);CHKERRQ(ierr);
+  for (i = 1; i < nlevels; i++) {
+    ierr = DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -125,16 +125,16 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm,PetscInt nlevels,DM dm
 
 .keywords: DMMoab, generate, coarsening
 @*/
-PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm,PetscInt nlevels,DM dmc[])
+PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM dmc[])
 {
   PetscErrorCode  ierr;
   PetscInt        i;
 
   PetscFunctionBegin;
 
-  ierr = DMCoarsen(dm,PetscObjectComm((PetscObject)dm),&dmc[0]);CHKERRQ(ierr);
-  for (i=1; i<nlevels; i++) {
-    ierr = DMCoarsen(dmc[i-1],PetscObjectComm((PetscObject)dm),&dmc[i]);CHKERRQ(ierr);
+  ierr = DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]);CHKERRQ(ierr);
+  for (i = 1; i < nlevels; i++) {
+    ierr = DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -161,7 +161,7 @@ PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm,PetscInt nlevels,DM dm
 
 .keywords: DMMoab, create, refinement
 @*/
-PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interpl,Vec* vec)
+PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* interpl, Vec* vec)
 {
   DM_Moab         *dmbp, *dmbc;
   PetscErrorCode   ierr;
@@ -173,29 +173,29 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
   moab::Range      eowned;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dmp,DM_CLASSID,1);
-  PetscValidHeaderSpecific(dmc,DM_CLASSID,2);
+  PetscValidHeaderSpecific(dmp, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmc, DM_CLASSID, 2);
   dmbp = (DM_Moab*)(dmp)->data;
   dmbc = (DM_Moab*)(dmc)->data;
   nlsizp = dmbp->nloc;// *dmb1->numFields;
   nlsizc = dmbc->nloc;// *dmb2->numFields;
   ngsizp = dmbp->n; // *dmb1->numFields;
   ngsizc = dmbc->n; // *dmb2->numFields;
-  nlghsizp = (dmbp->nloc+dmbp->nghost); // *dmb1->numFields;
+  nlghsizp = (dmbp->nloc + dmbp->nghost); // *dmb1->numFields;
 
   // Interpolation matrix: \sum_{i=1}^P Owned(Child) * (Owned(Parent) + Ghosted(Parent))
   // Size: nlsizc * nlghsizp
-  PetscInfo4(NULL,"Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n",ngsizc,nlghsizp,dmbp->hlevel,dmbc->hlevel);
+  PetscInfo4(NULL, "Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
-  ierr = PetscCalloc2(nlsizc,&nnz,nlsizc,&onz);CHKERRQ(ierr);
+  ierr = PetscCalloc2(nlsizc, &nnz, nlsizc, &onz);CHKERRQ(ierr);
 
   eowned = *dmbp->elocal;
 #ifdef MOAB_HAVE_MPI
-  merr = dmbp->pcomm->filter_pstatus(eowned,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+  merr = dmbp->pcomm->filter_pstatus(eowned, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
 #endif
   /* Loop through the local elements and compute the relation between the current parent and the refined_level. */
-  for(moab::Range::iterator iter = eowned.begin(); iter!= eowned.end(); iter++) {
+  for (moab::Range::iterator iter = eowned.begin(); iter != eowned.end(); iter++) {
 
     const moab::EntityHandle ehandle = *iter;
     std::vector<moab::EntityHandle> children;
@@ -203,16 +203,16 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
     moab::Range connc_owned;
 
     /* Get the relation between the current (coarse) parent and its corresponding (finer) children elements */
-    merr = dmbp->hierarchy->parent_to_child(ehandle, dmbp->hlevel, dmbc->hlevel, children);MBERRNM(merr);
+    merr = dmbp->hierarchy->parent_to_child(ehandle, dmbp->hlevel, dmbc->hlevel, children); MBERRNM(merr);
 
     /* Get connectivity of the parent elements */
     //merr = dmb1->mbiface->get_connectivity(ehandle,connect,vpere,false);MBERRNM(merr);
-    merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp);MBERRNM(merr);
-    merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned);MBERRNM(merr);
+    merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp); MBERRNM(merr);
+    merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned); MBERRNM(merr);
 #ifdef MOAB_HAVE_MPI
-    merr = dmbc->pcomm->filter_pstatus(connc_owned,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+    merr = dmbc->pcomm->filter_pstatus(connc_owned, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
 #endif
-    for (unsigned tc=0; tc<connc_owned.size(); tc++) {
+    for (unsigned tc = 0; tc < connc_owned.size(); tc++) {
       connc.push_back(connc_owned[tc]);
     }
 
@@ -221,35 +221,35 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
     ierr = DMMoabGetDofsBlockedLocal(dmp, connp.size(), &connp[0], &dofsp[0]);CHKERRQ(ierr);
     ierr = DMMoabGetDofsBlockedLocal(dmc, connc.size(), &connc[0], &dofsc[0]);CHKERRQ(ierr);
 
-    for (unsigned tp=0;tp<connp.size(); tp++) {
+    for (unsigned tp = 0; tp < connp.size(); tp++) {
       if (dmbp->vowned->find(connp[tp]) != dmbp->vowned->end()) {
-        for (unsigned tc=0;tc<connc.size(); tc++) {
+        for (unsigned tc = 0; tc < connc.size(); tc++) {
           if (dmbc->vowned->find(connc[tc]) != dmbc->vowned->end()) {
-            /* FIXME: This will over-allocate since we multi-count shared nodes. 
+            /* FIXME: This will over-allocate since we multi-count shared nodes.
                Disadvantage of using element traversal for nnz computation. */
             nnz[dofsc[tc]]++;
           }
         }
       }
       else if (dmbp->vghost->find(connp[tp]) != dmbp->vghost->end()) {
-        for (unsigned tc=0;tc<connc.size(); tc++) {
+        for (unsigned tc = 0; tc < connc.size(); tc++) {
           if (dmbc->vowned->find(connc[tc]) != dmbc->vowned->end()) {
-            /* FIXME: This will over-allocate since we multi-count shared nodes. 
+            /* FIXME: This will over-allocate since we multi-count shared nodes.
                Disadvantage of using element traversal for nnz computation. */
             onz[dofsc[tc]]++;
           }
         }
       }
-      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid entity in child level %D\n", connp[tp]);
+      else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid entity in child level %D\n", connp[tp]);
     }
   }
 
-  ionz=onz[0];
-  innz=nnz[0];
-  for (int tc=0; tc < nlsizc; tc++) {
+  ionz = onz[0];
+  innz = nnz[0];
+  for (int tc = 0; tc < nlsizc; tc++) {
     // check for maximum allowed sparsity = fully dense
-    nnz[tc] = std::min(nlsizp,nnz[tc]);
-    onz[tc] = std::min(nlghsizp-nlsizp,onz[tc]);
+    nnz[tc] = std::min(nlsizp, nnz[tc]);
+    onz[tc] = std::min(nlghsizp - nlsizp, onz[tc]);
 
     innz = (innz < nnz[tc] ? nnz[tc] : innz);
     ionz = (ionz < onz[tc] ? onz[tc] : ionz);
@@ -259,14 +259,14 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
   ierr = MatCreate(PetscObjectComm((PetscObject)dmc), interpl);CHKERRQ(ierr);
   ierr = MatSetSizes(*interpl, nlsizc, nlsizp, ngsizc, ngsizp);CHKERRQ(ierr);
   //ierr = MatSetType(*interpl, dm1->mattype);CHKERRQ(ierr);
-  ierr = MatSetType(*interpl,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(*interpl, MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*interpl);CHKERRQ(ierr);
 
-  ierr = MatSeqAIJSetPreallocation(*interpl,innz,nnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*interpl,innz,nnz,ionz,onz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*interpl, innz, nnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*interpl, innz, nnz, ionz, onz);CHKERRQ(ierr);
 
   /* clean up temporary memory */
-  ierr = PetscFree2(nnz,onz);CHKERRQ(ierr);
+  ierr = PetscFree2(nnz, onz);CHKERRQ(ierr);
 
   /* set up internal matrix data-structures */
   ierr = MatSetUp(*interpl);CHKERRQ(ierr);
@@ -276,10 +276,10 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
 
   ierr = DMGetDimension(dmp, &dim);CHKERRQ(ierr);
 
-  factor = std::pow(2.0 /*degree_P_for_refinement*/,(dmbc->hlevel-dmbp->hlevel)*dmbp->dim*1.0);
+  factor = std::pow(2.0 /*degree_P_for_refinement*/, (dmbc->hlevel - dmbp->hlevel) * dmbp->dim * 1.0);
 
   /* Loop through the remaining vertices. These vertices appear only on the current refined_level. */
-  for(moab::Range::iterator iter = eowned.begin(); iter!= eowned.end(); iter++) {
+  for (moab::Range::iterator iter = eowned.begin(); iter != eowned.end(); iter++) {
 
     const moab::EntityHandle ehandle = *iter;
     std::vector<moab::EntityHandle> children;
@@ -287,44 +287,44 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
     moab::Range connc_owned;
 
     /* Get the relation between the current (coarse) parent and its corresponding (finer) children elements */
-    merr = dmbp->hierarchy->parent_to_child(ehandle, dmbp->hlevel, dmbc->hlevel, children);MBERRNM(merr);
+    merr = dmbp->hierarchy->parent_to_child(ehandle, dmbp->hlevel, dmbc->hlevel, children); MBERRNM(merr);
 
     /* Get connectivity and coordinates of the parent vertices */
-    merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp);MBERRNM(merr);
-    merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned);MBERRNM(merr);
+    merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp); MBERRNM(merr);
+    merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned); MBERRNM(merr);
 #ifdef MOAB_HAVE_MPI
-    merr = dmbc->pcomm->filter_pstatus(connc_owned,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+    merr = dmbc->pcomm->filter_pstatus(connc_owned, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
 #endif
-    for (unsigned tc=0; tc<connc_owned.size(); tc++) {
+    for (unsigned tc = 0; tc < connc_owned.size(); tc++) {
       connc.push_back(connc_owned[tc]);
     }
 
-    std::vector<double> pcoords(connp.size()*3), ccoords(connc.size()*3), values_phi(connc.size());
+    std::vector<double> pcoords(connp.size() * 3), ccoords(connc.size() * 3), values_phi(connc.size());
     /* Get coordinates for connectivity entities in canonical order for both coarse and finer levels */
-    merr = dmbp->hierarchy->get_coordinates(&connp[0], connp.size(), dmbp->hlevel, &pcoords[0]);MBERRNM(merr);
-    merr = dmbc->hierarchy->get_coordinates(&connc[0], connc.size(), dmbc->hlevel, &ccoords[0]);MBERRNM(merr);
+    merr = dmbp->hierarchy->get_coordinates(&connp[0], connp.size(), dmbp->hlevel, &pcoords[0]); MBERRNM(merr);
+    merr = dmbc->hierarchy->get_coordinates(&connc[0], connc.size(), dmbc->hlevel, &ccoords[0]); MBERRNM(merr);
 
     std::vector<int> dofsp(connp.size()), dofsc(connc.size());
     /* TODO: specific to scalar system - use GetDofs */
     ierr = DMMoabGetDofsBlocked(dmp, connp.size(), &connp[0], &dofsp[0]);CHKERRQ(ierr);
     ierr = DMMoabGetDofsBlocked(dmc, connc.size(), &connc[0], &dofsc[0]);CHKERRQ(ierr);
 
-    /* Compute the interpolation weights by determining distance of 1-ring 
+    /* Compute the interpolation weights by determining distance of 1-ring
        neighbor vertices from current vertex
 
        TODO: This needs to be replaced with a consistent interface to compute
        the basis function interpolation between the levels evaluated correctly.
-       RBF basis will be terrible for any unsmooth problems.. 
+       RBF basis will be terrible for any unsmooth problems..
        -- NEEDS TO BE REMOVED --
     */
     values_phi.resize(connp.size());
-    for (unsigned tc=0;tc<connc.size(); tc++) {
+    for (unsigned tc = 0; tc < connc.size(); tc++) {
 
-      double normsum=0.0;
-      for (unsigned tp=0;tp<connp.size(); tp++) {
+      double normsum = 0.0;
+      for (unsigned tp = 0; tp < connp.size(); tp++) {
         values_phi[tp] = 0.0;
-        for (unsigned k=0;k<3; k++)
-          values_phi[tp] += std::pow(pcoords[tp*3+k]-ccoords[k+tc*3], dim);
+        for (unsigned k = 0; k < 3; k++)
+          values_phi[tp] += std::pow(pcoords[tp * 3 + k] - ccoords[k + tc * 3], dim);
         if (values_phi[tp] < 1e-12) {
           values_phi[tp] = 1e12;
         }
@@ -334,11 +334,11 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
           normsum += values_phi[tp];
         }
       }
-      for (unsigned tp=0;tp<connp.size(); tp++) {
+      for (unsigned tp = 0; tp < connp.size(); tp++) {
         if (values_phi[tp] > 1e11)
-          values_phi[tp] = factor*0.5/connp.size();
+          values_phi[tp] = factor * 0.5 / connp.size();
         else
-          values_phi[tp] = factor*values_phi[tp]*0.5/(connp.size()*normsum);
+          values_phi[tp] = factor * values_phi[tp] * 0.5 / (connp.size() * normsum);
       }
       ierr = MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[0], ADD_VALUES);CHKERRQ(ierr);
     }
@@ -349,9 +349,9 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
     //  std::cout<<"values "<<values_phi[j]<<std::endl;
 
   }
-  if (vec) *vec=NULL;
-  ierr = MatAssemblyBegin(*interpl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*interpl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (vec) *vec = NULL;
+  ierr = MatAssemblyBegin(*interpl, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*interpl, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -375,13 +375,13 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp,DM dmc,Mat* interp
 
 .keywords: DMMoab, create, refinement
 @*/
-PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1,DM dm2,VecScatter* ctx)
+PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter* ctx)
 {
   //DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
-  PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
+  PetscValidHeaderSpecific(dm1, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm2, DM_CLASSID, 2);
   //dmmoab = (DM_Moab*)(dm1)->data;
 
   PetscPrintf(PETSC_COMM_WORLD, "[DMCreateInjection_Moab] :: Placeholder\n");
@@ -391,21 +391,21 @@ PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1,DM dm2,VecScatter* ctx
 
 #undef __FUNCT__
 #define __FUNCT__ "DM_UMR_Moab_Private"
-PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmref)
+PetscErrorCode  DM_UMR_Moab_Private(DM dm, MPI_Comm comm, PetscBool refine, DM *dmref)
 {
   PetscErrorCode  ierr;
-  PetscInt        i,dim;
+  PetscInt        i, dim;
   DM              dm2;
   moab::ErrorCode merr;
-  DM_Moab        *dmb = (DM_Moab*)dm->data,*dd2;
+  DM_Moab        *dmb = (DM_Moab*)dm->data, *dd2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(dmref,4);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmref, 4);
 
   if ( (dmb->hlevel == dmb->nhlevels && refine) || (dmb->hlevel == 0 && !refine) ) {
-    if (dmb->hlevel+1 > dmb->nhlevels && refine) PetscInfo2(NULL,"Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D. Creating a NULL object.\n",dmb->hlevel+1,dmb->nhlevels);
-    if (dmb->hlevel-1 < 0 && !refine) PetscInfo1(NULL,"Invalid multigrid coarsen hierarchy level specified (%D). Creating a NULL object.\n",dmb->hlevel-1);
+    if (dmb->hlevel + 1 > dmb->nhlevels && refine) PetscInfo2(NULL, "Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D. Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels);
+    if (dmb->hlevel - 1 < 0 && !refine) PetscInfo1(NULL, "Invalid multigrid coarsen hierarchy level specified (%D). Creating a NULL object.\n", dmb->hlevel - 1);
     *dmref = PETSC_NULL;
     PetscFunctionReturn(0);
   }
@@ -418,22 +418,22 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
   dd2->pcomm = dmb->pcomm;
 #endif
   dd2->icreatedinstance = PETSC_FALSE;
-  dd2->nghostrings=dmb->nghostrings;
+  dd2->nghostrings = dmb->nghostrings;
 
   /* set the new level based on refinement/coarsening */
   if (refine) {
-    dd2->hlevel=dmb->hlevel+1;
+    dd2->hlevel = dmb->hlevel + 1;
   }
   else {
-    dd2->hlevel=dmb->hlevel-1;
+    dd2->hlevel = dmb->hlevel - 1;
   }
 
   /* Copy the multilevel hierarchy pointers in MOAB */
   dd2->hierarchy = dmb->hierarchy;
   dd2->nhlevels = dmb->nhlevels;
-  ierr = PetscMalloc1(dd2->nhlevels+1,&dd2->hsets);CHKERRQ(ierr);
-  for (i=0; i<=dd2->nhlevels; i++) {
-    dd2->hsets[i]=dmb->hsets[i];
+  ierr = PetscMalloc1(dd2->nhlevels + 1, &dd2->hsets);CHKERRQ(ierr);
+  for (i = 0; i <= dd2->nhlevels; i++) {
+    dd2->hsets[i] = dmb->hsets[i];
   }
   dd2->fileset = dd2->hsets[dd2->hlevel];
 
@@ -450,11 +450,11 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
   /* set global ID tag handle */
   ierr = DMMoabSetLocalToGlobalTag(dm2, dmb->ltog_tag);CHKERRQ(ierr);
 
-  merr = dd2->mbiface->tag_get_handle(MATERIAL_SET_TAG_NAME, dd2->material_tag);MBERRNM(merr);
+  merr = dd2->mbiface->tag_get_handle(MATERIAL_SET_TAG_NAME, dd2->material_tag); MBERRNM(merr);
 
-  ierr = DMSetOptionsPrefix(dm2,((PetscObject)dm)->prefix);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dm2, ((PetscObject)dm)->prefix);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMSetDimension(dm2,dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm2, dim);CHKERRQ(ierr);
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   dm2->ops->creatematrix = dm->ops->creatematrix;
@@ -463,11 +463,11 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
   ierr = DMMoabSetBlockFills(dm2, dmb->dfill, dmb->ofill);CHKERRQ(ierr);
 
   /* copy vector type information */
-  ierr = DMSetMatType(dm2,dm->mattype);CHKERRQ(ierr);
-  ierr = DMSetVecType(dm2,dm->vectype);CHKERRQ(ierr);
+  ierr = DMSetMatType(dm2, dm->mattype);CHKERRQ(ierr);
+  ierr = DMSetVecType(dm2, dm->vectype);CHKERRQ(ierr);
   dd2->numFields = dmb->numFields;
   if (dmb->numFields) {
-    ierr = DMMoabSetFieldNames(dm2,dmb->numFields,dmb->fieldNames);CHKERRQ(ierr);
+    ierr = DMMoabSetFieldNames(dm2, dmb->numFields, dmb->fieldNames);CHKERRQ(ierr);
   }
 
   ierr = DMSetFromOptions(dm2);CHKERRQ(ierr);
@@ -502,14 +502,14 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
 
 .keywords: DMMoab, create, refinement
 @*/
-PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm,MPI_Comm comm,DM* dmf)
+PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
 {
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
 
-  ierr = DM_UMR_Moab_Private(dm,comm,PETSC_TRUE,dmf);CHKERRQ(ierr);
+  ierr = DM_UMR_Moab_Private(dm, comm, PETSC_TRUE, dmf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -535,13 +535,13 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm,MPI_Comm comm,DM* dmf)
 
 .keywords: DMMoab, create, coarsening
 @*/
-PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm,MPI_Comm comm,DM* dmc)
+PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM* dmc)
 {
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
 
-  ierr = DM_UMR_Moab_Private(dm,comm,PETSC_FALSE,dmc);CHKERRQ(ierr);
+  ierr = DM_UMR_Moab_Private(dm, comm, PETSC_FALSE, dmc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

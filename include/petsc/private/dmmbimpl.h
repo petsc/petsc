@@ -25,7 +25,7 @@ typedef struct {
 } Vec_MOAB;
 
 namespace moab {
-  class NestedRefine;
+class NestedRefine;
 }
 
 typedef struct {
@@ -41,14 +41,14 @@ typedef struct {
   const char              **fieldNames;
 
   /* level specific data */
-  PetscInt                n,nloc,nghost;                  /* Number of global, local only and shared vertices for current partition */
-  PetscInt                nele,neleloc,neleghost;         /* Number of global, local only and shared elements for current partition */
+  PetscInt                n, nloc, nghost;                /* Number of global, local only and shared vertices for current partition */
+  PetscInt                nele, neleloc, neleghost;       /* Number of global, local only and shared elements for current partition */
   PetscInt                *gsindices;                     /* Global ID for all local+ghosted vertices */
-  PetscInt                *gidmap,*lidmap;                /* Global ID indices, Local ID indices, field-based local map, field-based global map */
-  PetscInt                seqstart,seqend;                /* Local start and end entity IDs for vertices */
-  PetscInt                vstart,vend;                    /* Global start and end index for distributed Vec */
+  PetscInt                *gidmap, *lidmap;               /* Global ID indices, Local ID indices, field-based local map, field-based global map */
+  PetscInt                seqstart, seqend;               /* Local start and end entity IDs for vertices */
+  PetscInt                vstart, vend;                   /* Global start and end index for distributed Vec */
   PetscInt                nghostrings;                    /* Number of ghost ring layers */
-  PetscInt                gminmax[2],lminmax[2];          /* Local and global min/max in the ID sequence */
+  PetscInt                gminmax[2], lminmax[2];         /* Local and global min/max in the ID sequence */
   PetscInt                refct;
 
   /* store the mapping information */
@@ -77,7 +77,7 @@ typedef struct {
   /* level specific data */
   moab::Range             *vowned, *vghost, *vlocal;      /* Vertex entities: strictly owned, strictly ghosted, owned+ghosted */
   moab::Range             *elocal, *eghost;               /* Topological dimensional entities: strictly owned, strictly ghosted */
-  moab::Range             *bndyvtx,*bndyfaces,*bndyelems; /* Boundary entities: skin vertices, skin faces and elements on the outer skin */
+  moab::Range             *bndyvtx, *bndyfaces, *bndyelems; /* Boundary entities: skin vertices, skin faces and elements on the outer skin */
   moab::EntityHandle      fileset;                        /* The Global set to which all local entities belong */
 
   /* level hierarchy in MOAB */

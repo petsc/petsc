@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECXX= dmmoab.cxx dmmbvec.cxx dmmbmat.cxx dmmbfield.cxx dmmbmg.cxx dmmbio.cxx dmmbutil.cxx
+SOURCECXX= dmmoab.cxx dmmbvec.cxx dmmbmat.cxx dmmbfield.cxx dmmbmg.cxx dmmbfem.cxx dmmbio.cxx dmmbutil.cxx
 SOURCEF  =
 SOURCEH  =
 DIRS     = examples

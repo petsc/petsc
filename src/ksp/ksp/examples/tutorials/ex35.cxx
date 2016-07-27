@@ -80,10 +80,6 @@ typedef struct {
 
 extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
-
-static PetscErrorCode Compute_Basis ( UserContext *user, PetscInt n, PetscReal *verts, PetscReal *quad, PetscReal *phypts, PetscReal *jxw,
-                                     PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy);
-
 static PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user);
 
 #undef __FUNCT__
@@ -305,14 +301,15 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
   DM                dm;
   PetscInt          dof_indices[user->VPERE];
   PetscBool         dbdry[user->VPERE];
-  PetscReal         vpos[user->VPERE*3],quadrature[user->NQPTS*3],phypts[user->NQPTS*3],jxw[user->NQPTS];
+  PetscReal         vpos[user->VPERE*3];
   PetscScalar       ff;
-  PetscInt          i,q,num_conn;
+  PetscInt          i,q,num_conn,npoints;
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
-  PetscScalar       phi[user->VPERE*user->NQPTS],localv[user->VPERE];
+  PetscReal         *localv,*phi,*phypts,*jxw;
   PetscBool         elem_on_boundary;
+  PetscQuadrature   quadratureObj;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -320,6 +317,10 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
 
   /* reset the RHS */
   ierr = VecSet(b, 0.0);CHKERRQ(ierr);
+
+  ierr = DMMoabFEMCreateQuadratureDefault (2, user->VPERE, &quadratureObj);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc4(user->VPERE,&localv, user->VPERE*npoints,&phi, npoints*3,&phypts, npoints,&jxw);CHKERRQ(ierr);
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
@@ -347,7 +348,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
 
     /* 1) compute the basis functions and the derivatives wrt x and y directions
        2) compute the quadrature points transformed to the physical space */
-    ierr = Compute_Basis(user, user->VPERE, vpos, quadrature, phypts, jxw, phi, 0, 0);CHKERRQ(ierr);
+    ierr = DMMoabFEMComputeBasis(2, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, 0);CHKERRQ(ierr);
 
     /* Compute function over the locally owned part of the grid */
     for (q=0; q<user->NQPTS; ++q) {
@@ -395,6 +396,8 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
   /* Restore vectors */
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  ierr = PetscFree4(localv,phi,phypts,jxw);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&quadratureObj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -404,16 +407,17 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
   DM                dm;
-  PetscInt          i,j,q,num_conn,nglobale,nglobalv,hlevel;
+  PetscInt          i,j,q,num_conn,nglobale,nglobalv,npoints,hlevel;
   PetscInt          dof_indices[user->VPERE];
-  PetscReal         vpos[user->VPERE*3],quadrature[user->NQPTS*3],phypts[user->NQPTS*3],jxw[user->NQPTS],rho;
+  PetscReal         vpos[user->VPERE*3],rho;
   PetscBool         dbdry[user->VPERE];
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
   PetscBool         elem_on_boundary;
-  PetscScalar       array[user->VPERE*user->VPERE];
-  PetscScalar       phi[user->VPERE*user->NQPTS], dphidx[user->VPERE*user->NQPTS], dphidy[user->VPERE*user->NQPTS];
+  PetscReal         array[user->VPERE*user->VPERE];
+  PetscReal         *phi, *dphi[2], *phypts, *jxw;
+  PetscQuadrature   quadratureObj;
   PetscErrorCode    ierr;
  
   PetscFunctionBeginUser;
@@ -426,13 +430,17 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   ierr = DMMoabGetHierarchyLevel(dm, &hlevel);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);
 
+  ierr = DMMoabFEMCreateQuadratureDefault ( 2, user->VPERE, &quadratureObj );CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc5(user->VPERE*npoints,&phi, user->VPERE*npoints,&dphi[0], user->VPERE*npoints,&dphi[1], npoints*3,&phypts, npoints,&jxw);CHKERRQ(ierr);
+
   /* loop over local elements */
   for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     // Get connectivity information:
     ierr = DMMoabGetElementConnectivity(dm, ehandle, &num_conn, &connect);CHKERRQ(ierr);
-    if (num_conn != user->VPERE) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only QUAD4 element bases are supported in the current example. Connectivity=%D.\n", num_conn);
+    if (num_conn != user->VPERE) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only QUAD4 or TRI3 element bases are supported in the current example. Connectivity=%D.\n", num_conn);
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
     ierr = DMMoabGetVertexCoordinates(dm,num_conn,connect,vpos);CHKERRQ(ierr);
@@ -446,7 +454,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 
     /* 1) compute the basis functions and the derivatives wrt x and y directions
        2) compute the quadrature points transformed to the physical space */
-    ierr = Compute_Basis(user, user->VPERE, vpos, quadrature, phypts, jxw, phi,  dphidx, dphidy);CHKERRQ(ierr);
+    ierr = DMMoabFEMComputeBasis(2, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, dphi);CHKERRQ(ierr);
 
     ierr = PetscMemzero(array, user->VPERE*user->VPERE*sizeof(PetscScalar));
 
@@ -458,8 +466,8 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 
       for (i=0; i < user->VPERE; ++i) {
         for (j=0; j < user->VPERE; ++j) {
-          array[i*user->VPERE+j] += jxw[q] * rho * ( dphidx[q*user->VPERE+i]*dphidx[q*user->VPERE+j] + 
-                                               dphidy[q*user->VPERE+i]*dphidy[q*user->VPERE+j] );
+          array[i*user->VPERE+j] += jxw[q] * rho * ( dphi[0][q*user->VPERE+i]*dphi[0][q*user->VPERE+j] + 
+                                                     dphi[1][q*user->VPERE+i]*dphi[1][q*user->VPERE+j] );
         }
       }
     }
@@ -503,6 +511,8 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
     ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
+  ierr = PetscFree5(phi,dphi[0],dphi[1],phypts,jxw);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&quadratureObj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -567,177 +577,6 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user)
   if (err) {
     ierr = DMMoabVecRestoreArray(dm, err, &e);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-
-PetscReal determinant_mat_2x2 ( PetscReal inmat[2*2] )
-{
-  return  inmat[0]*inmat[3]-inmat[1]*inmat[2];
-}
-
-PetscErrorCode invert_mat_2x2 (PetscReal *inmat, PetscReal *outmat, PetscReal *determinant)
-{
-  if (!inmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_POINTER,"Invalid input matrix specified for 2x2 inversion.");
-  PetscReal det = determinant_mat_2x2(inmat);
-  if (outmat) {
-    outmat[0]= inmat[3]/det;
-    outmat[1]=-inmat[1]/det;
-    outmat[2]=-inmat[2]/det;
-    outmat[3]= inmat[0]/det;
-  }
-  if (determinant) *determinant=det;
-  PetscFunctionReturn(0);
-}
-
-
-/*@
-  Compute_Basis - Compute the linear Lagrange basis functions and its derivatives
-  on a quadrilateral element.
-
-  Input Parameter:
-. n - Number of vertices in the element
-. verts - Array of coordinates of the vertices
-
-  Output Parameter:
-. quad - The quadrature points on the reference element
-. phypts - The equivalent quadrature points on the physical element
-. jxw - Product of Jacobian times the quadrature weight
-. phi - Basis functions evaluated at the quadrature points
-. dphidx - Derivative of basis functions wrt X evaluated at the quadrature points
-. dphidy - Derivative of basis functions wrt Y evaluated at the quadrature points
-. dphidz - Derivative of basis functions wrt Z evaluated at the quadrature points
-@*/
-#undef __FUNCT__
-#define __FUNCT__ "Compute_Basis"
-PetscErrorCode Compute_Basis ( UserContext *user, PetscInt n, PetscReal *verts, PetscReal *quad/*NQPTS*3*/, PetscReal *phypts/*NQPTS*3*/, PetscReal *jxw/*NQPTS*/,
-                                     PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy)
-{
-  int i,j;
-  PetscReal jacobian[4],ijacobian[4];
-  double jacobiandet;
-  PetscErrorCode    ierr;
-  PetscFunctionBegin;
-
-  ierr = PetscMemzero(phypts,user->NQPTS*3*sizeof(PetscReal));CHKERRQ(ierr);
-  if (dphidx) { /* Reset arrays. */
-    ierr = PetscMemzero(dphidx,n*user->VPERE*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(dphidy,n*user->VPERE*sizeof(PetscReal));CHKERRQ(ierr);
-  }
-  if (n == 4) { /* Linear Quadrangle */
-
-    /* 2-D 2-point tensor product Gaussian quadrature */
-    quad[0]=-0.5773502691896257; quad[1]=-0.5773502691896257;
-    quad[3]=-0.5773502691896257; quad[4]=0.5773502691896257;
-    quad[6]=0.5773502691896257; quad[7]=-0.5773502691896257;
-    quad[9]=0.5773502691896257; quad[10]=0.5773502691896257;
-    /* transform quadrature bounds: [-1, 1] => [0, 1] */
-    for (i=0; i<user->VPERE*3; ++i) {
-      quad[i]=0.5*quad[i]+0.5;
-    }
-
-    for (j=0;j<n;j++)
-    {
-      const int offset=j*user->VPERE;
-      const double r = quad[0+j*3];
-      const double s = quad[1+j*3];
-
-      phi[0+offset] = ( 1.0 - r ) * ( 1.0 - s );
-      phi[1+offset] =         r   * ( 1.0 - s );
-      phi[2+offset] =         r   *         s;
-      phi[3+offset] = ( 1.0 - r ) *         s;
-
-      const double dNi_dxi[4]  = { -1.0 + s, 1.0 - s, s, -s };
-      const double dNi_deta[4] = { -1.0 + r, -r, r, 1.0 - r };
-
-      ierr = PetscMemzero(jacobian,4*sizeof(PetscReal));CHKERRQ(ierr);
-      ierr = PetscMemzero(ijacobian,4*sizeof(PetscReal));CHKERRQ(ierr);
-      for (i = 0; i < user->VPERE; ++i) {
-        const PetscScalar* vertices = verts+i*3;
-        jacobian[0] += dNi_dxi[i] * vertices[0];
-        jacobian[2] += dNi_dxi[i] * vertices[1];
-        jacobian[1] += dNi_deta[i] * vertices[0];
-        jacobian[3] += dNi_deta[i] * vertices[1];
-        for (int k = 0; k < 3; ++k)
-          phypts[3*j+k] += phi[i+offset] * vertices[k];
-      }
-
-      /* invert the jacobian */
-      ierr = invert_mat_2x2(jacobian, ijacobian, &jacobiandet);CHKERRQ(ierr);
-
-      jxw[j] = jacobiandet/(user->NQPTS);
-
-      /*  Divide by element jacobian. */
-      for ( i = 0; i < user->VPERE; i++ ) {
-        for (int k = 0; k < 2; ++k) {
-          if (dphidx) dphidx[i+offset] += dNi_dxi[i]*ijacobian[k*2+0];
-          if (dphidy) dphidy[i+offset] += dNi_deta[i]*ijacobian[k*2+1];
-        }
-      }
-
-    }
-  }
-  else { /* Linear triangle */
-    /* 2-D 3-point Gaussian quadrature */
-    quad[0]=1.0/6; quad[1]=1.0/6;
-    quad[3]=2.0/3; quad[4]=1.0/6;
-    quad[6]=1.0/6; quad[7]=2.0/3;
-
-    ierr = PetscMemzero(jacobian,4*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(ijacobian,4*sizeof(PetscReal));CHKERRQ(ierr);
-
-    /* Jacobian is constant */
-    jacobian[0] = -(verts[0*3+0]-verts[2*3+0]); jacobian[1] = -(verts[1*3+0]-verts[2*3+0]);
-    jacobian[2] = (verts[0*3+1]-verts[2*3+1]); jacobian[3] = (verts[1*3+1]-verts[2*3+1]);
-
-    /* invert the jacobian */
-    ierr = invert_mat_2x2(jacobian, ijacobian, &jacobiandet);CHKERRQ(ierr);
-    if ( jacobiandet < 1e-8 ) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Triangular element has zero volume: %g. Degenerate element or invalid connectivity\n", jacobiandet);
-
-    for (j=0;j<n;j++)
-    {
-      const int offset=j*user->VPERE;
-      const double r = quad[0+j*3];
-      const double s = quad[1+j*3];
-
-      jxw[j] = jacobiandet/(user->NQPTS)/6;
-
-      phi[0+offset] = r;
-      phi[1+offset] = s;
-      phi[2+offset] = 1.0 - r - s;
-
-      if (dphidx) {
-        dphidx[0+offset] = (verts[1*3+1]-verts[2*3+1])/jacobiandet;
-        dphidx[1+offset] = (verts[2*3+1]-verts[0*3+1])/jacobiandet;
-        dphidx[2+offset] = -dphidx[0+offset] - dphidx[1+offset];
-      }
-
-      if (dphidy) {
-        dphidy[0+offset] = (verts[2*3+0]-verts[1*3+0])/jacobiandet;
-        dphidy[1+offset] = (verts[0*3+0]-verts[2*3+0])/jacobiandet;
-        dphidy[2+offset] = -dphidy[0+offset] - dphidy[1+offset];
-      }
-
-      for (i = 0; i < user->VPERE; ++i) {
-        const PetscScalar* vertices = verts+i*3;
-        for (int k = 0; k < 3; ++k)
-          phypts[3*j+k] += phi[i+offset] * vertices[k];
-      }
-
-    }
-  }
-#if 0
-  /* verify if the computed basis functions are consistent */
-  for ( j = 0; j < n; j++ ) {
-    PetscScalar phisum=0,dphixsum=0,dphiysum=0;
-    for ( i = 0; i < user->VPERE; i++ ) {
-      phisum += phi[i+j*user->VPERE];
-      if (dphidx) dphixsum += dphidx[i+j*user->VPERE];
-      if (dphidy) dphiysum += dphidy[i+j*user->VPERE];
-    }
-    PetscPrintf(PETSC_COMM_WORLD, "Sum of basis at quadrature point %D = %g, %g, %g\n", j, phisum, dphixsum, dphiysum);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
