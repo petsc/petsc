@@ -40,12 +40,6 @@ static char help[] = "\
 #include <petscksp.h>
 #include <petscdmmoab.h>
 
-static PetscErrorCode ComputeMatrix_MOAB(KSP,Mat,Mat,void*);
-static PetscErrorCode ComputeRHS_MOAB(KSP,Vec,void*);
-
-static PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscInt npts, PetscReal *quad/*npts*3*/, PetscReal *pts/*npts*3*/, 
-        PetscReal *jxw/*npts*/, PetscReal *phi/*npts*/, PetscReal *dphidx/*npts*/, PetscReal *dphidy/*npts*/, PetscReal *dphidz/*npts*/);
-
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
@@ -57,9 +51,11 @@ typedef struct {
   char      filename[PETSC_MAX_PATH_LEN];
 
   /* Discretization parameters */
-  int NQPTS,VPERE;
+  int VPERE;
 } UserContext;
 
+static PetscErrorCode ComputeMatrix_MOAB(KSP,Mat,Mat,void*);
+static PetscErrorCode ComputeRHS_MOAB(KSP,Vec,void*);
 static PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user);
 
 #undef __FUNCT__
@@ -111,7 +107,6 @@ int main(int argc,char **argv)
   ierr        = PetscOptionsBool("-tet", "Use tetrahedra to discretize the unit cube domain", "ex36.cxx", usesimplex, &usesimplex, NULL);CHKERRQ(ierr);
   ierr        = PetscOptionsEnd();
 
-  user.NQPTS  = (usesimplex ? 4:8);
   user.VPERE  = (usesimplex ? 4:8);
 
   /* Create the DM object from either a mesh file or from in-memory structured grid */
@@ -282,16 +277,17 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 {
   UserContext*      user = (UserContext*)ptr;
   DM                dm;
-  PetscInt          dof_indices[user->VPERE];
+  PetscInt          dof_indices[user->VPERE],npoints;
   PetscBool         dbdry[user->VPERE];
-  PetscReal         vpos[user->VPERE*3],quadrature[user->NQPTS*3],phypts[user->NQPTS*3];
-  PetscReal         jxw[user->NQPTS],phi[user->VPERE*user->NQPTS];
+  PetscReal         vpos[user->VPERE*3];
   PetscInt          i,q,num_conn;
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
   PetscScalar       localv[user->VPERE];
+  PetscReal         *phi,*phypts,*jxw;
   PetscBool         elem_on_boundary;
+  PetscQuadrature   quadratureObj;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -299,6 +295,10 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 
   /* reset the RHS */
   ierr = VecSet(b, 0.0);CHKERRQ(ierr);
+
+  ierr = DMMoabFEMCreateQuadratureDefault (3, user->VPERE, &quadratureObj);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc3(user->VPERE*npoints,&phi, npoints*3,&phypts, npoints,&jxw);CHKERRQ(ierr);
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
@@ -322,10 +322,11 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 
     /* compute the quadrature points transformed to the physical space and then
        compute the basis functions to compute local operators */
-    ierr = Compute_Basis(user->VPERE, vpos, user->NQPTS, quadrature, phypts, jxw, phi, 0, 0, 0);CHKERRQ(ierr);
+    // ierr = Compute_Basis(user->VPERE, vpos, user->NQPTS, quadrature, phypts, jxw, phi, 0, 0, 0);CHKERRQ(ierr);
+    ierr = DMMoabFEMComputeBasis(3, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, 0);CHKERRQ(ierr);
 
     /* Compute function over the locally owned part of the grid */
-    for (q=0; q<user->NQPTS; ++q) {
+    for (q=0; q<npoints; ++q) {
       const double ff = ForcingFunction(&phypts[3*q], user);
       for (i=0; i < user->VPERE; ++i) {
         localv[i] += jxw[q] * phi[q*user->VPERE+i] * ff;
@@ -366,6 +367,8 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
   /* Restore vectors */
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  ierr = PetscFree3(phi,phypts,jxw);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&quadratureObj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -376,18 +379,17 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
   DM                dm;
-  PetscInt          i,j,q,num_conn;
+  PetscInt          i,j,q,num_conn,nglobale,nglobalv,npoints,hlevel;
   PetscInt          dof_indices[user->VPERE];
-  PetscReal         vpos[user->VPERE*3],quadrature[user->NQPTS*3],phypts[user->NQPTS*3];
+  PetscReal         vpos[user->VPERE*3],rho;
   PetscBool         dbdry[user->VPERE];
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
   PetscBool         elem_on_boundary;
   PetscScalar       array[user->VPERE*user->VPERE];
-  PetscReal         jxw[user->NQPTS],phi[user->VPERE*user->NQPTS];
-  PetscReal         dphidx[user->VPERE*user->NQPTS], dphidy[user->VPERE*user->NQPTS], dphidz[user->VPERE*user->NQPTS];
-  PetscReal         rho;
+  PetscReal         *phi, *dphi[3], *phypts, *jxw;
+  PetscQuadrature   quadratureObj;
   PetscErrorCode    ierr;
  
   PetscFunctionBeginUser;
@@ -396,6 +398,13 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
   /* get the essential MOAB mesh related quantities needed for FEM assembly */  
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
+  ierr = DMMoabGetSize(dm, &nglobale, &nglobalv);CHKERRQ(ierr);
+  ierr = DMMoabGetHierarchyLevel(dm, &hlevel);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);
+
+  ierr = DMMoabFEMCreateQuadratureDefault ( 3, user->VPERE, &quadratureObj );CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc6(user->VPERE*npoints,&phi, user->VPERE*npoints,&dphi[0], user->VPERE*npoints,&dphi[1], user->VPERE*npoints,&dphi[2], npoints*3,&phypts, npoints,&jxw);CHKERRQ(ierr);
 
   /* loop over local elements */
   for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
@@ -413,12 +422,13 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 
     /* compute the quadrature points transformed to the physical space and
        compute the basis functions and the derivatives wrt x, y and z directions */
-    ierr = Compute_Basis(user->VPERE, vpos, user->NQPTS, quadrature, phypts, jxw, phi, dphidx, dphidy, dphidz);CHKERRQ(ierr);
+    // ierr = Compute_Basis(user->VPERE, vpos, user->NQPTS, quadrature, phypts, jxw, phi, dphidx, dphidy, dphidz);CHKERRQ(ierr);
+    ierr = DMMoabFEMComputeBasis(3, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, dphi);CHKERRQ(ierr);
 
     ierr = PetscMemzero(array, user->VPERE*user->VPERE*sizeof(PetscScalar));
 
     /* Compute function over the locally owned part of the grid */
-    for (q=0; q < user->NQPTS; ++q) {
+    for (q=0; q < npoints; ++q) {
 
       /* compute the inhomogeneous diffusion coefficient at the first quadrature point 
           -- for large spatial variations, embed this property evaluation inside quadrature loop */
@@ -426,9 +436,9 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 
       for (i=0; i < user->VPERE; ++i) {
         for (j=0; j < user->VPERE; ++j) {
-          array[i*user->VPERE+j] += jxw[q] * rho * ( dphidx[q*user->VPERE+i]*dphidx[q*user->VPERE+j] + 
-                                                     dphidy[q*user->VPERE+i]*dphidy[q*user->VPERE+j] +
-                                                     dphidz[q*user->VPERE+i]*dphidz[q*user->VPERE+j] );
+          array[i*user->VPERE+j] += jxw[q] * rho * ( dphi[0][q*user->VPERE+i]*dphi[0][q*user->VPERE+j] + 
+                                                     dphi[1][q*user->VPERE+i]*dphi[1][q*user->VPERE+j] +
+                                                     dphi[2][q*user->VPERE+i]*dphi[2][q*user->VPERE+j] );
         }
       }
     }
@@ -472,351 +482,8 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
     ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-
-double determinant_mat_3x3 ( PetscReal inmat[3*3] )
-{
-  return   inmat[0]*(inmat[8]*inmat[4]-inmat[7]*inmat[5])
-         - inmat[3]*(inmat[8]*inmat[1]-inmat[7]*inmat[2])
-         + inmat[6]*(inmat[5]*inmat[1]-inmat[4]*inmat[2]);
-}
-
-PetscErrorCode invert_mat_3x3 (PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
-{
-  if (!inmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_POINTER,"Invalid input matrix specified for 3x3 inversion.");
-  double det = determinant_mat_3x3(inmat);
-  if (outmat) {
-    outmat[0]= (inmat[8]*inmat[4]-inmat[7]*inmat[5])/det;
-    outmat[1]=-(inmat[8]*inmat[1]-inmat[7]*inmat[2])/det;
-    outmat[2]= (inmat[5]*inmat[1]-inmat[4]*inmat[2])/det;
-    outmat[3]=-(inmat[8]*inmat[3]-inmat[6]*inmat[5])/det;
-    outmat[4]= (inmat[8]*inmat[0]-inmat[6]*inmat[2])/det;
-    outmat[5]=-(inmat[5]*inmat[0]-inmat[3]*inmat[2])/det;
-    outmat[6]= (inmat[7]*inmat[3]-inmat[6]*inmat[4])/det;
-    outmat[7]=-(inmat[7]*inmat[0]-inmat[6]*inmat[1])/det;
-    outmat[8]= (inmat[4]*inmat[0]-inmat[3]*inmat[1])/det;
-  }
-  if (determinant) *determinant=det;
-  PetscFunctionReturn(0);
-}
-
-
-double determinant_mat_4x4 ( PetscReal inmat[4*4] )
-{
-  return
-      inmat[0+0*4] * (
-          inmat[1+1*4] * ( inmat[2+2*4] * inmat[3+3*4] - inmat[2+3*4] * inmat[3+2*4] )
-        - inmat[1+2*4] * ( inmat[2+1*4] * inmat[3+3*4] - inmat[2+3*4] * inmat[3+1*4] )
-        + inmat[1+3*4] * ( inmat[2+1*4] * inmat[3+2*4] - inmat[2+2*4] * inmat[3+1*4] ) )
-    - inmat[0+1*4] * (
-          inmat[1+0*4] * ( inmat[2+2*4] * inmat[3+3*4] - inmat[2+3*4] * inmat[3+2*4] )
-        - inmat[1+2*4] * ( inmat[2+0*4] * inmat[3+3*4] - inmat[2+3*4] * inmat[3+0*4] )
-        + inmat[1+3*4] * ( inmat[2+0*4] * inmat[3+2*4] - inmat[2+2*4] * inmat[3+0*4] ) )
-    + inmat[0+2*4] * (
-          inmat[1+0*4] * ( inmat[2+1*4] * inmat[3+3*4] - inmat[2+3*4] * inmat[3+1*4] )
-        - inmat[1+1*4] * ( inmat[2+0*4] * inmat[3+3*4] - inmat[2+3*4] * inmat[3+0*4] )
-        + inmat[1+3*4] * ( inmat[2+0*4] * inmat[3+1*4] - inmat[2+1*4] * inmat[3+0*4] ) )
-    - inmat[0+3*4] * (
-          inmat[1+0*4] * ( inmat[2+1*4] * inmat[3+2*4] - inmat[2+2*4] * inmat[3+1*4] )
-        - inmat[1+1*4] * ( inmat[2+0*4] * inmat[3+2*4] - inmat[2+2*4] * inmat[3+0*4] )
-        + inmat[1+2*4] * ( inmat[2+0*4] * inmat[3+1*4] - inmat[2+1*4] * inmat[3+0*4] ) );
-}
-
-PetscErrorCode invert_mat_4x4 (PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
-{
-  if (!inmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_POINTER,"Invalid input matrix specified for 4x4 inversion.");
-  double det = determinant_mat_4x4(inmat);
-  if (outmat) {
-    outmat[0]=  (inmat[5]*inmat[10]*inmat[15]+inmat[6]*inmat[11]*inmat[13]+inmat[7]*inmat[9]*inmat[14]-inmat[5]*inmat[11]*inmat[14]-inmat[6]*inmat[9]*inmat[15]-inmat[7]*inmat[10]*inmat[13])/det;
-    outmat[1]=  (inmat[1]*inmat[11]*inmat[14]+inmat[2]*inmat[9]*inmat[15]+inmat[3]*inmat[10]*inmat[13]-inmat[1]*inmat[10]*inmat[15]-inmat[2]*inmat[11]*inmat[13]-inmat[3]*inmat[9]*inmat[14])/det;
-    outmat[2]=  (inmat[1]*inmat[6]*inmat[15]+inmat[2]*inmat[7]*inmat[13]+inmat[3]*inmat[5]*inmat[14]-inmat[1]*inmat[7]*inmat[14]-inmat[2]*inmat[5]*inmat[15]-inmat[3]*inmat[6]*inmat[13])/det;
-    outmat[3]=  (inmat[1]*inmat[7]*inmat[10]+inmat[2]*inmat[5]*inmat[11]+inmat[3]*inmat[6]*inmat[9]-inmat[1]*inmat[6]*inmat[11]-inmat[2]*inmat[7]*inmat[9]-inmat[3]*inmat[5]*inmat[10])/det;
-    outmat[4]=  (inmat[4]*inmat[11]*inmat[14]+inmat[6]*inmat[8]*inmat[15]+inmat[7]*inmat[10]*inmat[12]-inmat[4]*inmat[10]*inmat[15]-inmat[6]*inmat[11]*inmat[12]-inmat[7]*inmat[8]*inmat[14])/det;
-    outmat[5]=  (inmat[0]*inmat[10]*inmat[15]+inmat[2]*inmat[11]*inmat[12]+inmat[3]*inmat[8]*inmat[14]-inmat[0]*inmat[11]*inmat[14]-inmat[2]*inmat[8]*inmat[15]-inmat[3]*inmat[10]*inmat[12])/det;
-    outmat[6]=  (inmat[0]*inmat[7]*inmat[14]+inmat[2]*inmat[4]*inmat[15]+inmat[3]*inmat[6]*inmat[12]-inmat[0]*inmat[6]*inmat[15]-inmat[2]*inmat[7]*inmat[12]-inmat[3]*inmat[4]*inmat[14])/det;
-    outmat[7]=  (inmat[0]*inmat[6]*inmat[11]+inmat[2]*inmat[7]*inmat[8]+inmat[3]*inmat[4]*inmat[10]-inmat[0]*inmat[7]*inmat[10]-inmat[2]*inmat[4]*inmat[11]-inmat[3]*inmat[6]*inmat[8])/det;
-    outmat[8]=  (inmat[4]*inmat[9]*inmat[15]+inmat[5]*inmat[11]*inmat[12]+inmat[7]*inmat[8]*inmat[13]-inmat[4]*inmat[11]*inmat[13]-inmat[5]*inmat[8]*inmat[15]-inmat[7]*inmat[9]*inmat[12])/det;
-    outmat[9]=  (inmat[0]*inmat[11]*inmat[13]+inmat[1]*inmat[8]*inmat[15]+inmat[3]*inmat[9]*inmat[12]-inmat[0]*inmat[9]*inmat[15]-inmat[1]*inmat[11]*inmat[12]-inmat[3]*inmat[8]*inmat[13])/det;
-    outmat[10]= (inmat[0]*inmat[5]*inmat[15]+inmat[1]*inmat[7]*inmat[12]+inmat[3]*inmat[4]*inmat[13]-inmat[0]*inmat[7]*inmat[13]-inmat[1]*inmat[4]*inmat[15]-inmat[3]*inmat[5]*inmat[12])/det;
-    outmat[11]= (inmat[0]*inmat[7]*inmat[9]+inmat[1]*inmat[4]*inmat[11]+inmat[3]*inmat[5]*inmat[8]-inmat[0]*inmat[5]*inmat[11]-inmat[1]*inmat[7]*inmat[8]-inmat[3]*inmat[4]*inmat[9])/det;
-    outmat[12]= (inmat[4]*inmat[10]*inmat[13]+inmat[5]*inmat[8]*inmat[14]+inmat[6]*inmat[9]*inmat[12]-inmat[4]*inmat[9]*inmat[14]-inmat[5]*inmat[10]*inmat[12]-inmat[6]*inmat[8]*inmat[13])/det;
-    outmat[13]= (inmat[0]*inmat[9]*inmat[14]+inmat[1]*inmat[10]*inmat[12]+inmat[2]*inmat[8]*inmat[13]-inmat[0]*inmat[10]*inmat[13]-inmat[1]*inmat[8]*inmat[14]-inmat[2]*inmat[9]*inmat[12])/det;
-    outmat[14]= (inmat[0]*inmat[6]*inmat[13]+inmat[1]*inmat[4]*inmat[14]+inmat[2]*inmat[5]*inmat[12]-inmat[0]*inmat[5]*inmat[14]-inmat[1]*inmat[6]*inmat[12]-inmat[2]*inmat[4]*inmat[13])/det;
-    outmat[15]= (inmat[0]*inmat[5]*inmat[10]+inmat[1]*inmat[6]*inmat[8]+inmat[2]*inmat[4]*inmat[9]-inmat[0]*inmat[6]*inmat[9]-inmat[1]*inmat[4]*inmat[10]-inmat[2]*inmat[5]*inmat[8])/det;
-  }
-  if (determinant) *determinant=det;
-  PetscFunctionReturn(0);
-}
-
-
-/*
-*  Purpose: Compute_Basis: all bases at N points for a HEX8 element.
-*
-*  Discussion:
-*
-*    The routine is given the coordinates of the vertices of a hexahedra.
-*    It works directly with these coordinates, and does not refer to a 
-*    reference element.
-*
-*    The sides of the element are presumed to lie along coordinate axes.
-*
-*    The routine evaluates the basis functions associated with each corner,
-*    and their derivatives with respect to X and Y.
-*
-*  Physical Element HEX8:
-*
-*      8------7        t  s
-*     /|     /|        | /
-*    5------6 |        |/
-*    | |    | |        0-------r
-*    | 4----|-3        
-*    |/     |/        
-*    1------2        
-*     
-*
-*  Parameters:
-*
-*    Input, PetscScalar Q[3*8], the coordinates of the vertices.
-*    It is common to list these points in counter clockwise order.
-*
-*    Input, int N, the number of evaluation points.
-*
-*    Input, PetscScalar P[3*N], the evaluation points.
-*
-*    Output, PetscScalar PHI[8*N], the bases at the evaluation points.
-*
-*    Output, PetscScalar DPHIDX[8*N], DPHIDY[8*N], the derivatives of the
-*    bases at the evaluation points.
-*
-*  Original Author: John Burkardt (http://people.sc.fsu.edu/~jburkardt/cpp_src/fem3d_pack/fem3d_pack.cpp)
-*  Modified by Vijay Mahadevan
-*/
-#undef __FUNCT__
-#define __FUNCT__ "Compute_Basis"
-PetscErrorCode Compute_Basis ( PetscInt nverts, PetscReal *coords/*nverts*3*/, PetscInt npts, PetscReal *quad/*npts*3*/, PetscReal *phypts/*npts*3*/, 
-        PetscReal *jxw/*npts*/, PetscReal *phi/*npts*/, PetscReal *dphidx/*npts*/, PetscReal *dphidy/*npts*/, PetscReal *dphidz/*npts*/)
-{
-  PetscReal volume;
-  int i,j;
-  PetscReal jacobian[9],ijacobian[9];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* Reset arrays. */
-  ierr = PetscMemzero(phi,npts*nverts*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemzero(quad,npts*3*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemzero(phypts,npts*3*sizeof(PetscReal));CHKERRQ(ierr);
-  if (dphidx) {
-    ierr = PetscMemzero(dphidx,npts*nverts*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(dphidy,npts*nverts*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(dphidz,npts*nverts*sizeof(PetscReal));CHKERRQ(ierr);
-  }
-
-  if (nverts == 8) { // Linear Hexahedra
-
-    /* 3-D 2-point tensor product Gaussian quadrature */
-    quad[0]=-0.5773502691896257; quad[1]=-0.5773502691896257;  quad[2]=-0.5773502691896257;
-    quad[3]=-0.5773502691896257; quad[4]=0.5773502691896257;   quad[5]=-0.5773502691896257;
-    quad[6]=0.5773502691896257;  quad[7]=-0.5773502691896257;  quad[8]=-0.5773502691896257;
-    quad[9]=0.5773502691896257;  quad[10]=0.5773502691896257;  quad[11]=-0.5773502691896257;
-
-    quad[12]=-0.5773502691896257; quad[13]=-0.5773502691896257;  quad[14]=0.5773502691896257;
-    quad[15]=-0.5773502691896257; quad[16]=0.5773502691896257;   quad[17]=0.5773502691896257;
-    quad[18]=0.5773502691896257;  quad[19]=-0.5773502691896257;  quad[20]=0.5773502691896257;
-    quad[21]=0.5773502691896257;  quad[22]=0.5773502691896257;   quad[23]=0.5773502691896257;
-
-    /* transform quadrature bounds: [-1, 1] => [0, 1] */
-    //for (i=0; i<npts*3; ++i) quad[i]=0.5*quad[i]+0.5;
-
-    for (j=0;j<npts;j++)
-    {
-      const int offset = j*nverts;
-      const double& r = quad[j*3+0];
-      const double& s = quad[j*3+1];
-      const double& t = quad[j*3+2];
-
-      phi[offset+0] = ( 1.0 - r ) * ( 1.0 - s ) * ( 1.0 - t ) / 8;
-      phi[offset+1] = ( 1.0 + r ) * ( 1.0 - s ) * ( 1.0 - t ) / 8;
-      phi[offset+2] = ( 1.0 + r ) * ( 1.0 + s ) * ( 1.0 - t ) / 8;
-      phi[offset+3] = ( 1.0 - r ) * ( 1.0 + s ) * ( 1.0 - t ) / 8;
-      phi[offset+4] = ( 1.0 - r ) * ( 1.0 - s ) * ( 1.0 + t ) / 8;
-      phi[offset+5] = ( 1.0 + r ) * ( 1.0 - s ) * ( 1.0 + t ) / 8;
-      phi[offset+6] = ( 1.0 + r ) * ( 1.0 + s ) * ( 1.0 + t ) / 8;
-      phi[offset+7] = ( 1.0 - r ) * ( 1.0 + s ) * ( 1.0 + t ) / 8;
-
-      const double dNi_dxi[8]  = { - ( 1.0 - s ) * ( 1.0 - t ),
-                                     ( 1.0 - s ) * ( 1.0 - t ),
-                                     ( 1.0 + s ) * ( 1.0 - t ),
-                                   - ( 1.0 + s ) * ( 1.0 - t ),
-                                   - ( 1.0 - s ) * ( 1.0 + t ),
-                                     ( 1.0 - s ) * ( 1.0 + t ),
-                                     ( 1.0 + s ) * ( 1.0 + t ),
-                                   - ( 1.0 + s ) * ( 1.0 + t )  };
-
-      const double dNi_deta[8]  = { - ( 1.0 - r ) * ( 1.0 - t ),
-                                    - ( 1.0 + r ) * ( 1.0 - t ),
-                                      ( 1.0 + r ) * ( 1.0 - t ),
-                                      ( 1.0 - r ) * ( 1.0 - t ),
-                                    - ( 1.0 - r ) * ( 1.0 + t ),
-                                    - ( 1.0 + r ) * ( 1.0 + t ),
-                                      ( 1.0 + r ) * ( 1.0 + t ),
-                                      ( 1.0 - r ) * ( 1.0 + t ) };
-
-      const double dNi_dzeta[8]  = { - ( 1.0 - r ) * ( 1.0 - s ),
-                                     - ( 1.0 + r ) * ( 1.0 - s ),
-                                     - ( 1.0 + r ) * ( 1.0 + s ),
-                                     - ( 1.0 - r ) * ( 1.0 + s ),
-                                       ( 1.0 - r ) * ( 1.0 - s ),
-                                       ( 1.0 + r ) * ( 1.0 - s ),
-                                       ( 1.0 + r ) * ( 1.0 + s ),
-                                       ( 1.0 - r ) * ( 1.0 + s ) };
-
-      ierr = PetscMemzero(jacobian,9*sizeof(PetscReal));CHKERRQ(ierr);
-      ierr = PetscMemzero(ijacobian,9*sizeof(PetscReal));CHKERRQ(ierr);
-      double factor = 1.0/8;
-      for (i = 0; i < nverts; ++i) {
-        const PetscScalar* vertex = coords+i*3;
-        jacobian[0] += dNi_dxi[i]   * vertex[0];
-        jacobian[3] += dNi_dxi[i]   * vertex[1];
-        jacobian[6] += dNi_dxi[i]   * vertex[2];
-        jacobian[1] += dNi_deta[i]  * vertex[0];
-        jacobian[4] += dNi_deta[i]  * vertex[1];
-        jacobian[7] += dNi_deta[i]  * vertex[2];
-        jacobian[2] += dNi_dzeta[i] * vertex[0];
-        jacobian[5] += dNi_dzeta[i] * vertex[1];
-        jacobian[8] += dNi_dzeta[i] * vertex[2];
-      }
-
-      /* invert the jacobian */
-      ierr = invert_mat_3x3(jacobian, ijacobian, &volume);CHKERRQ(ierr);
-
-      jxw[j] = factor*volume/npts;
-
-      /*  Divide by element jacobian. */
-      for ( i = 0; i < nverts; ++i ) {
-        const PetscScalar* vertex = coords+i*3;
-        for (int k = 0; k < 3; ++k) {
-          phypts[3*j+k] += phi[i+offset] * vertex[k];
-          if (dphidx) dphidx[i+offset] += dNi_dxi[i]   * ijacobian[0*3+k];
-          if (dphidy) dphidy[i+offset] += dNi_deta[i]  * ijacobian[1*3+k];
-          if (dphidz) dphidz[i+offset] += dNi_dzeta[i] * ijacobian[2*3+k];
-        }
-      }
-    }
-  }
-  else if (nverts == 4) { // Linear Tetrahedra
-    // KEAST rule 2, order 4
-    quad[0]=0.5854101966249685; quad[1]=0.1381966011250105; quad[2]=0.1381966011250105;
-    quad[3]=0.1381966011250105; quad[4]=0.5854101966249685; quad[5]=0.1381966011250105;
-    quad[6]=0.1381966011250105; quad[7]=0.1381966011250105; quad[8]=0.5854101966249685;
-    quad[9]=0.1381966011250105; quad[10]=0.1381966011250105; quad[11]=0.1381966011250105;
-
-    ierr = PetscMemzero(jacobian,9*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemzero(ijacobian,9*sizeof(PetscReal));CHKERRQ(ierr);
-
-    jacobian[0] = coords[1*3+0]-coords[0*3+0];  jacobian[1] = coords[2*3+0]-coords[0*3+0]; jacobian[2] = coords[3*3+0]-coords[0*3+0];
-    jacobian[3] = coords[1*3+1]-coords[0*3+1];  jacobian[4] = coords[2*3+1]-coords[0*3+1]; jacobian[5] = coords[3*3+1]-coords[0*3+1];
-    jacobian[6] = coords[1*3+2]-coords[0*3+2];  jacobian[7] = coords[2*3+2]-coords[0*3+2]; jacobian[8] = coords[3*3+2]-coords[0*3+2];
-
-    /* invert the jacobian */
-    ierr = invert_mat_3x3(jacobian, ijacobian, &volume);CHKERRQ(ierr);
-
-    if ( volume < 1e-8 ) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Tetrahedral element has zero volume: %g. Degenerate element or invalid connectivity\n", volume);
-
-    for ( j = 0; j < npts; j++ )
-    {
-      const int offset = j*nverts;
-      const double factor = 1.0/6;
-      const double& r = quad[j*3+0];
-      const double& s = quad[j*3+1];
-      const double& t = quad[j*3+2];
-
-      jxw[j] = factor*volume/npts;
-
-      phi[offset+0] = 1.0 - r - s - t;
-      phi[offset+1] = r;
-      phi[offset+2] = s;
-      phi[offset+3] = t;
-
-      if (dphidx) {
-        dphidx[0+offset] = ( coords[1+2*3] * ( coords[2+1*3] - coords[2+3*3] ) 
-                           - coords[1+1*3] * ( coords[2+2*3] - coords[2+3*3] )
-                           - coords[1+3*3] * ( coords[2+1*3] - coords[2+2*3] )
-                           ) / volume;
-        dphidx[1+offset] = -( coords[1+2*3] * ( coords[2+0*3] - coords[2+3*3] )
-                           - coords[1+0*3] * ( coords[2+2*3] - coords[2+3*3] )
-                           - coords[1+3*3] * ( coords[2+0*3] - coords[2+2*3] )
-                           ) / volume;
-        dphidx[2+offset] = ( coords[1+1*3] * ( coords[2+0*3] - coords[2+3*3] )
-                           - coords[1+0*3] * ( coords[2+1*3] - coords[2+3*3] )
-                           - coords[1+3*3] * ( coords[2+0*3] - coords[2+1*3] )
-                           ) / volume;
-        dphidx[3+offset] = -dphidx[0+offset] - dphidx[1+offset] - dphidx[2+offset];
-      }
-
-      if (dphidy) {
-        dphidy[0+offset] = ( coords[0+1*3] * ( coords[2+2*3] - coords[2+3*3] )
-                           - coords[0+2*3] * ( coords[2+1*3] - coords[2+3*3] )
-                           + coords[0+3*3] * ( coords[2+1*3] - coords[2+2*3] )
-                           ) / volume;
-        dphidy[1+offset] = -( coords[0+0*3] * ( coords[2+2*3] - coords[2+3*3] )
-                           - coords[0+2*3] * ( coords[2+0*3] - coords[2+3*3] )
-                           + coords[0+3*3] * ( coords[2+0*3] - coords[2+2*3] )
-                           ) / volume;
-        dphidy[2+offset] = ( coords[0+0*3] * ( coords[2+1*3] - coords[2+3*3] )
-                           - coords[0+1*3] * ( coords[2+0*3] - coords[2+3*3] )
-                           + coords[0+3*3] * ( coords[2+0*3] - coords[2+1*3] )
-                           ) / volume;
-        dphidy[3+offset] = -dphidy[0+offset] - dphidy[1+offset] - dphidy[2+offset];
-      }
-
-
-      if (dphidz) {
-        dphidz[0+offset] = ( coords[0+1*3] * (coords[1+3*3]-coords[1+2*3])
-                           - coords[0+2*3] * (coords[1+3*3]-coords[1+1*3])
-                           + coords[0+3*3] * (coords[1+2*3]-coords[1+1*3])
-                           ) / volume;
-        dphidz[1+offset] = -( coords[0+0*3] * (coords[1+3*3]-coords[1+2*3])
-                           + coords[0+2*3] * (coords[1+0*3]-coords[1+3*3]) 
-                           - coords[0+3*3] * (coords[1+0*3]-coords[1+2*3])
-                           ) / volume;
-        dphidz[2+offset] = ( coords[0+0*3] * (coords[1+3*3]-coords[1+1*3])
-                           + coords[0+1*3] * (coords[1+0*3]-coords[1+3*3]) 
-                           - coords[0+3*3] * (coords[1+0*3]-coords[1+1*3])
-                           ) / volume;
-        dphidz[3+offset] = -dphidz[0+offset] - dphidz[1+offset] - dphidz[2+offset];
-      }
-
-      for (i = 0; i < nverts; ++i) {
-        const PetscScalar* vertices = coords+i*3;
-        for (int k = 0; k < 3; ++k)
-          phypts[3*j+k] += phi[i+offset] * vertices[k];
-      }
-    } // Tetrahedra -- ends
-  }
-  else
-  {
-    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The number of entity vertices are invalid. Currently only support HEX8: %D",nverts);
-  }
-#if 0
-  /* verify if the computed basis functions are consistent */
-  for ( j = 0; j < npts; j++ ) {
-    PetscScalar phisum=0,dphixsum=0,dphiysum=0,dphizsum=0;
-    const int offset = j*nverts;
-    for ( i = 0; i < nverts; i++ ) {
-      phisum += phi[i+offset];
-      if (dphidx) dphixsum += dphidx[i+offset];
-      if (dphidy) dphiysum += dphidy[i+offset];
-      if (dphidz) dphizsum += dphidz[i+offset];
-      if (dphidx) PetscPrintf(PETSC_COMM_WORLD, "\t Values [%d]: [JxW] [phi, dphidx, dphidy, dphidz] = %g, %g, %g, %g, %g\n", j, jxw[j], phi[i+offset], dphidx[i+offset], dphidy[i+offset], dphidz[i+offset]);
-    }
-    if (dphidx) PetscPrintf(PETSC_COMM_WORLD, "Sum of basis at quadrature point %D (%g, %g, %g) = %g, %g, %g, %g\n", j, quad[3*j+0], quad[3*j+1], quad[3*j+2], phisum, dphixsum, dphiysum, dphizsum);
-    //PetscPrintf(PETSC_COMM_WORLD, "Sum of basis at quadrature point %D (%g, %g, %g) = %g, %g, %g, %g\n", j, pts[3*j+0], pts[3*j+1], pts[3*j+2], phisum, dphixsum, dphiysum, dphizsum);
-  }
-  //if (dphidx) exit(0);
-#endif
+  ierr = PetscFree6(phi,dphi[0],dphi[1],dphi[2],phypts,jxw);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&quadratureObj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

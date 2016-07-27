@@ -73,7 +73,7 @@ typedef struct {
   PetscReal bounds[6];
   PetscReal xref,yref;
   PetscReal nu;
-  PetscInt  NQPTS,VPERE;
+  PetscInt  VPERE;
   BCType    bcType;
   char filename[PETSC_MAX_PATH_LEN];
 } UserContext;
@@ -136,7 +136,6 @@ int main(int argc,char **argv)
   ierr        = PetscOptionsString("-file", "The mesh file for the problem", "ex35.cxx", "",user.filename,PETSC_MAX_PATH_LEN,&use_extfile);CHKERRQ(ierr);
   ierr        = PetscOptionsEnd();
 
-  user.NQPTS  = (usesimplex ? 3:4);
   user.VPERE  = (usesimplex ? 3:4);
 
   /* Create the DM object from either a mesh file or from in-memory structured grid */
@@ -307,7 +306,8 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
-  PetscReal         *localv,*phi,*phypts,*jxw;
+  PetscScalar       localv[user->VPERE];
+  PetscReal         *phi,*phypts,*jxw;
   PetscBool         elem_on_boundary;
   PetscQuadrature   quadratureObj;
   PetscErrorCode    ierr;
@@ -320,7 +320,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
 
   ierr = DMMoabFEMCreateQuadratureDefault (2, user->VPERE, &quadratureObj);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc4(user->VPERE,&localv, user->VPERE*npoints,&phi, npoints*3,&phypts, npoints,&jxw);CHKERRQ(ierr);
+  ierr = PetscMalloc3(user->VPERE*npoints,&phi, npoints*3,&phypts, npoints,&jxw);CHKERRQ(ierr);
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
@@ -351,7 +351,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
     ierr = DMMoabFEMComputeBasis(2, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, 0);CHKERRQ(ierr);
 
     /* Compute function over the locally owned part of the grid */
-    for (q=0; q<user->NQPTS; ++q) {
+    for (q=0; q<npoints; ++q) {
       ff = ComputeForcingFunction(&phypts[3*q], user);
 
       for (i=0; i < user->VPERE; ++i) {
@@ -396,7 +396,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
   /* Restore vectors */
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-  ierr = PetscFree4(localv,phi,phypts,jxw);CHKERRQ(ierr);
+  ierr = PetscFree3(phi,phypts,jxw);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&quadratureObj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -415,7 +415,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
   PetscBool         elem_on_boundary;
-  PetscReal         array[user->VPERE*user->VPERE];
+  PetscScalar       array[user->VPERE*user->VPERE];
   PetscReal         *phi, *dphi[2], *phypts, *jxw;
   PetscQuadrature   quadratureObj;
   PetscErrorCode    ierr;
@@ -459,7 +459,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
     ierr = PetscMemzero(array, user->VPERE*user->VPERE*sizeof(PetscScalar));
 
     /* Compute function over the locally owned part of the grid */
-    for (q=0; q<user->NQPTS; ++q) {
+    for (q=0; q<npoints; ++q) {
       /* compute the inhomogeneous diffusion coefficient at the first quadrature point 
          -- for large spatial variations, embed this property evaluation inside quadrature loop */
       rho = ComputeRho(&phypts[q*3], user);
