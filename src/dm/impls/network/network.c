@@ -988,7 +988,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   DM_Network     *network = (DM_Network*) dm->data;
   PetscInt       eStart,eEnd,vStart,vEnd,rstart,nrows,*rows,localSize;
   PetscInt       cstart,ncols,j,e,v; 
-  PetscBool      ghost,ghost_vc;
+  PetscBool      ghost,ghost_vc,ghost2;
   Mat            Juser;
   PetscSection   sectionGlobal;
   PetscInt       nedges,*vptr=NULL,vc,*rows_v;
@@ -1096,7 +1096,12 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       ierr = DMNetworkGetNumVariables(dm,vc,&ncols);CHKERRQ(ierr);
 
       Juser = network->Jv[vptr[v-vStart]+2*e+2]; /* Jacobian(v,vc) */
-      ierr = MatSetPreallocationblock_private(Juser,nrows,rows_v,ncols,(ghost_vc||ghost),vd_nz,vo_nz);CHKERRQ(ierr);
+      if (ghost_vc||ghost) {
+        ghost2 = PETSC_TRUE;
+      } else {
+        ghost2 = PETSC_FALSE;
+      }
+      ierr = MatSetPreallocationblock_private(Juser,nrows,rows_v,ncols,ghost2,vd_nz,vo_nz);CHKERRQ(ierr);
     }
 
     /* Set preallocation for vertex self */
@@ -1122,8 +1127,8 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   ierr = VecGetArray(vd_nz,&vdnz);CHKERRQ(ierr);
   ierr = VecGetArray(vo_nz,&vonz);CHKERRQ(ierr);
   for (j=0; j<localSize; j++) {
-    dnnz[j] = (PetscInt)vdnz[j];
-    onnz[j] = (PetscInt)vonz[j];
+    dnnz[j] = (PetscInt)PetscRealPart(vdnz[j]);
+    onnz[j] = (PetscInt)PetscRealPart(vonz[j]);
   }
   ierr = VecRestoreArray(vd_nz,&vdnz);CHKERRQ(ierr);
   ierr = VecRestoreArray(vo_nz,&vonz);CHKERRQ(ierr);
