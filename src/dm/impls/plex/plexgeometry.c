@@ -927,6 +927,37 @@ PETSC_STATIC_INLINE void Volume_Tetrahedron_Origin_Internal(PetscReal *vol, Pets
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputePointGeometry_Internal"
+static PetscErrorCode DMPlexComputePointGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  const PetscScalar *coords;
+  PetscInt       dim, d, off;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetDof(coordSection,e,&dim);CHKERRQ(ierr);
+  if (!dim) PetscFunctionReturn(0);
+  ierr = PetscSectionGetOffset(coordSection,e,&off);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates,&coords);CHKERRQ(ierr);
+  if (v0) {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[off + d]);}
+  ierr = VecRestoreArrayRead(coordinates,&coords);CHKERRQ(ierr);
+  *detJ = 1.;
+  if (J) {
+    for (d = 0; d < dim * dim; d++) J[d] = 0.;
+    for (d = 0; d < dim; d++) J[d * dim + d] = 1.;
+    if (invJ) {
+      for (d = 0; d < dim * dim; d++) invJ[d] = 0.;
+      for (d = 0; d < dim; d++) invJ[d * dim + d] = 1.;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeLineGeometry_Internal"
 static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
@@ -1201,20 +1232,21 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
 PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
   PetscInt       depth, dim, coneSize;
+  DMLabel        depthLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
-  if (depth == 1) {
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(depthLabel, cell, &dim);CHKERRQ(ierr);
+  if (depth == 1 && dim == 1) {
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  } else {
-    DMLabel depth;
-
-    ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
-    ierr = DMLabelGetValue(depth, cell, &dim);CHKERRQ(ierr);
   }
   switch (dim) {
+  case 0:
+    ierr = DMPlexComputePointGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+    break;
   case 1:
     ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
     break;
