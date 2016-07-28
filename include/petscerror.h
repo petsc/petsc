@@ -519,6 +519,7 @@ M*/
 #define SETERRABORT(comm,n,s)
 
 #define CHKERRQ(n)     ;
+#define CHKERRV(n)     ;
 #define CHKERRABORT(comm,n) ;
 #define CHKERRCONTINUE(n) ;
 #define CHKMEMQ        ;
