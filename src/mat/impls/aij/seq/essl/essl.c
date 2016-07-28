@@ -83,7 +83,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   essl->rparm[0] = 1.e-12;
   essl->rparm[1] = 1.0;
 
-  ierr = PetscOptionsGetReal(((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],NULL);CHKERRQ(ierr);
 
   dgsf(&one,&nessl,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
