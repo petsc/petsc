@@ -78,7 +78,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Local BDDC graph for subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of vertices %d\n",graph->nvtxs);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Custom minimal size %d\n",graph->custom_minimal_size);CHKERRQ(ierr);
-  if (verbosity_level > 1) {
+  if (verbosity_level > 2) {
     for (i=0;i<graph->nvtxs;i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d:\n",i);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   which_dof: %d\n",graph->which_dof[i]);CHKERRQ(ierr);
@@ -107,7 +107,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
           ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
         }
       }
-      if (verbosity_level > 2) {
+      if (verbosity_level > 3) {
         if (graph->xadj && graph->adjncy) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   local adj list:");CHKERRQ(ierr);
           ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
@@ -141,16 +141,18 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
     for (j=0;j<graph->count[node_num];j++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d",graph->neighbours_set[node_num][j]);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"):");CHKERRQ(ierr);
-    if (verbosity_level > 1 || graph->twodim) {
-      printcc = PETSC_TRUE;
-    } else if (graph->count[node_num] > 1 || (graph->count[node_num] == 1 && graph->special_dof[node_num] == PCBDDCGRAPH_NEUMANN_MARK)) {
-      printcc = PETSC_TRUE;
-    }
-    if (printcc) {
-      for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d (%d)",graph->queue[j],queue_in_global_numbering[j]);CHKERRQ(ierr);
+    if (verbosity_level > 1) {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"):");CHKERRQ(ierr);
+      if (graph->twodim || graph->count[node_num] > 1 || (graph->count[node_num] == 1 && graph->special_dof[node_num] == PCBDDCGRAPH_NEUMANN_MARK)) {
+        printcc = PETSC_TRUE;
       }
+      if (printcc) {
+        for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d (%d)",graph->queue[j],queue_in_global_numbering[j]);CHKERRQ(ierr);
+        }
+      }
+    } else {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,")");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
