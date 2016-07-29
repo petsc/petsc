@@ -6,11 +6,11 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCComputeNoNetFlux"
-PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, IS vl2l, PCBDDCGraph graph, MatNullSpace *nnsp)
+PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, IS vl2l, PCBDDCGraph graph, MatNullSpace *nnsp)
 {
   Mat                    loc_divudotp;
   Vec                    p,v,vins,quad_vec,*quad_vecs;
-  ISLocalToGlobalMapping rmap;
+  ISLocalToGlobalMapping map;
   IS                     *faces,*edges;
   PetscScalar            *vals;
   const PetscScalar      *array;
@@ -47,13 +47,17 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, IS vl2l, PCBDDCGraph 
   ierr = PetscMalloc1(maxsize,&vals);CHKERRQ(ierr);
   /* create vectors to hold quadrature weights */
   ierr = MatCreateVecs(A,&quad_vec,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalToGlobalMapping(A,&rmap,NULL);CHKERRQ(ierr);
+  if (!transpose) {
+    ierr = MatGetLocalToGlobalMapping(A,&map,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetLocalToGlobalMapping(A,NULL,&map);CHKERRQ(ierr);
+  }
   ierr = VecDuplicateVecs(quad_vec,maxneighs,&quad_vecs);CHKERRQ(ierr);
   ierr = VecDestroy(&quad_vec);CHKERRQ(ierr);
   for (i=0;i<maxneighs;i++) {
     PetscInt first,last;
 
-    ierr = VecSetLocalToGlobalMapping(quad_vecs[i],rmap);CHKERRQ(ierr);
+    ierr = VecSetLocalToGlobalMapping(quad_vecs[i],map);CHKERRQ(ierr);
     /* the near-null space fo BDDC carries information on quadrature weights,
        and these can be collinear -> so cheat with MatNullSpaceCreate
        and create a suitable set of basis vectors first */
@@ -80,9 +84,17 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, IS vl2l, PCBDDCGraph 
   }
   /* compute local quad vec */
   ierr = MatISGetLocalMat(divudotp,&loc_divudotp);CHKERRQ(ierr);
-  ierr = MatCreateVecs(loc_divudotp,&v,&p);CHKERRQ(ierr);
+  if (!transpose) {
+    ierr = MatCreateVecs(loc_divudotp,&v,&p);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateVecs(loc_divudotp,&p,&v);CHKERRQ(ierr);
+  }
   ierr = VecSet(p,1.);CHKERRQ(ierr);
-  ierr = MatMultTranspose(loc_divudotp,p,v);CHKERRQ(ierr);
+  if (!transpose) {
+    ierr = MatMultTranspose(loc_divudotp,p,v);CHKERRQ(ierr);
+  } else {
+    ierr = MatMult(loc_divudotp,p,v);CHKERRQ(ierr);
+  }
   if (vl2l) {
     ierr = VecGetSubVector(v,vl2l,&vins);CHKERRQ(ierr);
   } else {
@@ -3675,7 +3687,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (pcbddc->dbg_flag && !pcbddc->sub_schurs) {
       PetscInt nv;
 
-      ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag-1,pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = ISGetSize(ISForVertices,&nv);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
@@ -6072,7 +6084,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
         ierr = MatISSetLocalMat(coarsedivudotp_is,coarsedivudotp);CHKERRQ(ierr);
         ierr = MatDestroy(&coarsedivudotp);CHKERRQ(ierr);
-        ierr = PCBDDCSetDivergenceMat(pc_temp,coarsedivudotp_is,NULL);CHKERRQ(ierr);
+        ierr = PCBDDCSetDivergenceMat(pc_temp,coarsedivudotp_is,PETSC_FALSE,NULL);CHKERRQ(ierr);
         ierr = MatDestroy(&coarsedivudotp_is);CHKERRQ(ierr);
         pcbddc_coarse->adaptive_userdefined = PETSC_TRUE;
         if (pcbddc->adaptive_threshold < 1.0) pcbddc_coarse->deluxe_zerorows = PETSC_TRUE;
@@ -6614,7 +6626,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   if (pcbddc->dbg_flag) {
     IS       vertices;
     PetscInt nv,nedges,nfaces;
-    ierr = PCBDDCGraphASCIIView(graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PCBDDCGraphASCIIView(graph,pcbddc->dbg_flag-1,pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PCBDDCGraphGetCandidatesIS(graph,&nfaces,NULL,&nedges,NULL,&vertices);CHKERRQ(ierr);
     ierr = ISGetSize(vertices,&nv);CHKERRQ(ierr);
     ierr = ISDestroy(&vertices);CHKERRQ(ierr);

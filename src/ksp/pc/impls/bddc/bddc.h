@@ -53,6 +53,7 @@ typedef struct {
   Vec           temp_solution;
   Mat           local_mat;
   PetscBool     use_exact_dirichlet_trick;
+  PetscBool     exact_dirichlet_trick_app;
   PetscBool     ksp_guess_nonzero;
   PetscBool     rhs_change;
   PetscBool     temp_solution_used;
@@ -114,6 +115,7 @@ typedef struct {
   /* no-net-flux */
   PetscBool compute_nonetflux;
   Mat       divudotp;
+  PetscBool divudotp_trans;
   IS        divudotp_vl2l;
 
   /* local disconnected subdomains */

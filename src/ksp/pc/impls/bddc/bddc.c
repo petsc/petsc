@@ -211,7 +211,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDivergenceMat_BDDC"
-static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, IS vl2l)
+static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool trans, IS vl2l)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;
@@ -220,6 +220,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, IS vl2l)
   ierr = PetscObjectReference((PetscObject)divudotp);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->divudotp);CHKERRQ(ierr);
   pcbddc->divudotp = divudotp;
+  pcbddc->divudotp_trans = trans;
   pcbddc->compute_nonetflux = PETSC_TRUE;
   if (vl2l) {
     ierr = PetscObjectReference((PetscObject)vl2l);CHKERRQ(ierr);
@@ -239,15 +240,16 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, IS vl2l)
    Input Parameters:
 +  pc - the preconditioning context
 .  divudotp - the matrix (must be of type MATIS)
+.  trans - if trans if false (resp. true), then pressures are in the test (trial) space and velocities are in the trial (test) space.
 -  vl2l - optional IS describing the local (wrt the local mat in divudotp) to local (wrt the local mat in pc->pmat) map for the velocities
 
    Level: advanced
 
-   Notes: It triggers the algebraic computation of no-net-flux condition
+   Notes: This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
 
 .seealso: PCBDDC
 @*/
-PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, IS vl2l)
+PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, PetscBool trans, IS vl2l)
 {
   PetscBool      ismatis;
   PetscErrorCode ierr;
@@ -256,10 +258,11 @@ PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, IS vl2l)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(divudotp,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,divudotp,2);
-  if (vl2l) PetscValidHeaderSpecific(divudotp,IS_CLASSID,3);
+  PetscValidLogicalCollectiveBool(pc,trans,3);
+  if (vl2l) PetscValidHeaderSpecific(divudotp,IS_CLASSID,4);
   ierr = PetscObjectTypeCompare((PetscObject)divudotp,MATIS,&ismatis);CHKERRQ(ierr);
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
-  ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,IS),(pc,divudotp,vl2l));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,PetscBool,IS),(pc,divudotp,trans,vl2l));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -1339,6 +1342,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
 
   /* set initial guess if using PCG */
+  pcbddc->exact_dirichlet_trick_app = PETSC_FALSE;
   if (x && pcbddc->use_exact_dirichlet_trick) {
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior) {
@@ -1366,6 +1370,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     if (ksp) {
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
+    pcbddc->exact_dirichlet_trick_app = PETSC_TRUE;
   } else if (pcbddc->ChangeOfBasisMatrix && pcbddc->change_interior && benign_correction_computed && pcbddc->use_exact_dirichlet_trick) {
     ierr = VecLockPop(pcis->vec1_global);CHKERRQ(ierr);
   }
@@ -1414,6 +1419,8 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   if (ksp) {
     ierr = KSPSetInitialGuessNonzero(ksp,pcbddc->ksp_guess_nonzero);CHKERRQ(ierr);
   }
+  /* reset flag for exact dirichlet trick */
+  pcbddc->exact_dirichlet_trick_app = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -1580,7 +1587,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (pcbddc->compute_nonetflux) {
       MatNullSpace nnfnnsp;
 
-      ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
+      ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_trans,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
       ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nnfnnsp);CHKERRQ(ierr);
     }
@@ -1750,7 +1757,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     pcbddc->work_change = r;
     r = swap;
     /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
-    if (pcbddc->benign_apply_coarse_only && pcbddc->use_exact_dirichlet_trick && pcbddc->change_interior) {
+    if (pcbddc->benign_apply_coarse_only && pcbddc->exact_dirichlet_trick_app && pcbddc->change_interior) {
       ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
       ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
     }
@@ -1758,7 +1765,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   if (pcbddc->benign_have_null) { /* get p0 from r */
     ierr = PCBDDCBenignGetOrSetP0(pc,r,PETSC_TRUE);CHKERRQ(ierr);
   }
-  if (!pcbddc->use_exact_dirichlet_trick && !pcbddc->benign_apply_coarse_only) {
+  if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     /* First Dirichlet solve */
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1846,7 +1853,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   }
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
 
-  if (!pcbddc->use_exact_dirichlet_trick && !pcbddc->benign_apply_coarse_only) {
+  if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
     if (pcbddc->switch_static) {
       ierr = VecAXPBYPCZ(pcis->vec2_D,m_one,one,m_one,pcis->vec4_D,pcis->vec1_D);CHKERRQ(ierr);
     } else {
@@ -1916,7 +1923,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     pcbddc->work_change = r;
     r = swap;
     /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
-    if (pcbddc->benign_apply_coarse_only && pcbddc->use_exact_dirichlet_trick && pcbddc->change_interior) {
+    if (pcbddc->benign_apply_coarse_only && pcbddc->exact_dirichlet_trick_app && pcbddc->change_interior) {
       ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
       ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
     }
@@ -1924,7 +1931,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
   if (pcbddc->benign_have_null) { /* get p0 from r */
     ierr = PCBDDCBenignGetOrSetP0(pc,r,PETSC_TRUE);CHKERRQ(ierr);
   }
-  if (!pcbddc->use_exact_dirichlet_trick && !pcbddc->benign_apply_coarse_only) {
+  if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     /* First Dirichlet solve */
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -2009,7 +2016,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     }
   }
   ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
-  if (!pcbddc->use_exact_dirichlet_trick && !pcbddc->benign_apply_coarse_only) {
+  if (!pcbddc->exact_dirichlet_trick_app && !pcbddc->benign_apply_coarse_only) {
     if (pcbddc->switch_static) {
       ierr = VecAXPBYPCZ(pcis->vec2_D,m_one,one,m_one,pcis->vec4_D,pcis->vec1_D);CHKERRQ(ierr);
     } else {
@@ -2539,6 +2546,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->ISForDofsLocal             = 0;
   pcbddc->ConstraintMatrix           = 0;
   pcbddc->use_exact_dirichlet_trick  = PETSC_TRUE;
+  pcbddc->exact_dirichlet_trick_app  = PETSC_FALSE;
   pcbddc->coarse_loc_to_glob         = 0;
   pcbddc->coarsening_ratio           = 8;
   pcbddc->coarse_adj_red             = 0;
