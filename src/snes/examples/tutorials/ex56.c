@@ -161,7 +161,9 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 {
   const PetscInt Ncomp = dim;
   PetscInt       comp;
-
+PetscMPIInt rank;
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+ PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s() x = %12.3e %12.3e %12.3e Nf=%D time=%g\n",rank,"zero",x[0],x[1],x[2],Nf,time);
   for (comp = 0; comp < Ncomp; ++comp) u[comp] = 0;
   return 0;
 }
@@ -260,7 +262,7 @@ int main(int argc,char **args)
           for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v*dim+d]);
           faceCoord /= Nv;
           for (b = 0; b < 2; ++b) {
-            if (PetscAbs(faceCoord - b*Lx) < PETSC_SMALL) {
+            if (PetscAbs(faceCoord - b/* *Lx */) < PETSC_SMALL) { /* domain have not been set yet, still [0,1]^3 */
               ierr = DMSetLabelValue(dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
             }
           }
