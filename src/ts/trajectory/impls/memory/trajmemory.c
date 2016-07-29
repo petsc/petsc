@@ -264,7 +264,7 @@ static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   PetscFunctionBegin;
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[33mDump stack to file\033[0m\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(tj->monitor,"Dump stack to file\n");CHKERRQ(ierr);
   }
   if (id == 1) {
     PetscMPIInt rank;
@@ -315,7 +315,7 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   PetscFunctionBegin;
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[33mLoad stack from file\033[0m\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(tj->monitor,"Load stack from file\n");CHKERRQ(ierr);
   }
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
   PetscFunctionBegin;
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[33mLoad last stack element from file\033[0m\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(tj->monitor,"Load last stack element from file\n");CHKERRQ(ierr);
   }
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = VecGetSize(Y[0],&size);CHKERRQ(ierr);
@@ -410,7 +410,7 @@ static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   PetscFunctionBegin;
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[33mLoad a single point from file\033[0m\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(tj->monitor,"Load a single point from file\n");CHKERRQ(ierr);
   }
   ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
   if (id == 1) {
@@ -446,7 +446,7 @@ static PetscErrorCode LoadSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   PetscFunctionBegin;
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[33mLoad a single point from file\033[0m\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(tj->monitor,"Load a single point from file\n");CHKERRQ(ierr);
   }
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-CPS%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -789,28 +789,28 @@ static PetscErrorCode printwhattodo(PetscViewer viewer,PetscInt whattodo,Revolve
 
   switch(whattodo) {
     case 1:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35mAdvance from %D to %D\033[0m\n",rctx->oldcapo+shift,rctx->capo+shift);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Advance from %D to %D\n",rctx->oldcapo+shift,rctx->capo+shift);CHKERRQ(ierr);
       break;
     case 2:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35mStore in checkpoint number %D (located in RAM)\033[0m\n",rctx->check);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Store in checkpoint number %D (located in RAM)\n",rctx->check);CHKERRQ(ierr);
       break;
     case 3:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35mFirst turn: Initialize adjoints and reverse first step\033[0m\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"First turn: Initialize adjoints and reverse first step\n");CHKERRQ(ierr);
       break;
     case 4:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35mForward and reverse one step\033[0m\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Forward and reverse one step\n");CHKERRQ(ierr);
       break;
     case 5:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35mRestore in checkpoint number %D (located in RAM)\033[0m\n",rctx->check);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Restore in checkpoint number %D (located in RAM)\n",rctx->check);CHKERRQ(ierr);
       break;
     case 7:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35mStore in checkpoint number %D (located on disk)\033[0m\n",rctx->check);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Store in checkpoint number %D (located on disk)\n",rctx->check);CHKERRQ(ierr);
       break;
     case 8:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35mRestore in checkpoint number %D (located on disk)\033[0m\n",rctx->check);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Restore in checkpoint number %D (located on disk)\n",rctx->check);CHKERRQ(ierr);
       break;
     case -1:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35mError!");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Error!");CHKERRQ(ierr);
       break;
   }
   PetscFunctionReturn(0);
@@ -827,28 +827,28 @@ static PetscErrorCode printwhattodo2(PetscViewer viewer,PetscInt whattodo,Revolv
 
   switch(whattodo) {
     case 1:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35m[Top Level] Advance from stride %D to stride %D\033[0m\n",rctx->oldcapo+shift,rctx->capo+shift);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"[Top Level] Advance from stride %D to stride %D\n",rctx->oldcapo+shift,rctx->capo+shift);CHKERRQ(ierr);
       break;
     case 2:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35m[Top Level] Store in checkpoint number %D\033[0m\n",rctx->check);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"[Top Level] Store in checkpoint number %D\n",rctx->check);CHKERRQ(ierr);
       break;
     case 3:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35m[Top Level] First turn: Initialize adjoints and reverse first stride\033[0m\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"[Top Level] First turn: Initialize adjoints and reverse first stride\n");CHKERRQ(ierr);
       break;
     case 4:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35m[Top Level] Forward and reverse one stride\033[0m\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"[Top Level] Forward and reverse one stride\n");CHKERRQ(ierr);
       break;
     case 5:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35m[Top Level] Restore in checkpoint number %D\033[0m\n",rctx->check);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"[Top Level] Restore in checkpoint number %D\n",rctx->check);CHKERRQ(ierr);
       break;
     case 7:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35m[Top Level] Store in top-level checkpoint number %D\033[0m\n",rctx->check);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"[Top Level] Store in top-level checkpoint number %D\n",rctx->check);CHKERRQ(ierr);
       break;
     case 8:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35m[Top Level] Restore in top-level checkpoint number %D\033[0m\n",rctx->check);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"[Top Level] Restore in top-level checkpoint number %D\n",rctx->check);CHKERRQ(ierr);
       break;
     case -1:
-      ierr = PetscViewerASCIIPrintf(viewer,"\x1B[35m[Top Level] Error!");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"[Top Level] Error!");CHKERRQ(ierr);
       break;
   }
   PetscFunctionReturn(0);
@@ -1001,7 +1001,7 @@ static PetscErrorCode GetTrajROF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,stepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[35mSkip the step from %D to %D (stage values already checkpointed)\033[0m\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
   }
@@ -1090,7 +1090,7 @@ static PetscErrorCode GetTrajRON(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     if (whattodo == 1) tjsch->rctx->stepsleft = tjsch->rctx->capo-tjsch->rctx->oldcapo;
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[35mSkip the step from %D to %D (stage values already checkpointed)\033[0m\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
   }
@@ -1218,7 +1218,7 @@ static PetscErrorCode GetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
         ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,(stridenum-1)*tjsch->stride+1,1,PETSC_FALSE,&store);CHKERRQ(ierr);
         if (tj->monitor) {
           ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[35mSkip the step from %D to %D (stage values already checkpointed)\033[0m\n",(stridenum-1)*tjsch->stride+tjsch->rctx->oldcapo,(stridenum-1)*tjsch->stride+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",(stridenum-1)*tjsch->stride+tjsch->rctx->oldcapo,(stridenum-1)*tjsch->stride+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
         }
         ierr = ElementCreate(ts,stack,&e,(stridenum-1)*tjsch->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -1235,7 +1235,7 @@ static PetscErrorCode GetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,localstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[35mSkip the step from %D to %D (stage values already checkpointed)\033[0m\n",stepnum-localstepnum+tjsch->rctx->oldcapo,stepnum-localstepnum+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",stepnum-localstepnum+tjsch->rctx->oldcapo,stepnum-localstepnum+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
     if (e->stepnum < stepnum) {
@@ -1347,7 +1347,7 @@ static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
       ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx2,(tjsch->total_steps+tjsch->stride-1)/tjsch->stride,stridenum,stridenum,PETSC_TRUE,&tjsch->store_stride);CHKERRQ(ierr);
       if (tj->monitor) {
         ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[35m[Top Level] Skip the stride from %D to %D (stage values already checkpointed)\033[0m\n",tjsch->rctx2->oldcapo,tjsch->rctx2->oldcapo+1);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(tj->monitor,"[Top Level] Skip the stride from %D to %D (stage values already checkpointed)\n",tjsch->rctx2->oldcapo,tjsch->rctx2->oldcapo+1);CHKERRQ(ierr);
       }
       if (!tjsch->rctx2->reverseonestep && tjsch->rctx2->stepsleft > 0) tjsch->rctx2->stepsleft--;
     }
@@ -1404,7 +1404,7 @@ static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
           ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,(restoredstridenum-1)*tjsch->stride+1,1,PETSC_FALSE,&store);CHKERRQ(ierr);
           if (tj->monitor) {
             ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-            ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[35mSkip the step from %D to %D (stage values already checkpointed)\033[0m\n",(restoredstridenum-1)*tjsch->stride,(restoredstridenum-1)*tjsch->stride+1);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",(restoredstridenum-1)*tjsch->stride,(restoredstridenum-1)*tjsch->stride+1);CHKERRQ(ierr);
           }
           ierr = ElementCreate(ts,stack,&e,(restoredstridenum-1)*tjsch->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
           ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -1444,7 +1444,7 @@ static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
     ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,localstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[35mSkip the step from %D to %D (stage values already checkpointed)\033[0m\n",stepnum-localstepnum+tjsch->rctx->oldcapo,stepnum-localstepnum+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",stepnum-localstepnum+tjsch->rctx->oldcapo,stepnum-localstepnum+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
     if (e->stepnum < stepnum) {
@@ -1526,7 +1526,7 @@ static PetscErrorCode GetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     if (whattodo == 1) tjsch->rctx->stepsleft = tjsch->rctx->capo-tjsch->rctx->oldcapo;
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(tj->monitor,"\x1B[35mSkip the step from %D to %D (stage values already checkpointed)\033[0m\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
     restart++; /* skip one step */
