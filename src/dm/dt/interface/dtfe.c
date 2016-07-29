@@ -2006,13 +2006,13 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
               ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
               ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
               ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-              ierr = LatticePointLexicographic_Internal(dim, orderEff, tup);CHKERRQ(ierr);
               for (d = 0; d < dim; ++d) {
                 qpoints[d] = v0[d];
                 for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d2]+1)*dx);
               }
               qweights[0] = 1.0;
               ++f;
+              ierr = LatticePointLexicographic_Internal(dim, orderEff, tup);CHKERRQ(ierr);
             }
           } else {
             while (!tup[dim]) {
@@ -2021,13 +2021,13 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
               ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
               ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
               ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-              ierr = TensorPointLexicographic_Internal(dim, orderEff, tup);CHKERRQ(ierr);
               for (d = 0; d < dim; ++d) {
                 qpoints[d] = v0[d];
                 for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d]+1)*dx);
               }
               qweights[0] = 1.0;
               ++f;
+              ierr = TensorPointLexicographic_Internal(dim, orderEff, tup);CHKERRQ(ierr);
             }
           }
           ierr = PetscFree4(tup,v0,J,invJ);CHKERRQ(ierr);
