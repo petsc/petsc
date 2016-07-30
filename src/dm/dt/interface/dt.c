@@ -50,7 +50,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 
   PetscFunctionBegin;
   PetscValidPointer(q, 2);
-  ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(*q,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
   (*q)->dim       = -1;
   (*q)->order     = -1;
