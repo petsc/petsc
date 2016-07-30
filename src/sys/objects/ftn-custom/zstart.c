@@ -155,7 +155,7 @@ extern char **PetscGlobalArgs;
 
 /*
     Reads in Fortran command line argments and sends them to
-  all processors and adds them to Options database.
+  all processors.
 */
 
 PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
