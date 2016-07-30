@@ -92,6 +92,7 @@ struct _p_SNES {
   PetscInt    linear_its;         /* total number of linear solver iterations */
   PetscReal   norm;               /* residual norm of current iterate */
   PetscReal   rtol;               /* relative tolerance */
+  PetscReal   divtol;             /* relative divergence tolerance */
   PetscReal   abstol;             /* absolute tolerance */
   PetscReal   stol;               /* step length tolerance*/
   PetscReal   deltatol;           /* trust region convergence tolerance */
@@ -141,7 +142,8 @@ struct _p_SNES {
 
   /* SNESConvergedDefault context: split it off into a separate var/struct to be passed as context to SNESConvergedDefault? */
   PetscReal   ttol;              /* rtol*initial_residual_norm */
-
+  PetscReal   rnorm0;            /* initial residual norm (used for divergence testing) */
+  
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   PetscInt    nvwork;
 

@@ -333,6 +333,24 @@ runex1_3:
 	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_3.tmp
+runex1_aijcusparse:
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse > ex1_1.tmp 2>&1;\
+	   if (${DIFF} output/ex1_1_aijcusparse.out ex1_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex1_1 for aijcusparse, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1_1.tmp
+runex1_2_aijcusparse:
+	-@${MPIEXEC} -n 1 ./ex1 -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
+	  -mat_type aijcusparse > ex1_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex1_2_aijcusparse.out ex1_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex1_2 for aijcusparse, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1_2.tmp
+runex1_3_aijcusparse:
+	-@${MPIEXEC} -n 1 ./ex1 -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse >\
+	   ex1_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex1_3_aijcusparse.out ex1_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex1_3 for aijcusparse, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1_3.tmp
+
 runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
@@ -1201,7 +1219,7 @@ runex46_aijcusp:
 		${DIFF} output/ex46_aijcusp.out ex46_aijcusp.tmp || printf "${PWD}\nPossible problem with ex46_aijcusp, diffs above\n=========================================\n"; \
 		${RM} ex46_aijcusp.tmp
 runex46_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex46 -mat_type aijcusparse -dm_vec_type cuda -random_exact_sol > ex46_aijcusparse.tmp 2>& 1; \
+	-@${MPIEXEC} -n 1 ./ex46 -mat_type aijcusparse -dm_vec_type cuda -random_exact_sol -pc_type ilu -pc_factor_mat_solver_package cusparse > ex46_aijcusparse.tmp 2>& 1; \
 		${DIFF} output/ex46_aijcusparse.out ex46_aijcusparse.tmp || printf "${PWD}\nPossible problem with ex46_aijcusparse, diffs above\n=========================================\n"; \
 		${RM} ex46_aijcusparse.tmp
 
@@ -1649,9 +1667,13 @@ TESTEXAMPLES_STRUMPACK                  = ex52.PETSc runex52_strumpack_ilu runex
 TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
 TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
 TESTEXAMPLES_MKL_PARDISO                = ex2.PETSc runex2_mkl_pardiso_lu runex2_mkl_pardiso_cholesky ex2.rm
-TESTEXAMPLES_CUDA_DATAFILESPATH         = ex10.PETSc runex10_aijcusparse ex10.rm
-TESTEXAMPLES_CUDA                       = ex4.PETSc runex4 ex4.rm ex7.PETSc  runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
-                                          ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
+TESTEXAMPLES_VECCUDA_DATAFILESPATH      = ex10.PETSc runex10_aijcusparse ex10.rm
+TESTEXAMPLES_VECCUDA                    = ex1.PETSc runex1_aijcusparse runex1_2_aijcusparse runex1_3_aijcusparse ex1.rm \
+                                          ex7.PETSc runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+                                          ex46.PETSc runex46_aijcusparse ex46.rm
+TESTEXAMPLES_CUSP                       = ex4.PETSc runex4 ex4.rm ex7.PETSc runex7_mpiaijcusp \
+                                          runex7_mpiaijcusp_2 runex7_mpiaijcusp_simple runex7_mpiaijcusp_simple_2 ex7.rm \
+                                          ex46.PETSc runex46_aijcusp ex46.rm
 TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TRILINOS                   = ex63.PETSc runex63 runex63_2 ex63.rm

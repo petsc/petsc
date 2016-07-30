@@ -1,0 +1,12 @@
+... Use Lax-LaxFriedrichs finite difference
+0 TS dt 0.0166667 time 0.
+1 TS dt 0.0166667 time 0.0166667
+2 TS dt 0.0166667 time 0.0333333
+3 TS dt 0.0166667 time 0.05
+4 TS dt 0.0166667 time 0.0666667
+5 TS dt 0.0166667 time 0.0833333
+6 TS dt 0.0166667 time 0.1
+7 TS dt 0.0166667 time 0.116667
+8 TS dt 0.0166667 time 0.133333
+9 TS dt 0.0166667 time 0.15
+10 TS dt 0.0166667 time 0.166667

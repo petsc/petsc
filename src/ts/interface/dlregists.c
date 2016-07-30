@@ -48,13 +48,13 @@ PetscErrorCode  TSInitializePackage(void)
   if (TSPackageInitialized) PetscFunctionReturn(0);
   TSPackageInitialized = PETSC_TRUE;
   /* Inialize subpackages */
-  ierr = TSGLInitializePackage();CHKERRQ(ierr);
+  ierr = TSGLLEInitializePackage();CHKERRQ(ierr);
   ierr = TSRKInitializePackage();CHKERRQ(ierr);
   ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
   ierr = TSRosWInitializePackage();CHKERRQ(ierr);
   ierr = TSSSPInitializePackage();CHKERRQ(ierr);
   ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
-  ierr = TSGLAdaptInitializePackage();CHKERRQ(ierr);
+  ierr = TSGLLEAdaptInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("TS",&TS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DMTS",&DMTS_CLASSID);CHKERRQ(ierr);

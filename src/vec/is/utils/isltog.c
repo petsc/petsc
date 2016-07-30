@@ -6,30 +6,6 @@
 PetscClassId IS_LTOGM_CLASSID;
 static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobalMapping,PetscInt*,PetscInt**,PetscInt**,PetscInt***);
 
-
-#undef __FUNCT__
-#define __FUNCT__ "ISG2LMapApply"
-PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const PetscInt in[],PetscInt out[])
-{
-  PetscErrorCode ierr;
-  PetscInt       i,start,end;
-
-  PetscFunctionBegin;
-  if (!mapping->globals) {
-    ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,0,0,0,0);CHKERRQ(ierr);
-  }
-  start = mapping->globalstart;
-  end = mapping->globalend;
-  for (i=0; i<n; i++) {
-    if (in[i] < 0)          out[i] = in[i];
-    else if (in[i] < start) out[i] = -1;
-    else if (in[i] > end)   out[i] = -1;
-    else                    out[i] = mapping->globals[in[i] - start];
-  }
-  PetscFunctionReturn(0);
-}
-
-
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
 /*@
@@ -1394,7 +1370,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingRestoreIndices"
 /*@C
-   ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with ISLocalToGlobalMappingRestoreIndices()
+   ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with ISLocalToGlobalMappingGetIndices()
 
    Not Collective
 

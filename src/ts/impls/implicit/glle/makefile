@@ -1,15 +1,16 @@
 
-#requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
+
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zaijviennaclf.c
+SOURCEC  = glle.c glleadapt.c
 SOURCEF  =
-SOURCEH  =
-DIRS     =
-LIBBASE  = libpetscmat
-LOCDIR   = src/mat/impls/aij/seq/seqviennacl/ftn-custom/
+SOURCEH  = glle.h
+LIBBASE  = libpetscts
+MANSEC   = TS
+LOCDIR   = src/ts/impls/implicit/glle/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
+

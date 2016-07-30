@@ -95,6 +95,7 @@ PETSC_EXTERN PetscErrorCode ISPairToList(IS,IS,PetscInt*, IS *[]);
 PETSC_EXTERN PetscErrorCode ISEmbed(IS,IS,PetscBool,IS*);
 PETSC_EXTERN PetscErrorCode ISSortPermutation(IS,PetscBool,IS*);
 PETSC_EXTERN PetscErrorCode ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
+PETSC_EXTERN PetscErrorCode ISRenumber(IS,IS,PetscInt*,IS*);
 
 /* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
@@ -133,7 +134,6 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobal
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping,const PetscInt**);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping,const PetscInt**);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm,PetscInt,const ISLocalToGlobalMapping[],ISLocalToGlobalMapping*);
-PETSC_EXTERN PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping,PetscInt*);
 
 

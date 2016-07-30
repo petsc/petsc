@@ -9,7 +9,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
-EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c \
+EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c ex9.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                 ex25.c ex28.c ex30.c ex33.c \
                 ex35.c ex42.c ex46.c ex48.c \
@@ -568,6 +568,31 @@ runex9_9:
 	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type composite -snes_composite_type additiveoptimal -snes_composite_sneses vinewtonrsls -sub_0_snes_vi_monitor  > ex9_9.tmp 2>&1; \
            ${DIFF} output/ex9_9.out ex9_9.tmp || printf  "${PWD}\nPossible problem with ex9_9, diffs above\n=========================================\n"; \
            ${RM} -f ex9_9.tmp
+
+runex12_p4est_convergence_test:
+	-@echo "=================="
+	-@echo "Refinement level 2"
+	-@echo "=================="
+	-@${MPIEXEC} -n 4 ./ex12 -quiet -run_type test -interpolate 1 -petscspace_order 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+	-@echo "=================="
+	-@echo "Refinement level 3"
+	-@echo "=================="
+	-@${MPIEXEC} -n 4 ./ex12 -quiet -run_type test -interpolate 1 -petscspace_order 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 3 -dm_forest_initial_refinement 3 -dm_forest_maximum_refinement 5 -dm_p4est_refine_pattern hash
+	-@echo "=================="
+	-@echo "Refinement level 4"
+	-@echo "=================="
+	-@${MPIEXEC} -n 4 ./ex12 -quiet -run_type test -interpolate 1 -petscspace_order 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 4 -dm_forest_initial_refinement 4 -dm_forest_maximum_refinement 6 -dm_p4est_refine_pattern hash
+	-@echo "=================="
+	-@echo "Refinement level 5"
+	-@echo "=================="
+	-@${MPIEXEC} -n 4 ./ex12 -quiet -run_type test -interpolate 1 -petscspace_order 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 5 -dm_forest_initial_refinement 5 -dm_forest_maximum_refinement 7 -dm_p4est_refine_pattern hash
+
+runex12_p4est_solve_bddc:
+	-@${MPIEXEC} -n 4 ./ex12 -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -ksp_monitor -snes_linesearch_type bt -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+
+runex12_p4est_solve_fas:
+	-@${MPIEXEC} -n 4 ./ex12 -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_order 2 -snes_max_it 10 -snes_type fas -snes_linesearch_type bt -snes_fas_levels 3 -fas_coarse_snes_type newtonls -fas_coarse_snes_linesearch_type basic -fas_coarse_ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_snes_monitor_short -fas_levels_snes_max_it 4 -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type bt -fas_levels_ksp_type cg -fas_levels_pc_type jacobi -fas_levels_snes_monitor_short -fas_levels_cycle_snes_linesearch_type bt -snes_monitor_short -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \

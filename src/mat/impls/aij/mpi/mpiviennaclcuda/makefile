@@ -1,14 +1,17 @@
+#requirespackage 'PETSC_HAVE_VIENNACL'
+#requiresdefine 'PETSC_HAVE_CUDA'
 
-#requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
+
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zmpiaijviennaclf.c
+SOURCECU = mpiaijviennaclcuda.cu
 SOURCEF  =
 SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/impls/aij/mpi/mpiviennacl/ftn-custom/
+DIRS     =
+MANSEC   = Mat
+LOCDIR   = src/mat/impls/aij/mpi/mpiviennaclcuda/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

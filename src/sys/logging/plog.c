@@ -1276,6 +1276,31 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscLogViewWarnDebugging"
+static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
+{
+#if defined(PETSC_USE_DEBUG)
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option,      #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else
+  return 0;
+#endif
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogView_Default"
 PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 {
@@ -1317,6 +1342,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "************************************************************************************************************************\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");CHKERRQ(ierr);
+  ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
   ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
   ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
@@ -1497,33 +1523,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with a debugging option,      #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   To get timing results run ./configure                #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   using --with-debugging=no, the performance will      #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   be generally two or three times faster.              #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
-#endif
-#if defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_FORTRAN_KERNELS)
-  ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   The code for various complex numbers numerical       #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   kernels uses C++, which generally is not well        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   optimized.  For performance that is about 4-5 times  #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   faster, specify --with-fortran-kernels=1             #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #   when running ./configure.py.                         #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
-#endif
+  ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
 
   /* Report events */
   ierr = PetscFPrintf(comm, fd,"Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total\n");CHKERRQ(ierr);
@@ -1730,6 +1730,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 
   /* Cleanup */
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);
+  ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

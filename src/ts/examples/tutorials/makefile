@@ -257,7 +257,7 @@ runex3_2:
 	   ${DIFF} output/ex3_1.out ex3_2.tmp || printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_2.tmp
 runex3_3:                       # IMEX IJacobian for constant RHS Jacobian
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason > ex3_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason | ${SED} "s/ATOL/RTOL/g" > ex3_3.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_3.out ex3_3.tmp || printf "${PWD}\nPossible problem with ex3_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_3.tmp
 runex3_4:                       # non-IMEX IJacobian with constant RHS Jacobian
@@ -404,22 +404,33 @@ runex11_euler:
 #[-dm_plex_convert_type p4est]
 
 runex11_advect:
-	${MPIEXEC} -n 4 ./ex11 \
+	-@${MPIEXEC} -n 4 ./ex11 \
 		-physics advect -advect_sol_type bump_cavity -advect_bump_center 0.,0.5 -advect_bump_radius 0.25 -advect_bump_type cos -ufv_cfl 10 \
 		-petscfv_type leastsquares -petscfv_compute_gradients 1 -petsclimiter_type minmod \
 		-monitor solution,error -ufv_vtk_interval 10 \
 		-f -grid_bounds -1.,1.,-1.,1. -bc_outflow 1,2,3,4 -grid_size 64,64 \
 		-ts_ssp_type rks2 -ts_ssp_nstages 10 -ts_final_time 1.
 
+
 runex11_advect_p4est:
-	${MPIEXEC} -n 4 ./ex11 \
+	-@${MPIEXEC} -n 4 ./ex11 \
 		-physics advect -advect_sol_type bump_cavity -advect_bump_center 0.,0.5 -advect_bump_radius 0.25 -advect_bump_type cos -ufv_cfl 10 \
 		-petscfv_type leastsquares -petscfv_compute_gradients 1 -petsclimiter_type minmod \
-		-monitor solution,error -ufv_vtk_interval 10 \
+		-monitor solution,error \
 		-f -grid_bounds -1.,1.,-1.,1. -bc_outflow 1,2,3,4 \
 			-dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 4 \
 		-ts_ssp_type rks2 -ts_ssp_nstages 10 -ts_final_time 1. \
 		-ufv_use_amr -ufv_refine_tol 1.e-2 -ufv_coarsen_tol 1.e-4
+
+runex11_advect_p4est_fine:
+	-@${MPIEXEC} -n 4 ./ex11 \
+		-physics advect -advect_sol_type bump_cavity -advect_bump_center 0.,0.5 -advect_bump_radius 0.25 -advect_bump_type cos -ufv_cfl 10 \
+		-petscfv_type leastsquares -petscfv_compute_gradients 1 -petsclimiter_type minmod \
+		-monitor solution,error \
+		-f -grid_bounds -1.,1.,-1.,1. -bc_outflow 1,2,3,4 \
+			-dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 7 -dm_forest_minimum_refinement 3 -dm_forest_initial_refinement 4 \
+		-ts_ssp_type rks2 -ts_ssp_nstages 10 -ts_final_time 1. \
+		-ufv_use_amr -ufv_refine_tol 2.5e-3 -ufv_coarsen_tol 2.5e-5
 
 runex11_euler_p4est:
 	-@${MPIEXEC} -n 4 ./ex11 -ufv_vtk_interval 1 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 \
@@ -432,6 +443,12 @@ runex12:
 	   -ts_monitor -ksp_monitor_short > ex12_1.tmp 2>&1; \
 	   ${DIFF} output/ex12_1.out ex12_1.tmp || printf "${PWD}\nPossible problem with ex12_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex12_1.tmp
+
+runex12_2:
+	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 0.11 -ts_dt 1e-1 -ts_type glle \
+	   -ts_monitor -ksp_monitor_short > ex12_2.tmp 2>&1; \
+	   ${DIFF} output/ex12_2.out ex12_2.tmp || printf "${PWD}\nPossible problem with ex12_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex12_2.tmp
 
 runex13:
 	-@${MPIEXEC} -n 1 ./ex13 -ts_max_steps 5 -ts_monitor > ex13.tmp 2>&1; \
@@ -636,6 +653,12 @@ runex22_3:
 	-@${MPIEXEC} -n 2 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_final_time .1  -ts_adapt_type none > ex22_3.tmp 2>&1; \
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || printf "${PWD}\nPossible problem with ex22_3, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22_3.tmp
+
+runex22_4:
+	-@${MPIEXEC} -n 2 ./ex22 -ts_type eimex -da_grid_x 200 -ts_eimex_order_adapt true -ts_dt 0.001 -ts_monitor > ex22_4.tmp 2>&1; \
+	   ${DIFF} output/ex22_4.out ex22_4.tmp || printf "${PWD}\nPossible problem with ex22_4, diffs above\n=========================================\n";  \
+	   ${RM} -f ex22_4.tmp
+
 runex22f:
 	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || printf "${PWD}\nPossible problem with ex22f_1, diffs above\n=========================================\n";  \
@@ -800,24 +823,24 @@ runex44_2:
 	   ${DIFF} output/ex44_2.out ex44_2.tmp || printf "${PWD}\nPossible problem with ex44_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex44_2.tmp
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 ex3.rm \
+TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_4 runex3_5 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
                             ex8.PETSc runex8 ex8.rm \
-                            ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
+                            ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_5 ex15.rm \
                             ex16adj.PETSc runex16adj runex16adj_2 ex16adj.rm \
                             ex17.PETSc runex17 ex17.rm \
                             ex19.PETSc ex19.rm \
-                            ex22.PETSc runex22_2 runex22_3 ex22.rm \
+                            ex22.PETSc runex22_2 runex22_3 runex22_4 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
                             ex31.PETSc ex31.rm \
                             ex40.PETSc runex40 ex40.rm \
                             ex41.PETSc runex41 ex41.rm \
                             ex43.PETSc ex43.rm \
                             ex44.PETSc runex44 ex44.rm
-TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
-                            ex12.PETSc runex12 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm \
+TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3_3 ex3.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
+                            ex12.PETSc runex12 runex12_2 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm \
                             ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm \
                             ex43.PETSc runex43_a runex43_b ex43.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\

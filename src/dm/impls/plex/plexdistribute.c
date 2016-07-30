@@ -1092,7 +1092,7 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
   ierr = DMGetCoordinateSection(dmParallel, &newCoordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
   if (originalCoordinates) {
-    ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF, &newCoordinates);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
 
