@@ -586,6 +586,35 @@ static PetscErrorCode LatticePoint_Internal(PetscInt len, PetscInt sum, PetscInt
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "LatticePointLexicographic_Internal"
+/*
+  LatticePointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to at most 'max'.
+                                       Ordering is lexicographic with lowest index as least significant in ordering.
+                                       e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,0}.
+
+  Input Parameters:
++ len - The length of the tuple
+. max - The maximum sum
+- tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
+
+  Output Parameter:
+. tup - A tuple of len integers whos sum is at most 'max'
+*/
+static PetscErrorCode LatticePointLexicographic_Internal(PetscInt len, PetscInt max, PetscInt tup[])
+{
+  PetscFunctionBegin;
+  while (len--) {
+    max -= tup[len];
+    if (!max) {
+      tup[len] = 0;
+      break;
+    }
+  }
+  tup[++len]++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TensorPoint_Internal"
 /*
   TensorPoint_Internal - Returns all tuples of size 'len' with nonnegative integers that are less than 'max'.
@@ -623,6 +652,37 @@ static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt 
       else                 {++ind[0];}
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TensorPointLexicographic_Internal"
+/*
+  TensorPointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that are all less than or equal to 'max'.
+                                      Ordering is lexicographic with lowest index as least significant in ordering.
+                                      e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,1}, {0,2}, {1,2}, {2,2}.
+
+  Input Parameters:
++ len - The length of the tuple
+. max - The maximum value
+- tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
+
+  Output Parameter:
+. tup - A tuple of len integers whos sum is at most 'max'
+*/
+static PetscErrorCode TensorPointLexicographic_Internal(PetscInt len, PetscInt max, PetscInt tup[])
+{
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  for (i = 0; i < len; i++) {
+    if (tup[i] < max) {
+      break;
+    } else {
+      tup[i] = 0;
+    }
+  }
+  tup[i]++;
   PetscFunctionReturn(0);
 }
 
@@ -1982,13 +2042,13 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     ++f;
     lag->numDof[0] = 1;
   } else {
-    PetscInt     *ind, *tup;
+    PetscInt     *tup;
     PetscReal    *v0, *hv0, *J, *invJ, detJ, hdetJ;
     PetscSection section;
 
     ierr = PetscSectionCreate(PETSC_COMM_SELF,&section);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(section,pStart,pEnd);CHKERRQ(ierr);
-    ierr = PetscCalloc6(dim,&ind,dim,&tup,dim,&v0,dim,&hv0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
+    ierr = PetscCalloc5(dim+1,&tup,dim,&v0,dim,&hv0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; p++) {
       PetscInt       pointDim, d, nFunc = 0;
       PetscDualSpace hsp;
@@ -2011,43 +2071,41 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         PetscReal    denom    = continuous ? order : (!tensorSpace ? order+1+dim : order+2);
         PetscReal    numer    = (!simplex || !tensorSpace) ? 2. : (2./dim);
         PetscReal    dx = numer/denom;
-        PetscInt     cdim, d, d2, o;
+        PetscInt     cdim, d, d2;
 
         if (orderEff < 0) continue;
         ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, orderEff, &cdim);CHKERRQ(ierr);
 
+        ierr = PetscMemzero(tup,(dim+1)*sizeof(PetscInt));CHKERRQ(ierr);
         if (!tensorSpace) {
-          for (o = 0; o <= orderEff; ++o) {
-            ierr = PetscMemzero(ind, dim*sizeof(PetscInt));CHKERRQ(ierr);
-            while (ind[0] >= 0) {
-              ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
-              ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
-              ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
-              ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
-              ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-              ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
-              for (d = 0; d < dim; ++d) {
-                qpoints[d] = v0[d];
-                for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d2]+1)*dx);
-              }
-              qweights[0] = 1.0;
-              ++f;
-            }
-          }
-        } else {
-          while (ind[0] >= 0) {
+          while (!tup[dim]) {
             ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
             ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
             ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
             ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
             ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-            ierr = TensorPoint_Internal(dim, orderEff+1, ind, tup);CHKERRQ(ierr);
             for (d = 0; d < dim; ++d) {
               qpoints[d] = v0[d];
               for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d2]+1)*dx);
             }
             qweights[0] = 1.0;
             ++f;
+            ierr = LatticePointLexicographic_Internal(dim, orderEff, tup);CHKERRQ(ierr);
+          }
+        } else {
+          while (!tup[dim]) {
+            ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
+            ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
+            ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
+            ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
+            ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
+            for (d = 0; d < dim; ++d) {
+              qpoints[d] = v0[d];
+              for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d2]+1)*dx);
+            }
+            qweights[0] = 1.0;
+            ++f;
+            ierr = TensorPointLexicographic_Internal(dim, orderEff, tup);CHKERRQ(ierr);
           }
         }
         lag->numDof[dim] = cdim;
@@ -2084,7 +2142,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       }
       ierr = PetscSectionSetDof(section,p,lag->numDof[pointDim]);CHKERRQ(ierr);
     }
-    ierr = PetscFree6(ind,tup,v0,hv0,J,invJ);CHKERRQ(ierr);
+    ierr = PetscFree5(tup,v0,hv0,J,invJ);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
     { /* reorder to closure order */
       PetscInt *key, count;
