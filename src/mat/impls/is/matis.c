@@ -1609,8 +1609,8 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
    Level: advanced
 
    Notes: See MATIS for more details.
-          m and n are NOT related to the size of the map; they are the size of the part of the vector owned
-          by that process. The sizes of rmap and cmap define the size of the local matrices.
+          m and n are NOT related to the size of the map; they represent the size of the local parts of the vectors
+          used in MatMult operations. The sizes of rmap and cmap define the size of the local matrices.
           If either rmap or cmap are NULL, then the matrix is assumed to be square.
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
@@ -1620,9 +1620,11 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!rmap && !cmap) SETERRQ(comm,PETSC_ERR_USER,"You need to provide at least one of the mapping");
+  if (!rmap && !cmap) SETERRQ(comm,PETSC_ERR_USER,"You need to provide at least one of the mappings");
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(*A,bs);CHKERRQ(ierr);
+  if (bs > 0) {
+    ierr = MatSetBlockSize(*A,bs);CHKERRQ(ierr);
+  }
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATIS);CHKERRQ(ierr);
   if (rmap && cmap) {
