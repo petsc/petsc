@@ -3674,6 +3674,68 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, Pets
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetCompressedClosure"
+static PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
+{
+  const PetscInt *cla;
+  PetscInt       np, *pts = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, clSec, clPoints);CHKERRQ(ierr);
+  if (!*clPoints) {
+    PetscInt pStart, pEnd, p, q;
+
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &np, &pts);CHKERRQ(ierr);
+    /* Compress out points not in the section */
+    for (p = 0, q = 0; p < np; p++) {
+      PetscInt r = pts[2*p];
+      if ((r >= pStart) && (r < pEnd)) {
+        pts[q*2]   = r;
+        pts[q*2+1] = pts[2*p+1];
+        ++q;
+      }
+    }
+    np = q;
+    cla = NULL;
+  } else {
+    PetscInt dof, off;
+
+    ierr = PetscSectionGetDof(*clSec, point, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(*clSec, point, &off);CHKERRQ(ierr);
+    ierr = ISGetIndices(*clPoints, &cla);CHKERRQ(ierr);
+    np   = dof/2;
+    pts  = (PetscInt *) &cla[off];
+  }
+  *numPoints = np;
+  *points    = pts;
+  *clp       = cla;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexRestoreCompressedClosure"
+static PetscErrorCode DMPlexRestoreCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  if (!*clPoints) {
+    ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, numPoints, points);CHKERRQ(ierr);
+  } else {
+    ierr = ISRestoreIndices(*clPoints, clp);CHKERRQ(ierr);
+  }
+  *numPoints = 0;
+  *points    = NULL;
+  *clSec     = NULL;
+  *clPoints  = NULL;
+  *clp       = NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexVecGetClosure_Static"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Static(PetscSection section, PetscInt numPoints, const PetscInt points[], const PetscInt perm[], const PetscScalar vArray[], PetscInt *size, PetscScalar array[])
 {
@@ -3787,31 +3849,8 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     PetscFunctionReturn(0);
   }
   /* Get points */
+  ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &perm);CHKERRQ(ierr);
-  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, &clSection, &clPoints);CHKERRQ(ierr);
-  if (!clPoints) {
-    PetscInt pStart, pEnd, p, q;
-
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    /* Compress out points not in the section */
-    for (p = 0, q = 0; p < numPoints*2; p += 2) {
-      if ((points[p] >= pStart) && (points[p] < pEnd)) {
-        points[q*2]   = points[p];
-        points[q*2+1] = points[p+1];
-        ++q;
-      }
-    }
-    numPoints = q;
-  } else {
-    PetscInt dof, off;
-
-    ierr = PetscSectionGetDof(clSection, point, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(clSection, point, &off);CHKERRQ(ierr);
-    ierr = ISGetIndices(clPoints, &clp);CHKERRQ(ierr);
-    numPoints = dof/2;
-    points    = (PetscInt *) &clp[off];
-  }
   /* Get array */
   if (!values || !*values) {
     PetscInt asize = 0, dof, p;
@@ -3821,8 +3860,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
       asize += dof;
     }
     if (!values) {
-      if (!clPoints) {ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);}
-      else           {ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);}
+      ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
       if (csize) *csize = asize;
       PetscFunctionReturn(0);
     }
@@ -3835,8 +3873,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   if (numFields > 0) {ierr = DMPlexVecGetClosure_Fields_Static(section, numPoints, points, numFields, perm, vArray, &size, array);CHKERRQ(ierr);}
   else               {ierr = DMPlexVecGetClosure_Static(section, numPoints, points, perm, vArray, &size, array);CHKERRQ(ierr);}
   /* Cleanup points */
-  if (!clPoints) {ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);}
-  else           {ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);}
+  ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   /* Cleanup array */
   ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
   if (!*values) {
@@ -4153,30 +4190,7 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   }
   /* Get points */
   ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &perm);CHKERRQ(ierr);
-  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, &clSection, &clPoints);CHKERRQ(ierr);
-  if (!clPoints) {
-    PetscInt pStart, pEnd, q;
-
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    /* Compress out points not in the section */
-    for (p = 0, q = 0; p < numPoints*2; p += 2) {
-      if ((points[p] >= pStart) && (points[p] < pEnd)) {
-        points[q*2]   = points[p];
-        points[q*2+1] = points[p+1];
-        ++q;
-      }
-    }
-    numPoints = q;
-  } else {
-    PetscInt dof, off;
-
-    ierr = PetscSectionGetDof(clSection, point, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(clSection, point, &off);CHKERRQ(ierr);
-    ierr = ISGetIndices(clPoints, &clp);CHKERRQ(ierr);
-    numPoints = dof/2;
-    points    = (PetscInt *) &clp[off];
-  }
+  ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   /* Get array */
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
   /* Get values */
@@ -4270,8 +4284,7 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     }
   }
   /* Cleanup points */
-  if (!clPoints) {ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);}
-  else           {ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);}
+  ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   /* Cleanup array */
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4298,30 +4311,7 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   /* Get points */
   ierr = PetscSectionGetClosureInversePermutation_Internal(section, (PetscObject) dm, NULL, &perm);CHKERRQ(ierr);
-  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, &clSection, &clPoints);CHKERRQ(ierr);
-  if (!clPoints) {
-    PetscInt pStart, pEnd, q;
-
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    /* Compress out points not in the section */
-    for (p = 0, q = 0; p < numPoints*2; p += 2) {
-      if ((points[p] >= pStart) && (points[p] < pEnd)) {
-        points[q*2]   = points[p];
-        points[q*2+1] = points[p+1];
-        ++q;
-      }
-    }
-    numPoints = q;
-  } else {
-    PetscInt dof, off;
-
-    ierr = PetscSectionGetDof(clSection, point, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(clSection, point, &off);CHKERRQ(ierr);
-    ierr = ISGetIndices(clPoints, &clp);CHKERRQ(ierr);
-    numPoints = dof/2;
-    points    = (PetscInt *) &clp[off];
-  }
+  ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   /* Get array */
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
   /* Get values */
@@ -4371,8 +4361,7 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
     }
   }
   /* Cleanup points */
-  if (!clPoints) {ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);}
-  else           {ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);}
+  ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   /* Cleanup array */
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5061,30 +5050,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   if (Nf > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", Nf);
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
   /* Get points in closure */
-  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, &clSection, &clPoints);CHKERRQ(ierr);
-  if (!clPoints) {
-    PetscInt pStart, pEnd, q;
-
-    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    /* Compress out points not in the section */
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    for (p = 0, q = 0; p < numPoints*2; p += 2) {
-      if ((points[p] >= pStart) && (points[p] < pEnd)) {
-        points[q*2]   = points[p];
-        points[q*2+1] = points[p+1];
-        ++q;
-      }
-    }
-    numPoints = q;
-  } else {
-    PetscInt dof, off;
-
-    ierr = PetscSectionGetDof(clSection, point, &dof);CHKERRQ(ierr);
-    numPoints = dof/2;
-    ierr = PetscSectionGetOffset(clSection, point, &off);CHKERRQ(ierr);
-    ierr = ISGetIndices(clPoints, &clp);CHKERRQ(ierr);
-    points = (PetscInt *) &clp[off];
-  }
+  ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   /* Get number of indices and indices per field */
   for (p = 0, Nind = 0; p < numPoints*2; p += 2) {
     PetscInt dof, fdof;
@@ -5102,8 +5068,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   {
     ierr = DMPlexAnchorsModifyMat(dm, section, numPoints, Nind, points, NULL, &numPointsNew, &NindNew, &pointsNew, NULL, offsets, PETSC_TRUE);CHKERRQ(ierr);
     if (numPointsNew) {
-      if (!clPoints) {ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);}
-      else           {ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);}
+      ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
       numPoints = numPointsNew;
       Nind      = NindNew;
       points    = pointsNew;
@@ -5135,8 +5100,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   if (numPointsNew) {
     ierr = DMRestoreWorkArray(dm, 2*numPointsNew, PETSC_INT, &pointsNew);CHKERRQ(ierr);
   } else {
-    if (!clPoints) {ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);}
-    else           {ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);}
+    ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   }
   if (numIndices) *numIndices = Nind;
   PetscFunctionReturn(0);
@@ -5187,7 +5151,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   const PetscInt *clp;
   PetscInt       *indices;
   PetscInt        offsets[32];
-  PetscInt        numFields, numPoints, newNumPoints, numIndices, newNumIndices, dof, off, globalOff, pStart, pEnd, p, q, f;
+  PetscInt        numFields, numPoints, newNumPoints, numIndices, newNumIndices, dof, off, globalOff, p, f;
   PetscScalar    *newValues;
   PetscErrorCode  ierr;
 
@@ -5201,28 +5165,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, &clSection, &clPoints);CHKERRQ(ierr);
-  if (!clPoints) {
-    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    /* Compress out points not in the section */
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    for (p = 0, q = 0; p < numPoints*2; p += 2) {
-      if ((points[p] >= pStart) && (points[p] < pEnd)) {
-        points[q*2]   = points[p];
-        points[q*2+1] = points[p+1];
-        ++q;
-      }
-    }
-    numPoints = q;
-  } else {
-    PetscInt dof, off;
-
-    ierr = PetscSectionGetDof(clSection, point, &dof);CHKERRQ(ierr);
-    numPoints = dof/2;
-    ierr = PetscSectionGetOffset(clSection, point, &off);CHKERRQ(ierr);
-    ierr = ISGetIndices(clPoints, &clp);CHKERRQ(ierr);
-    points = (PetscInt *) &clp[off];
-  }
+  ierr = DMPlexGetCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   for (p = 0, numIndices = 0; p < numPoints*2; p += 2) {
     PetscInt fdof;
 
@@ -5238,11 +5181,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   if (numFields && offsets[numFields] != numIndices) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", offsets[numFields], numIndices);
   ierr = DMPlexAnchorsModifyMat(dm,section,numPoints,numIndices,points,values,&newNumPoints,&newNumIndices,&newPoints,&newValues,offsets,PETSC_TRUE);CHKERRQ(ierr);
   if (newNumPoints) {
-    if (!clPoints) {
-      ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    } else {
-      ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);
-    }
+    ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
     numPoints  = newNumPoints;
     numIndices = newNumIndices;
     points     = newPoints;
@@ -5285,11 +5224,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
     ierr = DMRestoreWorkArray(dm,2*newNumPoints,PETSC_INT,&newPoints);CHKERRQ(ierr);
   }
   else {
-    if (!clPoints) {
-      ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    } else {
-      ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);
-    }
+    ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numIndices, PETSC_INT, &indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
