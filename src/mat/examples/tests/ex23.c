@@ -2,23 +2,23 @@
 static char help[] = "Tests the use of interface functions for MATIS matrices.\n\
 This example tests: MatZeroRows(), MatZeroRowsLocal(), MatView(), MatDuplicate(),\n\
 MatCopy(), MatGetSubMatrix(), MatGetLocalSubMatrix(), MatAXPY(), MatShift()\n\
-MatDiagonalSet() and MatISGetMPIXAIJ()\n";
+MatDiagonalSet(), MatTranspose() and MatISGetMPIXAIJ()\n";
 
 #include <petscmat.h>
 
 PetscErrorCode TestMatZeroRows(Mat,Mat,IS,PetscScalar);
+PetscErrorCode CheckMat(Mat,Mat,const char*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                    A,B,A2,B2,Bcheck;
+  Mat                    A,B,A2,B2;
   Mat                    Aee,Aeo,Aoe,Aoo;
   Vec                    x;
   ISLocalToGlobalMapping cmap,rmap;
   IS                     is,is2,reven,rodd,ceven,codd;
   PetscScalar            diag = 2.;
-  PetscReal              error;
   PetscInt               n,m,i;
   PetscMPIInt            rank,size;
   PetscErrorCode         ierr;
@@ -79,11 +79,7 @@ int main(int argc,char **args)
 
   /* test MatISGetMPIXAIJ */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatISGetMPIXAIJ\n");CHKERRQ(ierr);
-  ierr = MatISGetMPIXAIJ(A,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
-  ierr = MatAXPY(Bcheck,-1.,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-  if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON ASSEMBLY %g",error);CHKERRQ(ierr);
-  ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
+  ierr = CheckMat(A,B,"MatISGetMPIXAIJ");CHKERRQ(ierr);
 
   /* test MatGetLocalSubMatrix */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatGetLocalSubMatrix\n");CHKERRQ(ierr);
@@ -132,12 +128,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAXPY(A2,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  /* cannot call MatNorm on MATIS */
-  ierr = MatISGetMPIXAIJ(A2,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
-  ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-  if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON GetLocalSubMatrix %g",error);CHKERRQ(ierr);
+  ierr = CheckMat(A2,NULL,"MatGetLocalSubMatrix");CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
-  ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
 
   /* test MatGetSubMatrix */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatGetSubMatrix\n");CHKERRQ(ierr);
@@ -156,29 +148,18 @@ int main(int argc,char **args)
   }
   ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(B,is,is,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
-  ierr = MatISGetMPIXAIJ(A2,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
-  ierr = MatAXPY(Bcheck,-1.,B2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-  if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON FIRST GetSubMatrix %g",error);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,"first MatGetSubMatrix");CHKERRQ(ierr);
 
   ierr = MatGetSubMatrix(A,is,is,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
-  ierr = MatISGetMPIXAIJ(A2,MAT_REUSE_MATRIX,&Bcheck);CHKERRQ(ierr);
-  ierr = MatAXPY(Bcheck,-1.,B2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-  if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON REUSE GetSubMatrix %g",error);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,"reuse MatGetSubMatrix");CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
-  ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrix(A,is,is2,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(B,is,is2,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
-  ierr = MatISGetMPIXAIJ(A2,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
-  ierr = MatAXPY(Bcheck,-1.,B2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-  if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON SECOND GetSubMatrix %g",error);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,"second MatGetSubMatrix");CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
-  ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&is2);CHKERRQ(ierr);
 
@@ -204,39 +185,73 @@ int main(int argc,char **args)
     ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
     ierr = MatDiagonalSet(A2,x,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatDiagonalSet(B2,x,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatISGetMPIXAIJ(A2,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
-    ierr = MatAXPY(Bcheck,-1.,B2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON MatDiagonalSet %g",error);CHKERRQ(ierr);
+    ierr = CheckMat(A2,B2,"MatDiagonalSet");CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = MatDestroy(&A2);CHKERRQ(ierr);
     ierr = MatDestroy(&B2);CHKERRQ(ierr);
-    ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
 
     /* test MatShift (MatShift_IS internally uses MatDiagonalSet_IS with ADD_VALUES) */
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatShift\n");CHKERRQ(ierr);
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
     ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
-    ierr = MatShift(A,1.0);CHKERRQ(ierr);
-    ierr = MatShift(B,1.0);CHKERRQ(ierr);
-    ierr = MatISGetMPIXAIJ(A2,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
-    ierr = MatAXPY(Bcheck,-1.,B2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON MatShift %g",error);CHKERRQ(ierr);
+    ierr = MatShift(A2,1.0);CHKERRQ(ierr);
+    ierr = MatShift(B2,1.0);CHKERRQ(ierr);
+    ierr = CheckMat(A2,B2,"MatShift");CHKERRQ(ierr);
     ierr = MatDestroy(&A2);CHKERRQ(ierr);
     ierr = MatDestroy(&B2);CHKERRQ(ierr);
-    ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
 
     /* nonzero diag value is supported for square matrices only */
     ierr = TestMatZeroRows(A,B,is,diag);CHKERRQ(ierr);
   }
   ierr = TestMatZeroRows(A,B,is,0.0);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
+  /* test MatTranspose */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatTranspose\n");CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = MatTranspose(B,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,"initial matrix MatTranspose");CHKERRQ(ierr);
+
+  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,"reuse matrix (not in place) MatTranspose");CHKERRQ(ierr);
+  ierr = MatDestroy(&A2);CHKERRQ(ierr);
+
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+  ierr = MatTranspose(A2,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,"reuse matrix (in place) MatTranspose");CHKERRQ(ierr);
+  ierr = MatDestroy(&A2);CHKERRQ(ierr);
+
+  ierr = MatDuplicate(B,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,"reuse matrix (different type) MatTranspose");CHKERRQ(ierr);
+  ierr = MatDestroy(&A2);CHKERRQ(ierr);
+
+  ierr = MatDestroy(&B2);CHKERRQ(ierr);
+
+  /* free testing matrices */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CheckMat"
+PetscErrorCode CheckMat(Mat A, Mat B, const char* func)
+{
+  Mat            Bcheck;
+  PetscReal      error;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = MatISGetMPIXAIJ(A,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
+  if (B) { /* if B is present, subtract it */
+    ierr = MatAXPY(Bcheck,-1.,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
+  ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
+  if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: %g",func,error);CHKERRQ(ierr);
+  ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -328,28 +343,20 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, IS is, PetscScalar diag)
 
   /* check the result of ZeroRows with that from MPIAIJ routines
      assuming that MatISGetMPIXAIJ and MatZeroRows_MPIAIJ work fine */
-  ierr = MatISGetMPIXAIJ(B,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDuplicate(Afull,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatZeroRowsIS(B,is,diag,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatAXPY(Bcheck,-1.,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-  if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS %g (diag %s)",error,diagstr);CHKERRQ(ierr);
+  ierr = MatDuplicate(Afull,MAT_COPY_VALUES,&Bcheck);CHKERRQ(ierr);
+  ierr = MatSetOption(Bcheck,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(Bcheck,is,diag,NULL,NULL);CHKERRQ(ierr);
+  ierr = CheckMat(B,Bcheck,"Zerorows");CHKERRQ(ierr);
   ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   if (B2) { /* test MatZeroRowsColumns */
-    ierr = MatISGetMPIXAIJ(B2,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
     ierr = MatDuplicate(Afull,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatZeroRowsColumnsIS(B,is,diag,NULL,NULL);CHKERRQ(ierr);
-    ierr = MatAXPY(Bcheck,-1.,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWSCOLUMNS %g (diag %s)",error,diagstr);CHKERRQ(ierr);
-    ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
+    ierr = CheckMat(B2,B,"MatZeroRowsColumns");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = MatDestroy(&B2);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
