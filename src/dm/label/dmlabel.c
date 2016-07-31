@@ -770,15 +770,14 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
   if (start) {PetscValidPointer(start, 3); *start = 0;}
   if (end)   {PetscValidPointer(end,   4); *end   = 0;}
   for (v = 0; v < label->numStrata; ++v) {
-    const PetscInt *points;
+    PetscInt min, max;
 
     if (label->stratumValues[v] != value) continue;
     ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
     if (label->stratumSizes[v]  <= 0)     break;
-    ierr = ISGetIndices(label->points[v],&points);CHKERRQ(ierr);
-    if (start) *start = points[0];
-    if (end)   *end   = points[label->stratumSizes[v]-1]+1;
-    ierr = ISRestoreIndices(label->points[v],&points);CHKERRQ(ierr);
+    ierr = ISGetMinMax(label->points[v], &min, &max);CHKERRQ(ierr);
+    if (start) *start = min;
+    if (end)   *end   = max+1;
     break;
   }
   PetscFunctionReturn(0);
