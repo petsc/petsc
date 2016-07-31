@@ -161,9 +161,7 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 {
   const PetscInt Ncomp = dim;
   PetscInt       comp;
-PetscMPIInt rank;
-MPI_Comm_rank(MPI_COMM_WORLD, &rank);
- PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s() x = %12.3e %12.3e %12.3e Nf=%D time=%g\n",rank,"zero",x[0],x[1],x[2],Nf,time);
+
   for (comp = 0; comp < Ncomp; ++comp) u[comp] = 0;
   return 0;
 }
@@ -452,7 +450,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
     ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = KSPComputeExtremeSingularValues(ksp, &emax, &emin);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s emax=%10.4E\n",0,__FUNCT__,emax);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s emax=%10.2E\n",0,__FUNCT__,emax);CHKERRQ(ierr);
   }
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   if (1) { /* p4est might need this */
