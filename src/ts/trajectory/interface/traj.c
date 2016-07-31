@@ -114,7 +114,9 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  disk checkpoint reads = %D\n",tj->diskreads);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  disk checkpoint writes = %D\n",tj->diskwrites);CHKERRQ(ierr);
     if (tj->ops->view) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*tj->ops->view)(tj,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

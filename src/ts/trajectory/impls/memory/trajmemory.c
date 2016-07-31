@@ -265,6 +265,7 @@ static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Dump stack to file\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
   if (id == 1) {
     PetscMPIInt rank;
@@ -316,6 +317,7 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Load stack from file\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -366,6 +368,7 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Load last stack element from file\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = VecGetSize(Y[0],&size);CHKERRQ(ierr);
@@ -411,6 +414,7 @@ static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Load a single point from file\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
   ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
   if (id == 1) {
@@ -447,6 +451,7 @@ static PetscErrorCode LoadSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Load a single point from file\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-CPS%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -643,7 +648,7 @@ static PetscErrorCode SetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscRe
     ierr = StackTop(stack,&e);CHKERRQ(ierr);
     e->timenext = ts->ptime;
   }
-  if (stepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+  if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
   ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
   ierr = StackPush(stack,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -966,7 +971,7 @@ static PetscErrorCode SetTrajROF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   if (stack->solution_only && stepnum == tjsch->total_steps) PetscFunctionReturn(0);
   ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,stepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1) {
-    if (stepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+    if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1002,6 +1007,7 @@ static PetscErrorCode GetTrajROF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
   }
@@ -1049,7 +1055,7 @@ static PetscErrorCode SetTrajRON(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
       ierr        = TSGetPrevTime(ts,&timeprev);CHKERRQ(ierr);
       e->timeprev = timeprev;
     } else {
-      if (stepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+      if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
       ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
       ierr = StackPush(stack,e);CHKERRQ(ierr);
     }
@@ -1091,6 +1097,7 @@ static PetscErrorCode GetTrajRON(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
   }
@@ -1141,7 +1148,7 @@ static PetscErrorCode SetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   }
   ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,localstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1) {
-    if (localstepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+    if (localstepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1219,6 +1226,7 @@ static PetscErrorCode GetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
         if (tj->monitor) {
           ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",(stridenum-1)*tjsch->stride+tjsch->rctx->oldcapo,(stridenum-1)*tjsch->stride+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
         }
         ierr = ElementCreate(ts,stack,&e,(stridenum-1)*tjsch->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -1236,6 +1244,7 @@ static PetscErrorCode GetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",stepnum-localstepnum+tjsch->rctx->oldcapo,stepnum-localstepnum+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
     if (e->stepnum < stepnum) {
@@ -1297,7 +1306,7 @@ static PetscErrorCode SetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
   if (!stack->solution_only && localstepnum == 0 && stepnum != tjsch->total_steps && !tjsch->recompute) PetscFunctionReturn(0);
   ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,localstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1) {
-    if (localstepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+    if (localstepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1348,6 +1357,7 @@ static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
       if (tj->monitor) {
         ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(tj->monitor,"[Top Level] Skip the stride from %D to %D (stage values already checkpointed)\n",tjsch->rctx2->oldcapo,tjsch->rctx2->oldcapo+1);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
       }
       if (!tjsch->rctx2->reverseonestep && tjsch->rctx2->stepsleft > 0) tjsch->rctx2->stepsleft--;
     }
@@ -1405,6 +1415,7 @@ static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
           if (tj->monitor) {
             ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
             ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",(restoredstridenum-1)*tjsch->stride,(restoredstridenum-1)*tjsch->stride+1);CHKERRQ(ierr);
+            ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
           }
           ierr = ElementCreate(ts,stack,&e,(restoredstridenum-1)*tjsch->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
           ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -1445,6 +1456,7 @@ static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",stepnum-localstepnum+tjsch->rctx->oldcapo,stepnum-localstepnum+tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
     if (e->stepnum < stepnum) {
@@ -1475,7 +1487,7 @@ static PetscErrorCode SetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   if (stack->solution_only && stepnum == tjsch->total_steps) PetscFunctionReturn(0);
   ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,tjsch->total_steps,stepnum,stepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
   if (store == 1){
-    if (stepnum < stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+    if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   } else if (store == 2) {
@@ -1527,6 +1539,7 @@ static PetscErrorCode GetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     if (tj->monitor) {
       ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",tjsch->rctx->oldcapo,tjsch->rctx->oldcapo+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     }
     if (!tjsch->rctx->reverseonestep && tjsch->rctx->stepsleft > 0) tjsch->rctx->stepsleft--;
     restart++; /* skip one step */
@@ -1741,7 +1754,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_cps_ram;
 
   if (tjsch->stride > 1) { /* two level mode */
-    if (tjsch->save_stack && tjsch->max_cps_disk > 1 && tjsch->max_cps_disk <= tjsch->max_cps_ram) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
+    if (tjsch->save_stack && tjsch->max_cps_disk > 1 && tjsch->max_cps_disk <= tjsch->max_cps_ram) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
     if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) tjsch->stype = TWO_LEVEL_REVOLVE; /* use revolve_offline for each stride */
     if (tjsch->max_cps_disk > 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride-1) tjsch->stype = TWO_LEVEL_TWO_REVOLVE;  /* use revolve_offline for each stride */
     if (tjsch->max_cps_disk <= 1 && (tjsch->max_cps_ram >= tjsch->stride || tjsch->max_cps_ram == -1)) tjsch->stype = TWO_LEVEL_NOREVOLVE; /* can also be handled by TWO_LEVEL_REVOLVE */
@@ -1757,7 +1770,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 
   if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
 #ifndef PETSC_HAVE_REVOLVE
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"revolve is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-revolve.");
+    SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"revolve is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-revolve.");
 #else
     switch (tjsch->stype) {
       case TWO_LEVEL_REVOLVE:
