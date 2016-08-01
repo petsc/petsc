@@ -14,17 +14,17 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get;
   Not Collective
 
   Input Parameters:
-+ name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
++ name        - the name of a new user-defined creation routine
+- create_func - the creation routine itself
 
   Notes:
   TSTrajectoryRegister() may be called multiple times to add several user-defined tses.
 
   Level: advanced
 
-.keywords: TS, register
+.keywords: TS, trajectory, timestep, register
 
-.seealso: TSTrajectoryRegisterAll(), TSTrajectoryRegisterDestroy()
+.seealso: TSTrajectoryRegisterAll()
 @*/
 PetscErrorCode TSTrajectoryRegister(const char sname[],PetscErrorCode (*function)(TSTrajectory,TS))
 {
@@ -90,7 +90,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
     Level: beginner
 
-.keywords: TS, timestep, view
+.keywords: TS, trajectory, timestep, view
 
 .seealso: PetscViewerASCIIOpen()
 @*/
@@ -130,18 +130,18 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
   Collective on MPI_Comm
 
   Input Parameter:
-. comm - The communicator
+. comm - the communicator
 
   Output Parameter:
-. tj   - The trajectory object
+. tj   - the trajectory object
 
   Level: advanced
 
-  Notes: Usually one does not call this routine, it is called automatically when one calls TSSetSaveTrajectory(). One can call
-   TSGetTrajectory() to access the created trajectory.
+  Notes: Usually one does not call this routine, it is called automatically when one calls TSSetSaveTrajectory().
 
-.keywords: TS, create
-.seealso: TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType(), TSGetTrajectory()
+.keywords: TS, trajectory, create
+
+.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType()
 @*/
 PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 {
@@ -167,17 +167,18 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   Collective on TS
 
   Input Parameters:
-+ ts   - The TS context
-- type - A known method
++ tj   - the TSTrajectory context
+. ts   - the TS context
+- type - a known method
 
   Options Database Command:
 . -ts_trajectory_type <type> - Sets the method; use -help for a list of available methods (for instance, basic)
 
    Level: intermediate
 
-.keywords: TS, set, type
+.keywords: TS, trajectory, timestep, set, type
 
-.seealso: TS, TSSolve(), TSCreate(), TSSetFromOptions(), TSDestroy(), TSType
+.seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy()
 
 @*/
 PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,const TSTrajectoryType type)
@@ -219,8 +220,9 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory,TS);
 
   Level: advanced
 
-.keywords: TS, timestepper, register, all
-.seealso: TSCreate(), TSRegister(), TSRegisterDestroy()
+.keywords: TS, trajectory, register, all
+
+.seealso: TSTrajectoryRegister()
 @*/
 PetscErrorCode  TSTrajectoryRegisterAll(void)
 {
@@ -245,13 +247,13 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
    Collective on TSTrajectory
 
    Input Parameter:
-.  ts - the TSTrajectory context obtained from TSTrajectoryCreate()
+.  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 
    Level: advanced
 
-.keywords: TS, timestepper, destroy
+.keywords: TS, trajectory, timestep, destroy
 
-.seealso: TSCreate(), TSSetUp(), TSSolve()
+.seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
 @*/
 PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
 {
@@ -276,12 +278,17 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   Collective on TSTrajectory
 
   Input Parameter:
-. tj - TSTrajectory
++ tj - the TSTrajectory context
+- ts - the TS context
+
+  Options Database Keys:
+. -ts_trajectory_type <type> - TSTRAJECTORYBASIC, TSTRAJECTORYMEMORY, TSTRAJECTORYSINGLEFILE, TSTRAJECTORYVISUALIZATION
 
   Level: intermediate
 
-.keywords: TS, set, options, database, type
-.seealso: TSSetFromOptions(), TSSetType()
+.keywords: TS, trajectory, set, options, type
+
+.seealso: TSTrajectorySetFromOptions(), TSTrajectorySetType()
 */
 static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject,TSTrajectory tj,TS ts)
 {
@@ -317,9 +324,14 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 +  tj - the TSTrajectory context
 -  flg - PETSC_TRUE to active a monitor, PETSC_FALSE to disable
 
+   Options Database Keys:
+.  -ts_trajecotry_monitor - print TSTrajectory information
+
    Level: intermediate
 
-.seealso: TSTrajectorySetType()
+.keywords: TS, trajectory, set, monitor
+
+.seealso: TSTrajectoryCreate(), TSTrajectoryDestroy(), TSTrajectorySetUp()
 @*/
 PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 {
@@ -344,19 +356,20 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
    Collective on TSTrajectory
 
    Input Parameter:
-.  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
++  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
+-  ts - the TS context
 
    Options Database Keys:
-.  -ts_trajectory_type <type> - TSTRAJECTORYBASIC
-.  -ts_trajectory_max_cps <int>
++  -ts_trajectory_type <type> - TSTRAJECTORYBASIC, TSTRAJECTORYMEMORY, TSTRAJECTORYSINGLEFILE, TSTRAJECTORYVISUALIZATION
+-  -ts_trajecotry_monitor - print TSTrajectory information
 
    Level: advanced
 
    Notes: This is not normally called directly by users
 
-.keywords: TS, timestep, set, options, database, trajectory
+.keywords: TS, trajectory, timestep, set, options, database
 
-.seealso: TSGetType(), TSSetSaveTrajectory(), TSGetTrajectory()
+.seealso: TSSetSaveTrajectory(), TSTrajectorySetUp()
 @*/
 PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 {
@@ -387,12 +400,12 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
    Collective on TS
 
    Input Parameter:
-.  ts - the TS context obtained from TSCreate()
-.  tj - the TS trajectory context
++  ts - the TS context obtained from TSCreate()
+-  tj - the TS trajectory context
 
    Level: advanced
 
-.keywords: TS, setup, checkpoint
+.keywords: TS, trajectory, setup
 
 .seealso: TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy()
 @*/

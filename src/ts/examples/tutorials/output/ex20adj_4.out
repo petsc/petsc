@@ -1,0 +1,88 @@
+Store in checkpoint number 0 (located in RAM)
+Advance from 0 to 6
+Store in checkpoint number 1 (located in RAM)
+Advance from 6 to 8
+Store in checkpoint number 2 (located in RAM)
+Advance from 8 to 10
+Store in checkpoint number 3 (located in RAM)
+Advance from 10 to 12
+Store in checkpoint number 4 (located in RAM)
+Advance from 12 to 14
+First turn: Initialize adjoints and reverse first step
+Restore in checkpoint number 4 (located in RAM)
+Advance from 12 to 13
+Skip the step from 12 to 13 (stage values already checkpointed)
+Forward and reverse one step
+Restore in checkpoint number 4 (located in RAM)
+Forward and reverse one step
+Skip the step from 12 to 13 (stage values already checkpointed)
+Restore in checkpoint number 3 (located in RAM)
+Advance from 10 to 11
+Skip the step from 10 to 11 (stage values already checkpointed)
+Forward and reverse one step
+Restore in checkpoint number 3 (located in RAM)
+Forward and reverse one step
+Skip the step from 10 to 11 (stage values already checkpointed)
+Restore in checkpoint number 2 (located in RAM)
+Advance from 8 to 9
+Skip the step from 8 to 9 (stage values already checkpointed)
+Forward and reverse one step
+Restore in checkpoint number 2 (located in RAM)
+Forward and reverse one step
+Skip the step from 8 to 9 (stage values already checkpointed)
+Restore in checkpoint number 1 (located in RAM)
+Advance from 6 to 7
+Skip the step from 6 to 7 (stage values already checkpointed)
+Forward and reverse one step
+Restore in checkpoint number 1 (located in RAM)
+Forward and reverse one step
+Skip the step from 6 to 7 (stage values already checkpointed)
+Restore in checkpoint number 0 (located in RAM)
+Advance from 0 to 1
+Skip the step from 0 to 1 (stage values already checkpointed)
+Store in checkpoint number 1 (located in RAM)
+Advance from 1 to 2
+Store in checkpoint number 2 (located in RAM)
+Advance from 2 to 3
+Store in checkpoint number 3 (located in RAM)
+Advance from 3 to 4
+Store in checkpoint number 4 (located in RAM)
+Advance from 4 to 5
+Forward and reverse one step
+Restore in checkpoint number 4 (located in RAM)
+Forward and reverse one step
+Skip the step from 4 to 5 (stage values already checkpointed)
+Restore in checkpoint number 3 (located in RAM)
+Forward and reverse one step
+Skip the step from 3 to 4 (stage values already checkpointed)
+Restore in checkpoint number 2 (located in RAM)
+Forward and reverse one step
+Skip the step from 2 to 3 (stage values already checkpointed)
+Restore in checkpoint number 1 (located in RAM)
+Forward and reverse one step
+Skip the step from 1 to 2 (stage values already checkpointed)
+Restore in checkpoint number 0 (located in RAM)
+Forward and reverse one step
+Skip the step from 0 to 1 (stage values already checkpointed)
+
+ sensitivity wrt initial conditions: d[y(tf)]/d[y0]  d[y(tf)]/d[z0]
+Vec Object: 1 MPI processes
+  type: seq
+1.00844
+5.74982e-06
+
+ sensitivity wrt initial conditions: d[z(tf)]/d[y0]  d[z(tf)]/d[z0]
+Vec Object: 1 MPI processes
+  type: seq
+1.03128
+-0.828692
+
+ sensitivity wrt parameters: d[y(tf)]/d[mu]
+Vec Object: 1 MPI processes
+  type: seq
+-1.89651e-13
+
+ sensivitity wrt parameters: d[z(tf)]/d[mu]
+Vec Object: 1 MPI processes
+  type: seq
+-2.13422e-11
