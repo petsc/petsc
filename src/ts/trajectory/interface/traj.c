@@ -325,7 +325,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 -  flg - PETSC_TRUE to active a monitor, PETSC_FALSE to disable
 
    Options Database Keys:
-.  -ts_trajecotry_monitor - print TSTrajectory information
+.  -ts_trajectory_monitor - print TSTrajectory information
 
    Level: intermediate
 
@@ -361,7 +361,7 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 
    Options Database Keys:
 +  -ts_trajectory_type <type> - TSTRAJECTORYBASIC, TSTRAJECTORYMEMORY, TSTRAJECTORYSINGLEFILE, TSTRAJECTORYVISUALIZATION
--  -ts_trajecotry_monitor - print TSTrajectory information
+-  -ts_trajectory_monitor - print TSTrajectory information
 
    Level: advanced
 
