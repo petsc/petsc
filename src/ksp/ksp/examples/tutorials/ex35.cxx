@@ -348,7 +348,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
 
     /* 1) compute the basis functions and the derivatives wrt x and y directions
        2) compute the quadrature points transformed to the physical space */
-    ierr = DMMoabFEMComputeBasis(2, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, 0);CHKERRQ(ierr);
+    ierr = DMMoabFEMComputeBasis(2, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, NULL);CHKERRQ(ierr);
 
     /* Compute function over the locally owned part of the grid */
     for (q=0; q<npoints; ++q) {

@@ -171,6 +171,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   PetscInt         innz, *nnz, ionz, *onz;
   PetscInt         nlsizp, nlsizc, nlghsizp, ngsizp, ngsizc;
   moab::Range      eowned;
+  const PetscBool  use_consistent_bases=PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmp, DM_CLASSID, 1);
@@ -186,6 +187,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   // Interpolation matrix: \sum_{i=1}^P Owned(Child) * (Owned(Parent) + Ghosted(Parent))
   // Size: nlsizc * nlghsizp
   PetscInfo4(NULL, "Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
+
+  ierr = DMGetDimension(dmp, &dim);CHKERRQ(ierr);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
   ierr = PetscCalloc2(nlsizc, &nnz, nlsizc, &onz);CHKERRQ(ierr);
@@ -209,9 +212,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
     //merr = dmb1->mbiface->get_connectivity(ehandle,connect,vpere,false);MBERRNM(merr);
     merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp); MBERRNM(merr);
     merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned); MBERRNM(merr);
-#ifdef MOAB_HAVE_MPI
-    merr = dmbc->pcomm->filter_pstatus(connc_owned, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
-#endif
+
     for (unsigned tc = 0; tc < connc_owned.size(); tc++) {
       connc.push_back(connc_owned[tc]);
     }
@@ -271,35 +272,69 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   /* set up internal matrix data-structures */
   ierr = MatSetUp(*interpl);CHKERRQ(ierr);
 
+  /* Define variables for assembly */
+  std::vector<moab::EntityHandle> children;
+  std::vector<moab::EntityHandle> connp, connc;
+  std::vector<PetscReal> pcoords, ccoords, values_phi;
+  moab::Range connc_owned;
+
+  if (use_consistent_bases) {
+    const moab::EntityHandle ehandle = eowned.front();
+
+    merr = dmbp->hierarchy->parent_to_child(ehandle, dmbp->hlevel, dmbc->hlevel, children); MBERRNM(merr);
+
+    /* Get connectivity and coordinates of the parent vertices */
+    connc_owned.clear();
+    merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp); MBERRNM(merr);
+    merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned); MBERRNM(merr);
+
+    for (unsigned tc = 0; tc < connc_owned.size(); tc++) {
+      connc.push_back(connc_owned[tc]);
+    }
+
+    std::vector<PetscReal> natparam(3*connc.size(), 0.0);
+    pcoords.resize(connp.size() * 3);
+    ccoords.resize(connc.size() * 3);
+    values_phi.resize(connp.size()*connc.size());
+    /* Get coordinates for connectivity entities in canonical order for both coarse and finer levels */
+    merr = dmbp->hierarchy->get_coordinates(&connp[0], connp.size(), dmbp->hlevel, &pcoords[0]); MBERRNM(merr);
+    merr = dmbc->hierarchy->get_coordinates(&connc[0], connc.size(), dmbc->hlevel, &ccoords[0]); MBERRNM(merr);
+
+    /* Set values: For each DOF in coarse grid cell, set the contribution or PHI evaluated at each fine grid DOF point */
+    for (unsigned tc = 0; tc < connc.size(); tc++) {
+      const PetscInt offset = tc * 3;
+
+      /* Scale ccoords relative to pcoords */
+      ierr = DMMoabPToRMapping(dim, connp.size(), &pcoords[0], &ccoords[offset], &natparam[offset], &values_phi[connp.size()*tc]);CHKERRQ(ierr);
+    }
+  }
+  else {
+    factor = std::pow(2.0 /*degree_P_for_refinement*/, (dmbc->hlevel - dmbp->hlevel) * dmbp->dim * 1.0);
+  }
+
   /* TODO: Decipher the correct non-zero pattern. There is still some issue with onz allocation */
   // ierr = MatSetOption(*interpl, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
-
-  ierr = DMGetDimension(dmp, &dim);CHKERRQ(ierr);
-
-  factor = std::pow(2.0 /*degree_P_for_refinement*/, (dmbc->hlevel - dmbp->hlevel) * dmbp->dim * 1.0);
 
   /* Loop through the remaining vertices. These vertices appear only on the current refined_level. */
   for (moab::Range::iterator iter = eowned.begin(); iter != eowned.end(); iter++) {
 
     const moab::EntityHandle ehandle = *iter;
-    std::vector<moab::EntityHandle> children;
-    std::vector<moab::EntityHandle> connp, connc;
-    moab::Range connc_owned;
 
     /* Get the relation between the current (coarse) parent and its corresponding (finer) children elements */
+    children.clear();
+    connc.clear();
     merr = dmbp->hierarchy->parent_to_child(ehandle, dmbp->hlevel, dmbc->hlevel, children); MBERRNM(merr);
 
     /* Get connectivity and coordinates of the parent vertices */
+    connc_owned.clear();
     merr = dmbp->hierarchy->get_connectivity(ehandle, dmbp->hlevel, connp); MBERRNM(merr);
     merr = dmbc->mbiface->get_connectivity(&children[0], children.size(), connc_owned); MBERRNM(merr);
-#ifdef MOAB_HAVE_MPI
-    merr = dmbc->pcomm->filter_pstatus(connc_owned, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
-#endif
     for (unsigned tc = 0; tc < connc_owned.size(); tc++) {
       connc.push_back(connc_owned[tc]);
     }
 
-    std::vector<double> pcoords(connp.size() * 3), ccoords(connc.size() * 3), values_phi(connc.size());
+    pcoords.resize(connp.size() * 3);
+    ccoords.resize(connc.size() * 3);
     /* Get coordinates for connectivity entities in canonical order for both coarse and finer levels */
     merr = dmbp->hierarchy->get_coordinates(&connp[0], connp.size(), dmbp->hlevel, &pcoords[0]); MBERRNM(merr);
     merr = dmbc->hierarchy->get_coordinates(&connc[0], connc.size(), dmbc->hlevel, &ccoords[0]); MBERRNM(merr);
@@ -309,45 +344,57 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
     ierr = DMMoabGetDofsBlocked(dmp, connp.size(), &connp[0], &dofsp[0]);CHKERRQ(ierr);
     ierr = DMMoabGetDofsBlocked(dmc, connc.size(), &connc[0], &dofsc[0]);CHKERRQ(ierr);
 
-    /* Compute the interpolation weights by determining distance of 1-ring
-       neighbor vertices from current vertex
+    /* Compute the actual interpolation weights when projecting solution/residual between levels */
+    if (use_consistent_bases) {
 
-       TODO: This needs to be replaced with a consistent interface to compute
-       the basis function interpolation between the levels evaluated correctly.
-       RBF basis will be terrible for any unsmooth problems..
-       -- NEEDS TO BE REMOVED --
-    */
-    values_phi.resize(connp.size());
-    for (unsigned tc = 0; tc < connc.size(); tc++) {
+      /* Use the cached values of natural parameteric coordinates and basis pre-evaluated.
+         We are making an assumption here that UMR used in GMG to generate the hierarchy uses
+         the same template for all elements; This will fail for mixed element meshes (TRI/QUAD).
 
-      double normsum = 0.0;
-      for (unsigned tp = 0; tp < connp.size(); tp++) {
-        values_phi[tp] = 0.0;
-        for (unsigned k = 0; k < 3; k++)
-          values_phi[tp] += std::pow(pcoords[tp * 3 + k] - ccoords[k + tc * 3], dim);
-        if (values_phi[tp] < 1e-12) {
-          values_phi[tp] = 1e12;
-        }
-        else {
-          //values_phi[tp] = std::pow(values_phi[tp], -1.0/dim);
-          values_phi[tp] = std::pow(values_phi[tp], -1.0);
-          normsum += values_phi[tp];
-        }
+         TODO: Fix the above assumption by caching data for families
+      */
+
+      /* Set values: For each DOF in coarse grid cell, set the contribution or PHI evaluated at each fine grid DOF point */
+      for (unsigned tc = 0; tc < connc.size(); tc++) {
+        /* TODO: Check if we should be using INSERT_VALUES instead */
+        ierr = MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[connp.size()*tc], ADD_VALUES);CHKERRQ(ierr);
       }
-      for (unsigned tp = 0; tp < connp.size(); tp++) {
-        if (values_phi[tp] > 1e11)
-          values_phi[tp] = factor * 0.5 / connp.size();
-        else
-          values_phi[tp] = factor * values_phi[tp] * 0.5 / (connp.size() * normsum);
-      }
-      ierr = MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[0], ADD_VALUES);CHKERRQ(ierr);
     }
+    else {
+      /* Compute the interpolation weights by determining distance of 1-ring
+         neighbor vertices from current vertex
 
-    //get interpolation weights
-    //ierr = Compute_Quad4_Basis(pcoords, 1, coord, values_phi);CHKERRQ(ierr);
-    // for (int j=0;j<dofs_per_element; j++)
-    //  std::cout<<"values "<<values_phi[j]<<std::endl;
+         This should be used only when FEM basis is not used for the discretization.
+         Else, the consistent interface to compute the basis function for interpolation
+         between the levels should be evaluated correctly to preserve convergence of GMG.
+         RBF basis will be terrible for any unsmooth problems..
+      */
+      values_phi.resize(connp.size());
+      for (unsigned tc = 0; tc < connc.size(); tc++) {
 
+        PetscReal normsum = 0.0;
+        for (unsigned tp = 0; tp < connp.size(); tp++) {
+          values_phi[tp] = 0.0;
+          for (unsigned k = 0; k < 3; k++)
+            values_phi[tp] += std::pow(pcoords[tp * 3 + k] - ccoords[k + tc * 3], dim);
+          if (values_phi[tp] < 1e-12) {
+            values_phi[tp] = 1e12;
+          }
+          else {
+            //values_phi[tp] = std::pow(values_phi[tp], -1.0/dim);
+            values_phi[tp] = std::pow(values_phi[tp], -1.0);
+            normsum += values_phi[tp];
+          }
+        }
+        for (unsigned tp = 0; tp < connp.size(); tp++) {
+          if (values_phi[tp] > 1e11)
+            values_phi[tp] = factor * 0.5 / connp.size();
+          else
+            values_phi[tp] = factor * values_phi[tp] * 0.5 / (connp.size() * normsum);
+        }
+        ierr = MatSetValues(*interpl, 1, &dofsc[tc], connp.size(), &dofsp[0], &values_phi[0], ADD_VALUES);CHKERRQ(ierr);
+      }
+    }
   }
   if (vec) *vec = NULL;
   ierr = MatAssemblyBegin(*interpl, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

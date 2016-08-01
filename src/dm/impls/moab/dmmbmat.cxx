@@ -5,7 +5,7 @@
 #include <MBTagConventions.hpp>
 #include <moab/NestedRefine.hpp>
 
-static PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscBool);
+PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscBool);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Moab"
@@ -64,7 +64,7 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoab_Compute_NNZ_From_Connectivity"
-PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt* innz, PetscInt* nnz, PetscInt* ionz, PetscInt* onz, PetscBool isbaij)
+PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt* innz, PetscInt* nnz, PetscInt* ionz, PetscInt* onz, PetscBool isbaij)
 {
   PetscInt        i, f, nloc, vpere, bs, n_nnz, n_onz, ivtx = 0;
   PetscInt        ibs, jbs, inbsize, iobsize, nfields, nlsiz;

@@ -322,8 +322,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 
     /* compute the quadrature points transformed to the physical space and then
        compute the basis functions to compute local operators */
-    // ierr = Compute_Basis(user->VPERE, vpos, user->NQPTS, quadrature, phypts, jxw, phi, 0, 0, 0);CHKERRQ(ierr);
-    ierr = DMMoabFEMComputeBasis(3, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, 0);CHKERRQ(ierr);
+    ierr = DMMoabFEMComputeBasis(3, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, NULL);CHKERRQ(ierr);
 
     /* Compute function over the locally owned part of the grid */
     for (q=0; q<npoints; ++q) {
@@ -422,7 +421,6 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 
     /* compute the quadrature points transformed to the physical space and
        compute the basis functions and the derivatives wrt x, y and z directions */
-    // ierr = Compute_Basis(user->VPERE, vpos, user->NQPTS, quadrature, phypts, jxw, phi, dphidx, dphidy, dphidz);CHKERRQ(ierr);
     ierr = DMMoabFEMComputeBasis(3, user->VPERE, vpos, quadratureObj, phypts, jxw, phi, dphi);CHKERRQ(ierr);
 
     ierr = PetscMemzero(array, user->VPERE*user->VPERE*sizeof(PetscScalar));

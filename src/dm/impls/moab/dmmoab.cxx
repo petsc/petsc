@@ -125,9 +125,6 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
 
 #ifdef MOAB_HAVE_MPI
   moab::EntityHandle partnset;
-  PetscInt rank, nprocs;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &nprocs);CHKERRQ(ierr);
 
   /* Create root sets for each mesh.  Then pass these
       to the load_file functions to be populated. */
