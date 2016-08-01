@@ -1,38 +1,48 @@
 	[0]main 1944 equations in vector, 648 vertices
 	[0]main 594 local equations
   0 SNES Function norm 0.125242 
-    0 KSP Residual norm 1276.12 
-    1 KSP Residual norm 271.357 
-    2 KSP Residual norm 91.5162 
-    3 KSP Residual norm 21.6362 
-    4 KSP Residual norm 2.55283 
-    5 KSP Residual norm 0.647794 
-    6 KSP Residual norm 0.262864 
-    7 KSP Residual norm 0.0902539 
-    8 KSP Residual norm 0.0162065 
-    9 KSP Residual norm 0.00336204 
-   10 KSP Residual norm 0.00124359 
-  Linear solve converged due to CONVERGED_RTOL iterations 10
-  1 SNES Function norm 4.77887e-07 
-    0 KSP Residual norm 0.00124359 
-    1 KSP Residual norm 0.000430947 
-    2 KSP Residual norm 4.96784e-05 
-    3 KSP Residual norm 1.22701e-05 
-    4 KSP Residual norm 4.47457e-06 
-    5 KSP Residual norm 1.04972e-06 
-    6 KSP Residual norm 1.5693e-07 
-    7 KSP Residual norm 3.02764e-08 
-    8 KSP Residual norm 9.98541e-09 
-    9 KSP Residual norm 2.91496e-09 
-   10 KSP Residual norm 1.05872e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 10
+    0 KSP Residual norm 735.717 
+    1 KSP Residual norm 289.037 
+    2 KSP Residual norm 71.3419 
+    3 KSP Residual norm 23.0615 
+    4 KSP Residual norm 9.00223 
+    5 KSP Residual norm 3.3604 
+    6 KSP Residual norm 1.7815 
+    7 KSP Residual norm 0.910149 
+    8 KSP Residual norm 0.475694 
+    9 KSP Residual norm 0.138854 
+   10 KSP Residual norm 0.0421371 
+   11 KSP Residual norm 0.02474 
+   12 KSP Residual norm 0.0134667 
+   13 KSP Residual norm 0.00548299 
+   14 KSP Residual norm 0.00111248 
+   15 KSP Residual norm 0.000238066 
+  Linear solve converged due to CONVERGED_RTOL iterations 15
+  1 SNES Function norm 3.25853e-07 
+    0 KSP Residual norm 0.000238066 
+    1 KSP Residual norm 7.42678e-05 
+    2 KSP Residual norm 2.25071e-05 
+    3 KSP Residual norm 5.16983e-06 
+    4 KSP Residual norm 2.00448e-06 
+    5 KSP Residual norm 1.46821e-06 
+    6 KSP Residual norm 6.83981e-07 
+    7 KSP Residual norm 2.14961e-07 
+    8 KSP Residual norm 9.36773e-08 
+    9 KSP Residual norm 4.61367e-08 
+   10 KSP Residual norm 2.49658e-08 
+   11 KSP Residual norm 1.08224e-08 
+   12 KSP Residual norm 5.01209e-09 
+   13 KSP Residual norm 1.58527e-09 
+   14 KSP Residual norm 5.015e-10 
+   15 KSP Residual norm 1.808e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 15
   2 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 3 MPI processes
   type: newtonls
   maximum iterations=10, maximum function evaluations=10000
   tolerances: relative=1e-06, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=20
+  total number of linear solver iterations=30
   total number of function evaluations=3
   norm schedule ALWAYS
   SNESLineSearch Object: 3 MPI processes
@@ -84,29 +94,29 @@ SNES Object: 3 MPI processes
               Factored matrix follows:
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=12, cols=12, bs=6
+                  rows=6, cols=6, bs=6
                   package used to perform factorization: petsc
-                  total: nonzeros=144, allocated nonzeros=144
+                  total: nonzeros=36, allocated nonzeros=36
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 3 nodes, limit used is 5
+                    using I-node routines: found 2 nodes, limit used is 5
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqaij
-            rows=12, cols=12, bs=6
-            total: nonzeros=144, allocated nonzeros=144
+            rows=6, cols=6, bs=6
+            total: nonzeros=36, allocated nonzeros=36
             total number of mallocs used during MatSetValues calls =0
-              using I-node routines: found 3 nodes, limit used is 5
+              using I-node routines: found 2 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 3 MPI processes
           type: mpiaij
-          rows=12, cols=12, bs=6
-          total: nonzeros=144, allocated nonzeros=144
+          rows=6, cols=6, bs=6
+          total: nonzeros=36, allocated nonzeros=36
           total number of mallocs used during MatSetValues calls =0
-            using I-node (on process 0) routines: found 3 nodes, limit used is 5
+            using I-node (on process 0) routines: found 2 nodes, limit used is 5
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 3 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.128876, max = 2.70639
+          Chebyshev: eigenvalue estimates:  min = 0.19028, max = 3.99589
           Chebyshev: eigenvalues estimated using cg with translations  [0. 0.05; 0. 1.05]
           KSP Object: (mg_levels_1_esteig_) 3 MPI processes
             type: cg
@@ -125,10 +135,10 @@ SNES Object: 3 MPI processes
         linear system matrix = precond matrix:
         Mat Object: 3 MPI processes
           type: mpiaij
-          rows=144, cols=144, bs=6
-          total: nonzeros=12456, allocated nonzeros=12456
+          rows=114, cols=114, bs=6
+          total: nonzeros=7812, allocated nonzeros=7812
           total number of mallocs used during MatSetValues calls =0
-            using I-node (on process 0) routines: found 12 nodes, limit used is 5
+            using I-node (on process 0) routines: found 3 nodes, limit used is 5
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 3 MPI processes

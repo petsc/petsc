@@ -960,7 +960,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   MatCoarsen     crs;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscReal      rr;
+  PetscReal      hashfact;
   PetscInt       iSwapIndex;
 
   PetscFunctionBegin;
@@ -984,8 +984,9 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
     permute[Ii]   = Ii;
   }
   ierr = MatGetOwnershipRange(Gmat1, &Istart, &Iend);CHKERRQ(ierr);
+  hashfact = 929.;
   for (Ii = 0; Ii < nloc; Ii++) {
-    iSwapIndex = (PetscInt) (rr*nloc);
+    iSwapIndex = (PetscInt) (hashfact*nloc)%nloc;
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
       PetscInt iTemp = permute[iSwapIndex];
       permute[iSwapIndex]   = permute[Ii];
