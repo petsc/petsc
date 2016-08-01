@@ -21,6 +21,7 @@ extern cublasHandle_t cublasv2handle;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE
+#define petscinitializenoarguments_   PETSCINITIALIZENOARGUMENTS
 #define petscfinalize_                PETSCFINALIZE
 #define petscend_                     PETSCEND
 #define iargc_                        IARGC
@@ -248,7 +249,7 @@ extern PetscErrorCode  PetscInitializeSAWs(const char[]);
       Since this is called from Fortran it does not return error codes
 
 */
-PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
 {
 #if defined (PETSC_USE_NARGS)
   short          flg,i;
@@ -429,11 +430,13 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
      below.
   */
   PetscInitializeFortran();
-  PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
-  FIXCHAR(filename,len,t1);
-  *ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,t1);
-  FREECHAR(filename,t1);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database\n");return;}
+  if(readarguments == PETSC_TRUE) {
+    PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
+    FIXCHAR(filename,len,t1);
+    *ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,t1);
+    FREECHAR(filename,t1);
+    if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database\n");return;}
+  }
   *ierr = PetscOptionsCheckInitial_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
   *ierr = PetscCitationsInitialize();
@@ -482,6 +485,20 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   }
 #endif
 }
+
+/*
+    petscinitialize - Wrapper methods to enable or disable argument passing
+*/
+PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+	petscinitialize_internal(filename, len, PETSC_TRUE, ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscinitializenoarguments_(PetscErrorCode *ierr)
+{
+	petscinitialize_internal(NULL, (PetscInt) 0, PETSC_FALSE, ierr);
+}
+
 
 PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
 {
