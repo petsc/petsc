@@ -28,7 +28,7 @@ PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
 
     ierr = PetscLayoutCompare((*B)->cmap,A->rmap,&rcong);CHKERRQ(ierr);
     ierr = PetscLayoutCompare((*B)->rmap,A->cmap,&ccong);CHKERRQ(ierr);
-    cong = rcong || ccong;
+    cong = (PetscBool)(rcong || ccong);
   }
   if (reuse == MAT_INITIAL_MATRIX || *B == A || !cong) {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
