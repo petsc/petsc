@@ -884,7 +884,7 @@ PetscErrorCode ComputeJacobian_Internal ( const PetscInt dim, const PetscInt nve
   PetscReal *jacobian, PetscReal *ijacobian, PetscReal* dvolume)
 {
   PetscInt i;
-  PetscReal volume;
+  PetscReal volume=1.0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

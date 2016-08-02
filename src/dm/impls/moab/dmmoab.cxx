@@ -1210,12 +1210,12 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     moab::Skinner skinner(dmmoab->mbiface);
 
     /* get the entities on the skin - only the faces */
-    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, false, true, false); MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
+    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, true, true, false); MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
 
 #ifdef MOAB_HAVE_MPI
     /* filter all the non-owned and shared entities out of the list */
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_SHARED, PSTATUS_NOT); MBERRNM(merr);
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_INTERFACE, PSTATUS_NOT); MBERRNM(merr);
 #endif
 
     /* get all the nodes via connectivity and the parent elements via adjacency information */

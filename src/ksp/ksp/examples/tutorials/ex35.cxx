@@ -185,8 +185,8 @@ int main(int argc,char **argv)
 
     if (usemg) {
       ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
-      ierr = PCMGSetType(pc,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
       ierr = PCMGSetLevels(pc,user.nlevels+1,NULL);CHKERRQ(ierr);
+      ierr = PCMGSetType(pc,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
       ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PCMGSetCycleType(pc, PC_MG_CYCLE_V);CHKERRQ(ierr);
       ierr = PCMGSetNumberSmoothUp(pc,2);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ int main(int argc,char **argv)
   }
   else {
     dmref = dm;
-    PetscObjectReference((PetscObject)dmref);
+    PetscObjectReference((PetscObject)dm);
   }
 
   ierr = KSPSetDM(ksp,dmref);CHKERRQ(ierr);
@@ -219,9 +219,9 @@ int main(int argc,char **argv)
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
   if (error) {
-    ierr = DMGetGlobalVector(dmref, &errv);CHKERRQ(ierr);
+    ierr = VecDuplicate(b, &errv);CHKERRQ(ierr);
     ierr = ComputeDiscreteL2Error(ksp, errv, &user);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dmref, &errv);CHKERRQ(ierr);
+    ierr = VecDestroy(&errv);CHKERRQ(ierr);
   }
 
   if (io) {
@@ -538,13 +538,13 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user)
   ierr = KSPGetSolution(ksp, &sol);CHKERRQ(ierr);
 
   /* Get the internal reference to the vector arrays */
-  ierr = DMMoabVecGetArrayRead(dm, sol, &x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(sol, &x);CHKERRQ(ierr);
   ierr = VecGetSize(sol, &N);CHKERRQ(ierr);
   if (err) {
     /* reset the error vector */
     ierr = VecSet(err, 0.0);CHKERRQ(ierr);
     /* get array reference */
-    ierr = DMMoabVecGetArray(dm, err, &e);CHKERRQ(ierr);
+    ierr = VecGetArray(err, &e);CHKERRQ(ierr);
   }
 
   ierr = DMMoabGetLocalVertices(dm, &ownedvtx, NULL);CHKERRQ(ierr);
@@ -573,9 +573,9 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Computed Errors: L_2 = %f, L_inf = %f\n", sqrt(global_l2/N), global_linf);CHKERRQ(ierr);
 
   /* Restore vectors */
-  ierr = DMMoabVecRestoreArrayRead(dm, sol, &x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(sol, &x);CHKERRQ(ierr);
   if (err) {
-    ierr = DMMoabVecRestoreArray(dm, err, &e);CHKERRQ(ierr);
+    ierr = VecRestoreArray(err, &e);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

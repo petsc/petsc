@@ -154,11 +154,10 @@ int main(int argc,char **argv)
     dmref = dmhierarchy[user.nlevels];
     PetscObjectReference((PetscObject)dmref);
 
-    ierr = KSPSetDM(ksp,dmref);CHKERRQ(ierr);
     if (usemg) {
       ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
-      ierr = PCMGSetType(pc,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
       ierr = PCMGSetLevels(pc,user.nlevels+1,NULL);CHKERRQ(ierr);
+      ierr = PCMGSetType(pc,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
       ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PCMGSetCycleType(pc, PC_MG_CYCLE_V);CHKERRQ(ierr);
       ierr = PCMGSetNumberSmoothUp(pc,2);CHKERRQ(ierr);
@@ -180,10 +179,10 @@ int main(int argc,char **argv)
   }
   else {
     dmref = dm;
-    PetscObjectReference((PetscObject)dmref);
-    ierr = KSPSetDM(ksp,dmref);CHKERRQ(ierr);
+    PetscObjectReference((PetscObject)dm);
   }
 
+  ierr = KSPSetDM(ksp,dmref);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* Perform the actual solve */
@@ -192,9 +191,9 @@ int main(int argc,char **argv)
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
   if (error) {
-    ierr = DMGetGlobalVector(dmref, &errv);CHKERRQ(ierr);
+    ierr = VecDuplicate(b, &errv);CHKERRQ(ierr);
     ierr = ComputeDiscreteL2Error(ksp, errv, &user);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dmref, &errv);CHKERRQ(ierr);
+    ierr = VecDestroy(&errv);CHKERRQ(ierr);
   }
 
   if (io) {
@@ -265,7 +264,8 @@ double ForcingFunction(PetscReal coords[3], UserContext* user)
 {
   const PetscReal exact = ExactSolution(coords, user);
 #if (PROBLEM == 1)
-  return exact;
+  const PetscReal duxyz = ( (coords[0]-user->xyzref[0]) + (coords[1]-user->xyzref[1]) + (coords[2]-user->xyzref[2]) );
+  return (4.0/user->nu * duxyz * duxyz - 6.0)*exact/user->nu;
 #else
   return 3.0*PETSC_PI*PETSC_PI*exact;
 #endif
@@ -312,7 +312,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 
     // Get connectivity information:
     ierr = DMMoabGetElementConnectivity(dm, ehandle, &num_conn, &connect);CHKERRQ(ierr);
-    if (num_conn != user->VPERE) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only HEX8 element bases are supported in the current example. n(Connectivity)=%D.\n", num_conn);
+    if (num_conn != user->VPERE) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only HEX8/TET4 element bases are supported in the current example. n(Connectivity)=%D.\n", num_conn);
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
     ierr = DMMoabGetVertexCoordinates(dm,num_conn,connect,vpos);CHKERRQ(ierr);
@@ -411,7 +411,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 
     // Get connectivity information:
     ierr = DMMoabGetElementConnectivity(dm, ehandle, &num_conn, &connect);CHKERRQ(ierr);
-    if (num_conn != user->VPERE) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only HEX8 element bases are supported in the current example. Connectivity=%D.\n", num_conn);
+    if (num_conn != user->VPERE) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only HEX8/TET4 element bases are supported in the current example. Connectivity=%D.\n", num_conn);
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
     ierr = DMMoabGetVertexCoordinates(dm,user->VPERE,connect,vpos);CHKERRQ(ierr);
@@ -442,20 +442,16 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
     }
 
     /* check if element is on the boundary */
-    ierr = DMMoabCheckBoundaryVertices(dm,user->VPERE,connect,dbdry);CHKERRQ(ierr);
-    elem_on_boundary=PETSC_FALSE;
-    for (i=0; i < user->VPERE; ++i)
-      if (dbdry[i]) elem_on_boundary=PETSC_TRUE;
+    ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
 
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
 
       /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
-      //ierr = DMMoabCheckBoundaryVertices(dm,user->VPERE,connect,dbdry);CHKERRQ(ierr);
+      ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry);CHKERRQ(ierr);
 
       for (i=0; i < user->VPERE; ++i) {
         if (dbdry[i]) {  /* dirichlet node */
-          // PetscPrintf (PETSC_COMM_WORLD, "At the boundary:= dof_indices[%d] = %d\n", i, dof_indices[i]);
           /* think about strongly imposing dirichlet */
           for (j=0; j < user->VPERE; ++j) {
             /* TODO: symmetrize the system - need the RHS */
@@ -507,13 +503,13 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user)
   ierr = KSPGetSolution(ksp, &sol);CHKERRQ(ierr);
 
   /* Get the internal reference to the vector arrays */
-  ierr = DMMoabVecGetArrayRead(dm, sol, &x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(sol, &x);CHKERRQ(ierr);
   ierr = VecGetSize(sol, &N);CHKERRQ(ierr);
   if (err) {
     /* reset the error vector */
     ierr = VecSet(err, 0.0);CHKERRQ(ierr);
     /* get array reference */
-    ierr = DMMoabVecGetArray(dm, err, &e);CHKERRQ(ierr);
+    ierr = VecGetArray(err, &e);CHKERRQ(ierr);
   }
 
   ierr = DMMoabGetLocalVertices(dm, &ownedvtx, NULL);CHKERRQ(ierr);
@@ -543,9 +539,9 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Computed Errors: L_2 = %f, L_inf = %f\n", sqrt(global_l2/N), global_linf);CHKERRQ(ierr);
 
   /* Restore vectors */
-  ierr = DMMoabVecRestoreArrayRead(dm, sol, &x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(sol, &x);CHKERRQ(ierr);
   if (err) {
-    ierr = DMMoabVecRestoreArray(dm, err, &e);CHKERRQ(ierr);
+    ierr = VecRestoreArray(err, &e);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
