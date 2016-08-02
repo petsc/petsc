@@ -549,9 +549,14 @@ runex9_4:
            ${DIFF} output/ex9_4.out ex9_4.tmp || printf  "${PWD}\nPossible problem with ex9_4, diffs above\n=========================================\n"; \
            ${RM} -f ex9_4.tmp
 runex9_5:
-	-@${MPIEXEC} -n 1 ./ex9 -snes_fd_color -snes_monitor_short  > ex9_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex9 -snes_fd_color > ex9_5.tmp 2>&1; \
            ${DIFF} output/ex9_5.out ex9_5.tmp || printf  "${PWD}\nPossible problem with ex9_5, diffs above\n=========================================\n"; \
            ${RM} -f ex9_5.tmp
+runex9_5_2:
+	-@${MPIEXEC} -n 4 ./ex9 -snes_fd_color > ex9_5.tmp 2>&1; \
+           ${DIFF} output/ex9_5.out ex9_5.tmp || printf  "${PWD}\nPossible problem with ex9_5_2, diffs above\n=========================================\n"; \
+           ${RM} -f ex9_5.tmp
+
 runex9_6:
 	-@${MPIEXEC} -n 1 ./ex9 -da_refine 3 -pc_type mg -snes_monitor_short -ksp_monitor_short > ex9_6.tmp 2>&1; \
            ${DIFF} output/ex9_6.out ex9_6.tmp || printf  "${PWD}\nPossible problem with ex9_6, diffs above\n=========================================\n"; \
@@ -1310,7 +1315,7 @@ TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw rune
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 runex9_5 runex9_6 ex9.rm ex19.PETSc runex19_ibcgs ex19.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 runex9_5 runex9_5_2 runex9_6 ex9.rm ex19.PETSc runex19_ibcgs ex19.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX_NOTSINGLE = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm  ex14.PETSc ex14.rm
