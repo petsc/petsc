@@ -83,6 +83,7 @@ typedef struct {
   PetscBool     use_edges;
   /* Some customization is possible */
   PetscBool           recompute_topography;
+  PetscBool           graphanalyzed;
   PCBDDCGraph         mat_graph;
   MatNullSpace        onearnullspace;
   PetscObjectState    *onearnullvecs_state;

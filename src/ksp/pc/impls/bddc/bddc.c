@@ -1460,7 +1460,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   matis = (Mat_IS*)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
-     Also, BDDC directly build the Dirichlet problem */
+     Also, BDDC builds its own KSP for the Dirichlet problem */
   /* split work */
   if (pc->setupcalled) {
     if (pc->flag == SAME_NONZERO_PATTERN) {
@@ -1493,6 +1493,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"When the static switch is one, the iteration matrix should be of type MATIS");
   }
 
+  /* activate all connected components if the netflux has been requested */
   if (pcbddc->compute_nonetflux) {
     pcbddc->use_vertices = PETSC_TRUE;
     pcbddc->use_edges = PETSC_TRUE;
@@ -1508,6 +1509,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
 
+  /* compute topology info in local ordering */
+  if (pcbddc->recompute_topography) {
+    ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
+  }
+
   if (pcbddc->user_ChangeOfBasisMatrix) {
     /* use_change_of_basis flag is used to automatically compute a change of basis from constraints */
     pcbddc->use_change_of_basis = PETSC_FALSE;
@@ -1521,11 +1527,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* detect local disconnected subdomains if requested and not done before */
   if (pcbddc->detect_disconnected && !pcbddc->n_local_subs) {
     ierr = MatDetectDisconnectedComponents(pcbddc->local_mat,PETSC_FALSE,&pcbddc->n_local_subs,&pcbddc->local_subs);CHKERRQ(ierr);
-  }
-
-  /* compute topology info in local ordering */
-  if (pcbddc->recompute_topography) {
-    ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
   }
 
   /*
@@ -1588,6 +1589,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       MatNullSpace nnfnnsp;
 
       ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_trans,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
+      /* TODO what if a nearnullspace is already attached? */
       ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nnfnnsp);CHKERRQ(ierr);
     }

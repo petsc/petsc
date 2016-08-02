@@ -1674,6 +1674,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   ierr = MatDestroy(&pcbddc->divudotp);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
+  pcbddc->graphanalyzed = PETSC_FALSE;
   for (i=0;i<pcbddc->n_local_subs;i++) {
     ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
   }
@@ -4764,17 +4765,19 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #define __FUNCT__ "PCBDDCAnalyzeInterface"
 PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 {
-  PC_BDDC     *pcbddc = (PC_BDDC*)pc->data;
-  PC_IS       *pcis = (PC_IS*)pc->data;
-  Mat_IS      *matis  = (Mat_IS*)pc->pmat->data;
-  PetscInt    ierr,i,N;
+  ISLocalToGlobalMapping map;
+  PC_BDDC                *pcbddc = (PC_BDDC*)pc->data;
+  Mat_IS                 *matis  = (Mat_IS*)pc->pmat->data;
+  PetscInt               ierr,i,N;
 
   PetscFunctionBegin;
+  if (pcbddc->graphanalyzed) PetscFunctionReturn(0);
   /* Reset previously computed graph */
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   /* Init local Graph struct */
   ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
-  ierr = PCBDDCGraphInit(pcbddc->mat_graph,pcis->mapping,N);CHKERRQ(ierr);
+  ierr = MatGetLocalToGlobalMapping(pc->pmat,&map,NULL);CHKERRQ(ierr);
+  ierr = PCBDDCGraphInit(pcbddc->mat_graph,map,N);CHKERRQ(ierr);
 
   /* Check validity of the csr graph passed in by the user */
   if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
@@ -4811,9 +4814,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
       ierr = ISGetLocalSize(pcbddc->local_subs[i],&nl);CHKERRQ(ierr);
       ierr = ISGetIndices(pcbddc->local_subs[i],&idxs);CHKERRQ(ierr);
-      for (j=0;j<nl;j++) {
-        local_subs[idxs[j]] = i;
-      }
+      for (j=0;j<nl;j++) local_subs[idxs[j]] = i;
       ierr = ISRestoreIndices(pcbddc->local_subs[i],&idxs);CHKERRQ(ierr);
     }
     pcbddc->mat_graph->n_local_subs = pcbddc->n_local_subs;
@@ -4822,6 +4823,9 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
   /* Graph's connected components analysis */
   ierr = PCBDDCGraphComputeConnectedComponents(pcbddc->mat_graph);CHKERRQ(ierr);
+
+  /* set flag indicating analysis has been done */
+  pcbddc->graphanalyzed = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
