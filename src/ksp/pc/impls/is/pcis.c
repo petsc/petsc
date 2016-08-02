@@ -146,7 +146,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
   if (!pc->setupcalled) {
     PetscInt    n_I;
     PetscInt    *idx_I_local,*idx_B_local,*idx_I_global,*idx_B_global;
-    PetscInt    *array;
+    PetscBT     bt;
     PetscInt    i,j;
 
     /* get info on mapping */
@@ -157,17 +157,17 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     ierr = ISLocalToGlobalMappingGetInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
 
     /* Identifying interior and interface nodes, in local numbering */
-    ierr = PetscMalloc1(pcis->n,&array);CHKERRQ(ierr);
-    ierr = PetscMemzero(array,pcis->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscBTCreate(pcis->n,&bt);CHKERRQ(ierr);
     for (i=0;i<pcis->n_neigh;i++)
-      for (j=0;j<pcis->n_shared[i];j++)
-          array[pcis->shared[i][j]] += 1;
+      for (j=0;j<pcis->n_shared[i];j++) {
+          ierr = PetscBTSet(bt,pcis->shared[i][j]);CHKERRQ(ierr);
+      }
 
     /* Creating local and global index sets for interior and inteface nodes. */
     ierr = PetscMalloc1(pcis->n,&idx_I_local);CHKERRQ(ierr);
     ierr = PetscMalloc1(pcis->n,&idx_B_local);CHKERRQ(ierr);
     for (i=0, pcis->n_B=0, n_I=0; i<pcis->n; i++) {
-      if (!array[i]) {
+      if (!PetscBTLookup(bt,i)) {
         idx_I_local[n_I] = i;
         n_I++;
       } else {
@@ -175,6 +175,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
         pcis->n_B++;
       }
     }
+
     /* Getting the global numbering */
     idx_B_global = idx_I_local + n_I; /* Just avoiding allocating extra memory, since we have vacant space */
     idx_I_global = idx_B_local + pcis->n_B;
@@ -190,7 +191,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     /* Freeing memory */
     ierr = PetscFree(idx_B_local);CHKERRQ(ierr);
     ierr = PetscFree(idx_I_local);CHKERRQ(ierr);
-    ierr = PetscFree(array);CHKERRQ(ierr);
+    ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
 
     /* Creating work vectors and arrays */
     ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
