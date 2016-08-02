@@ -5332,7 +5332,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
             values = valCopy;
           }
           for (i = 0; i < fdof; i++) {
-            PetscReal fval = flip[i];
+            PetscScalar fval = flip[i];
 
             for (k = 0; k < numIndices; k++) {
               valCopy[numIndices * (foffset + i) + k] *= fval;
