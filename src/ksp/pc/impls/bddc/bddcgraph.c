@@ -1094,8 +1094,14 @@ PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph graph)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(graph->xadj);CHKERRQ(ierr);
-  ierr = PetscFree(graph->adjncy);CHKERRQ(ierr);
+  if (graph->freecsr) {
+    ierr = PetscFree(graph->xadj);CHKERRQ(ierr);
+    ierr = PetscFree(graph->adjncy);CHKERRQ(ierr);
+  } else {
+    graph->xadj = NULL;
+    graph->adjncy = NULL;
+  }
+  graph->freecsr = PETSC_TRUE;
   graph->nvtxs_csr = 0;
   PetscFunctionReturn(0);
 }
@@ -1182,6 +1188,8 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   /* zeroes workspace for values of ncc */
   graph->subset_ncc = 0;
   graph->subset_ref_node = 0;
+  /* default flag for csr */
+  graph->freecsr = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

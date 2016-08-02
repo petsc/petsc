@@ -47,6 +47,7 @@ struct _PCBDDCGraph {
   PetscInt               nvtxs_csr;
   PetscInt               *xadj;
   PetscInt               *adjncy;
+  PetscBool              freecsr;
   /* data for local subdomains (if any have been detected)
      these are not intended to be exposed */
   PetscInt               n_local_subs;

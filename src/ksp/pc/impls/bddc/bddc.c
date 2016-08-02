@@ -960,10 +960,16 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
       ierr = PetscMalloc1(xadj[nvtxs],&mat_graph->adjncy);CHKERRQ(ierr);
       ierr = PetscMemcpy(mat_graph->xadj,xadj,(nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemcpy(mat_graph->adjncy,adjncy,xadj[nvtxs]*sizeof(PetscInt));CHKERRQ(ierr);
+      mat_graph->freecsr = PETSC_TRUE;
     } else if (copymode == PETSC_OWN_POINTER) {
-      mat_graph->xadj = (PetscInt*)xadj;
-      mat_graph->adjncy = (PetscInt*)adjncy;
-    }
+      mat_graph->xadj    = (PetscInt*)xadj;
+      mat_graph->adjncy  = (PetscInt*)adjncy;
+      mat_graph->freecsr = PETSC_TRUE;
+    } else if (copymode == PETSC_USE_POINTER) {
+      mat_graph->xadj    = (PetscInt*)xadj;
+      mat_graph->adjncy  = (PetscInt*)adjncy;
+      mat_graph->freecsr = PETSC_FALSE;
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d",copymode);
     mat_graph->nvtxs_csr = nvtxs;
     pcbddc->recompute_topography = PETSC_TRUE;
   }
