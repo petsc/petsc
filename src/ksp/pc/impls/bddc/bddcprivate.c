@@ -696,7 +696,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
   for (i=0;i<pcbddc->benign_n;i++) pcbddc->benign_p0[i] = 1;
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
-  for (i=0;i<pcbddc->benign_n;i++) if ((PetscInt)PetscRealPart(pcbddc->benign_p0[i]) != -PetscGlobalRank-i) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %1.4e at %d instead of %1.4e\n",pcbddc->benign_p0[i],i,-PetscGlobalRank-i);CHKERRQ(ierr);
+  for (i=0;i<pcbddc->benign_n;i++) if ((PetscInt)(PetscRealPart(pcbddc->benign_p0[i])) != -PetscGlobalRank-i) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %g at %d instead of %g\n",PetscRealPart(pcbddc->benign_p0[i]),i,-PetscGlobalRank-i);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6502,7 +6502,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
     ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,PETSC_FALSE,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,NULL,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE,0,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {
     PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
-    PetscBool isseqaij,need_change = PETSC_FALSE;;
+    PetscBool isseqaij,need_change = PETSC_FALSE;
     PetscInt  benign_n;
     Mat       change = NULL;
     Vec       scaling = NULL;
