@@ -301,6 +301,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetLevels(PC,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothUp(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothDown(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCMGSetNumberSmooth(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleType(PC,PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);

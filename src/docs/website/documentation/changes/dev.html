@@ -101,7 +101,7 @@
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
       <ul>
-        <li>Added ISRenumber to renumber an IS into a contiguous set.
+        <li>Added ISRenumber to renumber an IS into a contiguous set.</li>
       </ul>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
@@ -111,8 +111,9 @@
       <h4>Mat:</h4>
       <h4>PC:</h4>
       <ul>
-        <li>Removed PCBDDCSetNullSpace. Local nullspace information should now be attached to the subdomain matrix via MatSetNullSpace.
-        <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators for the specification of the type of multipliers.
+        <li>Removed PCBDDCSetNullSpace. Local nullspace information should now be attached to the subdomain matrix via MatSetNullSpace().</li>
+        <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators() for the specification of the type of multipliers.</li>
+        <li>Added PCMGSetNumberSmooth()</li>
       </ul>
       <h4>KSP:</h4>
       <ul>
@@ -124,13 +125,14 @@
       <ul>
         <li>Changed TSGL to TSGLLE.</li>
         <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinaryRead.m and PetscBinaryIO.py can read these in automatically.<\li>
+        <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinarRead.m can read these in automatically but PetscBinaryIO.py has not been updated to read in REAL_FILE_CLASSID objects yet commit 450a797fa5ea0c6be96436f8b33aaf4169bbbcaa</li>
       </ul>
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
       <ul>
-        <li>Petsc64bitInt -> PetscInt64, PetscIntMult64bit() -> PetscInt64Mult(), PetscBagRegister64bitInt() -> PetscBagRegisterInt64()
+        <li>Petsc64bitInt -> PetscInt64, PetscIntMult64bit() -> PetscInt64Mult(), PetscBagRegister64bitInt() -> PetscBagRegisterInt64()</li>
       </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
