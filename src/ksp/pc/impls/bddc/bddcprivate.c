@@ -696,7 +696,10 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_FALSE);CHKERRQ(ierr);
   for (i=0;i<pcbddc->benign_n;i++) pcbddc->benign_p0[i] = 1;
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
-  for (i=0;i<pcbddc->benign_n;i++) if ((PetscInt)(PetscRealPart(pcbddc->benign_p0[i])) != -PetscGlobalRank-i) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %g at %d instead of %g\n",PetscRealPart(pcbddc->benign_p0[i]),i,-PetscGlobalRank-i);CHKERRQ(ierr);
+  for (i=0;i<pcbddc->benign_n;i++) {
+    PetscInt val = PetscRealPart(pcbddc->benign_p0[i]);
+    if (val != -PetscGlobalRank-i) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %g at %d instead of %g\n",PetscRealPart(pcbddc->benign_p0[i]),i,-PetscGlobalRank-i);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
