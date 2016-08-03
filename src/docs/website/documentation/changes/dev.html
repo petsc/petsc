@@ -114,6 +114,7 @@
         <li>Removed PCBDDCSetNullSpace. Local nullspace information should now be attached to the subdomain matrix via MatSetNullSpace().</li>
         <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators() for the specification of the type of multipliers.</li>
         <li>Added PCMGSetNumberSmooth()</li>
+        <li>PCMGSetGalerkin() and -pc_mg_galerkin now take PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE as arguments instead of PetscBool<\li>
       </ul>
       <h4>KSP:</h4>
       <ul>

@@ -667,8 +667,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
     ierr = PCSetFromOptions_MG(PetscOptionsObject,pc);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if (!mg->galerkin) SETERRQ(comm,PETSC_ERR_USER,"PCGAMG must use Galerkin for coarse operators.");
-    if (mg->galerkin == 1) mg->galerkin = 2;
+    ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_EXTERNAL);CHKERRQ(ierr);
 
     /* clean up */
     for (level=1; level<pc_gamg->Nlevels; level++) {
@@ -1289,8 +1288,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 
   /* create a supporting struct and attach it to pc */
   ierr         = PetscNewLog(pc,&pc_gamg);CHKERRQ(ierr);
+  ierr         = PCMGSetGalerkin(pc,PC_MG_GALERKIN_EXTERNAL);CHKERRQ(ierr);
   mg           = (PC_MG*)pc->data;
-  mg->galerkin = 2;             /* Use Galerkin, but it is computed externally from PCMG by GAMG code */
   mg->innerctx = pc_gamg;
 
   ierr = PetscNewLog(pc,&pc_gamg->ops);CHKERRQ(ierr);

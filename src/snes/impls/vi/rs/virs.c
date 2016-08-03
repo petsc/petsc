@@ -345,7 +345,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   /* Multigrid must use Galerkin for coarse grids with active set/reduced space methods; cannot rediscretize on coarser grids*/
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_BOTH);CHKERRQ(ierr);
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;

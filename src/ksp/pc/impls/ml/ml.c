@@ -1198,9 +1198,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc)
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr); /* calls PCCreate_MG() and MGCreate_Private() */
   ierr = PetscObjectChangeTypeName((PetscObject)pc,PCML);CHKERRQ(ierr);
   /* Since PCMG tries to use DM assocated with PC must delete it */
-  ierr         = DMDestroy(&pc->dm);CHKERRQ(ierr);
-  mg           = (PC_MG*)pc->data;
-  mg->galerkin = 2;             /* Use Galerkin, but it is computed externally */
+  ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_EXTERNAL);CHKERRQ(ierr);
+  mg   = (PC_MG*)pc->data;
 
   /* create a supporting struct and attach it to pc */
   ierr         = PetscNewLog(pc,&pc_ml);CHKERRQ(ierr);

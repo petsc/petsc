@@ -10,7 +10,7 @@ PC Object: (stokes_) 8 MPI processes
   type: mg
     MG: type is MULTIPLICATIVE, levels=2 cycles=v
       Cycles per PCApply=1
-      Using Galerkin computed coarse grid matrices
+      Using Galerkin computed coarse grid matrices for pmat
   Coarse grid solver -- level -------------------------------
     KSP Object: (stokes_mg_coarse_) 8 MPI processes
       type: preonly
@@ -81,7 +81,7 @@ PC Object: (stokes_) 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (stokes_mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.112342, max = 1.23576
+        Chebyshev: eigenvalue estimates:  min = 0.150726, max = 1.65798
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
         KSP Object: (stokes_mg_levels_1_esteig_) 8 MPI processes
           type: gmres
@@ -100,12 +100,7 @@ PC Object: (stokes_) 8 MPI processes
     PC Object: (stokes_mg_levels_1_) 8 MPI processes
       type: sor
         SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
-      linear system matrix followed by preconditioner matrix:
-      Mat Object: 8 MPI processes
-        type: mpiaij
-        rows=363, cols=363, bs=3
-        total: nonzeros=8649, allocated nonzeros=8649
-        total number of mallocs used during MatSetValues calls =0
+      linear system matrix = precond matrix:
       Mat Object: 8 MPI processes
         type: mpiaij
         rows=363, cols=363, bs=3
@@ -123,4 +118,4 @@ PC Object: (stokes_) 8 MPI processes
     rows=363, cols=363, bs=3
     total: nonzeros=8649, allocated nonzeros=8649
     total number of mallocs used during MatSetValues calls =0
-9.0909e-02   1.9325e-03   2.9842e-04   4.8732e-03 
+9.0909e-02   1.9277e-03   2.9843e-04   4.8733e-03 

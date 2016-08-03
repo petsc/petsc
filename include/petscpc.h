@@ -307,8 +307,8 @@ PETSC_EXTERN PetscErrorCode PCMGSetCycleType(PC,PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGMultiplicativeSetCycles(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PCMGGalerkinType);
+PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PCMGGalerkinType*);
 
 PETSC_EXTERN PetscErrorCode PCMGSetRhs(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGSetX(PC,PetscInt,Vec);

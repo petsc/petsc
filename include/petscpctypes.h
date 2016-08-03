@@ -280,6 +280,25 @@ typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
 PETSC_EXTERN const char *const PCMGCycleTypes[];
 
 /*E
+    PCMGalerkinType - Determines if the coarse grid operators are computed via the Galerkin process
+
+   Level: beginner
+
+   Values:
++  PC_MG_GALERKIN_PMAT - computes the pmat (matrix from which the preconditioner is built) via the Galerkin process from the finest grid
+.  PC_MG_GALERKIN_MAT -  computes the mat (matrix used to apply the operator) via the Galerkin process from the finest grid
+.  PC_MG_GALERKIN_BOTH - computes both the mat and pmat via the Galerkin process (if pmat == mat the construction is only done once
+-  PC_MG_GALERKIN_NONE - neither operator is computed via the Galerkin process, the user must provide the operator
+
+   Users should never set PC_MG_GALERKIN_EXTERNAL, it is used by GAMG and ML
+
+.seealso: PCMGSetCycleType()
+
+E*/
+typedef enum { PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE, PC_MG_GALERKIN_EXTERNAL} PCMGGalerkinType;
+PETSC_EXTERN const char *const PCMGGalerkinTypes[];
+
+/*E
     PCExoticType - Face based or wirebasket based coarse grid space
 
    Level: beginner
