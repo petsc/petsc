@@ -729,7 +729,7 @@ runex31_2:
 	   ${RM} -f ex31_2.tmp
 
 runex35:
-	-@${MPIEXEC} -n 1 ./ex35 -n 20 -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none -ts_adapt_basic_reject_safety 1 > ex35_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35 -n 20 -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none  > ex35_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_1.out ex35_1.tmp || printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_1.tmp
 

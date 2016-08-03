@@ -1,12 +1,12 @@
 Creating a 3-dimensional structured regular mesh of 2x2x2 in memory and creating a DM object.
 Generate the MOAB mesh hierarchy with 2 levels.
 Level 0
-DM Object:Coarse Mesh 2 MPI processes
+DM Object: Coarse Mesh 2 MPI processes
   type: moab
   Coarse Mesh in 3 dimensions:
     Sizes: cells=27, vertices=8, blocks=1
     Boundary trace:
-      cells=0, faces=0, vertices=0
+      cells=8, faces=12, vertices=17
     Fields: 1 components
       [0] - DEFAULT
 Level 1

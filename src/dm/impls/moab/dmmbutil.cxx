@@ -231,7 +231,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   nnodes = genCtx.blockSizeVertexXYZ[0] * (genCtx.dim > 1 ? genCtx.blockSizeVertexXYZ[1] * (genCtx.dim > 2 ? genCtx.blockSizeVertexXYZ[2] : 1) : 1);
   ierr = PetscMalloc1(nnodes, &gids);CHKERRQ(ierr);
 
-  merr = iface->get_node_coords(3, nnodes, 0, startv, arrays); MBERR("Can't get node coords.", merr);
+  merr = iface->get_node_coords(3, nnodes, 0, startv, arrays);MBERR("Can't get node coords.", merr);
 
   /* will start with the lower corner: */
   /* x = ( m * genCtx.A + a ) * genCtx.q * genCtx.blockSizeElementXYZ[0]; */
@@ -286,17 +286,17 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::Re
   switch (genCtx.dim) {
   case 1:
     nvperelem = 2;
-    merr = iface->get_element_connect(nelems, 2, moab::MBEDGE, 0, starte, conn); MBERR("Can't get EDGE2 element connectivity.", merr);
+    merr = iface->get_element_connect(nelems, 2, moab::MBEDGE, 0, starte, conn);MBERR("Can't get EDGE2 element connectivity.", merr);
     break;
   case 2:
     if (genCtx.simplex) {
       nvperelem = 3;
       nelems = ntensorelems * simplices_per_tensor[genCtx.dim];
-      merr = iface->get_element_connect(nelems, 3, moab::MBTRI, 0, starte, conn); MBERR("Can't get TRI3 element connectivity.", merr);
+      merr = iface->get_element_connect(nelems, 3, moab::MBTRI, 0, starte, conn);MBERR("Can't get TRI3 element connectivity.", merr);
     }
     else {
       nvperelem = 4;
-      merr = iface->get_element_connect(nelems, 4, moab::MBQUAD, 0, starte, conn); MBERR("Can't get QUAD4 element connectivity.", merr);
+      merr = iface->get_element_connect(nelems, 4, moab::MBQUAD, 0, starte, conn);MBERR("Can't get QUAD4 element connectivity.", merr);
     }
     break;
   case 3:
@@ -304,11 +304,11 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::Re
     if (genCtx.simplex) {
       nvperelem = 4;
       nelems = ntensorelems * simplices_per_tensor[genCtx.dim];
-      merr = iface->get_element_connect(nelems, 4, moab::MBTET, 0, starte, conn); MBERR("Can't get TET4 element connectivity.", merr);
+      merr = iface->get_element_connect(nelems, 4, moab::MBTET, 0, starte, conn);MBERR("Can't get TET4 element connectivity.", merr);
     }
     else {
       nvperelem = 8;
-      merr = iface->get_element_connect(nelems, 8, moab::MBHEX, 0, starte, conn); MBERR("Can't get HEX8 element connectivity.", merr);
+      merr = iface->get_element_connect(nelems, 8, moab::MBHEX, 0, starte, conn);MBERR("Can't get HEX8 element connectivity.", merr);
     }
     break;
   }
@@ -349,10 +349,10 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::Re
     }
   }
   if (genCtx.adjEnts) { /* we need to update adjacencies now, because some elements are new */
-    merr = iface->update_adjacencies(starte, nelems, nvperelem, conn); MBERR("Can't update adjacencies", merr);
+    merr = iface->update_adjacencies(starte, nelems, nvperelem, conn);MBERR("Can't update adjacencies", merr);
   }
   tmp.swap(cells);
-  merr = mbImpl->tag_set_data(global_id_tag, cells, &gids[0]); MBERR("Can't set global ids to elements.", merr);
+  merr = mbImpl->tag_set_data(global_id_tag, cells, &gids[0]);MBERR("Can't set global ids to elements.", merr);
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +534,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   DMMoabMeshGeneratorCtx genCtx;
   const PetscInt         npts = nele + 1;    /* Number of points in every dimension */
 
-  moab::Tag              global_id_tag, part_tag, geom_tag;
+  moab::Tag              global_id_tag, part_tag, geom_tag, mat_tag, dir_tag, neu_tag;
   moab::Range            ownedvtx, ownedelms, localvtxs, localelms;
   moab::EntityHandle     regionset;
   PetscInt               ml = 0, nl = 0, kl = 0;
@@ -575,10 +575,10 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   dmmoab->refct = 1;
 
   /* create a file set to associate all entities in current mesh */
-  merr = mbImpl->create_meshset(moab::MESHSET_SET, dmmoab->fileset); MBERR("Creating file set failed", merr);
+  merr = mbImpl->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
 
   /* No errors yet; proceed with building the mesh */
-  merr = mbImpl->query_interface(readMeshIface); MBERRNM(merr);
+  merr = mbImpl->query_interface(readMeshIface);MBERRNM(merr);
 
   genCtx.M = genCtx.N = genCtx.K = 1;
   genCtx.A = genCtx.B = genCtx.C = 1;
@@ -632,14 +632,18 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   /* generate the block at (a, b, c); it will represent a partition , it will get a partition tag */
   PetscInt dum_id = -1;
-  merr = mbImpl->tag_get_handle("GLOBAL_ID", 1, moab::MB_TYPE_INTEGER, global_id_tag); MBERR("Getting Tag handle failed", merr);
+  merr = mbImpl->tag_get_handle("GLOBAL_ID", 1, moab::MB_TYPE_INTEGER, global_id_tag);MBERR("Getting Global_ID Tag handle failed", merr);
 
-  merr = mbImpl->tag_get_handle("PARALLEL_PARTITION", 1, moab::MB_TYPE_INTEGER, part_tag, moab::MB_TAG_CREAT | moab::MB_TAG_SPARSE, &dum_id); MBERR("Getting Tag handle failed", merr);
+  merr = mbImpl->tag_get_handle(MATERIAL_SET_TAG_NAME, 1, moab::MB_TYPE_INTEGER, mat_tag);MBERR("Getting Material set Tag handle failed", merr);
+  merr = mbImpl->tag_get_handle(DIRICHLET_SET_TAG_NAME, 1, moab::MB_TYPE_INTEGER, dir_tag);MBERR("Getting Dirichlet set Tag handle failed", merr);
+  merr = mbImpl->tag_get_handle(NEUMANN_SET_TAG_NAME, 1, moab::MB_TYPE_INTEGER, neu_tag);MBERR("Getting Neumann set Tag handle failed", merr);
+
+  merr = mbImpl->tag_get_handle("PARALLEL_PARTITION", 1, moab::MB_TYPE_INTEGER, part_tag, moab::MB_TAG_CREAT | moab::MB_TAG_SPARSE, &dum_id);MBERR("Getting Partition Tag handle failed", merr);
 
   /* lets create some sets */
-  merr = mbImpl->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_CREAT | moab::MB_TAG_SPARSE, &dum_id); MBERRNM(merr);
-  merr = mbImpl->create_meshset(moab::MESHSET_SET, regionset); MBERRNM(merr);
-  ierr     = PetscLogEventEnd(genCtx.generateMesh, 0, 0, 0, 0);CHKERRQ(ierr);
+  merr = mbImpl->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_CREAT | moab::MB_TAG_SPARSE, &dum_id);MBERRNM(merr);
+  merr = mbImpl->create_meshset(moab::MESHSET_SET, regionset);MBERRNM(merr);
+  ierr = PetscLogEventEnd(genCtx.generateMesh, 0, 0, 0, 0);CHKERRQ(ierr);
 
   for (a = 0; a < (genCtx.dim > 0 ? genCtx.A : genCtx.A); a++) {
     for (b = 0; b < (genCtx.dim > 1 ? genCtx.B : 1); b++) {
@@ -667,77 +671,73 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
         }
 
         moab::EntityHandle part_set;
-        merr = mbImpl->create_meshset(moab::MESHSET_SET, part_set); MBERR("Can't create mesh set.", merr);
+        merr = mbImpl->create_meshset(moab::MESHSET_SET, part_set);MBERR("Can't create mesh set.", merr);
 
-        merr = mbImpl->add_entities(part_set, verts); MBERR("Can't add vertices to set.", merr);
-        merr = mbImpl->add_entities(part_set, cells); MBERR("Can't add entities to set.", merr);
-        // PetscInfo2(NULL, "Generated local mesh: %D vertices and %D elements.\n", verts.size(), cells.size());
-
-        merr = mbImpl->add_entities(regionset, cells); MBERR("Can't add entities to set.", merr);
+        merr = mbImpl->add_entities(part_set, verts);MBERR("Can't add vertices to set.", merr);
+        merr = mbImpl->add_entities(part_set, cells);MBERR("Can't add entities to set.", merr);
+        merr = mbImpl->add_entities(regionset, cells);MBERR("Can't add entities to set.", merr);
 
         /* if needed, add all edges and faces */
         if (genCtx.adjEnts)
         {
           if (genCtx.dim > 1) {
-            merr = mbImpl->get_adjacencies(cells, 1, true, edges, moab::Interface::UNION); MBERR("Can't get edges", merr);
-            merr = mbImpl->add_entities(part_set, edges); MBERR("Can't add edges to partition set.", merr);
+            merr = mbImpl->get_adjacencies(cells, 1, true, edges, moab::Interface::UNION);MBERR("Can't get edges", merr);
+            merr = mbImpl->add_entities(part_set, edges);MBERR("Can't add edges to partition set.", merr);
           }
           if (genCtx.dim > 2) {
-            merr = mbImpl->get_adjacencies(cells, 2, true, faces, moab::Interface::UNION); MBERR("Can't get faces", merr);
-            merr = mbImpl->add_entities(part_set, faces); MBERR("Can't add faces to partition set.", merr);
+            merr = mbImpl->get_adjacencies(cells, 2, true, faces, moab::Interface::UNION);MBERR("Can't get faces", merr);
+            merr = mbImpl->add_entities(part_set, faces);MBERR("Can't add faces to partition set.", merr);
           }
           edges.clear();
           faces.clear();
         }
         verts.clear(); cells.clear();
 
-        merr = mbImpl->tag_set_data(part_tag, &part_set, 1, &part_num); MBERR("Can't set part tag on set", merr);
+        merr = mbImpl->tag_set_data(part_tag, &part_set, 1, &part_num);MBERR("Can't set part tag on set", merr);
         if (dmmoab->fileset) {
-          merr = mbImpl->add_parent_child(dmmoab->fileset, part_set); MBERR("Can't add part set to file set.", merr);
-          merr = mbImpl->unite_meshset(dmmoab->fileset, part_set); MBERRNM(merr);
+          merr = mbImpl->add_parent_child(dmmoab->fileset, part_set);MBERR("Can't add part set to file set.", merr);
+          merr = mbImpl->unite_meshset(dmmoab->fileset, part_set);MBERRNM(merr);
         }
-        merr = mbImpl->add_entities(dmmoab->fileset, &part_set, 1); MBERRNM(merr);
+        merr = mbImpl->add_entities(dmmoab->fileset, &part_set, 1);MBERRNM(merr);
       }
     }
   }
 
-  /* set geometric dimension tag for regions */
-  merr = mbImpl->tag_set_data(geom_tag, &regionset, 1, &dmmoab->dim); MBERRNM(merr);
-  merr = mbImpl->add_parent_child(dmmoab->fileset, regionset); MBERRNM(merr);
+  merr = mbImpl->add_parent_child(dmmoab->fileset, regionset);MBERRNM(merr);
 
   /* Only in parallel: resolve shared entities between processors and exchange ghost layers */
   if (global_size > 1) {
 
     ierr = PetscLogEventBegin(genCtx.parResolve, 0, 0, 0, 0);CHKERRQ(ierr);
 
-    merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, genCtx.dim, cells); MBERR("Can't get all d-dimensional elements.", merr);
-    merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 0, verts); MBERR("Can't get all vertices.", merr);
+    merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, genCtx.dim, cells);MBERR("Can't get all d-dimensional elements.", merr);
+    merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 0, verts);MBERR("Can't get all vertices.", merr);
 
     if (genCtx.A * genCtx.B * genCtx.C != 1) { //  merge needed
       moab::MergeMesh mm(mbImpl);
       if (genCtx.newMergeMethod) {
-        merr = mm.merge_using_integer_tag(verts, global_id_tag); MBERR("Can't merge with GLOBAL_ID tag", merr);
+        merr = mm.merge_using_integer_tag(verts, global_id_tag);MBERR("Can't merge with GLOBAL_ID tag", merr);
       }
       else {
-        merr = mm.merge_entities(cells, 0.0001); MBERR("Can't merge with coordinates", merr);
+        merr = mm.merge_entities(cells, 0.0001);MBERR("Can't merge with coordinates", merr);
       }
     }
 
 #ifdef MOAB_HAVE_MPI
     /* check the handles */
-    merr = pcomm->check_all_shared_handles(); MBERRV(mbImpl, merr);
+    merr = pcomm->check_all_shared_handles();MBERRV(mbImpl, merr);
 
     /* resolve the shared entities by exchanging information to adjacent processors */
-    merr = pcomm->resolve_shared_ents(dmmoab->fileset, cells, dim, dim - 1, NULL, &global_id_tag); MBERRV(mbImpl, merr);
+    merr = pcomm->resolve_shared_ents(dmmoab->fileset, cells, dim, dim - 1, NULL, &global_id_tag);MBERRV(mbImpl, merr);
     if (dmmoab->fileset) {
-      merr = pcomm->exchange_ghost_cells(dim, 0, nghost, dim, true, false, &dmmoab->fileset); MBERRV(mbImpl, merr);
+      merr = pcomm->exchange_ghost_cells(dim, 0, nghost, dim, true, false, &dmmoab->fileset);MBERRV(mbImpl, merr);
     }
     else {
-      merr = pcomm->exchange_ghost_cells(dim, 0, nghost, dim, true, false); MBERRV(mbImpl, merr);
+      merr = pcomm->exchange_ghost_cells(dim, 0, nghost, dim, true, false);MBERRV(mbImpl, merr);
     }
 
     /* Reassign global IDs on all entities. */
-    merr = pcomm->assign_global_ids(dmmoab->fileset, dim, 1, false, true, false); MBERRNM(merr);
+    merr = pcomm->assign_global_ids(dmmoab->fileset, dim, 1, false, true, false);MBERRNM(merr);
 #endif
 
     ierr = PetscLogEventEnd(genCtx.parResolve, 0, 0, 0, 0);CHKERRQ(ierr);
@@ -747,17 +747,27 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
     // delete all quads and edges
     moab::Range toDelete;
     if (genCtx.dim > 1) {
-      merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 1, toDelete); MBERR("Can't get edges", merr);
+      merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 1, toDelete);MBERR("Can't get edges", merr);
     }
 
     if (genCtx.dim > 2) {
-      merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 2, toDelete); MBERR("Can't get faces", merr);
+      merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 2, toDelete);MBERR("Can't get faces", merr);
     }
 
 #ifdef MOAB_HAVE_MPI
-    merr = dmmoab->pcomm->delete_entities(toDelete) ; MBERR("Can't delete entities", merr);
+    merr = dmmoab->pcomm->delete_entities(toDelete) ;MBERR("Can't delete entities", merr);
 #endif
   }
+
+  /* set geometric dimension tag for regions */
+  merr = mbImpl->tag_set_data(geom_tag, &regionset, 1, &dmmoab->dim);MBERRNM(merr);
+  /* set default material ID for regions */
+  int default_material = 1;
+  merr = mbImpl->tag_set_data(mat_tag, &regionset, 1, &default_material);MBERRNM(merr);
+  /*
+    int default_dbc = 0;
+    merr = mbImpl->tag_set_data(dir_tag, &vertexset, 1, &default_dbc);MBERRNM(merr);
+  */
   PetscFunctionReturn(0);
 }
 
@@ -856,7 +866,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   dmmoab->refct = 1;
 
   /* create a file set to associate all entities in current mesh */
-  merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, dmmoab->fileset); MBERR("Creating file set failed", merr);
+  merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
 
   /* add mesh loading options specific to the DM */
   ierr = DMMoab_GetReadOptions_Private(dmmoab->partition_by_rank, nprocs, dim, nghost, dmmoab->read_mode,
@@ -866,28 +876,28 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
 
   /* Load the mesh from a file. */
   if (dmmoab->fileset) {
-    merr = mbiface->load_file(filename, &dmmoab->fileset, readopts); MBERRVM(mbiface, "Reading MOAB file failed.", merr);
+    merr = mbiface->load_file(filename, &dmmoab->fileset, readopts);MBERRVM(mbiface, "Reading MOAB file failed.", merr);
   }
   else {
-    merr = mbiface->load_file(filename, 0, readopts); MBERRVM(mbiface, "Reading MOAB file failed.", merr);
+    merr = mbiface->load_file(filename, 0, readopts);MBERRVM(mbiface, "Reading MOAB file failed.", merr);
   }
 
 #ifdef MOAB_HAVE_MPI
   /* Reassign global IDs on all entities. */
-  merr = pcomm->assign_global_ids(dmmoab->fileset, dim, 1, true, true, true); MBERRNM(merr);
+  /* merr = pcomm->assign_global_ids(dmmoab->fileset, dim, 1, true, true, true);MBERRNM(merr); */
 #endif
 
   /* load the local vertices */
-  merr = mbiface->get_entities_by_type(dmmoab->fileset, moab::MBVERTEX, verts, true); MBERRNM(merr);
+  merr = mbiface->get_entities_by_type(dmmoab->fileset, moab::MBVERTEX, verts, true);MBERRNM(merr);
   /* load the local elements */
-  merr = mbiface->get_entities_by_dimension(dmmoab->fileset, dim, elems, true); MBERRNM(merr);
+  merr = mbiface->get_entities_by_dimension(dmmoab->fileset, dim, elems, true);MBERRNM(merr);
 
 #ifdef MOAB_HAVE_MPI
   /* Everything is set up, now just do a tag exchange to update tags
      on all of the ghost vertexes */
-  merr = pcomm->exchange_tags(dmmoab->ltog_tag, verts); MBERRV(mbiface, merr);
-  merr = pcomm->exchange_tags(dmmoab->ltog_tag, elems); MBERRV(mbiface, merr);
-  merr = pcomm->collective_sync_partition(); MBERR("Collective sync failed", merr);
+  merr = pcomm->exchange_tags(dmmoab->ltog_tag, verts);MBERRV(mbiface, merr);
+  merr = pcomm->exchange_tags(dmmoab->ltog_tag, elems);MBERRV(mbiface, merr);
+  merr = pcomm->collective_sync_partition();MBERR("Collective sync failed", merr);
 #endif
 
   PetscInfo3(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size());
@@ -923,7 +933,7 @@ PetscErrorCode DMMoabRenumberMeshEntities(DM dm)
 #ifdef MOAB_HAVE_MPI
   /* Insert new points */
   moab::ErrorCode     merr;
-  merr = ((DM_Moab*) dm->data)->pcomm->assign_global_ids(((DM_Moab*) dm->data)->fileset, 3, 0, false, true, false); MBERRNM(merr);
+  merr = ((DM_Moab*) dm->data)->pcomm->assign_global_ids(((DM_Moab*) dm->data)->fileset, 3, 0, false, true, false);MBERRNM(merr);
 #endif
   PetscFunctionReturn(0);
 }

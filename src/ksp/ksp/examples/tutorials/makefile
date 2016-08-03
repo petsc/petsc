@@ -1106,25 +1106,31 @@ runex34_2 :
 	   ${RM} -f ex34_2.tmp
 
 runex35:
-	-@${MPIEXEC} -n 1 ./ex35 -bc_type dirichlet -levels 0 -nu .01 -n 10 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex35 -levels 0 -nu .01 -n 10 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_1.tmp 2>&1;\
 	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex35, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex35_1.tmp
 
 runex35_2:
-	-@${MPIEXEC} -n 2 ./ex35 -bc_type dirichlet -levels 2 -nu .01 -n 20 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex35 -levels 3 -nu .01 -n 2 -mg -ksp_converged_reason > ex35_2.tmp 2>&1;\
 	   if (${DIFF} output/ex35_2.out ex35_2.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex35_2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex35_2.tmp
 
+runex35_3:
+	-@${MPIEXEC} -n 2 ./ex35 -problem 3 -file data/ex35_mesh.h5m -mg -levels 1 -ksp_converged_reason > ex35_3.tmp 2>&1;\
+	   if (${DIFF} output/ex35_3.out ex35_3.tmp) then true ;  \
+	   else echo ${PWD} ; echo "Possible problem with runex35_3, diffs above \n========================================="; fi ;\
+	   ${RM} -f ex35_3.tmp
+
 runex36:
-	-@${MPIEXEC} -n 1 ./ex36 -bc_type dirichlet -levels 0 -nu .01 -n 10 -ksp_converged_reason -ksp_monitor -error > ex36_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex36 -levels 1 -nu .01 -n 4 -mg -ksp_converged_reason -error > ex36_1.tmp 2>&1;\
 	   if (${DIFF} output/ex36_1.out ex36_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex36, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex36_1.tmp
 
 runex36_2:
-	-@${MPIEXEC} -n 2 ./ex36 -bc_type dirichlet -levels 2 -nu .01 -n 5 -mg -ksp_converged_reason -ksp_monitor -error > ex36_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex36 -levels 2 -nu .01 -n 2 -mg -ksp_converged_reason -error > ex36_2.tmp 2>&1;\
 	   if (${DIFF} output/ex36_2.out ex36_2.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex36_2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex36_2.tmp
@@ -1715,7 +1721,7 @@ TESTEXAMPLES_CUSP                       = ex4.PETSc runex4 ex4.rm ex7.PETSc rune
                                           runex7_mpiaijcusp_2 runex7_mpiaijcusp_simple runex7_mpiaijcusp_simple_2 ex7.rm \
                                           ex46.PETSc runex46_aijcusp ex46.rm
 TESTEXAMPLES_MOAB                       = ex35.PETSc runex35 ex35.rm ex36.PETSc runex36 ex36.rm
-TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 ex35.rm ex36.PETSc runex36_2 ex36.rm
+TESTEXAMPLES_MOAB_HDF5                  = ex35.PETSc runex35_2 runex35_3 ex35.rm ex36.PETSc runex36_2 ex36.rm
 TESTEXAMPLES_TRILINOS                   = ex63.PETSc runex63 runex63_2 ex63.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

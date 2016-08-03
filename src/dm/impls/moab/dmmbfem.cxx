@@ -573,7 +573,7 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
     ierr = DMatrix_Invert_3x3_Internal(jacobian, ijacobian, volume);CHKERRQ(ierr);
     if ( *volume < 1e-8 ) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Tetrahedral element has zero volume: %g. Degenerate element or invalid connectivity\n", *volume);
 
-    PetscReal Dx[4], Dy[4], Dz[4];
+    PetscReal Dx[4]={0,0,0,0}, Dy[4]={0,0,0,0}, Dz[4]={0,0,0,0};
     if (dphidx) {
       Dx[0] =   ( coords[1 + 2 * 3] * ( coords[2 + 1 * 3] - coords[2 + 3 * 3] )
                  - coords[1 + 1 * 3] * ( coords[2 + 2 * 3] - coords[2 + 3 * 3] )
@@ -645,16 +645,12 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
         dphidx[1 + offset] = Dx[1];
         dphidx[2 + offset] = Dx[2];
         dphidx[3 + offset] = Dx[3];
-      }
-
-      if (dphidy) {
+      
         dphidy[0 + offset] = Dy[0];
         dphidy[1 + offset] = Dy[1];
         dphidy[2 + offset] = Dy[2];
         dphidy[3 + offset] = Dy[3];
-      }
-
-      if (dphidz) {
+      
         dphidz[0 + offset] = Dz[0];
         dphidz[1 + offset] = Dz[1];
         dphidz[2 + offset] = Dz[2];
