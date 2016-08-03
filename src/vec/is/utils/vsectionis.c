@@ -2764,8 +2764,8 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
     }
     link->next   = sym->workout;
     sym->workout = link;
-    ierr = PetscMemzero(link->perms,numPoints * sizeof(const PetscInt *));CHKERRQ(ierr);
-    ierr = PetscMemzero(link->rots,numPoints * sizeof(const PetscScalar *));CHKERRQ(ierr);
+    ierr = PetscMemzero((void *) link->perms,numPoints * sizeof(const PetscInt *));CHKERRQ(ierr);
+    ierr = PetscMemzero((void *) link->rots,numPoints * sizeof(const PetscScalar *));CHKERRQ(ierr);
     ierr = (*sym->ops->getpoints) (sym, section, numPoints, points, link->perms, link->rots);CHKERRQ(ierr);
     if (perms) *perms = link->perms;
     if (rots)  *rots  = link->rots;

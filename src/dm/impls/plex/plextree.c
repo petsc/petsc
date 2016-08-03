@@ -2278,7 +2278,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = PetscSectionGetNumFields(localCoarse,&numFields);CHKERRQ(ierr);
   maxFields = PetscMax(1,numFields) + 1;
   ierr = PetscMalloc7(maxFields,&offsets,maxFields,&offsetsCopy,maxFields,&newOffsets,maxFields,&newOffsetsCopy,maxFields,&rowOffsets,maxFields,&numD,maxFields,&numO);CHKERRQ(ierr);
-  ierr = PetscCalloc2(maxFields,&perms,maxFields,&flips);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxFields,&perms,maxFields,&flips);CHKERRQ(ierr);
+  ierr = PetscMemzero((void *) perms, maxFields * sizeof(const PetscInt **));CHKERRQ(ierr);
+  ierr = PetscMemzero((void *) flips, maxFields * sizeof(const PetscScalar **));CHKERRQ(ierr);
 
   for (p = pStartC; p < pEndC; p++) { /* count the sizes of the indices and matrices */
     PetscInt dof, matSize   = 0;

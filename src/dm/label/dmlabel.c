@@ -1507,7 +1507,12 @@ PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
     label->refct++;
     sl->label = label;
     ierr = DMLabelGetNumValues(label,&sl->numStrata);CHKERRQ(ierr);
-    ierr = PetscCalloc5(sl->numStrata+1,&sl->modes,sl->numStrata+1,&sl->sizes,sl->numStrata+1,&sl->perms,sl->numStrata+1,&sl->rots,sl->numStrata+1,&sl->minMaxOrients);CHKERRQ(ierr);
+    ierr = PetscMalloc5(sl->numStrata+1,&sl->modes,sl->numStrata+1,&sl->sizes,sl->numStrata+1,&sl->perms,sl->numStrata+1,&sl->rots,sl->numStrata+1,&sl->minMaxOrients);CHKERRQ(ierr);
+    ierr = PetscMemzero((void *) sl->modes,(sl->numStrata+1)*sizeof(PetscCopyMode));CHKERRQ(ierr);
+    ierr = PetscMemzero((void *) sl->sizes,(sl->numStrata+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemzero((void *) sl->perms,(sl->numStrata+1)*sizeof(const PetscInt **));CHKERRQ(ierr);
+    ierr = PetscMemzero((void *) sl->rots,(sl->numStrata+1)*sizeof(const PetscScalar **));CHKERRQ(ierr);
+    ierr = PetscMemzero((void *) sl->minMaxOrients,(sl->numStrata+1)*sizeof(PetscInt[2]));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
