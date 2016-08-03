@@ -374,35 +374,58 @@ PetscErrorCode PetscCDSetMat(PetscCoarsenData *ail, Mat a_mat)
  */
 #undef __FUNCT__
 #define __FUNCT__ "PetscCDGetASMBlocks"
-PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a_bs, PetscInt *a_sz, IS **a_local_is)
+PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a_bs, Mat mat, PetscInt *a_sz, IS **a_local_is)
 {
   PetscErrorCode ierr;
   PetscCDIntNd   *n;
-  PetscInt       lsz,ii,kk,*idxs,jj;
-  IS             *is_loc;
+  PetscInt       lsz,ii,kk,*idxs,jj,s,e,gid;
+  IS             *is_loc,is_bcs;
 
   PetscFunctionBegin;
   for (ii=kk=0; ii<ail->size; ii++) {
     if (ail->array[ii]) kk++;
   }
-  *a_sz = kk; /* out */
-
-  ierr        = PetscMalloc1(kk, &is_loc);CHKERRQ(ierr);
-  *a_local_is = is_loc; /* out */
+  /* count BCs */
+  ierr = MatGetOwnershipRange(mat, &s, &e);CHKERRQ(ierr);
+  for (gid=s,lsz=0; gid<e; gid++) {
+    ierr = MatGetRow(mat,gid,&jj,0,0);CHKERRQ(ierr);
+    if (jj<2) lsz++;
+    ierr = MatRestoreRow(mat,gid,&jj,0,0);CHKERRQ(ierr);
+  }
+  if (lsz) {
+    ierr = PetscMalloc1(a_bs*lsz, &idxs);CHKERRQ(ierr);
+    for (gid=s,lsz=0; gid<e; gid++) {
+      ierr = MatGetRow(mat,gid,&jj,0,0);CHKERRQ(ierr);
+      if (jj<2) {
+        for (jj=0; jj<a_bs; lsz++,jj++) idxs[lsz] = a_bs*gid + jj;
+      }
+      ierr = MatRestoreRow(mat,gid,&jj,0,0);CHKERRQ(ierr);
+    }
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_bcs);CHKERRQ(ierr);
+    *a_sz = kk + 1; /* out */
+  } else {
+    is_bcs=0;
+    *a_sz = kk; /* out */
+  }
+  ierr = PetscMalloc1(*a_sz, &is_loc);CHKERRQ(ierr);
 
   for (ii=kk=0; ii<ail->size; ii++) {
     for (lsz=0, n=ail->array[ii]; n; lsz++, n=n->next) /* void */;
     if (lsz) {
       ierr = PetscMalloc1(a_bs*lsz, &idxs);CHKERRQ(ierr);
       for (lsz = 0, n=ail->array[ii]; n; n = n->next) {
-        PetscInt gid;
         ierr = PetscCDIntNdGetID(n, &gid);CHKERRQ(ierr);
         for (jj=0; jj<a_bs; lsz++,jj++) idxs[lsz] = a_bs*gid + jj;
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_loc[kk++]);CHKERRQ(ierr);
     }
   }
+  if (is_bcs) {
+    is_loc[kk++] = is_bcs;
+  }
   if (*a_sz != kk) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"*a_sz %D != kk %D",*a_sz,kk);
+  *a_local_is = is_loc; /* out */
+
   PetscFunctionReturn(0);
 }
 

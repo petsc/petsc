@@ -1,22 +1,22 @@
 	[0]main 300/100 eqs in vector
-    0 KSP Residual norm 64.2019 
-    1 KSP Residual norm 0.709728 
-    2 KSP Residual norm 0.0375644 
-    3 KSP Residual norm 0.00276169 
-    4 KSP Residual norm 0.00021727 
-    5 KSP Residual norm 1.39118e-05 
-    6 KSP Residual norm 8.73385e-07 
-    7 KSP Residual norm 6.09274e-08 
+    0 KSP Residual norm 64.2328 
+    1 KSP Residual norm 0.696157 
+    2 KSP Residual norm 0.0378379 
+    3 KSP Residual norm 0.00276791 
+    4 KSP Residual norm 0.000181165 
+    5 KSP Residual norm 1.18914e-05 
+    6 KSP Residual norm 7.96736e-07 
+    7 KSP Residual norm 5.50441e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 7
-    0 KSP Residual norm 0.000642019 
-    1 KSP Residual norm 7.09728e-06 
-    2 KSP Residual norm 3.75644e-07 
-    3 KSP Residual norm 2.76169e-08 
-    4 KSP Residual norm 2.1727e-09 
-    5 KSP Residual norm 1.391e-10 
+    0 KSP Residual norm 0.000642328 
+    1 KSP Residual norm 6.96157e-06 
+    2 KSP Residual norm 3.78379e-07 
+    3 KSP Residual norm 2.76791e-08 
+    4 KSP Residual norm 1.81165e-09 
+    5 KSP Residual norm 1.189e-10 
     6 KSP Residual norm < 1.e-11
     7 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 7
     0 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 0
-[0]main emax=9.9984E-01
+[0]main emax=9.9991E-01
