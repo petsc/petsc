@@ -4901,15 +4901,18 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
     *n_subdomains = PetscMin(void_procs,*n_subdomains);
   }
 
-  /* number of subdomains requested greater than active processes -> just shift the matrix */
-  if (active_procs < *n_subdomains) {
-    PetscInt issize,isidx;
+  /* number of subdomains requested greater than active processes -> just shift the matrix
+     number of subdomains requested 1 -> send to master or first candidate in voids  */
+  if (active_procs < *n_subdomains || *n_subdomains == 1) {
+    PetscInt issize,isidx,dest;
+    if (*n_subdomains == 1) dest = 0;
+    else dest = rank;
     if (im_active) {
       issize = 1;
       if (procs_candidates) { /* shift the pattern on non-active candidates (if any) */
-        isidx = procs_candidates[rank];
+        isidx = procs_candidates[dest];
       } else {
-        isidx = rank;
+        isidx = dest;
       }
     } else {
       issize = 0;
@@ -5753,7 +5756,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   im_active = !!(pcis->n);
   ierr = MPIU_Allreduce(&im_active,&active_procs,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
 
-  /* determine number of process partecipating to coarse solver and compute subassembling pattern */
+  /* determine number of processes partecipating to coarse solver and compute subassembling pattern */
   /* restr : whether if we want to exclude senders (which are not receivers) from the subassembling pattern */
   /* full_restr : just use the receivers from the subassembling pattern */
   coarse_mat_is = NULL;
