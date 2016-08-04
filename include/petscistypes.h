@@ -74,4 +74,18 @@ typedef struct _n_PetscLayout* PetscLayout;
 S*/
 typedef struct _p_PetscSection *PetscSection;
 
+/*S
+  PetscSectionSym - Symmetries of the data referenced by a PetscSection.
+
+  Often the order of data index by a PetscSection is meaningful, and describes additional structure, such as points on a
+  line, grid, or lattice.  If the data is accessed from a different "orientation", then the image of the data under
+  access then undergoes a symmetry transformation.  A PetscSectionSym specifies these symmetries.  The types of
+  symmetries that can be specified are of the form R * P, where R is a diagonal matrix of scalars, and P is a permutation.
+
+  Level: developer
+
+.seealso: PetscSectionSymCreate(), PetscSectionSymDestroy(), PetscSectionSetSym(), PetscSectionGetSym(), PetscSectionSetFieldSym(), PetscSectionGetFieldSym(), PetscSectionGetSymPoints()
+S*/
+typedef struct _p_PetscSectionSym *PetscSectionSym;
+
 #endif

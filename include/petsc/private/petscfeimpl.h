@@ -54,6 +54,7 @@ struct _PetscDualSpaceOps {
   PetscErrorCode (*getdimension)(PetscDualSpace,PetscInt*);
   PetscErrorCode (*getnumdof)(PetscDualSpace,const PetscInt**);
   PetscErrorCode (*getheightsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
+  PetscErrorCode (*getsymmetries)(PetscDualSpace,const PetscInt****,const PetscScalar****);
 };
 
 struct _p_PetscDualSpace {
@@ -67,10 +68,14 @@ struct _p_PetscDualSpace {
 
 typedef struct {
   PetscInt       *numDof;
-  PetscBool       simplex;
+  PetscBool       simplexCell;
+  PetscBool       tensorSpace;
   PetscBool       continuous;
   PetscInt        height;
   PetscDualSpace *subspaces;
+  PetscInt     ***symmetries;
+  PetscInt        numSelfSym;
+  PetscInt        selfSymOff;
 } PetscDualSpace_Lag;
 
 typedef struct {
