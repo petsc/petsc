@@ -832,22 +832,19 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
     ierr = VecRestoreArray(local_vec2,&array2);CHKERRQ(ierr);
   }
-  if (neumann_is || dirichlet_is) {
-    /* Take into account Neumann nodes */
+  /* Take into account Neumann nodes */
+  if (neumann_is) {
     ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
-    ierr = VecSet(local_vec2,0.0);CHKERRQ(ierr);
-    if (neumann_is) {
-      ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(neumann_is,&is_size);CHKERRQ(ierr);
-      ierr = ISGetIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-      for (i=0;i<is_size;i++) {
-        if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
-          array[is_indices[i]] = 1.0;
-        }
+    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(neumann_is,&is_size);CHKERRQ(ierr);
+    ierr = ISGetIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    for (i=0;i<is_size;i++) {
+      if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+        array[is_indices[i]] = 1.0;
       }
-      ierr = ISRestoreIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-      ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
     }
+    ierr = ISRestoreIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
     /* Neumann nodes: impose consistency among neighbours */
     ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
     ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -861,30 +858,24 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
       }
     }
     ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
-    /* Take into account Dirichlet nodes */
-    ierr = VecSet(local_vec2,0.0);CHKERRQ(ierr);
-    if (dirichlet_is) {
-      ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-      ierr = VecGetArray(local_vec2,&array2);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(dirichlet_is,&is_size);CHKERRQ(ierr);
-      ierr = ISGetIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-      for (i=0;i<is_size;i++){
-        if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
-          k = is_indices[i];
-          if (!PetscBTLookup(graph->touched,k)) {
-            if (PetscRealPart(array[k]) > 0.1) SETERRQ1(comm,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong\n",k);
-            array2[k] = 1.0;
-          }
-        }
+  }
+  /* Take into account Dirichlet nodes (they overwrite any Neumann boundary node previously set) */
+  if (dirichlet_is) {
+    ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
+    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(dirichlet_is,&is_size);CHKERRQ(ierr);
+    ierr = ISGetIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    for (i=0;i<is_size;i++){
+      if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+        array[is_indices[i]] = 1.0;
       }
-      ierr = ISRestoreIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-      ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
-      ierr = VecRestoreArray(local_vec2,&array2);CHKERRQ(ierr);
     }
+    ierr = ISRestoreIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
     /* Dirichlet nodes: impose consistency among neighbours */
     ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter_ctx,local_vec2,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,local_vec2,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
