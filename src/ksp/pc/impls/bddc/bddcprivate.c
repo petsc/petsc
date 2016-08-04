@@ -1542,7 +1542,13 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         for (ii=0;ii<B_neigs;ii++) {
           ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Eigenvector (old basis) %d/%d (%d)\n",ii,B_neigs,B_N);CHKERRQ(ierr);
           for (j=0;j<B_N;j++) {
+#if defined(PETSC_USE_COMPLEX)
+            PetscReal r = PetscRealPart(eigv[(ii+eigs_start)*subset_size+j]);
+            PetscReal c = PetscImaginaryPart(eigv[(ii+eigs_start)*subset_size+j]);
+            ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"       %1.4e + %1.4e i\n",r,c);CHKERRQ(ierr);
+#else
             ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"       %1.4e\n",eigv[(ii+eigs_start)*subset_size+j]);CHKERRQ(ierr);
+#endif
           }
         }
       }
