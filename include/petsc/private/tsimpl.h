@@ -70,10 +70,11 @@ struct _TSTrajectoryOps {
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
-  PetscInt setupcalled;             /* true if setup has been called */
-  PetscInt recomps;                 /* counter for recomputations in the adjoint run */
-  PetscInt diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
-  void *data;
+  PetscViewer monitor;
+  PetscInt    setupcalled;             /* true if setup has been called */
+  PetscInt    recomps;                 /* counter for recomputations in the adjoint run */
+  PetscInt    diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
+  void        *data;
 };
 
 struct _p_TS {
