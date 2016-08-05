@@ -26,7 +26,6 @@
 /* temporarily declare it */
 PetscErrorCode PCApply_BDDC(PC,Vec,Vec);
 
-/* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BDDC"
 PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
@@ -84,7 +83,6 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCView_BDDC"
 static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
@@ -265,7 +263,7 @@ PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, PetscBool trans, IS v
   ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,PetscBool,IS),(pc,divudotp,trans,vl2l));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetChangeOfBasisMat_BDDC"
 static PetscErrorCode PCBDDCSetChangeOfBasisMat_BDDC(PC pc, Mat change, PetscBool interior)
@@ -320,7 +318,7 @@ PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change, PetscBool interior)
   ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisMat_C",(PC,Mat,PetscBool),(pc,change,interior));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetPrimalVerticesIS_BDDC"
 static PetscErrorCode PCBDDCSetPrimalVerticesIS_BDDC(PC pc, IS PrimalVertices)
@@ -369,7 +367,7 @@ PetscErrorCode PCBDDCSetPrimalVerticesIS(PC pc, IS PrimalVertices)
   ierr = PetscTryMethod(pc,"PCBDDCSetPrimalVerticesIS_C",(PC,IS),(pc,PrimalVertices));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetPrimalVerticesLocalIS_BDDC"
 static PetscErrorCode PCBDDCSetPrimalVerticesLocalIS_BDDC(PC pc, IS PrimalVertices)
@@ -417,7 +415,7 @@ PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC pc, IS PrimalVertices)
   ierr = PetscTryMethod(pc,"PCBDDCSetPrimalVerticesLocalIS_C",(PC,IS),(pc,PrimalVertices));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetCoarseningRatio_BDDC"
 static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc,PetscInt k)
@@ -553,7 +551,6 @@ PetscErrorCode PCBDDCSetLevels(PC pc,PetscInt levels)
   ierr = PetscTryMethod(pc,"PCBDDCSetLevels_C",(PC,PetscInt),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDirichletBoundaries_BDDC"
@@ -605,7 +602,6 @@ PetscErrorCode PCBDDCSetDirichletBoundaries(PC pc,IS DirichletBoundaries)
   ierr = PetscTryMethod(pc,"PCBDDCSetDirichletBoundaries_C",(PC,IS),(pc,DirichletBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDirichletBoundariesLocal_BDDC"
@@ -656,7 +652,6 @@ PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC pc,IS DirichletBoundaries)
   ierr = PetscTryMethod(pc,"PCBDDCSetDirichletBoundariesLocal_C",(PC,IS),(pc,DirichletBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNeumannBoundaries_BDDC"
@@ -708,7 +703,6 @@ PetscErrorCode PCBDDCSetNeumannBoundaries(PC pc,IS NeumannBoundaries)
   ierr = PetscTryMethod(pc,"PCBDDCSetNeumannBoundaries_C",(PC,IS),(pc,NeumannBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNeumannBoundariesLocal_BDDC"
@@ -759,7 +753,6 @@ PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PC pc,IS NeumannBoundaries)
   ierr = PetscTryMethod(pc,"PCBDDCSetNeumannBoundariesLocal_C",(PC,IS),(pc,NeumannBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetDirichletBoundaries_BDDC"
@@ -801,7 +794,6 @@ PetscErrorCode PCBDDCGetDirichletBoundaries(PC pc,IS *DirichletBoundaries)
   ierr = PetscUseMethod(pc,"PCBDDCGetDirichletBoundaries_C",(PC,IS*),(pc,DirichletBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetDirichletBoundariesLocal_BDDC"
@@ -844,7 +836,6 @@ PetscErrorCode PCBDDCGetDirichletBoundariesLocal(PC pc,IS *DirichletBoundaries)
   ierr = PetscUseMethod(pc,"PCBDDCGetDirichletBoundariesLocal_C",(PC,IS*),(pc,DirichletBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetNeumannBoundaries_BDDC"
@@ -886,7 +877,6 @@ PetscErrorCode PCBDDCGetNeumannBoundaries(PC pc,IS *NeumannBoundaries)
   ierr = PetscUseMethod(pc,"PCBDDCGetNeumannBoundaries_C",(PC,IS*),(pc,NeumannBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetNeumannBoundariesLocal_BDDC"
@@ -929,7 +919,6 @@ PetscErrorCode PCBDDCGetNeumannBoundariesLocal(PC pc,IS *NeumannBoundaries)
   ierr = PetscUseMethod(pc,"PCBDDCGetNeumannBoundariesLocal_C",(PC,IS*),(pc,NeumannBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetLocalAdjacencyGraph_BDDC"
@@ -945,10 +934,13 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
     ierr = PCBDDCGraphResetCSR(mat_graph);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (mat_graph->nvtxs_csr == nvtxs) {
+  if (mat_graph->nvtxs_csr == nvtxs && mat_graph->freecsr) { /* we own the data */
     if (mat_graph->xadj == xadj && mat_graph->adjncy == adjncy) same_data = PETSC_TRUE;
     if (!same_data && mat_graph->xadj[nvtxs] == xadj[nvtxs]) {
-      ierr = PetscMemcmp(adjncy,mat_graph->adjncy,nvtxs*sizeof(PetscInt),&same_data);CHKERRQ(ierr);
+      ierr = PetscMemcmp(xadj,mat_graph->xadj,(nvtxs+1)*sizeof(PetscInt),&same_data);CHKERRQ(ierr);
+      if (same_data) {
+        ierr = PetscMemcmp(adjncy,mat_graph->adjncy,xadj[nvtxs]*sizeof(PetscInt),&same_data);CHKERRQ(ierr);
+      }
     }
   }
   if (!same_data) {
@@ -1016,7 +1008,6 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
   }
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDofsSplittingLocal_BDDC"
@@ -1097,7 +1088,6 @@ PetscErrorCode PCBDDCSetDofsSplittingLocal(PC pc,PetscInt n_is, IS ISForDofs[])
   ierr = PetscTryMethod(pc,"PCBDDCSetDofsSplittingLocal_C",(PC,PetscInt,IS[]),(pc,n_is,ISForDofs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDofsSplitting_BDDC"
@@ -1179,10 +1169,8 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCPreSolve_BDDC"
-/* -------------------------------------------------------------------------- */
 /*
    PCPreSolve_BDDC - Changes the right hand side and (if necessary) the initial
                      guess if a transformation of basis approach has been selected.
@@ -1383,10 +1371,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCPostSolve_BDDC"
-/* -------------------------------------------------------------------------- */
 /*
    PCPostSolve_BDDC - Changes the computed solution if a transformation of basis
                      approach has been selected. Also, restores rhs to its original state.
@@ -1429,10 +1415,8 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   pcbddc->exact_dirichlet_trick_app = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_BDDC"
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_BDDC - Prepares for the use of the BDDC preconditioner
                   by setting data structures and options.
@@ -1727,7 +1711,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCApply_BDDC - Applies the BDDC operator to a vector.
 
@@ -1897,7 +1880,6 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCApplyTranspose_BDDC - Applies the transpose of the BDDC operator to a vector.
 
@@ -2055,7 +2037,6 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
   }
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCDestroy_BDDC"
@@ -2111,7 +2092,6 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCPreSolveChangeRHS_BDDC"
@@ -2225,7 +2205,6 @@ PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat fetidp_mat, Vec standard_rhs, Vec fetid
   ierr = PetscUseMethod(mat_ctx->pc,"PCBDDCMatFETIDPGetRHS_C",(Mat,Vec,Vec),(fetidp_mat,standard_rhs,fetidp_flux_rhs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetSolution_BDDC"
@@ -2310,7 +2289,6 @@ PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, V
   ierr = PetscUseMethod(mat_ctx->pc,"PCBDDCMatFETIDPGetSolution_C",(Mat,Vec,Vec),(fetidp_mat,fetidp_flux_sol,standard_sol));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 extern PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 extern PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
