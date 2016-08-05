@@ -245,22 +245,22 @@ PETSC_EXTERN PetscErrorCode TS2SetSolution(TS,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TS2GetSolution(TS,Vec*,Vec*);
 
 /*S
-     TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step and stage)
+     TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step)
 
    Level: advanced
 
-  Concepts: ODE solvers, adjoint
+  Concepts: ODE solvers, trajectory
 
-.seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC, TSDestroy()
+.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectorySetType(), TSTrajectoryDestroy()
 S*/
 typedef struct _p_TSTrajectory* TSTrajectory;
 
 /*J
-    TSTrajectoryType - String with the name of a PETSc TS trajectory storage method
+    TSTrajectorySetType - String with the name of a PETSc TS trajectory storage method
 
    Level: intermediate
 
-.seealso: TSSetType(), TS, TSRegister(), TSTrajectoryCreate(), TSTrajectorySetType()
+.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy()
 J*/
 typedef const char* TSTrajectoryType;
 #define TSTRAJECTORYBASIC         "basic"
@@ -284,6 +284,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory,TS);
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegister(const char[],PetscErrorCode (*)(TSTrajectory,TS));
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetUp(TSTrajectory,TS);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetMonitor(TSTrajectory,PetscBool);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS,PetscInt*,Vec**,Vec**);
