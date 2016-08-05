@@ -9,14 +9,8 @@ Load of [1, 2, 3] at x=1. (not a true uniform load).\n\
 #include <petscsnes.h>
 #include <petscds.h>
 #include <petscdmforest.h>
-/* #define MARK_DEBUG */
-static PetscBool log_stages = PETSC_TRUE;
-static PetscErrorCode MaybeLogStagePush(PetscLogStage stage) { return log_stages ? PetscLogStagePush(stage) : 0; }
-static PetscErrorCode MaybeLogStagePop() { return log_stages ? PetscLogStagePop() : 0; }
 
 static PetscReal s_soft_alpha=1.e-3;
-/* static PetscReal s_mu=0.375; */
-/* static PetscReal s_lambda=0.75; */
 static PetscReal s_mu=0.4;
 static PetscReal s_lambda=0.4;
 
@@ -194,12 +188,10 @@ int main(int argc,char **args)
   {
     ierr = PetscOptionsInt("-ne","number of elements in each direction","",ne,&ne,&flg);CHKERRQ(ierr);
     if (flg) {
-      for (i=0; i<dim; i++) cells[i] = ne; /* this can be generalized now */
-      /* cells[0] = ne; */
+      for (i=0; i<dim; i++) cells[i] = ne; /* this can be generalized */
     }
     Lx = 1.; /* or ne for rod */
     ierr = PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-log_stages","Log stages of solve separately","",log_stages,&log_stages,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-two_solves","solve additional variant of the problem","",two_solves,&two_solves,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
@@ -209,21 +201,16 @@ int main(int argc,char **args)
     if (!flg || i!=3) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER, "'-mat_block_size 3' must be set (%D) and = 3 (%D)",flg,flg? i : 3);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (log_stages) {
-    ierr = PetscLogStageRegister("Mesh Setup", &stage[6]);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("1st Setup", &stage[0]);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("1st Solve", &stage[1]);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("2nd Setup (RAP)", &stage[2]);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("2nd Solve", &stage[3]);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("3rd Setup (nothing)", &stage[4]);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister("3rd Solve", &stage[5]);CHKERRQ(ierr);
-  } else {
-    for (i=0; i<(PetscInt)(sizeof(stage)/sizeof(stage[0])); i++) stage[i] = -1;
-  }
+  ierr = PetscLogStageRegister("Mesh Setup", &stage[6]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("1st Setup", &stage[0]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("1st Solve", &stage[1]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("2nd Setup (RAP)", &stage[2]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("2nd Solve", &stage[3]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("3rd Setup (nothing)", &stage[4]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("3rd Solve", &stage[5]);CHKERRQ(ierr);
   /* create DM, Plex calls DMSetup */
-  ierr = MaybeLogStagePush(stage[6]);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[6]);CHKERRQ(ierr);
   ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
-  /* ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr); */
   {
     DMLabel         label;
     IS              is;
@@ -260,7 +247,7 @@ int main(int argc,char **args)
           for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v*dim+d]);
           faceCoord /= Nv;
           for (b = 0; b < 2; ++b) {
-            if (PetscAbs(faceCoord - b/* *Lx */) < PETSC_SMALL) { /* domain have not been set yet, still [0,1]^3 */
+            if (PetscAbs(faceCoord - b) < PETSC_SMALL) { /* domain have not been set yet, still [0,1]^3 */
               ierr = DMSetLabelValue(dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
             }
           }
@@ -273,7 +260,7 @@ int main(int argc,char **args)
     ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
     ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   }
-  if (1) {
+  {
     PetscInt dimEmbed, i;
     PetscInt nCoords;
     PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
@@ -313,8 +300,7 @@ int main(int argc,char **args)
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = newdm;
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
-  }
-  else {
+  } else {
     /* Plex Distribute mesh over processes */
     ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
     if (distdm) {
@@ -357,15 +343,11 @@ int main(int argc,char **args)
     ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
     while (cdm) {
       ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
-#if defined(MARK_DEBUG)
-      ierr = DMView(cdm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
       ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
     }
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   }
-  /* ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr); */
   /* vecs & mat */
   ierr = DMCreateGlobalVector(dm,&xx);CHKERRQ(ierr);
   ierr = VecDuplicate(xx, &bb);CHKERRQ(ierr);
@@ -388,9 +370,9 @@ int main(int argc,char **args)
   ierr = DMPlexSetSNESLocalFEM(dm,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes, Amat, Amat, NULL, NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr); /* plex only, needed ??? */
-  ierr = MaybeLogStagePop();CHKERRQ(ierr);
-  ierr = MaybeLogStagePush(stage[0]);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
   /* ksp */
   ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues( ksp,PETSC_TRUE);CHKERRQ(ierr);
@@ -406,44 +388,32 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d equations in vector, %d vertices\n",rank,__FUNCT__,i,i/dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(bb,&i);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d local equations\n",rank,__FUNCT__,i);CHKERRQ(ierr);
-#if defined(MARK_DEBUG)
-  ierr = VecGetBlockSize(bb,&i);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s block size %d\n",rank,__FUNCT__,i,i/dim);CHKERRQ(ierr);
-  if (PETSC_FALSE) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIOpen(comm, "Amat.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(Amat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);
-  }
-#endif
-  ierr = MaybeLogStagePop();CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
   /* 1st solve */
-  ierr = MaybeLogStagePush(stage[1]);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
   ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
-  ierr = MaybeLogStagePop();CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
   /* 2nd solve */
   if (two_solves) {
     PetscReal emax, emin;
     Vec       res;
 
-    ierr = MaybeLogStagePush(stage[2]);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[2]);CHKERRQ(ierr);
     /* PC setup basically */
     ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
     ierr = SNESSetUp(snes);CHKERRQ(ierr);
-    ierr = MaybeLogStagePop();CHKERRQ(ierr);
-    ierr = MaybeLogStagePush(stage[3]);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[3]);CHKERRQ(ierr);
     ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
-    ierr = MaybeLogStagePop();CHKERRQ(ierr);
-    ierr = MaybeLogStagePush(stage[4]);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[4]);CHKERRQ(ierr);
 
     /* 3rd solve */
     ierr = SNESSetUp(snes);CHKERRQ(ierr);
-    ierr = MaybeLogStagePop();CHKERRQ(ierr);
-    ierr = MaybeLogStagePush(stage[5]);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage[5]);CHKERRQ(ierr);
     ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
-    ierr = MaybeLogStagePop();CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
 
     ierr = VecDuplicate(xx, &res);CHKERRQ(ierr);
     ierr = MatMult(Amat, xx, res);CHKERRQ(ierr);
