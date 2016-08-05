@@ -1,4 +1,514 @@
-Linear solve converged due to CONVERGED_RTOL iterations 9
-Linear solve converged due to CONVERGED_RTOL iterations 9
-Linear solve converged due to CONVERGED_RTOL iterations 9
-[0]main |b-Ax|/|b|=4.200950e-05, |b|=4.969822e+00, emax=9.935795e-01
+  0 KSP Residual norm 1551.71 
+  1 KSP Residual norm 527.032 
+  2 KSP Residual norm 212.394 
+  3 KSP Residual norm 77.8411 
+  4 KSP Residual norm 22.441 
+  5 KSP Residual norm 7.49988 
+  6 KSP Residual norm 2.82264 
+  7 KSP Residual norm 1.32274 
+  8 KSP Residual norm 0.373896 
+  9 KSP Residual norm 0.103111 
+ 10 KSP Residual norm 0.0244254 
+ 11 KSP Residual norm 0.00514979 
+Linear solve converged due to CONVERGED_RTOL iterations 11
+KSP Object: 8 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 8 MPI processes
+  type: gamg
+    MG: type is MULTIPLICATIVE, levels=3 cycles=v
+      Cycles per PCApply=1
+      Using externally compute Galerkin coarse grid matrices
+      GAMG specific options
+        Threshold for dropping small values from graph 0.01
+        Using aggregates from coarsening process to define subdomains for PCASM
+        Using parallel coarse grid solver (all coarse grid equations not put on one process)
+        AGG specific options
+          Symmetric graph false
+          Number of levels to square graph 1
+          Number smoothing steps 1
+  Coarse grid solver -- level -------------------------------
+    KSP Object: (mg_coarse_) 8 MPI processes
+      type: cg
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: (mg_coarse_) 8 MPI processes
+      type: jacobi
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=72, cols=72, bs=6
+        total: nonzeros=5184, allocated nonzeros=5184
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 8 nodes, limit used is 5
+  Down solver (pre-smoother) on level 1 -------------------------------
+    KSP Object: (mg_levels_1_) 8 MPI processes
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.34566, max = 1.81472
+        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        KSP Object: (mg_levels_1_esteig_) 8 MPI processes
+          type: cg
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
+      maximum iterations=1
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using nonzero initial guess
+      using NONE norm type for convergence test
+    PC Object: (mg_levels_1_) 8 MPI processes
+      type: asm
+        Additive Schwarz: total subdomain blocks = 15, amount of overlap = 0
+        Additive Schwarz: restriction/interpolation type - BASIC
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_1_sub_) 1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5., needed 0.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=0, cols=0
+                package used to perform factorization: petsc
+                total: nonzeros=1, allocated nonzeros=1
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=0, cols=0
+          total: nonzeros=0, allocated nonzeros=0
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=510, cols=510, bs=6
+        total: nonzeros=81684, allocated nonzeros=81684
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 19 nodes, limit used is 5
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  Down solver (pre-smoother) on level 2 -------------------------------
+    KSP Object: (mg_levels_2_) 8 MPI processes
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.392095, max = 2.0585
+        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        KSP Object: (mg_levels_2_esteig_) 8 MPI processes
+          type: cg
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
+      maximum iterations=1
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using nonzero initial guess
+      using NONE norm type for convergence test
+    PC Object: (mg_levels_2_) 8 MPI processes
+      type: asm
+        Additive Schwarz: total subdomain blocks = 89, amount of overlap = 0
+        Additive Schwarz: restriction/interpolation type - BASIC
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (mg_levels_2_sub_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_2_sub_) 1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5., needed 1.23026
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=78, cols=78
+                package used to perform factorization: petsc
+                total: nonzeros=3366, allocated nonzeros=3366
+                total number of mallocs used during MatSetValues calls =0
+                  using I-node routines: found 23 nodes, limit used is 5
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=78, cols=78
+          total: nonzeros=2736, allocated nonzeros=2736
+          total number of mallocs used during MatSetValues calls =0
+            using I-node routines: found 26 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=8232, cols=8232, bs=3
+        total: nonzeros=576000, allocated nonzeros=666792
+        total number of mallocs used during MatSetValues calls =0
+          has attached near null space
+          using I-node (on process 0) routines: found 343 nodes, limit used is 5
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  linear system matrix = precond matrix:
+  Mat Object: 8 MPI processes
+    type: mpiaij
+    rows=8232, cols=8232, bs=3
+    total: nonzeros=576000, allocated nonzeros=666792
+    total number of mallocs used during MatSetValues calls =0
+      has attached near null space
+      using I-node (on process 0) routines: found 343 nodes, limit used is 5
+  0 KSP Residual norm 0.0155171 
+  1 KSP Residual norm 0.00527032 
+  2 KSP Residual norm 0.00212394 
+  3 KSP Residual norm 0.000778411 
+  4 KSP Residual norm 0.00022441 
+  5 KSP Residual norm 7.49988e-05 
+  6 KSP Residual norm 2.82264e-05 
+  7 KSP Residual norm 1.32274e-05 
+  8 KSP Residual norm 3.73896e-06 
+  9 KSP Residual norm 1.03111e-06 
+ 10 KSP Residual norm 2.44254e-07 
+ 11 KSP Residual norm 5.14979e-08 
+Linear solve converged due to CONVERGED_RTOL iterations 11
+KSP Object: 8 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 8 MPI processes
+  type: gamg
+    MG: type is MULTIPLICATIVE, levels=3 cycles=v
+      Cycles per PCApply=1
+      Using externally compute Galerkin coarse grid matrices
+      GAMG specific options
+        Threshold for dropping small values from graph 0.01
+        Using aggregates from coarsening process to define subdomains for PCASM
+        Using parallel coarse grid solver (all coarse grid equations not put on one process)
+        AGG specific options
+          Symmetric graph false
+          Number of levels to square graph 1
+          Number smoothing steps 1
+  Coarse grid solver -- level -------------------------------
+    KSP Object: (mg_coarse_) 8 MPI processes
+      type: cg
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: (mg_coarse_) 8 MPI processes
+      type: jacobi
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=72, cols=72, bs=6
+        total: nonzeros=5184, allocated nonzeros=5184
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 8 nodes, limit used is 5
+  Down solver (pre-smoother) on level 1 -------------------------------
+    KSP Object: (mg_levels_1_) 8 MPI processes
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.34566, max = 1.81472
+        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        KSP Object: (mg_levels_1_esteig_) 8 MPI processes
+          type: cg
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
+      maximum iterations=1
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using nonzero initial guess
+      using NONE norm type for convergence test
+    PC Object: (mg_levels_1_) 8 MPI processes
+      type: asm
+        Additive Schwarz: total subdomain blocks = 15, amount of overlap = 0
+        Additive Schwarz: restriction/interpolation type - BASIC
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_1_sub_) 1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5., needed 0.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=0, cols=0
+                package used to perform factorization: petsc
+                total: nonzeros=1, allocated nonzeros=1
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=0, cols=0
+          total: nonzeros=0, allocated nonzeros=0
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=510, cols=510, bs=6
+        total: nonzeros=81684, allocated nonzeros=81684
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 19 nodes, limit used is 5
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  Down solver (pre-smoother) on level 2 -------------------------------
+    KSP Object: (mg_levels_2_) 8 MPI processes
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.392095, max = 2.0585
+        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        KSP Object: (mg_levels_2_esteig_) 8 MPI processes
+          type: cg
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
+      maximum iterations=1
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using nonzero initial guess
+      using NONE norm type for convergence test
+    PC Object: (mg_levels_2_) 8 MPI processes
+      type: asm
+        Additive Schwarz: total subdomain blocks = 89, amount of overlap = 0
+        Additive Schwarz: restriction/interpolation type - BASIC
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (mg_levels_2_sub_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_2_sub_) 1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5., needed 1.23026
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=78, cols=78
+                package used to perform factorization: petsc
+                total: nonzeros=3366, allocated nonzeros=3366
+                total number of mallocs used during MatSetValues calls =0
+                  using I-node routines: found 23 nodes, limit used is 5
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=78, cols=78
+          total: nonzeros=2736, allocated nonzeros=2736
+          total number of mallocs used during MatSetValues calls =0
+            using I-node routines: found 26 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=8232, cols=8232, bs=3
+        total: nonzeros=576000, allocated nonzeros=666792
+        total number of mallocs used during MatSetValues calls =0
+          has attached near null space
+          using I-node (on process 0) routines: found 343 nodes, limit used is 5
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  linear system matrix = precond matrix:
+  Mat Object: 8 MPI processes
+    type: mpiaij
+    rows=8232, cols=8232, bs=3
+    total: nonzeros=576000, allocated nonzeros=666792
+    total number of mallocs used during MatSetValues calls =0
+      has attached near null space
+      using I-node (on process 0) routines: found 343 nodes, limit used is 5
+  0 KSP Residual norm 0.0155171 
+  1 KSP Residual norm 0.00527032 
+  2 KSP Residual norm 0.00212394 
+  3 KSP Residual norm 0.000778411 
+  4 KSP Residual norm 0.00022441 
+  5 KSP Residual norm 7.49988e-05 
+  6 KSP Residual norm 2.82264e-05 
+  7 KSP Residual norm 1.32274e-05 
+  8 KSP Residual norm 3.73896e-06 
+  9 KSP Residual norm 1.03111e-06 
+ 10 KSP Residual norm 2.44254e-07 
+ 11 KSP Residual norm 5.14979e-08 
+Linear solve converged due to CONVERGED_RTOL iterations 11
+KSP Object: 8 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 8 MPI processes
+  type: gamg
+    MG: type is MULTIPLICATIVE, levels=3 cycles=v
+      Cycles per PCApply=1
+      Using externally compute Galerkin coarse grid matrices
+      GAMG specific options
+        Threshold for dropping small values from graph 0.01
+        Using aggregates from coarsening process to define subdomains for PCASM
+        Using parallel coarse grid solver (all coarse grid equations not put on one process)
+        AGG specific options
+          Symmetric graph false
+          Number of levels to square graph 1
+          Number smoothing steps 1
+  Coarse grid solver -- level -------------------------------
+    KSP Object: (mg_coarse_) 8 MPI processes
+      type: cg
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: (mg_coarse_) 8 MPI processes
+      type: jacobi
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=72, cols=72, bs=6
+        total: nonzeros=5184, allocated nonzeros=5184
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 8 nodes, limit used is 5
+  Down solver (pre-smoother) on level 1 -------------------------------
+    KSP Object: (mg_levels_1_) 8 MPI processes
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.34566, max = 1.81472
+        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        KSP Object: (mg_levels_1_esteig_) 8 MPI processes
+          type: cg
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
+      maximum iterations=1
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using nonzero initial guess
+      using NONE norm type for convergence test
+    PC Object: (mg_levels_1_) 8 MPI processes
+      type: asm
+        Additive Schwarz: total subdomain blocks = 15, amount of overlap = 0
+        Additive Schwarz: restriction/interpolation type - BASIC
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (mg_levels_1_sub_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_1_sub_) 1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5., needed 0.
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=0, cols=0
+                package used to perform factorization: petsc
+                total: nonzeros=1, allocated nonzeros=1
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=0, cols=0
+          total: nonzeros=0, allocated nonzeros=0
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=510, cols=510, bs=6
+        total: nonzeros=81684, allocated nonzeros=81684
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 19 nodes, limit used is 5
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  Down solver (pre-smoother) on level 2 -------------------------------
+    KSP Object: (mg_levels_2_) 8 MPI processes
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.392095, max = 2.0585
+        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        KSP Object: (mg_levels_2_esteig_) 8 MPI processes
+          type: cg
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        Chebyshev: estimating eigenvalues using noisy right hand side
+      maximum iterations=1
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using nonzero initial guess
+      using NONE norm type for convergence test
+    PC Object: (mg_levels_2_) 8 MPI processes
+      type: asm
+        Additive Schwarz: total subdomain blocks = 89, amount of overlap = 0
+        Additive Schwarz: restriction/interpolation type - BASIC
+        Local solve is same for all blocks, in the following KSP and PC objects:
+      KSP Object: (mg_levels_2_sub_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (mg_levels_2_sub_) 1 MPI processes
+        type: lu
+          LU: out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5., needed 1.23026
+            Factored matrix follows:
+              Mat Object: 1 MPI processes
+                type: seqaij
+                rows=78, cols=78
+                package used to perform factorization: petsc
+                total: nonzeros=3366, allocated nonzeros=3366
+                total number of mallocs used during MatSetValues calls =0
+                  using I-node routines: found 23 nodes, limit used is 5
+        linear system matrix = precond matrix:
+        Mat Object: 1 MPI processes
+          type: seqaij
+          rows=78, cols=78
+          total: nonzeros=2736, allocated nonzeros=2736
+          total number of mallocs used during MatSetValues calls =0
+            using I-node routines: found 26 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object: 8 MPI processes
+        type: mpiaij
+        rows=8232, cols=8232, bs=3
+        total: nonzeros=576000, allocated nonzeros=666792
+        total number of mallocs used during MatSetValues calls =0
+          has attached near null space
+          using I-node (on process 0) routines: found 343 nodes, limit used is 5
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  linear system matrix = precond matrix:
+  Mat Object: 8 MPI processes
+    type: mpiaij
+    rows=8232, cols=8232, bs=3
+    total: nonzeros=576000, allocated nonzeros=666792
+    total number of mallocs used during MatSetValues calls =0
+      has attached near null space
+      using I-node (on process 0) routines: found 343 nodes, limit used is 5
+[0]main |b-Ax|/|b|=6.267888e-05, |b|=4.630910e+00, emax=9.974612e-01

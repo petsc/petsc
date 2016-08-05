@@ -396,7 +396,7 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   else          {max = first; min = first + step*(n-1);}
 
   is->min  = n > 0 ? min : -1;
-  is->max  = n > 0 ? max : -1;
+  is->max  = n > 0 ? max : -2;
   is->data = (void*)sub;
 
   if ((!first && step == 1) || (first == max && step == -1 && !min)) is->isperm = PETSC_TRUE;

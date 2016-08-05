@@ -1549,6 +1549,11 @@ PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+  if (s->sym) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscSectionSymView(s->sym,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1627,6 +1632,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   ierr = ISDestroy(&s->perm);CHKERRQ(ierr);
   ierr = PetscFree(s->clPerm);CHKERRQ(ierr);
   ierr = PetscFree(s->clInvPerm);CHKERRQ(ierr);
+  ierr = PetscSectionSymDestroy(&s->sym);CHKERRQ(ierr);
 
   s->pStart    = -1;
   s->pEnd      = -1;
@@ -2359,5 +2365,526 @@ PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
   ierr = PetscObjectReference((PetscObject) s->field[field]);CHKERRQ(ierr);
   *subs = s->field[field];
+  PetscFunctionReturn(0);
+}
+
+PetscClassId      PETSC_SECTION_SYM_CLASSID;
+PetscFunctionList PetscSectionSymList = NULL;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSymCreate"
+/*@
+  PetscSectionSymCreate - Creates an empty PetscSectionSym object.
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - the MPI communicator
+
+  Output Parameter:
+. sym - pointer to the new set of symmetries
+
+  Level: developer
+
+.seealso: PetscSectionSym, PetscSectionSymDestroy()
+@*/
+PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(sym,2);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*sym,PETSC_SECTION_SYM_CLASSID,"PetscSectionSym","Section Symmetry","IS",comm,PetscSectionSymDestroy,PetscSectionSymView);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSymSetType"
+/*@C
+  PetscSectionSymSetType - Builds a PetscSection symmetry, for a particular implementation.
+
+  Collective on PetscSectionSym
+
+  Input Parameters:
++ sym    - The section symmetry object
+- method - The name of the section symmetry type
+
+  Level: developer
+
+.seealso: PetscSectionSymGetType(), PetscSectionSymCreate()
+@*/
+PetscErrorCode  PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType method)
+{
+  PetscErrorCode (*r)(PetscSectionSym);
+  PetscBool      match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject) sym, method, &match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
+
+  ierr = PetscFunctionListFind(PetscSectionSymList,method,&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSectionSym type: %s", method);
+  if (sym->ops->destroy) {
+    ierr = (*sym->ops->destroy)(sym);CHKERRQ(ierr);
+    sym->ops->destroy = NULL;
+  }
+  ierr = (*r)(sym);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)sym,method);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSymGetType"
+/*@C
+  PetscSectionSymGetType - Gets the section symmetry type name (as a string) from the PetscSectionSym.
+
+  Not Collective
+
+  Input Parameter:
+. sym  - The section symmetry
+
+  Output Parameter:
+. type - The index set type name
+
+  Level: developer
+
+.seealso: PetscSectionSymSetType(), PetscSectionSymCreate()
+@*/
+PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID,1);
+  PetscValidCharPointer(type,2);
+  *type = ((PetscObject)sym)->type_name;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSymRegister"
+/*@C
+  PetscSectionSymRegister - Adds a new section symmetry implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  PetscSectionSymRegister() may be called multiple times to add several user-defined vectors
+
+  Level: developer
+
+.seealso: PetscSectionSymCreate(), PetscSectionSymSetType()
+@*/
+PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*function)(PetscSectionSym))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = ISInitializePackage();CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscSectionSymList,sname,function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSymDestroy"
+/*@
+   PetscSectionSymDestroy - Destroys a section symmetry.
+
+   Collective on PetscSectionSym
+
+   Input Parameters:
+.  sym - the section symmetry
+
+   Level: developer
+
+.seealso: PetscSectionSymCreate(), PetscSectionSymDestroy()
+@*/
+PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
+{
+  SymWorkLink    link,next;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!*sym) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*sym),PETSC_SECTION_SYM_CLASSID,1);
+  if (--((PetscObject)(*sym))->refct > 0) {*sym = 0; PetscFunctionReturn(0);}
+  if ((*sym)->ops->destroy) {
+    ierr = (*(*sym)->ops->destroy)(*sym);CHKERRQ(ierr);
+  }
+  if ((*sym)->workout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Work array still checked out");
+  for (link=(*sym)->workin; link; link=next) {
+    next = link->next;
+    ierr = PetscFree2(link->perms,link->rots);CHKERRQ(ierr);
+    ierr = PetscFree(link);CHKERRQ(ierr);
+  }
+  (*sym)->workin = NULL;
+  ierr = PetscHeaderDestroy(sym);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSymView"
+/*@C
+   PetscSectionSymView - Displays a section symmetry
+
+   Collective on PetscSectionSym
+
+   Input Parameters:
++  sym - the index set
+-  viewer - viewer used to display the set, for example PETSC_VIEWER_STDOUT_SELF.
+
+   Level: developer
+
+.seealso: PetscViewerASCIIOpen()
+@*/
+PetscErrorCode PetscSectionSymView(PetscSectionSym sym,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,1);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sym),&viewer);CHKERRQ(ierr);
+  }
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  PetscCheckSameComm(sym,1,viewer,2);
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sym,viewer);CHKERRQ(ierr);
+  if (sym->ops->view) {
+    ierr = (*sym->ops->view)(sym,viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetSym"
+/*@
+  PetscSectionSetSym - Set the symmetries for the data referred to by the section
+
+  Collective on PetscSection
+
+  Input Parameters:
++ section - the section describing data layout
+- sym - the symmetry describing the affect of orientation on the access of the data
+
+  Level: developer
+
+.seealso: PetscSectionGetSym(), PetscSectionSymCreate()
+@*/
+PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,2);
+  PetscCheckSameComm(section,1,sym,2);
+  ierr = PetscObjectReference((PetscObject)sym);CHKERRQ(ierr);
+  ierr = PetscSectionSymDestroy(&(section->sym));CHKERRQ(ierr);
+  section->sym = sym;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetSym"
+/*@
+  PetscSectionGetSym - Get the symmetries for the data referred to by the section
+
+  Not collective
+
+  Input Parameters:
+. section - the section describing data layout
+
+  Output Parameters:
+. sym - the symmetry describing the affect of orientation on the access of the data
+
+  Level: developer
+
+.seealso: PetscSectionSetSym(), PetscSectionSymCreate()
+@*/
+PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  *sym = section->sym;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetFieldSym"
+/*@
+  PetscSectionSetFieldSym - Set the symmetries for the data referred to by a field of the section
+
+  Collective on PetscSection
+
+  Input Parameters:
++ section - the section describing data layout
+. field - the field number
+- sym - the symmetry describing the affect of orientation on the access of the data
+
+  Level: developer
+
+.seealso: PetscSectionGetFieldSym(), PetscSectionSymCreate()
+@*/
+PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, PetscSectionSym sym)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  if (field < 0 || field >= section->numFields) SETERRQ2(PetscObjectComm((PetscObject)section),PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number %D (not in [0,%D)", field, section->numFields);
+  ierr = PetscSectionSetSym(section->field[field],sym);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetFieldSym"
+/*@
+  PetscSectionGetFieldSym - Get the symmetries for the data referred to by a field of the section
+
+  Collective on PetscSection
+
+  Input Parameters:
++ section - the section describing data layout
+- field - the field number
+
+  Output Parameters:
+. sym - the symmetry describing the affect of orientation on the access of the data
+
+  Level: developer
+
+.seealso: PetscSectionSetFieldSym(), PetscSectionSymCreate()
+@*/
+PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, PetscSectionSym *sym)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  if (field < 0 || field >= section->numFields) SETERRQ2(PetscObjectComm((PetscObject)section),PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number %D (not in [0,%D)", field, section->numFields);
+  *sym = section->field[field]->sym;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetPointSyms"
+/*@C
+  PetscSectionGetPointSyms - Get the symmetries for a set of points in a PetscSection under specific orientations.
+
+  Not collective
+
+  Input Parameters:
++ section - the section
+. numPoints - the number of points
+- points - an array of size 2 * numPoints, containing a list of (point, orientation) pairs. (An orientation is an
+    arbitrary integer: its interpretation is up to sym.  Orientations are used by DM: for their interpretation in that
+    context, see DMPlexGetConeOrientation()).
+
+  Output Parameter:
++ perms - The permutations for the given orientations (or NULL if there is no symmetry or the permutation is the identity).
+- rots - The field rotations symmetries for the given orientations (or NULL if there is no symmetry or the rotations are all
+    identity).
+
+  Example of usage, gathering dofs into a local array (lArray) from a section array (sArray):
+.vb
+     const PetscInt    **perms;
+     const PetscScalar **rots;
+     PetscInt            lOffset;
+
+     PetscSectionGetPointSyms(section,numPoints,points,&perms,&rots);
+     for (i = 0, lOffset = 0; i < numPoints; i++) {
+       PetscInt           point = points[2*i], dof, sOffset;
+       const PetscInt    *perm  = perms ? perms[i] : NULL;
+       const PetscScalar *rot   = rots  ? rots[i]  : NULL;
+
+       PetscSectionGetDof(section,point,&dof);
+       PetscSectionGetOffset(section,point,&sOffset);
+
+       if (perm) {for (j = 0; j < dof; j++) {lArray[lOffset + perm[j]]  = sArray[sOffset + j];}}
+       else      {for (j = 0; j < dof; j++) {lArray[lOffset +      j ]  = sArray[sOffset + j];}}
+       if (rot)  {for (j = 0; j < dof; j++) {lArray[lOffset +      j ] *= rot[j];             }}
+       lOffset += dof;
+     }
+     PetscSectionRestorePointSyms(section,numPoints,points,&perms,&rots);
+.ve
+
+  Example of usage, adding dofs into a section array (sArray) from a local array (lArray):
+.vb
+     const PetscInt    **perms;
+     const PetscScalar **rots;
+     PetscInt            lOffset;
+
+     PetscSectionGetPointSyms(section,numPoints,points,&perms,&rots);
+     for (i = 0, lOffset = 0; i < numPoints; i++) {
+       PetscInt           point = points[2*i], dof, sOffset;
+       const PetscInt    *perm  = perms ? perms[i] : NULL;
+       const PetscScalar *rot   = rots  ? rots[i]  : NULL;
+
+       PetscSectionGetDof(section,point,&dof);
+       PetscSectionGetOffset(section,point,&sOff);
+
+       if (perm) {for (j = 0; j < dof; j++) {sArray[sOffset + j] += lArray[lOffset + perm[j]] * (rot ? PetscConj(rot[perm[j]]) : 1.);}}
+       else      {for (j = 0; j < dof; j++) {sArray[sOffset + j] += lArray[lOffset +      j ] * (rot ? PetscConj(rot[     j ]) : 1.);}}
+       offset += dof;
+     }
+     PetscSectionRestorePointSyms(section,numPoints,points,&perms,&rots);
+.ve
+
+  Level: developer
+
+.seealso: PetscSectionRestorePointSyms(), PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetSym()
+@*/
+PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
+{
+  PetscSectionSym sym;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  if (numPoints) PetscValidIntPointer(points,3);
+  if (perms) *perms = NULL;
+  if (rots)  *rots  = NULL;
+  sym = section->sym;
+  if (sym && (perms || rots)) {
+    SymWorkLink link;
+
+    if (sym->workin) {
+      link        = sym->workin;
+      sym->workin = sym->workin->next;
+    } else {
+      ierr = PetscNewLog(sym,&link);CHKERRQ(ierr);
+    }
+    if (numPoints > link->numPoints) {
+      ierr = PetscFree2(link->perms,link->rots);CHKERRQ(ierr);
+      ierr = PetscMalloc2(numPoints,&link->perms,numPoints,&link->rots);CHKERRQ(ierr);
+      link->numPoints = numPoints;
+    }
+    link->next   = sym->workout;
+    sym->workout = link;
+    ierr = PetscMemzero((void *) link->perms,numPoints * sizeof(const PetscInt *));CHKERRQ(ierr);
+    ierr = PetscMemzero((void *) link->rots,numPoints * sizeof(const PetscScalar *));CHKERRQ(ierr);
+    ierr = (*sym->ops->getpoints) (sym, section, numPoints, points, link->perms, link->rots);CHKERRQ(ierr);
+    if (perms) *perms = link->perms;
+    if (rots)  *rots  = link->rots;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionRestorePointSyms"
+/*@C
+  PetscSectionRestorePointSyms - Restore the symmetries returned by PetscSectionGetPointSyms()
+
+  Not collective
+
+  Input Parameters:
++ section - the section
+. numPoints - the number of points
+- points - an array of size 2 * numPoints, containing a list of (point, orientation) pairs. (An orientation is an
+    arbitrary integer: its interpretation is up to sym.  Orientations are used by DM: for their interpretation in that
+    context, see DMPlexGetConeOrientation()).
+
+  Output Parameter:
++ perms - The permutations for the given orientations: set to NULL at conclusion
+- rots - The field rotations symmetries for the given orientations: set to NULL at conclusion
+
+  Level: developer
+
+.seealso: PetscSectionGetPointSyms(), PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetSym()
+@*/
+PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
+{
+  PetscSectionSym sym;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  sym = section->sym;
+  if (sym && (perms || rots)) {
+    SymWorkLink *p,link;
+
+    for (p=&sym->workout; (link=*p); p=&link->next) {
+      if ((perms && link->perms == *perms) || (rots && link->rots == *rots)) {
+        *p          = link->next;
+        link->next  = sym->workin;
+        sym->workin = link;
+        if (perms) *perms = NULL;
+        if (rots)  *rots  = NULL;
+        PetscFunctionReturn(0);
+      }
+    }
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Array was not checked out");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetFieldPointSyms"
+/*@C
+  PetscSectionGetFieldPointSyms - Get the symmetries for a set of points in a field of a PetscSection under specific orientations.
+
+  Not collective
+
+  Input Parameters:
++ section - the section
+. field - the field of the section
+. numPoints - the number of points
+- points - an array of size 2 * numPoints, containing a list of (point, orientation) pairs. (An orientation is an
+    arbitrary integer: its interpretation is up to sym.  Orientations are used by DM: for their interpretation in that
+    context, see DMPlexGetConeOrientation()).
+
+  Output Parameter:
++ perms - The permutations for the given orientations (or NULL if there is no symmetry or the permutation is the identity).
+- rots - The field rotations symmetries for the given orientations (or NULL if there is no symmetry or the rotations are all
+    identity).
+
+  Level: developer
+
+.seealso: PetscSectionGetPointSyms(), PetscSectionRestoreFieldPointSyms()
+@*/
+PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt field, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  if (field > section->numFields) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"field %D greater than number of fields (%D) in section",field,section->numFields);
+  ierr = PetscSectionGetPointSyms(section->field[field],numPoints,points,perms,rots);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionRestoreFieldPointSyms"
+/*@C
+  PetscSectionRestoreFieldPointSyms - Restore the symmetries returned by PetscSectionGetFieldPointSyms()
+
+  Not collective
+
+  Input Parameters:
++ section - the section
+. field - the field number
+. numPoints - the number of points
+- points - an array of size 2 * numPoints, containing a list of (point, orientation) pairs. (An orientation is an
+    arbitrary integer: its interpretation is up to sym.  Orientations are used by DM: for their interpretation in that
+    context, see DMPlexGetConeOrientation()).
+
+  Output Parameter:
++ perms - The permutations for the given orientations: set to NULL at conclusion
+- rots - The field rotations symmetries for the given orientations: set to NULL at conclusion
+
+  Level: developer
+
+.seealso: PetscSectionRestorePointSyms(), petscSectionGetFieldPointSyms(), PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetSym()
+@*/
+PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt field, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
+  if (field > section->numFields) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"field %D greater than number of fields (%D) in section",field,section->numFields);
+  ierr = PetscSectionRestorePointSyms(section->field[field],numPoints,points,perms,rots);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

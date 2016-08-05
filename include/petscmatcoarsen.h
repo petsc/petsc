@@ -85,7 +85,7 @@ PETSC_EXTERN PetscErrorCode PetscCDSetMat(PetscCoarsenData*,Mat);
 
 PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData*,PetscInt,PetscCDIntNd**);
 PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData*,PetscInt,PetscCDIntNd**);
-PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const PetscInt,PetscInt*,IS**);
+PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const PetscInt,Mat,PetscInt*,IS**);
 
 
 #endif

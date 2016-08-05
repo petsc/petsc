@@ -1,30 +1,30 @@
 	[0]main 1944 equations in vector, 648 vertices
 	[0]main 426 local equations
   0 SNES Function norm 0.125242 
-    0 KSP Residual norm 1442.6 
-    1 KSP Residual norm 305.207 
-    2 KSP Residual norm 88.78 
-    3 KSP Residual norm 11.2639 
-    4 KSP Residual norm 2.88586 
-    5 KSP Residual norm 1.09722 
-    6 KSP Residual norm 0.176474 
-    7 KSP Residual norm 0.0213004 
-    8 KSP Residual norm 0.00560684 
-    9 KSP Residual norm 0.00194264 
-   10 KSP Residual norm 0.000275147 
+    0 KSP Residual norm 1441.87 
+    1 KSP Residual norm 305.281 
+    2 KSP Residual norm 88.9021 
+    3 KSP Residual norm 11.2831 
+    4 KSP Residual norm 2.89221 
+    5 KSP Residual norm 1.10036 
+    6 KSP Residual norm 0.1771 
+    7 KSP Residual norm 0.0213668 
+    8 KSP Residual norm 0.00562775 
+    9 KSP Residual norm 0.0019523 
+   10 KSP Residual norm 0.000276327 
   Linear solve converged due to CONVERGED_RTOL iterations 10
-  1 SNES Function norm 2.49717e-07 
-    0 KSP Residual norm 0.000275147 
-    1 KSP Residual norm 0.000102204 
-    2 KSP Residual norm 2.85477e-05 
-    3 KSP Residual norm 3.60869e-06 
-    4 KSP Residual norm 6.27979e-07 
-    5 KSP Residual norm 1.7904e-07 
-    6 KSP Residual norm 4.90477e-08 
-    7 KSP Residual norm 7.18074e-09 
-    8 KSP Residual norm 1.37758e-09 
-    9 KSP Residual norm 4.087e-10 
-   10 KSP Residual norm 1.370e-10 
+  1 SNES Function norm 2.51032e-07 
+    0 KSP Residual norm 0.000276327 
+    1 KSP Residual norm 0.000102743 
+    2 KSP Residual norm 2.87342e-05 
+    3 KSP Residual norm 3.62876e-06 
+    4 KSP Residual norm 6.32336e-07 
+    5 KSP Residual norm 1.80313e-07 
+    6 KSP Residual norm 4.94389e-08 
+    7 KSP Residual norm 7.22936e-09 
+    8 KSP Residual norm 1.38831e-09 
+    9 KSP Residual norm 4.127e-10 
+   10 KSP Residual norm 1.384e-10 
   Linear solve converged due to CONVERGED_RTOL iterations 10
   2 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
@@ -52,11 +52,13 @@ SNES Object: 3 MPI processes
     type: gamg
       MG: type is MULTIPLICATIVE, levels=3 cycles=v
         Cycles per PCApply=1
-        Using Galerkin computed coarse grid matrices
+        Using externally compute Galerkin coarse grid matrices
         GAMG specific options
           Threshold for dropping small values from graph 0.
           AGG specific options
             Symmetric graph false
+            Number of levels to square graph 1
+            Number smoothing steps 1
     Coarse grid solver -- level -------------------------------
       KSP Object: (mg_coarse_) 3 MPI processes
         type: preonly
@@ -106,7 +108,7 @@ SNES Object: 3 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 3 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.122412, max = 2.57066
+          Chebyshev: eigenvalue estimates:  min = 0.122679, max = 2.57625
           Chebyshev: eigenvalues estimated using cg with translations  [0. 0.05; 0. 1.05]
           KSP Object: (mg_levels_1_esteig_) 3 MPI processes
             type: cg

@@ -17,7 +17,7 @@ static char help[] = "Demonstrates Pattern Formation with Reaction-Diffusion Equ
            -draw_save -draw_save_movie
 
       Helpful runtime linear solver options:
-           -pc_type mg -pc_mg_galerkin -da_refine 1 -snes_monitor -ksp_monitor -ts_view  (note that these Jacobians are so well-conditioned multigrid may not be the best solver)
+           -pc_type mg -pc_mg_galerkin pmat -da_refine 1 -snes_monitor -ksp_monitor -ts_view  (note that these Jacobians are so well-conditioned multigrid may not be the best solver)
 
       Point your browser to localhost:8080 to monitor the simulation
            ./ex5  -ts_view_pre saws  -stack_view saws -draw_save -draw_save_single_file -x_virtual -ts_monitor_draw_solution -saws_root .

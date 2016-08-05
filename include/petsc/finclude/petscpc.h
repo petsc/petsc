@@ -122,6 +122,18 @@
       PetscEnum PC_MG_CYCLE_W
       parameter (PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2)
 
+! PCMGGalerkinType
+      PetscEnum PC_MG_GALERKIN_BOTH
+      PetscEnum PC_MG_GALERKIN_PMAT
+      PetscEnum PC_MG_GALERKIN_MAT
+      PetscEnum PC_MG_GALERKIN_NONE
+      PetscEnum PC_MG_GALERKIN_EXTERNAL
+      parameter (PC_MG_GALERKIN_BOTH = 0)
+      parameter (PC_MG_GALERKIN_PMAT = 1)
+      parameter (PC_MG_GALERKIN_MAT = 2)
+      parameter (PC_MG_GALERKIN_NONE = 3)
+      parameter (PC_MG_GALERKIN_EXTERNAL = 4)
+
       PetscEnum PC_EXOTIC_FACE
       PetscEnum PC_EXOTIC_WIREBASKET
       parameter (PC_EXOTIC_FACE=0,PC_EXOTIC_WIREBASKET=1)
