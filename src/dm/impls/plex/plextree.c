@@ -1272,10 +1272,12 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
     PetscSpace     bspace;
     PetscDualSpace dspace;
     PetscInt i, j, k, nPoints, offset;
-    PetscInt fSize, fComp;
-    PetscReal *weights, *pointsRef, *pointsReal, *work;
-    PetscInt  *sizes;
+    PetscInt fSize, fComp, maxDof;
+    PetscReal   *weights, *pointsRef, *pointsReal, *work;
+    PetscScalar *scwork, *X;
+    PetscInt  *sizes, *workIndRow, *workIndCol;
     Mat Amat, Bmat, Xmat;
+    const PetscInt    *numDof  = NULL;
     const PetscInt    ***perms = NULL;
     const PetscScalar ***flips = NULL;
 
@@ -1302,6 +1304,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       ierr = PetscFVGetNumComponents(fv,&fComp);CHKERRQ(ierr);
     }
     else SETERRQ1(PetscObjectComm(disc),PETSC_ERR_ARG_UNKNOWN_TYPE, "PetscDS discretization id %d not recognized.", id);
+    ierr = PetscDualSpaceGetNumDof(dspace,&numDof);CHKERRQ(ierr);
+    for (i = 0, maxDof = 0; i <= spdim; i++) {maxDof = PetscMax(maxDof,numDof[i]);}
     ierr = PetscDualSpaceGetSymmetries(dspace,&perms,&flips);CHKERRQ(ierr);
 
     ierr = MatCreate(PETSC_COMM_SELF,&Amat);CHKERRQ(ierr);
@@ -1319,7 +1323,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       ierr = PetscQuadratureGetData(quad,NULL,&qPoints,NULL,NULL);CHKERRQ(ierr);
       nPoints += qPoints;
     }
-    ierr = PetscMalloc5(fSize,&sizes,nPoints,&weights,spdim*nPoints,&pointsRef,spdim*nPoints,&pointsReal,fSize*nPoints,&work);CHKERRQ(ierr);
+    ierr = PetscMalloc7(fSize,&sizes,nPoints,&weights,spdim*nPoints,&pointsRef,spdim*nPoints,&pointsReal,fSize*nPoints,&work,maxDof,&workIndRow,maxDof,&workIndCol);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxDof * maxDof,&scwork);CHKERRQ(ierr);
     offset = 0;
     for (i = 0; i < fSize; i++) {
       PetscInt        qPoints;
@@ -1369,6 +1374,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       }
       ierr = EvaluateBasis(bspace,fSize,nPoints,sizes,pointsReal,weights,work,Bmat);CHKERRQ(ierr);
       ierr = MatMatSolve(Amat,Bmat,Xmat);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(Xmat,&X);CHKERRQ(ierr);
       ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSizeP,&closureP);CHKERRQ(ierr);
       ierr = PetscMalloc2(closureSize+1,&childOffsets,closureSizeP+1,&parentOffsets);CHKERRQ(ierr);
       childOffsets[0] = 0;
@@ -1398,7 +1404,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
         parentOffsets[i+1]=parentOffsets[i]+dof / fComp;
       }
       for (i = 0; i < closureSize; i++) {
-        PetscInt conDof, conOff, aDof, aOff;
+        PetscInt conDof, conOff, aDof, aOff, nWork;
         PetscInt p = closure[2*i];
         PetscInt o = closure[2*i+1];
         const PetscInt    *perm;
@@ -1414,10 +1420,11 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
           ierr = PetscSectionGetOffset(cSec,p,&conOff);CHKERRQ(ierr);
         }
         if (!conDof) continue;
-        perm = (perms && perms[i]) ? perms[i][o] : NULL;
-        flip = (flips && flips[i]) ? flips[i][o] : NULL;
-        ierr = PetscSectionGetDof(aSec,p,&aDof);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(aSec,p,&aOff);CHKERRQ(ierr);
+        perm  = (perms && perms[i]) ? perms[i][o] : NULL;
+        flip  = (flips && flips[i]) ? flips[i][o] : NULL;
+        ierr  = PetscSectionGetDof(aSec,p,&aDof);CHKERRQ(ierr);
+        ierr  = PetscSectionGetOffset(aSec,p,&aOff);CHKERRQ(ierr);
+        nWork = childOffsets[i+1]-childOffsets[i];
         for (k = 0; k < aDof; k++) {
           PetscInt a = anchors[aOff + k];
           PetscInt aSecDof, aSecOff;
@@ -1435,37 +1442,52 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
           for (j = 0; j < closureSizeP; j++) {
             PetscInt q = closureP[2*j];
             PetscInt oq = closureP[2*j+1];
-            const PetscInt    *permP;
-            const PetscScalar *flipP;
-
-            permP = (perms && perms[j]) ? perms[j][oq] : NULL;
-            flipP = (flips && flips[j]) ? flips[j][oq] : NULL;
 
             if (q == a) {
-              PetscInt r, s, t;
+              PetscInt r, s, t, nWorkP;
+              const PetscInt    *permP;
+              const PetscScalar *flipP;
 
-              for (r = childOffsets[i]; r < childOffsets[i+1]; r++) {
-                PetscInt ri = perm ? perm[r - childOffsets[i]] : (r - childOffsets[i]);
-
-                for (s = parentOffsets[j]; s < parentOffsets[j+1]; s++) {
-                  PetscInt sj = permP ? permP[s - parentOffsets[j]] : (s - parentOffsets[j]);
-                  PetscScalar val;
-                  PetscInt insertCol, insertRow;
-
-                  ierr = MatGetValue(Xmat,parentOffsets[j] + sj,childOffsets[i] + ri,&val);CHKERRQ(ierr);
-                  if (flip)  val *= flip [ri];
-                  if (flipP) val *= flipP[sj];
-                  insertRow = conOff  + fComp * (r - childOffsets[i]);
-                  insertCol = aSecOff + fComp * (s - parentOffsets[j]);
-                  for (t = 0; t < fComp; t++) {
-                    ierr = MatSetValue(cMat,insertRow + t,insertCol + t,val,INSERT_VALUES);CHKERRQ(ierr);
+              permP  = (perms && perms[j]) ? perms[j][oq] : NULL;
+              flipP  = (flips && flips[j]) ? flips[j][oq] : NULL;
+              nWorkP = parentOffsets[j+1]-parentOffsets[j];
+              /* get a copy of the child-to-anchor portion of the matrix, and transpose so that rows correspond to the
+               * child and columns correspond to the anchor: BUT the maxrix returned by MatDenseGetArray is
+               * column-major, so transpose-transpose = do nothing */
+              for (r = 0; r < nWork; r++) {
+                for (s = 0; s < nWorkP; s++) {
+                  scwork[r * nWorkP + s] = X[fSize * (r + childOffsets[i]) + (s + parentOffsets[j])];
+                }
+              }
+              for (r = 0; r < nWork; r++)  {workIndRow[perm  ? perm[r]  : r] = conOff  + fComp * r;}
+              for (s = 0; s < nWorkP; s++) {workIndCol[permP ? permP[s] : s] = aSecOff + fComp * s;}
+              if (flip) {
+                for (r = 0; r < nWork; r++) {
+                  for (s = 0; s < nWorkP; s++) {
+                    scwork[r * nWorkP + s] *= flip[r];
                   }
                 }
               }
+              if (flipP) {
+                for (r = 0; r < nWork; r++) {
+                  for (s = 0; s < nWorkP; s++) {
+                    scwork[r * nWorkP + s] *= flipP[s];
+                  }
+                }
+              }
+              for (t = 0; t < fComp; t++) {
+                ierr = MatSetValues(cMat,nWork,workIndRow,nWorkP,workIndCol,scwork,INSERT_VALUES);CHKERRQ(ierr);
+                if (t < fComp - 1) {
+                  for (r = 0; r < nWork;  r++) {workIndRow[r]++;}
+                  for (s = 0; s < nWorkP; s++) {workIndCol[s]++;}
+                }
+              }
+              break;
             }
           }
         }
       }
+      ierr = MatDenseRestoreArray(Xmat,&X);CHKERRQ(ierr);
       ierr = PetscFree2(childOffsets,parentOffsets);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSizeP,&closureP);CHKERRQ(ierr);
@@ -1473,7 +1495,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
     ierr = MatDestroy(&Amat);CHKERRQ(ierr);
     ierr = MatDestroy(&Bmat);CHKERRQ(ierr);
     ierr = MatDestroy(&Xmat);CHKERRQ(ierr);
-    ierr = PetscFree5(sizes,weights,pointsRef,pointsReal,work);CHKERRQ(ierr);
+    ierr = PetscFree(scwork);CHKERRQ(ierr);
+    ierr = PetscFree7(sizes,weights,pointsRef,pointsReal,work,workIndRow,workIndCol);CHKERRQ(ierr);
     if (id == PETSCFV_CLASSID) {
       ierr = PetscSpaceDestroy(&bspace);CHKERRQ(ierr);
     }
