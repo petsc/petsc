@@ -4,6 +4,55 @@
 #include <petscblaslapack.h>
 #include <petsc/private/sfimpl.h>
 
+/* the near-null space of BDDC carries information on quadrature weights,
+   and these can be collinear -> so cheat with MatNullSpaceCreate
+   and create a suitable set of basis vectors first */
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCNullSpaceCreate"
+PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm comm, PetscBool has_const, PetscInt nvecs, Vec quad_vecs[], MatNullSpace *nnsp)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  for (i=0;i<nvecs;i++) {
+    PetscInt first,last;
+
+    ierr = VecGetOwnershipRange(quad_vecs[i],&first,&last);CHKERRQ(ierr);
+    if (last-first == 1 && has_const) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+    if (i>=first && i < last) {
+      PetscScalar *data;
+      ierr = VecGetArray(quad_vecs[i],&data);CHKERRQ(ierr);
+      if (!has_const) {
+        data[i-first] = 1.;
+      } else {
+        data[i-first] = 1./PetscSqrtReal(2.);
+        data[i-first+1] = -1./PetscSqrtReal(2.);
+      }
+      ierr = VecRestoreArray(quad_vecs[i],&data);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectStateIncrease((PetscObject)quad_vecs[i]);CHKERRQ(ierr);
+  }
+  ierr = MatNullSpaceCreate(comm,has_const,nvecs,quad_vecs,nnsp);CHKERRQ(ierr);
+  for (i=0;i<nvecs;i++) { /* reset vectors */
+    PetscInt first,last;
+    ierr = VecGetOwnershipRange(quad_vecs[i],&first,&last);CHKERRQ(ierr);
+    if (i>=first && i < last) {
+      PetscScalar *data;
+      ierr = VecGetArray(quad_vecs[i],&data);CHKERRQ(ierr);
+      if (!has_const) {
+        data[i-first] = 0.;
+      } else {
+        data[i-first] = 0.;
+        data[i-first+1] = 0.;
+      }
+      ierr = VecRestoreArray(quad_vecs[i],&data);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectStateIncrease((PetscObject)quad_vecs[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCComputeNoNetFlux"
 PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, IS vl2l, PCBDDCGraph graph, MatNullSpace *nnsp)
@@ -54,34 +103,11 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   }
   ierr = VecDuplicateVecs(quad_vec,maxneighs,&quad_vecs);CHKERRQ(ierr);
   ierr = VecDestroy(&quad_vec);CHKERRQ(ierr);
+  ierr = PCBDDCNullSpaceCreate(PetscObjectComm((PetscObject)A),PETSC_FALSE,maxneighs,quad_vecs,nnsp);CHKERRQ(ierr);
   for (i=0;i<maxneighs;i++) {
-    PetscInt first,last;
-
     ierr = VecSetLocalToGlobalMapping(quad_vecs[i],map);CHKERRQ(ierr);
-    /* the near-null space fo BDDC carries information on quadrature weights,
-       and these can be collinear -> so cheat with MatNullSpaceCreate
-       and create a suitable set of basis vectors first */
-    ierr = VecGetOwnershipRange(quad_vecs[i],&first,&last);CHKERRQ(ierr);
-    if (i>=first && i < last) {
-      PetscScalar *data;
-      ierr = VecGetArray(quad_vecs[i],&data);CHKERRQ(ierr);
-      data[i-first] = 1.;
-      ierr = VecRestoreArray(quad_vecs[i],&data);CHKERRQ(ierr);
-    }
-    ierr = PetscObjectStateIncrease((PetscObject)quad_vecs[i]);CHKERRQ(ierr);
   }
-  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),PETSC_FALSE,maxneighs,quad_vecs,nnsp);CHKERRQ(ierr);
-  for (i=0;i<maxneighs;i++) { /* reset vectors */
-    PetscInt first,last;
-    ierr = VecGetOwnershipRange(quad_vecs[i],&first,&last);CHKERRQ(ierr);
-    if (i>=first && i < last) {
-      PetscScalar *data;
-      ierr = VecGetArray(quad_vecs[i],&data);CHKERRQ(ierr);
-      data[i-first] = 0.;
-      ierr = VecRestoreArray(quad_vecs[i],&data);CHKERRQ(ierr);
-    }
-    ierr = PetscObjectStateIncrease((PetscObject)quad_vecs[i]);CHKERRQ(ierr);
-  }
+
   /* compute local quad vec */
   ierr = MatISGetLocalMat(divudotp,&loc_divudotp);CHKERRQ(ierr);
   if (!transpose) {
