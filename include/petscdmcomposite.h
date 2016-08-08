@@ -17,6 +17,8 @@ PETSC_EXTERN PetscErrorCode DMCompositeGetAccess(DM,Vec,...);
 PETSC_EXTERN PetscErrorCode DMCompositeRestoreAccess(DM,Vec,...);
 PETSC_EXTERN PetscErrorCode DMCompositeGetAccessArray(DM,Vec,PetscInt,const PetscInt*,Vec*);
 PETSC_EXTERN PetscErrorCode DMCompositeRestoreAccessArray(DM,Vec,PetscInt,const PetscInt*,Vec*);
+PETSC_EXTERN PetscErrorCode DMCompositeGetLocalAccessArray(DM,Vec,PetscInt,const PetscInt*,Vec*);
+PETSC_EXTERN PetscErrorCode DMCompositeRestoreLocalAccessArray(DM,Vec,PetscInt,const PetscInt*,Vec*);
 PETSC_EXTERN PetscErrorCode DMCompositeGetLocalVectors(DM,...);
 PETSC_EXTERN PetscErrorCode DMCompositeGetEntries(DM,...);
 PETSC_EXTERN PetscErrorCode DMCompositeGetEntriesArray(DM,DM[]);
