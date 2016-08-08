@@ -870,6 +870,24 @@ static PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool  *flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatIsStructurallySymmetric_IS"
+static PetscErrorCode MatIsStructurallySymmetric_IS(Mat A,PetscBool  *flg)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *matis = (Mat_IS*)A->data;
+  PetscBool      local_sym;
+
+  PetscFunctionBegin;
+  if (A->rmap->mapping != A->cmap->mapping) {
+    *flg = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+  ierr = MatIsStructurallySymmetric(matis->A,&local_sym);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_IS"
 static PetscErrorCode MatDestroy_IS(Mat A)
 {
@@ -1685,6 +1703,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->setoption               = MatSetOption_IS;
   A->ops->ishermitian             = MatIsHermitian_IS;
   A->ops->issymmetric             = MatIsSymmetric_IS;
+  A->ops->isstructurallysymmetric = MatIsStructurallySymmetric_IS;
   A->ops->duplicate               = MatDuplicate_IS;
   A->ops->missingdiagonal         = MatMissingDiagonal_IS;
   A->ops->copy                    = MatCopy_IS;
