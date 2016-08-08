@@ -164,6 +164,38 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCGraphRestoreCandidatesIS"
+PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (n_faces) {
+    if (FacesIS) {
+      for (i=0;i<*n_faces;i++) {
+        ierr = ISDestroy(&((*FacesIS)[i]));CHKERRQ(ierr);
+      }
+      ierr = PetscFree(*FacesIS);CHKERRQ(ierr);
+    }
+    *n_faces = 0;
+  }
+  if (n_edges) {
+    if (EdgesIS) {
+      for (i=0;i<*n_edges;i++) {
+        ierr = ISDestroy(&((*EdgesIS)[i]));CHKERRQ(ierr);
+      }
+      ierr = PetscFree(*EdgesIS);CHKERRQ(ierr);
+    }
+    *n_edges = 0;
+  }
+  if (VerticesIS) {
+    ierr = ISDestroy(VerticesIS);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphGetCandidatesIS"
 PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
 {
@@ -226,18 +258,18 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
       if (graph->count[repdof] == 1 && graph->special_dof[repdof] != PCBDDCGRAPH_NEUMANN_MARK) {
         if (graph->twodim) {
           if (EdgesIS) {
-            ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForEdges[nec]);CHKERRQ(ierr);
+            ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForEdges[nec]);CHKERRQ(ierr);
           }
           nec++;
         } else {
           if (FacesIS) {
-            ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForFaces[nfc]);CHKERRQ(ierr);
+            ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForFaces[nfc]);CHKERRQ(ierr);
           }
           nfc++;
         }
       } else {
         if (EdgesIS) {
-          ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForEdges[nec]);CHKERRQ(ierr);
+          ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForEdges[nec]);CHKERRQ(ierr);
         }
         nec++;
       }
@@ -262,16 +294,10 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   }
   /* get back info */
   if (n_faces) *n_faces = nfc;
-  if (FacesIS) {
-    *FacesIS = ISForFaces;
-  }
+  if (FacesIS) *FacesIS = ISForFaces;
   if (n_edges) *n_edges = nec;
-  if (EdgesIS) {
-    *EdgesIS = ISForEdges;
-  }
-  if (VerticesIS) {
-    *VerticesIS = ISForVertices;
-  }
+  if (EdgesIS) *EdgesIS = ISForEdges;
+  if (VerticesIS) *VerticesIS = ISForVertices;
   PetscFunctionReturn(0);
 }
 
@@ -1092,7 +1118,7 @@ PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph graph)
     graph->xadj = NULL;
     graph->adjncy = NULL;
   }
-  graph->freecsr = PETSC_TRUE;
+  graph->freecsr = PETSC_FALSE;
   graph->nvtxs_csr = 0;
   PetscFunctionReturn(0);
 }
@@ -1180,7 +1206,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   graph->subset_ncc = 0;
   graph->subset_ref_node = 0;
   /* default flag for csr */
-  graph->freecsr = PETSC_TRUE;
+  graph->freecsr = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

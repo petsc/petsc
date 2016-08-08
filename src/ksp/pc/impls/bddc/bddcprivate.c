@@ -116,7 +116,6 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
     idx = -(idx+1);
     ierr = VecSetValuesLocal(quad_vecs[idx],nn,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = ISRestoreIndices(faces[i],&idxs);CHKERRQ(ierr);
-    ierr = ISDestroy(&faces[i]);CHKERRQ(ierr);
   }
   for (i=0;i<ne;i++) {
     const PetscInt    *idxs;
@@ -129,10 +128,8 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
     idx = -(idx+1);
     ierr = VecSetValuesLocal(quad_vecs[idx],nn,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = ISRestoreIndices(edges[i],&idxs);CHKERRQ(ierr);
-    ierr = ISDestroy(&edges[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(edges);CHKERRQ(ierr);
-  ierr = PetscFree(faces);CHKERRQ(ierr);
+  ierr = PCBDDCGraphRestoreCandidatesIS(graph,&nf,&faces,&ne,&edges,NULL);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vins,&array);CHKERRQ(ierr);
   if (vl2l) {
     ierr = VecRestoreSubVector(v,vl2l,&vins);CHKERRQ(ierr);
@@ -3697,7 +3694,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (pcbddc->dbg_flag && !pcbddc->sub_schurs) {
       PetscInt nv;
 
-      ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag-1,pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = ISGetSize(ISForVertices,&nv);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
@@ -4780,7 +4777,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PetscInt               ierr,i,N;
 
   PetscFunctionBegin;
-  if (pcbddc->graphanalyzed) PetscFunctionReturn(0);
+  if (pcbddc->graphanalyzed && !pcbddc->recompute_topography) PetscFunctionReturn(0);
   /* Reset previously computed graph */
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   /* Init local Graph struct */
@@ -6629,7 +6626,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
     ierr = ISGetIndices(verticesIS,(const PetscInt**)&idxs);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),vsize,idxs,PETSC_COPY_VALUES,&verticescomm);CHKERRQ(ierr);
     ierr = ISRestoreIndices(verticesIS,(const PetscInt**)&idxs);CHKERRQ(ierr);
-    ierr = ISDestroy(&verticesIS);CHKERRQ(ierr);
+    ierr = PCBDDCGraphRestoreCandidatesIS(pcbddc->mat_graph,NULL,NULL,NULL,NULL,&verticesIS);CHKERRQ(ierr);
     ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
     ierr = PCBDDCGraphInit(graph,pcbddc->mat_graph->l2gmap,pcbddc->mat_graph->nvtxs_global);CHKERRQ(ierr);
     ierr = PCBDDCGraphSetUp(graph,pcbddc->mat_graph->custom_minimal_size,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticescomm);CHKERRQ(ierr);
@@ -6642,10 +6639,9 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   if (pcbddc->dbg_flag) {
     IS       vertices;
     PetscInt nv,nedges,nfaces;
-    ierr = PCBDDCGraphASCIIView(graph,pcbddc->dbg_flag-1,pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PCBDDCGraphASCIIView(graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PCBDDCGraphGetCandidatesIS(graph,&nfaces,NULL,&nedges,NULL,&vertices);CHKERRQ(ierr);
     ierr = ISGetSize(vertices,&nv);CHKERRQ(ierr);
-    ierr = ISDestroy(&vertices);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate vertices (%d)\n",PetscGlobalRank,nv,pcbddc->use_vertices);CHKERRQ(ierr);
@@ -6653,6 +6649,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate faces    (%d)\n",PetscGlobalRank,nfaces,pcbddc->use_faces);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PCBDDCGraphRestoreCandidatesIS(graph,&nfaces,NULL,&nedges,NULL,&vertices);CHKERRQ(ierr);
   }
 
   /* sub_schurs init */

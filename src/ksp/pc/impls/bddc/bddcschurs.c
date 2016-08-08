@@ -1592,14 +1592,17 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B,
   ierr = PetscBTCreate(n_all_cc,&sub_schurs->is_edge);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_all_cc,&all_cc);CHKERRQ(ierr);
   for (i=0;i<n_faces;i++) {
+    ierr = PetscObjectReference((PetscObject)faces[i]);CHKERRQ(ierr);
     all_cc[i] = faces[i];
   }
   for (i=0;i<n_edges;i++) {
+    ierr = PetscObjectReference((PetscObject)edges[i]);CHKERRQ(ierr);
     all_cc[n_faces+i] = edges[i];
     ierr = PetscBTSet(sub_schurs->is_edge,n_faces+i);CHKERRQ(ierr);
   }
-  ierr = PetscFree(faces);CHKERRQ(ierr);
-  ierr = PetscFree(edges);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)vertices);CHKERRQ(ierr);
+  sub_schurs->is_vertices = vertices;
+  ierr = PCBDDCGraphRestoreCandidatesIS(graph,&n_faces,&faces,&n_edges,&edges,&vertices);CHKERRQ(ierr);
   sub_schurs->is_dir = NULL;
   ierr = PCBDDCGraphGetDirichletDofsB(graph,&sub_schurs->is_dir);CHKERRQ(ierr);
 
@@ -1627,7 +1630,6 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B,
       ierr = ISSort(sub_schurs->is_subs[i]);CHKERRQ(ierr);
     }
   }
-  sub_schurs->is_vertices = vertices;
   sub_schurs->S_Ej_all = NULL;
   sub_schurs->sum_S_Ej_all = NULL;
   sub_schurs->sum_S_Ej_inv_all = NULL;
