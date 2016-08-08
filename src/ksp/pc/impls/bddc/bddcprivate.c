@@ -771,7 +771,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = ISLocalToGlobalMappingGetInfo(pc->pmat->rmap->mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
     ierr = PetscCalloc1(n,&iwork);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&interior_dofs);CHKERRQ(ierr);
-    for (i=0;i<n_neigh;i++)
+    for (i=1;i<n_neigh;i++)
       for (j=0;j<n_shared[i];j++)
           iwork[shared[i][j]] += 1;
     for (i=0;i<n;i++)
