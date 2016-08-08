@@ -19,15 +19,15 @@ PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm comm, PetscBool has_const, PetscIn
     PetscInt first,last;
 
     ierr = VecGetOwnershipRange(quad_vecs[i],&first,&last);CHKERRQ(ierr);
-    if (last-first == 1 && has_const) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+    if (last-first < 2*nvecs && has_const) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
     if (i>=first && i < last) {
       PetscScalar *data;
       ierr = VecGetArray(quad_vecs[i],&data);CHKERRQ(ierr);
       if (!has_const) {
         data[i-first] = 1.;
       } else {
-        data[i-first] = 1./PetscSqrtReal(2.);
-        data[i-first+1] = -1./PetscSqrtReal(2.);
+        data[2*i-first] = 1./PetscSqrtReal(2.);
+        data[2*i-first+1] = -1./PetscSqrtReal(2.);
       }
       ierr = VecRestoreArray(quad_vecs[i],&data);CHKERRQ(ierr);
     }
@@ -43,8 +43,8 @@ PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm comm, PetscBool has_const, PetscIn
       if (!has_const) {
         data[i-first] = 0.;
       } else {
-        data[i-first] = 0.;
-        data[i-first+1] = 0.;
+        data[2*i-first] = 0.;
+        data[2*i-first+1] = 0.;
       }
       ierr = VecRestoreArray(quad_vecs[i],&data);CHKERRQ(ierr);
     }
