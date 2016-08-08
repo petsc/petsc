@@ -8,9 +8,116 @@
 */
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petsc/private/sfimpl.h>
 
 #define MATIS_MAX_ENTRIES_INSERTION 2048
+
+#undef __FUNCT__
+#define __FUNCT__ "MatISContainerDestroy_Private"
+static PetscErrorCode MatISContainerDestroy_Private(void *ptr)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscFree(ptr); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_MPIAIJ_IS"
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+{
+  Mat_MPIAIJ             *aij  = (Mat_MPIAIJ*)A->data;
+  Mat_SeqAIJ             *diag = (Mat_SeqAIJ*)(aij->A->data);
+  Mat_SeqAIJ             *offd = (Mat_SeqAIJ*)(aij->B->data);
+  Mat                    lA;
+  ISLocalToGlobalMapping rl2g,cl2g;
+  IS                     is;
+  MPI_Comm               comm;
+  void                   *ptrs[2];
+  const char             *names[2] = {"_convert_csr_aux","_convert_csr_data"};
+  PetscScalar            *dd,*od,*aa,*data;
+  PetscInt               *di,*dj,*oi,*oj;
+  PetscInt               *aux,*ii,*jj;
+  PetscInt               dr,dc,oc,str,stc,nnz,i,jd,jo,cum;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  if (!aij->garray) SETERRQ(comm,PETSC_ERR_SUP,"garray not present");
+
+  /* access relevant information from MPIAIJ */
+  ierr = MatGetOwnershipRange(A,&str,NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(A,&stc,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&dr,&dc);CHKERRQ(ierr);
+  di   = diag->i;
+  dj   = diag->j;
+  dd   = diag->a;
+  oc   = aij->B->cmap->n;
+  oi   = offd->i;
+  oj   = offd->j;
+  od   = offd->a;
+  nnz  = diag->i[dr] + offd->i[dr];
+
+  /* generate l2g maps for rows and cols */
+  ierr = ISCreateStride(comm,dr,str,1,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dc+oc,&aux);CHKERRQ(ierr);
+  for (i=0; i<dc; i++) aux[i]    = i+stc;
+  for (i=0; i<oc; i++) aux[i+dc] = aij->garray[i];
+  ierr = ISCreateGeneral(comm,dc+oc,aux,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+
+  /* create MATIS object */
+  ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*newmat,dr,dc,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,MATIS);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*newmat,rl2g,cl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+
+  /* merge local matrices */
+  ierr = PetscMalloc1(nnz+dr+1,&aux);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nnz,&data);CHKERRQ(ierr);
+  ii   = aux;
+  jj   = aux+dr+1;
+  aa   = data;
+  *ii  = *(di++) + *(oi++);
+  for (jd=0,jo=0,cum=0;*ii<nnz;cum++)
+  {
+     for (;jd<*di;jd++) { *jj++ = *dj++;      *aa++ = *dd++; }
+     for (;jo<*oi;jo++) { *jj++ = *oj++ + dc; *aa++ = *od++; }
+     *(++ii) = *(di++) + *(oi++);
+  }
+  for (;cum<dr;cum++) *(++ii) = nnz;
+  ii   = aux;
+  jj   = aux+dr+1;
+  aa   = data;
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,dr,dc+oc,ii,jj,aa,&lA);CHKERRQ(ierr);
+
+  /* create containers to destroy the data */
+  ptrs[0] = aux;
+  ptrs[1] = data;
+  for (i=0; i<2; i++) {
+    PetscContainer c;
+
+    ierr = PetscContainerCreate(PETSC_COMM_SELF,&c);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(c,ptrs[i]);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(c,MatISContainerDestroy_Private);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)lA,names[i],(PetscObject)c);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
+  }
+
+  /* finalize matrix */
+  ierr = MatISSetLocalMat(*newmat,lA);CHKERRQ(ierr);
+  ierr = MatDestroy(&lA);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetUpSF"
