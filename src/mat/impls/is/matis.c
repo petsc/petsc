@@ -656,7 +656,10 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   /* info on mat */
   PetscInt       bs,rows,cols,lrows,lcols;
   PetscInt       local_rows,local_cols;
-  PetscBool      isdense,issbaij,isseqaij;
+  PetscBool      isseqdense,isseqsbaij,isseqaij,isseqbaij;
+#if defined (PETSC_USE_DEBUG)
+  PetscBool      lb[4],bb[4];
+#endif
   PetscMPIInt    nsubdomains;
   /* values insertion */
   PetscScalar    *array;
@@ -678,30 +681,29 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&lrows,&lcols);CHKERRQ(ierr);
   ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQBAIJ,&isseqbaij);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
+  if (!isseqdense && !isseqaij && !isseqbaij && !isseqsbaij) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)(matis->A))->type_name);
+#if defined (PETSC_USE_DEBUG)
+  lb[0] = isseqdense;
+  lb[1] = isseqaij;
+  lb[2] = isseqbaij;
+  lb[3] = isseqsbaij;
+  ierr = MPIU_Allreduce(lb,bb,4,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+  if (!bb[0] && !bb[1] && !bb[2] && !bb[3]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Local matrices must have the same type");
+#endif
 
   if (reuse == MAT_INITIAL_MATRIX) {
-    MatType     new_mat_type;
-    PetscBool   issbaij_red;
-
-    /* determining new matrix type */
-    ierr = MPIU_Allreduce(&issbaij,&issbaij_red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-    if (issbaij_red) {
-      new_mat_type = MATSBAIJ;
-    } else {
-      if (bs>1) {
-        new_mat_type = MATBAIJ;
-      } else {
-        new_mat_type = MATAIJ;
-      }
-    }
-
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),M);CHKERRQ(ierr);
     ierr = MatSetSizes(*M,lrows,lcols,rows,cols);CHKERRQ(ierr);
     ierr = MatSetBlockSize(*M,bs);CHKERRQ(ierr);
-    ierr = MatSetType(*M,new_mat_type);CHKERRQ(ierr);
+    if (!isseqsbaij) {
+      ierr = MatSetType(*M,MATAIJ);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetType(*M,MATSBAIJ);CHKERRQ(ierr);
+    }
     ierr = MatISSetMPIXAIJPreallocation_Private(mat,*M,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     PetscInt mbs,mrows,mcols,mlrows,mlcols;
@@ -717,7 +719,7 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     ierr = MatZeroEntries(*M);CHKERRQ(ierr);
   }
 
-  if (issbaij) {
+  if (isseqsbaij) {
     ierr = MatConvert(matis->A,MATSEQBAIJ,MAT_INITIAL_MATRIX,&local_mat);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
@@ -726,7 +728,7 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
 
   /* Set values */
   ierr = MatSetLocalToGlobalMapping(*M,mat->rmap->mapping,mat->cmap->mapping);CHKERRQ(ierr);
-  if (isdense) { /* special case for dense local matrices */
+  if (isseqdense) { /* special case for dense local matrices */
     PetscInt i,*dummy_rows,*dummy_cols;
 
     if (local_rows != local_cols) {
@@ -775,7 +777,7 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   ierr = MatAssemblyBegin(*M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatDestroy(&local_mat);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (isdense) {
+  if (isseqdense) {
     ierr = MatSetOption(*M,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
