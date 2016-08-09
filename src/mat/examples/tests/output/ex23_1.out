@@ -28,3 +28,4 @@ Test MatZeroRows (diag zero)
 Test MatZeroRowsColumns (diag zero)
 Test MatMissingDiagonal
 [0] [0,2) Missing 1, row 0 (diag zero)
+Test MatTranspose

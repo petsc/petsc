@@ -94,3 +94,4 @@ Test MatMissingDiagonal
 [3] [6,7) Missing 1, row 6 (diag zero)
 [4] [7,8) Missing 1, row 7 (diag zero)
 [5] [8,9) Missing 0, row -1 (diag zero)
+Test MatTranspose
