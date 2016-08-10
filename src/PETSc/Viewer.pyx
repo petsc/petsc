@@ -271,6 +271,51 @@ cdef class Viewer(Object):
         PetscINCREF(viewer.obj)
         return viewer
 
+    # --- ASCII viewers ---
+
+    def setASCIITab(self, tabs):
+        cdef PetscInt ctabs = asInt(tabs)
+        CHKERR( PetscViewerASCIISetTab(self.vwr, ctabs) )
+
+    def getASCIITab(self):
+        cdef PetscInt tabs = 0
+        CHKERR( PetscViewerASCIIGetTab(self.vwr, &tabs) )
+        return toInt(tabs)
+
+    def addASCIITab(self, tabs):
+        cdef PetscInt ctabs = asInt(tabs)
+        CHKERR( PetscViewerASCIIAddTab(self.vwr, ctabs) )
+
+    def subtractASCIITab(self, tabs):
+        cdef PetscInt ctabs = asInt(tabs)
+        CHKERR( PetscViewerASCIISubtractTab(self.vwr, ctabs) )
+
+    def pushASCIISynchronized(self):
+        CHKERR( PetscViewerASCIIPushSynchronized(self.vwr) )
+
+    def popASCIISynchronized(self):
+        CHKERR( PetscViewerASCIIPopSynchronized(self.vwr) )
+
+    def pushASCIITab(self):
+        CHKERR( PetscViewerASCIIPushTab(self.vwr) )
+
+    def popASCIITab(self):
+        CHKERR( PetscViewerASCIIPopTab(self.vwr) )
+
+    def useASCIITabs(self, flag):
+        cdef PetscBool flg = flag
+        CHKERR( PetscViewerASCIIUseTabs(self.vwr, flg) )
+
+    def printfASCII(self, msg):
+        cdef const_char *cmsg = NULL
+        msg = str2bytes(msg, &cmsg)
+        CHKERR( PetscViewerASCIIPrintf(self.vwr, cmsg) )
+
+    def printfASCIISynchronized(self, msg):
+        cdef const_char *cmsg = NULL
+        msg = str2bytes(msg, &cmsg)
+        CHKERR( PetscViewerASCIISynchronizedPrintf(self.vwr, cmsg) )
+
     # --- methods specific to file viewers ---
 
     def flush(self):
