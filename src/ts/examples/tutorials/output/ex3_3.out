@@ -22,6 +22,7 @@ TS Object: 1 MPI processes
   maximum time=100.
   total number of linear solver iterations=12
   total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
     Rosenbrock-W ra34pw2
     Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
     Abscissa of A+Gamma =  0.435867  0.871733  0.731580  1.000000 
