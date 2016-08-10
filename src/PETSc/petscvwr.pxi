@@ -82,6 +82,18 @@ cdef extern from * nogil:
     int PetscViewerPushFormat(PetscViewer,PetscViewerFormat)
     int PetscViewerPopFormat(PetscViewer)
 
+    int PetscViewerASCIISetTab(PetscViewer,PetscInt)
+    int PetscViewerASCIIGetTab(PetscViewer,PetscInt*)
+    int PetscViewerASCIIAddTab(PetscViewer,PetscInt)
+    int PetscViewerASCIISubtractTab(PetscViewer,PetscInt)
+    int PetscViewerASCIIPushSynchronized(PetscViewer)
+    int PetscViewerASCIIPopSynchronized(PetscViewer)
+    int PetscViewerASCIIPushTab(PetscViewer)
+    int PetscViewerASCIIPopTab(PetscViewer)
+    int PetscViewerASCIIUseTabs(PetscViewer,PetscBool)
+    int PetscViewerASCIIPrintf(PetscViewer,const_char[],...)
+    int PetscViewerASCIISynchronizedPrintf(PetscViewer,const_char[],...)
+
     int PetscViewerFileGetName(PetscViewer,char*[])
     int PetscViewerFileSetName(PetscViewer,char[])
     int PetscViewerFileGetMode(PetscViewer,PetscFileMode*)
