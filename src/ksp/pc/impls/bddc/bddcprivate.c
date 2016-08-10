@@ -1675,7 +1675,6 @@ PetscErrorCode PCBDDCResetCustomization(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCBDDCGraphResetCSR(pcbddc->mat_graph);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->user_primal_vertices);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
