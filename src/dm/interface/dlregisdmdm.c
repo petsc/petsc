@@ -1,4 +1,5 @@
 
+#include <petsc/private/dmlabelimpl.h>
 #include <petsc/private/dmdaimpl.h>
 #include <petsc/private/dmpleximpl.h>
 #include <petsc/private/petscdsimpl.h>
@@ -64,6 +65,7 @@ PetscErrorCode  DMInitializePackage(void)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
 #endif
+  ierr = PetscSectionSymRegister(PETSCSECTIONSYMLABEL,PetscSectionSymCreate_Label);CHKERRQ(ierr);
 
   /* Register Constructors */
   ierr = DMRegisterAll();CHKERRQ(ierr);

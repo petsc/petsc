@@ -604,13 +604,11 @@ PetscErrorCode  PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 
    Notes: the function MUST return an error code of 0 on success and nonzero on failure.
 
-   Developer Notes: There should also be a PCShellSetApplySymmetricRight() and PCShellSetApplySymmetricLeft().
-
    Level: developer
 
 .keywords: PC, shell, set, apply, user-provided
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext(), PCShellSetApplyBA()
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext(), PCShellSetApplyBA(), PCShellSetApplySymmetricRight(),PCShellSetApplySymmetricLeft()
 @*/
 PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 {
@@ -663,7 +661,7 @@ PetscErrorCode  PCShellSetApplySymmetricLeft(PC pc,PetscErrorCode (*apply)(PC,Ve
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplySymmetricRight"
 /*@C
-   PCShellSetApply - Sets routine to use as right preconditioner (when the PC_SYMMETRIC is used).
+   PCShellSetApplySymmetricRight - Sets routine to use as right preconditioner (when the PC_SYMMETRIC is used).
 
    Logically Collective on PC
 

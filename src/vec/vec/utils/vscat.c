@@ -1903,7 +1903,7 @@ PetscErrorCode  VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 /* ------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterView"
-/*@
+/*@C
    VecScatterView - Views a vector scatter context.
 
    Collective on VecScatter
@@ -1914,7 +1914,7 @@ PetscErrorCode  VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 
    Level: intermediate
 
-@*/
+C@*/
 PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
 {
   PetscErrorCode ierr;

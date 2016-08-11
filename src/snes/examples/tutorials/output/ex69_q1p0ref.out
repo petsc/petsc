@@ -1,6 +1,6 @@
-DM Object: 1 MPI processes
+DM Object: Mesh 1 MPI processes
   type: plex
-DM_0x84000000_0 in 2 dimensions:
+Mesh in 2 dimensions:
   0-cells: 169
   1-cells: 312
   2-cells: 144
@@ -9,8 +9,8 @@ Labels:
   markerTop: 1 strata of sizes (25)
   markerRight: 1 strata of sizes (25)
   markerBottom: 1 strata of sizes (25)
-  marker: 4 strata of sizes (25, 25, 25, 25)
   Face Sets: 4 strata of sizes (21, 21, 21, 21)
+  marker: 4 strata of sizes (25, 25, 25, 25)
   depth: 3 strata of sizes (169, 312, 144)
 Integral of pressure: 0.
   0 SNES Function norm 0.0392131 

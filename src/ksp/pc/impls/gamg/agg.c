@@ -11,7 +11,7 @@
 typedef struct {
   PetscInt  nsmooths;
   PetscBool sym_graph;
-  PetscInt square_graph;
+  PetscInt  square_graph;
 } PC_GAMG_AGG;
 
 #undef __FUNCT__
@@ -25,7 +25,7 @@ typedef struct {
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_gamg_agg_nsmooths
+.  -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
 
    Level: intermediate
 
@@ -59,21 +59,22 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSymGraph"
 /*@
-   PCGAMGSetSymGraph -
+   PCGAMGSetSymGraph - Symmetrize the graph before computing the aggregation. Some algorithms require the graph be symmetric
 
    Not Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
+.  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -pc_gamg_sym_graph
+.  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation
 
    Level: intermediate
 
    Concepts: Aggregation AMG preconditioner
 
-.seealso: ()
+.seealso: PCGAMGSetSquareGraph()
 @*/
 PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n)
 {
@@ -101,21 +102,22 @@ static PetscErrorCode PCGAMGSetSymGraph_AGG(PC pc, PetscBool n)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSquareGraph"
 /*@
-   PCGAMGSetSquareGraph -
+   PCGAMGSetSquareGraph -  Square the graph, ie. compute A'*A before aggregating it
 
    Not Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
+-  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -pc_gamg_square_graph
+.  -pc_gamg_square_graph <n,default = 1> - number of levels to square the graph on before aggregating it
 
    Level: intermediate
 
    Concepts: Aggregation AMG preconditioner
 
-.seealso: ()
+.seealso: PCGAMGSetSymGraph()
 @*/
 PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscInt n)
 {
@@ -140,13 +142,6 @@ static PetscErrorCode PCGAMGSetSquareGraph_AGG(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-/*
-   PCSetFromOptions_GAMG_AGG
-
-  Input Parameter:
-   . pc -
-*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG_AGG"
 static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsObject,PC pc)
@@ -159,19 +154,8 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsOb
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"GAMG-AGG options");CHKERRQ(ierr);
   {
-    /* -pc_gamg_agg_nsmooths */
-    pc_gamg_agg->nsmooths = 1;
-
     ierr = PetscOptionsInt("-pc_gamg_agg_nsmooths","smoothing steps for smoothed aggregation, usually 1","PCGAMGSetNSmooths",pc_gamg_agg->nsmooths,&pc_gamg_agg->nsmooths,NULL);CHKERRQ(ierr);
-
-    /* -pc_gamg_sym_graph */
-    pc_gamg_agg->sym_graph = PETSC_FALSE;
-
     ierr = PetscOptionsBool("-pc_gamg_sym_graph","Set for asymmetric matrices","PCGAMGSetSymGraph",pc_gamg_agg->sym_graph,&pc_gamg_agg->sym_graph,NULL);CHKERRQ(ierr);
-
-    /* -pc_gamg_square_graph */
-    pc_gamg_agg->square_graph = 1;
-
     ierr = PetscOptionsInt("-pc_gamg_square_graph","Number of levels to square graph for faster coarsening and lower coarse grid complexity","PCGAMGSetSquareGraph",pc_gamg_agg->square_graph,&pc_gamg_agg->square_graph,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -179,12 +163,6 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsOb
 }
 
 /* -------------------------------------------------------------------------- */
-/*
-   PCDestroy_AGG
-
-  Input Parameter:
-   . pc -
-*/
 #undef __FUNCT__
 #define __FUNCT__ "PCDestroy_GAMG_AGG"
 static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
@@ -891,6 +869,8 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"      AGG specific options\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"        Symmetric graph %s\n",pc_gamg_agg->sym_graph ? "true" : "false");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"        Number of levels to square graph %D\n",pc_gamg_agg->square_graph);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"        Number smoothing steps %D\n",pc_gamg_agg->nsmooths);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1307,6 +1287,11 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   pc_gamg->ops->optprolongator    = PCGAMGOptProlongator_AGG;
   pc_gamg->ops->createdefaultdata = PCSetData_AGG;
   pc_gamg->ops->view              = PCView_GAMG_AGG;
+
+  pc_gamg_agg->square_graph = 1;
+  pc_gamg_agg->sym_graph    = PETSC_FALSE;
+  pc_gamg_agg->nsmooths     = 1;
+
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNSmooths_C",PCGAMGSetNSmooths_AGG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetSymGraph_C",PCGAMGSetSymGraph_AGG);CHKERRQ(ierr);

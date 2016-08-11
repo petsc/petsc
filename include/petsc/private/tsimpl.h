@@ -24,8 +24,8 @@ PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSGLRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSGLLERegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSGLLEAdaptRegisterAll(void);
 
 typedef struct _TSOps *TSOps;
 
@@ -70,10 +70,11 @@ struct _TSTrajectoryOps {
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
-  PetscInt setupcalled;             /* true if setup has been called */
-  PetscInt recomps;                 /* counter for recomputations in the adjoint run */
-  PetscInt diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
-  void *data;
+  PetscViewer monitor;
+  PetscInt    setupcalled;             /* true if setup has been called */
+  PetscInt    recomps;                 /* counter for recomputations in the adjoint run */
+  PetscInt    diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
+  void        *data;
 };
 
 struct _p_TS {

@@ -1,58 +1,58 @@
 /*
-  This function is called when a pc_type option is changed (new options may need to be displayed and/o old ones removed
+  This function is called when a pc_type option is changed (new options may need to be displayed and/or old ones removed
 */
 
 $(document).on("change","select[id^='pc_type']",function() {
 
     //get the pc option
-    va pcValue   = $(this).val();
-    va id        = $(this).attr("id"); //really should not be used in this method. there are better ways of getting information
-    va endtag    = id.substring(id.indexOf("0"),id.length);
-    va parentDiv = "solver" + endtag;
+    var pcValue   = $(this).val();
+    var id        = $(this).attr("id"); //really should not be used in this method. there are better ways of getting information
+    var endtag    = id.substring(id.indexOf("0"),id.length);
+    var parentDiv = "solver" + endtag;
 
-    emoveAllChildren(endtag); //this function also changes matInfo as needed
+    removeAllChildren(endtag); //this function also changes matInfo as needed
 
-    //ecord pc_type in matInfo
+    //record pc_type in matInfo
     matInfo[endtag].pc_type = pcValue;
 
     if (pcValue == "mg") {
-        va defaults = getDefaults("mg",matInfo[endtag].symm, matInfo[endtag].posdef, matInfo[endtag].logstruc);
-        va defaultMgLevels = defaults.pc_mg_levels;
+        var defaults = getDefaults("mg",matInfo[endtag].symm, matInfo[endtag].posdef, matInfo[endtag].logstruc);
+        var defaultMgLevels = defaults.pc_mg_levels;
 
         matInfo[endtag].pc_mg_levels = defaultMgLevels;
         matInfo[endtag].pc_mg_type   = defaults.pc_mg_type;
 
-        //fist add options related to multigrid (pc_mg_type and pc_mg_levels)
-        $("#" + paentDiv).append("<br><b>MG Type &nbsp;&nbsp;</b><select id=\"pc_mg_type" + endtag + "\"></select>");
-        $("#" + paentDiv).append("<br><b>MG Levels </b><input type='text' id=\'pc_mg_levels" + endtag + "\' maxlength='4'>");
+        //first add options related to multigrid (pc_mg_type and pc_mg_levels)
+        $("#" + parentDiv).append("<br><b>MG Type &nbsp;&nbsp;</b><select id=\"pc_mg_type" + endtag + "\"></select>");
+        $("#" + parentDiv).append("<br><b>MG Levels </b><input type='text' id=\'pc_mg_levels" + endtag + "\' maxlength='4'>");
 
         populateList("mg",endtag);
 
         $("#pc_mg_levels" + endtag).val(defaultMgLevels);
         $("#pc_mg_type" + endtag).val(defaults.pc_mg_type);
 
-        //display options fo each level
-        fo(var i=defaultMgLevels-1; i>=0; i--) {
-            va childEndtag = endtag + "_" + i;
+        //display options for each level
+        for(var i=defaultMgLevels-1; i>=0; i--) {
+            var childEndtag = endtag + "_" + i;
 
             matInfo[childEndtag] = {
                 pc_type : defaults.sub_pc_type,
                 ksp_type: defaults.sub_ksp_type,
-                symm: matInfo[endtag].symm, //inheit !!
+                symm: matInfo[endtag].symm, //inherit !!
                 posdef: matInfo[endtag].posdef,
-                logstuc: matInfo[endtag].logstruc
+                logstruc: matInfo[endtag].logstruc
             };
 
-            va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+            var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
-            $("#" + paentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            if(i == 0) //coase grid solver (level 0)
-                $("#solve" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
+            $("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+            if(i == 0) //coarse grid solver (level 0)
+                $("#solver" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
             else
-                $("#solve" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
+                $("#solver" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
 
-            $("#solve" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
-	    $("#solve" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+            $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
+	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
             populateList("ksp",childEndtag);
             populateList("pc",childEndtag);
@@ -60,51 +60,51 @@ $(document).on("change","select[id^='pc_type']",function() {
 	    //set defaults
             $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-            //tigger both to add additional options
-            $("#ksp_type" + childEndtag).tigger("change");
-            $("#pc_type" + childEndtag).tigger("change");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
 
     }
 
     else if(pcValue == "gamg") {
-        va defaults = getDefaults("gamg",matInfo[endtag].symm, matInfo[endtag].posdef, matInfo[endtag].logstruc);
-        va defaultGamgLevels = defaults.pc_gamg_levels;
+        var defaults = getDefaults("gamg",matInfo[endtag].symm, matInfo[endtag].posdef, matInfo[endtag].logstruc);
+        var defaultGamgLevels = defaults.pc_gamg_levels;
 
         matInfo[endtag].pc_gamg_levels = defaultGamgLevels;
         matInfo[endtag].pc_gamg_type   = defaults.pc_gamg_type;
 
-        //fist add options related to multigrid (pc_gamg_type and pc_gamg_levels)
-        $("#" + paentDiv).append("<br><b>GAMG Type &nbsp;&nbsp;</b><select id=\"pc_gamg_type" + endtag + "\"></select>");
-        $("#" + paentDiv).append("<br><b>GAMG Levels </b><input type='text' id=\'pc_gamg_levels" + endtag + "\' maxlength='4'>");
+        //first add options related to multigrid (pc_gamg_type and pc_gamg_levels)
+        $("#" + parentDiv).append("<br><b>GAMG Type &nbsp;&nbsp;</b><select id=\"pc_gamg_type" + endtag + "\"></select>");
+        $("#" + parentDiv).append("<br><b>GAMG Levels </b><input type='text' id=\'pc_gamg_levels" + endtag + "\' maxlength='4'>");
 
         populateList("gamg",endtag);
 
         $("#pc_gamg_levels" + endtag).val(defaultGamgLevels);
         $("#pc_gamg_type" + endtag).val(defaults.pc_gamg_type);
 
-        //display options fo each level
-        fo(var i=defaultGamgLevels-1; i>=0; i--) {
-            va childEndtag = endtag + "_" + i;
+        //display options for each level
+        for(var i=defaultGamgLevels-1; i>=0; i--) {
+            var childEndtag = endtag + "_" + i;
 
             matInfo[childEndtag] = {
                 pc_type : defaults.sub_pc_type,
                 ksp_type: defaults.sub_ksp_type,
-                symm: matInfo[endtag].symm, //inheit !!
+                symm: matInfo[endtag].symm, //inherit !!
                 posdef: matInfo[endtag].posdef,
-                logstuc: matInfo[endtag].logstruc
+                logstruc: matInfo[endtag].logstruc
             };
 
-            va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+            var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
-            $("#" + paentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            if(i == 0) //coase grid solver (level 0)
-                $("#solve" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
+            $("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+            if(i == 0) //coarse grid solver (level 0)
+                $("#solver" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
             else
-                $("#solve" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
+                $("#solver" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
 
-            $("#solve" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
-	    $("#solve" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+            $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
+	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
             populateList("ksp",childEndtag);
             populateList("pc",childEndtag);
@@ -112,37 +112,37 @@ $(document).on("change","select[id^='pc_type']",function() {
 	    //set defaults
             $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-            //tigger both to add additional options
-            $("#ksp_type" + childEndtag).tigger("change");
-            $("#pc_type" + childEndtag).tigger("change");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
 
     }
 
-    else if (pcValue == "edundant") {
-        va defaults = getDefaults("redundant",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
-        va defaultRedundantNumber = defaults.pc_redundant_number;
-        va childEndtag = endtag + "_0";
+    else if (pcValue == "redundant") {
+        var defaults = getDefaults("redundant",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
+        var defaultRedundantNumber = defaults.pc_redundant_number;
+        var childEndtag = endtag + "_0";
 
-        matInfo[endtag].pc_edundant_number = defaultRedundantNumber;
+        matInfo[endtag].pc_redundant_number = defaultRedundantNumber;
 
-        //fist add options related to redundant (pc_redundant_number)
-        $("#" + paentDiv).append("<br><b>Redundant Number </b><input type='text' id=\'pc_redundant_number" + endtag + "\' maxlength='4'>");
-        $("#pc_edundant_number" + endtag).val(defaultRedundantNumber);
+        //first add options related to redundant (pc_redundant_number)
+        $("#" + parentDiv).append("<br><b>Redundant Number </b><input type='text' id=\'pc_redundant_number" + endtag + "\' maxlength='4'>");
+        $("#pc_redundant_number" + endtag).val(defaultRedundantNumber);
 
         matInfo[childEndtag] = {
             pc_type : defaults.sub_pc_type,
             ksp_type: defaults.sub_ksp_type,
-            symm: matInfo[endtag].symm, //inheit!!
+            symm: matInfo[endtag].symm, //inherit!!
             posdef: matInfo[endtag].posdef,
-            logstuc: matInfo[endtag].logstruc
+            logstruc: matInfo[endtag].logstruc
         };
 
-        va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
-	$("#" + paentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-	$("#solve" + childEndtag).append("<br><b>Redundant Solver Options </b>");
-	$("#solve" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
-	$("#solve" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+        var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+	$("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+	$("#solver" + childEndtag).append("<br><b>Redundant Solver Options </b>");
+	$("#solver" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
+	$("#solver" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
 	populateList("ksp",childEndtag);
         populateList("pc",childEndtag);
@@ -150,37 +150,37 @@ $(document).on("change","select[id^='pc_type']",function() {
         //set defaults
         $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	$("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-        //tigger both to add additional options
-        $("#ksp_type" + childEndtag).tigger("change");
-        $("#pc_type" + childEndtag).tigger("change");
+        //trigger both to add additional options
+        $("#ksp_type" + childEndtag).trigger("change");
+        $("#pc_type" + childEndtag).trigger("change");
     }
 
     else if (pcValue == "bjacobi") {
-        va defaults = getDefaults("bjacobi",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
-        va defaultBjacobiBlocks = defaults.pc_bjacobi_blocks;
-        va childEndtag = endtag + "_0";
+        var defaults = getDefaults("bjacobi",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
+        var defaultBjacobiBlocks = defaults.pc_bjacobi_blocks;
+        var childEndtag = endtag + "_0";
 
         matInfo[endtag].pc_bjacobi_blocks   = defaultBjacobiBlocks;
 
-        //fist add options related to bjacobi (pc_bjacobi_blocks)
-        $("#" + paentDiv).append("<br><b>Bjacobi Blocks </b><input type='text' id=\'pc_bjacobi_blocks" + endtag + "\' maxlength='4'>");
+        //first add options related to bjacobi (pc_bjacobi_blocks)
+        $("#" + parentDiv).append("<br><b>Bjacobi Blocks </b><input type='text' id=\'pc_bjacobi_blocks" + endtag + "\' maxlength='4'>");
         $("#pc_bjacobi_blocks" + endtag).val(defaultBjacobiBlocks);
 
         matInfo[childEndtag] = {
             pc_type : defaults.sub_pc_type,
             ksp_type: defaults.sub_ksp_type,
-            symm: matInfo[endtag].symm, //inheit!!
+            symm: matInfo[endtag].symm, //inherit!!
             posdef: matInfo[endtag].posdef,
-            logstuc: matInfo[endtag].logstruc
+            logstruc: matInfo[endtag].logstruc
         };
 
-        va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+        var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
-	$("#" + paentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+	$("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
 
-	$("#solve" + childEndtag).append("<br><b>Bjacobi Solver Options </b>");
-	$("#solve" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
-	$("#solve" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+	$("#solver" + childEndtag).append("<br><b>Bjacobi Solver Options </b>");
+	$("#solver" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
+	$("#solver" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
 	populateList("ksp",childEndtag);
         populateList("pc",childEndtag);
@@ -188,42 +188,42 @@ $(document).on("change","select[id^='pc_type']",function() {
         //set defaults
         $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	$("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-        //tigger both to add additional options
-        $("#ksp_type" + childEndtag).tigger("change");
-        $("#pc_type" + childEndtag).tigger("change");
+        //trigger both to add additional options
+        $("#ksp_type" + childEndtag).trigger("change");
+        $("#pc_type" + childEndtag).trigger("change");
     }
 
     else if (pcValue == "asm") {
-        va defaults = getDefaults("asm",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
+        var defaults = getDefaults("asm",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-        va defaultAsmBlocks  = defaults.pc_asm_blocks;
-        va defaultAsmOverlap = defaults.pc_asm_overlap;
-        va childEndtag = endtag + "_0";
+        var defaultAsmBlocks  = defaults.pc_asm_blocks;
+        var defaultAsmOverlap = defaults.pc_asm_overlap;
+        var childEndtag = endtag + "_0";
 
         matInfo[endtag].pc_asm_blocks  = defaultAsmBlocks;
-        matInfo[endtag].pc_asm_ovelap = defaultAsmOverlap;
+        matInfo[endtag].pc_asm_overlap = defaultAsmOverlap;
 
-        //fist add options related to ASM
-        $("#" + paentDiv).append("<br><b>ASM blocks   &nbsp;&nbsp;</b><input type='text' id=\"pc_asm_blocks" + endtag + "\" maxlength='4'>");
-	$("#" + paentDiv).append("<br><b>ASM overlap   </b><input type='text' id=\"pc_asm_overlap" + endtag + "\" maxlength='4'>");
+        //first add options related to ASM
+        $("#" + parentDiv).append("<br><b>ASM blocks   &nbsp;&nbsp;</b><input type='text' id=\"pc_asm_blocks" + endtag + "\" maxlength='4'>");
+	$("#" + parentDiv).append("<br><b>ASM overlap   </b><input type='text' id=\"pc_asm_overlap" + endtag + "\" maxlength='4'>");
         $("#pc_asm_blocks" + endtag).val(defaultAsmBlocks);
-        $("#pc_asm_ovelap" + endtag).val(defaultAsmOverlap);
+        $("#pc_asm_overlap" + endtag).val(defaultAsmOverlap);
 
         matInfo[childEndtag] = {
             pc_type : defaults.sub_pc_type,
             ksp_type: defaults.sub_ksp_type,
-            symm: matInfo[endtag].symm, //inheit!!
+            symm: matInfo[endtag].symm, //inherit!!
             posdef: matInfo[endtag].posdef,
-            logstuc: matInfo[endtag].logstruc
+            logstruc: matInfo[endtag].logstruc
         };
 
-        va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+        var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
-	$("#" + paentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+	$("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
 
-	$("#solve" + childEndtag).append("<br><b>ASM Solver Options </b>");
-	$("#solve" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
-	$("#solve" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+	$("#solver" + childEndtag).append("<br><b>ASM Solver Options </b>");
+	$("#solver" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
+	$("#solver" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
 	populateList("ksp",childEndtag);
         populateList("pc",childEndtag);
@@ -231,30 +231,30 @@ $(document).on("change","select[id^='pc_type']",function() {
         //set defaults
         $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	$("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-        //tigger both to add additional options
-        $("#ksp_type" + childEndtag).tigger("change");
-        $("#pc_type" + childEndtag).tigger("change");
+        //trigger both to add additional options
+        $("#ksp_type" + childEndtag).trigger("change");
+        $("#pc_type" + childEndtag).trigger("change");
     }
 
     else if (pcValue == "ksp") {
-        va defaults = getDefaults("ksp",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
-        va childEndtag = endtag + "_0";
+        var defaults = getDefaults("ksp",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
+        var childEndtag = endtag + "_0";
 
         matInfo[childEndtag] = {
             pc_type : defaults.sub_pc_type,
             ksp_type: defaults.sub_ksp_type,
-            symm: matInfo[endtag].symm, //inheit!!
+            symm: matInfo[endtag].symm, //inherit!!
             posdef: matInfo[endtag].posdef,
-            logstuc: matInfo[endtag].logstruc
+            logstruc: matInfo[endtag].logstruc
         };
 
-        va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+        var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
-	$("#" + paentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+	$("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
 
-	$("#solve" + childEndtag).append("<br><b>KSP Solver Options </b>");
-	$("#solve" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
-	$("#solve" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+	$("#solver" + childEndtag).append("<br><b>KSP Solver Options </b>");
+	$("#solver" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
+	$("#solver" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
 	populateList("ksp",childEndtag);
         populateList("pc",childEndtag);
@@ -262,64 +262,64 @@ $(document).on("change","select[id^='pc_type']",function() {
         //set defaults
         $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	$("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-        //tigger both to add additional options
-        $("#ksp_type" + childEndtag).tigger("change");
-        $("#pc_type" + childEndtag).tigger("change");
+        //trigger both to add additional options
+        $("#ksp_type" + childEndtag).trigger("change");
+        $("#pc_type" + childEndtag).trigger("change");
     }
 
     else if (pcValue == "fieldsplit") {
-        /*if(!matInfo[endtag].logstuc) {//do nothing if not logstruc
-            alet("Error: Fieldsplit can only be used on logically block-structured matrix!");
-            eturn;
+        /*if(!matInfo[endtag].logstruc) {//do nothing if not logstruc
+            alert("Error: Fieldsplit can only be used on logically block-structured matrix!");
+            return;
         }*/
-        va defaults = getDefaults("fieldsplit",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
-        va defaultFieldsplitBlocks = defaults.pc_fieldsplit_blocks;
+        var defaults = getDefaults("fieldsplit",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
+        var defaultFieldsplitBlocks = defaults.pc_fieldsplit_blocks;
 
         matInfo[endtag].pc_fieldsplit_type   = defaults.pc_fieldsplit_type;
         matInfo[endtag].pc_fieldsplit_blocks = defaults.pc_fieldsplit_blocks;
 
-        //fist add options related to fieldsplit (pc_fieldsplit_type and pc_fieldsplit_blocks)
-        $("#" + paentDiv).append("<br><b>Fieldsplit Type &nbsp;&nbsp;</b><select id=\"pc_fieldsplit_type" + endtag + "\"></select>");
-        $("#" + paentDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id=\"pc_fieldsplit_blocks" + endtag + "\" maxlength='4'>");
+        //first add options related to fieldsplit (pc_fieldsplit_type and pc_fieldsplit_blocks)
+        $("#" + parentDiv).append("<br><b>Fieldsplit Type &nbsp;&nbsp;</b><select id=\"pc_fieldsplit_type" + endtag + "\"></select>");
+        $("#" + parentDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id=\"pc_fieldsplit_blocks" + endtag + "\" maxlength='4'>");
 
         populateList("fieldsplit",endtag);
 
         $("#pc_fieldsplit_blocks" + endtag).val(defaultFieldsplitBlocks);
         $("#pc_fieldsplit_type" + endtag).val(defaults.pc_fieldsplit_type);
 
-        fo(var i=defaultFieldsplitBlocks-1; i>=0; i--) {
-            va childEndtag = endtag + "_" + i;
+        for(var i=defaultFieldsplitBlocks-1; i>=0; i--) {
+            var childEndtag = endtag + "_" + i;
 
             matInfo[childEndtag] = {
                 pc_type : defaults.sub_pc_type,
                 ksp_type: defaults.sub_ksp_type,
-                symm: matInfo[endtag].symm, //inheit!!
+                symm: matInfo[endtag].symm, //inherit!!
                 posdef: matInfo[endtag].posdef,
-                logstuc: false //this one is false to prevent infinite recursion
+                logstruc: false //this one is false to prevent infinite recursion
             };
 
-            va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+            var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
-            $("#" + paentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            $("#solve" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is <input type=\"checkbox\" id=\"symm" + childEndtag + "\">symmetric,  <input type=\"checkbox\" id=\"posdef" + childEndtag + "\">positive definite, <input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">block structured)</b>");
+            $("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is <input type=\"checkbox\" id=\"symm" + childEndtag + "\">symmetric,  <input type=\"checkbox\" id=\"posdef" + childEndtag + "\">positive definite, <input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">block structured)</b>");
 
-            //special fo fieldsplit
+            //special for fieldsplit
             if(matInfo[childEndtag].symm)
-                $("#symm" + childEndtag).att("checked",true);
+                $("#symm" + childEndtag).attr("checked",true);
             if(matInfo[childEndtag].posdef)
-                $("#posdef" + childEndtag).att("checked",true);
-            if(matInfo[childEndtag].logstuc)
-                $("#logstuc" + childEndtag).attr("checked",true);
+                $("#posdef" + childEndtag).attr("checked",true);
+            if(matInfo[childEndtag].logstruc)
+                $("#logstruc" + childEndtag).attr("checked",true);
 
             if(matInfo[endtag].symm)
-                $("#symm" + childEndtag).att("disabled",true);
+                $("#symm" + childEndtag).attr("disabled",true);
             if(matInfo[endtag].posdef)
-                $("#posdef" + childEndtag).att("disabled",true);
+                $("#posdef" + childEndtag).attr("disabled",true);
             if(!matInfo[endtag].symm)
-                $("#posdef" + childEndtag).att("disabled",true);
+                $("#posdef" + childEndtag).attr("disabled",true);
 
-            $("#solve" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
-	    $("#solve" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+            $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
+	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
             populateList("ksp",childEndtag);
             populateList("pc",childEndtag);
@@ -327,129 +327,129 @@ $(document).on("change","select[id^='pc_type']",function() {
 	    //set defaults
             $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-            //tigger both to add additional options
-            $("#ksp_type" + childEndtag).tigger("change");
-            $("#pc_type" + childEndtag).tigger("change");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
     }
-    efresh(); //refresh diagrams after any change in pc
+    refresh(); //refresh diagrams after any change in pc
 });
 
 //called when a ksp option is changed
 //simply adjust ksp_type in matInfo
 $(document).on("change","select[id^='ksp_type']",function() {
 
-    va kspValue   = $(this).val();
-    va id         = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
-    va endtag     = id.substring(id.indexOf("0"),id.length);
+    var kspValue   = $(this).val();
+    var id         = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
+    var endtag     = id.substring(id.indexOf("0"),id.length);
 
     matInfo[endtag].ksp_type = kspValue;
-    efresh(); //refresh diagrams after any change in ksp
+    refresh(); //refresh diagrams after any change in ksp
 });
 
-//need to add a bunch of methods hee for changing each variable: pc_fieldsplit_blocks, pc_asm_blocks, pc_redundant_number, etc
-//these methods seem incedibly redundant. perhaps there is a better way to write these.
+//need to add a bunch of methods here for changing each variable: pc_fieldsplit_blocks, pc_asm_blocks, pc_redundant_number, etc
+//these methods seem incredibly redundant. perhaps there is a better way to write these.
 $(document).on("change","select[id^='pc_mg_type']",function() {
 
-    va mgType     = $(this).val();
-    va id         = $(this).attr("id"); //really should not be used in this method. there are better ways of getting information
-    va endtag     = id.substring(id.indexOf("0"),id.length);
+    var mgType     = $(this).val();
+    var id         = $(this).attr("id"); //really should not be used in this method. there are better ways of getting information
+    var endtag     = id.substring(id.indexOf("0"),id.length);
 
     matInfo[endtag].pc_mg_type = mgType;
-    efresh();
+    refresh();
 });
 
 $(document).on("change","select[id^='pc_gamg_type']",function() {
 
-    va gamgType   = $(this).val();
-    va id         = $(this).attr("id"); //really should not be used in this method. there are better ways of getting information
-    va endtag     = id.substring(id.indexOf("0"),id.length);
+    var gamgType   = $(this).val();
+    var id         = $(this).attr("id"); //really should not be used in this method. there are better ways of getting information
+    var endtag     = id.substring(id.indexOf("0"),id.length);
 
     matInfo[endtag].pc_gamg_type = gamgType;
-    efresh();
+    refresh();
 });
 
 $(document).on("change","select[id^='pc_fieldsplit_type']",function() {
 
-    va fieldsplitType  = $(this).val();
-    va id              = $(this).attr("id"); //really should not be used in this method. there are better ways of getting information
-    va endtag          = id.substring(id.indexOf("0"),id.length);
+    var fieldsplitType  = $(this).val();
+    var id              = $(this).attr("id"); //really should not be used in this method. there are better ways of getting information
+    var endtag          = id.substring(id.indexOf("0"),id.length);
 
     matInfo[endtag].pc_fieldsplit_type = fieldsplitType;
-    efresh();
+    refresh();
 });
 
 $(document).on("keyup","input[id^='pc_asm_blocks']",function() {
 
-    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //eturn on invalid input
-        eturn;
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
 
-    va id     = this.id;
-    va endtag = id.substring(id.indexOf(0),id.length);
-    va val    = $(this).val();
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var val    = $(this).val();
 
     matInfo[endtag].pc_asm_blocks = val;
-    efresh(); //refresh diagrams
+    refresh(); //refresh diagrams
 });
 
-$(document).on("keyup","input[id^='pc_asm_ovelap']",function() {
+$(document).on("keyup","input[id^='pc_asm_overlap']",function() {
 
-    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //eturn on invalid input
-        eturn;
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
 
-    va id     = this.id;
-    va endtag = id.substring(id.indexOf(0),id.length);
-    va val    = $(this).val();
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var val    = $(this).val();
 
-    matInfo[endtag].pc_asm_ovelap = val;
-    efresh();
+    matInfo[endtag].pc_asm_overlap = val;
+    refresh();
 });
 
 $(document).on("keyup","input[id^='pc_bjacobi_blocks']",function() {
 
-    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //eturn on invalid input
-        eturn;
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
 
-    va id     = this.id;
-    va endtag = id.substring(id.indexOf(0),id.length);
-    va val    = $(this).val();
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var val    = $(this).val();
 
     matInfo[endtag].pc_bjacobi_blocks = val;
-    efresh(); //refresh diagrams
+    refresh(); //refresh diagrams
 });
 
-$(document).on("keyup","input[id^='pc_edundant_number']",function() {
+$(document).on("keyup","input[id^='pc_redundant_number']",function() {
 
-    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //eturn on invalid input
-        eturn;
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
 
-    va id     = this.id;
-    va endtag = id.substring(id.indexOf(0),id.length);
-    va val    = $(this).val();
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var val    = $(this).val();
 
-    matInfo[endtag].pc_edundant_number = val;
-    efresh();
+    matInfo[endtag].pc_redundant_number = val;
+    refresh();
 });
 
 
-//input: endtag of the paent
-function emoveAllChildren(endtag) {
+//input: endtag of the parent
+function removeAllChildren(endtag) {
 
-    va numChildren = getNumChildren(matInfo, endtag);
+    var numChildren = getNumChildren(matInfo, endtag);
 
-    fo(var i=0; i<numChildren; i++) {
-        va childEndtag = endtag + "_" + i;
+    for(var i=0; i<numChildren; i++) {
+        var childEndtag = endtag + "_" + i;
 
-        if(getNumChilden(matInfo, childEndtag) > 0)//this child has more children
+        if(getNumChildren(matInfo, childEndtag) > 0)//this child has more children
         {
-            emoveAllChildren(childEndtag);//recursive call to remove all children of that child
+            removeAllChildren(childEndtag);//recursive call to remove all children of that child
         }
-        delete matInfo[childEndtag]; //make sue this location is never accessed again.
+        delete matInfo[childEndtag]; //make sure this location is never accessed again.
 
-        $("#solve" + childEndtag).remove();//remove that child itself
+        $("#solver" + childEndtag).remove();//remove that child itself
     }
 
-    //adjust vaiables in matInfo
+    //adjust variables in matInfo
     if(matInfo[endtag].pc_type == "mg") {
         matInfo[endtag].pc_mg_levels = 0;
     }
@@ -457,29 +457,29 @@ function emoveAllChildren(endtag) {
         matInfo[endtag].pc_fieldsplit_blocks = 0;
     }
 
-    $("#pc_type" + endtag).nextAll().emove();//remove the options in the same level solver
+    $("#pc_type" + endtag).nextAll().remove();//remove the options in the same level solver
 
 }
 
-//called when text input fo pc_fieldsplit_blocks is changed
+//called when text input for pc_fieldsplit_blocks is changed
 $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
 
-    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //eturn on invalid input
-        eturn;
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
 
-    va id     = this.id;
-    va endtag = id.substring(id.indexOf(0),id.length);
-    va val    = $(this).val();
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var val    = $(this).val();
 
-    // this next pat is a bit tricky...there are 2 cases
+    // this next part is a bit tricky...there are 2 cases
 
-    //case 1: we need to emove some divs
+    //case 1: we need to remove some divs
     if(val < matInfo[endtag].pc_fieldsplit_blocks) {
-        fo(var i=val; i<matInfo[endtag].pc_fieldsplit_blocks; i++) {
-            va childEndtag = endtag + "_" + i;
-            emoveAllChildren(childEndtag); //remove grandchildren (if any)
+        for(var i=val; i<matInfo[endtag].pc_fieldsplit_blocks; i++) {
+            var childEndtag = endtag + "_" + i;
+            removeAllChildren(childEndtag); //remove grandchildren (if any)
             delete matInfo[childEndtag];
-            $("#solve" + childEndtag).remove(); //remove the divs
+            $("#solver" + childEndtag).remove(); //remove the divs
         }
         matInfo[endtag].pc_fieldsplit_blocks = val;
     }
@@ -487,61 +487,61 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
     //case 2: we need to add some divs
     else if(val > matInfo[endtag].pc_fieldsplit_blocks) {
 
-        va defaults = getDefaults("fieldsplit",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
+        var defaults = getDefaults("fieldsplit",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-        fo(var i = matInfo[endtag].pc_fieldsplit_blocks; i < val; i++) {
+        for(var i = matInfo[endtag].pc_fieldsplit_blocks; i < val; i++) {
 
-            //add divs and wite matInfo
-            va childEndtag = endtag + "_" + i;
-            va margin = getNumUnderscores(childEndtag) * 30;
+            //add divs and write matInfo
+            var childEndtag = endtag + "_" + i;
+            var margin = getNumUnderscores(childEndtag) * 30;
 
-            //this is the tickiest part: need to find exactly where to insert the new divs
-            //find the fist div that doesn't begin with endtag
+            //this is the trickiest part: need to find exactly where to insert the new divs
+            //find the first div that doesn't begin with endtag
 
-            va currentDiv  = $(this).parent().get(0);
+            var currentDiv  = $(this).parent().get(0);
 
-            while($(curentDiv).next().length > 0) { //while has next
-                va nextDiv    = $(currentDiv).next().get(0);
-                va nextId     = nextDiv.id;
-                va nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
+            while($(currentDiv).next().length > 0) { //while has next
+                var nextDiv    = $(currentDiv).next().get(0);
+                var nextId     = nextDiv.id;
+                var nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
 
                 if(nextEndtag.indexOf(endtag) == 0) {
-                    curentDiv = nextDiv;
+                    currentDiv = nextDiv;
                 }
                 else
-                    beak;
+                    break;
             }
 
-            //append new stuff immediately afte current div
+            //append new stuff immediately after current div
             matInfo[childEndtag] = {
                 pc_type : defaults.sub_pc_type,
                 ksp_type: defaults.sub_ksp_type,
-                symm: matInfo[endtag].symm, //inheit!!
+                symm: matInfo[endtag].symm, //inherit!!
                 posdef: matInfo[endtag].posdef,
-                logstuc: false
+                logstruc: false
             };
 
-            va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
-            $(curentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            $("#solve" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is <input type=\"checkbox\" id=\"symm" + childEndtag + "\">symmetric, <input type=\"checkbox\" id=\"posdef" + childEndtag + "\">positive definite, <input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">block structured)</b>");
+            var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+            $(currentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is <input type=\"checkbox\" id=\"symm" + childEndtag + "\">symmetric, <input type=\"checkbox\" id=\"posdef" + childEndtag + "\">positive definite, <input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">block structured)</b>");
 
-            //special fo fieldsplit
+            //special for fieldsplit
             if(matInfo[childEndtag].symm)
-                $("#symm" + childEndtag).att("checked",true);
+                $("#symm" + childEndtag).attr("checked",true);
             if(matInfo[childEndtag].posdef)
-                $("#posdef" + childEndtag).att("checked",true);
-            if(matInfo[childEndtag].logstuc)
-                $("#logstuc" + childEndtag).attr("checked",true);
+                $("#posdef" + childEndtag).attr("checked",true);
+            if(matInfo[childEndtag].logstruc)
+                $("#logstruc" + childEndtag).attr("checked",true);
 
             if(matInfo[endtag].symm)
-                $("#symm" + childEndtag).att("disabled",true);
+                $("#symm" + childEndtag).attr("disabled",true);
             if(matInfo[endtag].posdef)
-                $("#posdef" + childEndtag).att("disabled",true);
+                $("#posdef" + childEndtag).attr("disabled",true);
             if(!matInfo[endtag].symm)
-                $("#posdef" + childEndtag).att("disabled",true);
+                $("#posdef" + childEndtag).attr("disabled",true);
 
-            $("#solve" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
-	    $("#solve" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+            $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
+	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
             populateList("ksp",childEndtag);
             populateList("pc",childEndtag);
@@ -549,13 +549,13 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
             //set defaults
             $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-            //tigger both to add additional options
-            $("#ksp_type" + childEndtag).tigger("change");
-            $("#pc_type" + childEndtag).tigger("change");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
         matInfo[endtag].pc_fieldsplit_blocks = val;
     }
-    efresh(); //refresh diagrams
+    refresh(); //refresh diagrams
 });
 
 /*
@@ -563,22 +563,22 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
 */
 $(document).on('keyup', "input[id^='pc_mg_levels']", function()
 {
-    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //eturn on invalid input
-        eturn;
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
 
-    va id     = this.id;
-    va endtag = id.substring(id.indexOf(0),id.length);
-    va val    = $(this).val();
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var val    = $(this).val();
 
-    // this next pat is a bit tricky...there are 2 cases
+    // this next part is a bit tricky...there are 2 cases
 
-    //case 1: we need to emove some divs
+    //case 1: we need to remove some divs
     if(val < matInfo[endtag].pc_mg_levels) {
-        fo(var i=val; i<matInfo[endtag].pc_mg_levels; i++) {
-            va childEndtag = endtag + "_" + i;
-            emoveAllChildren(childEndtag); //remove grandchildren (if any)
+        for(var i=val; i<matInfo[endtag].pc_mg_levels; i++) {
+            var childEndtag = endtag + "_" + i;
+            removeAllChildren(childEndtag); //remove grandchildren (if any)
             delete matInfo[childEndtag];
-            $("#solve" + childEndtag).remove(); //remove the divs
+            $("#solver" + childEndtag).remove(); //remove the divs
         }
         matInfo[endtag].pc_mg_levels = val;
     }
@@ -586,47 +586,47 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
     //case 2: we need to add some divs
     else if(val > matInfo[endtag].pc_mg_levels) {
 
-        va defaults = getDefaults("mg",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
+        var defaults = getDefaults("mg",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-        fo(var i = matInfo[endtag].pc_mg_levels; i < val; i++) {
-            va childEndtag = endtag + "_" + i;
-            va margin = getNumUnderscores(childEndtag) * 30;
+        for(var i = matInfo[endtag].pc_mg_levels; i < val; i++) {
+            var childEndtag = endtag + "_" + i;
+            var margin = getNumUnderscores(childEndtag) * 30;
 
-            //this is the tickiest part: need to find exactly where to insert the new divs
-            //find the fist div that doesn't begin with endtag
+            //this is the trickiest part: need to find exactly where to insert the new divs
+            //find the first div that doesn't begin with endtag
 
-            va currentDiv  = $(this).parent().get(0);
+            var currentDiv  = $(this).parent().get(0);
 
-            while($(curentDiv).next().length > 0) { //while has next
-                va nextDiv    = $(currentDiv).next().get(0);
-                va nextId     = nextDiv.id;
-                va nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
+            while($(currentDiv).next().length > 0) { //while has next
+                var nextDiv    = $(currentDiv).next().get(0);
+                var nextId     = nextDiv.id;
+                var nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
 
                 if(nextEndtag.indexOf(endtag) == 0) {
-                    curentDiv = nextDiv;
+                    currentDiv = nextDiv;
                 }
                 else
-                    beak;
+                    break;
             }
 
-            //append new stuff immediately afte current div
+            //append new stuff immediately after current div
             matInfo[childEndtag] = {
                 pc_type : defaults.sub_pc_type,
                 ksp_type: defaults.sub_ksp_type,
-                symm: matInfo[endtag].symm, //inheit!!
+                symm: matInfo[endtag].symm, //inherit!!
                 posdef: matInfo[endtag].posdef,
-                logstuc: matInfo[endtag].logstruc
+                logstruc: matInfo[endtag].logstruc
             };
 
-            va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
-            $(curentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            if(i == 0) //coase grid solver (level 0)
-                $("#solve" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
+            var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+            $(currentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+            if(i == 0) //coarse grid solver (level 0)
+                $("#solver" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
             else
-                $("#solve" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
+                $("#solver" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
 
-            $("#solve" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
-	    $("#solve" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+            $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
+	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
             populateList("ksp",childEndtag);
             populateList("pc",childEndtag);
@@ -634,33 +634,33 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
             //set defaults
             $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-            //tigger both to add additional options
-            $("#ksp_type" + childEndtag).tigger("change");
-            $("#pc_type" + childEndtag).tigger("change");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
         matInfo[endtag].pc_mg_levels = val;
     }
-    efresh(); //refresh diagrams
+    refresh(); //refresh diagrams
 });
 
 $(document).on('keyup', "input[id^='pc_gamg_levels']", function()
 {
-    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //eturn on invalid input
-        eturn;
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
 
-    va id     = this.id;
-    va endtag = id.substring(id.indexOf(0),id.length);
-    va val    = $(this).val();
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var val    = $(this).val();
 
-    // this next pat is a bit tricky...there are 2 cases
+    // this next part is a bit tricky...there are 2 cases
 
-    //case 1: we need to emove some divs
+    //case 1: we need to remove some divs
     if(val < matInfo[endtag].pc_gamg_levels) {
-        fo(var i=val; i<matInfo[endtag].pc_gamg_levels; i++) {
-            va childEndtag = endtag + "_" + i;
-            emoveAllChildren(childEndtag); //remove grandchildren (if any)
+        for(var i=val; i<matInfo[endtag].pc_gamg_levels; i++) {
+            var childEndtag = endtag + "_" + i;
+            removeAllChildren(childEndtag); //remove grandchildren (if any)
             delete matInfo[childEndtag];
-            $("#solve" + childEndtag).remove(); //remove the divs
+            $("#solver" + childEndtag).remove(); //remove the divs
         }
         matInfo[endtag].pc_gamg_levels = val;
     }
@@ -668,47 +668,47 @@ $(document).on('keyup', "input[id^='pc_gamg_levels']", function()
     //case 2: we need to add some divs
     else if(val > matInfo[endtag].pc_gamg_levels) {
 
-        va defaults = getDefaults("gamg",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
+        var defaults = getDefaults("gamg",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-        fo(var i = matInfo[endtag].pc_gamg_levels; i < val; i++) {
-            va childEndtag = endtag + "_" + i;
-            va margin = getNumUnderscores(childEndtag) * 30;
+        for(var i = matInfo[endtag].pc_gamg_levels; i < val; i++) {
+            var childEndtag = endtag + "_" + i;
+            var margin = getNumUnderscores(childEndtag) * 30;
 
-            //this is the tickiest part: need to find exactly where to insert the new divs
-            //find the fist div that doesn't begin with endtag
+            //this is the trickiest part: need to find exactly where to insert the new divs
+            //find the first div that doesn't begin with endtag
 
-            va currentDiv  = $(this).parent().get(0);
+            var currentDiv  = $(this).parent().get(0);
 
-            while($(curentDiv).next().length > 0) { //while has next
-                va nextDiv    = $(currentDiv).next().get(0);
-                va nextId     = nextDiv.id;
-                va nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
+            while($(currentDiv).next().length > 0) { //while has next
+                var nextDiv    = $(currentDiv).next().get(0);
+                var nextId     = nextDiv.id;
+                var nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
 
                 if(nextEndtag.indexOf(endtag) == 0) {
-                    curentDiv = nextDiv;
+                    currentDiv = nextDiv;
                 }
                 else
-                    beak;
+                    break;
             }
 
-            //append new stuff immediately afte current div
+            //append new stuff immediately after current div
             matInfo[childEndtag] = {
                 pc_type : defaults.sub_pc_type,
                 ksp_type: defaults.sub_ksp_type,
-                symm: matInfo[endtag].symm, //inheit!!
+                symm: matInfo[endtag].symm, //inherit!!
                 posdef: matInfo[endtag].posdef,
-                logstuc: matInfo[endtag].logstruc
+                logstruc: matInfo[endtag].logstruc
             };
 
-            va margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
-            $(curentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            if(i == 0) //coase grid solver (level 0)
-                $("#solve" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
+            var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+            $(currentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+            if(i == 0) //coarse grid solver (level 0)
+                $("#solver" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
             else
-                $("#solve" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
+                $("#solver" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
 
-            $("#solve" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
-	    $("#solve" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+            $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
+	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
             populateList("ksp",childEndtag);
             populateList("pc",childEndtag);
@@ -716,11 +716,11 @@ $(document).on('keyup', "input[id^='pc_gamg_levels']", function()
             //set defaults
             $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
 	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
-            //tigger both to add additional options
-            $("#ksp_type" + childEndtag).tigger("change");
-            $("#pc_type" + childEndtag).tigger("change");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
         matInfo[endtag].pc_gamg_levels = val;
     }
-    efresh(); //refresh diagrams
+    refresh(); //refresh diagrams
 });

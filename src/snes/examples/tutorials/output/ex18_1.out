@@ -24,7 +24,7 @@ SNES Object: 1 MPI processes
     type: mg
       MG: type is MULTIPLICATIVE, levels=3 cycles=v
         Cycles per PCApply=1
-        Using Galerkin computed coarse grid matrices
+        Using Galerkin computed coarse grid matrices for pmat
     Coarse grid solver -- level -------------------------------
       KSP Object: (mg_coarse_) 1 MPI processes
         type: preonly

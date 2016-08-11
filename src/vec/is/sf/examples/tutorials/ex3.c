@@ -18,6 +18,7 @@ int main(int argc, char **argv)
   PetscInt    i;
   PetscInt    *ilocal;
   PetscSFNode *iremote;
+  PetscBool   test_dupped_type;
   MPI_Datatype contig;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
@@ -25,6 +26,11 @@ int main(int argc, char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
+
+  ierr             = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF type freeing options","none");CHKERRQ(ierr);
+  test_dupped_type = PETSC_FALSE;
+  ierr             = PetscOptionsBool("-test_dupped_type", "Test dupped input type","",test_dupped_type,&test_dupped_type,NULL);CHKERRQ(ierr);
+  ierr             = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
@@ -61,6 +67,12 @@ int main(int argc, char **argv)
   ierr = MPI_Type_contiguous(4, MPIU_SCALAR, &contig);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&contig);CHKERRQ(ierr);
 
+  if (test_dupped_type) {
+    MPI_Datatype tmp;
+    ierr = MPI_Type_dup(contig, &tmp);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&contig);CHKERRQ(ierr);
+    contig = tmp;
+  }
   for (i=0;i<10000;i++) {
     ierr = PetscSFBcastBegin(sf,contig,bufA,bufAout);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf,contig,bufA,bufAout);CHKERRQ(ierr);

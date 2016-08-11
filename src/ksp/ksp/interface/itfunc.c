@@ -1700,6 +1700,31 @@ PetscErrorCode KSPMonitor(KSP ksp,PetscInt it,PetscReal rnorm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscMonitorCompare"
+/*
+
+    Checks if two monitors are identical; if they are then it destroys the new one
+*/
+PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void),void *nmctx,PetscErrorCode (*nmdestroy)(void**),PetscErrorCode (*mon)(void),void *mctx,PetscErrorCode (*mdestroy)(void**),PetscBool *identical)
+{
+  *identical = PETSC_FALSE;
+  if (nmon == mon && nmdestroy == mdestroy) {
+    if (nmctx == mctx) *identical = PETSC_TRUE;
+    else if (nmdestroy == (PetscErrorCode (*)(void**)) PetscViewerAndFormatDestroy) {
+      PetscViewerAndFormat *old = (PetscViewerAndFormat*)mctx, *newo = (PetscViewerAndFormat*)nmctx;
+      if (old->viewer == newo->viewer && old->format == newo->format) *identical = PETSC_TRUE;
+    }
+    if (*identical) {
+      if (mdestroy) {
+        PetscErrorCode ierr;
+        ierr = (*mdestroy)(&nmctx);CHKERRQ(ierr);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPMonitorSet"
 /*@C
    KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor
@@ -1760,18 +1785,15 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
 {
   PetscInt       i;
   PetscErrorCode ierr;
+  PetscBool      identical;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->numbermonitors >= MAXKSPMONITORS) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
   for (i=0; i<ksp->numbermonitors;i++) {
-    if (monitor == ksp->monitor[i] && monitordestroy == ksp->monitordestroy[i] && mctx == ksp->monitorcontext[i]) {
-      if (monitordestroy) {
-        ierr = (*monitordestroy)(&mctx);CHKERRQ(ierr);
-      }
-      PetscFunctionReturn(0);
-    }
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))monitor,mctx,monitordestroy,(PetscErrorCode (*)(void))ksp->monitor[i],ksp->monitorcontext[i],ksp->monitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
   }
+  if (ksp->numbermonitors >= MAXKSPMONITORS) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
   ksp->monitor[ksp->numbermonitors]          = monitor;
   ksp->monitordestroy[ksp->numbermonitors]   = monitordestroy;
   ksp->monitorcontext[ksp->numbermonitors++] = (void*)mctx;

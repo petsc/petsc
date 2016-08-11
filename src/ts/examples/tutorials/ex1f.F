@@ -278,8 +278,8 @@
       my     = int(user(lmy))
       lambda = user(param)
 
-      hx    = 1.0 / (mx-1)
-      hy    = 1.0 / (my-1)
+      hx    = 1.0 / real(mx-1)
+      hy    = 1.0 / real(my-1)
       sc    = hx*hy
       hxdhy = hx/hy
       hydhx = hy/hx
@@ -346,8 +346,8 @@
       my     = int(user(lmy))
       lambda = user(param)
 
-      hx    = 1.0 / (mx-1)
-      hy    = 1.0 / (my-1)
+      hx    = 1.0 / real(mx-1)
+      hy    = 1.0 / real(my-1)
       sc    = hx*hy
       hxdhy = hx/hy
       hydhx = hy/hx

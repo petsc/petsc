@@ -31,7 +31,7 @@
 #define TSPYTHON          'python'
 #define TSTHETA           'theta'
 #define TSALPHA           'alpha'
-#define TSGL              'gl'
+#define TSGLLE            'glle'
 #define TSSSP             'ssp'
 #define TSARKIMEX         'arkimex'
 #define TSROSW            'rosw'
@@ -44,10 +44,10 @@
 #define TSSSPRKS3  'rks3'
 #define TSSSPRK104 'rk104'
 
-#define TSGLAdaptType character*(80)
-#define TSGLADAPT_NONE 'none'
-#define TSGLADAPT_SIZE 'size'
-#define TSGLADAPT_BOTH 'both'
+#define TSGLLEAdaptType character*(80)
+#define TSGLLEADAPT_NONE 'none'
+#define TSGLLEADAPT_SIZE 'size'
+#define TSGLLEADAPT_BOTH 'both'
 
 #define TSAdaptType character*(80)
 #define TSADAPTBASIC 'basic'

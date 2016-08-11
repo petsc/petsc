@@ -30,6 +30,7 @@ class Configure(config.base.Configure):
     self.x              = framework.require('config.packages.X', self)
     self.fortrancpp     = framework.require('PETSc.options.fortranCPP', self)
     self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.veccuda        = framework.require('config.utilities.veccuda', self)
     return
 
   def configureRegression(self):
@@ -113,6 +114,15 @@ class Configure(config.base.Configure):
             jobs.append(i.PACKAGE+ '_COMPLEX')
           elif i.PACKAGE in ['STRUMPACK']:
             jobs.append(i.PACKAGE)
+      if hasattr(self.compilers, 'CUDAC'):
+        if self.veccuda.defines.has_key('HAVE_VECCUDA'):
+          jobs.append('VECCUDA')
+          if self.scalartypes.scalartype.lower() == 'complex':
+            rjobs.append('VECCUDA_Complex')
+          else:
+            rjobs.append('VECCUDA_NoComplex')
+            if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
+              rjobs.append('VECCUDA_DATAFILESPATH')
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return

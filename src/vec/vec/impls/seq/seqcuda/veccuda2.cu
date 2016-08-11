@@ -38,7 +38,6 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
     err = cudaStreamCreate(&stream);CHKERRCUDA(err);
     veccuda->stream = stream;
     veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
-    v->ops->destroy = VecDestroy_SeqCUDA;
     if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED) {
       if (v->data && ((Vec_Seq*)v->data)->array) {
         v->valid_GPU_array = PETSC_CUDA_CPU;

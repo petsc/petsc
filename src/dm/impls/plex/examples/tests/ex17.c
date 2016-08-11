@@ -135,7 +135,7 @@ static PetscErrorCode TestLocation(DM dm, AppCtx *user)
     ierr = VecGetArray(v, &a);CHKERRQ(ierr);
     for (d = 0; d < dim; ++d) a[d] = centroid[d];
     ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
-    ierr = DMLocatePoints(dm, v, &cellSF);CHKERRQ(ierr);
+    ierr = DMLocatePoints(dm, v, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(cellSF,NULL,&n,NULL,&cells);CHKERRQ(ierr);
     if (n        != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Found %d cells instead %d", n, 1);

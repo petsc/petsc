@@ -233,6 +233,20 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         for (corner = 0; corner < gmsh_elem[c].numNodes; ++corner) {
           pcone[corner] = gmsh_elem[c].nodes[corner] + trueNumCells-1;
         }
+        if (dim == 3) {
+          /* Tetrahedra are inverted */
+          if (gmsh_elem[c].numNodes == 4) {
+            PetscInt tmp = pcone[0];
+            pcone[0] = pcone[1];
+            pcone[1] = tmp;
+          }
+          /* Hexahedra are inverted */
+          if (gmsh_elem[c].numNodes == 8) {
+            PetscInt tmp = pcone[1];
+            pcone[1] = pcone[3];
+            pcone[3] = tmp;
+          }
+        }   
         ierr = DMPlexSetCone(*dm, cell, pcone);CHKERRQ(ierr);
         cell++;
       }
@@ -291,9 +305,10 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF, &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
   ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (!rank) {

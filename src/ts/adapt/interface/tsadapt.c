@@ -103,7 +103,7 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
 /*@C
   TSAdaptInitializePackage - This function initializes everything in the TSAdapt package. It is
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
-  TSCreate_GL() when using static libraries.
+  TSCreate_GLLE() when using static libraries.
 
   Level: developer
 

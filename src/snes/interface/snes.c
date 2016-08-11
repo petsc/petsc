@@ -1552,6 +1552,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 #else
   snes->deltatol          = 1.e-12;
 #endif
+  snes->divtol            = 1.e4;
+  snes->rnorm0            = 0;
   snes->nfuncs            = 0;
   snes->numFailures       = 0;
   snes->maxFailures       = 1;
@@ -3526,18 +3528,15 @@ PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*f)(SNES,PetscInt,Petsc
 {
   PetscInt       i;
   PetscErrorCode ierr;
+  PetscBool      identical;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (snes->numbermonitors >= MAXSNESMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   for (i=0; i<snes->numbermonitors;i++) {
-    if (f == snes->monitor[i] && monitordestroy == snes->monitordestroy[i] && mctx == snes->monitorcontext[i]) {
-      if (monitordestroy) {
-        ierr = (*monitordestroy)(&mctx);CHKERRQ(ierr);
-      }
-      PetscFunctionReturn(0);
-    }
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))f,mctx,monitordestroy,(PetscErrorCode (*)(void))snes->monitor[i],snes->monitorcontext[i],snes->monitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
   }
+  if (snes->numbermonitors >= MAXSNESMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   snes->monitor[snes->numbermonitors]          = f;
   snes->monitordestroy[snes->numbermonitors]   = monitordestroy;
   snes->monitorcontext[snes->numbermonitors++] = (void*)mctx;

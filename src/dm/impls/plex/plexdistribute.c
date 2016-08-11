@@ -1092,7 +1092,7 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
   ierr = DMGetCoordinateSection(dmParallel, &newCoordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
   if (originalCoordinates) {
-    ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF, &newCoordinates);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
 
@@ -1584,7 +1584,10 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
 
   *dmParallel = NULL;
-  if (numProcs == 1) PetscFunctionReturn(0);
+  if (numProcs == 1) {
+    ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   /* Create cell partition */
   ierr = PetscLogEventBegin(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);

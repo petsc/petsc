@@ -122,7 +122,7 @@ PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const cha
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGL, TSSSP
++  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_steps <maxsteps> - maximum number of time-steps to take
 .  -ts_final_time <time> - maximum time to compute to
@@ -3426,8 +3426,16 @@ $    int monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
 @*/
 PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void**))
 {
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscBool      identical;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  for (i=0; i<ts->numbermonitors;i++) {
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))monitor,mctx,mdestroy,(PetscErrorCode (*)(void))ts->monitor[i],ts->monitorcontext[i],ts->monitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
+  }
   if (ts->numbermonitors >= MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   ts->monitor[ts->numbermonitors]          = monitor;
   ts->monitordestroy[ts->numbermonitors]   = mdestroy;
@@ -3563,8 +3571,16 @@ $    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numco
 @*/
 PetscErrorCode  TSAdjointMonitorSet(TS ts,PetscErrorCode (*adjointmonitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),void *adjointmctx,PetscErrorCode (*adjointmdestroy)(void**))
 {
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscBool      identical;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  for (i=0; i<ts->numbermonitors;i++) {
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))adjointmonitor,adjointmctx,adjointmdestroy,(PetscErrorCode (*)(void))ts->adjointmonitor[i],ts->adjointmonitorcontext[i],ts->adjointmonitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
+  }
   if (ts->numberadjointmonitors >= MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many adjoint monitors set");
   ts->adjointmonitor[ts->numberadjointmonitors]          = adjointmonitor;
   ts->adjointmonitordestroy[ts->numberadjointmonitors]   = adjointmdestroy;

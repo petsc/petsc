@@ -1,41 +1,39 @@
   Residual norms for stokes_ solve.
-  0 KSP Residual norm 0.00477565 
-  1 KSP Residual norm 0.00112366 
-  2 KSP Residual norm 0.00185947 
-  3 KSP Residual norm 0.00190497 
-  4 KSP Residual norm 0.00181449 
-  5 KSP Residual norm 0.0011633 
-  6 KSP Residual norm 0.00104766 
-  7 KSP Residual norm 0.00108925 
-  8 KSP Residual norm 0.000561857 
-  9 KSP Residual norm 0.00037724 
- 10 KSP Residual norm 0.000343633 
- 11 KSP Residual norm 0.000450265 
- 12 KSP Residual norm 0.000339173 
- 13 KSP Residual norm 0.000233863 
- 14 KSP Residual norm 0.000248757 
- 15 KSP Residual norm 0.000198859 
- 16 KSP Residual norm 0.000114131 
- 17 KSP Residual norm 5.27112e-05 
- 18 KSP Residual norm 4.13626e-05 
- 19 KSP Residual norm 3.14644e-05 
- 20 KSP Residual norm 2.84109e-05 
- 21 KSP Residual norm 2.34285e-05 
- 22 KSP Residual norm 2.05284e-05 
- 23 KSP Residual norm 1.54962e-05 
- 24 KSP Residual norm 9.95168e-06 
- 25 KSP Residual norm 5.81216e-06 
- 26 KSP Residual norm 3.59577e-06 
- 27 KSP Residual norm 2.2632e-06 
- 28 KSP Residual norm 1.5193e-06 
- 29 KSP Residual norm 1.09912e-06 
- 30 KSP Residual norm 7.32167e-07 
- 31 KSP Residual norm 4.43854e-07 
- 32 KSP Residual norm 3.34227e-07 
- 33 KSP Residual norm 1.63063e-07 
- 34 KSP Residual norm 8.5728e-08 
- 35 KSP Residual norm 5.1827e-08 
- 36 KSP Residual norm 2.37302e-08 
+  0 KSP Residual norm 0.00346575 
+  1 KSP Residual norm 0.0006369 
+  2 KSP Residual norm 0.00180904 
+  3 KSP Residual norm 0.0014944 
+  4 KSP Residual norm 0.00107531 
+  5 KSP Residual norm 0.000590348 
+  6 KSP Residual norm 0.000365066 
+  7 KSP Residual norm 0.000185156 
+  8 KSP Residual norm 0.000189493 
+  9 KSP Residual norm 0.000216068 
+ 10 KSP Residual norm 0.000123412 
+ 11 KSP Residual norm 9.07756e-05 
+ 12 KSP Residual norm 0.000118242 
+ 13 KSP Residual norm 0.000139609 
+ 14 KSP Residual norm 0.000100344 
+ 15 KSP Residual norm 5.91506e-05 
+ 16 KSP Residual norm 3.64635e-05 
+ 17 KSP Residual norm 2.38965e-05 
+ 18 KSP Residual norm 1.15755e-05 
+ 19 KSP Residual norm 7.33988e-06 
+ 20 KSP Residual norm 4.18901e-06 
+ 21 KSP Residual norm 3.65618e-06 
+ 22 KSP Residual norm 2.44009e-06 
+ 23 KSP Residual norm 1.44572e-06 
+ 24 KSP Residual norm 1.32263e-06 
+ 25 KSP Residual norm 6.59147e-07 
+ 26 KSP Residual norm 5.43137e-07 
+ 27 KSP Residual norm 4.36012e-07 
+ 28 KSP Residual norm 4.43264e-07 
+ 29 KSP Residual norm 3.36884e-07 
+ 30 KSP Residual norm 1.34332e-07 
+ 31 KSP Residual norm 7.68214e-08 
+ 32 KSP Residual norm 6.02056e-08 
+ 33 KSP Residual norm 3.61338e-08 
+ 34 KSP Residual norm 2.44547e-08 
 KSP Object: (stokes_) 4 MPI processes
   type: pipegcr
     PIPEGCR: max previous directions = 60
@@ -51,7 +49,7 @@ PC Object: (stokes_) 4 MPI processes
   type: mg
     MG: type is MULTIPLICATIVE, levels=4 cycles=v
       Cycles per PCApply=1
-      Using Galerkin computed coarse grid matrices
+      Using Galerkin computed coarse grid matrices for pmat
   Coarse grid solver -- level -------------------------------
     KSP Object: (stokes_mg_coarse_) 4 MPI processes
       type: preonly
@@ -230,7 +228,7 @@ PC Object: (stokes_) 4 MPI processes
   Down solver (pre-smoother) on level 3 -------------------------------
     KSP Object: (stokes_mg_levels_3_) 4 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.345997, max = 1.90298
+        Chebyshev: eigenvalue estimates:  min = 0.301145, max = 1.6563
         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.1]
         KSP Object: (stokes_mg_levels_3_esteig_) 4 MPI processes
           type: gmres
@@ -284,12 +282,7 @@ PC Object: (stokes_) 4 MPI processes
             total: nonzeros=148225, allocated nonzeros=148225
             total number of mallocs used during MatSetValues calls =0
               not using I-node (on process 0) routines
-      linear system matrix followed by preconditioner matrix:
-      Mat Object: 4 MPI processes
-        type: mpiaij
-        rows=49923, cols=49923, bs=3
-        total: nonzeros=1334025, allocated nonzeros=1334025
-        total number of mallocs used during MatSetValues calls =0
+      linear system matrix = precond matrix:
       Mat Object: 4 MPI processes
         type: mpiaij
         rows=49923, cols=49923, bs=3

@@ -245,6 +245,10 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 # endif
 #endif
 
+typedef short PetscShort;
+typedef char PetscChar;
+typedef float PetscFloat;
+
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
       represent size of arrays and indexing into arrays. Its size can be configured with the option
@@ -598,6 +602,34 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 
 M*/
 #define PetscMalloc(a,b)  ((*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
+
+/*MC
+   PetscRealloc - Rellocates memory
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscRealloc(size_t m,void **result)
+
+   Not Collective
+
+   Input Parameters:
++  m - number of bytes to allocate
+-  result - initial memory allocated
+
+   Output Parameter:
+.  result - new memory allocated
+
+   Level: developer
+
+   Notes:
+   Memory is always allocated at least double aligned
+
+.seealso: PetscMalloc(), PetscFree(), PetscNew()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscRealloc(a,b)  ((*PetscTrRealloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
@@ -1380,6 +1412,7 @@ M*/
 
 PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
@@ -1417,7 +1450,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 12} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 12, PETSC_STRUCT, PETSC_DATATYPE_UNKNOWN} PetscDataType;
 PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)

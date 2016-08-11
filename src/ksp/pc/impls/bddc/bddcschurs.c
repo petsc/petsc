@@ -519,19 +519,21 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
 
   /* allocate extra workspace needed only for GETRI */
-  Bwork = NULL;
-  pivots = NULL;
   if (local_size && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
-    PetscScalar lwork;
+    PetscScalar  lwork,dummyscalar = 0.;
+    PetscBLASInt dummyint = 0;
 
     B_lwork = -1;
     ierr = PetscBLASIntCast(local_size,&B_N);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,Bwork,&B_N,pivots,&lwork,&B_lwork,&B_ierr));
+    PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,&dummyscalar,&B_N,&dummyint,&lwork,&B_lwork,&B_ierr));
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
     ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
     ierr = PetscMalloc2(B_lwork,&Bwork,B_N,&pivots);CHKERRQ(ierr);
+  } else {
+    Bwork = NULL;
+    pivots = NULL;
   }
 
   /* prepare parallel matrices for summing up properly schurs on subsets */
@@ -539,7 +541,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   ierr = ISLocalToGlobalMappingApplyIS(sub_schurs->l2gmap,all_subsets_n,&all_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets_n);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm_n,sub_schurs->n_subs,auxnum2,PETSC_OWN_POINTER,&all_subsets_mult);CHKERRQ(ierr);
-  ierr = PCBDDCSubsetNumbering(all_subsets,all_subsets_mult,&global_size,&all_subsets_n);CHKERRQ(ierr);
+  ierr = ISRenumber(all_subsets,all_subsets_mult,&global_size,&all_subsets_n);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets_mult);CHKERRQ(ierr);
   ierr = ISGetLocalSize(all_subsets_n,&i);CHKERRQ(ierr);

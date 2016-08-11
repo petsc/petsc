@@ -1732,7 +1732,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
 
   ierr = PCMGSetLevels(pc,nlevels,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pc,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT);CHKERRQ(ierr);
 
   for (k=1; k<nlevels; k++) {
     ierr = DMCreateInterpolation(da_list[k-1],da_list[k],&R,NULL);CHKERRQ(ierr);

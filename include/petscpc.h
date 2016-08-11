@@ -253,8 +253,9 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType);
 PETSC_EXTERN PetscErrorCode PCGAMGGetType( PC,PCGAMGType*);
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGAMGSetUseASMAggs(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetRepartition(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGASMSetUseAggs(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
@@ -301,12 +302,13 @@ PETSC_EXTERN PetscErrorCode PCMGGetLevels(PC,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothUp(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothDown(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCMGSetNumberSmooth(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleType(PC,PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGMultiplicativeSetCycles(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PCMGGalerkinType);
+PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PCMGGalerkinType*);
 
 PETSC_EXTERN PetscErrorCode PCMGSetRhs(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGSetX(PC,PetscInt,Vec);

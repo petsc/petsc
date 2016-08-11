@@ -943,20 +943,22 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     if (section) {
-      PetscInt *ltog;
-      PetscInt pStart, pEnd, size, p, l;
+      const PetscInt *cdofs;
+      PetscInt       *ltog;
+      PetscInt        pStart, pEnd, size, p, l;
 
       ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
       ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
       ierr = PetscMalloc1(size, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
       for (p = pStart, l = 0; p < pEnd; ++p) {
-        PetscInt bdof, cdof, dof, off, c;
+        PetscInt bdof, cdof, dof, off, c, cind = 0;
 
         /* Should probably use constrained dofs */
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintIndices(section, p, &cdofs);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
-        ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
         /* If you have dofs, and constraints, and they are unequal, we set the blocksize to 1 */
         bdof = cdof && (dof-cdof) ? 1 : dof;
         if (dof) {
@@ -964,7 +966,8 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
           else if (bs != bdof) {bs = 1;}
         }
         for (c = 0; c < dof; ++c, ++l) {
-          ltog[l] = off+c;
+          if ((cind < cdof) && (c == cdofs[cind])) ltog[l] = off < 0 ? off-c : off+c;
+          else                                     ltog[l] = (off < 0 ? -(off+1) : off) + c;
         }
       }
       /* Must have same blocksize on all procs (some might have no points) */
@@ -1655,7 +1658,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
   PetscValidPointer(subdms,3);
   if (dm->ops->createddscatters) {
     ierr = (*dm->ops->createddscatters)(dm,n,subdms,iscat,oscat,gscat);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionLocalScatter implementation defined");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionScatter implementation defined");
   PetscFunctionReturn(0);
 }
 
@@ -3987,6 +3990,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   ierr = DMGetCoordinates(dmc,&ccoords);CHKERRQ(ierr);
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(dmc_coord,&ccoords);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)ccoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateInjection(dmc_coord,dm_coord,&inject);CHKERRQ(ierr);
     ierr = MatRestrict(inject,coords,ccoords);CHKERRQ(ierr);
     ierr = MatDestroy(&inject);CHKERRQ(ierr);
@@ -4011,6 +4015,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
   ierr = DMGetCoordinates(subdm,&ccoords);CHKERRQ(ierr);
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(subdm_coord,&ccoords);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)ccoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(subdm_coord,&clcoords);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)clcoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateDomainDecompositionScatters(dm_coord,1,&subdm_coord,NULL,&scat_i,&scat_g);CHKERRQ(ierr);
@@ -4918,15 +4923,14 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
-  PetscValidPointer(cellSF,3);
+  PetscValidPointer(cellSF,4);
   if (*cellSF) {
     PetscMPIInt result;
 
-    PetscValidHeaderSpecific(cellSF,PETSCSF_CLASSID,3);
+    PetscValidHeaderSpecific(*cellSF,PETSCSF_CLASSID,4);
     ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)v),PetscObjectComm((PetscObject)cellSF),&result);CHKERRQ(ierr);
     if (result != MPI_IDENT && result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"cellSF must have a communicator congruent to v's");
-  }
-  else {
+  } else {
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)v),cellSF);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(DM_LocatePoints,dm,0,0,0);CHKERRQ(ierr);
@@ -4955,7 +4959,7 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *
 PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 {
   PetscSection   section;
-  PetscBool      hasConstraints;
+  PetscBool      hasConstraints, ghasConstraints;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4963,7 +4967,8 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscValidPointer(odm,2);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionHasConstraints(section, &hasConstraints);CHKERRQ(ierr);
-  if (!hasConstraints) {
+  ierr = MPI_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  if (!ghasConstraints) {
     *odm = dm;
     PetscFunctionReturn(0);
   }
@@ -6342,6 +6347,68 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
   PetscValidHeaderSpecific(X,VEC_CLASSID,5);
   if (!dm->ops->computel2fielddiff) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMComputeL2FieldDiff",((PetscObject)dm)->type_name);
   ierr = (dm->ops->computel2fielddiff)(dm,time,funcs,ctxs,X,diff);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMAdaptLabel"
+/*@C
+  DMAdaptLabel - Adapt a dm based on a label with values interpreted as coarsening and refining flags.  Specific implementations of DM maybe have
+                 specialized flags, but all implementations should accept flag values DM_ADAPT_DETERMINE, DM_ADAPT_KEEP, DM_ADAPT_REFINE, and DM_ADAPT_COARSEN.
+
+  Collective on dm
+
+  Input parameters:
++ dm - the pre-adaptation DM object
+- label - label with the flags
+
+  Output parameters:
+. adaptedDM - the adapted DM object: may be NULL if an adapted DM could not be produced.
+
+  Level: intermediate
+@*/
+PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *adaptedDM)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(label,2);
+  PetscValidPointer(adaptedDM,3);
+  *adaptedDM = NULL;
+  ierr = PetscTryMethod((PetscObject)dm,"DMAdaptLabel_C",(DM,DMLabel, DM*),(dm,label,adaptedDM));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetNeighbors"
+/*@C
+ DMGetNeighbors - Gets an array containing the MPI rank of all the processes neighbors
+
+ Not Collective
+
+ Input Parameter:
+ . dm    - The DM
+
+ Output Parameter:
+ . nranks - the number of neighbours
+ . ranks - the neighbors ranks
+
+ Notes:
+ Do not free the array, it is freed when the DM is destroyed.
+
+ Level: beginner
+
+ .seealso: DMDAGetNeighbors(), PetscSFGetRanks()
+@*/
+PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (!dm->ops->getneighbors) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMGetNeighbors",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->getneighbors)(dm,nranks,ranks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -21,6 +21,10 @@
 #include <cuda_runtime.h>
 #endif
 
+#if defined(PETSC_HAVE_VIENNACL)
+PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
+#endif
+
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was
@@ -691,6 +695,10 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #elif defined(PETSC_HAVE_VECCUDA)
   ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscCUDASynchronize = flg3;
+#endif
+
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscViennaCLInit();CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

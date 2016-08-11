@@ -9,7 +9,7 @@ struct _PCGAMGOps {
   PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
   PetscErrorCode (*prolongator)(PC, Mat, Mat, PetscCoarsenData*, Mat*);
   PetscErrorCode (*optprolongator)(PC, Mat, Mat*);
-  PetscErrorCode (*createlevel)(PC, Mat, PetscInt, Mat *, Mat *, PetscMPIInt *, IS *);
+  PetscErrorCode (*createlevel)(PC, Mat, PetscInt, Mat *, Mat *, PetscMPIInt *, IS *, PetscBool);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,PC);
   PetscErrorCode (*destroy)(PC);
@@ -23,7 +23,8 @@ typedef struct gamg_TAG {
   PetscInt  setup_count;
   PetscBool repart;
   PetscBool reuse_prol;
-  PetscBool use_aggs_in_gasm;
+  PetscBool use_aggs_in_asm;
+  PetscBool use_parallel_coarse_grid_solver;
   PetscInt  min_eq_proc;
   PetscInt  coarse_eq_limit;
   PetscReal threshold;      /* common quatity to many AMG methods so keep it up here */

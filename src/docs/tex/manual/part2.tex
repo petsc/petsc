@@ -2907,10 +2907,11 @@ One can provide this with MatSetNearNullSpace().
 For elasticity, where rotational rigid body modes define the near null space you can call PCSetCoordinates() instead of MatSetNearNullSpace() and it will set the near null space for you.
 
 Other options for GAMG include PCGAMGSetProcEqLim(),
-PCGAMGSetCoarseEqLim(), PCGAMGSetRepartitioning(),
+PCGAMGSetCoarseEqLim(), PCGAMGSetRepartition(),
 PCGAMGRegister(), PCGAMGSetReuseInterpolation(),
-PCGAMGSetUseASMAggs(), PCGAMGSetNlevels(),
-PCGAMGSetThreshold(), and PCGAMGGetType().
+PCGAMGASMSetUseAggs(), PCGAMGSetNlevels(),
+PCGAMGSetThreshold(), and PCGAMGGetType(),
+PCGAMGSetUseParallelCoarseGridSolve.
 
 
 {\bf Trouble shooting algebraic multigrid methods:}  If GAMG, ML, or hypre does not perform well the
@@ -4840,7 +4841,7 @@ is one of \trl{TS_LINEAR} or \trl{TS_NONLINEAR}.
  TSSetType(TS ts,TSType type);
 \end{tabbing}
 Currently supported types are TSEULER, TSRK (Runge-Kutta), \sindex{generalized linear}
-TSBEULER, TSCN (Crank-Nicolson), TSTHETA, TSGL (generalized linear), TSPSEUDO, and \sindex{Crank-Nicolson} \sindex{Runge-Kutta}
+TSBEULER, TSCN (Crank-Nicolson), TSTHETA, TSGLLE (generalized linear), TSPSEUDO, and \sindex{Crank-Nicolson} \sindex{Runge-Kutta}
 TSSUNDIALS (only if the Sundials package is installed), \sindex{backward Euler} \sindex{Euler, backward}
 or the command line option \\
 \trl{-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials,eimex,arkimex,rosw}.

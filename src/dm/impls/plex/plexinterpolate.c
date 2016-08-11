@@ -596,7 +596,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = PetscSectionSetUp(coordSectionB);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSectionB, &coordSizeB);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmA, &coordinatesA);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject) dmB), &coordinatesB);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF, &coordinatesB);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinatesB, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinatesB, coordSizeB, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(coordinatesB,VECSTANDARD);CHKERRQ(ierr);

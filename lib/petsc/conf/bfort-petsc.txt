@@ -32,6 +32,7 @@ native PCPARMSGlobalType
 native PCPARMSLocalType
 native PCMGType
 native PCMGCycleType
+native PCMGGalerkinType
 native PCExoticType
 native PetscSFWindowSyncType
 native SNESCompositeType
@@ -114,7 +115,7 @@ nativeptr Vecs
 nativeptr VecScatter
 nativeptr PetscSection
 nativeptr MatMFFD
-nativeptr TSGLAdapt
+nativeptr TSGLLEAdapt
 nativeptr TSAdapt
 nativeptr PetscCUSPIndices
 nativeptr PetscSF

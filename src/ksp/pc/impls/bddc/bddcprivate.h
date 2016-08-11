@@ -45,7 +45,6 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC);
 PetscErrorCode PCBDDCSetUpLocalSolvers(PC,PetscBool,PetscBool);
 PetscErrorCode PCBDDCSetUpCorrection(PC,PetscScalar**);
 PetscErrorCode PCBDDCSetUpCoarseSolver(PC,PetscScalar*);
-PetscErrorCode PCBDDCSubsetNumbering(IS,IS,PetscInt*,IS*);
 PetscErrorCode PCBDDCComputePrimalNumbering(PC,PetscInt*,PetscInt**);
 PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,InsertMode,ScatterMode);

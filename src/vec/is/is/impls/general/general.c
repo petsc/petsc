@@ -595,8 +595,12 @@ static PetscErrorCode ISCreateGeneral_Private(IS is)
   for (i=1; i<n; i++) {
     if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
   }
-  if (n) min = max = idx[0];
-  else   min = max = 0;
+  if (n) {
+    min = max = idx[0];
+  } else {
+    min = -1;
+    max = -2;
+  }
   for (i=1; i<n; i++) {
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];

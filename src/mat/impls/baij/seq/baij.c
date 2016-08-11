@@ -1120,7 +1120,7 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmet
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
   if (symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,0,&tia,&tja);CHKERRQ(ierr);
+    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,PETSC_TRUE,0,0,&tia,&tja);CHKERRQ(ierr);
     nz   = tia[n];
   } else {
     tia = a->i; tja = a->j;
@@ -1131,7 +1131,7 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmet
     /* malloc & create the natural set of indices */
     ierr = PetscMalloc1((n+1)*bs,ia);CHKERRQ(ierr);
     if (n) {
-      (*ia)[0] = 0;
+      (*ia)[0] = oshift;
       for (j=1; j<bs; j++) {
         (*ia)[j] = (tia[1]-tia[0])*bs+(*ia)[j-1];
       }
@@ -3560,7 +3560,7 @@ PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
 
   PetscFunctionBegin;
   if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"block size %D > 1 is not supported yet",bs);
-  if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  if (m > 0 && i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);

@@ -128,8 +128,8 @@ PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscSc
 PETSC_STATIC_INLINE void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
 /******************* Advect ********************/
-typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP} AdvectSolType;
-static const char *const AdvectSolTypes[] = {"TILTED","BUMP","AdvectSolType","ADVECT_SOL_",0};
+typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP,ADVECT_SOL_BUMP_CAVITY} AdvectSolType;
+static const char *const AdvectSolTypes[] = {"TILTED","BUMP","BUMP_CAVITY","AdvectSolType","ADVECT_SOL_",0};
 typedef enum {ADVECT_SOL_BUMP_CONE,ADVECT_SOL_BUMP_COS} AdvectSolBumpType;
 static const char *const AdvectSolBumpTypes[] = {"CONE","COS","AdvectSolBumpType","ADVECT_SOL_BUMP_",0};
 
@@ -150,6 +150,7 @@ typedef struct {
     Physics_Advect_Bump   bump;
   } sol;
   struct {
+    PetscInt Solution;
     PetscInt Error;
   } functional;
 } Physics_Advect;
@@ -194,6 +195,33 @@ static void PhysicsRiemann_Advect(PetscInt dim, PetscInt Nf, const PetscReal *qp
     wind[0] = -qp[1];
     wind[1] = qp[0];
     break;
+  case ADVECT_SOL_BUMP_CAVITY:
+    {
+      PetscInt  i;
+      PetscReal comp2[3], rad2;
+
+      rad2 = 0.;
+      for (i = 0; i < dim; i++) {
+        comp2[i] = qp[i] * qp[i];
+        rad2    += comp2[i];
+      }
+
+      wind[0] = -qp[1];
+      wind[1] = qp[0];
+      if (rad2 > 1.) {
+        PetscInt  maxI = 0;
+        PetscReal maxComp2 = comp2[0];
+
+        for (i = 1; i < dim; i++) {
+          if (comp2[i] > maxComp2) {
+            maxI     = i;
+            maxComp2 = comp2[i];
+          }
+        }
+        wind[maxI] = 0.;
+      }
+    }
+    break;
     /* default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]); */
   }
   wn      = Dot2(wind, n);
@@ -216,6 +244,7 @@ static PetscErrorCode PhysicsSolution_Advect(Model mod,PetscReal time,const Pets
     if (x0[1] > 0) u[0] = 1.*x[0] + 3.*x[1];
     else u[0] = advect->inflowState;
   } break;
+  case ADVECT_SOL_BUMP_CAVITY:
   case ADVECT_SOL_BUMP: {
     Physics_Advect_Bump *bump = &advect->sol.bump;
     PetscReal           x0[DIM],v[DIM],r,cost,sint;
@@ -250,6 +279,7 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 
   PetscFunctionBeginUser;
   ierr = PhysicsSolution_Advect(mod,time,x,yexact,phys);CHKERRQ(ierr);
+  f[advect->functional.Solution] = PetscRealPart(y[0]);
   f[advect->functional.Error] = PetscAbsScalar(y[0]-yexact[0]);
   PetscFunctionReturn(0);
 }
@@ -263,7 +293,7 @@ static PetscErrorCode SetUpBC_Advect(PetscDS prob, Physics phys)
 
   PetscFunctionBeginUser;
   /* Register "canned" boundary conditions and defaults for where to apply. */
-  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),   inflowids,  phys);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -298,6 +328,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys,PetscOptionIte
       ierr = PetscOptionsRealArray("-advect_tilted_inflow","Inflow state","",&advect->inflowState,&dof,NULL);CHKERRQ(ierr);
       phys->maxspeed = Norm2(tilted->wind);
     } break;
+    case ADVECT_SOL_BUMP_CAVITY:
     case ADVECT_SOL_BUMP: {
       Physics_Advect_Bump *bump = &advect->sol.bump;
       two = 2;
@@ -316,6 +347,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys,PetscOptionIte
   /* Initial/transient solution with default boundary conditions */
   ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys);CHKERRQ(ierr);
   /* Register "canned" functionals */
+  ierr = ModelFunctionalRegister(mod,"Solution",&advect->functional.Solution,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
   ierr = ModelFunctionalRegister(mod,"Error",&advect->functional.Error,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
   mod->bcs[0] = mod->bcs[1] = mod->bcs[2] = DM_BOUNDARY_GHOSTED;
   PetscFunctionReturn(0);
@@ -1379,6 +1411,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     size_t            ftableused,ftablealloc;
     const PetscScalar *cgeom,*x;
     DM                dmCell;
+    DMLabel           vtkLabel;
     PetscReal         *fmin,*fmax,*fintegral,*ftmp;
     fcount = mod->maxComputed+1;
     ierr   = PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fintegral,fcount,&ftmp);CHKERRQ(ierr);
@@ -1392,14 +1425,18 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     ierr = DMPlexGetHeightStratum(dmCell,0,&cStart,&cEnd);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm,"vtk",&vtkLabel);CHKERRQ(ierr);
     for (c = cStart; c < cEndInterior; ++c) {
       const PetscFVCellGeom *cg;
       const PetscScalar     *cx;
+      PetscInt              vtkVal = 0;
+
       /* not that these two routines as currently implemented work for any dm with a
        * defaultSection/defaultGlobalSection */
       ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
       ierr = DMPlexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
-      if (!cx) continue;        /* not a global cell */
+      if (vtkLabel) {ierr = DMLabelGetValue(vtkLabel,c,&vtkVal);CHKERRQ(ierr);}
+      if (!vtkVal || !cx) continue;        /* ghost, or not a global cell */
       for (i=0; i<mod->numCall; i++) {
         FunctionalLink flink = mod->functionalCall[i];
         ierr = (*flink->func)(mod,time,cg->centroid,cx,ftmp,flink->ctx);CHKERRQ(ierr);
@@ -1497,6 +1534,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   const PetscScalar *pointVals;
   const PetscScalar *pointGrads;
   const PetscScalar *pointGeom;
+  DMLabel           adaptLabel = NULL;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -1525,14 +1563,7 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = VecGetArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
-  if (isForest) {
-    DMLabel adaptLabel;
-
-    ierr = DMRemoveLabel(dm,"adapt",&adaptLabel);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
-    ierr = DMCreateLabel(dm,"adapt");CHKERRQ(ierr);
-  }
-
+  ierr = DMLabelCreate("adapt",&adaptLabel);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; c++) {
     PetscReal             errInd = 0.;
     const PetscScalar     *pointGrad;
@@ -1546,12 +1577,8 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
     ierr = (user->model->errorIndicator)(dim,cg->volume,user->model->physics->dof,pointVal,pointGrad,&errInd,user->model->errorCtx);CHKERRQ(ierr);
     minMaxInd[0] = PetscMin(minMaxInd[0],errInd);
     minMaxInd[1] = PetscMax(minMaxInd[1],errInd);
-    if (errInd > refineTol) {
-      if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_REFINE);CHKERRQ(ierr);}
-    }
-    if (errInd < coarsenTol) {
-      if (isForest) {ierr = DMSetLabelValue(dm,"adapt",c,DM_FOREST_COARSEN);CHKERRQ(ierr);}
-    }
+    if (errInd > refineTol)  {ierr = DMLabelSetValue(adaptLabel,c,DM_ADAPT_REFINE);CHKERRQ(ierr);}
+    if (errInd < coarsenTol) {ierr = DMLabelSetValue(adaptLabel,c,DM_ADAPT_COARSEN);CHKERRQ(ierr);}
   }
   ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
@@ -1565,20 +1592,16 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   minInd = minMaxIndGlobal[0];
   maxInd = -minMaxIndGlobal[1];
   ierr = PetscInfo2(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
-  if (maxInd > refineTol) { /* at least one cell is over the refinement threshold */
-    if (isForest) {
-      ierr = DMForestAdaptLabel(dm,"adapt",&adaptedDM);CHKERRQ(ierr);
-    }
-    else {
-      ierr = DMRefine(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
-    }
-  }
-  else if (isForest && minInd < coarsenTol) { /* at least one cell is under the coarsening threshold */
-    ierr = DMForestAdaptLabel(dm,"adapt",&adaptedDM);CHKERRQ(ierr);
+  if (maxInd > refineTol || minInd < coarsenTol) { /* at least one cell is over the refinement threshold */
+    ierr = DMAdaptLabel(dm,adaptLabel,&adaptedDM);CHKERRQ(ierr);
   }
   else if (maxInd < coarsenTol) { /* all cells are under the coarsening threshold */
     ierr = DMCoarsen(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
   }
+  else if (minInd > refineTol) { /* all cells are over the refinement threshold */
+    ierr = DMRefine(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
+  }
+  ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
   if (adaptedDM) {
     if (tsNew) {
       ierr = initializeTS(adaptedDM,user,tsNew);CHKERRQ(ierr);

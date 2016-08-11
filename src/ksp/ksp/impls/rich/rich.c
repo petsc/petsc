@@ -134,7 +134,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         if (ksp->reason) break;
       }
 
-      ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
+      ierr = VecAXPY(x,richardsonP->scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
       ksp->its++;
 
       if (i+1 < maxit || ksp->normtype != KSP_NORM_NONE) {

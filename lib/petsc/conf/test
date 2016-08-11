@@ -82,8 +82,10 @@ testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
 testexamples_PASTIX_DATAFILESPATH: ${TESTEXAMPLES_PASTIX_DATAFILESPATH}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUSP: ${TESTEXAMPLES_CUSP}
-testexamples_CUDA: ${TESTEXAMPLES_CUDA}
-testexamples_CUDA_DATAFILESPATH: ${TESTEXAMPLES_CUDA_DATAFILESPATH}
+testexamples_VECCUDA: ${TESTEXAMPLES_VECCUDA}
+testexamples_VECCUDA_Complex: ${TESTEXAMPLES_VECCUDA_COMPLEX}
+testexamples_VECCUDA_NoComplex: ${TESTEXAMPLES_VECCUDA_NOCOMPLEX}
+testexamples_VECCUDA_DATAFILESPATH: ${TESTEXAMPLES_VECCUDA_DATAFILESPATH}
 testexamples_YAML: ${TESTEXAMPLES_YAML}
 testexamples_MOAB: ${TESTEXAMPLES_MOAB}
 testexamples_MOAB_HDF5: ${TESTEXAMPLES_MOAB_HDF5}
@@ -236,11 +238,17 @@ buildexamples_OPENMP:
 TESTMODE = testexamples
 
 ALLTESTS_PRINT_PROGRESS = no
+ALLTESTS_CHECK_FAILURES = no
 
 alltests:
 	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	-@${OMAKE} alltest DIFF=${PETSC_DIR}/bin/petscdiff PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
+	@if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
+            cat alltests.log | sed -e '1d' -e '$$d' | \
+            grep -v '^[\*]\{7,7\} Testing: ${TESTMODE}_[a-zA-Z0-9_]* [\*]\{7,7\}$$' | \
+            grep -v '^[\.]*$$' | wc -l | grep '^[ ]*0$$' > /dev/null; \
+        fi;
 
 alltest:
 	-@date

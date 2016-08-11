@@ -911,31 +911,31 @@ runex42_2:
 	   ${RM} -f ex42.tmp
 
 runex43:
-	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_package cusparse  -mat_cusparse_storage_format ell -vec_type seqcusp -pc_type ilu > ex43.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_package cusparse  -mat_cusparse_storage_format ell -vec_type cuda -pc_type ilu > ex43.tmp 2>&1;\
 	if (${DIFF} output/ex43.out ex43.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43.tmp
 
 runex43_2:
-	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format hyb -vec_type seqcusp -ksp_type cg -pc_type icc > ex43_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format hyb -vec_type cuda -ksp_type cg -pc_type icc > ex43_2.tmp 2>&1;\
 	if (${DIFF} output/ex43_2.out ex43_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_2.tmp
 
 runex43_3:
-	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu > ex43_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format csr -vec_type cuda -ksp_type bicg -pc_type ilu > ex43_3.tmp 2>&1;\
 	if (${DIFF} output/ex43_3.out ex43_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_3.tmp
 
 runex43_4:
-	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd > ex43_4.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse  -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format csr -vec_type cuda -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd > ex43_4.tmp 2>&1;\
 	if (${DIFF} output/ex43_4.out ex43_4.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_4.tmp
 
 runex43_5:
-	-@${MPIEXEC} -n 2 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type mpicusp > ex43_5.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type cuda > ex43_5.tmp 2>&1;\
 	if (${DIFF} output/ex43_5.out ex43_5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex43_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_5.tmp
@@ -1049,7 +1049,7 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
-TESTEXAMPLES_CUDA_DATAFILESPATH = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 runex43_6 runex43_7 runex43_8 ex43.rm
+TESTEXAMPLES_VECCUDA_DATAFILESPATH = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 ex43.rm
 TESTEXAMPLES_SUITESPARSE       = ex32.PETSc runex32_cholmod runex32_cholmod_seqsbaij ex32.rm
 TESTEXAMPLES_CHOMBO            =
 TESTEXAMPLES_SUPERLU_DIST_COMPLEX = ex17.PETSc runex17_superlu_dist runex17_superlu_dist_2 ex17.rm

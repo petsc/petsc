@@ -5,7 +5,7 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = convert.c matstash.c axpy.c zerodiag.c \
            getcolv.c gcreate.c freespace.c compressedrow.c multequal.c \
-           matstashspace.c pheap.c bandwidth.c overlapsplit.c
+           matstashspace.c pheap.c bandwidth.c overlapsplit.c zerorows.c
 SOURCEF  =
 SOURCEH  = freespace.h petscheap.h
 LIBBASE  = libpetscmat

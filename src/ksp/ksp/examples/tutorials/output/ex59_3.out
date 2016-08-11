@@ -1,12 +1,8 @@
 ---------------------BDDC stats-------------------------------
-Number of degrees of freedom               :     1368 
-Number of iterations                       :        4 
-Eigenvalues preconditioned operator        : 1.00e+00 1.44e+00
-Error betweeen exact and computed solution : 8.14e-03
+Number of degrees of freedom               :     1368
+Eigenvalues preconditioned operator        : 1.0e+00 1.5e+00
 --------------------------------------------------------------
 ------------------FETI-DP stats-------------------------------
-Number of degrees of freedom               :      138 
-Number of iterations                       :        4 
-Eigenvalues preconditioned operator        : 1.03e+00 1.46e+00
-Error betweeen exact and computed solution : 1.12e-03
+Number of degrees of freedom               :      138
+Eigenvalues preconditioned operator        : 1.0e+00 1.5e+00
 --------------------------------------------------------------

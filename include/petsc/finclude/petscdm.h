@@ -25,7 +25,9 @@
 !
       PetscEnum DM_POINTLOCATION_NONE
       PetscEnum DM_POINTLOCATION_NEAREST
+      PetscEnum DM_POINTLOCATION_REMOVE
 
       parameter (DM_POINTLOCATION_NONE = 0)
       parameter (DM_POINTLOCATION_NEAREST = 1)
+      parameter (DM_POINTLOCATION_REMOVE = 2)
 

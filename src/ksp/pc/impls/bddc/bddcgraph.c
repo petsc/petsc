@@ -1086,7 +1086,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)(graph->l2gmap)),graph->ncc,graph->subset_ref_node,PETSC_COPY_VALUES,&subset_n);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(graph->l2gmap,subset_n,&subset);CHKERRQ(ierr);
   ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
-  ierr = PCBDDCSubsetNumbering(subset,NULL,NULL,&subset_n);CHKERRQ(ierr);
+  ierr = ISRenumber(subset,NULL,NULL,&subset_n);CHKERRQ(ierr);
   ierr = ISDestroy(&subset);CHKERRQ(ierr);
   ierr = ISGetLocalSize(subset_n,&k);CHKERRQ(ierr);
   if (k != graph->ncc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",k,graph->ncc);

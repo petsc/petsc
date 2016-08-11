@@ -52,7 +52,7 @@
       N  = 10
       call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
      &                        '-n',N,flg,ierr)
-      h = 1.0/(N-1.0)
+      h = 1.0/real(N-1)
       ctx(6) = N
       ctx(4) = PETSC_COMM_WORLD
 
@@ -144,7 +144,7 @@
 
       call MPI_Comm_rank(ctx(4),rank,ierr)
       call MPI_Comm_size(ctx(4),size,ierr)
-      h     = 1.0/(ctx(6) - 1.0)
+      h     = 1.0/(real(ctx(6)) - 1.0)
       call DMGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
       call DMGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
 
@@ -242,7 +242,7 @@
       PetscScalar      d,A,h,vxx(1)
 
       i1 = 1
-      h = 1.0/(ctx(6) - 1.0)
+      h = 1.0/(real(ctx(6)) - 1.0)
       d = h*h
       call MPI_Comm_rank(ctx(4),rank,ierr)
       call MPI_Comm_size(ctx(4),size,ierr)

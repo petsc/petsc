@@ -208,7 +208,7 @@ PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,Pets
   if (!ia) PetscFunctionReturn(0);
   ishift = 0;
   if (symmetric && !A->structurally_symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,ishift,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
+    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,PETSC_TRUE,ishift,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
   } else if (oshift == 1) {
     PetscInt *tia;
     PetscInt nz = a->i[A->rmap->n];
@@ -257,7 +257,7 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,P
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
   if (symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,0,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
+    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,PETSC_TRUE,0,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
   } else {
     ierr = PetscCalloc1(n+1,&collengths);CHKERRQ(ierr);
     ierr = PetscMalloc1(n+1,&cia);CHKERRQ(ierr);
@@ -4293,7 +4293,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 #endif
 
   PetscFunctionBegin;
-  if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  if (m > 0 && i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
   /* ierr = MatSetBlockSizes(*mat,,);CHKERRQ(ierr); */

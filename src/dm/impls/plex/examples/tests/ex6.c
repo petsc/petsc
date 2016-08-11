@@ -30,7 +30,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-fill", "The percentage of label chart to set", "ex6.c", options->fill, &options->fill, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TestSetup"
@@ -53,14 +53,16 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
 
     ierr = PetscRandomGetValueReal(r, &p);CHKERRQ(ierr);
     ierr = DMLabelGetValue(label, (PetscInt) p, &val);CHKERRQ(ierr);
-    if (val < 0) ++user->size;
-    ierr = DMLabelSetValue(label, (PetscInt) p, i % user->numStrata);CHKERRQ(ierr);
+    if (val < 0) {
+      ++user->size;
+      ierr = DMLabelSetValue(label, (PetscInt) p, i % user->numStrata);CHKERRQ(ierr);
+    }
   }
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = DMLabelCreateIndex(label, user->pStart, user->pEnd);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Created label with chart [%d, %d) and set %d values\n", user->pStart, user->pEnd, user->size);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Created label with chart [%D, %D) and set %D values\n", user->pStart, user->pEnd, user->size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TestLookup"
@@ -78,13 +80,39 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
 
     ierr = DMLabelGetValue(label, p, &val);CHKERRQ(ierr);
     ierr = DMLabelHasPoint(label, p, &has);CHKERRQ(ierr);
-    if (((val >= 0) && !has) || ((val < 0) && has)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %d does not match contains check %d for point %d", val, (PetscInt) has, p);
+    if (((val >= 0) && !has) || ((val < 0) && has)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %D does not match contains check %D for point %D", val, (PetscInt) has, p);
     if (has) ++n;
   }
-  if (n != user->size) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %d does not match number set %d", n, user->size);
+  if (n != user->size) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %D does not match number set %D", n, user->size);
   /* Also put in timing code */
   PetscFunctionReturn(0);
-};
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TestClear"
+PetscErrorCode TestClear(DMLabel label, AppCtx *user)
+{
+  PetscInt       pStart = user->pStart, pEnd = user->pEnd, p;
+  PetscInt       defaultValue;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetDefaultValue(label,&defaultValue);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    PetscInt  val;
+    PetscBool hasPoint;
+
+    ierr = DMLabelGetValue(label,p,&val);CHKERRQ(ierr);
+    if (val != defaultValue) {
+      ierr = DMLabelClearValue(label,p,val);CHKERRQ(ierr);
+    }
+    ierr = DMLabelGetValue(label,p,&val);CHKERRQ(ierr);
+    ierr = DMLabelHasPoint(label,p,&hasPoint);CHKERRQ(ierr);
+    if (val != defaultValue) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected default value %D after clearing point %D, got %D",defaultValue,p,val);
+    if (hasPoint) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Label contains %D after clearing",p);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -99,6 +127,7 @@ int main(int argc, char **argv)
   ierr = DMLabelCreate("Test Label", &label);CHKERRQ(ierr);
   ierr = TestSetup(label, &user);CHKERRQ(ierr);
   ierr = TestLookup(label, &user);CHKERRQ(ierr);
+  ierr = TestClear(label,&user);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

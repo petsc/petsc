@@ -1815,43 +1815,13 @@ PetscErrorCode MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
 PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_MPIBAIJ   *l      = (Mat_MPIBAIJ *) A->data;
-  PetscInt      *owners = A->rmap->range;
-  PetscInt       n      = A->rmap->n;
-  PetscSF        sf;
   PetscInt      *lrows;
-  PetscSFNode   *rrows;
-  PetscInt       r, p = 0, len = 0;
+  PetscInt       r, len;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Create SF where leaves are input rows and roots are owned rows */
-  ierr = PetscMalloc1(n, &lrows);CHKERRQ(ierr);
-  for (r = 0; r < n; ++r) lrows[r] = -1;
-  if (!A->nooffproczerorows) {ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);}
-  for (r = 0; r < N; ++r) {
-    const PetscInt idx   = rows[r];
-    if (idx < 0 || A->rmap->N <= idx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D out of range [0,%D)",idx,A->rmap->N);
-    if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this row too */
-      ierr = PetscLayoutFindOwner(A->rmap,idx,&p);CHKERRQ(ierr);
-    }
-    if (A->nooffproczerorows) {
-      if (p != l->rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"MAT_NO_OFF_PROC_ZERO_ROWS set, but row %D is not owned by rank %d",idx,l->rank);
-      lrows[len++] = idx - owners[p];
-    } else {
-      rrows[r].rank = p;
-      rrows[r].index = rows[r] - owners[p];
-    }
-  }
-  if (!A->nooffproczerorows) {
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
-    /* Collect flags for rows to be zeroed */
-    ierr = PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-    /* Compress and put in row numbers */
-    for (r = 0; r < n; ++r) if (lrows[r] >= 0) lrows[len++] = r;
-  }
+  /* get locally owned rows */
+  ierr = MatZeroRowsMapLocal_Private(A,N,rows,&len,&lrows);CHKERRQ(ierr);
   /* fix right hand side if needed */
   if (x && b) {
     const PetscScalar *xx;

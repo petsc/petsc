@@ -51,6 +51,7 @@ PETSC_INTERN PetscErrorCode VecCreate_MPICUDA(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPICUDA_Private(Vec,PetscBool,PetscInt,const PetscScalar*);
 PETSC_INTERN PetscErrorCode VecCreate_CUDA(Vec);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUDA(Vec);
+PETSC_INTERN PetscErrorCode VecDestroy_MPICUDA(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqCUDA(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqCUDA(Vec,Vec);
