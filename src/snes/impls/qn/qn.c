@@ -815,6 +815,8 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       iteration as the current iteration's values when constructing the approximate Jacobian.  The second, composed,
       perturbs the problem the Jacobian represents to be P(x, b) - x = 0, where P(x, b) is the preconditioner.
 
+      Uses left nonlinear preconditioning by default.
+
       References:
 +   1. -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
 .   2. -   R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi Newton Matrices and their use in Limited Memory Methods,
