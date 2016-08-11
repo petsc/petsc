@@ -32,6 +32,7 @@ extern cublasHandle_t cublasv2handle;
 #define petscgetcommandargument_      PETSCGETCOMMANDARGUMENT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
+#define petscinitializenoarguments_   petscinitializenoarguments
 #define petscfinalize_                petscfinalize
 #define petscend_                     petscend
 #define mpi_init_                     mpi_init
@@ -249,7 +250,7 @@ extern PetscErrorCode  PetscInitializeSAWs(const char[]);
       Since this is called from Fortran it does not return error codes
 
 */
-void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
+static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
 {
 #if defined (PETSC_USE_NARGS)
   short          flg,i;
@@ -486,17 +487,14 @@ void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool readargumen
 #endif
 }
 
-/*
-    petscinitialize - Wrapper methods to enable or disable argument passing
-*/
 PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-	petscinitialize_internal(filename, len, PETSC_TRUE, ierr);
+  petscinitialize_internal(filename, len, PETSC_TRUE, ierr);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscinitializenoarguments_(PetscErrorCode *ierr)
 {
-	petscinitialize_internal(NULL, (PetscInt) 0, PETSC_FALSE, ierr);
+  petscinitialize_internal(NULL, (PetscInt) 0, PETSC_FALSE, ierr);
 }
 
 
