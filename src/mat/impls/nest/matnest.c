@@ -370,7 +370,18 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
   } else {
     ierr = MatNestFindIS(A,vs->nr,is->row,isrow,&row);CHKERRQ(ierr);
     ierr = MatNestFindIS(A,vs->nc,is->col,iscol,&col);CHKERRQ(ierr);
-    *B   = vs->m[row][col];
+    if (!vs->m[row][col]) {
+      PetscInt lr,lc;
+
+      ierr = MatCreate(PetscObjectComm((PetscObject)A),&vs->m[row][col]);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(vs->isglobal.row[row],&lr);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(vs->isglobal.col[col],&lc);CHKERRQ(ierr);
+      ierr = MatSetSizes(vs->m[row][col],lr,lc,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = MatSetUp(vs->m[row][col]);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(vs->m[row][col],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(vs->m[row][col],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    }
+    *B = vs->m[row][col];
   }
   PetscFunctionReturn(0);
 }
