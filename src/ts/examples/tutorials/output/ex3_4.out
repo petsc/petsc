@@ -13,17 +13,18 @@ TS Object: 1 MPI processes
   maximum time=100.
   total number of linear solver iterations=3
   total number of rejected steps=0
-  TSAdapt Object:   1 MPI processes
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  TSAdapt Object: 1 MPI processes
     type: none
     number of candidates 0
-  SNES Object:   1 MPI processes
+  SNES Object: 1 MPI processes
     type: ksponly
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=1
     total number of function evaluations=1
     norm schedule ALWAYS
-    SNESLineSearch Object:     1 MPI processes
+    SNESLineSearch Object: 1 MPI processes
       type: basic
       maxstep=1.000000e+08, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
@@ -44,7 +45,7 @@ TS Object: 1 MPI processes
         matrix ordering: natural
         factor fill ratio given 1., needed 1.
           Factored matrix follows:
-            Mat Object:             1 MPI processes
+            Mat Object: 1 MPI processes
               type: seqaij
               rows=60, cols=60
               package used to perform factorization: petsc
@@ -52,13 +53,13 @@ TS Object: 1 MPI processes
               total number of mallocs used during MatSetValues calls =0
                 not using I-node routines
       linear system matrix followed by preconditioner matrix:
-      Mat Object:       1 MPI processes
+      Mat Object: 1 MPI processes
         type: seqaij
         rows=60, cols=60
         total: nonzeros=176, allocated nonzeros=176
         total number of mallocs used during MatSetValues calls =0
           not using I-node routines
-      Mat Object:       1 MPI processes
+      Mat Object: 1 MPI processes
         type: seqaij
         rows=60, cols=60
         total: nonzeros=176, allocated nonzeros=176
