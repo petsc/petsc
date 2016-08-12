@@ -252,13 +252,9 @@ extern PetscErrorCode  PetscInitializeSAWs(const char[]);
 */
 static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
 {
+  int            j,i;
 #if defined (PETSC_USE_NARGS)
-  short          flg,i;
-#else
-  int            i;
-#if !defined(PETSC_HAVE_PXFGETARG_NEW) && !defined (PETSC_HAVE_PXFGETARG_NEW) && !defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
-  int            j;
-#endif
+  short          flg;
 #endif
 #if defined(PETSC_HAVE_CUDA)
   PetscBool      flg2;
@@ -269,7 +265,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   char           *t1,name[256],hostname[64];
   PetscMPIInt    f_petsc_comm_world;
 
-  *ierr = PetscMemzero(name,256); if (*ierr) return;
+  *ierr = PetscMemzero(name,sizeof(name)); if (*ierr) return;
   if (PetscInitializeCalled) {*ierr = 0; return;}
 
   /* this must be initialized in a routine, not as a constant declaration*/
@@ -285,7 +281,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   if (*ierr) return;
   i = 0;
 #if defined (PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* same as 'else' case */
-  getarg_(&i,name,256);
+  getarg_(&i,name,sizeof(name));
 #elif defined (PETSC_HAVE_PXFGETARG_NEW)
   { int ilen,sierr;
     getarg_(&i,name,&ilen,&sierr,256);
@@ -296,15 +292,15 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   GETARG(&i,name,256,&flg);
 #else
   getarg_(&i,name,256);
+#endif
   /* Eliminate spaces at the end of the string */
-  for (j=254; j>=0; j--) {
+  for (j=sizeof(name)-1; j>=0; j--) {
     if (name[j] != ' ') {
       name[j+1] = 0;
       break;
     }
   }
   if (j<0) PetscStrncpy(name,"Unknown Name",256);
-#endif
   *ierr = PetscSetProgramName(name);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscSetProgramName()\n");return;}
 
