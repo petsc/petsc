@@ -732,7 +732,7 @@ static PetscErrorCode  PetscCreateLogTreeNested(PetscViewer viewer, PetscNestedE
         
         /* check whether the next path is the same as this process's next path */
         same = PETSC_TRUE;     
-        for (j=0; same && j<=depth; j++) { same = (same &&  nstMyPath[j] == nstPath[j]) ? PETSC_TRUE : PETSC_FALSE;}
+        for (j=0; same && j<depth; j++) { same = (same &&  nstMyPath[j] == nstPath[j]) ? PETSC_TRUE : PETSC_FALSE;}
         
         if (same) { 
           /* Register 'own path' */
