@@ -325,6 +325,9 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
       lid_cprowID_1[lid] = ix;
     }
   } else {
+    PetscBool        isAIJ;
+    ierr = PetscObjectTypeCompare((PetscObject)Gmat_1,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+    if (!isAIJ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA_1        = (Mat_SeqAIJ*)Gmat_1->data;
     matA_2        = (Mat_SeqAIJ*)Gmat_2->data;
     lid_cprowID_1 = NULL;
