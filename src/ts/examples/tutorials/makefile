@@ -655,7 +655,7 @@ runex22_3:
 	   ${RM} -f ex22_3.tmp
 
 runex22_4:
-	-@${MPIEXEC} -n 2 ./ex22 -ts_type eimex -da_grid_x 200 -ts_eimex_order_adapt true -ts_dt 0.001 -ts_monitor > ex22_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -ts_type eimex -da_grid_x 200 -ts_eimex_order_adapt true -ts_dt 0.001 -ts_monitor -ts_max_steps 100 | ${SED} "s/ITS/TIME/g" > ex22_4.tmp 2>&1; \
 	   ${DIFF} output/ex22_4.out ex22_4.tmp || printf "${PWD}\nPossible problem with ex22_4, diffs above\n=========================================\n";  \
 	   ${RM} -f ex22_4.tmp
 
