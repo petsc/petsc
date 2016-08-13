@@ -1290,8 +1290,8 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
   Vec              coordinates;
   PetscScalar     *coords = NULL;
   const PetscReal *quadPoints;
-  PetscReal       *basisDer;
-  PetscInt         dim, cdim, pdim, qdim, Nq, numCoords, d, q;
+  PetscReal       *basisDer, *basis, detJt;
+  PetscInt         dim, cdim, pdim, qdim, Nq, numCoords, q;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1303,13 +1303,22 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
   ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quad, &qdim, &Nq, &quadPoints, NULL);CHKERRQ(ierr);
-  ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
-  *detJ = 0.0;
+  ierr = PetscFEGetDefaultTabulation(fe, &basis, &basisDer, NULL);CHKERRQ(ierr);
   if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
   if (numCoords != pdim*cdim) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
-  if (v0) {for (d = 0; d < cdim; d++) v0[d] = PetscRealPart(coords[d]);}
-  if (J) {
-    ierr = PetscMemzero(J, Nq*cdim*dim*sizeof(PetscReal));CHKERRQ(ierr);
+  if (v0) {
+    ierr = PetscMemzero(v0, Nq*cdim*sizeof(PetscReal));CHKERRQ(ierr);
+    for (q = 0; q < Nq; ++q) {
+      PetscInt i, k;
+
+      for (k = 0; k < pdim; ++k)
+        for (i = 0; i < cdim; ++i)
+          v0[q*cdim + i] += basis[q*pdim + k] * PetscRealPart(coords[k*cdim + i]);
+      ierr = PetscLogFlops(2.0*pdim*cdim);CHKERRQ(ierr);
+    }
+  }
+  if (J) {ierr = PetscMemzero(J, Nq*cdim*dim*sizeof(PetscReal));CHKERRQ(ierr);}
+  if (J || invJ || detJ) {
     for (q = 0; q < Nq; ++q) {
       PetscInt i, j, k, c, r;
 
@@ -1324,19 +1333,21 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
           for (r = 0; r < cdim; ++r)
             J[r*cdim+c] = r == c ? 1.0 : 0.0;
       }
+      if (!detJ && !invJ) continue;
       switch (cdim) {
       case 3:
-        DMPlex_Det3D_Internal(detJ, J);
-        if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
+        DMPlex_Det3D_Internal(&detJt, J);
+        if (invJ) {DMPlex_Invert3D_Internal(invJ, J, detJt);}
         break;
       case 2:
         DMPlex_Det2D_Internal(detJ, J);
-        if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
+        if (invJ) {DMPlex_Invert2D_Internal(invJ, J, detJt);}
         break;
       case 1:
-        *detJ = J[0];
+        detJt = J[0];
         if (invJ) invJ[0] = 1.0/J[0];
       }
+      if (detJ) detJ[q] = detJt;
     }
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords);CHKERRQ(ierr);
@@ -1356,7 +1367,7 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
 - fe   - the finite element containing the quadrature
 
   Output Arguments:
-+ v0   - the translation part of this transform
++ v0   - if fe != NULL, the image of the transformed quadrature points, otherwise the image of the first vertex in the closure of the reference element
 . J    - the Jacobian of the transform from the reference element at each quadrature point
 . invJ - the inverse of the Jacobian at each quadrature point
 - detJ - the Jacobian determinant at each quadrature point
