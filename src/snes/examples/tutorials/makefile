@@ -1221,12 +1221,12 @@ runex56:
 	   ${RM} -f ex.tmp
 
 runex56_hypre:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 4 -lx 1. -alpha .01 -two_solves false -ex56_dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -mat_block_size 3 -petscpartitioner_type parmetis > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 4 -lx 1. -alpha .01 -two_solves false -ex56_dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -mat_block_size 3 -petscpartitioner_type simple > ex.tmp 2>&1; \
          ${DIFF} output/ex56_hypre.out ex.tmp || printf "${PWD}\nPossible problem with ex56_hypre.out, diffs above \n=========================================\n"; \
          ${RM} -f ex.tmp
 
 runex56_ml:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 4 -lx 1. -alpha .01 -two_solves false -ex56_dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short  -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type parmetis -use_mat_nearnullspace  > ex.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 4 -lx 1. -alpha .01 -two_solves false -ex56_dm_refine 1 -petscspace_poly_tensor -petscspace_order 1 -ksp_type cg -ksp_monitor_short  -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type simple -use_mat_nearnullspace  > ex.tmp 2>&1;	\
          ${DIFF} output/ex56_ml.out ex.tmp || printf "${PWD}\nPossible problem with ex56_ml.out, diffs above\n=========================================\n"; \
         ${RM} -f ex.tmp
 
