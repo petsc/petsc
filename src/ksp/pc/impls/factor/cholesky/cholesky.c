@@ -78,9 +78,9 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 #define __FUNCT__ "PCSetUp_Cholesky"
 static PetscErrorCode PCSetUp_Cholesky(PC pc)
 {
-  PetscErrorCode ierr;
-  PetscBool      flg;
-  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
+  PetscErrorCode         ierr;
+  PetscBool              flg;
+  PC_Cholesky            *dir = (PC_Cholesky*)pc->data;
   const MatSolverPackage stype;
 
   PetscFunctionBegin;
@@ -150,6 +150,12 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       ierr            = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+    } else {
+      F = ((PC_Factor*)dir)->fact;
+      if ((PCFailedReason)F->errortype == PC_FACTOR_NUMERIC_ZEROPIVOT) {
+        F->errortype     = MAT_FACTOR_NOERROR;
+        pc->failedreason = (PCFailedReason)F->errortype;
+      }
     }
     F = ((PC_Factor*)dir)->fact;
     if (F->errortype) { /* FactorSymbolic() fails */
