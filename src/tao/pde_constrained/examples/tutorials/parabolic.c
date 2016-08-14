@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   PetscLogStage      stages[1];
 #endif
 
-  PetscInitialize(&argc, &argv, (char*)0,help);
+  ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
   user.mx = 8;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
@@ -236,8 +236,8 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&x0);CHKERRQ(ierr);
   ierr = ParabolicDestroy(&user);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -964,7 +964,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatSetFromOptions(user->L);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(user->L,2,NULL,2,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->L,2,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(user->L,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->L,&istart,&iend);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
     if (i<m/3){
@@ -999,7 +999,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatScale(user->L,PetscPowScalar(h,1.5));CHKERRQ(ierr);
 
   /* Generate Div matrix */
-  ierr = MatTranspose(user->Grad,MAT_INITIAL_MATRIX,&user->Div);
+  ierr = MatTranspose(user->Grad,MAT_INITIAL_MATRIX,&user->Div);CHKERRQ(ierr);
 
   /* Build work vectors and matrices */
   ierr = VecCreate(PETSC_COMM_WORLD,&user->S);CHKERRQ(ierr);
@@ -1074,7 +1074,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = PCShellSetContext(user->prec,user);CHKERRQ(ierr);
 
   /* Create scatter from y to y_1,y_2,...,y_nt */
-  ierr = PetscMalloc1(user->nt*user->m,&user->yi_scatter);
+  ierr = PetscMalloc1(user->nt*user->m,&user->yi_scatter);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&yi);CHKERRQ(ierr);
   ierr = VecSetSizes(yi,PETSC_DECIDE,user->mx*user->mx*user->mx);CHKERRQ(ierr);
   ierr = VecSetFromOptions(yi);CHKERRQ(ierr);
@@ -1114,7 +1114,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecDestroy(&di);CHKERRQ(ierr);
 
   /* Assemble RHS of forward problem */
-  ierr = VecCopy(bc,user->yiwork[0]);
+  ierr = VecCopy(bc,user->yiwork[0]);CHKERRQ(ierr);
   for (i=1; i<user->nt; i++){
     ierr = VecSet(user->yiwork[i],0.0);CHKERRQ(ierr);
   }
@@ -1190,7 +1190,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
     z[i] = h*(i+0.5);
   }
 
-  ierr = MatGetOwnershipRange(user->Qblock,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->Qblock,&istart,&iend);CHKERRQ(ierr);
   nx = user->mx; ny = user->mx; nz = user->mx;
   for (i=istart; i<iend; i++){
     xri = xr[i];
@@ -1277,7 +1277,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = Scatter_i(user->ywork,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
   for (j=0; j<user->ns; j++){
     i = user->sample_times[j];
-    ierr = MatMult(user->Qblock,user->yiwork[i],user->di[j]);
+    ierr = MatMult(user->Qblock,user->yiwork[i],user->di[j]);CHKERRQ(ierr);
   }
   ierr = Gather_i(user->d,user->di,user->di_scatter,user->ns);CHKERRQ(ierr);
 

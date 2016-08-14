@@ -24,8 +24,8 @@ PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSGLRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSGLLERegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSGLLEAdaptRegisterAll(void);
 
 typedef struct _TSOps *TSOps;
 

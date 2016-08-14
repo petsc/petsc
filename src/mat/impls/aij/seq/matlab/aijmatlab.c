@@ -153,6 +153,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
 
   PetscFunctionBegin;
   if (F->factortype == MAT_FACTOR_ILU || info->dt > 0) {
+    /* the ILU form is not currently registered */
     if (info->dtcol == PETSC_DEFAULT) dtcol = .01;
     F->ops->solve = MatSolve_Matlab;
     F->factortype = MAT_FACTOR_LU;
@@ -205,6 +206,19 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPack
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDestroy_matlab"
+PetscErrorCode MatDestroy_matlab(Mat A)
+{
+  PetscErrorCode ierr;
+  const char     *_A;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetName((PetscObject)A,&_A);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"delete %s l_%s u_%s;",_A,_A,_A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_matlab"
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 {
@@ -214,8 +228,11 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   ierr                         = MatCreate(PetscObjectComm((PetscObject)A),F);CHKERRQ(ierr);
   ierr                         = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  ierr                         = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr                         = MatSeqAIJSetPreallocation(*F,0,NULL);CHKERRQ(ierr);
+  ierr                         = PetscStrallocpy("matlab",&((PetscObject)*F)->type_name);CHKERRQ(ierr);
+  ierr                         = MatSetUp(*F);CHKERRQ(ierr);
+
+  (*F)->ops->destroy           = MatDestroy_matlab;
+  (*F)->ops->getinfo           = MatGetInfo_External;  
   (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
 
@@ -274,8 +291,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MATSOLVERMATLAB - "matlab" - Providing direct solvers (LU and QR) and drop tolerance
-  based ILU factorization (ILUDT) for sequential matrices via the external package MATLAB.
+  MATSOLVERMATLAB - "matlab" - Providing direct solver LU for sequential aij matrix via the external package MATLAB.
 
 
   Works with MATSEQAIJ matrices.
@@ -283,6 +299,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
   Options Database Keys:
 . -pc_factor_mat_solver_package matlab - selects MATLAB to do the sparse factorization
 
+  Notes: You must ./configure with the options --with-matlab --with-matlab-engine
 
   Level: beginner
 

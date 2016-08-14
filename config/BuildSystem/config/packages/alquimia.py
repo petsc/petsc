@@ -18,8 +18,6 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
-    self.installdir    = framework.require('PETSc.options.installDir',  self)
-    self.petscdir      = framework.require('PETSc.options.petscdir', self.setCompilers)
     self.mpi           = framework.require('config.packages.MPI', self)
     self.hdf5          = framework.require('config.packages.hdf5', self)
     self.pflotran      = framework.require('config.packages.pflotran', self)
@@ -63,7 +61,7 @@ class Configure(config.package.CMakePackage):
 
     plibs = self.hdf5.lib
     if self.framework.argDB['prefix']:
-       idir = os.path.join(self.installdir.dir,'lib')
+       idir = os.path.join(self.getDefaultInstallDir(),'lib')
     else:
        idir = os.path.join(self.petscdir.dir,self.arch,'lib')
     if self.framework.argDB['with-single-library']:

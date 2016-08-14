@@ -283,7 +283,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
   }
   ipmP->nb = ipmP->nxlb + ipmP->nxub + ipmP->mi;
 
-  comm = ((PetscObject)(tao->solution))->comm;
+  ierr = PetscObjectGetComm((PetscObject)tao->solution,&comm);CHKERRQ(ierr);
 
   bigsize = ipmP->n+2*ipmP->nb+ipmP->me;
   ierr = PetscMalloc1(bigsize,&stepind);CHKERRQ(ierr);

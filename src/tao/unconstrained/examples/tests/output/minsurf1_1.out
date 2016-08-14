@@ -27,7 +27,7 @@ Tao Object: 1 MPI processes
       CG Type: prp
       Gradient steps: 0
       Reset steps: 0
-  TaoLineSearch Object:   1 MPI processes
+  TaoLineSearch Object: 1 MPI processes
     type: more-thuente
   convergence tolerances: fatol=1e-07,   frtol=1e-07
   convergence tolerances: gatol=1e-07,   steptol=0,   gttol=0
@@ -56,9 +56,9 @@ Tao Object: 1 MPI processes
       nls ksp dtol: 0
       nls ksp iter: 0
       nls ksp othr: 0
-  TaoLineSearch Object:   1 MPI processes
+  TaoLineSearch Object: 1 MPI processes
     type: more-thuente
-  KSP Object:   1 MPI processes
+  KSP Object: 1 MPI processes
     type: stcg
   total KSP iterations: 79
   convergence tolerances: fatol=1e-07,   frtol=1e-07

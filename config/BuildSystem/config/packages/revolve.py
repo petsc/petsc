@@ -15,7 +15,6 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.petscdir = framework.require('PETSc.options.petscdir',self.setCompilers)
     return
 
   def Install(self):

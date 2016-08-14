@@ -40,7 +40,7 @@ static void CholmodErrorHandler(int status,const char *file,int line,const char 
 PetscErrorCode  CholmodStart(Mat F)
 {
   PetscErrorCode ierr;
-  Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->spptr;
+  Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->data;
   cholmod_common *c;
   PetscBool      flg;
 
@@ -193,17 +193,14 @@ static PetscErrorCode VecUnWrapCholmodRead(Vec X,cholmod_dense *Y)
 PETSC_INTERN PetscErrorCode  MatDestroy_CHOLMOD(Mat F)
 {
   PetscErrorCode ierr;
-  Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->spptr;
+  Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->data;
 
   PetscFunctionBegin;
-  if (chol) {
-    ierr = !cholmod_X_free_factor(&chol->factor,chol->common);CHKERRQ(ierr);
-    ierr = !cholmod_X_finish(chol->common);CHKERRQ(ierr);
-    ierr = PetscFree(chol->common);CHKERRQ(ierr);
-    ierr = PetscFree(chol->matrix);CHKERRQ(ierr);
-    ierr = (*chol->Destroy)(F);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(F->spptr);CHKERRQ(ierr);
+  ierr = !cholmod_X_free_factor(&chol->factor,chol->common);CHKERRQ(ierr);
+  ierr = !cholmod_X_finish(chol->common);CHKERRQ(ierr);
+  ierr = PetscFree(chol->common);CHKERRQ(ierr);
+  ierr = PetscFree(chol->matrix);CHKERRQ(ierr);
+  ierr = PetscFree(F->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -215,7 +212,7 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat,Vec,Vec);
 #define __FUNCT__ "MatFactorInfo_CHOLMOD"
 static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
 {
-  Mat_CHOLMOD          *chol = (Mat_CHOLMOD*)F->spptr;
+  Mat_CHOLMOD          *chol = (Mat_CHOLMOD*)F->data;
   const cholmod_common *c    = chol->common;
   PetscErrorCode       ierr;
   PetscInt             i;
@@ -278,7 +275,6 @@ PETSC_INTERN PetscErrorCode  MatView_CHOLMOD(Mat F,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = MatView_SeqSBAIJ(F,viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -293,7 +289,7 @@ PETSC_INTERN PetscErrorCode  MatView_CHOLMOD(Mat F,PetscViewer viewer)
 #define __FUNCT__ "MatSolve_CHOLMOD"
 static PetscErrorCode MatSolve_CHOLMOD(Mat F,Vec B,Vec X)
 {
-  Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
+  Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
   cholmod_dense  cholB,*cholX;
   PetscScalar    *x;
   PetscErrorCode ierr;
@@ -315,7 +311,7 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat F,Vec B,Vec X)
 #define __FUNCT__ "MatCholeskyFactorNumeric_CHOLMOD"
 static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
+  Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
   cholmod_sparse cholA;
   PetscBool      aijalloc;
   PetscErrorCode ierr;
@@ -338,7 +334,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
 #define __FUNCT__ "MatCholeskyFactorSymbolic_CHOLMOD"
 PETSC_INTERN PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 {
-  Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
+  Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
   PetscErrorCode ierr;
   cholmod_sparse cholA;
   PetscBool      aijalloc;
@@ -427,14 +423,14 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   /* Create the factorization matrix F */
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
+  ierr = PetscStrallocpy("cholmod",&((PetscObject)B)->type_name);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = PetscNewLog(B,&chol);CHKERRQ(ierr);
 
   chol->Wrap    = MatWrapCholmod_seqsbaij;
-  chol->Destroy = MatDestroy_SeqSBAIJ;
-  B->spptr      = chol;
+  B->data       = chol;
 
+  B->ops->getinfo                = MatGetInfo_External;
   B->ops->view                   = MatView_CHOLMOD;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
   B->ops->destroy                = MatDestroy_CHOLMOD;

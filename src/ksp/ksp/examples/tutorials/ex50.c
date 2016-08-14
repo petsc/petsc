@@ -48,10 +48,10 @@ int main(int argc,char **argv)
   PetscInt       bc;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = KSPSetDM(ksp,(DM)da);
+  ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
   user.uu     = 1.0;
@@ -67,8 +67,8 @@ int main(int argc,char **argv)
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 #undef __FUNCT__

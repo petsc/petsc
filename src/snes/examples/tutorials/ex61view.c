@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   PetscInt       i,n=10000;
   PetscInt       seed;
 
-  PetscInitialize(&argc,&argv, (char*)0, help);
+  ierr = PetscInitialize(&argc,&argv, (char*)0, help);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue(NULL,"-viewer_binary_skip_info","true");CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) {
@@ -75,6 +75,6 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&eta);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = DMDestroy(&da2);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

@@ -1592,7 +1592,7 @@ PETSC_COMM_WORLD = NewComm;
         <li>
           You are using geometric multigrid, but some equations (often boundary
           conditions) are not scaled compatibly between levels. Try
-          <code>-pc_mg_galerkin</code> to algebraically construct a correctly
+          <code>-pc_mg_galerkin both</code> to algebraically construct a correctly
           scaled coarse operator or make sure that all the equations are scaled
           in the same way if you want to use rediscretized coarse levels.
         </li>

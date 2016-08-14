@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.20-pre2.tar.gz']
-    self.gitcommit         = 'v1.1.20-pre2'
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.23-p1.tar.gz']
+    self.gitcommit         = 'v1.1.23-p1'
     self.complex           = 1
     self.double            = 0
     self.downloadonWindows = 1
@@ -25,8 +25,6 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
-    self.petscclone     = framework.require('PETSc.options.petscclone',self.setCompilers)
     return
 
   def formGNUConfigureArgs(self):

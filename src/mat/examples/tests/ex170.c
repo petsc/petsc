@@ -143,7 +143,7 @@ int main(int argc, char **argv)
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   /* Use matrix to encode a graph */
@@ -189,5 +189,5 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&c);CHKERRQ(ierr);
   ierr = VecDestroy(&cold);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

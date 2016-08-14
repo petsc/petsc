@@ -501,7 +501,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(PETSC_MAX_PATH_LEN,&ropts);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PETSC_MAX_PATH_LEN,&ropts);CHKERRQ(ierr);
   ierr = PetscMemzero(&ropts_par,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscMemzero(&ropts_dbg,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
 

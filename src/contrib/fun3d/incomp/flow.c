@@ -14,8 +14,8 @@ and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 #endif
 #endif
 
-#define ICALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(int),y);CHKERRQ(ierr);
-#define FCALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(PetscScalar),y);CHKERRQ(ierr);
+#define ICALLOC(size,y) ierr = PetscMalloc1(PetscMax(size,1),y);CHKERRQ(ierr);
+#define FCALLOC(size,y) ierr = PetscMalloc1(PetscMax(size,1),y);CHKERRQ(ierr);
 
 typedef struct {
   Vec    qnew,qold,func;
@@ -89,7 +89,7 @@ int main(int argc,char **args)
   PetscInt    maxfails                       = 10000;
   char        pvtu_fname[PETSC_MAX_PATH_LEN] = "incomp";
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
   ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,"petsc.opt",PETSC_FALSE);CHKERRQ(ierr);
 
@@ -312,7 +312,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(comm,"Time taken in gradient calculation %g sec.\n",grad_time);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /*---------------------------------------------------------------------*/

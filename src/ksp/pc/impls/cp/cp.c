@@ -136,18 +136,17 @@ static PetscErrorCode PCSetFromOptions_CP(PetscOptionItems *PetscOptionsObject,P
   PetscFunctionReturn(0);
 }
 
-
 /*MC
      PCCP - a "column-projection" preconditioner
 
      This is a terrible preconditioner and is not recommended, ever!
 
-     Loops over the entries of x computing dx_i to
+     Loops over the entries of x computing dx_i (e_i is the unit vector in the ith direction) to
 $
 $        min || b - A(x + dx_i e_i ||_2
 $        dx_i
 $
-$    That is, it changes a single entry of x to minimize the new residual.
+$    That is, it changes a single entry of x to minimize the new residual norm.
 $   Let A_i represent the ith column of A, then the minimization can be written as
 $
 $       min || r - (dx_i) A e_i ||_2

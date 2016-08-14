@@ -129,13 +129,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupProblem"
-PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
   PetscDS        prob;
+  const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
   switch (user->dim) {
@@ -146,6 +146,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
+  ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -155,7 +156,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM             cdm   = dm;
   const PetscInt dim   = user->dim;
-  const PetscInt id    = 1;
   PetscFE        feBd  = NULL;
   PetscFE        fe;
   PetscDS        prob;
@@ -170,12 +170,12 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = PetscObjectSetName((PetscObject) feBd, "potential");CHKERRQ(ierr);
   }
   /* Set discretization and boundary conditions for each mesh */
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
+  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
-    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-    ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
-    ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(cdm, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
@@ -209,24 +209,22 @@ static int refine_fn(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  SNES           snes; /* nonlinear solver */
-  DM             dm;   /* problem definition */
-  Vec            u;    /* solution, residual vectors */
-  AppCtx         user; /* user-defined work context */
-  PetscSection   section;
-  PetscInt       v, lsize;
-  PetscReal      ferrors[1];
-  void         (*initialGuess[2])(const PetscReal x[], PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
-  PetscErrorCode ierr;
-
+  SNES                 snes; /* nonlinear solver */
+  DM                   dm;   /* problem definition */
+  Vec                  u;    /* solution, residual vectors */
+  AppCtx               user; /* user-defined work context */
+  PetscSection         section;
+  PetscInt             v, lsize;
+  PetscReal            ferrors[1];
+  void                 (*initialGuess[2])(const PetscReal x[], PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
+  PetscErrorCode       ierr;
   p4est_connectivity_t *conn;
   p4est_t              *p4est;
   p4est_ghost_t        *ghost;
   p4est_lnodes_t       *lnodes;
   int                   startlevel, endlevel, level;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   sc_init(PETSC_COMM_WORLD, 1, 1, NULL, SC_LP_ESSENTIAL);
   p4est_init(NULL, SC_LP_PRODUCTION);  /* SC_LP_ERROR for silence. */
 
@@ -343,5 +341,5 @@ int main(int argc, char **argv)
   sc_finalize();
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -122,7 +122,7 @@ PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const cha
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGL, TSSSP
++  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_steps <maxsteps> - maximum number of time-steps to take
 .  -ts_final_time <time> - maximum time to compute to
@@ -1918,6 +1918,16 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
+    if (ts->vrtol) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using vector of relative error tolerances, ");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using relative error tolerance of %g, ",(double)ts->rtol);CHKERRQ(ierr);
+    }
+    if (ts->vatol) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using vector of absolute error tolerances\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using absolute error tolerance of %g\n",(double)ts->atol);CHKERRQ(ierr);
+    }
     ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
     ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
     if (ts->ops->view) {
@@ -3512,6 +3522,13 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
     if (!rank) {
+      PetscBool skipHeader;
+      PetscInt  classid = REAL_FILE_CLASSID;
+
+      ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+      if (!skipHeader) {
+         ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+       }
       ierr = PetscRealView(1,&ptime,viewer);CHKERRQ(ierr);
     } else {
       ierr = PetscRealView(0,&ptime,viewer);CHKERRQ(ierr);
@@ -4867,13 +4884,13 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
 #undef __FUNCT__
 #define __FUNCT__ "TSSetDM"
 /*@
-   TSSetDM - Sets the DM that may be used by some preconditioners
+   TSSetDM - Sets the DM that may be used by some nonlinear solvers or preconditioners under the TS
 
    Logically Collective on TS and DM
 
    Input Parameters:
-+  ts - the preconditioner context
--  dm - the dm
++  ts - the ODE integrator object
+-  dm - the dm, cannot be NULL
 
    Level: intermediate
 
@@ -4888,6 +4905,7 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (ts->dm) {               /* Move the DMTS context over to the new DM unless the new DM already has one */
     if (ts->dm->dmts && !dm->dmts) {
@@ -6182,7 +6200,7 @@ PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6291,7 +6309,7 @@ PetscErrorCode  TSSetJacobianMatlab(TS ts,Mat A,Mat B,const char *func,mxArray *
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6364,7 +6382,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -6421,11 +6439,28 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     PetscInt      dim;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
+    if (!ctx->names) {
+      PetscBool flg;
+      /* user provides names of variables to plot but no names has been set so assume names are integer values */
+      ierr = PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",&flg);CHKERRQ(ierr);
+      if (flg) {
+        PetscInt i,n;
+        char     **names;
+        ierr = VecGetSize(u,&n);CHKERRQ(ierr);
+        ierr = PetscMalloc1(n+1,&names);CHKERRQ(ierr);
+        for (i=0; i<n; i++) {
+          ierr = PetscMalloc1(5,&names[i]);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(names[i],5,"%D",i);CHKERRQ(ierr);
+        }
+        names[n] = NULL;
+        ctx->names = names;
+      }
+    }
     if (ctx->names && !ctx->displaynames) {
       char      **displaynames;
       PetscBool flg;
       ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
-      ierr = PetscMalloc((dim+1)*sizeof(char*),&displaynames);CHKERRQ(ierr);
+      ierr = PetscMalloc1(dim+1,&displaynames);CHKERRQ(ierr);
       ierr = PetscMemzero(displaynames,(dim+1)*sizeof(char*));CHKERRQ(ierr);
       ierr = PetscOptionsGetStringArray(((PetscObject)ts)->options,((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",displaynames,&dim,&flg);CHKERRQ(ierr);
       if (flg) {

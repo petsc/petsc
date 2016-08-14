@@ -1,8 +1,51 @@
 #include <../src/tao/unconstrained/impls/neldermead/neldermead.h>
 #include <petscvec.h>
 
-static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm);
-static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f);
+
+/*------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "NelderMeadSort"
+static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
+{
+  PetscReal *values = nm->f_values;
+  PetscInt  *indices = nm->indices;
+  PetscInt  dim = nm->N+1;
+  PetscInt  i,j,index;
+  PetscReal val;
+
+  PetscFunctionBegin;
+  for (i=1;i<dim;i++) {
+    index = indices[i];
+    val = values[index];
+    for (j=i-1; j>=0 && values[indices[j]] > val; j--) {
+      indices[j+1] = indices[j];
+    }
+    indices[j+1] = index;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+/*------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "NelderMeadReplace"
+static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /*  Add new vector's fraction of average */
+  ierr = VecAXPY(nm->Xbar,nm->oneOverN,Xmu);CHKERRQ(ierr);
+  ierr = VecCopy(Xmu,nm->simplex[index]);CHKERRQ(ierr);
+  nm->f_values[index] = f;
+
+  ierr = NelderMeadSort(nm);CHKERRQ(ierr);
+
+  /*  Subtract last vector from average */
+  ierr = VecAXPY(nm->Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_NM"
@@ -32,7 +75,7 @@ static PetscErrorCode TaoSetUp_NM(Tao tao)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_NM"
-PetscErrorCode TaoDestroy_NM(Tao tao)
+static PetscErrorCode TaoDestroy_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscErrorCode ierr;
@@ -55,7 +98,7 @@ PetscErrorCode TaoDestroy_NM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NM"
-PetscErrorCode TaoSetFromOptions_NM(PetscOptionItems *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_NM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscErrorCode ierr;
@@ -74,7 +117,7 @@ PetscErrorCode TaoSetFromOptions_NM(PetscOptionItems *PetscOptionsObject,Tao tao
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_NM"
-PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
+static PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscBool      isascii;
@@ -97,7 +140,7 @@ PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_NM"
-PetscErrorCode TaoSolve_NM(Tao tao)
+static PetscErrorCode TaoSolve_NM(Tao tao)
 {
   PetscErrorCode     ierr;
   TAO_NelderMead     *nm = (TAO_NelderMead*)tao->data;
@@ -254,47 +297,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-
-/*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "NelderMeadSort"
-PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
-{
-  PetscReal *values = nm->f_values;
-  PetscInt  *indices = nm->indices;
-  PetscInt  dim = nm->N+1;
-  PetscInt  i,j,index;
-  PetscReal val;
-
-  PetscFunctionBegin;
-  for (i=1;i<dim;i++) {
-    index = indices[i];
-    val = values[index];
-    for (j=i-1; j>=0 && values[indices[j]] > val; j--) {
-      indices[j+1] = indices[j];
-    }
-    indices[j+1] = index;
-  }
-  PetscFunctionReturn(0);
-}
-
-
-/*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "NelderMeadReplace"
-PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /*  Add new vector's fraction of average */
-  ierr = VecAXPY(nm->Xbar,nm->oneOverN,Xmu);CHKERRQ(ierr);
-  ierr = VecCopy(Xmu,nm->simplex[index]);CHKERRQ(ierr);
-  nm->f_values[index] = f;
-
-  ierr = NelderMeadSort(nm);CHKERRQ(ierr);
-
-  /*  Subtract last vector from average */
-  ierr = VecAXPY(nm->Xbar,-nm->oneOverN,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

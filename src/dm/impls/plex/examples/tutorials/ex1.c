@@ -18,10 +18,10 @@ int main(int argc, char **argv)
   PetscBool      interpolate = PETSC_TRUE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, interpolate, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, dim == 2 ? 2 : 1, interpolate, &dm);CHKERRQ(ierr);
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {ierr = DMDestroy(&dm);CHKERRQ(ierr); dm = dmDist;}
@@ -66,5 +66,5 @@ int main(int argc, char **argv)
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

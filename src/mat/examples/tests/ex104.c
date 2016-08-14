@@ -26,7 +26,7 @@ int main(int argc,char **argv)
 #endif
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
@@ -128,6 +128,6 @@ int main(int argc,char **argv)
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }

@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscViewerFormat format;
   PetscBool         iascii;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-myviewer",&viewer,&format,NULL);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -27,5 +27,5 @@ int main(int argc,char **args)
   }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

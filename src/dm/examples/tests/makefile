@@ -197,12 +197,12 @@ runex2:
 	   else printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIEXEC} -n 3 ./ex2 -wrap none -local_print -nox | grep -v "Vec Object:Vec" > ex2_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex2 -wrap none -local_print -nox | grep -v "Vec Object: Vec" > ex2_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIEXEC} -n 3 ./ex2 -wrap ghosted -local_print -nox  | grep -v "Vec Object:Vec" > ex2_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex2 -wrap ghosted -local_print -nox  | grep -v "Vec Object: Vec" > ex2_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_3.tmp

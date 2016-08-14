@@ -633,7 +633,7 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   c->needCount[0] = 0;
   /* HACK END */
   if (c->queueRemoteMax) {
-    ierr = PetscMalloc(sizeof(CharacteristicPointDA2D) * c->queueRemoteMax, &c->queueRemote);CHKERRQ(ierr);
+    ierr = PetscMalloc1(c->queueRemoteMax, &c->queueRemote);CHKERRQ(ierr);
   } else c->queueRemote = NULL;
   c->queueRemoteSize = c->queueRemoteMax;
 

@@ -80,16 +80,20 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   if(hpart->Ncoarseparts>size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP," we do not support number of coarse parts %D > size %D \n",hpart->Ncoarseparts,size);
   ierr = MatPartitioningCreate(comm,&coarsePart);CHKERRQ(ierr);
     /* if did not set partitioning type yet, use parmetis by default */
-  if(!hpart->coarseparttype){
-	ierr = MatPartitioningSetType(coarsePart,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
-  }else{
-	ierr = MatPartitioningSetType(coarsePart,hpart->coarseparttype);CHKERRQ(ierr);
+  if (!hpart->coarseparttype){
+#if defined(PETSC_HAVE_PARMETIS)
+    ierr = MatPartitioningSetType(coarsePart,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype"); 
+#endif
+  } else {
+    ierr = MatPartitioningSetType(coarsePart,hpart->coarseparttype);CHKERRQ(ierr);
   }
   ierr = MatPartitioningSetAdjacency(coarsePart,adj);CHKERRQ(ierr);
   ierr = MatPartitioningSetNParts(coarsePart, hpart->Ncoarseparts);CHKERRQ(ierr);
   /* copy over vertex weights */
   if(part->vertex_weights){
-   ierr = PetscMalloc(sizeof(PetscInt)*mat_localsize,&coarse_vertex_weights);CHKERRQ(ierr);
+   ierr = PetscMalloc1(mat_localsize,&coarse_vertex_weights);CHKERRQ(ierr);
    ierr = PetscMemcpy(coarse_vertex_weights,part->vertex_weights,sizeof(PetscInt)*mat_localsize);CHKERRQ(ierr);
    ierr = MatPartitioningSetVertexWeights(coarsePart,coarse_vertex_weights);CHKERRQ(ierr);
   }
@@ -112,8 +116,12 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   ierr = MatPartitioningCreate(scomm,&finePart);CHKERRQ(ierr);
   /* if do not set partitioning type, use parmetis by default */
   if(!hpart->fineparttype){
+#if defined(PETSC_HAVE_PARMETIS)
     ierr = MatPartitioningSetType(finePart,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
-  }else{
+#else
+    SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype"); 
+#endif
+  } else {
     ierr = MatPartitioningSetType(finePart,hpart->fineparttype);CHKERRQ(ierr);
   }
   ierr = MatPartitioningSetAdjacency(finePart,sadj);CHKERRQ(ierr);

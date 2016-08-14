@@ -3,6 +3,7 @@
 
 #include <petscdmlabel.h>
 #include <petscbt.h>
+#include <petscistypes.h>
 #include <../src/sys/utils/hash.h>
 
 /* This is an integer map, in addition it is also a container class
@@ -18,10 +19,10 @@ struct _n_DMLabel {
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt    defaultValue;   /* Background value when no value explicitly given */
   PetscInt   *stratumValues;  /* Value of each stratum */
-  /* Basic sorted array storage */
-  PetscBool  *arrayValid;     /* The array storage is valid (no additions need to be merged in) */
+  /* Basic IS storage */
+  PetscBool  *validIS;        /* The IS is valid (no additions need to be merged in) */
   PetscInt   *stratumSizes;   /* Size of each stratum */
-  PetscInt  **points;         /* Points for each stratum, always sorted */
+  IS         *points;         /* Points for each stratum, always sorted */
   /* Hashtable for fast insertion */
   PetscHashI *ht;             /* Hash table for fast insertion */
   /* Index for fast search */
@@ -29,4 +30,5 @@ struct _n_DMLabel {
   PetscBT     bt;             /* A bit-wise index */
 };
 
+PETSC_INTERN PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym);
 #endif

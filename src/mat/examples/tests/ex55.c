@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscBool      equal,flg_loadmat,flg;
   PetscScalar    value[3];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg_loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int main(int argc,char **args)
   {
     /* Check the symmetry of C because it will be converted to a sbaij matrix */
     Mat Ctrans;
-    ierr = MatTranspose(C, MAT_INITIAL_MATRIX,&Ctrans);
+    ierr = MatTranspose(C, MAT_INITIAL_MATRIX,&Ctrans);CHKERRQ(ierr);
     ierr = MatEqual(C, Ctrans, &flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

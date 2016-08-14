@@ -14,9 +14,6 @@
    - *** Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
    - BDDC with MG framework?
 
-   FETIDP
-   - Move FETIDP code to its own classes
-
    MATIS related operations contained in BDDC code
    - Provide general case for subassembling
 
@@ -37,6 +34,10 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"BDDC options");CHKERRQ(ierr);
   /* Verbose debugging */
+  ierr = PetscOptionsBool("-pc_bddc_dirichlet_approximate","Inform PCBDDC that we are using approximate Dirichlet solvers","none",pcbddc->NullSpace_corr[0],&pcbddc->NullSpace_corr[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_dirichlet_approximate_scale","Inform PCBDDC that we need to scale the Dirichlet solve","none",pcbddc->NullSpace_corr[1],&pcbddc->NullSpace_corr[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_neumann_approximate","Inform PCBDDC that we are using approximate Neumann solvers","none",pcbddc->NullSpace_corr[2],&pcbddc->NullSpace_corr[2],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_neumann_approximate_scale","Inform PCBDDC that we need to scale the Neumann solve","none",pcbddc->NullSpace_corr[3],&pcbddc->NullSpace_corr[3],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_check_level","Verbose output for PCBDDC (intended for debug)","none",pcbddc->dbg_flag,&pcbddc->dbg_flag,NULL);CHKERRQ(ierr);
   /* Primal space customization */
   ierr = PetscOptionsBool("-pc_bddc_use_local_mat_graph","Use or not adjacency graph of local mat for interface analysis","none",pcbddc->use_local_adj,&pcbddc->use_local_adj,NULL);CHKERRQ(ierr);
@@ -123,7 +124,6 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Symmetric computation of primal basis functions: %d\n",pcbddc->symmetric_primal);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,    "  BDDC: Num. Procs. to map coarse adjacency list: %d\n",pcbddc->coarse_adj_red);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -356,50 +356,6 @@ PetscErrorCode PCBDDCSetLevels(PC pc,PetscInt levels)
   PetscValidLogicalCollectiveInt(pc,levels,2);
   if (levels > 99) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of levels for bddc is 99\n");
   ierr = PetscTryMethod(pc,"PCBDDCSetLevels_C",(PC,PetscInt),(pc,levels));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetNullSpace_BDDC"
-static PetscErrorCode PCBDDCSetNullSpace_BDDC(PC pc,MatNullSpace NullSpace)
-{
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)NullSpace);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&pcbddc->NullSpace);CHKERRQ(ierr);
-  pcbddc->NullSpace = NullSpace;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetNullSpace"
-/*@
- PCBDDCSetNullSpace - Set nullspace for BDDC operator
-
-   Logically collective on PC and MatNullSpace
-
-   Input Parameters:
-+  pc - the preconditioning context
--  NullSpace - Null space of the linear operator to be preconditioned (Pmat)
-
-   Level: intermediate
-
-   Notes:
-
-.seealso: PCBDDC
-@*/
-PetscErrorCode PCBDDCSetNullSpace(PC pc,MatNullSpace NullSpace)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(NullSpace,MAT_NULLSPACE_CLASSID,2);
-  PetscCheckSameComm(pc,1,NullSpace,2);
-  ierr = PetscTryMethod(pc,"PCBDDCSetNullSpace_C",(PC,MatNullSpace),(pc,NullSpace));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -1003,6 +959,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
+
   /* Creates parallel work vectors used in presolve */
   if (!pcbddc->original_rhs) {
     ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
@@ -1114,24 +1071,12 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     /* store the original rhs */
     if (copy_rhs) {
       ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
-      copy_rhs = PETSC_FALSE;
     }
 
     /* change rhs */
     ierr = MatMultTranspose(change_ctx->global_change,rhs,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecCopy(pcis->vec1_global,rhs);CHKERRQ(ierr);
     pcbddc->rhs_change = PETSC_TRUE;
-  }
-
-  /* remove nullspace if present */
-  if (ksp && x && pcbddc->NullSpace) {
-    ierr = MatNullSpaceRemove(pcbddc->NullSpace,x);CHKERRQ(ierr);
-    /* store the original rhs */
-    if (copy_rhs) {
-      ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
-    }
-    pcbddc->rhs_change = PETSC_TRUE;
-    ierr = MatNullSpaceRemove(pcbddc->NullSpace,rhs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1628,7 +1573,6 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevels_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundariesLocal_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C",NULL);CHKERRQ(ierr);
@@ -1769,7 +1713,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
 
   /* apply B_delta^T */
   ierr = VecScatterBegin(mat_ctx->l2g_lambda,fetidp_flux_sol,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (mat_ctx->l2g_lambda,fetidp_flux_sol,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(mat_ctx->l2g_lambda,fetidp_flux_sol,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = MatMultTranspose(mat_ctx->B_delta,mat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
   /* compute rhs for BDDC application */
   ierr = VecAYPX(pcis->vec1_B,-1.0,mat_ctx->temp_solution_B);CHKERRQ(ierr);
@@ -1784,8 +1728,8 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   if (!pcbddc->switch_static) {
     /* compute values into the interior if solved for the partially subassembled Schur complement */
     ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec1_D);CHKERRQ(ierr);
-    ierr = VecAXPY(mat_ctx->temp_solution_D,-1.0,pcis->vec1_D);CHKERRQ(ierr);
-    ierr = KSPSolve(pcbddc->ksp_D,mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
+    ierr = VecAYPX(pcis->vec1_D,-1.0,mat_ctx->temp_solution_D);CHKERRQ(ierr);
+    ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr);
   }
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec1_D,standard_sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec1_D,standard_sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1836,7 +1780,7 @@ extern PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPOperators_BDDC"
-static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, PC *fetidp_pc)
+static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_redundant, Mat *fetidp_mat, PC *fetidp_pc)
 {
 
   FETIDPMat_ctx  fetidpmat_ctx;
@@ -1850,6 +1794,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   /* FETIDP linear matrix */
   ierr = PCBDDCCreateFETIDPMatContext(pc,&fetidpmat_ctx);CHKERRQ(ierr);
+  fetidpmat_ctx->fully_redundant = fully_redundant;
   ierr = PCBDDCSetupFETIDPMatContext(fetidpmat_ctx);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,PETSC_DECIDE,PETSC_DECIDE,fetidpmat_ctx->n_lambda,fetidpmat_ctx->n_lambda,fetidpmat_ctx,&newmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_MULT,(void (*)(void))FETIDPMatMult);CHKERRQ(ierr);
@@ -1881,14 +1826,12 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
    Collective
 
    Input Parameters:
-.  pc - the BDDC preconditioning context (setup should have been called before)
++  pc - the BDDC preconditioning context (setup should have been called before)
+-  fully_redundant - true for a fully redundant set of Lagrange multipliers
 
    Output Parameters:
 +  fetidp_mat - shell FETI-DP matrix object
 -  fetidp_pc  - shell Dirichlet preconditioner for FETI-DP matrix
-
-   Options Database Keys:
-.    -fetidp_fullyredundant <false> - use or not a fully redundant set of Lagrange multipliers
 
    Level: developer
 
@@ -1897,14 +1840,14 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
 
 .seealso: PCBDDC, PCBDDCMatFETIDPGetRHS, PCBDDCMatFETIDPGetSolution
 @*/
-PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc)
+PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, Mat *fetidp_mat, PC *fetidp_pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (pc->setupcalled) {
-    ierr = PetscUseMethod(pc,"PCBDDCCreateFETIDPOperators_C",(PC,Mat*,PC*),(pc,fetidp_mat,fetidp_pc));CHKERRQ(ierr);
+    ierr = PetscUseMethod(pc,"PCBDDCCreateFETIDPOperators_C",(PC,PetscBool,Mat*,PC*),(pc,fully_redundant,fetidp_mat,fetidp_pc));CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You must call PCSetup_BDDC() first \n");
   PetscFunctionReturn(0);
 }
@@ -1929,7 +1872,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
    Unlike 'conventional' interface preconditioners, PCBDDC iterates over all degrees of freedom, not just those on the interface. This allows the use of approximate solvers on the subdomains.
 
-   Approximate local solvers are automatically adapted for singular linear problems (see [1]) if the user has provided the nullspace using PCBDDCSetNullSpace()
+   Approximate local solvers are automatically adapted (see [1]) if the user has attached a nullspace object to the subdomain matrices, and informed BDDC of using approximate solvers (via the command line).
 
    Boundary nodes are split in vertices, edges and faces classes using information from the local to global mapping of dofs and the local connectivity graph of nodes. The latter can be customized by using PCBDDCSetLocalAdjacencyGraph()
    Additional information on dofs can be provided by using PCBDDCSetDofsSplitting(), PCBDDCSetDirichletBoundaries(), PCBDDCSetNeumannBoundaries(), and PCBDDCSetPrimalVerticesLocalIS()
@@ -2035,7 +1978,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->onearnullspace             = 0;
   pcbddc->onearnullvecs_state        = 0;
   pcbddc->user_primal_vertices       = 0;
-  pcbddc->NullSpace                  = 0;
   pcbddc->temp_solution              = 0;
   pcbddc->original_rhs               = 0;
   pcbddc->local_mat                  = 0;
@@ -2119,7 +2061,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",PCBDDCSetLevel_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",PCBDDCSetUseExactDirichlet_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevels_C",PCBDDCSetLevels_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C",PCBDDCSetNullSpace_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C",PCBDDCSetDirichletBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundariesLocal_C",PCBDDCSetDirichletBoundariesLocal_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C",PCBDDCSetNeumannBoundaries_BDDC);CHKERRQ(ierr);

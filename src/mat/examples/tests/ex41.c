@@ -22,11 +22,10 @@ int main(int argc,char **args)
   PetscRandom    r;
   PetscScalar    rand;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
-
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
@@ -81,8 +80,6 @@ int main(int argc,char **args)
     ierr = ISGetSize(is1[i],&sz1);CHKERRQ(ierr);
     ierr = ISGetSize(is2[i],&sz2);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d], i=%D, flg =%d sz1 = %D sz2 = %D\n",rank,i,(int)flg,sz1,sz2);CHKERRQ(ierr);
-    /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);
-    ISView(is2[i],PETSC_VIEWER_STDOUT_SELF); */
   }
 
   /* Free Allocated Memory */
@@ -96,9 +93,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
-
-  ierr = PetscFinalize();
 #endif
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 

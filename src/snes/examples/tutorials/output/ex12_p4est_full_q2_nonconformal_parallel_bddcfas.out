@@ -1,0 +1,307 @@
+  0 SNES Function norm 17.6346 
+    0 SNES Function norm 17.6346 
+    1 SNES Function norm 9.68992e-06 
+      0 SNES Function norm 8.15491e-06 
+      1 SNES Function norm 2.434e-11 
+        0 SNES Function norm 1.976e-11 
+        1 SNES Function norm < 1.e-11
+      0 SNES Function norm 1.843e-11 
+      1 SNES Function norm < 1.e-11
+    0 SNES Function norm 8.62367e-06 
+    1 SNES Function norm 1.223e-11 
+  1 SNES Function norm 1.223e-11 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+SNES Object: 7 MPI processes
+  type: fas
+  FAS: type is MULTIPLICATIVE, levels=3, cycles=1
+      Not using Galerkin computed coarse grid function evaluation
+  Coarse grid solver -- level 0 -------------------------------
+    SNES Object: (fas_coarse_) 7 MPI processes
+      type: newtonls
+      maximum iterations=50, maximum function evaluations=10000
+      tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+      total number of linear solver iterations=7
+      total number of function evaluations=1
+      SNESLineSearch Object: (fas_coarse_) 7 MPI processes
+        type: basic
+        maxstep=1.000000e+08, minlambda=1.000000e-12
+        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+        maximum iterations=40
+      KSP Object: (fas_coarse_) 7 MPI processes
+        type: cg
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object: (fas_coarse_) 7 MPI processes
+        type: bddc
+          BDDC: Use verbose output: 0
+          BDDC: Use local mat graph: 1
+          BDDC: Use vertices: 1
+          BDDC: Use edges: 1
+          BDDC: Use faces: 0
+          BDDC: Use true near null space: 0
+          BDDC: Use QR for single constraints on cc: 0
+          BDDC: Use change of basis on local edge nodes: 0
+          BDDC: Use change of basis on local face nodes: 0
+          BDDC: Switch on static condensation ops around the interface preconditioner: 0
+          BDDC: Coarse problem restribute procs: 0
+          BDDC: Multilevel coarsening ratio: 8
+          BDDC: Multilevel max levels: 0
+          BDDC: Use estimated eigs for coarse problem: 0
+          BDDC: Use deluxe scaling: 0
+          BDDC: Rebuild interface graph for Schur principal minors: 0
+          BDDC: Number of dofs' layers for the computation of principal minors: -1
+          BDDC: Use user CSR graph to compute successive layers: 0
+          BDDC: Fast deluxe scaling: 0
+          BDDC: Adaptive constraint selection threshold: 0.
+          BDDC: Min constraints / connected component: 0
+          BDDC: Max constraints / connected component: 0
+          BDDC: Symmetric computation of primal basis functions: 1
+          BDDC: Num. Procs. to map coarse adjacency list: 0
+        linear system matrix = precond matrix:
+        Mat Object: 7 MPI processes
+          type: is
+          rows=209, cols=209
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=38, cols=38
+              total: nonzeros=460, allocated nonzeros=606
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+  Down solver (pre-smoother) on level 1 -------------------------------
+    SNES Object: (fas_levels_1_) 7 MPI processes
+      type: newtonls
+      maximum iterations=1, maximum function evaluations=30000
+      tolerances: relative=0., absolute=0., solution=0.
+      total number of linear solver iterations=7
+      total number of function evaluations=2
+      norm schedule FINALONLY
+      SNESLineSearch Object: (fas_levels_1_) 7 MPI processes
+        type: bt
+          interpolation: cubic
+          alpha=1.000000e-04
+        maxstep=1.000000e+08, minlambda=1.000000e-12
+        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+        maximum iterations=40
+      KSP Object: (fas_levels_1_) 7 MPI processes
+        type: cg
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object: (fas_levels_1_) 7 MPI processes
+        type: bddc
+          BDDC: Use verbose output: 0
+          BDDC: Use local mat graph: 1
+          BDDC: Use vertices: 1
+          BDDC: Use edges: 1
+          BDDC: Use faces: 0
+          BDDC: Use true near null space: 0
+          BDDC: Use QR for single constraints on cc: 0
+          BDDC: Use change of basis on local edge nodes: 0
+          BDDC: Use change of basis on local face nodes: 0
+          BDDC: Switch on static condensation ops around the interface preconditioner: 0
+          BDDC: Coarse problem restribute procs: 0
+          BDDC: Multilevel coarsening ratio: 8
+          BDDC: Multilevel max levels: 0
+          BDDC: Use estimated eigs for coarse problem: 0
+          BDDC: Use deluxe scaling: 0
+          BDDC: Rebuild interface graph for Schur principal minors: 0
+          BDDC: Number of dofs' layers for the computation of principal minors: -1
+          BDDC: Use user CSR graph to compute successive layers: 0
+          BDDC: Fast deluxe scaling: 0
+          BDDC: Adaptive constraint selection threshold: 0.
+          BDDC: Min constraints / connected component: 0
+          BDDC: Max constraints / connected component: 0
+          BDDC: Symmetric computation of primal basis functions: 1
+          BDDC: Num. Procs. to map coarse adjacency list: 0
+        linear system matrix = precond matrix:
+        Mat Object: 7 MPI processes
+          type: is
+          rows=513, cols=513
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=96, cols=96
+              total: nonzeros=1308, allocated nonzeros=1607
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  Down solver (pre-smoother) on level 2 -------------------------------
+    SNES Object: (fas_levels_2_) 7 MPI processes
+      type: newtonls
+      maximum iterations=1, maximum function evaluations=30000
+      tolerances: relative=0., absolute=0., solution=0.
+      total number of linear solver iterations=8
+      total number of function evaluations=2
+      norm schedule FINALONLY
+      SNESLineSearch Object: (fas_levels_2_) 7 MPI processes
+        type: bt
+          interpolation: cubic
+          alpha=1.000000e-04
+        maxstep=1.000000e+08, minlambda=1.000000e-12
+        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+        maximum iterations=40
+      KSP Object: (fas_levels_2_) 7 MPI processes
+        type: cg
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object: (fas_levels_2_) 7 MPI processes
+        type: bddc
+          BDDC: Use verbose output: 0
+          BDDC: Use local mat graph: 1
+          BDDC: Use vertices: 1
+          BDDC: Use edges: 1
+          BDDC: Use faces: 0
+          BDDC: Use true near null space: 0
+          BDDC: Use QR for single constraints on cc: 0
+          BDDC: Use change of basis on local edge nodes: 0
+          BDDC: Use change of basis on local face nodes: 0
+          BDDC: Switch on static condensation ops around the interface preconditioner: 0
+          BDDC: Coarse problem restribute procs: 0
+          BDDC: Multilevel coarsening ratio: 8
+          BDDC: Multilevel max levels: 0
+          BDDC: Use estimated eigs for coarse problem: 0
+          BDDC: Use deluxe scaling: 0
+          BDDC: Rebuild interface graph for Schur principal minors: 0
+          BDDC: Number of dofs' layers for the computation of principal minors: -1
+          BDDC: Use user CSR graph to compute successive layers: 0
+          BDDC: Fast deluxe scaling: 0
+          BDDC: Adaptive constraint selection threshold: 0.
+          BDDC: Min constraints / connected component: 0
+          BDDC: Max constraints / connected component: 0
+          BDDC: Symmetric computation of primal basis functions: 1
+          BDDC: Num. Procs. to map coarse adjacency list: 0
+        linear system matrix = precond matrix:
+        Mat Object: 7 MPI processes
+          type: is
+          rows=1495, cols=1495
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=246, cols=246
+              total: nonzeros=3624, allocated nonzeros=4092
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  maximum iterations=20, maximum function evaluations=30000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=0
+  total number of function evaluations=1
+  norm schedule ALWAYS
+  SNESLineSearch Object: 7 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=1
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=32, cols=32
+              total: nonzeros=336, allocated nonzeros=427
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=87, cols=87
+              total: nonzeros=1119, allocated nonzeros=1302
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=235, cols=235
+              total: nonzeros=3311, allocated nonzeros=3699
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=36, cols=36
+              total: nonzeros=392, allocated nonzeros=528
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=92, cols=92
+              total: nonzeros=1128, allocated nonzeros=1419
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=250, cols=250
+              total: nonzeros=3356, allocated nonzeros=3934
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=38, cols=38
+              total: nonzeros=392, allocated nonzeros=564
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=82, cols=82
+              total: nonzeros=960, allocated nonzeros=1229
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=240, cols=240
+              total: nonzeros=3216, allocated nonzeros=3706
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=52, cols=52
+              total: nonzeros=608, allocated nonzeros=764
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=78, cols=78
+              total: nonzeros=964, allocated nonzeros=1288
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=238, cols=238
+              total: nonzeros=3464, allocated nonzeros=3848
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=32, cols=32
+              total: nonzeros=336, allocated nonzeros=420
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=83, cols=83
+              total: nonzeros=1063, allocated nonzeros=1216
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=228, cols=228
+              total: nonzeros=3088, allocated nonzeros=3536
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=38, cols=38
+              total: nonzeros=460, allocated nonzeros=606
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=90, cols=90
+              total: nonzeros=1260, allocated nonzeros=1489
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=238, cols=238
+              total: nonzeros=3436, allocated nonzeros=3905
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+Number of SNES iterations = 1
+L_2 Error: < 1.0e-11

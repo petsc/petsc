@@ -1,5 +1,5 @@
 
-#include <petsc/private/matimpl.h>               /*I "petscmat.h" I*/
+#include <petsc/private/matimpl.h>               /*I "petscmatcoarsen.h" I*/
 
 /* Logging support */
 PetscClassId MAT_COARSEN_CLASSID;
@@ -57,11 +57,13 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)
    Output Parameter:
 .  type - coarsener type
 
-   Level: intermediate
+   Level: advanced
 
    Not Collective
 
 .keywords: Coarsen, get, method, name, type
+
+.seealso: MatCoarsenCreate(), MatCoarsenType, MatCoarsenSetType()
 @*/
 PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,MatCoarsenType *type)
 {
@@ -89,7 +91,7 @@ $    -mat_coarsen_type mis
    To see the coarsen result
 $    -mat_coarsen_view
 
-   Level: beginner
+   Level: advanced
 
    Notes: Use MatCoarsenGetData() to access the results of the coarsening
 
@@ -120,8 +122,7 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetAdjacency"
 /*@
-   MatCoarsenSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
-      partitioned.
+   MatCoarsenSetAdjacency - Sets the adjacency graph (matrix) of the thing to be coarsened.
 
    Collective on MatCoarsen and Mat
 
@@ -129,11 +130,11 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
 +  agg - the coarsen context
 -  adj - the adjacency matrix
 
-   Level: beginner
+   Level: advanced
 
 .keywords: Coarsen, adjacency
 
-.seealso: MatCoarsenCreate()
+.seealso: MatCoarsenCreate(), MatCoarsenApply()
 @*/
 PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 {
@@ -147,7 +148,7 @@ PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetStrictAggs"
 /*@
-   MatCoarsenSetStrictAggs -
+   MatCoarsenSetStrictAggs - WHAT IS THIS?
 
    Logically Collective on MatCoarsen
 
@@ -155,7 +156,7 @@ PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 +  agg - the coarsen context
 -  str - the adjacency matrix
 
-   Level: beginner
+   Level: advanced
 
 .keywords: Coarsen, adjacency
 
@@ -179,7 +180,7 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
    Input Parameters:
 .  agg - the coarsen context
 
-   Level: beginner
+   Level: advanced
 
 .keywords: Coarsen, destroy, context
 
@@ -219,12 +220,12 @@ PetscErrorCode  MatCoarsenDestroy(MatCoarsen *agg)
    Output Parameter:
 .  newcrs - location to put the context
 
-   Level: beginner
+   Level: advanced
 
 .keywords: Coarsen, create, context
 
 .seealso: MatCoarsenSetType(), MatCoarsenApply(), MatCoarsenDestroy(),
-          MatCoarsenSetAdjacency()
+          MatCoarsenSetAdjacency(), MatCoarsenGetData()
 
 @*/
 PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
@@ -253,7 +254,7 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 .  agg - the coarsen context
 .  viewer - optional visualization context
 
-   Level: intermediate
+   Level: advanced
 
    Note:
    The available visualization contexts include
@@ -309,7 +310,7 @@ $  -mat_coarsen_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, mis)
 
-   Level: intermediate
+   Level: advanced
 
 .keywords: coarsen, set, method, type
 
@@ -361,7 +362,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
 +  coarser - the coarsen context
 -  perm - vertex ordering of (greedy) algorithm
 
-   Level: beginner
+   Level: advanced
 
    Notes:
       The IS weights is freed by PETSc, so user has given this to us
@@ -423,7 +424,7 @@ $  -mat_coarsen_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, mis)
 
-   Level: beginner
+   Level: advanced
 
 .keywords: coarsen, set, method, type
 @*/

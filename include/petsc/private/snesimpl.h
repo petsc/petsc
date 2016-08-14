@@ -92,6 +92,7 @@ struct _p_SNES {
   PetscInt    linear_its;         /* total number of linear solver iterations */
   PetscReal   norm;               /* residual norm of current iterate */
   PetscReal   rtol;               /* relative tolerance */
+  PetscReal   divtol;             /* relative divergence tolerance */
   PetscReal   abstol;             /* absolute tolerance */
   PetscReal   stol;               /* step length tolerance*/
   PetscReal   deltatol;           /* trust region convergence tolerance */
@@ -141,7 +142,8 @@ struct _p_SNES {
 
   /* SNESConvergedDefault context: split it off into a separate var/struct to be passed as context to SNESConvergedDefault? */
   PetscReal   ttol;              /* rtol*initial_residual_norm */
-
+  PetscReal   rnorm0;            /* initial residual norm (used for divergence testing) */
+  
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   PetscInt    nvwork;
 
@@ -153,6 +155,11 @@ struct _p_SNES {
   Vec         xl,xu;             /* upper and lower bounds for box constrained VI problems */
   PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
   PetscBool   usersetbounds;     /* bounds have been set via SNESVISetVariableBounds(), rather than via computevariablebounds() callback. */
+
+  PetscBool   alwayscomputesfinalresidual;  /* Does SNESSolve_XXX always compute the value of the residual at the final
+                                             * solution and put it in vec_func?  Used inside SNESSolve_FAS to determine
+                                             * if the final residual must be computed before restricting or prolonging
+                                             * it. */
 
 };
 

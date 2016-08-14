@@ -11,6 +11,7 @@
 #define IS PetscFortranAddr
 #define ISColoring PetscFortranAddr
 #define PetscSection PetscFortranAddr
+#define PetscSectionSym PetscFortranAddr
 #endif
 
 #define PetscSF PetscFortranAddr

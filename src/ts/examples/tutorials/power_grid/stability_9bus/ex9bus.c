@@ -409,7 +409,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
     f[9*i+7] += xdot[9*i+7];
     f[9*i+8] += xdot[9*i+8];
   }
-  ierr = VecRestoreArray(F,&f);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -927,7 +927,7 @@ int main(int argc,char **argv)
     ierr = VecDuplicate(X,&vatol);CHKERRQ(ierr);
     ierr = VecSet(X,100000.0);CHKERRQ(ierr);
     ierr = VecGetArray(vatol,&vatoli);CHKERRQ(ierr);
-    ierr = ISGetIndices(user.is_diff,&idx);
+    ierr = ISGetIndices(user.is_diff,&idx);CHKERRQ(ierr);
     for(k=0; k < 7*ngen; k++) vatoli[idx[k]] = 1e-2;
     ierr = VecRestoreArray(vatol,&vatoli);CHKERRQ(ierr);
   }
@@ -1054,5 +1054,5 @@ int main(int argc,char **argv)
     ierr = VecDestroy(&vatol);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }

@@ -208,7 +208,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
 
    Developer Notes: this must match petsc/finclude/petscsnes.h
 
-       The string versions of these are in SNESConvergedReason, if you change any value here you must
+       The string versions of these are in SNESConvergedReasons, if you change any value here you must
      also adjust that array.
 
    Each reason has its own manual page.
@@ -230,6 +230,8 @@ typedef enum {/* converged */
               SNES_DIVERGED_LINE_SEARCH         = -6, /* the line search failed */
               SNES_DIVERGED_INNER               = -7, /* inner solve failed */
               SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
+              SNES_DIVERGED_DTOL                = -9, /* || F || > divtol*||F_initial|| */
+
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
 PETSC_EXTERN const char *const*SNESConvergedReasons;
 
@@ -271,6 +273,15 @@ M*/
    Level: beginner
 
 .seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_DIVERGED_DTOL - The norm of the function has increased by a factor of divtol set with SNESSetDivergenceTolerance()
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances(), SNESSetDivergenceTolerance()
 
 M*/
 
@@ -470,6 +481,9 @@ PETSC_EXTERN PetscErrorCode SNESNGSGetTolerances(SNES,PetscReal*,PetscReal*,Pets
 
 PETSC_EXTERN PetscErrorCode SNESUpdateCheckJacobian(SNES,PetscInt);
 
+PETSC_EXTERN PetscErrorCode SNESSetAlwaysComputesFinalResidual(SNES,PetscBool);
+PETSC_EXTERN PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES,PetscBool*);
+
 PETSC_EXTERN PetscErrorCode SNESShellGetContext(SNES,void**);
 PETSC_EXTERN PetscErrorCode SNESShellSetContext(SNES,void*);
 PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec));
@@ -506,7 +520,6 @@ typedef const char* SNESLineSearchType;
 PETSC_EXTERN PetscFunctionList SNESList;
 PETSC_EXTERN PetscClassId      SNESLINESEARCH_CLASSID;
 PETSC_EXTERN PetscFunctionList SNESLineSearchList;
-PETSC_EXTERN PetscLogEvent     SNESLineSearch_Apply;
 
 #define SNES_LINESEARCH_ORDER_LINEAR    1
 #define SNES_LINESEARCH_ORDER_QUADRATIC 2
@@ -671,13 +684,12 @@ PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM,InsertMode,PetscErrorCode 
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFEM(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFVM(DM,Vec*,Vec*,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGradientDM(DM,PetscFV,DM*);
-PETSC_EXTERN PetscErrorCode DMPlexReconstructGradientsFVM(DM,Vec,Vec);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreCellFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
-PETSC_EXTERN PetscErrorCode DMPlexGetFaceFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, Vec, Vec, PetscScalar **, PetscScalar **);
-PETSC_EXTERN PetscErrorCode DMPlexRestoreFaceFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, Vec, Vec, PetscScalar **, PetscScalar **);
-PETSC_EXTERN PetscErrorCode DMPlexGetFaceGeometry(DM, PetscInt, PetscInt, Vec, Vec, PetscFVFaceGeom **, PetscReal **);
-PETSC_EXTERN PetscErrorCode DMPlexRestoreFaceGeometry(DM, PetscInt, PetscInt, Vec, Vec, PetscFVFaceGeom **, PetscReal **);
+PETSC_EXTERN PetscErrorCode DMPlexGetFaceFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, Vec, Vec, PetscInt *, PetscScalar **, PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMPlexRestoreFaceFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, Vec, Vec, PetscInt *, PetscScalar **, PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMPlexGetFaceGeometry(DM, PetscInt, PetscInt, Vec, Vec, PetscInt *, PetscFVFaceGeom **, PetscReal **);
+PETSC_EXTERN PetscErrorCode DMPlexRestoreFaceGeometry(DM, PetscInt, PetscInt, Vec, Vec, PetscInt *, PetscFVFaceGeom **, PetscReal **);
 
 PETSC_EXTERN PetscErrorCode DMSNESSetBoundaryLocal(DM,PetscErrorCode (*)(DM,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunctionLocal(DM,PetscErrorCode (*)(DM,Vec,Vec,void*),void*);

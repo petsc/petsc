@@ -540,6 +540,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   snes->usespc  = PETSC_FALSE;
   snes->usesksp = PETSC_TRUE;
 
+  snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
   ierr        = PetscNewLog(snes,&ms);CHKERRQ(ierr);
   snes->data  = (void*)ms;
   ms->damping = 0.9;

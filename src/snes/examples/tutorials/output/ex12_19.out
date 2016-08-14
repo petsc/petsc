@@ -29,7 +29,7 @@ Vec Object: 1 MPI processes
 0.833333
 0.833333
 Initial guess
-Vec Object:potential 1 MPI processes
+Vec Object: potential 1 MPI processes
   type: seq
 0.5
 L_2 Error: < 1.0e-11

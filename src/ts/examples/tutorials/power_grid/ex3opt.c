@@ -28,8 +28,8 @@ PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 
 /* Event check */
 #undef __FUNCT__
-#define __FUNCT__ "EventFunction"
-PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
+#define __FUNCT__ "PetscEventFunction"
+PetscErrorCode PetscEventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
 {
   AppCtx        *user=(AppCtx*)ctx;
 
@@ -219,7 +219,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   PetscFunctionBeginUser;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
@@ -300,7 +300,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* ------------------------------------------------------------------ */

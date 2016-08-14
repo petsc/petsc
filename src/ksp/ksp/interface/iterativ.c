@@ -1027,16 +1027,20 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetWorkVecs"
-/*
+/*@C
   KSPSetWorkVecs - Sets a number of work vectors into a KSP object
 
+  Collective on KSP
+
   Input Parameters:
-. ksp  - iterative context
-. nw   - number of work vectors to allocate
++ ksp  - iterative context
+- nw   - number of work vectors to allocate
 
-   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
+  Level: developer
 
- */
+  Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
+
+@*/
 PetscErrorCode KSPSetWorkVecs(KSP ksp,PetscInt nw)
 {
   PetscErrorCode ierr;
@@ -1124,7 +1128,7 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 
    Input Parameters:
 +  ksp - the preconditioner context
--  dm - the dm
+-  dm - the dm, cannot be NULL
 
    Notes: If this is used then the KSP will attempt to use the DM to create the matrix and use the routine
           set with DMKSPSetComputeOperators(). Use KSPSetDMActive(ksp,PETSC_FALSE) to instead use the matrix
@@ -1141,9 +1145,10 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (ksp->dm) {                /* Move the DMSNES context over to the new DM unless the new DM already has one */
-    if (ksp->dm->dmksp && ksp->dmAuto && !dm->dmksp) {
+    if (ksp->dm->dmksp && !dm->dmksp) {
       DMKSP kdm;
       ierr = DMCopyDMKSP(ksp->dm,dm);CHKERRQ(ierr);
       ierr = DMGetDMKSP(ksp->dm,&kdm);CHKERRQ(ierr);

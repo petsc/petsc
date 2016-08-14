@@ -85,8 +85,9 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
 
-  B->preallocated = PETSC_FALSE;
-  *A              = B;
+  B->congruentlayouts = -1;
+  B->preallocated     = PETSC_FALSE;
+  *A                  = B;
   PetscFunctionReturn(0);
 }
 
@@ -255,7 +256,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 #undef __FUNCT__
 #define __FUNCT__ "MatXAIJSetPreallocation"
 /*@
-   MatXAIJSetPreallocation - set preallocation for serial and parallel AIJ, BAIJ, and SBAIJ matrices
+   MatXAIJSetPreallocation - set preallocation for serial and parallel AIJ, BAIJ, and SBAIJ matrices and their unassembled versions.
 
    Collective on Mat
 
@@ -276,6 +277,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
 {
   PetscErrorCode ierr;
   void           (*aij)(void);
+  void           (*is)(void);
 
   PetscFunctionBegin;
   ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
@@ -287,17 +289,19 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
   ierr = MatSeqSBAIJSetPreallocation(A,bs,0,dnnzu);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(A,bs,0,dnnzu,0,onnzu);CHKERRQ(ierr);
   /*
-    In general, we have to do extra work to preallocate for scalar (AIJ) matrices so we check whether it will do any
+    In general, we have to do extra work to preallocate for scalar (AIJ) or unassembled (IS) matrices so we check whether it will do any
     good before going on with it.
   */
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
-  if (!aij) {
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatISSetPreallocation_C",&is);CHKERRQ(ierr);
+  if (!aij && !is) {
     ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
   }
-  if (aij) {
+  if (aij || is) {
     if (bs == 1) {
       ierr = MatSeqAIJSetPreallocation(A,0,dnnz);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
+      ierr = MatISSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
     } else {                    /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
       ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
@@ -308,6 +312,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
       }
       ierr = MatSeqAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
+      ierr = MatISSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
       ierr = PetscFree2(sdnnz,sonnz);CHKERRQ(ierr);
     }
   }

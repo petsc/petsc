@@ -26,7 +26,7 @@ typedef enum {RUN_FULL, RUN_TEST} RunType;
 
 typedef struct {
   RunType runType;  /* Whether to run tests, or solve the full problem */
-  PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 } AppCtx;
 
 #undef __FUNCT__
@@ -56,7 +56,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, 2, 2, PETSC_TRUE, dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
   if (distributedMesh) {
@@ -183,17 +183,17 @@ void g3_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     -\div \kappa(a) \grad u + f = -6 (x + y) + 6 (x + y) = 0
 */
-PetscErrorCode quadratic_u_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
   return 0;
 }
-PetscErrorCode linear_a_2d(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *a, void *ctx)
+PetscErrorCode linear_a_2d(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *a, void *ctx)
 {
   *a = x[0] + x[1];
   return 0;
 }
-PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *l, void *ctx)
+PetscErrorCode zero(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *l, void *ctx)
 {
   *l = 0.0;
   return 0;
@@ -201,13 +201,12 @@ PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar 
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupProblem"
-PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
-  PetscDS        prob;
+  const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 1, f0_a, f1_a);CHKERRQ(ierr);
   ierr = PetscDSSetResidual(prob, 2, f0_l, f1_l);CHKERRQ(ierr);
@@ -221,6 +220,9 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   user->exactFuncs[0] = quadratic_u_2d;
   user->exactFuncs[1] = linear_a_2d;
   user->exactFuncs[2] = zero;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wall", "marker", 1, 0, NULL, (void (*)()) user->exactFuncs[1], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wall", "marker", 2, 0, NULL, (void (*)()) user->exactFuncs[2], 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -233,6 +235,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[3];
   PetscQuadrature q;
   PetscInt        f;
+  PetscDS         prob;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
@@ -247,16 +250,12 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) fe[2], "multiplier");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[2], q);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  for (f = 0; f < 3; ++f) {ierr = PetscDSSetDiscretization(prob, f, (PetscObject) fe[f]);CHKERRQ(ierr);}
+  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
-    const PetscInt id = 1;
-    PetscDS        prob;
 
-    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-    for (f = 0; f < 3; ++f) {ierr = PetscDSSetDiscretization(prob, f, (PetscObject) fe[f]);CHKERRQ(ierr);}
-    ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 1, 0, NULL, (void (*)()) user->exactFuncs[1], 1, &id, user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 2, 0, NULL, (void (*)()) user->exactFuncs[2], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   for (f = 0; f < 3; ++f) {ierr = PetscFEDestroy(&fe[f]);CHKERRQ(ierr);}
@@ -273,7 +272,7 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
@@ -288,22 +287,22 @@ int main(int argc, char **argv)
   ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMProjectFunction(dm, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions(snes, u, user.exactFuncs, NULL);CHKERRQ(ierr);
   if (user.runType == RUN_FULL) {
-    PetscErrorCode (*initialGuess[3])(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+    PetscErrorCode (*initialGuess[3])(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
     PetscReal        error;
 
     initialGuess[0] = zero;
     initialGuess[1] = zero;
     initialGuess[2] = zero;
-    ierr = DMProjectFunction(dm, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+    ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     ierr = VecViewFromOptions(u, NULL, "-initial_vec_view");CHKERRQ(ierr);
-    ierr = DMComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial L_2 Error: %g\n", error);CHKERRQ(ierr);}
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
-    ierr = DMComputeL2Diff(dm, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Final L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "Final L_2 Error: %g\n", error);CHKERRQ(ierr);}
   }
@@ -315,5 +314,5 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

@@ -18,10 +18,10 @@ int main(int argc,char **args)
   PetscReal      norm;        /* norm of solution error */
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
-  PetscScalar    neg_one = -1.0,one = 1.0,value[3];
+  PetscScalar    one = 1.0,value[3];
   PetscBool      TEST_PROCEDURAL=PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-procedural",&TEST_PROCEDURAL,NULL);CHKERRQ(ierr);
 
@@ -118,7 +118,7 @@ int main(int argc,char **args)
     ierr = PetscObjectGetComm((PetscObject)A_redundant,&subcomm);CHKERRQ(ierr); 
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     if (subsize==1 && !rank) {
-      printf("A_redundant:\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"A_redundant:\n");CHKERRQ(ierr);
       ierr = MatView(A_redundant,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
   } else {
@@ -129,7 +129,7 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* Check the error */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
@@ -139,5 +139,5 @@ int main(int argc,char **args)
   ierr = VecDestroy(&b);CHKERRQ(ierr); ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

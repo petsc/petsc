@@ -151,8 +151,7 @@ int main(int argc, char **argv)
   PetscReal      eta=0.1,norm;
   PetscScalar(*diagfunc)(PetscInt,PetscInt);
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* Process command line options */
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-eta",&eta,NULL);CHKERRQ(ierr);
@@ -227,7 +226,6 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
-  PetscFinalize();
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

@@ -79,20 +79,19 @@ int main(int argc,char **argv)
   UserContext    user;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASetElementType(da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp, da);CHKERRQ(ierr);
 
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");CHKERRQ(ierr);
   user.phi = 0.5;
   ierr     = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, NULL);CHKERRQ(ierr);
   user.dt  = 0.1;
   ierr     = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsEnd();
+  ierr     = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = CreateStructures(da, &user);CHKERRQ(ierr);
   ierr = ComputePredictor(da, &user);CHKERRQ(ierr);
@@ -111,7 +110,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__
@@ -559,7 +558,6 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
         q_y    += psi_y[k]*t_n[idx[k]];
       }
       mu          /= 3.0;
-      kappa       /= 3.0;
       tau_xx      *= (2.0/3.0)*mu;
       tau_xy      *= mu;
       tau_yy      *= (2.0/3.0)*mu;

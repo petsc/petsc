@@ -29,7 +29,7 @@ int main(int argc,char **args)
   PetscLogStage  stage[6];
   PetscScalar    DD1[24][24];
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr  = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
@@ -316,14 +316,10 @@ int main(int argc,char **args)
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
     ierr = MaybeLogStagePush(stage[4]);CHKERRQ(ierr);
 
-    /* 3rd solve */
-    ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
-    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
     ierr = MaybeLogStagePush(stage[5]);CHKERRQ(ierr);
 
+    /* 3rd solve */
     ierr = KSPSolve(ksp, bb, xx);CHKERRQ(ierr);
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
@@ -347,7 +343,7 @@ int main(int argc,char **args)
   ierr = PetscFree(coords);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* Data was previously provided in the file data/elem_3d_elast_v_25.tx */

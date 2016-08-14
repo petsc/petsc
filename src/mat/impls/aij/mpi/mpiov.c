@@ -134,7 +134,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes);CHKERRQ(ierr);
   nrecvrows = 0;
   for (i=0; i<nfrom; i++) nrecvrows += fromsizes[2*i];
-  ierr = PetscMalloc(nrecvrows*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvrows,&remote);CHKERRQ(ierr);
   nrecvrows = 0;
   for (i=0; i<nfrom; i++){
     for (j=0; j<fromsizes[2*i]; j++){
@@ -170,7 +170,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   nrecvrows = 0;
   for (i=0; i<nto; i++) nrecvrows += tosizes[2*i];
   ierr = PetscCalloc1(nrecvrows,&todata);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrecvrows*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvrows,&remote);CHKERRQ(ierr);
   nrecvrows = 0;
   for (i=0; i<nto; i++){
     for (j=0; j<tosizes[2*i]; j++){
@@ -207,13 +207,13 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat,PetscIn
 
   PetscFunctionBegin;
   max_lsize = 0;
-  ierr = PetscMalloc(nidx*sizeof(PetscInt),&isz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nidx,&isz);CHKERRQ(ierr);
   for (i=0; i<nidx; i++){
     ierr = ISGetLocalSize(is[i],&lsize);CHKERRQ(ierr);
     max_lsize = lsize>max_lsize ? lsize:max_lsize;
     isz[i]    = lsize;
   }
-  ierr = PetscMalloc((max_lsize+nrecvs)*nidx*sizeof(PetscInt),&indices_temp);CHKERRQ(ierr);
+  ierr = PetscMalloc1((max_lsize+nrecvs)*nidx,&indices_temp);CHKERRQ(ierr);
   for (i=0; i<nidx; i++){
     ierr = ISGetIndices(is[i],&indices_i_temp);CHKERRQ(ierr);
     ierr = PetscMemcpy(indices_temp+i*(max_lsize+nrecvs),indices_i_temp, sizeof(PetscInt)*isz[i]);CHKERRQ(ierr);
@@ -376,7 +376,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
   PetscInt          tnz,an,bn,i,j,row,start,end,rstart,cstart,col,k,*indices_temp;
   PetscInt          lsize,lsize_tmp,owner;
   PetscMPIInt       rank;
-  Mat                   amat,bmat;
+  Mat               amat,bmat;
   PetscBool         done;
   PetscLayout       cmap,rmap;
   MPI_Comm          comm;
@@ -398,7 +398,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
   /* it is a better way to estimate memory than the old implementation
    * where global size of matrix is used
    * */
-  ierr = PetscMalloc(sizeof(PetscInt)*tnz,&indices_temp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tnz,&indices_temp);CHKERRQ(ierr);
   for (i=0; i<nidx; i++) {
     ierr = ISGetLocalSize(is[i],&lsize);CHKERRQ(ierr);
     ierr = ISGetIndices(is[i],&indices);CHKERRQ(ierr);

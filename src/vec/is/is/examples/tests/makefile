@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/vec/is/is/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
 EXAMPLESF       = ex1f.F ex2f.F
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
@@ -42,6 +42,10 @@ ex6: ex6.o chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_VEC_LIB}
 	${RM} -f ex6.o
 
+ex7: ex7.o chkopts
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_VEC_LIB}
+	${RM} -f ex7.o
+
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1  ./ex1
@@ -64,7 +68,10 @@ runex6_3:
 	  ${DIFF} output/ex6_3.out ex6_3.tmp || printf "${PWD}\nPossible problems with ex6_3, diffs above\n=========================================\n"; \
 	  ${RM} -f ex6_3.tmp
 
-TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6_3 ex6.rm
+runex7:
+	-@${MPIEXEC} -n 1  ./ex7
+
+TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6_3 ex6.rm ex7.PETSc runex7 ex7.rm
 TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI =

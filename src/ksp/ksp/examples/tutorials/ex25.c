@@ -40,8 +40,7 @@ int main(int argc,char **argv)
   Vec            x;
   PetscReal      nrm;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   user.k = 1;
   user.e = .99;
   ierr   = PetscOptionsGetInt(NULL,0,"-k",&user.k,0);CHKERRQ(ierr);
@@ -68,8 +67,7 @@ int main(int argc,char **argv)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

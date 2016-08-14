@@ -9,7 +9,9 @@
 #include "petsc/finclude/petscvecdef.h"
 #include "petsc/finclude/petscmatdef.h"
 
-#define DMBoundaryType PetscEnum
+#define DMType character*(80)
+#define DMBoundaryType      PetscEnum
+#define DMPointLocationType PetscEnum
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define DM               PetscFortranAddr
@@ -22,5 +24,20 @@
 #define PetscLimiter     PetscFortranAddr
 #define PetscPartitioner PetscFortranAddr
 #endif
+
+#define DMDA        'da'
+#define DMCOMPOSITE 'composite'
+#define DMSLICED    'sliced'
+#define DMSHELL     'shell'
+#define DMPLEX      'plex'
+#define DMCARTESIAN 'cartesian'
+#define DMREDUNDANT 'redundant'
+#define DMPATCH     'patch'
+#define DMMOAB      'moab'
+#define DMNETWORK   'network'
+#define DMFOREST    'forest'
+#define DMP4EST     'p4est'
+#define DMP8EST     'p8est'
+#define DMSWARM     'swarm'
 
 #endif

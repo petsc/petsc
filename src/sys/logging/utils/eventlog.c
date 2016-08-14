@@ -11,9 +11,9 @@
 /* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */
 
 #undef __FUNCT__
-#define __FUNCT__ "EventRegLogCreate"
+#define __FUNCT__ "PetscEventRegLogCreate"
 /*@C
-  EventRegLogCreate - This creates a PetscEventRegLog object.
+  PetscEventRegLogCreate - This creates a PetscEventRegLog object.
 
   Not collective
 
@@ -23,9 +23,9 @@
   Level: developer
 
 .keywords: log, event, create
-.seealso: EventRegLogDestroy(), PetscStageLogCreate()
+.seealso: PetscEventRegLogDestroy(), PetscStageLogCreate()
 @*/
-PetscErrorCode EventRegLogCreate(PetscEventRegLog *eventLog)
+PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *eventLog)
 {
   PetscEventRegLog l;
   PetscErrorCode   ierr;
@@ -40,9 +40,9 @@ PetscErrorCode EventRegLogCreate(PetscEventRegLog *eventLog)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventRegLogDestroy"
+#define __FUNCT__ "PetscEventRegLogDestroy"
 /*@C
-  EventRegLogDestroy - This destroys a PetscEventRegLog object.
+  PetscEventRegLogDestroy - This destroys a PetscEventRegLog object.
 
   Not collective
 
@@ -52,9 +52,9 @@ PetscErrorCode EventRegLogCreate(PetscEventRegLog *eventLog)
   Level: developer
 
 .keywords: log, event, destroy
-.seealso: EventRegLogCreate()
+.seealso: PetscEventRegLogCreate()
 @*/
-PetscErrorCode EventRegLogDestroy(PetscEventRegLog eventLog)
+PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog eventLog)
 {
   int            e;
   PetscErrorCode ierr;
@@ -69,9 +69,9 @@ PetscErrorCode EventRegLogDestroy(PetscEventRegLog eventLog)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogCreate"
+#define __FUNCT__ "PetscEventPerfLogCreate"
 /*@C
-  EventPerfLogCreate - This creates a PetscEventPerfLog object.
+  PetscEventPerfLogCreate - This creates a PetscEventPerfLog object.
 
   Not collective
 
@@ -81,9 +81,9 @@ PetscErrorCode EventRegLogDestroy(PetscEventRegLog eventLog)
   Level: developer
 
 .keywords: log, event, create
-.seealso: EventPerfLogDestroy(), PetscStageLogCreate()
+.seealso: PetscEventPerfLogDestroy(), PetscStageLogCreate()
 @*/
-PetscErrorCode EventPerfLogCreate(PetscEventPerfLog *eventLog)
+PetscErrorCode PetscEventPerfLogCreate(PetscEventPerfLog *eventLog)
 {
   PetscEventPerfLog l;
   PetscErrorCode    ierr;
@@ -98,9 +98,9 @@ PetscErrorCode EventPerfLogCreate(PetscEventPerfLog *eventLog)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogDestroy"
+#define __FUNCT__ "PetscEventPerfLogDestroy"
 /*@C
-  EventPerfLogDestroy - This destroys a PetscEventPerfLog object.
+  PetscEventPerfLogDestroy - This destroys a PetscEventPerfLog object.
 
   Not collective
 
@@ -110,9 +110,9 @@ PetscErrorCode EventPerfLogCreate(PetscEventPerfLog *eventLog)
   Level: developer
 
 .keywords: log, event, destroy
-.seealso: EventPerfLogCreate()
+.seealso: PetscEventPerfLogCreate()
 @*/
-PetscErrorCode EventPerfLogDestroy(PetscEventPerfLog eventLog)
+PetscErrorCode PetscEventPerfLogDestroy(PetscEventPerfLog eventLog)
 {
   PetscErrorCode ierr;
 
@@ -124,9 +124,9 @@ PetscErrorCode EventPerfLogDestroy(PetscEventPerfLog eventLog)
 
 /*------------------------------------------------ General Functions -------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfInfoClear"
+#define __FUNCT__ "PetscEventPerfInfoClear"
 /*@C
-  EventPerfInfoClear - This clears a PetscEventPerfInfo object.
+  PetscEventPerfInfoClear - This clears a PetscEventPerfInfo object.
 
   Not collective
 
@@ -136,9 +136,9 @@ PetscErrorCode EventPerfLogDestroy(PetscEventPerfLog eventLog)
   Level: developer
 
 .keywords: log, event, destroy
-.seealso: EventPerfLogCreate()
+.seealso: PetscEventPerfLogCreate()
 @*/
-PetscErrorCode EventPerfInfoClear(PetscEventPerfInfo *eventInfo)
+PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 {
   PetscFunctionBegin;
   eventInfo->id            = -1;
@@ -159,9 +159,9 @@ PetscErrorCode EventPerfInfoClear(PetscEventPerfInfo *eventInfo)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfInfoCopy"
+#define __FUNCT__ "PetscEventPerfInfoCopy"
 /*@C
-  EventPerfInfoCopy - Copy the activity and visibility data in eventInfo to outInfo
+  PetscEventPerfInfoCopy - Copy the activity and visibility data in eventInfo to outInfo
 
   Not collective
 
@@ -174,9 +174,9 @@ PetscErrorCode EventPerfInfoClear(PetscEventPerfInfo *eventInfo)
   Level: developer
 
 .keywords: log, event, copy
-.seealso: EventPerfInfoClear()
+.seealso: PetscEventPerfInfoClear()
 @*/
-PetscErrorCode EventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
+PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
 {
   PetscFunctionBegin;
   outInfo->id      = eventInfo->id;
@@ -186,9 +186,9 @@ PetscErrorCode EventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventPerfIn
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogEnsureSize"
+#define __FUNCT__ "PetscEventPerfLogEnsureSize"
 /*@C
-  EventPerfLogEnsureSize - This ensures that a PetscEventPerfLog is at least of a certain size.
+  PetscEventPerfLogEnsureSize - This ensures that a PetscEventPerfLog is at least of a certain size.
 
   Not collective
 
@@ -199,9 +199,9 @@ PetscErrorCode EventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventPerfIn
   Level: developer
 
 .keywords: log, event, size, ensure
-.seealso: EventPerfLogCreate()
+.seealso: PetscEventPerfLogCreate()
 @*/
-PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
+PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
 {
   PetscEventPerfInfo *eventInfo;
   PetscErrorCode     ierr;
@@ -216,7 +216,7 @@ PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
     eventLog->maxEvents *= 2;
   }
   while (eventLog->numEvents < size) {
-    ierr = EventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++]);CHKERRQ(ierr);
+    ierr = PetscEventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -249,14 +249,14 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
 
 /*--------------------------------------------- Registration Functions ----------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "EventRegLogRegister"
+#define __FUNCT__ "PetscEventRegLogRegister"
 /*@C
-  EventRegLogRegister - Registers an event for logging operations in an application code.
+  PetscEventRegLogRegister - Registers an event for logging operations in an application code.
 
   Not Collective
 
   Input Parameters:
-+ eventLog - The EventLog
++ eventLog - The PetscEventLog
 . ename    - The name associated with the event
 - classid   - The classid associated to the class for this event
 
@@ -287,9 +287,9 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, P
 
 .keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
-          EventLogActivate(), EventLogDeactivate()
+          PetscEventLogActivate(), PetscEventLogDeactivate()
 @*/
-PetscErrorCode EventRegLogRegister(PetscEventRegLog eventLog, const char ename[], PetscClassId classid, PetscLogEvent *event)
+PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog, const char ename[], PetscClassId classid, PetscLogEvent *event)
 {
   PetscEventRegInfo *eventInfo;
   char              *str;
@@ -338,9 +338,9 @@ PetscErrorCode EventRegLogRegister(PetscEventRegLog eventLog, const char ename[]
 
 /*---------------------------------------------- Activation Functions -----------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogActivate"
+#define __FUNCT__ "PetscEventPerfLogActivate"
 /*@C
-  EventPerfLogActivate - Indicates that a particular event should be logged.
+  PetscEventPerfLogActivate - Indicates that a particular event should be logged.
 
   Not Collective
 
@@ -350,22 +350,22 @@ PetscErrorCode EventRegLogRegister(PetscEventRegLog eventLog, const char ename[]
 
    Usage:
 .vb
-      EventPerfLogDeactivate(log, VEC_SetValues);
+      PetscEventPerfLogDeactivate(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
-      EventPerfLogActivate(log, VEC_SetValues);
+      PetscEventPerfLogActivate(log, VEC_SetValues);
         [code where you do want to log VecSetValues()]
 .ve
 
   Note:
   The event may be either a pre-defined PETSc event (found in
-  include/petsclog.h) or an event number obtained with EventRegLogRegister().
+  include/petsclog.h) or an event number obtained with PetscEventRegLogRegister().
 
   Level: developer
 
 .keywords: log, event, activate
-.seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), EventPerfLogDeactivate()
+.seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), PetscEventPerfLogDeactivate()
 @*/
-PetscErrorCode EventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEvent event)
+PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEvent event)
 {
   PetscFunctionBegin;
   eventLog->eventInfo[event].active = PETSC_TRUE;
@@ -373,9 +373,9 @@ PetscErrorCode EventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEvent ev
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogDeactivate"
+#define __FUNCT__ "PetscEventPerfLogDeactivate"
 /*@C
-  EventPerfLogDeactivate - Indicates that a particular event should not be logged.
+  PetscEventPerfLogDeactivate - Indicates that a particular event should not be logged.
 
   Not Collective
 
@@ -385,22 +385,22 @@ PetscErrorCode EventPerfLogActivate(PetscEventPerfLog eventLog, PetscLogEvent ev
 
    Usage:
 .vb
-      EventPerfLogDeactivate(log, VEC_SetValues);
+      PetscEventPerfLogDeactivate(log, VEC_SetValues);
         [code where you do not want to log VecSetValues()]
-      EventPerfLogActivate(log, VEC_SetValues);
+      PetscEventPerfLogActivate(log, VEC_SetValues);
         [code where you do want to log VecSetValues()]
 .ve
 
   Note:
   The event may be either a pre-defined PETSc event (found in
-  include/petsclog.h) or an event number obtained with EventRegLogRegister().
+  include/petsclog.h) or an event number obtained with PetscEventRegLogRegister().
 
   Level: developer
 
 .keywords: log, event, activate
-.seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), EventPerfLogActivate()
+.seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), PetscEventPerfLogActivate()
 @*/
-PetscErrorCode EventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogEvent event)
+PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogEvent event)
 {
   PetscFunctionBegin;
   eventLog->eventInfo[event].active = PETSC_FALSE;
@@ -408,9 +408,9 @@ PetscErrorCode EventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogEvent 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogActivateClass"
+#define __FUNCT__ "PetscEventPerfLogActivateClass"
 /*@C
-  EventPerfLogActivateClass - Activates event logging for a PETSc object class.
+  PetscEventPerfLogActivateClass - Activates event logging for a PETSc object class.
 
   Not Collective
 
@@ -421,9 +421,9 @@ PetscErrorCode EventPerfLogDeactivate(PetscEventPerfLog eventLog, PetscLogEvent 
 
   Level: developer
 
-.seealso: EventPerfLogDeactivateClass(), EventPerfLogActivate(), EventPerfLogDeactivate()
+.seealso: PetscEventPerfLogDeactivateClass(), PetscEventPerfLogActivate(), PetscEventPerfLogDeactivate()
 @*/
-PetscErrorCode EventPerfLogActivateClass(PetscEventPerfLog eventLog, PetscEventRegLog eventRegLog, PetscClassId classid)
+PetscErrorCode PetscEventPerfLogActivateClass(PetscEventPerfLog eventLog, PetscEventRegLog eventRegLog, PetscClassId classid)
 {
   int e;
 
@@ -436,9 +436,9 @@ PetscErrorCode EventPerfLogActivateClass(PetscEventPerfLog eventLog, PetscEventR
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogDeactivateClass"
+#define __FUNCT__ "PetscEventPerfLogDeactivateClass"
 /*@C
-  EventPerfLogDeactivateClass - Deactivates event logging for a PETSc object class.
+  PetscEventPerfLogDeactivateClass - Deactivates event logging for a PETSc object class.
 
   Not Collective
 
@@ -449,9 +449,9 @@ PetscErrorCode EventPerfLogActivateClass(PetscEventPerfLog eventLog, PetscEventR
 
   Level: developer
 
-.seealso: EventPerfLogDeactivateClass(), EventPerfLogDeactivate(), EventPerfLogActivate()
+.seealso: PetscEventPerfLogDeactivateClass(), PetscEventPerfLogDeactivate(), PetscEventPerfLogActivate()
 @*/
-PetscErrorCode EventPerfLogDeactivateClass(PetscEventPerfLog eventLog, PetscEventRegLog eventRegLog, PetscClassId classid)
+PetscErrorCode PetscEventPerfLogDeactivateClass(PetscEventPerfLog eventLog, PetscEventRegLog eventRegLog, PetscClassId classid)
 {
   int e;
 
@@ -465,9 +465,9 @@ PetscErrorCode EventPerfLogDeactivateClass(PetscEventPerfLog eventLog, PetscEven
 
 /*------------------------------------------------ Query Functions --------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "EventRegLogGetEvent"
+#define __FUNCT__ "PetscEventRegLogGetEvent"
 /*@C
-  EventRegLogGetEvent - This function returns the event id given the event name.
+  PetscEventRegLogGetEvent - This function returns the event id given the event name.
 
   Not Collective
 
@@ -481,9 +481,9 @@ PetscErrorCode EventPerfLogDeactivateClass(PetscEventPerfLog eventLog, PetscEven
   Level: developer
 
 .keywords: log, stage
-.seealso: EventRegLogRegister()
+.seealso: PetscEventRegLogRegister()
 @*/
-PetscErrorCode  EventRegLogGetEvent(PetscEventRegLog eventLog, const char name[], PetscLogEvent *event)
+PetscErrorCode  PetscEventRegLogGetEvent(PetscEventRegLog eventLog, const char name[], PetscLogEvent *event)
 {
   PetscBool      match;
   int            e;
@@ -504,9 +504,9 @@ PetscErrorCode  EventRegLogGetEvent(PetscEventRegLog eventLog, const char name[]
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogSetVisible"
+#define __FUNCT__ "PetscEventPerfLogSetVisible"
 /*@C
-  EventPerfLogSetVisible - This function determines whether an event is printed during PetscLogView()
+  PetscEventPerfLogSetVisible - This function determines whether an event is printed during PetscLogView()
 
   Not Collective
 
@@ -521,9 +521,9 @@ PetscErrorCode  EventRegLogGetEvent(PetscEventRegLog eventLog, const char name[]
   Level: developer
 
 .keywords: log, visible, event
-.seealso: EventPerfLogGetVisible(), EventRegLogRegister(), PetscStageLogGetEventLog()
+.seealso: PetscEventPerfLogGetVisible(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
 @*/
-PetscErrorCode EventPerfLogSetVisible(PetscEventPerfLog eventLog, PetscLogEvent event, PetscBool isVisible)
+PetscErrorCode PetscEventPerfLogSetVisible(PetscEventPerfLog eventLog, PetscLogEvent event, PetscBool isVisible)
 {
   PetscFunctionBegin;
   eventLog->eventInfo[event].visible = isVisible;
@@ -531,9 +531,9 @@ PetscErrorCode EventPerfLogSetVisible(PetscEventPerfLog eventLog, PetscLogEvent 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "EventPerfLogGetVisible"
+#define __FUNCT__ "PetscEventPerfLogGetVisible"
 /*@C
-  EventPerfLogGetVisible - This function returns whether an event is printed during PetscLogView()
+  PetscEventPerfLogGetVisible - This function returns whether an event is printed during PetscLogView()
 
   Not Collective
 
@@ -550,9 +550,9 @@ PetscErrorCode EventPerfLogSetVisible(PetscEventPerfLog eventLog, PetscLogEvent 
   Level: developer
 
 .keywords: log, visible, event
-.seealso: EventPerfLogSetVisible(), EventRegLogRegister(), PetscStageLogGetEventLog()
+.seealso: PetscEventPerfLogSetVisible(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
 @*/
-PetscErrorCode EventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogEvent event, PetscBool  *isVisible)
+PetscErrorCode PetscEventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogEvent event, PetscBool  *isVisible)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(isVisible,3);

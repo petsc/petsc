@@ -48,7 +48,7 @@ int main(int argc,char *argv[])
   MPI_Comm       comm;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size != 2) SETERRQ(comm,PETSC_ERR_USER,"This example must be run with exactly two processes");
@@ -56,6 +56,6 @@ int main(int argc,char *argv[])
   ierr = Assemble(comm,2,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = Assemble(comm,1,MATMPIBAIJ);CHKERRQ(ierr);
   ierr = Assemble(comm,1,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

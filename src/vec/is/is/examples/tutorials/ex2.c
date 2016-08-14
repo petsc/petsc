@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   IS             set;
   const PetscInt *indices;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   n     = 10;
   first = 3;
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   if (first != 3 || step != 2) SETERRQ(PETSC_COMM_SELF,1,"Stride info not correct!\n");
   ierr = ISDestroy(&set);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

@@ -10,9 +10,9 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscContainer container;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

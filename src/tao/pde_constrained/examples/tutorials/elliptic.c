@@ -126,7 +126,7 @@ int main(int argc, char **argv)
   PetscInt           ntests = 1;
   PetscInt           i;
 
-  PetscInitialize(&argc, &argv, (char*)0,help);
+  ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
   user.mx = 8;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
@@ -191,8 +191,8 @@ int main(int argc, char **argv)
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x0);CHKERRQ(ierr);
   ierr = EllipticDestroy(&user);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -726,7 +726,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecGetLocalSize(user->subd,&dsubnlocal);CHKERRQ(ierr);
   ierr = VecSetSizes(user->d,dsubnlocal*user->ns,user->ndata*user->ns);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->d);CHKERRQ(ierr);
-  ierr = PetscMalloc1(user->ns,&user->di_scatter);
+  ierr = PetscMalloc1(user->ns,&user->di_scatter);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(user->d,&lo2,&hi2);CHKERRQ(ierr);
   istart = 0;
@@ -915,7 +915,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatSetFromOptions(user->Av);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(user->Av,2,NULL,2,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->Av,2,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(user->Av,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->Av,&istart,&iend);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
     if (i<m/3){
@@ -948,7 +948,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatSetFromOptions(user->L);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(user->L,2,NULL,2,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->L,2,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(user->L,&istart,&iend);
+  ierr = MatGetOwnershipRange(user->L,&istart,&iend);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
     if (i<m/3){
@@ -1018,7 +1018,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     ierr = MatDuplicate(user->Div,MAT_SHARE_NONZERO_PATTERN,&user->Divwork);CHKERRQ(ierr);
   } else {
     ierr = MatCreate(PETSC_COMM_WORLD,&user->Diag);CHKERRQ(ierr);
-    ierr = MatSetSizes(user->Diag,PETSC_DECIDE,PETSC_DECIDE,m,m);
+    ierr = MatSetSizes(user->Diag,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
     ierr = MatSetFromOptions(user->Diag);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(user->Diag,1,NULL,0,NULL);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(user->Diag,1,NULL);CHKERRQ(ierr);
@@ -1056,7 +1056,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork, 0);CHKERRQ(ierr);
-  ierr = VecAXPY(user->uwork,-1.0,user->utrue); /* Note: user->utrue */
+  ierr = VecAXPY(user->uwork,-1.0,user->utrue);CHKERRQ(ierr); /* Note: user->utrue */
   ierr = VecExp(user->uwork);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
 

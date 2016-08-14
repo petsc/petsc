@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   MatFDColoring  fdcoloring;
   PetscBool      matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -251,8 +251,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

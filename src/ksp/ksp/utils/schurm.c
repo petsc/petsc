@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h>
 #include <petscksp.h>                 /*I "petscksp.h" I*/
 const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
@@ -9,8 +8,6 @@ typedef struct {
   Vec                        work1,work2;
   MatSchurComplementAinvType ainvtype;
 } Mat_SchurComplement;
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateVecs_SchurComplement"

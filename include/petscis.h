@@ -72,6 +72,8 @@ PETSC_EXTERN PetscErrorCode ISSum(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISExpand(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISGetMinMax(IS,PetscInt*,PetscInt*);
 
+PETSC_EXTERN PetscErrorCode ISLocate(IS,PetscInt,PetscInt*);
+
 PETSC_EXTERN PetscErrorCode ISBlockGetIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISBlockRestoreIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISBlockGetLocalSize(IS,PetscInt *);
@@ -93,6 +95,7 @@ PETSC_EXTERN PetscErrorCode ISPairToList(IS,IS,PetscInt*, IS *[]);
 PETSC_EXTERN PetscErrorCode ISEmbed(IS,IS,PetscBool,IS*);
 PETSC_EXTERN PetscErrorCode ISSortPermutation(IS,PetscBool,IS*);
 PETSC_EXTERN PetscErrorCode ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
+PETSC_EXTERN PetscErrorCode ISRenumber(IS,IS,PetscInt*,IS*);
 
 /* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
@@ -131,7 +134,6 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobal
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping,const PetscInt**);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping,const PetscInt**);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm,PetscInt,const ISLocalToGlobalMapping[],ISLocalToGlobalMapping*);
-PETSC_EXTERN PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping,PetscInt*);
 
 
@@ -282,6 +284,7 @@ PETSC_EXTERN PetscErrorCode PetscLayoutSetBlockSize(PetscLayout,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscLayoutCompare(PetscLayout,PetscLayout,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
 
@@ -342,6 +345,42 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetField(PetscSection, PetscInt, PetscSe
 
 PETSC_EXTERN PetscErrorCode PetscSectionSetClosureIndex(PetscSection, PetscObject, PetscSection, IS);
 PETSC_EXTERN PetscErrorCode PetscSectionGetClosureIndex(PetscSection, PetscObject, PetscSection *, IS *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetClosurePermutation(PetscSection, PetscObject, IS);
+PETSC_EXTERN PetscErrorCode PetscSectionGetClosurePermutation(PetscSection, PetscObject, IS *);
+PETSC_EXTERN PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection, PetscObject, IS *);
+
+PETSC_EXTERN PetscClassId PETSC_SECTION_SYM_CLASSID;
+
+/*J
+  PetscSectionSymType - String with the name of a PetscSectionSym type.
+
+  Level: developer
+
+  Notes: PetscSectionSym has no default implementation, but is used by DM in PetscSectionSymCreateLabel().
+
+.seealso: PetscSectionSymSetType(), PetscSectionSym, PetscSectionSymCreate(), PetscSectionSymRegister()
+J*/
+typedef const char *PetscSectionSymType;
+
+PETSC_EXTERN PetscFunctionList PetscSectionSymList;
+PETSC_EXTERN PetscErrorCode PetscSectionSymSetType(PetscSectionSym, PetscSectionSymType);
+PETSC_EXTERN PetscErrorCode PetscSectionSymGetType(PetscSectionSym, PetscSectionSymType*);
+PETSC_EXTERN PetscErrorCode PetscSectionSymRegister(const char[],PetscErrorCode (*)(PetscSectionSym));
+
+PETSC_EXTERN PetscErrorCode PetscSectionSymCreate(MPI_Comm, PetscSectionSym*);
+PETSC_EXTERN PetscErrorCode PetscSectionSymDestroy(PetscSectionSym*);
+PETSC_EXTERN PetscErrorCode PetscSectionSymView(PetscSectionSym,PetscViewer);
+
+PETSC_EXTERN PetscErrorCode PetscSectionSetSym(PetscSection, PetscSectionSym);
+PETSC_EXTERN PetscErrorCode PetscSectionGetSym(PetscSection, PetscSectionSym*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldSym(PetscSection, PetscInt, PetscSectionSym);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldSym(PetscSection, PetscInt, PetscSectionSym*);
+
+PETSC_EXTERN PetscErrorCode PetscSectionGetPointSyms(PetscSection, PetscInt, const PetscInt *, const PetscInt ***, const PetscScalar ***);
+PETSC_EXTERN PetscErrorCode PetscSectionRestorePointSyms(PetscSection, PetscInt, const PetscInt *, const PetscInt ***, const PetscScalar ***);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection, PetscInt, PetscInt, const PetscInt *, const PetscInt ***, const PetscScalar ***);
+PETSC_EXTERN PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection, PetscInt, PetscInt, const PetscInt *, const PetscInt ***, const PetscScalar ***);
+
 
 /* PetscSF support */
 PETSC_EXTERN PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);

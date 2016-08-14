@@ -94,6 +94,9 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Essl(void);
 #if defined(PETSC_HAVE_SUPERLU)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU(void);
 #endif
+#if defined(PETSC_HAVE_STRUMPACK)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_STRUMPACK(void);
+#endif
 #if defined(PETSC_HAVE_PASTIX)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Pastix(void);
 #endif
@@ -121,8 +124,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
-PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat,MatFactorType,Mat*);
-PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat,MatFactorType,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInitializePackage"
@@ -202,7 +203,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetOrdering",   MAT_CLASSID,&MAT_GetOrdering);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_CLASSID,&MAT_IncreaseOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_CLASSID,&MAT_Partitioning);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCoarsen",  MAT_COARSEN_CLASSID,&MAT_Coarsen);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCoarsen",       MAT_COARSEN_CLASSID,&MAT_Coarsen);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatZeroEntries",   MAT_CLASSID,&MAT_ZeroEntries);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatLoad",          MAT_CLASSID,&MAT_Load);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatView",          MAT_CLASSID,&MAT_View);CHKERRQ(ierr);
@@ -235,6 +236,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatRedundantMat",  MAT_CLASSID,&MAT_RedundantMat);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetMultiProcBlock", MAT_CLASSID,&MAT_GetMultiProcBlock);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetRandom",     MAT_CLASSID,&MAT_SetRandom);CHKERRQ(ierr);
 
   /* these may be specific to MPIAIJ matrices */
   ierr = PetscLogEventRegister("MatMPISumSeqNumeric",MAT_CLASSID,&MAT_Seqstompinum);CHKERRQ(ierr);
@@ -262,12 +264,12 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatSetValBatch3",MAT_CLASSID,&MAT_SetValuesBatchIII);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch4",MAT_CLASSID,&MAT_SetValuesBatchIV);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&Mat_Coloring_Apply);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringComm",MAT_COLORING_CLASSID,&Mat_Coloring_Comm);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringLocal",MAT_COLORING_CLASSID,&Mat_Coloring_Local);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringIS",MAT_COLORING_CLASSID,&Mat_Coloring_ISCreate);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&Mat_Coloring_SetUp);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatColoringWeights",MAT_COLORING_CLASSID,&Mat_Coloring_Weights);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&MATCOLORING_Apply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringComm",MAT_COLORING_CLASSID,&MATCOLORING_Comm);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringLocal",MAT_COLORING_CLASSID,&MATCOLORING_Local);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringIS",MAT_COLORING_CLASSID,&MATCOLORING_ISCreate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&MATCOLORING_SetUp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringWeights",MAT_COLORING_CLASSID,&MATCOLORING_Weights);CHKERRQ(ierr);
 
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
@@ -316,10 +318,6 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
 
   ierr = MatSolverPackageRegister(MATSOLVERBAS,   MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_bas);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERBSTRM, MATSEQBAIJ,       MAT_FACTOR_LU,MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERBSTRM, MATSEQBAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSBSTRM,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSBSTRM,MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
 
   /*
      Register the external package factorization based solvers
@@ -342,6 +340,9 @@ PetscErrorCode  MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
   ierr = MatSolverPackageRegister_SuperLU();CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_STRUMPACK)
+  ierr = MatSolverPackageRegister_STRUMPACK();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
   ierr = MatSolverPackageRegister_Pastix();CHKERRQ(ierr);

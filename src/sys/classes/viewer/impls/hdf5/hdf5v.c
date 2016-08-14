@@ -62,6 +62,7 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   }
   ierr = PetscFree(hdf5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -91,8 +92,8 @@ PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscB
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5SetBaseDimension2"
-/*@C
-     PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a 
+/*@
+     PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
 
     Logically Collective on PetscViewer
@@ -125,8 +126,8 @@ PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer,PetscBool flg
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5GetBaseDimension2"
-/*@C
-     PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a 
+/*@
+     PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
 
     Logically Collective on PetscViewer
@@ -168,7 +169,7 @@ PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool fl
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5SetSPOutput"
-/*@C
+/*@
      PetscViewerHDF5SetSPOutput - Data is written to disk in single precision even if PETSc is
        compiled with double precision PetscReal.
 
@@ -203,7 +204,7 @@ PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer,PetscBool flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5GetSPOutput"
-/*@C
+/*@
      PetscViewerHDF5GetSPOutput - Data is written to disk in single precision even if PETSc is
        compiled with double precision PetscReal.
 
@@ -246,6 +247,8 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (hdf5->file_id) PetscStackCallHDF5(H5Fclose,(hdf5->file_id));
+  if (hdf5->filename) {ierr = PetscFree(hdf5->filename);CHKERRQ(ierr);}
   ierr = PetscStrallocpy(name, &hdf5->filename);CHKERRQ(ierr);
   /* Set up file access property list with parallel I/O access */
   PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_FILE_ACCESS));
@@ -272,6 +275,18 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileGetName_HDF5"
+static PetscErrorCode PetscViewerFileGetName_HDF5(PetscViewer viewer,const char **name)
+{
+  PetscViewer_HDF5 *vhdf5 = (PetscViewer_HDF5*)viewer->data;
+
+  PetscFunctionBegin;
+  *name = vhdf5->filename;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_HDF5"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 {
@@ -291,6 +306,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   hdf5->groups           = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetBaseDimension2_C",PetscViewerHDF5SetBaseDimension2_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetSPOutput_C",PetscViewerHDF5SetSPOutput_HDF5);CHKERRQ(ierr);
@@ -394,7 +410,7 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
-  ierr = PetscMalloc(sizeof(GroupList), &groupNode);CHKERRQ(ierr);
+  ierr = PetscNew(&groupNode);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char**) &groupNode->name);CHKERRQ(ierr);
 
   groupNode->next = hdf5->groups;
@@ -617,7 +633,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5WriteAttribute"
-/*@
+/*@C
  PetscViewerHDF5WriteAttribute - Write a scalar attribute
 
   Input Parameters:
@@ -666,7 +682,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5ReadAttribute"
-/*@
+/*@C
  PetscViewerHDF5ReadAttribute - Read a scalar attribute
 
   Input Parameters:
@@ -735,7 +751,7 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5HasAttribute"
-/*@
+/*@C
  PetscViewerHDF5HasAttribute - Check whether a scalar attribute exists
 
   Input Parameters:

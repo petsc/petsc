@@ -110,6 +110,7 @@ typedef const char* VecType;
 
 
 /* Logging support */
+#define    REAL_FILE_CLASSID 1211213
 #define    VEC_FILE_CLASSID 1211214
 PETSC_EXTERN PetscClassId VEC_CLASSID;
 PETSC_EXTERN PetscClassId VEC_SCATTER_CLASSID;
@@ -560,7 +561,9 @@ PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec,PetscCUDAIndices);
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUDA(MPI_Comm,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUDA(MPI_Comm,PetscInt,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPICUDAWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,Vec*);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec,PetscInt*,Vec**);

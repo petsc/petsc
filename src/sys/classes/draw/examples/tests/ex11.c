@@ -23,6 +23,6 @@ int main(int argc,char **argv)
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

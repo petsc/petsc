@@ -32,6 +32,7 @@ PETSC_EXTERN PetscErrorCode DMLabelStratumHasPoint(DMLabel, PetscInt, PetscInt, 
 PETSC_EXTERN PetscErrorCode DMLabelHasStratum(DMLabel, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumSize(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumIS(DMLabel, PetscInt, IS *);
+PETSC_EXTERN PetscErrorCode DMLabelSetStratumIS(DMLabel, PetscInt, IS);
 PETSC_EXTERN PetscErrorCode DMLabelClearStratum(DMLabel, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelCreateIndex(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelDestroyIndex(DMLabel);
@@ -44,5 +45,10 @@ PETSC_EXTERN PetscErrorCode DMLabelGather(DMLabel, PetscSF, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelConvertToSection(DMLabel, PetscSection *, IS *);
 
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, PetscSF, PetscBool, DMLabel, PetscInt, PetscSection *);
+
+#define PETSCSECTIONSYMLABEL "label"
+PETSC_EXTERN PetscErrorCode PetscSectionSymCreateLabel(MPI_Comm,DMLabel,PetscSectionSym *);
+PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym,DMLabel);
+PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym,PetscInt,PetscInt,PetscInt,PetscInt,PetscCopyMode,const PetscInt **,const PetscScalar **);
 
 #endif

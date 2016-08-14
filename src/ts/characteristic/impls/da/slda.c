@@ -106,7 +106,7 @@ PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &bx, &by, 0, 0);
+  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &bx, &by, 0, 0);CHKERRQ(ierr);
 
   if (bx == DM_BOUNDARY_PERIODIC) {
       while (*x >= (PetscScalar)gx) *x -= (PetscScalar)gx;
@@ -116,5 +116,5 @@ PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar 
       while (*y >= (PetscScalar)gy) *y -= (PetscScalar)gy;
       while (*y < 0.0)              *y += (PetscScalar)gy;
     }
-  PetscFunctionReturn(ierr);
+  PetscFunctionReturn(0);
 }

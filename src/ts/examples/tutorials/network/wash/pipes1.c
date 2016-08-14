@@ -573,7 +573,7 @@ int main(int argc,char ** argv)
   DMNetworkMonitor  monitor;
   DMNetworkComponentGenericDataType *nwarr;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -724,7 +724,7 @@ int main(int argc,char ** argv)
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = TSMonitorSet(ts, TSDMNetworkMonitor, monitor, PETSC_NULL);
+    ierr = TSMonitorSet(ts, TSDMNetworkMonitor, monitor, PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -766,6 +766,6 @@ int main(int argc,char ** argv)
   }
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
   ierr = PetscFree(wash);CHKERRQ(ierr);
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }

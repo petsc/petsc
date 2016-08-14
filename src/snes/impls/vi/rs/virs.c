@@ -1,7 +1,5 @@
 
 #include <../src/snes/impls/vi/rs/virsimpl.h> /*I "petscsnes.h" I*/
-#include <petsc/private/kspimpl.h>
-#include <petsc/private/matimpl.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/vecimpl.h>
 
@@ -262,8 +260,6 @@ PetscErrorCode  DMDestroyVI(DM dm)
 /* --------------------------------------------------------------------------------------------------------*/
 
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreateIndexSets_VINEWTONRSLS"
 PetscErrorCode SNESCreateIndexSets_VINEWTONRSLS(SNES snes,Vec X,Vec F,IS *ISact,IS *ISinact)
@@ -349,7 +345,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   /* Multigrid must use Galerkin for coarse grids with active set/reduced space methods; cannot rediscretize on coarser grids*/
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_BOTH);CHKERRQ(ierr);
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
@@ -433,8 +429,9 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
       if (keptrows) {
         PetscInt       cnt,*nrows,k;
         const PetscInt *krows,*inact;
-        PetscInt       rstart=jac_inact_inact->rmap->rstart;
+        PetscInt       rstart;
 
+        ierr = MatGetOwnershipRange(jac_inact_inact,&rstart,NULL);CHKERRQ(ierr);
         ierr = MatDestroy(&jac_inact_inact);CHKERRQ(ierr);
         ierr = ISDestroy(&IS_act);CHKERRQ(ierr);
 
@@ -776,7 +773,7 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 .  1. - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSetType(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 
 M*/
 #undef __FUNCT__
@@ -797,6 +794,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
 
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
+
+  snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
   ierr                = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data          = (void*)vi;

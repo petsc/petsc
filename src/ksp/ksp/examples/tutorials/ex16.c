@@ -37,9 +37,9 @@ int main(int argc,char **args)
   PetscInt       ntimes,i,j,k,Ii,J,Istart,Iend;
   PetscInt       m   = 8,n = 7,its;
   PetscBool      flg = PETSC_FALSE;
-  PetscScalar    v,one = 1.0,neg_one = -1.0,rhs;
+  PetscScalar    v,one = 1.0,rhs;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
@@ -165,7 +165,7 @@ int main(int argc,char **args)
     /*
        Check the error
     */
-    ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+    ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     /*
@@ -193,5 +193,5 @@ int main(int argc,char **args)
          options are chosen (e.g., -log_summary).
   */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

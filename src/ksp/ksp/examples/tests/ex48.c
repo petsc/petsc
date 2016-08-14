@@ -8,7 +8,6 @@ static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
     Provided by: Mark Filipiak <mjf@staffmail.ed.ac.uk>
 */
 #include <petscksp.h>
-#include <petsc/private/kspimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -22,10 +21,10 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,n = 2,col[3],its;
   PetscMPIInt    size;
-  PetscScalar    neg_one      = -1.0,one = 1.0,value[3];
+  PetscScalar    one = 1.0,value[3];
   PetscBool      nonzeroguess = PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -147,7 +146,7 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
@@ -168,5 +167,5 @@ int main(int argc,char **args)
          options are chosen (e.g., -log_summary).
   */
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

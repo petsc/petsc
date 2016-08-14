@@ -76,5 +76,5 @@ int main(int argc,char **argv)
 
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

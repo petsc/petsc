@@ -49,7 +49,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBeginUser;
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len)              {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, dm);CHKERRQ(ierr);}
   else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
   if (user->testPartition) {
     PetscPartitioner part;
@@ -135,7 +135,7 @@ static PetscErrorCode TestLocation(DM dm, AppCtx *user)
     ierr = VecGetArray(v, &a);CHKERRQ(ierr);
     for (d = 0; d < dim; ++d) a[d] = centroid[d];
     ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
-    ierr = DMLocatePoints(dm, v, &cellSF);CHKERRQ(ierr);
+    ierr = DMLocatePoints(dm, v, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(cellSF,NULL,&n,NULL,&cells);CHKERRQ(ierr);
     if (n        != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Found %d cells instead %d", n, 1);
@@ -153,11 +153,11 @@ int main(int argc, char **argv)
   AppCtx         user; /* user-defined work context */
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = TestLocation(dm, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

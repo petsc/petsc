@@ -44,7 +44,7 @@ int main(int argc,char **args)
   PetscReal      *gllNode, *gllWgts;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL);CHKERRQ(ierr);
@@ -60,8 +60,6 @@ int main(int argc,char **args)
   ierr  = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr  = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr  = MatSetUp(A);CHKERRQ(ierr);
-  start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
-  end   = start + M/size + ((M%size) > rank);
 
   /* Create matrix  */
   ierr  = MatCreate(PETSC_COMM_WORLD,&Mass);CHKERRQ(ierr);
@@ -224,7 +222,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&Mass);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* --------------------------------------------------------------------- */

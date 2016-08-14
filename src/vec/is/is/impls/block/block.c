@@ -34,6 +34,43 @@ static PetscErrorCode ISDestroy_Block(IS is)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISLocate_Block"
+static PetscErrorCode ISLocate_Block(IS is,PetscInt key,PetscInt *location)
+{
+  IS_Block       *sub = (IS_Block*)is->data;
+  PetscInt       numIdx, i, bs, bkey, mkey;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetBlockSize(is->map,&bs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(is->map,&numIdx);CHKERRQ(ierr);
+  numIdx /= bs;
+  bkey    = key / bs;
+  mkey    = key % bs;
+  if (mkey < 0) {
+    bkey--;
+    mkey += bs;
+  }
+  if (sub->sorted) {
+    ierr = PetscFindInt(bkey,numIdx,sub->idx,location);CHKERRQ(ierr);
+  } else {
+    const PetscInt *idx = sub->idx;
+
+    *location = -1;
+    for (i = 0; i < numIdx; i++) {
+      if (idx[i] == bkey) {
+        *location = i;
+        break;
+      }
+    }
+  }
+  if (*location >= 0) {
+    *location = *location * bs + mkey;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISGetIndices_Block"
 static PetscErrorCode ISGetIndices_Block(IS in,const PetscInt *idx[])
 {
@@ -330,7 +367,8 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISToGeneral_Block,
                                ISOnComm_Block,
                                ISSetBlockSize_Block,
-                               0};
+                               0,
+                               ISLocate_Block};
 
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockSetIndices"
@@ -395,8 +433,12 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
   for (i=1; i<n; i++) {
     if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
   }
-  if (n) min = max = idx[0];
-  else   min = max = 0;
+  if (n) {
+    min = max = idx[0];
+  } else {
+    min = -1;
+    max = -2;
+  }
   for (i=1; i<n; i++) {
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];

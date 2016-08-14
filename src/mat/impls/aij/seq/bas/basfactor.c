@@ -182,6 +182,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_bas"
+PetscErrorCode MatFactorGetSolverPackage_seqaij_bas(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MATSOLVERBAS;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_bas"
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A,MatFactorType ftype,Mat *B)
 {
@@ -197,6 +206,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A,MatFactorType ftype,Ma
 
     (*B)->ops->iccfactorsymbolic     = MatICCFactorSymbolic_SeqAIJ_Bas;
     (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_Bas;
+     ierr = PetscObjectComposeFunction((PetscObject)*B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_bas);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factortype = ftype;
   

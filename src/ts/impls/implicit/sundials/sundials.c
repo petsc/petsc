@@ -916,17 +916,17 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool ft)
       TSSUNDIALS - ODE solver using the LLNL CVODE/SUNDIALS package (now called SUNDIALS)
 
    Options Database:
-+    -ts_sundials_type <bdf,adams>
++    -ts_sundials_type <bdf,adams> -
 .    -ts_sundials_gramschmidt_type <modified, classical> - type of orthogonalization inside GMRES
 .    -ts_sundials_atol <tol> - Absolute tolerance for convergence
 .    -ts_sundials_rtol <tol> - Relative tolerance for convergence
-.    -ts_sundials_linear_tolerance <tol>
+.    -ts_sundials_linear_tolerance <tol> - 
 .    -ts_sundials_maxl <maxl> - Max dimension of the Krylov subspace
--    -ts_sundials_monitor_steps - Monitor SUNDIALS internel steps
+-    -ts_sundials_monitor_steps - Monitor SUNDIALS internal steps
 
 
-    Notes: This uses its own nonlinear solver and Krylov method so PETSc SNES and KSP options do not apply
-           only PETSc PC options
+    Notes: This uses its own nonlinear solver and Krylov method so PETSc SNES and KSP options do not apply,
+           only PETSc PC options.
 
     Level: beginner
 

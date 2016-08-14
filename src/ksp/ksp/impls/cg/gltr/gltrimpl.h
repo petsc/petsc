@@ -18,6 +18,8 @@
 #if !defined(__GLTR)
 #define __GLTR
 
+#include <petsc/private/kspimpl.h>
+
 typedef struct {
   PetscReal *diag;             /* Diagonal part of Lanczos matrix           */
   PetscReal *offd;             /* Off-diagonal part of Lanczos matrix       */

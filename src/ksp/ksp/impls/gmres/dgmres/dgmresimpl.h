@@ -1,10 +1,9 @@
 #if !defined(__DGMRES)
 #define __DGMRES
 
-#include <petsc/private/kspimpl.h>        /*I "petscksp.h" I*/
-#include <petscblaslapack.h>
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
+#include <petscblaslapack.h>
 
 #define KSPDGMRESHEADER \
   /* Data specific to DGMRES */ \
@@ -46,6 +45,8 @@ typedef struct {
   KSPGMRESHEADER
   KSPDGMRESHEADER
 } KSP_DGMRES;
+
+PETSC_INTERN PetscErrorCode  KSPDGMRESComputeDeflationData(KSP,PetscInt*);
 
 PETSC_EXTERN PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;
 #define HH(a,b)  (dgmres->hh_origin + (b)*(dgmres->max_k+2)+(a))

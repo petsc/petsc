@@ -1,0 +1,68 @@
+  0 SNES VI Function norm 0.0946221 Active lower constraints 202/7417 upper constraints 0/0 Percent of total 0.0214688 Percent of bounded 0.
+    0 KSP Residual norm 2.45765 
+    1 KSP Residual norm 0.000603765 
+    2 KSP Residual norm 4.18806e-05 
+    3 KSP Residual norm 3.7929e-07 
+  1 SNES VI Function norm 0.0647612 Active lower constraints 854/4482 upper constraints 0/0 Percent of total 0.0907642 Percent of bounded 0.
+    0 KSP Residual norm 1.79404 
+    1 KSP Residual norm 0.00137158 
+    2 KSP Residual norm 2.78145e-05 
+    3 KSP Residual norm 4.31444e-07 
+  2 SNES VI Function norm 0.060498 Active lower constraints 424/3677 upper constraints 0/0 Percent of total 0.0450632 Percent of bounded 0.
+    0 KSP Residual norm 1.69714 
+    1 KSP Residual norm 0.00146784 
+    2 KSP Residual norm 2.98195e-05 
+    3 KSP Residual norm 3.80535e-07 
+  3 SNES VI Function norm 0.056679 Active lower constraints 277/2847 upper constraints 0/0 Percent of total 0.0294399 Percent of bounded 0.
+    0 KSP Residual norm 2.09943 
+    1 KSP Residual norm 0.00199476 
+    2 KSP Residual norm 3.66895e-05 
+    3 KSP Residual norm 5.17618e-07 
+  4 SNES VI Function norm 0.0529449 Active lower constraints 211/1987 upper constraints 0/0 Percent of total 0.0224253 Percent of bounded 0.
+    0 KSP Residual norm 2.85755 
+    1 KSP Residual norm 0.00251367 
+    2 KSP Residual norm 4.78256e-05 
+    3 KSP Residual norm 6.67164e-07 
+  5 SNES VI Function norm 0.0489903 Active lower constraints 198/1130 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0.
+    0 KSP Residual norm 3.51417 
+    1 KSP Residual norm 0.00252886 
+    2 KSP Residual norm 4.98769e-05 
+    3 KSP Residual norm 7.54949e-07 
+  6 SNES VI Function norm 0.0441333 Active lower constraints 198/604 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0.
+    0 KSP Residual norm 3.84722 
+    1 KSP Residual norm 0.00228059 
+    2 KSP Residual norm 4.16873e-05 
+    3 KSP Residual norm 7.9002e-07 
+  7 SNES VI Function norm 0.0369538 Active lower constraints 198/294 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0.
+    0 KSP Residual norm 3.90543 
+    1 KSP Residual norm 0.00214523 
+    2 KSP Residual norm 3.0449e-05 
+  8 SNES VI Function norm 0.0550699 Active lower constraints 178/178 upper constraints 0/0 Percent of total 0.0189181 Percent of bounded 0.
+    0 KSP Residual norm 3.98322 
+    1 KSP Residual norm 0.00110444 
+    2 KSP Residual norm 1.94814e-05 
+  9 SNES VI Function norm 0.0625589 Active lower constraints 155/155 upper constraints 0/0 Percent of total 0.0164736 Percent of bounded 0.
+    0 KSP Residual norm 1.277 
+    1 KSP Residual norm 0.000340663 
+    2 KSP Residual norm 5.82622e-06 
+ 10 SNES VI Function norm 0.0388619 Active lower constraints 176/176 upper constraints 0/0 Percent of total 0.0187055 Percent of bounded 0.
+    0 KSP Residual norm 0.390765 
+    1 KSP Residual norm 7.04616e-05 
+    2 KSP Residual norm 2.59225e-06 
+ 11 SNES VI Function norm 0.00749577 Active lower constraints 197/197 upper constraints 0/0 Percent of total 0.0209374 Percent of bounded 0.
+    0 KSP Residual norm 0.0283107 
+    1 KSP Residual norm 1.27367e-05 
+    2 KSP Residual norm 4.13472e-07 
+    3 KSP Residual norm 9.76387e-09 
+ 12 SNES VI Function norm 1.65924e-05 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0.
+    0 KSP Residual norm 0.000333878 
+    1 KSP Residual norm 1.76895e-07 
+    2 KSP Residual norm 7.17171e-09 
+    3 KSP Residual norm 1.660e-10 
+ 13 SNES VI Function norm 5.03642e-09 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0.
+    0 KSP Residual norm 6.16949e-08 
+    1 KSP Residual norm 8.331e-11 
+    2 KSP Residual norm < 1.e-11
+    3 KSP Residual norm < 1.e-11
+ 14 SNES VI Function norm 1.62272e-13 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0.
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 14

@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscBool            equal;
   PetscMPIInt          size;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -123,7 +123,6 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
-
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }

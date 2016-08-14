@@ -1307,7 +1307,7 @@ class Configure(config.base.Configure):
               oldLib  = self.linkerObj
               oldLibs = self.LIBS
               self.LIBS += ' -L'+self.tmpDir+' -lconftest'
-              accepted = self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);')
+              accepted = self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif (ret) {}\n')
               os.remove(oldLib)
               self.LIBS = oldLibs
               if accepted:

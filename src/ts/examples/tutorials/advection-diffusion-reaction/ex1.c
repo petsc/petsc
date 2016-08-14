@@ -92,7 +92,7 @@ PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(AppCtx),ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(v,&(*ctx)->k,1,NULL,PETSC_SCALAR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -195,7 +195,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
@@ -273,5 +273,5 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }

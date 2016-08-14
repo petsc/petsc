@@ -570,7 +570,7 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   PetscFunctionBegin;
   if (!ctx->fem) PetscFunctionReturn(0);
   /* Create DM */
-  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, 2, 2, PETSC_FALSE, &dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   /* Project solution into FE space */
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
@@ -590,10 +590,10 @@ int main(int argc, char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = MapleTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = FEMTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

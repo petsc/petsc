@@ -162,7 +162,7 @@ PetscErrorCode IFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
-  ierr = VecAYPX(F,-1.0,Ydot);
+  ierr = VecAYPX(F,-1.0,Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -219,7 +219,7 @@ PetscErrorCode IFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
-  ierr = VecAYPX(F,-1.0,Ydot);
+  ierr = VecAYPX(F,-1.0,Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -275,7 +275,7 @@ PetscErrorCode IFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
-  ierr = VecAYPX(F,-1.0,Ydot);
+  ierr = VecAYPX(F,-1.0,Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1078,7 +1078,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = VecSet(Y,0);CHKERRQ(ierr);
 
   /* Initialize the problem */
-  ierr = Initialize(Y,&ptype[0]);
+  ierr = Initialize(Y,&ptype[0]);CHKERRQ(ierr);
 
   /* Create and initialize the time-integrator                            */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
@@ -1096,11 +1096,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
-  } else if ((!strcmp(time_scheme,TSTHETA)) ||
-             (!strcmp(time_scheme,TSBEULER)) ||
-             (!strcmp(time_scheme,TSCN)) ||
-             (!strcmp(time_scheme,TSALPHA)) ||
-             (!strcmp(time_scheme,TSARKIMEX))) {
+  } else if ((!strcmp(time_scheme,TSTHETA)) || (!strcmp(time_scheme,TSBEULER)) || (!strcmp(time_scheme,TSCN)) || (!strcmp(time_scheme,TSALPHA)) || (!strcmp(time_scheme,TSARKIMEX))) {
     /* Implicit time-integration -> specify left-hand side function ydot-f(y) = 0 */
     /* and its Jacobian function                                                 */
     ierr = TSSetIFunction(ts,NULL,IFunction,&ptype[0]);CHKERRQ(ierr);
@@ -1116,7 +1112,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Exact solution */
   ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);
-  ierr = ExactSolution(Yex,&ptype[0],tfinal,exact_flag);
+  ierr = ExactSolution(Yex,&ptype[0],tfinal,exact_flag);CHKERRQ(ierr);
 
   /* Calculate Error */
   ierr = VecAYPX(Yex,-1.0,Y);CHKERRQ(ierr);
@@ -1150,7 +1146,7 @@ int main(int argc, char **argv)
   PetscInt        r;
 
   /* Initialize program */
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* Check if running with only 1 proc */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -1169,7 +1165,7 @@ int main(int argc, char **argv)
     error[r] = 0;
     if (r > 0) dt /= refine_fac;
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving ODE \"%s\" with dt %f, final time %f and system size %D.\n",ptype,(double)dt,(double)tfinal,GetSize(&ptype[0]));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving ODE \"%s\" with dt %f, final time %f and system size %D.\n",ptype,(double)dt,(double)tfinal,GetSize(&ptype[0]));CHKERRQ(ierr);
     ierr = SolveODE(&ptype[0],dt,tfinal,maxiter,&error[r],&flag);CHKERRQ(ierr);
     if (flag) {
       /* If exact solution available for the specified ODE */
@@ -1182,9 +1178,7 @@ int main(int argc, char **argv)
     }
   }
   ierr = PetscFree(error);CHKERRQ(ierr);
-
-  /* Exit */
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
 }
 

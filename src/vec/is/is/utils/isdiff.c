@@ -356,7 +356,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
     N   += n;
   }
-  ierr = PetscMalloc(sizeof(PetscInt)*N, &idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N, &idx);CHKERRQ(ierr);
   N = 0;
   for (i = 0; i < len; ++i) {
     ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
@@ -511,7 +511,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
     if (lcount > 0) {
       *listlen = lcount;
       if (!*islist) {
-        ierr = PetscMalloc(sizeof(IS)*lcount, islist);CHKERRQ(ierr);
+        ierr = PetscMalloc1(lcount, islist);CHKERRQ(ierr);
       }
     }
     /*

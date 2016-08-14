@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   PetscReal      norm;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-dim","the dimension of the problem","",2,&dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   numDof[0] = dim;
   ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, NULL, NULL, &section);CHKERRQ(ierr);
@@ -134,5 +134,5 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

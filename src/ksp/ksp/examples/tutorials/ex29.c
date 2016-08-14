@@ -53,14 +53,13 @@ int main(int argc,char **argv)
   PetscInt       bc;
   Vec            b,x;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0,1,0,1,0,0);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Pressure");CHKERRQ(ierr);
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");CHKERRQ(ierr);
   user.rho    = 1.0;
   ierr        = PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, NULL);CHKERRQ(ierr);
   user.nu     = 0.1;
@@ -68,7 +67,7 @@ int main(int argc,char **argv)
   bc          = (PetscInt)DIRICHLET;
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
-  ierr        = PetscOptionsEnd();
+  ierr        = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
@@ -82,8 +81,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

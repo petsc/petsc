@@ -140,8 +140,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawViewPortsCreate"
 /*@C
-   PetscDrawViewPortsCreate - Splits a window into smaller
-       view ports. Each processor shares all the viewports.
+   PetscDrawViewPortsCreate - Splits a window into smaller view ports. Each processor shares all the viewports.
 
    Collective on PetscDraw
 
@@ -151,6 +150,9 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 
    Output Parameter:
 .  ports - a PetscDrawViewPorts context (C structure)
+
+   Options Database:
+.  -draw_ports - display multiple fields in the same window with PetscDrawPorts instead of in seperate windows
 
    Level: advanced
 
@@ -187,10 +189,11 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
   while (n*n < nports) n++;
   h = 1.0/n;
 
-  ierr = PetscMalloc1(n*n,&xl);CHKERRQ(ierr); ports->xl = xl;
-  ierr = PetscMalloc1(n*n,&xr);CHKERRQ(ierr); ports->xr = xr;
-  ierr = PetscMalloc1(n*n,&yl);CHKERRQ(ierr); ports->yl = yl;
-  ierr = PetscMalloc1(n*n,&yr);CHKERRQ(ierr); ports->yr = yr;
+  ierr = PetscMalloc4(n*n,&xl,n*n,&xr,n*n,&yl,n*n,&yr);CHKERRQ(ierr);
+  ports->xl = xl;
+  ports->xr = xr;
+  ports->yl = yl;
+  ports->yr = yr;
 
   ierr = PetscDrawSetCoordinates(draw,0.0,0.0,1.0,1.0);CHKERRQ(ierr);
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
@@ -268,10 +271,11 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   /* save previous drawport of window */
   ierr = PetscDrawGetViewPort(draw,&ports->port_xl,&ports->port_yl,&ports->port_xr,&ports->port_yr);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(n,&xl);CHKERRQ(ierr); ports->xl = xl;
-  ierr = PetscMalloc1(n,&xr);CHKERRQ(ierr); ports->xr = xr;
-  ierr = PetscMalloc1(n,&yl);CHKERRQ(ierr); ports->yl = yl;
-  ierr = PetscMalloc1(n,&yr);CHKERRQ(ierr); ports->yr = yr;
+  ierr = PetscMalloc4(n,&xl,n,&xr,n,&yl,n,&yr);CHKERRQ(ierr);
+  ports->xr = xr;
+  ports->xl = xl;
+  ports->yl = yl;
+  ports->yr = yr;
 
   ierr = PetscDrawSetCoordinates(draw,0.0,0.0,1.0,1.0);CHKERRQ(ierr);
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
@@ -327,10 +331,7 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
   /* reset Drawport of Window back to previous value */
   ierr = PetscDrawSetViewPort(ports->draw,ports->port_xl,ports->port_yl,ports->port_xr,ports->port_yr);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&ports->draw);CHKERRQ(ierr);
-  ierr = PetscFree(ports->xl);CHKERRQ(ierr);
-  ierr = PetscFree(ports->xr);CHKERRQ(ierr);
-  ierr = PetscFree(ports->yl);CHKERRQ(ierr);
-  ierr = PetscFree(ports->yr);CHKERRQ(ierr);
+  ierr = PetscFree4(ports->xl,ports->xr,ports->yl,ports->yr);CHKERRQ(ierr);
   ierr = PetscFree(ports);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

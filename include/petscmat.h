@@ -60,12 +60,6 @@ typedef const char* MatType;
 #define MATSBAIJ           "sbaij"
 #define MATSEQSBAIJ        "seqsbaij"
 #define MATMPISBAIJ        "mpisbaij"
-#define MATSEQBSTRM        "seqbstrm"
-#define MATMPIBSTRM        "mpibstrm"
-#define MATBSTRM           "bstrm"
-#define MATSEQSBSTRM       "seqsbstrm"
-#define MATMPISBSTRM       "mpisbstrm"
-#define MATSBSTRM          "sbstrm"
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
@@ -99,10 +93,11 @@ J*/
 #define MatSolverPackage char*
 #define MATSOLVERSUPERLU      "superlu"
 #define MATSOLVERSUPERLU_DIST "superlu_dist"
+#define MATSOLVERSTRUMPACK    "strumpack"
 #define MATSOLVERUMFPACK      "umfpack"
 #define MATSOLVERCHOLMOD      "cholmod"
-#define MATSOLVERCLIQUE       "clique"
 #define MATSOLVERKLU          "klu"
+#define MATSOLVERCLIQUE       "clique"
 #define MATSOLVERELEMENTAL    "elemental"
 #define MATSOLVERESSL         "essl"
 #define MATSOLVERLUSOL        "lusol"
@@ -114,8 +109,6 @@ J*/
 #define MATSOLVERPETSC        "petsc"
 #define MATSOLVERBAS          "bas"
 #define MATSOLVERCUSPARSE     "cusparse"
-#define MATSOLVERBSTRM        "bstrm"
-#define MATSOLVERSBSTRM       "sbstrm"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -187,7 +180,6 @@ PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat,PetscBool);
 PETSC_EXTERN PetscFunctionList MatList;
 PETSC_EXTERN PetscFunctionList MatColoringList;
 PETSC_EXTERN PetscFunctionList MatPartitioningList;
-PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
 /*E
     MatStructure - Indicates if two matrices have the same nonzero structure
@@ -227,11 +219,6 @@ PETSC_EXTERN PetscErrorCode MatCreateLRC(Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,ISLocalToGlobalMapping,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-
-PETSC_EXTERN PetscErrorCode MatCreateSeqBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateSeqSBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPISBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 
 PETSC_EXTERN PetscErrorCode MatCreateScatter(MPI_Comm,VecScatter,Mat*);
 PETSC_EXTERN PetscErrorCode MatScatterSetVecScatter(Mat,VecScatter);
@@ -996,9 +983,13 @@ PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
     Level: beginner
 
-    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+    Developer Notes: Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+
+.seealso: MatGetFactor()
 S*/
 typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY,MAT_FACTOR_OTHER} MatFactorError;
+
+PETSC_EXTERN PetscErrorCode MatFactorGetError(Mat,MatFactorError*);
 
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
@@ -1142,6 +1133,7 @@ PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringVal
 PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeightType);
 PETSC_EXTERN PetscErrorCode MatColoringSetWeights(MatColoring,PetscReal*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringCreateWeights(MatColoring,PetscReal **,PetscInt **lperm);
+PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences
@@ -1291,73 +1283,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartition
 PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning,PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning, PetscInt);
-
-/*
-    These routines are for coarsening matrices:
-*/
-
-/*S
-     MatCoarsen - Object for managing the coarsening of a graph (symmetric matrix)
-
-   Level: beginner
-
-  Concepts: coarsen
-
-.seealso:  MatCoarsenCreate), MatCoarsenType
-S*/
-typedef struct _p_MatCoarsen* MatCoarsen;
-
-/*J
-    MatCoarsenType - String with the name of a PETSc matrix coarsen
-
-   Level: beginner
-
-.seealso: MatCoarsenCreate(), MatCoarsen
-J*/
-typedef const char* MatCoarsenType;
-#define MATCOARSENMIS  "mis"
-#define MATCOARSENHEM  "hem"
-
-/* linked list for aggregates */
-typedef struct _PetscCDIntNd{
-  struct _PetscCDIntNd *next;
-  PetscInt             gid;
-}PetscCDIntNd;
-
-/* only used by node pool */
-typedef struct _PetscCDArrNd{
-  struct _PetscCDArrNd *next;
-  struct _PetscCDIntNd *array;
-}PetscCDArrNd;
-
-typedef struct _PetscCoarsenData{
-  PetscCDArrNd pool_list;  /* node pool */
-  PetscCDIntNd *new_node;
-  PetscInt     new_left;
-  PetscInt     chk_sz;
-  PetscCDIntNd *extra_nodes;
-  PetscCDIntNd **array;  /* Array of lists */
-  PetscInt     size;
-  Mat          mat;  /* cache a Mat for communication data */
-}PetscCoarsenData;
-
-PETSC_EXTERN PetscErrorCode MatCoarsenCreate(MPI_Comm,MatCoarsen*);
-PETSC_EXTERN PetscErrorCode MatCoarsenSetType(MatCoarsen,MatCoarsenType);
-PETSC_EXTERN PetscErrorCode MatCoarsenSetAdjacency(MatCoarsen,Mat);
-PETSC_EXTERN PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen,const IS);
-PETSC_EXTERN PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen,PetscBool);
-PETSC_EXTERN PetscErrorCode MatCoarsenGetData( MatCoarsen, PetscCoarsenData ** );
-PETSC_EXTERN PetscErrorCode MatCoarsenApply(MatCoarsen);
-PETSC_EXTERN PetscErrorCode MatCoarsenDestroy(MatCoarsen*);
-
-PETSC_EXTERN PetscErrorCode MatCoarsenRegister(const char[],PetscErrorCode (*)(MatCoarsen));
-
-
-
-PETSC_EXTERN PetscErrorCode MatCoarsenView(MatCoarsen,PetscViewer);
-PETSC_EXTERN PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen);
-PETSC_EXTERN PetscErrorCode MatCoarsenGetType(MatCoarsen,MatCoarsenType*);
-PETSC_STATIC_INLINE PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
 PETSC_EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);
@@ -1659,6 +1584,23 @@ PETSC_EXTERN PetscErrorCode MatMkl_CPardisoSetCntl(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
+/*
+   PETSc interface to SUPERLU_DIST
+*/
+#ifdef PETSC_HAVE_SUPERLU_DIST
+PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat,PetscScalar*);
+#endif
+
+/*
+   PETSc interface to STRUMPACK
+*/
+#ifdef PETSC_HAVE_STRUMPACK
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSRelCompTol(Mat,PetscReal);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSMinSize(Mat,PetscInt);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetColPerm(Mat,PetscBool);
+#endif
+
+
 #ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
@@ -1794,5 +1736,8 @@ PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscInt,PetscInt*,IS**);
 
 PETSC_EXTERN PetscErrorCode MatPreallocatorPreallocate(Mat,PetscBool,Mat);
+
+PETSC_INTERN PetscErrorCode MatHeaderMerge(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat*);
 
 #endif

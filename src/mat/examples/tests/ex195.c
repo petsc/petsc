@@ -24,7 +24,7 @@ int main(int argc,char **args)
   PetscMPIInt         size;
   PetscErrorCode      ierr;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   /*
@@ -63,5 +63,5 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A3);CHKERRQ(ierr);
   ierr = MatDestroy(&A4);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

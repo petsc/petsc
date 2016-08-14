@@ -424,7 +424,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
   } else if (useGenerator) {
     if (cellSimplex) {
-      ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_FALSE, dm);CHKERRQ(ierr);
     } else {
       const PetscInt cells[3] = {2, 2, 2};
 
@@ -487,11 +487,11 @@ int main(int argc, char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &user.dm);CHKERRQ(ierr);
   ierr = CheckMesh(user.dm, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

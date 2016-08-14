@@ -3091,7 +3091,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
   else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
   /* Make split labels so that we can have corners in multiple labels */
   {
@@ -3109,7 +3109,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectSetName(*dm,"Mesh");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)(*dm),"Mesh");CHKERRQ(ierr);
   /* Setup test partitioning */
   if (user->testPartition) {
     PetscInt         triSizes_n2[2]       = {4, 4};
@@ -3166,13 +3166,15 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupProblem"
-static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
-  PetscDS        prob;
+  const PetscInt id  = 1;
+  PetscInt       comp;
+  Parameter      *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   switch (user->solType) {
   case SOLKX:
     ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_kx);CHKERRQ(ierr);
@@ -3209,6 +3211,14 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
+  comp = 1;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  comp = 0;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wallR", "markerRight",  0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  comp = 1;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  comp = 0;
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3259,10 +3269,9 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm = dm;
   const PetscInt  dim = user->dim;
-  const PetscInt  id  = 1;
   PetscFE         fe[2], *feAux;
   PetscQuadrature q;
-  PetscDS         prob;
+  PetscDS         prob, probAux = NULL;
   Parameter      *ctx;
   PetscInt        numAux = user->solType == SOLKX ? 3 : 5, order, comp, f;
   const char     *auxFieldNames[5];
@@ -3279,43 +3288,35 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Create discretization of auxiliary fields */
   ierr = PetscMalloc1(numAux, &feAux);CHKERRQ(ierr);
   ierr = PetscBagGetNames(user->bag, auxFieldNames);CHKERRQ(ierr);
+  ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {
     ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, NULL, 0, &feAux[f]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feAux[f], auxFieldNames[f]);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux[f], q);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);
   }
-  ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
+  ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
     DM      dmAux;
-    PetscDS probAux;
 
-    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-
+    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(cdm, dmAux);CHKERRQ(ierr);
-    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
-    for (f = 0; f < numAux; ++f) {ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);}
+    ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) cdm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
     ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
     ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
 
-    ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    comp = 1;
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
-    comp = 0;
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallR", "markerRight",  0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
-    comp = 1;
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallT", "markerTop",    0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
-    comp = 0;
-    ierr = DMAddBoundary(cdm, PETSC_TRUE, "wallL", "markerLeft",   0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {ierr = PetscFEDestroy(&feAux[f]);CHKERRQ(ierr);}
+  ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
   ierr = PetscFree(feAux);CHKERRQ(ierr);
   {
     PetscObject  pressure;
@@ -3356,24 +3357,24 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNu
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  SNES             snes;                 /* nonlinear solver */
-  DM               dm;                   /* problem definition */
-  Vec              u,r;                  /* solution, residual vectors */
-  Mat              J;                    /* Jacobian matrix */
+  SNES            snes;                 /* nonlinear solver */
+  DM              dm;                   /* problem definition */
+  Vec             u,r;                  /* solution, residual vectors */
+  Mat             J;                    /* Jacobian matrix */
 #if 1
-  MatNullSpace     nullSpace;            /* May be necessary for pressure */
-  Vec              nullVec;
-  PetscReal        pint;
+  MatNullSpace    nullSpace;            /* May be necessary for pressure */
+  Vec             nullVec;
+  PetscReal       pint;
 #endif
-  AppCtx           user;                 /* user-defined work context */
-  PetscInt         its;                  /* iterations for convergence */
-  PetscReal        error = 0.0;          /* L_2 error in the solution */
-  PetscReal        ferrors[2];
-  PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
+  AppCtx          user;                 /* user-defined work context */
+  PetscInt        its;                  /* iterations for convergence */
+  PetscReal       error = 0.0;          /* L_2 error in the solution */
+  PetscReal       ferrors[2];
+  PetscErrorCode  (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
   void            *ctxs[2];
-  PetscErrorCode   ierr;
+  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
@@ -3446,5 +3447,5 @@ int main(int argc, char **argv)
   ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

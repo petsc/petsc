@@ -589,6 +589,10 @@ $  -mat_partitioning_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, parmetis)
 
+
+   Notes: If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are
+   no installed partitioners it uses current which means no repartioning.
+
    Level: beginner
 
 .keywords: partitioning, set, method, type
@@ -605,6 +609,12 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   if (!((PetscObject)part)->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
     def = MATPARTITIONINGPARMETIS;
+#elif defined(PETSC_HAVE_CHACO)
+    def = MATPARTITIONINGCHACO;
+#elif defined(PETSC_HAVE_PARTY)
+    def = MATPARTITIONINGPARTY;
+#elif defined(PETSC_HAVE_PTSCOTCH)
+    def = MATPARTITIONINGPTSCOTCH;
 #else
     def = MATPARTITIONINGCURRENT;
 #endif

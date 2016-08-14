@@ -245,6 +245,10 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 # endif
 #endif
 
+typedef short PetscShort;
+typedef char PetscChar;
+typedef float PetscFloat;
+
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
       represent size of arrays and indexing into arrays. Its size can be configured with the option
@@ -255,22 +259,22 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
-typedef int64_t Petsc64bitInt;
+typedef int64_t PetscInt64;
 # define MPIU_INT64 MPI_INT64_T
 # define PetscInt64_FMT PRId64
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
-typedef long long Petsc64bitInt;
+typedef long long PetscInt64;
 # define MPIU_INT64 MPI_LONG_LONG_INT
 # define PetscInt64_FMT "lld"
 #elif defined(PETSC_HAVE___INT64)
-typedef __int64 Petsc64bitInt;
+typedef __int64 PetscInt64;
 # define MPIU_INT64 MPI_INT64_T
 # define PetscInt64_FMT "ld"
 #else
-#error "cannot determine Petsc64bitInt type"
+#error "cannot determine PetscInt64 type"
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
-typedef Petsc64bitInt PetscInt;
+typedef PetscInt64 PetscInt;
 #define MPIU_INT MPIU_INT64
 #define PetscInt_FMT PetscInt64_FMT
 #else
@@ -307,7 +311,7 @@ typedef int PetscInt;
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
-typedef Petsc64bitInt PetscBLASInt;
+typedef PetscInt64 PetscBLASInt;
 #else
 typedef int PetscBLASInt;
 #endif
@@ -571,7 +575,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 
 /*MC
-   PetscMalloc - Allocates memory, One should use PetscMalloc1() or PetscCalloc1() usually instead of this
+   PetscMalloc - Allocates memory, One should use PetscNew(), PetscMalloc1() or PetscCalloc1() usually instead of this
 
    Synopsis:
     #include <petscsys.h>
@@ -598,6 +602,34 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 
 M*/
 #define PetscMalloc(a,b)  ((*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
+
+/*MC
+   PetscRealloc - Rellocates memory
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscRealloc(size_t m,void **result)
+
+   Not Collective
+
+   Input Parameters:
++  m - number of bytes to allocate
+-  result - initial memory allocated
+
+   Output Parameter:
+.  result - new memory allocated
+
+   Level: developer
+
+   Notes:
+   Memory is always allocated at least double aligned
+
+.seealso: PetscMalloc(), PetscFree(), PetscNew()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscRealloc(a,b)  ((*PetscTrRealloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
@@ -1380,6 +1412,7 @@ M*/
 
 PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
@@ -1417,7 +1450,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 12} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 12, PETSC_STRUCT, PETSC_DATATYPE_UNKNOWN} PetscDataType;
 PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
@@ -1501,7 +1534,7 @@ PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEn
 /*
    These are MPI operations for MPI_Allreduce() etc
 */
-PETSC_EXTERN MPI_Op PetscMaxSum_Op;
+PETSC_EXTERN MPI_Op MPIU_MAXSUM_OP;
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 PETSC_EXTERN MPI_Op MPIU_SUM;
 #else
@@ -1539,7 +1572,7 @@ typedef struct _p_PetscObject* PetscObject;
 
 .seealso: PetscObjectState, PetscObjectGetId()
 M*/
-typedef Petsc64bitInt PetscObjectId;
+typedef PetscInt64 PetscObjectId;
 
 /*MC
     PetscObjectState - integer state for a PetscObject
@@ -1552,7 +1585,7 @@ typedef Petsc64bitInt PetscObjectId;
 
 .seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
 M*/
-typedef Petsc64bitInt PetscObjectState;
+typedef PetscInt64 PetscObjectState;
 
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
@@ -1832,20 +1865,6 @@ PETSC_EXTERN PetscErrorCode PetscFPrintf(MPI_Comm,FILE*,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscPrintf(MPI_Comm,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscSNPrintf(char*,size_t,const char [],...);
 PETSC_EXTERN PetscErrorCode PetscSNPrintfCount(char*,size_t,const char [],size_t*,...);
-
-/* These are used internally by PETSc ASCII IO routines*/
-#include <stdarg.h>
-PETSC_EXTERN PetscErrorCode PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
-PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list);
-PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
-
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN PetscErrorCode PetscVFPrintf_Matlab(FILE*,const char[],va_list);
-#endif
-
-#if defined(PETSC_HAVE_CLOSURES)
-PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char*));
-#endif
 
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfDefault(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfNone(const char [],...);
@@ -2283,7 +2302,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
   PetscFunctionReturn(0);
 }
 
-#define PetscIntMult64bit(a,b)   ((Petsc64bitInt)(a))*((Petsc64bitInt)(b))
+#define PetscInt64Mult(a,b)   ((PetscInt64)(a))*((PetscInt64)(b))
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRealIntMultTruncate"
@@ -2300,7 +2319,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
    Output Parameter:
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two PetscInt as a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two positive PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
 
@@ -2314,9 +2333,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 @*/
 PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
-  r  =  (Petsc64bitInt) (a*(PetscReal)b);
+  r  =  (PetscInt64) (a*(PetscReal)b);
   if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
   return (PetscInt) r;
 }
@@ -2336,7 +2355,7 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
    Output Parameter:
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two PetscInt as a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
 
@@ -2350,9 +2369,9 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 @*/
 PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
-  r  =  PetscIntMult64bit(a,b);
+  r  =  PetscInt64Mult(a,b);
   if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
   return (PetscInt) r;
 }
@@ -2372,7 +2391,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
    Output Parameter:
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two PetscInt as a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
 
@@ -2384,9 +2403,9 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 @*/
 PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
-  r  =  ((Petsc64bitInt)a) + ((Petsc64bitInt)b);
+  r  =  ((PetscInt64)a) + ((PetscInt64)b);
   if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
   return (PetscInt) r;
 }
@@ -2406,7 +2425,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
    Output Parameter:ma
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two 32 bit PetscInt and store in a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
 
    Developers Note: We currently assume that PetscInt addition can never overflow, this is obviously wrong but requires many more checks.
@@ -2417,10 +2436,10 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,PetscInt *result)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
   PetscFunctionBegin;
-  r  =  PetscIntMult64bit(a,b);
+  r  =  PetscInt64Mult(a,b);
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (r > PETSC_MAX_INT) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Product of two integer %d %d overflow, you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
 #endif
@@ -2443,7 +2462,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
    Output Parameter:ma
 .     c - the result as a PetscInt value
 
-   Use PetscIntMult64bit() to compute the product of two 32 bit PetscInt and store in a Petsc64bitInt
+   Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
 
    Level: advanced
@@ -2452,10 +2471,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscInt *result)
 {
-  Petsc64bitInt r;
+  PetscInt64 r;
 
   PetscFunctionBegin;
-  r  =  ((Petsc64bitInt)a) + ((Petsc64bitInt)b);
+  r  =  ((PetscInt64)a) + ((PetscInt64)b);
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (r > PETSC_MAX_INT) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sum of two integer %d %d overflow, you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
 #endif
@@ -2942,6 +2961,34 @@ PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],
    Verify that all processes in the communicator have called this from the same line of code
  */
 PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,const char*,const char *);
+
+/*MC
+   MPIU_Allreduce - a PETSc replacement for MPI_Allreduce() that tries to determine if the call from all the MPI processes occur from the
+                    same place in the PETSc code. This helps to detect bugs where different MPI processes follow different code paths
+                    resulting in inconsistent and incorrect calls to MPI_Allreduce().
+
+   Collective on MPI_Comm
+
+   Synopsis:
+     #include <petscsys.h>
+     PetscErrorCode MPIU_Allreduce(void *indata,void *outdata,PetscMPIInt count,MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
+
+   Input Parameters:
++  indata - pointer to the input data to be reduced
+.  count - the number of MPI data items in indata and outdata
+.  datatype - the MPI datatype, for example MPI_INT
+.  op - the MPI operation, for example MPI_SUM
+-  comm - the MPI communicator on which the operation occurs
+
+   Output Parameter:
+.  outdata - the reduced values
+
+   Notes: In optimized mode this directly calls MPI_Allreduce()
+
+   Level: developer
+
+.seealso: MPI_Allreduce()
+M*/
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) (PetscAllreduceBarrierCheck(fcomm,c,__LINE__,__FUNCT__,__FILE__) || MPI_Allreduce(a,b,c,d,e,fcomm))
 #else
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)

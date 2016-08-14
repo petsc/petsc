@@ -50,7 +50,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 
   PetscFunctionBegin;
   PetscValidPointer(q, 2);
-  ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(*q,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
   (*q)->dim       = -1;
   (*q)->order     = -1;
@@ -878,7 +878,6 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
       rterm   = alpha*wk*rval;
       maxTerm = PetscMax(PetscAbsReal(rterm), maxTerm);
       sum    += rterm;
-      /* if (l == 1) printf("k is %d and sum is %15.15f and wk is %15.15f\n", k, sum, wk); */
       ++k;
       /* Only need to evaluate every other point on refined levels */
       if (l != 1) ++k;
@@ -987,7 +986,6 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
       mpfr_abs(tmp, tmp, MPFR_RNDN);
       mpfr_max(maxTerm, maxTerm, tmp, MPFR_RNDN);
       mpfr_max(curTerm, curTerm, tmp, MPFR_RNDN);
-      /* if (l == 1) printf("k is %d and sum is %15.15f and wk is %15.15f\n", k, sum, wk); */
       ++k;
       /* Only need to evaluate every other point on refined levels */
       if (l != 1) ++k;

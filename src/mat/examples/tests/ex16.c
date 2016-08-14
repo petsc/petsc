@@ -14,8 +14,7 @@ int main(int argc,char **args)
   PetscScalar    v,*array;
   PetscViewer    view;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
       Create a parallel dense matrix shared by all processors
   */
@@ -74,5 +73,5 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

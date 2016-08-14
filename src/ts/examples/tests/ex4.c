@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   TSType         tstype;
   PetscBool      sundials;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* set data */
@@ -206,7 +206,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   if (fd_jacobian_coloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /* -------------------------------------------------------------------*/
@@ -494,6 +494,6 @@ PetscErrorCode PostStep(TS ts)
 
   PetscFunctionBeginUser;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",(double)t);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",(double)t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

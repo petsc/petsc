@@ -1167,6 +1167,9 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
   Input Parameter:
 . fvm - the PetscFV object to set options for
 
+  Options Database Key:
+. -petscfv_compute_gradients <bool> - Determines whether cell gradients are calculated
+
   Level: developer
 
 .seealso: PetscFVView()
@@ -1190,7 +1193,9 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
     ierr = PetscFVSetType(fvm, name);CHKERRQ(ierr);
   } else if (!((PetscObject) fvm)->type_name) {
     ierr = PetscFVSetType(fvm, defaultType);CHKERRQ(ierr);
+
   }
+  ierr = PetscOptionsBool("-petscfv_compute_gradients", "Compute cell gradients", "PetscFVSetComputeGradients", fvm->computeGradients, &fvm->computeGradients, NULL);CHKERRQ(ierr);
   if (fvm->ops->setfromoptions) {ierr = (*fvm->ops->setfromoptions)(fvm);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) fvm);CHKERRQ(ierr);

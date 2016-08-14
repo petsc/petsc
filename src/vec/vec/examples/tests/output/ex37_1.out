@@ -9,33 +9,33 @@ Vec Object: 1 MPI processes
   type: nest
   VecNest, rows=2,  structure: 
   (0) : type=nest, rows=6 
-    Vec Object:     1 MPI processes
+    Vec Object: 1 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=seq, rows=3 
-        Vec Object:         1 MPI processes
+        Vec Object: 1 MPI processes
           type: seq
         1.
         1.
         1.
       (1) : type=seq, rows=3 
-        Vec Object:         1 MPI processes
+        Vec Object: 1 MPI processes
           type: seq
         2.
         2.
         2.
   (1) : type=nest, rows=6 
-    Vec Object:     1 MPI processes
+    Vec Object: 1 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=seq, rows=3 
-        Vec Object:         1 MPI processes
+        Vec Object: 1 MPI processes
           type: seq
         3.
         3.
         3.
       (1) : type=seq, rows=3 
-        Vec Object:         1 MPI processes
+        Vec Object: 1 MPI processes
           type: seq
         7.20032
         0.61794

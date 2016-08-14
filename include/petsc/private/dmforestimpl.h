@@ -10,16 +10,21 @@
 typedef struct {
   PetscInt                   refct;
   void                       *data;
+  PetscErrorCode             (*clearadaptivityforest)(DM);
+  PetscErrorCode             (*getadaptivitysuccess)(DM,PetscBool*);
+  PetscErrorCode             (*transfervec)(DM,Vec,DM,Vec,PetscBool,PetscReal);
   PetscErrorCode             (*createcellchart)(DM,PetscInt*,PetscInt*);
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);
   PetscErrorCode             (*destroy)(DM);
   PetscErrorCode             (*ftemplate)(DM,DM);
   PetscBool                  setfromoptionscalled;
   PetscBool                  computeAdaptSF;
+  PetscErrorCode             (*mapcoordinates)(DM,PetscInt,PetscInt,const PetscReal[],PetscReal[],void*);
+  void                       *mapcoordinatesctx;
   DMForestTopology           topology;
   DM                         base;
   DM                         adapt;
-  DMForestAdaptivityPurpose  adaptPurpose;
+  DMAdaptFlag                adaptPurpose;
   PetscInt                   adjDim;
   PetscInt                   overlap;
   PetscInt                   minRefinement;
@@ -30,7 +35,7 @@ typedef struct {
   PetscSF                    cellSF;
   PetscSF                    preCoarseToFine;
   PetscSF                    coarseToPreFine;
-  char                       *adaptLabel;
+  DMLabel                    adaptLabel;
   DMForestAdaptivityStrategy adaptStrategy;
   PetscInt                   gradeFactor;
   PetscReal                  *cellWeights;

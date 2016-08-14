@@ -267,9 +267,12 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numEdges, numEdges + numVertices);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, 2);CHKERRQ(ierr);
   for (v = numEdges; v < numEdges+numVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, 2);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
@@ -454,6 +457,8 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  ierr = DMCreateLabel(dm,"marker");CHKERRQ(ierr);
+  ierr = DMCreateLabel(dm,"Face Sets");CHKERRQ(ierr);
   switch (dim) {
   case 2:
     faceMarkerTop    = 3;
@@ -879,6 +884,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   Input Parameters:
 + comm - The communicator for the DM object
 . dim - The spatial dimension
+. numFaces - Number of faces per dimension
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
@@ -889,7 +895,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
 .keywords: DM, create
 .seealso: DMPlexCreateHexBoxMesh(), DMSetType(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFaces, PetscBool interpolate, DM *dm)
 {
   DM             boundary;
   PetscErrorCode ierr;
@@ -900,13 +906,15 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
   PetscValidLogicalCollectiveInt(boundary,dim,2);
   ierr = DMSetType(boundary, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(boundary, dim-1);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(boundary, dim);CHKERRQ(ierr);
   switch (dim) {
   case 2:
   {
     PetscReal lower[2] = {0.0, 0.0};
     PetscReal upper[2] = {1.0, 1.0};
-    PetscInt  edges[2] = {2, 2};
+    PetscInt  edges[2];
 
+    edges[0] = numFaces; edges[1] = numFaces;
     ierr = DMPlexCreateSquareBoundary(boundary, lower, upper, edges);CHKERRQ(ierr);
     break;
   }
@@ -914,8 +922,9 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
   {
     PetscReal lower[3] = {0.0, 0.0, 0.0};
     PetscReal upper[3] = {1.0, 1.0, 1.0};
-    PetscInt  faces[3] = {1, 1, 1};
+    PetscInt  faces[3];
 
+    faces[0] = numFaces; faces[1] = numFaces; faces[2] = numFaces;
     ierr = DMPlexCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);
     break;
   }
@@ -992,6 +1001,7 @@ extern PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
 extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened);
+extern PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmRefined);
 extern PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[]);
 extern PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]);
 extern PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
@@ -1000,7 +1010,7 @@ extern PetscErrorCode DMDestroy_Plex(DM dm);
 extern PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
-extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, PetscSF cellSF);
+extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, PetscSF cellSF);
 extern PetscErrorCode DMProjectFunctionLocal_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 extern PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
 extern PetscErrorCode DMProjectFieldLocal_Plex(DM,Vec,void (**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],PetscScalar[]),InsertMode,Vec);
@@ -1113,52 +1123,17 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
 PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMBoundary     b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Handle boundary conditions */
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) dm), NULL, "Boundary condition options", "");CHKERRQ(ierr);
-  for (b = dm->boundary->next; b; b = b->next) {
-    char      optname[1024];
-    PetscInt  ids[1024], len = 1024, i;
-    PetscBool flg;
-
-    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s", b->name);CHKERRQ(ierr);
-    ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray(optname, "List of boundary IDs", "", ids, &len, &flg);CHKERRQ(ierr);
-    if (flg) {
-      DMLabel label;
-
-      ierr = DMGetLabel(dm, b->labelname, &label);CHKERRQ(ierr);
-      for (i = 0; i < len; ++i) {
-        PetscBool has;
-
-        ierr = DMLabelHasValue(label, ids[i], &has);CHKERRQ(ierr);
-        if (!has) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Boundary id %D is not present in the label %s", ids[i], b->name);
-      }
-      b->numids = len;
-      ierr = PetscFree(b->ids);CHKERRQ(ierr);
-      ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
-    }
-    ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
-    ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
-    if (flg) {
-      b->numcomps = len;
-      ierr = PetscFree(b->comps);CHKERRQ(ierr);
-      ierr = PetscMalloc1(len, &b->comps);CHKERRQ(ierr);
-      ierr = PetscMemcpy(b->comps, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* Handle viewing */
   ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMView", mesh->printTol, &mesh->printTol, NULL);CHKERRQ(ierr);
   /* Point Location */
   ierr = PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMView", PETSC_FALSE, &mesh->useHashLocation, NULL);CHKERRQ(ierr);
+  /* Generation and remeshing */
+  ierr = PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMView", PETSC_FALSE, &mesh->remeshBd, NULL);CHKERRQ(ierr);
   /* Projection behavior */
   ierr = PetscOptionsInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL);CHKERRQ(ierr);
@@ -1300,9 +1275,24 @@ static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetNeighors_Plex"
+static PetscErrorCode DMGetNeighors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
+{
+  PetscSF        sf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf, nranks, ranks, NULL, NULL, NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMInitialize_Plex"
 PetscErrorCode DMInitialize_Plex(DM dm)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   dm->ops->view                            = DMView_Plex;
   dm->ops->load                            = DMLoad_Plex;
@@ -1339,6 +1329,8 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2diff                   = DMComputeL2Diff_Plex;
   dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
+  dm->ops->getneighbors                    = DMGetNeighors_Plex;
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",DMAdaptLabel_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1399,6 +1391,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->triangleOpts = NULL;
   ierr = PetscPartitionerCreate(PetscObjectComm((PetscObject)dm), &mesh->partitioner);CHKERRQ(ierr);
   ierr = PetscPartitionerSetTypeFromOptions_Internal(mesh->partitioner);CHKERRQ(ierr);
+  mesh->remeshBd     = PETSC_FALSE;
 
   mesh->subpointMap = NULL;
 
@@ -1464,11 +1457,235 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexBuildFromCellList_Parallel_Private"
+/*
+  This takes as input the common mesh generator output, a list of the vertices for each cell, but vertex numbers are global and an SF is built for them
+*/
+static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscSF *sfVert)
+{
+  PetscSF         sfPoint;
+  PetscLayout     vLayout;
+  PetscHashI      vhash;
+  PetscSFNode    *remoteVerticesAdj, *vertexLocal, *vertexOwner, *remoteVertex;
+  const PetscInt *vrange;
+  PetscInt        numVerticesAdj, off, *verticesAdj, numVerticesGhost = 0, *localVertex, *cone, c, p, v, g;
+  PETSC_UNUSED PetscHashIIter ret, iter;
+  PetscMPIInt     rank, numProcs;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  /* Partition vertices */
+  ierr = PetscLayoutCreate(PetscObjectComm((PetscObject) dm), &vLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(vLayout, numVertices);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(vLayout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(vLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(vLayout, &vrange);CHKERRQ(ierr);
+  /* Count vertices and map them to procs */
+  PetscHashICreate(vhash);
+  for (c = 0; c < numCells; ++c) {
+    for (p = 0; p < numCorners; ++p) {
+      PetscHashIPut(vhash, cells[c*numCorners+p], ret, iter);
+    }
+  }
+  PetscHashISize(vhash, numVerticesAdj);
+  ierr = PetscMalloc1(numVerticesAdj, &verticesAdj);CHKERRQ(ierr);
+  off = 0; ierr = PetscHashIGetKeys(vhash, &off, verticesAdj);CHKERRQ(ierr);
+  if (off != numVerticesAdj) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %D should be %D", off, numVerticesAdj);
+  ierr = PetscMalloc1(numVerticesAdj, &remoteVerticesAdj);CHKERRQ(ierr);
+  for (v = 0; v < numVerticesAdj; ++v) {
+    const PetscInt gv = verticesAdj[v];
+    PetscInt       vrank;
+
+    ierr = PetscFindInt(gv, numProcs+1, vrange, &vrank);CHKERRQ(ierr);
+    vrank = vrank < 0 ? -(vrank+2) : vrank;
+    remoteVerticesAdj[v].index = gv - vrange[vrank];
+    remoteVerticesAdj[v].rank  = vrank;
+  }
+  /* Create cones */
+  ierr = DMPlexSetChart(dm, 0, numCells+numVerticesAdj);CHKERRQ(ierr);
+  for (c = 0; c < numCells; ++c) {ierr = DMPlexSetConeSize(dm, c, numCorners);CHKERRQ(ierr);}
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numCorners, PETSC_INT, &cone);CHKERRQ(ierr);
+  for (c = 0; c < numCells; ++c) {
+    for (p = 0; p < numCorners; ++p) {
+      const PetscInt gv = cells[c*numCorners+p];
+      PetscInt       lv;
+
+      ierr = PetscFindInt(gv, numVerticesAdj, verticesAdj, &lv);CHKERRQ(ierr);
+      if (lv < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not find global vertex %D in local connectivity", gv);
+      cone[p] = lv+numCells;
+    }
+    ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreWorkArray(dm, numCorners, PETSC_INT, &cone);CHKERRQ(ierr);
+  /* Create SF for vertices */
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfVert);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *sfVert, "Vertex Ownership SF");CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(*sfVert);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfVert, numVertices, numVerticesAdj, NULL, PETSC_OWN_POINTER, remoteVerticesAdj, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscFree(verticesAdj);CHKERRQ(ierr);
+  /* Build pointSF */
+  ierr = PetscMalloc2(numVerticesAdj, &vertexLocal, numVertices, &vertexOwner);CHKERRQ(ierr);
+  for (v = 0; v < numVerticesAdj; ++v) {vertexLocal[v].index = v+numCells; vertexLocal[v].rank = rank;}
+  for (v = 0; v < numVertices;    ++v) {vertexOwner[v].index = -1;         vertexOwner[v].rank = -1;}
+  ierr = PetscSFReduceBegin(*sfVert, MPI_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(*sfVert, MPI_2INT, vertexLocal, vertexOwner, MPI_MAXLOC);CHKERRQ(ierr);
+  for (v = 0; v < numVertices;    ++v) if (vertexOwner[v].rank < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global vertex %d on rank %d was unclaimed", v + vrange[rank], rank);
+  ierr = PetscSFBcastBegin(*sfVert, MPI_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(*sfVert, MPI_2INT, vertexOwner, vertexLocal);CHKERRQ(ierr);
+  for (v = 0; v < numVerticesAdj; ++v) if (vertexLocal[v].rank != rank) ++numVerticesGhost;
+  ierr = PetscMalloc1(numVerticesGhost, &localVertex);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numVerticesGhost, &remoteVertex);CHKERRQ(ierr);
+  for (v = 0, g = 0; v < numVerticesAdj; ++v) {
+    if (vertexLocal[v].rank != rank) {
+      localVertex[g]        = v+numCells;
+      remoteVertex[g].index = vertexLocal[v].index;
+      remoteVertex[g].rank  = vertexLocal[v].rank;
+      ++g;
+    }
+  }
+  ierr = PetscFree2(vertexLocal, vertexOwner);CHKERRQ(ierr);
+  if (g != numVerticesGhost) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of vertex ghosts %D should be %D", g, numVerticesGhost);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) sfPoint, "point SF");CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfPoint, numCells+numVerticesAdj, numVerticesGhost, localVertex, PETSC_OWN_POINTER, remoteVertex, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
+  PetscHashIDestroy(vhash);
+  /* Fill in the rest of the topology structure */
+  ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
+  ierr = DMPlexStratify(dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexBuildCoordinates_Parallel_Private"
+/*
+  This takes as input the coordinates for each owned vertex
+*/
+static PetscErrorCode DMPlexBuildCoordinates_Parallel_Private(DM dm, PetscInt spaceDim, PetscInt numCells, PetscSF sfVert, const double vertexCoords[])
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  PetscInt       numVertices, numVerticesAdj, coordSize, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFGetGraph(sfVert, &numVertices, &numVerticesAdj, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, spaceDim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVerticesAdj);CHKERRQ(ierr);
+  for (v = numCells; v < numCells+numVerticesAdj; ++v) {
+    ierr = PetscSectionSetDof(coordSection, v, spaceDim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, spaceDim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, spaceDim);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  {
+    MPI_Datatype coordtype;
+
+    /* Need a temp buffer for coords if we have complex/single */
+    ierr = MPI_Type_contiguous(spaceDim, MPI_DOUBLE, &coordtype);CHKERRQ(ierr);
+    ierr = MPI_Type_commit(&coordtype);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sfVert, coordtype, vertexCoords, coords);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfVert, coordtype, vertexCoords, coords);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&coordtype);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateFromCellListParallel"
+/*@C
+  DMPlexCreateFromCellListParallel - This takes as input common mesh generator output, a list of the vertices for each cell, and produces a DM
+
+  Input Parameters:
++ comm - The communicator
+. dim - The topological dimension of the mesh
+. numCells - The number of cells owned by this process
+. numVertices - The number of vertices owned by this process
+. numCorners - The number of vertices for each cell
+. interpolate - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
+. cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
+. spaceDim - The spatial dimension used for coordinates
+- vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
+
+  Output Parameter:
+. dm - The DM
+
+  Note: Two triangles sharing a face
+$
+$        2
+$      / | \
+$     /  |  \
+$    /   |   \
+$   0  0 | 1  3
+$    \   |   /
+$     \  |  /
+$      \ | /
+$        1
+would have input
+$  numCells = 2, numVertices = 4
+$  cells = [0 1 2  1 3 2]
+$
+which would result in the DMPlex
+$
+$        4
+$      / | \
+$     /  |  \
+$    /   |   \
+$   2  0 | 1  5
+$    \   |   /
+$     \  |  /
+$      \ | /
+$        3
+
+  Level: beginner
+
+.seealso: DMPlexCreateFromCellList(), DMPlexCreateFromDAG(), DMPlexCreate()
+@*/
+PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const double vertexCoords[], DM *dm)
+{
+  PetscSF        sfVert;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  PetscValidLogicalCollectiveInt(*dm, dim, 2);
+  PetscValidLogicalCollectiveInt(*dm, spaceDim, 8);
+  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
+  ierr = DMPlexBuildFromCellList_Parallel_Private(*dm, numCells, numVertices, numCorners, cells, &sfVert);CHKERRQ(ierr);
+  if (interpolate) {
+    DM idm = NULL;
+
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = idm;
+  }
+  ierr = DMPlexBuildCoordinates_Parallel_Private(*dm, spaceDim, numCells, sfVert, vertexCoords);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexBuildFromCellList_Private"
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell
 */
-PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[])
+static PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[])
 {
   PetscInt      *cone, c, p;
   PetscErrorCode ierr;
@@ -1497,7 +1714,7 @@ PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, PetscIn
 /*
   This takes as input the coordinates for each vertex
 */
-PetscErrorCode DMPlexBuildCoordinates_Private(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const double vertexCoords[])
+static PetscErrorCode DMPlexBuildCoordinates_Private(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const double vertexCoords[])
 {
   PetscSection   coordSection;
   Vec            coordinates;

@@ -35,7 +35,7 @@ int main(int argc,char **args)
   PetscReal      norm,tol = 1000*PETSC_MACHINE_EPSILON;
   PetscBool      InplaceLU=PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only\n");
   ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
@@ -69,7 +69,6 @@ int main(int argc,char **args)
 
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
 
-
   ierr = PetscOptionsGetBool(NULL,NULL,"-inplacelu",&InplaceLU,NULL);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   if (!InplaceLU) {
@@ -79,24 +78,6 @@ int main(int argc,char **args)
     ierr      = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
   } else { /* Test inplace factorization */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
-    /* or create F without DMDA
-    MatType     type;
-    PetscInt          i,ncols;
-    const PetscInt    *cols;
-    const PetscScalar *vals;
-    ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-    ierr = MatGetType(A,&type);CHKERRQ(ierr);
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&F);CHKERRQ(ierr);
-    ierr = MatSetSizes(F,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-    ierr = MatSetType(F,type);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(F);CHKERRQ(ierr);
-    for (i=0; i<m; i++) {
-      ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
-      ierr = MatSetValues(F,1,&i,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    */
     ierr = MatLUFactor(F,perm,iperm,&info);CHKERRQ(ierr);
   }
 
@@ -124,7 +105,7 @@ int main(int argc,char **args)
   ierr = MatSolveAdd(F,b,y,x);CHKERRQ(ierr);
   ierr = MatMult(A,y,b1);CHKERRQ(ierr);
   ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(A,x,b1,b1);
+  ierr = MatMultAdd(A,x,b1,b1);CHKERRQ(ierr);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
@@ -135,7 +116,7 @@ int main(int argc,char **args)
   ierr = MatSolveTransposeAdd(F,b,y,x);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,y,b1);CHKERRQ(ierr);
   ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd(A,x,b1,b1);
+  ierr = MatMultTransposeAdd(A,x,b1,b1);CHKERRQ(ierr);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
@@ -164,7 +145,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

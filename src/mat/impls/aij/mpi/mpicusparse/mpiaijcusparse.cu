@@ -15,11 +15,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
   PetscInt           i;
 
   PetscFunctionBegin;
-  if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
-  if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
-  if (d_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
-  if (o_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
-
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   if (d_nnz) {
@@ -83,7 +78,6 @@ PetscErrorCode  MatCreateVecs_MPIAIJCUSPARSE(Mat mat,Vec *right,Vec *left)
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_MPIAIJCUSPARSE"
@@ -206,6 +200,24 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat,MatAssemblyType);
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_MPIAIJCUSPARSE"
+PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A,MatAssemblyType mode)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *mpiaij;
+
+  PetscFunctionBegin;
+  mpiaij = (Mat_MPIAIJ*)A->data;
+  ierr = MatAssemblyEnd_MPIAIJ(A,mode);CHKERRQ(ierr);
+  if (!A->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
+    ierr = VecSetType(mpiaij->lvec,VECSEQCUDA);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAIJCUSPARSE"
 PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
@@ -254,6 +266,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUDA(stat);
   err = cudaStreamCreate(&(cusparseStruct->stream));CHKERRCUDA(err);
 
+  A->ops->assemblyend    = MatAssemblyEnd_MPIAIJCUSPARSE;
   A->ops->getvecs        = MatCreateVecs_MPIAIJCUSPARSE;
   A->ops->mult           = MatMult_MPIAIJCUSPARSE;
   A->ops->multtranspose  = MatMultTranspose_MPIAIJCUSPARSE;

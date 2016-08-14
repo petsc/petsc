@@ -77,32 +77,32 @@ static double bytes[4] = {
 
 int main(int argc,char **args)
 {
-  int          quantum, checktick(void);
-  register int j, k;
-  double       scalar, t, times[4][NTIMES],irate[4],rate[4];
-  int          rank,size,resultlen;
-  char         hostname[MPI_MAX_PROCESSOR_NAME];
-  MPI_Status   status;
-  int          ierr=0;
+  int            quantum, checktick(void);
+  register int   j, k;
+  double         scalar, t, times[4][NTIMES],irate[4],rate[4];
+  int            rank,size,resultlen;
+  char           hostname[MPI_MAX_PROCESSOR_NAME];
+  MPI_Status     status;
+  int            ierr;
 
-  MPI_Init(&argc,&args);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  ierr = MPI_Init(&argc,&args);if (ierr) return ierr;
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);if (ierr) return ierr;
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);if (ierr) return ierr;
   if (!rank) printf("Number of MPI processes %d ",size);
 
   for (j=0; j<MPI_MAX_PROCESSOR_NAME; j++) {
     hostname[j] = 0;
   }
-  MPI_Get_processor_name(hostname,&resultlen);
+  ierr = MPI_Get_processor_name(hostname,&resultlen);if (ierr) return ierr;
   if (!rank) {
     printf("Processor names  %s ",hostname);
     for (j=1; j<size; j++) {
-      MPI_Recv(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,j,0,MPI_COMM_WORLD,&status);
+      ierr = MPI_Recv(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,j,0,MPI_COMM_WORLD,&status);if (ierr) return ierr;
       printf("%s ",hostname);
     }
     printf("\n");
  } else {
-   MPI_Send(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,0,0,MPI_COMM_WORLD);
+   ierr = MPI_Send(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,0,0,MPI_COMM_WORLD);if (ierr) return ierr;
  }
  ierr = MPI_Barrier(MPI_COMM_WORLD);
 

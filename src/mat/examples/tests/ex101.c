@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -29,10 +29,10 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(pA,3,&P);CHKERRQ(ierr);
-  ierr = MatDestroy(&pA);
+  ierr = MatDestroy(&pA);CHKERRQ(ierr);
 
   /* Create AIJ equivalent matrix, aijP, for comparison testing */
-  ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);
+  ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);CHKERRQ(ierr);
 
   /* Create AIJ matrix, A */
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
@@ -65,11 +65,11 @@ int main(int argc,char **argv)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Cleanup */
-  ierr = MatDestroy(&P);
-  ierr = MatDestroy(&aijP);
-  ierr = MatDestroy(&A);
-  ierr = MatDestroy(&C);
-  ierr = MatDestroy(&mC);
-  PetscFinalize();
-  return(0);
+  ierr = MatDestroy(&P);CHKERRQ(ierr);
+  ierr = MatDestroy(&aijP);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&mC);CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  return ierr;
 }

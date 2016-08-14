@@ -58,8 +58,7 @@ int main(int argc,char **argv)
   DM             da,shell;
   PetscInt       levels;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-129,1,1,0,&da);CHKERRQ(ierr);
   ierr = MyDMShellCreate(PETSC_COMM_WORLD,da,&shell);CHKERRQ(ierr);
@@ -77,8 +76,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&shell);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

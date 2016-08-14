@@ -39,5 +39,5 @@ int main(int argc, char *args[])
   }
   ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

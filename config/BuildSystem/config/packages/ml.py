@@ -24,7 +24,6 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.languages  = framework.require('PETSc.options.languages',   self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]
     return
@@ -39,7 +38,7 @@ class Configure(config.package.GNUPackage):
     # Now specify -L ml-lib-path only to the first library
     alllibs[0] = os.path.join(dir,alllibs[0])
     import config.setCompilers
-    if self.languages.clanguage == 'C':
+    if self.getDefaultLanguage() == 'C':
       alllibs.extend(self.compilers.cxxlibs)
     return [alllibs]
 

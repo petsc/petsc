@@ -629,12 +629,12 @@ PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, PetscIn
       ierr = PetscSectionGetDof(sectionAdj, row, &numCols);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(sectionAdj, row, &cStart);CHKERRQ(ierr);
       for (c = cStart; c < cStart+numCols; ++c) {
-        if ((cols[c] >= rStart*bs) && (cols[c] < rEnd*bs)) {
-          ++dnz[r-rStart];
-          if (cols[c] >= row) ++dnzu[r-rStart];
+        if ((cols[c] >= rStart) && (cols[c] < rEnd)) {
+          ++dnz[r-rStart/bs];
+          if (cols[c] >= row) ++dnzu[r-rStart/bs];
         } else {
-          ++onz[r-rStart];
-          if (cols[c] >= row) ++onzu[r-rStart];
+          ++onz[r-rStart/bs];
+          if (cols[c] >= row) ++onzu[r-rStart/bs];
         }
       }
     }

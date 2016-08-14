@@ -147,6 +147,23 @@ PetscErrorCode  ISToGeneral_Stride(IS inis)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ISLocate_Stride"
+PetscErrorCode ISLocate_Stride(IS is,PetscInt key,PetscInt *location)
+{
+  IS_Stride      *sub = (IS_Stride*)is->data;
+  PetscInt       rem, step;
+
+  PetscFunctionBegin;
+  *location = -1;
+  step      = sub->step;
+  key      -= sub->first;
+  rem       = key / step;
+  if ((rem < sub->n) && !(key % step)) {
+    *location = rem;
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
      Returns a legitimate index memory even if
@@ -327,7 +344,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISToGeneral_Stride,
                                ISOnComm_Stride,
                                ISSetBlockSize_Stride,
-                               ISContiguousLocal_Stride};
+                               ISContiguousLocal_Stride,
+                               ISLocate_Stride};
 
 
 #undef __FUNCT__
@@ -378,7 +396,7 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   else          {max = first; min = first + step*(n-1);}
 
   is->min  = n > 0 ? min : -1;
-  is->max  = n > 0 ? max : -1;
+  is->max  = n > 0 ? max : -2;
   is->data = (void*)sub;
 
   if ((!first && step == 1) || (first == max && step == -1 && !min)) is->isperm = PETSC_TRUE;

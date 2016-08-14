@@ -3257,7 +3257,7 @@ subface ver 2, mark 2:
 [0] TetGenMeshOutputNodes(): Writing nodes.
 [0] TetGenMeshOutputElements(): Writing elements.
 [0] TetGenMeshOutputSubfaces(): Writing faces.
-DM Object:Simplicial Mesh 1 MPI processes
+DM Object: Simplicial Mesh 1 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
 orientation is missing

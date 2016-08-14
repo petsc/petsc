@@ -42,6 +42,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP);
 #endif
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
 
 /*
     This is used by KSPSetType() to make sure that at least one
@@ -112,6 +113,7 @@ PetscErrorCode  KSPRegisterAll(void)
 #endif
   ierr = KSPRegister(KSPTSIRM,       KSPCreate_TSIRM);CHKERRQ(ierr);
   ierr = KSPRegister(KSPCGLS,        KSPCreate_CGLS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPFETIDP,      KSPCreate_FETIDP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

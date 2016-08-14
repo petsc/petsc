@@ -58,7 +58,7 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   PetscInt       mx,my,mz,sex,sey,sez;
 
   PetscFunctionBeginUser;
-  ierr = PetscMalloc(sizeof(struct _p_CellProperties),&cells);CHKERRQ(ierr);
+  ierr = PetscNew(&cells);CHKERRQ(ierr);
 
   ierr = DMDAGetElementCorners(da_stokes,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
 
@@ -1732,7 +1732,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
 
   ierr = PCMGSetLevels(pc,nlevels,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pc,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_PMAT);CHKERRQ(ierr);
 
   for (k=1; k<nlevels; k++) {
     ierr = DMCreateInterpolation(da_list[k-1],da_list[k],&R,NULL);CHKERRQ(ierr);
@@ -2056,16 +2056,13 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   mx   = my = mz = 10;
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
   my   = mx; mz = mx;
   ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mz",&mz,NULL);CHKERRQ(ierr);
-
   ierr = solve_stokes_3d_coupled(mx,my,mz);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

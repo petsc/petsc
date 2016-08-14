@@ -1,7 +1,5 @@
 
-#include <petsc/private/kspimpl.h>         /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/impls/rich/richardsonimpl.h>
-
+#include <../src/ksp/ksp/impls/rich/richardsonimpl.h>     /*I "petscksp.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetScale"

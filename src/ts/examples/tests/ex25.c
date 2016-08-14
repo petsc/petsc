@@ -50,13 +50,13 @@ int main(int argc,char **argv)
   PetscInt       cycle;
   PetscErrorCode ierr;
 
-  MPI_Init(&argc,&argv);
+  ierr = MPI_Init(&argc,&argv);if (ierr) return ierr;
   for (cycle=0; cycle<4; cycle++) {
     ierr = Brusselator(argc,argv,cycle);
     if (ierr) return 1;
   }
-  MPI_Finalize();
-  return 0;
+  ierr = MPI_Finalize();
+  return ierr;
 }
 
 #undef __FUNCT__
@@ -316,7 +316,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   hx   = 1.0/(PetscReal)(info.mx-1);
 

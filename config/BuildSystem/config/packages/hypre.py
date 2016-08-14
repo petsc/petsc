@@ -19,17 +19,15 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.openmp         = framework.require('config.packages.openmp',self)
-    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
-    self.languages      = framework.require('PETSc.options.languages',   self)
-    self.blasLapack     = framework.require('config.packages.BlasLapack',self)
-    self.mpi            = framework.require('config.packages.MPI',self)
-    self.deps           = [self.mpi,self.blasLapack]
+    self.openmp     = framework.require('config.packages.openmp',self)
+    self.blasLapack = framework.require('config.packages.BlasLapack',self)
+    self.mpi        = framework.require('config.packages.MPI',self)
+    self.deps       = [self.mpi,self.blasLapack]
 
   def generateLibList(self,dir):
     '''Normally the one in package.py is used, but hypre requires the extra C++ library'''
     alllibs = config.package.GNUPackage.generateLibList(self,dir)
-    if self.languages.clanguage == 'C':
+    if self.getDefaultLanguage() == 'C':
       alllibs[0].extend(self.compilers.cxxlibs)
     return alllibs
 
@@ -77,7 +75,7 @@ class Configure(config.package.GNUPackage):
     args.append('--without-mli')
     args.append('--without-fei')
     args.append('--without-superlu')
-    if self.indexTypes.integerSize == 64:
+    if self.getDefaultIndexSize() == 64:
       args.append('--enable-bigint')
     # hypre configure assumes the AR flags are passed in with AR
     args = [arg for arg in args if not arg.startswith('AR')]

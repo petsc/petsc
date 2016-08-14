@@ -19,8 +19,7 @@ int main(int argc,char **args)
   KSPType        kspname;
   PetscReal      norm,tol=1000.*PETSC_MACHINE_EPSILON;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Create and initialize vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar);CHKERRQ(ierr);
@@ -66,7 +65,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
   ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);
+  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %g Number of iterations %D\n",(double)norm,its);CHKERRQ(ierr);
@@ -81,7 +80,7 @@ int main(int argc,char **args)
   ierr = PCDestroy(&pc);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 

@@ -89,7 +89,7 @@ typedef struct {
      compressed row storage
 */
 PetscErrorCode spbas_compress_pattern(PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,spbas_matrix*,PetscReal*);
-long int       spbas_memory_requirement(spbas_matrix);
+size_t         spbas_memory_requirement(spbas_matrix);
 PetscErrorCode spbas_delete(spbas_matrix);
 PetscErrorCode spbas_incomplete_cholesky(Mat,const PetscInt*,const PetscInt*,spbas_matrix,PetscReal,PetscReal,spbas_matrix*);
 PetscErrorCode spbas_matrix_to_crs(spbas_matrix, MatScalar **,PetscInt **,PetscInt**);

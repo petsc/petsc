@@ -15,6 +15,8 @@
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas_v2.h>
+
+extern cublasHandle_t cublasv2handle;
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -135,9 +137,7 @@ PETSC_EXTERN void MPIAPI PetscMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN void MPIAPI PetscMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 #endif
 
-extern MPI_Op PetscMaxSum_Op;
-
-PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm,PetscMPIInt,void*,void*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm,PetscMPIInt,void*,void*);
@@ -155,7 +155,7 @@ extern char **PetscGlobalArgs;
 
 /*
     Reads in Fortran command line argments and sends them to
-  all processors and adds them to Options database.
+  all processors.
 */
 
 PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
@@ -402,7 +402,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
        Create the PETSc MPI reduction operator that sums of the first
      half of the entries and maxes the second half.
   */
-  *ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);
+  *ierr = MPI_Op_create(MPIU_MaxSum_Local,1,&MPIU_MAXSUM_OP);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
 
   *ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);

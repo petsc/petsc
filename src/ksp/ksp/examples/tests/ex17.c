@@ -22,7 +22,7 @@ int main(int argc,char **args)
   TestType       type;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL);CHKERRQ(ierr);
   switch (p) {
@@ -91,7 +91,7 @@ int main(int argc,char **args)
   if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #undef __FUNCT__

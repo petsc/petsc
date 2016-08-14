@@ -144,7 +144,7 @@ int main(int argc, char **argv)
   Vec            localX;
 
   /* Initialize PETSc, TAO */
-  PetscInitialize(&argc, &argv, (char *)0, help);
+  ierr = PetscInitialize(&argc, &argv, (char *)0, help);CHKERRQ(ierr);
 
   /*
      Initialize the user-defined application context with reasonable
@@ -268,8 +268,8 @@ int main(int argc, char **argv)
   ierr = PetscFree(user.c);CHKERRQ(ierr);
   ierr = PetscFree(user.d);CHKERRQ(ierr);
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /* -------------------------------------------------------------------- */

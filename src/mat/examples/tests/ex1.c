@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscRandom    rand;
   PetscScalar    *array,rval;
 
-  PetscInitialize(&argc,&argv,(char*) 0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr  = MatCholeskyFactor(F,0,0);CHKERRQ(ierr);
   ierr  = MatSolve(F,b,y);CHKERRQ(ierr);
   ierr  = MatDestroy(&F);CHKERRQ(ierr);
-  value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for Cholesky %g\n",(double)norm);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   ierr  = MatCholeskyFactorSymbolic(F,mat,0,0);CHKERRQ(ierr);
   ierr  = MatCholeskyFactorNumeric(F,mat,0);CHKERRQ(ierr);
   ierr  = MatSolve(F,b,y);CHKERRQ(ierr);
-  value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for Cholesky %g\n",(double)norm);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   /* in-place LU */
   ierr  = MatLUFactor(F,0,0,0);CHKERRQ(ierr);
   ierr  = MatSolve(F,b,y);CHKERRQ(ierr);
-  value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %g\n",(double)norm);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ int main(int argc,char **argv)
   ierr  = MatLUFactorSymbolic(F,mat,0,0,0);CHKERRQ(ierr);
   ierr  = MatLUFactorNumeric(F,mat,0);CHKERRQ(ierr);
   ierr  = MatSolve(F,b,y);CHKERRQ(ierr);
-  value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %g\n",(double)norm);CHKERRQ(ierr);
@@ -154,6 +154,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = VecDestroy(&ytmp);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

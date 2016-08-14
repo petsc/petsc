@@ -146,7 +146,7 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   }
   vtk->dm    = dm;
   vtk->write = PetscViewerVTKWriteFunction;
-  ierr       = PetscMalloc(sizeof(struct _n_PetscViewerVTKObjectLink),&link);CHKERRQ(ierr);
+  ierr       = PetscNew(&link);CHKERRQ(ierr);
   link->ft   = fieldtype;
   link->vec  = vec;
   link->next = NULL;

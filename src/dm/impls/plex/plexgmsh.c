@@ -93,8 +93,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords, *coordsIn = NULL;
-  PetscInt       dim = 0, coordSize, c, v, d, cell;
-  int            i, numVertices = 0, numCells = 0, trueNumCells = 0, snum;
+  PetscInt       dim = 0, coordSize, c, v, d, r, cell;
+  int            i, numVertices = 0, numCells = 0, trueNumCells = 0, numRegions = 0, snum;
   PetscMPIInt    num_proc, rank;
   char           line[PETSC_MAX_PATH_LEN];
   PetscBool      match, binary, bswap = PETSC_FALSE;
@@ -134,8 +134,27 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
     ierr = PetscStrncmp(line, "$EndMeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
-    /* Read vertices */
+    /* OPTIONAL Read physical names */
     ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+    ierr = PetscStrncmp(line, "$PhysicalNames", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
+    if (match) {
+      ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+      snum = sscanf(line, "%d", &numRegions);
+      if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+      for (r = 0; r < numRegions; ++r) {
+        PetscInt rdim, tag;
+
+        ierr = PetscViewerRead(viewer, &rdim, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
+        ierr = PetscViewerRead(viewer, &tag,  1, NULL, PETSC_ENUM);CHKERRQ(ierr);
+        ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+      ierr = PetscStrncmp(line, "$EndPhysicalNames", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
+      if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+      /* Initial read for vertex section */
+      ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+    }
+    /* Read vertices */
     ierr = PetscStrncmp(line, "$Nodes", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
@@ -214,6 +233,20 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         for (corner = 0; corner < gmsh_elem[c].numNodes; ++corner) {
           pcone[corner] = gmsh_elem[c].nodes[corner] + trueNumCells-1;
         }
+        if (dim == 3) {
+          /* Tetrahedra are inverted */
+          if (gmsh_elem[c].numNodes == 4) {
+            PetscInt tmp = pcone[0];
+            pcone[0] = pcone[1];
+            pcone[1] = tmp;
+          }
+          /* Hexahedra are inverted */
+          if (gmsh_elem[c].numNodes == 8) {
+            PetscInt tmp = pcone[1];
+            pcone[1] = pcone[3];
+            pcone[3] = tmp;
+          }
+        }   
         ierr = DMPlexSetCone(*dm, cell, pcone);CHKERRQ(ierr);
         cell++;
       }
@@ -249,6 +282,16 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         ierr = DMPlexRestoreJoin(*dm, gmsh_elem[c].numNodes, (const PetscInt *) pcone, &joinSize, &join);CHKERRQ(ierr);
       }
     }
+
+    /* Create cell sets */
+    for (cell = 0, c = 0; c < numCells; ++c) {
+      if (gmsh_elem[c].dim == dim) {
+        if (gmsh_elem[c].numTags > 0) {
+          ierr = DMSetLabelValue(*dm, "Cell Sets", cell, gmsh_elem[c].tags[0]);CHKERRQ(ierr);
+          cell++;
+        }
+      }
+    }
   }
 
   /* Read coordinates */
@@ -265,6 +308,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = VecCreate(PETSC_COMM_SELF, &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
   ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (!rank) {

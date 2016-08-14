@@ -42,7 +42,6 @@ EXTERN_C_END
 
 typedef struct {
   PetscErrorCode (*Wrap)(Mat,PetscBool,cholmod_sparse*,PetscBool*);
-  PetscErrorCode (*Destroy)(Mat);
   cholmod_sparse *matrix;
   cholmod_factor *factor;
   cholmod_common *common;

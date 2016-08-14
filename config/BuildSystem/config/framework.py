@@ -328,6 +328,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.childGraph.addEdges(depChild, [config])
     return config
 
+  def requireModule(self, mod, depChild):
+    '''Return the input module, making sure it runs before depChild'''
+    if not mod is depChild:
+      self.childGraph.addEdges(depChild, [mod])
+    return mod
+
   ###############################################
   # Dependency Mechanisms
   def loadFramework(self, path):

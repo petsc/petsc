@@ -3,7 +3,7 @@
 
 #include <petsc/private/snesimpl.h>
 #include <petsc/private/linesearchimpl.h>
-#include <petsc/private/dmimpl.h>
+#include <petscdm.h>
 
 typedef struct {
 
@@ -44,8 +44,8 @@ typedef struct {
   PetscLogEvent eventsmoothsolve;              /* level smoother solves */
   PetscLogEvent eventresidual;                 /* level residual evaluation */
   PetscLogEvent eventinterprestrict;           /* level interpolation and restriction */
-
-
 } SNES_FAS;
+
+PETSC_INTERN PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES,SNES*);
 
 #endif

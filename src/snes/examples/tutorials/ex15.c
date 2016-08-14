@@ -122,7 +122,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
@@ -273,8 +273,8 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = DMDestroy(&dastar);CHKERRQ(ierr);
   ierr = PreCheckDestroy(&precheck);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /* ------------------------------------------------------------------- */
@@ -298,8 +298,7 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscScalar    **x;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx    = 1.0/(PetscReal)(Mx-1);
   hy    = 1.0/(PetscReal)(My-1);
@@ -387,8 +386,7 @@ static PetscErrorCode FormRHS(AppCtx *user,DM da,Vec B)
   PetscScalar    **b;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx    = 1.0/(PetscReal)(Mx-1);
   hy    = 1.0/(PetscReal)(My-1);
@@ -771,8 +769,7 @@ PetscErrorCode PreCheckCreate(MPI_Comm comm,PreCheck *precheck)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscMalloc(sizeof(struct _n_PreCheck),precheck);CHKERRQ(ierr);
-  ierr = PetscMemzero(*precheck,sizeof(struct _n_PreCheck));CHKERRQ(ierr);
+  ierr = PetscNew(precheck);CHKERRQ(ierr);
 
   (*precheck)->comm  = comm;
   (*precheck)->angle = 10.;     /* only active if angle is less than 10 degrees */
