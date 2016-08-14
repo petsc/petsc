@@ -20,4 +20,5 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--disable-python')
+    args.append('--with-hdf5-dir=%s' % self.hdf5.directory)
     return args
