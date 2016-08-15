@@ -1317,8 +1317,8 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
       ierr = PetscLogFlops(2.0*pdim*cdim);CHKERRQ(ierr);
     }
   }
-  if (J) {ierr = PetscMemzero(J, Nq*cdim*dim*sizeof(PetscReal));CHKERRQ(ierr);}
-  if (J || invJ || detJ) {
+  if (J) {
+    ierr = PetscMemzero(J, Nq*cdim*dim*sizeof(PetscReal));CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
       PetscInt i, j, k, c, r;
 
@@ -1336,20 +1336,21 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
       if (!detJ && !invJ) continue;
       switch (cdim) {
       case 3:
-        DMPlex_Det3D_Internal(&detJt, J);
-        if (invJ) {DMPlex_Invert3D_Internal(invJ, J, detJt);}
+        DMPlex_Det3D_Internal(&detJt, &J[q*cdim*dim]);
+        if (invJ) {DMPlex_Invert3D_Internal(&invJ[q*cdim*dim], &J[q*cdim*dim], detJt);}
         break;
       case 2:
-        DMPlex_Det2D_Internal(detJ, J);
-        if (invJ) {DMPlex_Invert2D_Internal(invJ, J, detJt);}
+        DMPlex_Det2D_Internal(detJ, &J[q*cdim*dim]);
+        if (invJ) {DMPlex_Invert2D_Internal(&invJ[q*cdim*dim], &J[q*cdim*dim], detJt);}
         break;
       case 1:
-        detJt = J[0];
-        if (invJ) invJ[0] = 1.0/J[0];
+        detJt = J[q*cdim*dim];
+        if (invJ) invJ[q*cdim*dim] = 1.0/detJt;
       }
       if (detJ) detJ[q] = detJt;
     }
   }
+  else if (detJ || invJ) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
