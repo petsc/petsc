@@ -248,7 +248,7 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
   PetscInt               i,wnum;
   DM_Composite           *com = (DM_Composite*)dm->data;
   PetscInt               readonly;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(pvec,VEC_CLASSID,2);
@@ -276,6 +276,73 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
       vecs[wnum++] = v;
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCompositeGetLocalAccessArray"
+/*@C
+    DMCompositeGetLocalAccessArray - Allows one to access the individual
+    packed vectors in their local representation.
+
+    Collective on DMComposite.
+
+    Input Parameters:
++    dm - the packer object
+.    pvec - packed vector
+.    nwanted - number of vectors wanted
+-    wanted - sorted array of vectors wanted, or NULL to get all vectors
+
+    Output Parameters:
+.    vecs - array of requested local vectors (must be allocated)
+
+    Notes: Use DMCompositeRestoreLocalAccessArray() to return the vectors
+    when you no longer need them.
+
+    Level: advanced
+
+.seealso: DMCompositeRestoreLocalAccessArray(), DMCompositeGetAccess(),
+DMCompositeGetEntries(), DMCompositeScatter(), DMCompositeGather()
+@*/
+PetscErrorCode  DMCompositeGetLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,const PetscInt *wanted,Vec *vecs)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *link;
+  PetscInt               i,wnum;
+  DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               readonly;
+  PetscInt               nlocal = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(pvec,VEC_CLASSID,2);
+  if (!com->setup) {
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
+  }
+
+  ierr = VecLockGet(pvec,&readonly);CHKERRQ(ierr);
+  for (i=0,wnum=0,link=com->next; link && wnum<nwanted; i++,link=link->next) {
+    if (!wanted || i == wanted[wnum]) {
+      Vec v;
+      ierr = DMGetLocalVector(link->dm,&v);CHKERRQ(ierr);
+      if (readonly) {
+        const PetscScalar *array;
+        ierr = VecGetArrayRead(pvec,&array);CHKERRQ(ierr);
+        ierr = VecPlaceArray(v,array+nlocal);CHKERRQ(ierr);
+        ierr = VecLockPush(v);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(pvec,&array);CHKERRQ(ierr);
+      } else {
+        PetscScalar *array;
+        ierr = VecGetArray(pvec,&array);CHKERRQ(ierr);
+        ierr = VecPlaceArray(v,array+nlocal);CHKERRQ(ierr);
+        ierr = VecRestoreArray(pvec,&array);CHKERRQ(ierr);
+      }
+      vecs[wnum++] = v;
+    }
+
+    nlocal += link->nlocal;
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -375,6 +442,59 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
         ierr = VecLockPop(vecs[wnum]);CHKERRQ(ierr);
       }
       ierr = DMRestoreGlobalVector(link->dm,&vecs[wnum]);CHKERRQ(ierr);
+      wnum++;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCompositeRestoreLocalAccessArray"
+/*@C
+    DMCompositeRestoreLocalAccessArray - Returns the vectors obtained with DMCompositeGetLocalAccessArray().
+
+    Collective on DMComposite.
+
+    Input Parameters:
++    dm - the packer object
+.    pvec - packed vector
+.    nwanted - number of vectors wanted
+.    wanted - sorted array of vectors wanted, or NULL to restore all vectors
+-    vecs - array of local vectors to return
+
+    Level: advanced
+
+    Notes:
+    nwanted and wanted must match the values given to DMCompositeGetLocalAccessArray()
+    otherwise the call will fail.
+
+.seealso: DMCompositeGetLocalAccessArray(), DMCompositeRestoreAccessArray(),
+DMCompositeRestoreAccess(), DMCompositeRestoreEntries(),
+DMCompositeScatter(), DMCompositeGather()
+@*/
+PetscErrorCode  DMCompositeRestoreLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,const PetscInt *wanted,Vec *vecs)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *link;
+  PetscInt               i,wnum;
+  DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               readonly;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(pvec,VEC_CLASSID,2);
+  if (!com->setup) {
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
+  }
+
+  ierr = VecLockGet(pvec,&readonly);CHKERRQ(ierr);
+  for (i=0,wnum=0,link=com->next; link && wnum<nwanted; i++,link=link->next) {
+    if (!wanted || i == wanted[wnum]) {
+      ierr = VecResetArray(vecs[wnum]);CHKERRQ(ierr);
+      if (readonly) {
+        ierr = VecLockPop(vecs[wnum]);CHKERRQ(ierr);
+      }
+      ierr = DMRestoreLocalVector(link->dm,&vecs[wnum]);CHKERRQ(ierr);
       wnum++;
     }
   }
@@ -658,6 +778,7 @@ PetscErrorCode  DMCompositeAddDM(DM dmc,DM dm)
   mine->dm     = dm;
   mine->next   = NULL;
   com->n      += n;
+  com->nghost += nlocal;
 
   /* add to end of list */
   if (!next) com->next = mine;
@@ -1438,12 +1559,13 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   DM_Composite   *com;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(p,&com);CHKERRQ(ierr);
-  p->data   = com;
-  ierr      = PetscObjectChangeTypeName((PetscObject)p,"DMComposite");CHKERRQ(ierr);
-  com->n    = 0;
-  com->next = NULL;
-  com->nDM  = 0;
+  ierr          = PetscNewLog(p,&com);CHKERRQ(ierr);
+  p->data       = com;
+  ierr          = PetscObjectChangeTypeName((PetscObject)p,"DMComposite");CHKERRQ(ierr);
+  com->n        = 0;
+  com->nghost   = 0;
+  com->next     = NULL;
+  com->nDM      = 0;
 
   p->ops->createglobalvector              = DMCreateGlobalVector_Composite;
   p->ops->createlocalvector               = DMCreateLocalVector_Composite;
