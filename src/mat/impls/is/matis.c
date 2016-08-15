@@ -14,6 +14,58 @@
 static PetscErrorCode MatISComputeSF_Private(Mat);
 
 #undef __FUNCT__
+#define __FUNCT__ "MatTranspose_IS"
+PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
+{
+  Mat                    C,lC,lA;
+  ISLocalToGlobalMapping rl2g,cl2g;
+  PetscBool              notset = PETSC_FALSE,cong = PETSC_TRUE;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) {
+    PetscBool rcong,ccong;
+
+    ierr = PetscLayoutCompare((*B)->cmap,A->rmap,&rcong);CHKERRQ(ierr);
+    ierr = PetscLayoutCompare((*B)->rmap,A->cmap,&ccong);CHKERRQ(ierr);
+    cong = (PetscBool)(rcong || ccong);
+  }
+  if (reuse == MAT_INITIAL_MATRIX || *B == A || !cong) {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectTypeCompare((PetscObject)*B,MATIS,&notset);CHKERRQ(ierr);
+    C = *B;
+  }
+
+  if (!notset) {
+    ierr = MatSetSizes(C,A->cmap->n,A->rmap->n,A->cmap->N,A->rmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(C,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
+    ierr = MatSetType(C,MATIS);CHKERRQ(ierr);
+    ierr = MatGetLocalToGlobalMapping(A,&rl2g,&cl2g);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(C,cl2g,rl2g);CHKERRQ(ierr);
+  }
+
+  /* perform local transposition */
+  ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
+  ierr = MatTranspose(lA,MAT_INITIAL_MATRIX,&lC);CHKERRQ(ierr);
+  ierr = MatISSetLocalMat(C,lC);CHKERRQ(ierr);
+  ierr = MatDestroy(&lC);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_INITIAL_MATRIX || *B != A) {
+    if (!cong) {
+      ierr = MatDestroy(B);CHKERRQ(ierr);
+    }
+    *B = C;
+  } else {
+    ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalSet_IS"
 PetscErrorCode  MatDiagonalSet_IS(Mat A,Vec D,InsertMode insmode)
 {
@@ -1557,8 +1609,8 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
    Level: advanced
 
    Notes: See MATIS for more details.
-          m and n are NOT related to the size of the map; they are the size of the part of the vector owned
-          by that process. The sizes of rmap and cmap define the size of the local matrices.
+          m and n are NOT related to the size of the map; they represent the size of the local parts of the vectors
+          used in MatMult operations. The sizes of rmap and cmap define the size of the local matrices.
           If either rmap or cmap are NULL, then the matrix is assumed to be square.
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
@@ -1568,9 +1620,11 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!rmap && !cmap) SETERRQ(comm,PETSC_ERR_USER,"You need to provide at least one of the mapping");
+  if (!rmap && !cmap) SETERRQ(comm,PETSC_ERR_USER,"You need to provide at least one of the mappings");
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(*A,bs);CHKERRQ(ierr);
+  if (bs > 0) {
+    ierr = MatSetBlockSize(*A,bs);CHKERRQ(ierr);
+  }
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATIS);CHKERRQ(ierr);
   if (rmap && cmap) {
@@ -1609,6 +1663,7 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 .  MatAXPY()
 .  MatGetSubMatrix()
 .  MatGetLocalSubMatrix()
+.  MatTranspose()
 -  MatSetLocalToGlobalMapping()
 
    Options Database Keys:
@@ -1669,6 +1724,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->axpy                    = MatAXPY_IS;
   A->ops->diagonalset             = MatDiagonalSet_IS;
   A->ops->shift                   = MatShift_IS;
+  A->ops->transpose               = MatTranspose_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
