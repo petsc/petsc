@@ -158,7 +158,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     } else {
       ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
-      if (err == PC_FACTOR_NUMERIC_ZEROPIVOT) {
+      if (err == MAT_FACTOR_NUMERIC_ZEROPIVOT) {
         ierr = MatFactorClearError(((PC_Factor*)dir)->fact);CHKERRQ(ierr);
         pc->failedreason = PC_NOERROR;
       }
