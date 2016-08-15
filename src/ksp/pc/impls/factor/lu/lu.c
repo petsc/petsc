@@ -157,10 +157,10 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     } else {
-      F = ((PC_Factor*)dir)->fact;
-      if ((PCFailedReason)F->errortype == PC_FACTOR_NUMERIC_ZEROPIVOT) {
-        F->errortype     = MAT_FACTOR_NOERROR;
-        pc->failedreason = (PCFailedReason)F->errortype;
+      ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
+      if (err == PC_FACTOR_NUMERIC_ZEROPIVOT) {
+        ierr = MatFactorClearError(((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+        pc->failedreason = PC_NOERROR;
       }
     }
     ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
