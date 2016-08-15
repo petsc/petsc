@@ -311,6 +311,10 @@ class Configure(config.base.Configure):
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         raise RuntimeError('C libraries cannot directly be used from Fortran')
+      except OSError, e:
+        self.setCompilers.LIBS = oldLibs
+        self.logWrite(self.setCompilers.restoreLog())
+        raise e
       self.logWrite(self.setCompilers.restoreLog())
     return
 
