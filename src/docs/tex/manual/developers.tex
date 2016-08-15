@@ -150,7 +150,7 @@ to be directed to \trl{petsc-maint@mcs.anl.gov}.
 \item Apologize for the problem when it is appropriate (but not otherwise).
 \item Thank the person for their patience if it is more than six hours since the report came in.
 \item If the person drops the \trl{petsc-maint} or \trl{petsc-users} from the reply list, add it back in.
-\item Often, it pays to not ask too many questions or give to many suggestions in the same email. The user often only responds to the first of them.
+\item Often, it pays to not ask too many questions or give too many suggestions in the same email. The user often only responds to the first of them.
 \end{tightitemize}
 
 \chapter{Style Guide}\label{chapter:styleguide}
@@ -285,7 +285,7 @@ See item \ref{styleitem:bracenextline} for an exception.
 \item \label{styleitem:bracenextline} In function declarations, the opening brace should be on the {\em next} line, not on the same line as the function name and arguments. 
   This is an exception to item \ref{styleitem:bracesameline}.
 \item Do not leave chunks of commented-out code in the source files.
-\item Do not use C++-style comments (\lstinline{\\ Comment}). Use only C-style comments (\lstinline{\* Comment *\}).
+\item Do not use C++-style comments (\lstinline{// Comment}). Use only C-style comments (\lstinline{/* Comment */}).
 \item Do not include a space after a \lstinline{(} or before a \lstinline{)}. Do not write
 \begin{lstlisting}
 ierr = PetscMalloc1( 10,&a );CHKERRQ(ierr); /* Incorrect */
@@ -470,7 +470,7 @@ generally not used in source code. Rather it has:
   \item \lstinline{PetscMPIInt}
   \item \lstinline{PetscBLASInt}
   \item \lstinline{PetscBool}
-  \item \lstinline{PetscBT} - bit storate of logical true and false
+  \item \lstinline{PetscBT} - bit storage of logical true and false
 \end{tightitemize}
 \lstinline{PetscInt} can be set using \trl{./configure} to be either \trl{int} (32 bit, the default) or \trl{long long}
 (64 bit, with \trl{configure --with-64-bit-indices}) to allow indexing into very large arrays. 
