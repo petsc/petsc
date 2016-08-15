@@ -1411,6 +1411,11 @@ runex56_nns:
          ${DIFF} output/ex56_nns.out ex.tmp || printf "${PWD}\nPossible problem with ex56_nns.out, diffs above\n=========================================\n"; \
          ${RM} -f ex.tmp
 
+runex56_nns_telescope:
+	-@${MPIEXEC} -n 2 ./ex56 -use_mat_nearnullspace -ksp_monitor_short -pc_type telescope -pc_telescope_reduction_factor 2 -telescope_pc_type gamg > ex.tmp 2>&1;	\
+         ${DIFF} output/ex56_nns_telescope.out ex.tmp || printf "${PWD}\nPossible problem with ex56_nns_telescope.out, diffs above\n=========================================\n"; \
+         ${RM} -f ex.tmp
+
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
 	${DIFF} output/ex58.out ex58.tmp || printf "${PWD}\nPossible problem with ex58, diffs above\n=========================================\n"; \
@@ -1610,7 +1615,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex51.PETSc runex51 ex51.rm \
                                  ex53.PETSc runex53 ex53.rm \
                                  ex54.PETSc runex54 runex54_Classical ex54.rm ex55.PETSc runex55 runex55_Classical runex55_NC ex55.rm\
-                                 ex56.PETSc runex56_nns ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm \
+                                 ex56.PETSc runex56_nns runex56_nns_telescope ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
                                  ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm ex65.PETSc runex65 ex65.rm
