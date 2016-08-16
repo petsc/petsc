@@ -160,13 +160,13 @@ int main(int argc,char **args)
   beta  = 1.0;
   ierr = MatDuplicate(Be,MAT_COPY_VALUES,&Ce);CHKERRQ(ierr);
   ierr = MatElementalSyr2k(uplo,orientation,alpha,Ae,Be,beta,Ce,PETSC_FALSE);CHKERRQ(ierr);
-  //if (!rank) printf(" Test MatElementalSyr2k(), C = α(AB^T + BA^T)+βC: \n");
+  //if (!rank) printf(" Test MatElementalSyr2k(), C = a(AB^T + BA^T)+bC: \n");
   //ierr = MatView(Ce,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&Ce);CHKERRQ(ierr);
 
   ierr = MatDuplicate(Be,MAT_COPY_VALUES,&Ce);CHKERRQ(ierr);
   ierr = MatElementalHer2k(uplo,orientation,alpha,Ae,Be,beta,Ce);CHKERRQ(ierr);
-  //if (!rank) printf(" Test MatElementalHer2k(), C = α(AB^H + BA^H)+βC: \n");
+  //if (!rank) printf(" Test MatElementalHer2k(), C = a(AB^H + BA^H)+bC: \n");
   //ierr = MatView(Ce,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&Ce);CHKERRQ(ierr);
 
