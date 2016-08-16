@@ -60,8 +60,10 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
     ierr = PetscFree(obj->prefix);CHKERRQ(ierr);
   } else {
     if (prefix[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
-    ierr = PetscFree(obj->prefix);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(prefix,&obj->prefix);CHKERRQ(ierr);
+    if (prefix != obj->prefix) {
+      ierr = PetscFree(obj->prefix);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(prefix,&obj->prefix);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
