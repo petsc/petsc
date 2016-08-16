@@ -152,6 +152,12 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       ierr            = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+    } else {
+      F = ((PC_Factor*)dir)->fact;
+      if ((PCFailedReason)F->errortype == PC_FACTOR_NUMERIC_ZEROPIVOT) {
+        F->errortype     = MAT_FACTOR_NOERROR;
+        pc->failedreason = (PCFailedReason)F->errortype;
+      }
     }
     ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
     if (err) { /* FactorSymbolic() fails */
