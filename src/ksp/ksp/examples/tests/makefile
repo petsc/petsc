@@ -1045,7 +1045,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_noche
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm ex41.PETSc runex41 runex41_2 ex41.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
                                  ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm\
-                                 ex49.PETSc runex49 ex49.rm ex50.PETSc runex50 ex50.rm
+                                 ex49.PETSc runex49 ex49.rm ex50.PETSc runex50 ex50.rm \
                                  ex51.PETSc runex51 runex51_2 ex51.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm

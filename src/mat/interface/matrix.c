@@ -110,13 +110,35 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    Level: advanced
 
-.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic()
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorClearError()
 @*/
 PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   *err = mat->errortype;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorClearError"
+/*@
+   MatFactorClearError - clears the error code in a factorization
+
+   Logically Collective on Mat
+
+   Input Parameter:
+.  mat - the factored matrix
+
+   Level: advanced
+
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorGetError()
+@*/
+PetscErrorCode MatFactorClearError(Mat mat)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  mat->errortype = MAT_FACTOR_NOERROR;
   PetscFunctionReturn(0);
 }
 
