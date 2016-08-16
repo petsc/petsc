@@ -447,8 +447,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = VecDot(tao->solution,qp->C,&d2);CHKERRQ(ierr);
     ierr = VecDot(qp->G,qp->Z,gap);CHKERRQ(ierr);
     ierr = VecDot(qp->T,qp->S,gap+1);CHKERRQ(ierr);
-
     qp->pobj = d1/2.0 + d2+qp->d;
+
     /* Compute the duality gap */
     qp->gap  = gap[0]+gap[1];
     qp->dobj = qp->pobj - qp->gap;
