@@ -301,6 +301,7 @@ PETSC_EXTERN void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,CHAR prefix PETSC_MIX
 
   *ierr = TSGetOptionsPrefix(*ts,&tname);
   *ierr = PetscStrncpy(prefix,tname,len);
+  FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 }
 PETSC_EXTERN void PETSC_STDCALL tsappendoptionsprefix_(TS *ts,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {

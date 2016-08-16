@@ -24,4 +24,5 @@ PETSC_EXTERN void PETSC_STDCALL dmdagetfieldname_(DM *da,PetscInt *nf,CHAR name 
 
   *ierr = DMDAGetFieldName(*da,*nf,&tname);
   *ierr = PetscStrncpy(name,tname,len);
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 }

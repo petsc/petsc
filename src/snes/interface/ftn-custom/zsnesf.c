@@ -191,6 +191,7 @@ PETSC_EXTERN void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PET
 
   *ierr = SNESGetOptionsPrefix(*snes,&tname);
   *ierr = PetscStrncpy(prefix,tname,len);if (*ierr) return;
+  FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 }
 
 PETSC_EXTERN void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
