@@ -312,7 +312,7 @@ ierr = func(a,22.0);CHKERRQ(ierr);
 \begin{enumerate}
 \item Array and pointer arguments where the array values are not changed should be labeled as \lstinline{const} arguments.
 \item Scalar values passed to functions should {\em never} be labeled as \lstinline{const}.
-\item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should actually be protyped as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} caste in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
+\item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should actually be prototyped as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} caste in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
 \item Do not use the \lstinline{register} directive.
 \item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
   call \lstinline{PetscLogFlops()} directly when needed.
@@ -881,7 +881,7 @@ These include the specific functions in the PETSc common function table.
       remove, by name, an object that was previously composed.
 
 \item \lstinline{query(PetscObject,const char *name,PetscObject*)} retrieves an object that was
-      previously composed with the first object. Retreives a null if no object with
+      previously composed with the first object. Retrieves a null if no object with
       that name was previously composed.
 
 \item \lstinline{composefunction(PetscObject,const char *name,const char *fname,void *func)} associates a function
@@ -896,7 +896,7 @@ These include the specific functions in the PETSc common function table.
       For example, \lstinline{fname} may be \trl{libpetscksp:PCCreate_LU} or
       \trl{http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate_LU}.
 
-\item \lstinline{queryfunction(PetscObject,const char *name,void **func)} retreives a function pointer that
+\item \lstinline{queryfunction(PetscObject,const char *name,void **func)} retrieves a function pointer that
       was associated with the object. If dynamic libraries are used, the function is loaded
       into memory at this time (if it has not been previously loaded), not when the
       \lstinline{composefunction()} routine was called.
@@ -904,7 +904,7 @@ These include the specific functions in the PETSc common function table.
 \end{tightitemize}
 
 Since the object composition allows one to {\em only} compose PETSc objects
-with PETSc objects rather than any arbitrary pointer, PETsc provides
+with PETSc objects rather than any arbitrary pointer, PETSc provides
 the convenience object \lstinline{PetscContainer}, created with the
 routine \lstinline{PetscContainerCreate(MPI_Comm,PetscContainer*)}
 to allow one to wrap any kind of data into a PETSc object that can then be
