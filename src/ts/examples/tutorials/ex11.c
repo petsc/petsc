@@ -506,7 +506,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys,PetscOptionItems *
 }
 
 /******************* Euler Density Shock (EULER_IV_SHOCK,EULER_SS_SHOCK) ********************/
-/* An initial‐value and self‐similar solutions of the compressible Euler equations */
+/* An initial-value and self-similar solutions of the compressible Euler equations */
 /* Ravi Samtaney and D. I. Pullin */
 /* Phys. Fluids 8, 2650 (1996); http://dx.doi.org/10.1063/1.869050 */
 typedef enum {EULER_PAR_GAMMA,EULER_PAR_RHOR,EULER_PAR_AMACH,EULER_PAR_ITANA,EULER_PAR_SIZE} EulerParamIdx;
@@ -553,7 +553,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
 
   if (eu->type==EULER_IV_SHOCK || eu->type==EULER_SS_SHOCK) {
     /******************* Euler Density Shock ********************/
-    /* On initial‐value and self‐similar solutions of the compressible Euler equations */
+    /* On initial-value and self-similar solutions of the compressible Euler equations */
     /* Ravi Samtaney and D. I. Pullin */
     /* Phys. Fluids 8, 2650 (1996); http://dx.doi.org/10.1063/1.869050 */
     /* initial conditions 1: left of shock, 0: left of discontinuity 2: right of discontinuity,  */
