@@ -9,55 +9,29 @@
 #include <petscksp.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_BQPIP"
-static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
+#define __FUNCT__ "QPIPComputeResidual"
+static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp,Tao tao)
 {
-  TAO_BQPIP      *qp =(TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
+  PetscReal      dtmp = 1.0 - qp->psteplength;
 
   PetscFunctionBegin;
-  /* Set pointers to Data */
-  ierr = VecGetSize(tao->solution,&qp->n);CHKERRQ(ierr);
+  /* Compute R3 and R5 */
 
-  /* Allocate some arrays */
-  if (!tao->gradient) {
-    ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);
-  }
-  if (!tao->stepdirection) {
-    ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);
-  }
-  if (!tao->XL) {
-    ierr = VecDuplicate(tao->solution,&tao->XL);CHKERRQ(ierr);
-    ierr = VecSet(tao->XL,-1.0e-20);CHKERRQ(ierr);
-  }
-  if (!tao->XU) {
-    ierr = VecDuplicate(tao->solution,&tao->XU);CHKERRQ(ierr);
-    ierr = VecSet(tao->XU,1.0e20);CHKERRQ(ierr);
-  }
+  ierr = VecScale(qp->R3,dtmp);CHKERRQ(ierr);
+  ierr = VecScale(qp->R5,dtmp);CHKERRQ(ierr);
+  qp->pinfeas=dtmp*qp->pinfeas;
 
-  ierr = VecDuplicate(tao->solution,&qp->Work);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->XU);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->XL);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->HDiag);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->DiagAxpy);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->RHS);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->RHS2);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->C0);CHKERRQ(ierr);
+  ierr = VecCopy(qp->S,tao->gradient);CHKERRQ(ierr);
+  ierr = VecAXPY(tao->gradient,-1.0,qp->Z);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(tao->solution,&qp->G);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->DG);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->S);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->Z);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->DZ);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->GZwork);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->R3);CHKERRQ(ierr);
+  ierr = MatMult(tao->hessian,tao->solution,qp->RHS);CHKERRQ(ierr);
+  ierr = VecScale(qp->RHS,-1.0);CHKERRQ(ierr);
+  ierr = VecAXPY(qp->RHS,-1.0,qp->C0);CHKERRQ(ierr);
+  ierr = VecAXPY(tao->gradient,-1.0,qp->RHS);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(tao->solution,&qp->T);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->DT);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->DS);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->TSwork);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->R5);CHKERRQ(ierr);
-  qp->m=2*qp->n;
+  ierr = VecNorm(tao->gradient,NORM_1,&qp->dinfeas);CHKERRQ(ierr);
+  qp->rnorm=(qp->dinfeas+qp->pinfeas)/(qp->m+qp->n);
   PetscFunctionReturn(0);
 }
 
@@ -119,7 +93,6 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
 
   qp->mu=0;qp->dinfeas=1.0;qp->pinfeas=1.0;
   while ((qp->dinfeas+qp->pinfeas)/(qp->m+qp->n) >= qp->mu) {
-
     ierr = VecScale(qp->G,two);CHKERRQ(ierr);
     ierr = VecScale(qp->Z,two);CHKERRQ(ierr);
     ierr = VecScale(qp->S,two);CHKERRQ(ierr);
@@ -156,37 +129,138 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_BQPIP"
-static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
+#define __FUNCT__ "QPIPStepLength"
+static PetscErrorCode QPIPStepLength(TAO_BQPIP *qp)
 {
-  TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
+  PetscReal      tstep1,tstep2,tstep3,tstep4,tstep;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tao->setupcalled) {
-    ierr = VecDestroy(&qp->G);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->DG);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->Z);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->DZ);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->GZwork);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->R3);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->S);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->DS);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->T);CHKERRQ(ierr);
+  /* Compute stepsize to the boundary */
+  ierr = VecStepMax(qp->G,qp->DG,&tstep1);CHKERRQ(ierr);
+  ierr = VecStepMax(qp->T,qp->DT,&tstep2);CHKERRQ(ierr);
+  ierr = VecStepMax(qp->S,qp->DS,&tstep3);CHKERRQ(ierr);
+  ierr = VecStepMax(qp->Z,qp->DZ,&tstep4);CHKERRQ(ierr);
 
-    ierr = VecDestroy(&qp->DT);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->TSwork);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->R5);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->HDiag);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->Work);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->XL);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->XU);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->DiagAxpy);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->RHS);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->RHS2);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->C0);CHKERRQ(ierr);
+  tstep = PetscMin(tstep1,tstep2);
+  qp->psteplength = PetscMin(0.95*tstep,1.0);
+
+  tstep = PetscMin(tstep3,tstep4);
+  qp->dsteplength = PetscMin(0.95*tstep,1.0);
+
+  qp->psteplength = PetscMin(qp->psteplength,qp->dsteplength);
+  qp->dsteplength = qp->psteplength;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "QPIPComputeNormFromCentralPath"
+static PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp,PetscReal *norm)
+{
+  PetscErrorCode ierr;
+  PetscReal      gap[2],mu[2],nmu;
+
+  PetscFunctionBegin;
+  ierr = VecPointwiseMult(qp->GZwork,qp->G,qp->Z);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(qp->TSwork,qp->T,qp->S);CHKERRQ(ierr);
+  ierr = VecNorm(qp->TSwork,NORM_1,&mu[0]);CHKERRQ(ierr);
+  ierr = VecNorm(qp->GZwork,NORM_1,&mu[1]);CHKERRQ(ierr);
+
+  nmu=-(mu[0]+mu[1])/qp->m;
+
+  ierr = VecShift(qp->GZwork,nmu);CHKERRQ(ierr);
+  ierr = VecShift(qp->TSwork,nmu);CHKERRQ(ierr);
+
+  ierr = VecNorm(qp->GZwork,NORM_2,&gap[0]);CHKERRQ(ierr);
+  ierr = VecNorm(qp->TSwork,NORM_2,&gap[1]);CHKERRQ(ierr);
+  gap[0]*=gap[0];
+  gap[1]*=gap[1];
+
+  qp->pathnorm=PetscSqrtScalar(gap[0]+gap[1]);
+  *norm=qp->pathnorm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "QPIPComputeStepDirection"
+static PetscErrorCode QPIPComputeStepDirection(TAO_BQPIP *qp,Tao tao)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Calculate DG */
+  ierr = VecCopy(tao->stepdirection,qp->DG);CHKERRQ(ierr);
+  ierr = VecAXPY(qp->DG,1.0,qp->R3);CHKERRQ(ierr);
+
+  /* Calculate DT */
+  ierr = VecCopy(tao->stepdirection,qp->DT);CHKERRQ(ierr);
+  ierr = VecScale(qp->DT,-1.0);CHKERRQ(ierr);
+  ierr = VecAXPY(qp->DT,-1.0,qp->R5);CHKERRQ(ierr);
+
+  /* Calculate DZ */
+  ierr = VecAXPY(qp->DZ,-1.0,qp->Z);CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(qp->GZwork,qp->DG,qp->G);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(qp->GZwork,qp->GZwork,qp->Z);CHKERRQ(ierr);
+  ierr = VecAXPY(qp->DZ,-1.0,qp->GZwork);CHKERRQ(ierr);
+
+  /* Calculate DS */
+  ierr = VecAXPY(qp->DS,-1.0,qp->S);CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(qp->TSwork,qp->DT,qp->T);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(qp->TSwork,qp->TSwork,qp->S);CHKERRQ(ierr);
+  ierr = VecAXPY(qp->DS,-1.0,qp->TSwork);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSetUp_BQPIP"
+static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
+{
+  TAO_BQPIP      *qp =(TAO_BQPIP*)tao->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Set pointers to Data */
+  ierr = VecGetSize(tao->solution,&qp->n);CHKERRQ(ierr);
+
+  /* Allocate some arrays */
+  if (!tao->gradient) {
+    ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);
   }
-  ierr = PetscFree(tao->data);CHKERRQ(ierr);
+  if (!tao->stepdirection) {
+    ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);
+  }
+  if (!tao->XL) {
+    ierr = VecDuplicate(tao->solution,&tao->XL);CHKERRQ(ierr);
+    ierr = VecSet(tao->XL,-1.0e-20);CHKERRQ(ierr);
+  }
+  if (!tao->XU) {
+    ierr = VecDuplicate(tao->solution,&tao->XU);CHKERRQ(ierr);
+    ierr = VecSet(tao->XU,1.0e20);CHKERRQ(ierr);
+  }
+
+  ierr = VecDuplicate(tao->solution,&qp->Work);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->XU);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->XL);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->HDiag);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->DiagAxpy);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->RHS);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->RHS2);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->C0);CHKERRQ(ierr);
+
+  ierr = VecDuplicate(tao->solution,&qp->G);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->DG);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->S);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->Z);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->DZ);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->GZwork);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->R3);CHKERRQ(ierr);
+
+  ierr = VecDuplicate(tao->solution,&qp->T);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->DT);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->DS);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->TSwork);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->R5);CHKERRQ(ierr);
+  qp->m=2*qp->n;
   PetscFunctionReturn(0);
 }
 
@@ -302,8 +376,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecScale(qp->DiagAxpy,-1.0);CHKERRQ(ierr);
-    ierr = QPComputeStepDirection(qp,tao);CHKERRQ(ierr);
-    ierr = QPStepLength(qp); CHKERRQ(ierr);
+    ierr = QPIPComputeStepDirection(qp,tao);CHKERRQ(ierr);
+    ierr = QPIPStepLength(qp); CHKERRQ(ierr);
 
     /* Calculate New Residual R1 in Work vector */
     ierr = MatMult(tao->hessian,tao->stepdirection,qp->RHS2);CHKERRQ(ierr);
@@ -356,8 +430,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
       ierr = MatDiagonalSet(tao->hessian,qp->HDiag,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = QPComputeStepDirection(qp,tao);CHKERRQ(ierr);
-      ierr = QPStepLength(qp);CHKERRQ(ierr);
+      ierr = QPIPComputeStepDirection(qp,tao);CHKERRQ(ierr);
+      ierr = QPIPStepLength(qp);CHKERRQ(ierr);
     }  /* End Corrector step */
 
 
@@ -394,127 +468,10 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "QPComputeStepDirection"
-static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *qp,Tao tao)
+#define __FUNCT__ "TaoView_BQPIP"
+static PetscErrorCode TaoView_BQPIP(Tao tao,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  /* Calculate DG */
-  ierr = VecCopy(tao->stepdirection,qp->DG);CHKERRQ(ierr);
-  ierr = VecAXPY(qp->DG,1.0,qp->R3);CHKERRQ(ierr);
-
-  /* Calculate DT */
-  ierr = VecCopy(tao->stepdirection,qp->DT);CHKERRQ(ierr);
-  ierr = VecScale(qp->DT,-1.0);CHKERRQ(ierr);
-  ierr = VecAXPY(qp->DT,-1.0,qp->R5);CHKERRQ(ierr);
-
-  /* Calculate DZ */
-  ierr = VecAXPY(qp->DZ,-1.0,qp->Z);CHKERRQ(ierr);
-  ierr = VecPointwiseDivide(qp->GZwork,qp->DG,qp->G);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(qp->GZwork,qp->GZwork,qp->Z);CHKERRQ(ierr);
-  ierr = VecAXPY(qp->DZ,-1.0,qp->GZwork);CHKERRQ(ierr);
-
-  /* Calculate DS */
-  ierr = VecAXPY(qp->DS,-1.0,qp->S);CHKERRQ(ierr);
-  ierr = VecPointwiseDivide(qp->TSwork,qp->DT,qp->T);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(qp->TSwork,qp->TSwork,qp->S);CHKERRQ(ierr);
-  ierr = VecAXPY(qp->DS,-1.0,qp->TSwork);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "QPIPComputeResidual"
-static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp,Tao tao)
-{
-  PetscErrorCode ierr;
-  PetscReal      dtmp = 1.0 - qp->psteplength;
-
-  PetscFunctionBegin;
-  /* Compute R3 and R5 */
-
-  ierr = VecScale(qp->R3,dtmp);CHKERRQ(ierr);
-  ierr = VecScale(qp->R5,dtmp);CHKERRQ(ierr);
-  qp->pinfeas=dtmp*qp->pinfeas;
-
-  ierr = VecCopy(qp->S,tao->gradient);CHKERRQ(ierr);
-  ierr = VecAXPY(tao->gradient,-1.0,qp->Z);CHKERRQ(ierr);
-
-  ierr = MatMult(tao->hessian,tao->solution,qp->RHS);CHKERRQ(ierr);
-  ierr = VecScale(qp->RHS,-1.0);CHKERRQ(ierr);
-  ierr = VecAXPY(qp->RHS,-1.0,qp->C0);CHKERRQ(ierr);
-  ierr = VecAXPY(tao->gradient,-1.0,qp->RHS);CHKERRQ(ierr);
-
-  ierr = VecNorm(tao->gradient,NORM_1,&qp->dinfeas);CHKERRQ(ierr);
-  qp->rnorm=(qp->dinfeas+qp->pinfeas)/(qp->m+qp->n);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "QPStepLength"
-static PetscErrorCode QPStepLength(TAO_BQPIP *qp)
-{
-  PetscReal      tstep1,tstep2,tstep3,tstep4,tstep;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* Compute stepsize to the boundary */
-  ierr = VecStepMax(qp->G,qp->DG,&tstep1);CHKERRQ(ierr);
-  ierr = VecStepMax(qp->T,qp->DT,&tstep2);CHKERRQ(ierr);
-  ierr = VecStepMax(qp->S,qp->DS,&tstep3);CHKERRQ(ierr);
-  ierr = VecStepMax(qp->Z,qp->DZ,&tstep4);CHKERRQ(ierr);
-
-  tstep = PetscMin(tstep1,tstep2);
-  qp->psteplength = PetscMin(0.95*tstep,1.0);
-
-  tstep = PetscMin(tstep3,tstep4);
-  qp->dsteplength = PetscMin(0.95*tstep,1.0);
-
-  qp->psteplength = PetscMin(qp->psteplength,qp->dsteplength);
-  qp->dsteplength = qp->psteplength;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeDual_BQPIP"
-PetscErrorCode TaoComputeDual_BQPIP(Tao tao,Vec DXL,Vec DXU)
-{
-  TAO_BQPIP       *qp = (TAO_BQPIP*)tao->data;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCopy(qp->Z,DXL);CHKERRQ(ierr);
-  ierr = VecCopy(qp->S,DXU);CHKERRQ(ierr);
-  ierr = VecScale(DXU,-1.0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "QPIPComputeNormFromCentralPath"
-PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp,PetscReal *norm)
-{
-  PetscErrorCode ierr;
-  PetscReal      gap[2],mu[2],nmu;
-
-  PetscFunctionBegin;
-  ierr = VecPointwiseMult(qp->GZwork,qp->G,qp->Z);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(qp->TSwork,qp->T,qp->S);CHKERRQ(ierr);
-  ierr = VecNorm(qp->TSwork,NORM_1,&mu[0]);CHKERRQ(ierr);
-  ierr = VecNorm(qp->GZwork,NORM_1,&mu[1]);CHKERRQ(ierr);
-
-  nmu=-(mu[0]+mu[1])/qp->m;
-
-  ierr = VecShift(qp->GZwork,nmu);CHKERRQ(ierr);
-  ierr = VecShift(qp->TSwork,nmu);CHKERRQ(ierr);
-
-  ierr = VecNorm(qp->GZwork,NORM_2,&gap[0]);CHKERRQ(ierr);
-  ierr = VecNorm(qp->TSwork,NORM_2,&gap[1]);CHKERRQ(ierr);
-  gap[0]*=gap[0];
-  gap[1]*=gap[1];
-
-  qp->pathnorm=PetscSqrtScalar(gap[0]+gap[1]);
-  *norm=qp->pathnorm;
   PetscFunctionReturn(0);
 }
 
@@ -534,19 +491,59 @@ static PetscErrorCode TaoSetFromOptions_BQPIP(PetscOptionItems *PetscOptionsObje
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoView_BQPIP"
-static PetscErrorCode TaoView_BQPIP(Tao tao,PetscViewer viewer)
+#define __FUNCT__ "TaoDestroy_BQPIP"
+static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
 {
+  TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  if (tao->setupcalled) {
+    ierr = VecDestroy(&qp->G);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DG);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->Z);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DZ);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->GZwork);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->R3);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->S);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DS);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->T);CHKERRQ(ierr);
+
+    ierr = VecDestroy(&qp->DT);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->TSwork);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->R5);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->HDiag);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->Work);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->XL);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->XU);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DiagAxpy);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->RHS);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->RHS2);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->C0);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------------------------------- */
-/*MC
- TAOBQPIP - bounded quadratic interior point algorithm for quadratic 
-    optimization with box constraints.
+#undef __FUNCT__
+#define __FUNCT__ "TaoComputeDual_BQPIP"
+static PetscErrorCode TaoComputeDual_BQPIP(Tao tao,Vec DXL,Vec DXU)
+{
+  TAO_BQPIP       *qp = (TAO_BQPIP*)tao->data;
+  PetscErrorCode  ierr;
 
- Notes: This algorithms solves quadratic problems only,the linear Hessian will
+  PetscFunctionBegin;
+  ierr = VecCopy(qp->Z,DXL);CHKERRQ(ierr);
+  ierr = VecCopy(qp->S,DXU);CHKERRQ(ierr);
+  ierr = VecScale(DXU,-1.0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*MC
+ TAOBQPIP - interior-point method for quadratic programs with
+    box constraints.
+
+ Notes: This algorithms solves quadratic problems only, the Hessian will
         only be computed once.
 
  Options Database Keys:
@@ -564,6 +561,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&qp);CHKERRQ(ierr);
+
   tao->ops->setup = TaoSetUp_BQPIP;
   tao->ops->solve = TaoSolve_BQPIP;
   tao->ops->view = TaoView_BQPIP;
@@ -594,4 +592,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   ierr = KSPSetTolerances(tao->ksp,1e-14,1e-30,1e30,PetscMax(10,qp->n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
