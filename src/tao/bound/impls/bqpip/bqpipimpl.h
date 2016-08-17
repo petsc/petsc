@@ -1,3 +1,7 @@
+/*
+  Private data structure used for bqpip method
+*/
+
 #if !defined(__TAO_BQPIP_H)
 #define __TAO_BQPIP_H
 
