@@ -1340,7 +1340,7 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
         if (invJ) {DMPlex_Invert3D_Internal(&invJ[q*cdim*dim], &J[q*cdim*dim], detJt);}
         break;
       case 2:
-        DMPlex_Det2D_Internal(detJ, &J[q*cdim*dim]);
+        DMPlex_Det2D_Internal(&detJt, &J[q*cdim*dim]);
         if (invJ) {DMPlex_Invert2D_Internal(&invJ[q*cdim*dim], &J[q*cdim*dim], detJt);}
         break;
       case 1:
