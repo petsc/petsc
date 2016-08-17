@@ -333,9 +333,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     lid_cprowID_1 = NULL;
   }
   if (nloc>0) {
-    if (!(matA_1 && !matA_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_1 && !matA_1->compressedrow.use)");
     if (!(!matB_1 || matB_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_1==0 || matB_1->compressedrow.use)");
-    if (!(matA_2 && !matA_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_2 && !matA_2->compressedrow.use)");
     if (!(!matB_2 || matB_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_2==0 || matB_2->compressedrow.use)");
   }
   /* get state of locals and selected gid for deleted */
