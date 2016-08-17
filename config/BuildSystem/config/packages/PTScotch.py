@@ -52,8 +52,8 @@ class Configure(config.package.Package):
     if self.libraries.add('-lz','gzwrite'):
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
       ldflags += ' -lz'
-    # OSX does not have pthread_barrierattr_t - so check for that
-    if self.libraries.add('-lpthread','pthread_barrierattr_t'):
+    # OSX does not have pthread_barrier_destroy - so check for that
+    if self.libraries.add('-lpthread','pthread_barrier_destroy'):
       self.cflags = self.cflags + ' -DCOMMON_PTHREAD'
       ldflags += ' -lpthread'
     if self.libraries.add('-lm','sin'): ldflags += ' -lm'
