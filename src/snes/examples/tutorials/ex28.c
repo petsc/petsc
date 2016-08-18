@@ -264,8 +264,9 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
     break;
   case 2: {
-    Mat Buu,Buk,Bku,Bkk;
-    IS  *is;
+    Mat       Buu,Buk,Bku,Bkk;
+    PetscBool nest;
+    IS        *is;
     ierr = DMCompositeScatter(user->pack,X,Uloc,Kloc);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
@@ -275,8 +276,17 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     ierr = MatGetLocalSubMatrix(B,is[1],is[0],&Bku);CHKERRQ(ierr);
     ierr = MatGetLocalSubMatrix(B,is[1],is[1],&Bkk);CHKERRQ(ierr);
     ierr = FormJacobianLocal_U(user,&infou,u,k,Buu);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)B,MATNEST,&nest);CHKERRQ(ierr);
+    if (!nest) {
+      /*
+         DMCreateMatrix_Composite()  for a nested matrix does not generate off-block matrices that one can call MatSetValuesLocal() on, it just creates dummy 
+         matrices with no entries; there cannot insert values into them. Commit b6480e041dd2293a65f96222772d68cdb4ed6306
+         changed Mat_Nest() from returning NULL pointers for these submatrices to dummy matrices because PCFIELDSPLIT could not
+         handle the returned null matrices.
+      */
+      ierr = FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk);CHKERRQ(ierr);
+      ierr = FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku);CHKERRQ(ierr);
+    }
     ierr = FormJacobianLocal_K(user,&infok,u,k,Bkk);CHKERRQ(ierr);
     ierr = MatRestoreLocalSubMatrix(B,is[0],is[0],&Buu);CHKERRQ(ierr);
     ierr = MatRestoreLocalSubMatrix(B,is[0],is[1],&Buk);CHKERRQ(ierr);
