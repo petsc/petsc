@@ -1334,6 +1334,7 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
             J[r*cdim+c] = r == c ? 1.0 : 0.0;
       }
       if (!detJ && !invJ) continue;
+      detJt = 0.;
       switch (cdim) {
       case 3:
         DMPlex_Det3D_Internal(&detJt, &J[q*cdim*dim]);
