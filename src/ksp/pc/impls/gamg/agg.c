@@ -280,7 +280,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
-  Mat_SeqAIJ     *matA_1, *matB_1=0, *matA_2, *matB_2=0;
+  Mat_SeqAIJ     *matA_1, *matB_1=0;
   MPI_Comm       comm;
   PetscInt       lid,*ii,*idx,ix,Iend,my0,kk,n,j;
   Mat_MPIAIJ     *mpimat_2 = 0, *mpimat_1=0;
@@ -312,8 +312,6 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     mpimat_1 = (Mat_MPIAIJ*)Gmat_1->data;
     matA_1   = (Mat_SeqAIJ*)mpimat_1->A->data;
     matB_1   = (Mat_SeqAIJ*)mpimat_1->B->data;
-    matA_2   = (Mat_SeqAIJ*)mpimat_2->A->data;
-    matB_2   = (Mat_SeqAIJ*)mpimat_2->B->data;
 
     /* force compressed row storage for B matrix in AuxMat */
     ierr = MatCheckCompressedRow(mpimat_1->B,matB_1->nonzerorowcnt,&matB_1->compressedrow,matB_1->i,Gmat_1->rmap->n,-1.0);CHKERRQ(ierr);
@@ -329,12 +327,10 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     ierr = PetscObjectTypeCompare((PetscObject)Gmat_1,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
     if (!isAIJ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA_1        = (Mat_SeqAIJ*)Gmat_1->data;
-    matA_2        = (Mat_SeqAIJ*)Gmat_2->data;
     lid_cprowID_1 = NULL;
   }
   if (nloc>0) {
     if (!(!matB_1 || matB_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_1==0 || matB_1->compressedrow.use)");
-    if (!(!matB_2 || matB_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_2==0 || matB_2->compressedrow.use)");
   }
   /* get state of locals and selected gid for deleted */
   ierr = PetscMalloc2(nloc, &lid_state,nloc, &lid_parent_gid);CHKERRQ(ierr);
