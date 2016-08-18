@@ -3,8 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://gforge.inria.fr/frs/download.php/file/34099/scotch_6.0.3.tar.gz',
-                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_6.0.3.tar.gz']
+    self.gitcommit       = '6.0.4-p1'
+    self.download        = ['git://https://bitbucket.org/petsc/pkg-scotch.git',
+                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_'+self.gitcommit+'.tar.gz']
     self.downloaddirname = 'scotch'
     self.liblist         = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
     self.functions       = ['SCOTCH_archBuild']
@@ -51,8 +52,8 @@ class Configure(config.package.Package):
     if self.libraries.add('-lz','gzwrite'):
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
       ldflags += ' -lz'
-    # OSX does not have pthread_barrierattr_t - so check for that
-    if self.libraries.add('-lpthread','pthread_barrierattr_t'):
+    # OSX does not have pthread_barrier_destroy - so check for that
+    if self.libraries.add('-lpthread','pthread_barrier_destroy'):
       self.cflags = self.cflags + ' -DCOMMON_PTHREAD'
       ldflags += ' -lpthread'
     if self.libraries.add('-lm','sin'): ldflags += ' -lm'

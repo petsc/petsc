@@ -1026,10 +1026,11 @@ runex51:
 	   ${RM} -f ex51.tmp
 
 runex51_2:
-	-@${MPIEXEC} -n 1 ./ex51 -reverse -pc_type cholesky > ex51.tmp 2>&1;\
-	if (${DIFF} output/ex51_1.out ex51.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex51_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex51.tmp
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex51 -reverse -pc_type cholesky > ex51.tmp 2>&1;\
+	if (${DIFF} output/ex51_1.out ex51.tmp > /dev/null 2>&1) then x='good'; fi; \
+	if (${DIFF} output/ex51_2.out ex51.tmp > /dev/null 2>&1) then x='good'; fi; \
+        if [ "$$x" = "bad" ]; then ${DIFF} output/ex51_1.out ex51.tmp ; ${DIFF} output/ex51_2.out ex51.tmp ; printf "${PWD}\nPossible problem with ex51_2, diffs above\n=========================================\n"; fi; \
+        ${RM} -f ex51.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
