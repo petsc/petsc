@@ -52,6 +52,7 @@ PETSC_EXTERN void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_
 
   *ierr = KSPGetOptionsPrefix(*ksp,&tname);
   *ierr = PetscStrncpy(prefix,tname,len); if (*ierr) return;
+  FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 }
 PETSC_EXTERN void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
