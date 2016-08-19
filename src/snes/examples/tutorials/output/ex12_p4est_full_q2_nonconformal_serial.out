@@ -1,15 +1,15 @@
-0 SNES Function norm 17.3771 
-    0 SNES Function norm 17.3771 
-    1 SNES Function norm 0.000129932 
-      0 SNES Function norm 0.000142642 
-      1 SNES Function norm 1.38974e-09 
-        0 SNES Function norm 1.54472e-09 
+0 SNES Function norm 17.9109 
+    0 SNES Function norm 17.9109 
+    1 SNES Function norm 0.000134337 
+      0 SNES Function norm 0.000146836 
+      1 SNES Function norm 1.38613e-09 
+        0 SNES Function norm 1.66976e-09 
         1 SNES Function norm < 1.e-11
-      0 SNES Function norm 9.758e-10 
+      0 SNES Function norm 9.714e-10 
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.00035202 
-    1 SNES Function norm 2.8436e-09 
-  1 SNES Function norm 2.8436e-09 
+    0 SNES Function norm 0.000365351 
+    1 SNES Function norm 2.95649e-09 
+  1 SNES Function norm 2.95649e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: fas
@@ -20,7 +20,7 @@ SNES Object: 1 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-      total number of linear solver iterations=35
+      total number of linear solver iterations=36
       total number of function evaluations=1
       SNESLineSearch Object: (fas_coarse_) 1 MPI processes
         type: basic
@@ -47,7 +47,7 @@ SNES Object: 1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=43
+      total number of linear solver iterations=48
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_1_) 1 MPI processes
@@ -78,7 +78,7 @@ SNES Object: 1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=86
+      total number of linear solver iterations=91
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_2_) 1 MPI processes
@@ -115,4 +115,4 @@ SNES Object: 1 MPI processes
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=1
 Number of SNES iterations = 1
-L_2 Error: 3.12806e-10
+L_2 Error: 4.27783e-10

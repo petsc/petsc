@@ -1,40 +1,41 @@
 0 SNES Function norm 8.32828 
-    0 KSP Residual norm 3.62248 
-    1 KSP Residual norm 1.1873 
-    2 KSP Residual norm 0.642451 
-    3 KSP Residual norm 0.432558 
-    4 KSP Residual norm 0.294047 
-    5 KSP Residual norm 0.223712 
-    6 KSP Residual norm 0.154989 
-    7 KSP Residual norm 0.103887 
-    8 KSP Residual norm 0.069051 
-    9 KSP Residual norm 0.04403 
-   10 KSP Residual norm 0.0176189 
-   11 KSP Residual norm 0.00550825 
-   12 KSP Residual norm 0.00255225 
-   13 KSP Residual norm 0.000925155 
-   14 KSP Residual norm 0.000446088 
-   15 KSP Residual norm 0.00023659 
-   16 KSP Residual norm 0.000109347 
-   17 KSP Residual norm 5.05761e-05 
-   18 KSP Residual norm 3.03535e-05 
-   19 KSP Residual norm 1.61718e-05 
-   20 KSP Residual norm 7.03678e-06 
-   21 KSP Residual norm 3.02616e-06 
-   22 KSP Residual norm 1.38526e-06 
-   23 KSP Residual norm 4.25668e-07 
-   24 KSP Residual norm 1.04292e-07 
-   25 KSP Residual norm 3.99103e-08 
-   26 KSP Residual norm 1.22343e-08 
-   27 KSP Residual norm 3.5216e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 27
-  1 SNES Function norm 1.1504e-08 
+    0 KSP Residual norm 3.63832 
+    1 KSP Residual norm 1.16215 
+    2 KSP Residual norm 0.636257 
+    3 KSP Residual norm 0.41618 
+    4 KSP Residual norm 0.272703 
+    5 KSP Residual norm 0.202986 
+    6 KSP Residual norm 0.133106 
+    7 KSP Residual norm 0.0916458 
+    8 KSP Residual norm 0.0602906 
+    9 KSP Residual norm 0.0339768 
+   10 KSP Residual norm 0.0129185 
+   11 KSP Residual norm 0.00384565 
+   12 KSP Residual norm 0.00166463 
+   13 KSP Residual norm 0.000689576 
+   14 KSP Residual norm 0.000363274 
+   15 KSP Residual norm 0.000248795 
+   16 KSP Residual norm 0.000117504 
+   17 KSP Residual norm 4.92821e-05 
+   18 KSP Residual norm 2.44486e-05 
+   19 KSP Residual norm 8.5084e-06 
+   20 KSP Residual norm 3.16169e-06 
+   21 KSP Residual norm 1.3838e-06 
+   22 KSP Residual norm 6.66623e-07 
+   23 KSP Residual norm 3.05146e-07 
+   24 KSP Residual norm 1.22526e-07 
+   25 KSP Residual norm 4.71749e-08 
+   26 KSP Residual norm 1.28143e-08 
+   27 KSP Residual norm 5.18994e-09 
+   28 KSP Residual norm 1.70512e-09 
+  Linear solve converged due to CONVERGED_RTOL iterations 28
+  1 SNES Function norm 5.64137e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=27
+  total number of linear solver iterations=28
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -70,8 +71,8 @@ SNES Object: 1 MPI processes
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=74, cols=74
-          total: nonzeros=452, allocated nonzeros=452
+          rows=69, cols=69
+          total: nonzeros=415, allocated nonzeros=415
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     linear system matrix = precond matrix:
@@ -82,4 +83,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
 Number of SNES iterations = 1
-L_2 Error: 0.00173611
+L_2 Error: 0.00131794
