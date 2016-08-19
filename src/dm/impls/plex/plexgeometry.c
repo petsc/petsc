@@ -2148,3 +2148,29 @@ PetscErrorCode DMPlexGetDataFVM(DM dm, PetscFV fv, Vec *cellgeom, Vec *facegeom,
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCoordinatesToReference"
+/*@
+  DMPlexCoordinatesToReference - Pull coordinates back from the mesh to the reference element using a single element
+  map.  This inversion will be accurate inside the reference element, but may be inaccurate for mappings that do not
+  extend uniquely outside the reference cell (e.g, most non-affine maps)
+
+  Not collective
+
+  Input Parameters:
++ dm         - The mesh, with coordinate maps defined either by a PetscDS for the coordinate DM (see DMGetCoordinateDM()) or
+               implicitly by the coordinates of the corner vertices of the cell: as an affine map for simplicial elements, or
+               as a multilinear map for tensor-product elements
+. cell       - the cell whose map is used.
+. numPoints  - the number of points to locate
++ realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())
+
+  Output Parameters:
+. refCoords  - (numPoints x dimension) array of reference coordinates (see DMGetDimension())
+@*/
+PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[])
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
