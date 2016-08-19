@@ -11,5 +11,6 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name P
   const char *tmp;
   *ierr = PetscObjectGetName(*obj,&tmp);
   *ierr = PetscStrncpy(name,tmp,len);if (*ierr) return;
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
