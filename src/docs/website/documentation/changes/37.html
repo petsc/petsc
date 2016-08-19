@@ -171,6 +171,16 @@ PetscOptionsGetAll(PetscOptions,char*[]);
       <h4>KSP:</h4>
       <ul>
         <li>KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
+        You should replace
+<pre>
+ierr = KSPMonitorSet(ksp,KSPMonitorDefault,NULL,NULL);CHKERRQ(ierr); </p>
+</pre>
+        with
+ <pre>
+PetscViewerAndFormat *vf;
+ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
+ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorDefault,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+ </pre>
         <li>-ksp_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
         <li> A Flexible Conjugate Gradient (FCG) implementation has been added as KSPFCG.
         <li> New implementations for pipelined, flexible Krylov methods have been added as KSPPIPEFGMRES, KSPPIPEFCG, and KSPPIPEGCR.
@@ -178,6 +188,16 @@ PetscOptionsGetAll(PetscOptions,char*[]);
       <h4>SNES:</h4>
       <ul>
         <li>SNESSetMonitor(SNESMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
+                You should replace
+<pre>
+ierr = SNESMonitorSet(ksp,SNESMonitorDefault,NULL,NULL);CHKERRQ(ierr); </p>
+</pre>
+        with
+ <pre>
+PetscViewerAndFormat *vf;
+ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
+ierr = SNESMonitorSet(ksp,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorDefault,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+ </pre>
         <li>-snes_monitor_solution/residual/solution_update now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
       </ul>
       <h4>SNESLineSearch:</h4>
@@ -190,7 +210,17 @@ PetscOptionsGetAll(PetscOptions,char*[]);
       <ul>
         <li>You must call TSSetExactFinalTime() or use the option -ts_exact_final_time before calling TSSolve()</li>
         <li>TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as the final argument, you can no longer pass a NULL)</li>
-        <li>-ts_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
+                You should replace
+<pre>
+ierr = TSMonitorSet(ksp,TSMonitorDefault,NULL,NULL);CHKERRQ(ierr); </p>
+</pre>
+        with
+ <pre>
+PetscViewerAndFormat *vf;
+ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
+ierr = TSMonitorSet(ksp,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,void*))TSMonitorDefault,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+ </pre>
+<li>-ts_monitor_solution now takes arguments of the form [viewertype[:filename[:formatoption]]] allowing viewing the solution in many ways. To get back the previous behavior use -ksp_monitor_solution draw</li>
         <li>-ts_monitor_binary_solution filename should now be written as -ts_monitor_solution binary:filename</li>
         <li>Renamed TSSetEventMonitor() to TSSetEventHandler(). Updated many TS implementations to support event detection.</li>
         <li>Updated TSTHETA, TSBEULER, and TSCN to support time adaptivity by estimating the local truncation error with a BDF-2 formula.</li>
