@@ -377,7 +377,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecScale(qp->DiagAxpy,-1.0);CHKERRQ(ierr);
     ierr = QPIPComputeStepDirection(qp,tao);CHKERRQ(ierr);
-    ierr = QPIPStepLength(qp); CHKERRQ(ierr);
+    ierr = QPIPStepLength(qp);CHKERRQ(ierr);
 
     /* Calculate New Residual R1 in Work vector */
     ierr = MatMult(tao->hessian,tao->stepdirection,qp->RHS2);CHKERRQ(ierr);
