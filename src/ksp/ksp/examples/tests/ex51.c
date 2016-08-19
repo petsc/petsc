@@ -61,15 +61,15 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Factorize first matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"First matrix\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"First matrix\n");CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
   if (reason) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp() failed due to %s\n",KSPConvergedReasons[reason]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp() failed due to %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
     ierr = PCGetSetUpFailedReason(pc,&pcreason);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Success!\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Success!\n");CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,17 +78,17 @@ int main(int argc,char **args)
   ierr = MatShift(A,reverse?alpha-beta:beta-alpha);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Second matrix\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Second matrix\n");CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
   if (reason) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp() failed due to %s\n",KSPConvergedReasons[reason]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp() failed due to %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
     ierr = PCGetSetUpFailedReason(pc,&pcreason);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Success!\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Success!\n");CHKERRQ(ierr);
     ierr = PCGetSetUpFailedReason(pc,&pcreason);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"PC reason is %s\n",PCFailedReasons[pcreason]);CHKERRQ(ierr);
   }
 
   /*
