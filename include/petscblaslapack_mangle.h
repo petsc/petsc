@@ -122,6 +122,7 @@
 #define BLAStrsm_    PETSCBLAS(trsm,TRSM)
 #define LAPACKgesvd_ PETSCBLAS(gesvd,GESVD)
 #define LAPACKgeev_  PETSCBLAS(geev,GEEV)
+#define LAPACKgels_  PETSCBLAS(gels,GELS)
 #define LAPACKsteqr_ PETSCBLAS(steqr,STEQR)  /* eigenvalues and eigenvectors of symm tridiagonal */
 #define LAPACKhseqr_ PETSCBLAS(hseqr,HSEQR)
 #define LAPACKgges_  PETSCBLAS(gges,GGES)
