@@ -67,8 +67,11 @@
       Mat A, B
       MatReuse reuse
       PetscErrorCode ierr
+      PetscInt i12,i0
 
-      call MatCreateShell(PETSC_COMM_SELF, 12, 12, 12, 12, 0, B, ierr)
+      i12 = 12
+      i0 = 0
+      call MatCreateShell(PETSC_COMM_SELF,i12,i12,i12,i12,i0,B,ierr)
       call MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr)
       call MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr)
 
@@ -216,6 +219,7 @@
       PetscViewer viewer
       MatOperation op
       PetscErrorCode ierr
+      PetscInt i12,i0
       external mymatmult
       external mymatmultadd
       external mymatmulttranspose
@@ -234,10 +238,12 @@
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
 
       viewer = PETSC_VIEWER_STDOUT_SELF
-      call VecCreateSeq(PETSC_COMM_SELF, 12, x, ierr)
-      call VecCreateSeq(PETSC_COMM_SELF, 12, y, ierr)
-      call VecCreateSeq(PETSC_COMM_SELF, 12, z, ierr)
-      call MatCreateShell(PETSC_COMM_SELF, 12, 12, 12, 12, 0, m, ierr)
+      i12 = 12
+      i0 = 0
+      call VecCreateSeq(PETSC_COMM_SELF, i12, x, ierr)
+      call VecCreateSeq(PETSC_COMM_SELF, i12, y, ierr)
+      call VecCreateSeq(PETSC_COMM_SELF, i12, z, ierr)
+      call MatCreateShell(PETSC_COMM_SELF,i12,i12,i12,i12,i0,m,ierr)
       call MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr)
       call MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr)
 
@@ -278,6 +284,7 @@
       call MatGetDiagonal(m, x, ierr)
       call MatDiagonalScale(m, x, y, ierr)
       call MatZeroEntries(m, ierr)
+      a = 102.
       call MatAXPY(m, a, mt, SAME_NONZERO_PATTERN, ierr)
       call MatShift(m, a, ierr)
       call MatDiagonalSet(m, x, INSERT_VALUES, ierr)
