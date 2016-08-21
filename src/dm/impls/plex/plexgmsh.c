@@ -292,6 +292,15 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         }
       }
     }
+
+    /* Create vertex sets */
+    for (c = 0; c < numCells; ++c) {
+      if (gmsh_elem[c].dim == 0) {
+        if (gmsh_elem[c].numTags > 0) {
+          ierr = DMSetLabelValue(*dm, "Vertex Sets", gmsh_elem[c].nodes[0] + vStart - 1, gmsh_elem[c].tags[0]);CHKERRQ(ierr);
+        }
+      }
+    }
   }
 
   /* Read coordinates */
