@@ -684,9 +684,8 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
-  } else if (isvtk) {           /* Duplicate the Vec and hold a reference to the DM */
+  } else if (isvtk) {           /* Duplicate the Vec */
     Vec Y;
-    ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
     ierr = VecDuplicate(xin,&Y);CHKERRQ(ierr);
     if (((PetscObject)xin)->name) {
       /* If xin was named, copy the name over to Y. The duplicate names are safe because nobody else will ever see Y. */
