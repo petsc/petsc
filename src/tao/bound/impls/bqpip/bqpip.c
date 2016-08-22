@@ -1,7 +1,7 @@
 
 /*
-    This file implements an interior point method for bound-constrained
-    quadratic programs.
+    This file implements a Mehrotra predictor-corrector method for 
+    bound-constrained quadratic programs.
 
  */
 
@@ -27,7 +27,7 @@ static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp,Tao tao)
 
   ierr = MatMult(tao->hessian,tao->solution,qp->RHS);CHKERRQ(ierr);
   ierr = VecScale(qp->RHS,-1.0);CHKERRQ(ierr);
-  ierr = VecAXPY(qp->RHS,-1.0,qp->C0);CHKERRQ(ierr);
+  ierr = VecAXPY(qp->RHS,-1.0,qp->C);CHKERRQ(ierr);
   ierr = VecAXPY(tao->gradient,-1.0,qp->RHS);CHKERRQ(ierr);
 
   ierr = VecNorm(tao->gradient,NORM_1,&qp->dinfeas);CHKERRQ(ierr);
@@ -45,16 +45,16 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
 
   PetscFunctionBegin;
   /* Compute function, Gradient R=Hx+b, and Hessian */
-  ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
-  ierr = VecMedian(qp->XL,tao->solution,qp->XU,tao->solution);CHKERRQ(ierr);
   ierr = MatMult(tao->hessian,tao->solution,tao->gradient);CHKERRQ(ierr);
-  ierr = VecCopy(qp->C0,qp->Work);CHKERRQ(ierr);
+  ierr = VecCopy(qp->C,qp->Work);CHKERRQ(ierr);
   ierr = VecAXPY(qp->Work,0.5,tao->gradient);CHKERRQ(ierr);
-  ierr = VecAXPY(tao->gradient,1.0,qp->C0);CHKERRQ(ierr);
+  ierr = VecAXPY(tao->gradient,1.0,qp->C);CHKERRQ(ierr);
   ierr = VecDot(tao->solution,qp->Work,&fff);CHKERRQ(ierr);
-  qp->pobj = fff + qp->c;
+  qp->pobj = fff + qp->d;
 
-  /* Initialize Primal Vectors */
+  if (PetscIsInfOrNanReal(qp->pobj)) SETERRQ(PETSC_COMM_SELF,1, "User provided data contains Inf or NaN");
+
+  /* Initialize slack vectors */
   /* T = XU - X; G = X - XL */
   ierr = VecCopy(qp->XU,qp->T);CHKERRQ(ierr);
   ierr = VecAXPY(qp->T,-1.0,tao->solution);CHKERRQ(ierr);
@@ -212,8 +212,8 @@ static PetscErrorCode QPIPComputeStepDirection(TAO_BQPIP *qp,Tao tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_BQPIP"
-static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
+#define __FUNCT__ "TaoSetup_BQPIP"
+static PetscErrorCode TaoSetup_BQPIP(Tao tao)
 {
   TAO_BQPIP      *qp =(TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
@@ -231,11 +231,11 @@ static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
   }
   if (!tao->XL) {
     ierr = VecDuplicate(tao->solution,&tao->XL);CHKERRQ(ierr);
-    ierr = VecSet(tao->XL,-1.0e-20);CHKERRQ(ierr);
+    ierr = VecSet(tao->XL,PETSC_NINFINITY);CHKERRQ(ierr);
   }
   if (!tao->XU) {
     ierr = VecDuplicate(tao->solution,&tao->XU);CHKERRQ(ierr);
-    ierr = VecSet(tao->XU,1.0e20);CHKERRQ(ierr);
+    ierr = VecSet(tao->XU,PETSC_INFINITY);CHKERRQ(ierr);
   }
 
   ierr = VecDuplicate(tao->solution,&qp->Work);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
   ierr = VecDuplicate(tao->solution,&qp->DiagAxpy);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&qp->RHS);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&qp->RHS2);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&qp->C0);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&qp->C);CHKERRQ(ierr);
 
   ierr = VecDuplicate(tao->solution,&qp->G);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&qp->DG);CHKERRQ(ierr);
@@ -288,21 +288,30 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   qp->psteplength    = 0.0;
   qp->dsteplength    = 0.0;
 
-  /* Tighten infinite bounds,things break when we don't do this
+  /* TODO
+     - Remove fixed variables and treat them correctly
+     - Use index sets for the infinite versus finite bounds
+     - Update remaining code for fixed and free variables
+     - Check for inf and nan in objective function value
+  */
+
+  /* Tighten infinite bounds, things break when we don't do this
     -- see test_bqpip.c
   */
+  ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
   ierr = VecSet(qp->XU,1.0e20);CHKERRQ(ierr);
   ierr = VecSet(qp->XL,-1.0e20);CHKERRQ(ierr);
   ierr = VecPointwiseMax(qp->XL,qp->XL,tao->XL);CHKERRQ(ierr);
   ierr = VecPointwiseMin(qp->XU,qp->XU,tao->XU);CHKERRQ(ierr);
+  ierr = VecMedian(qp->XL,tao->solution,qp->XU,tao->solution);CHKERRQ(ierr);
 
-  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&qp->c,qp->C0);CHKERRQ(ierr);
-  ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
-  ierr = MatMult(tao->hessian,tao->solution,qp->Work);CHKERRQ(ierr);
-  ierr = VecDot(tao->solution,qp->Work,&d1);CHKERRQ(ierr);
-  ierr = VecAXPY(qp->C0,-1.0,qp->Work);CHKERRQ(ierr);
-  ierr = VecDot(qp->C0,tao->solution,&d2);CHKERRQ(ierr);
-  qp->c -= (d1/2.0+d2);
+  /* Evaluate gradient and Hessian at zero to get the correct values
+     without contaminating them with numerical artifacts.
+  */
+
+  ierr = VecSet(qp->Work,0);CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao,qp->Work,&qp->d,qp->C);CHKERRQ(ierr);
+  ierr = TaoComputeHessian(tao,qp->Work,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
   ierr = MatGetDiagonal(tao->hessian,qp->HDiag);CHKERRQ(ierr);
 
   ierr = QPIPSetInitialPoint(qp,tao);CHKERRQ(ierr);
@@ -451,11 +460,11 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = MatMult(tao->hessian,tao->solution,qp->Work);CHKERRQ(ierr);
 
     ierr = VecDot(tao->solution,qp->Work,&d1);CHKERRQ(ierr);
-    ierr = VecDot(tao->solution,qp->C0,&d2);CHKERRQ(ierr);
+    ierr = VecDot(tao->solution,qp->C,&d2);CHKERRQ(ierr);
     ierr = VecDot(qp->G,qp->Z,gap);CHKERRQ(ierr);
     ierr = VecDot(qp->T,qp->S,gap+1);CHKERRQ(ierr);
 
-    qp->pobj = d1/2.0 + d2+qp->c;
+    qp->pobj = d1/2.0 + d2+qp->d;
     /* Compute the duality gap */
     qp->gap  = gap[0]+gap[1];
     qp->dobj = qp->pobj - qp->gap;
@@ -519,7 +528,7 @@ static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
     ierr = VecDestroy(&qp->DiagAxpy);CHKERRQ(ierr);
     ierr = VecDestroy(&qp->RHS);CHKERRQ(ierr);
     ierr = VecDestroy(&qp->RHS2);CHKERRQ(ierr);
-    ierr = VecDestroy(&qp->C0);CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->C);CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -562,7 +571,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&qp);CHKERRQ(ierr);
 
-  tao->ops->setup = TaoSetUp_BQPIP;
+  tao->ops->setup = TaoSetup_BQPIP;
   tao->ops->solve = TaoSolve_BQPIP;
   tao->ops->view = TaoView_BQPIP;
   tao->ops->setfromoptions = TaoSetFromOptions_BQPIP;
