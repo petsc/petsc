@@ -55,10 +55,9 @@ typedef struct {
   Vec RHS2;
 
   /* Data */
-  Vec B;
-  Vec C0;
-  PetscReal c;
+  Vec C;
+  PetscReal d;
 } TAO_BQPIP;
 
-#endif
+#endif  /* if !defined(__TAO_BQPIP_H) */
 
