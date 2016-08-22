@@ -4415,7 +4415,7 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
   if (coloring->ctype == IS_COLORING_GLOBAL) {
     ierr        = ISColoringReference(coloring);CHKERRQ(ierr);
     a->coloring = coloring;
-  } else if (coloring->ctype == IS_COLORING_GHOSTED) {
+  } else if (coloring->ctype == IS_COLORING_LOCAL) {
     PetscInt        i,*larray;
     ISColoring      ocoloring;
     ISColoringValue *colors;

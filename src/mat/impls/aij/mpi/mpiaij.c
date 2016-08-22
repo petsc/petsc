@@ -3790,7 +3790,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
     ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,PETSC_OWN_POINTER,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
-  } else if (coloring->ctype == IS_COLORING_GHOSTED) {
+  } else if (coloring->ctype == IS_COLORING_LOCAL) {
     ISColoringValue *colors;
     PetscInt        *larray;
     ISColoring      ocoloring;

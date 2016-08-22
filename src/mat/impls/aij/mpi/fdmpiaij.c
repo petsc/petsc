@@ -157,6 +157,8 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void
   PetscFunctionReturn(0);
 }
 
+#include <petscdm.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_AIJ"
 PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
@@ -176,6 +178,16 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   const PetscInt    ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
 
   PetscFunctionBegin;
+  if (ctype == IS_COLORING_LOCAL) {
+    Vec x1local;
+    DM  dm;
+    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(dm,&x1local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
+    x1   = x1local;
+  }
+
   /* (1) Set w1 = F(x1) */
   if (!coloring->fset) {
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
@@ -356,6 +368,11 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
     ierr = VecRestoreArray(vscale,&vscale_array);CHKERRQ(ierr);
   }
   coloring->currentcolor = -1;
+  if (ctype == IS_COLORING_LOCAL) {
+    DM  dm;
+    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm,&x1);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -384,7 +401,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 #endif
 
   PetscFunctionBegin;
-  if (ctype == IS_COLORING_GHOSTED) {
+  if (ctype == IS_COLORING_LOCAL) {
     if (!map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
     ierr = ISLocalToGlobalMappingGetIndices(map,&ltog);CHKERRQ(ierr);
   }
@@ -443,7 +460,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr       = PetscMalloc1(nis,&c->ncolumns);CHKERRQ(ierr);
   ierr       = PetscMalloc1(nis,&c->columns);CHKERRQ(ierr);
-  ierr       = PetscMalloc1(nis,&c->nrows);CHKERRQ(ierr);
+  ierr       = PetscCalloc1(nis,&c->nrows);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
 
   if (c->htype[0] == 'd') {
@@ -494,7 +511,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr = PetscMalloc1(nctot+1,&cols);CHKERRQ(ierr);
       ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
       ierr = PetscFree2(ncolsonproc,disp);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_GHOSTED) {
+    } else if (ctype == IS_COLORING_LOCAL) {
       /* Determine local number of columns of this color on this process, including ghost points */
       nctot = n;
       ierr  = PetscMalloc1(nctot+1,&cols);CHKERRQ(ierr);
@@ -506,7 +523,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     bs2     = bs*bs;
     nrows_i = 0;
     for (j=0; j<nctot; j++) { /* loop over columns*/
-      if (ctype == IS_COLORING_GHOSTED) {
+      if (ctype == IS_COLORING_LOCAL) {
         col = ltog[cols[j]];
       } else {
         col = cols[j];
@@ -585,7 +602,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
   ierr = PetscFree2(rowhit,valaddrhit);CHKERRQ(ierr);
 
-  if (ctype == IS_COLORING_GHOSTED) {
+  if (ctype == IS_COLORING_LOCAL) {
     ierr = ISLocalToGlobalMappingRestoreIndices(map,&ltog);CHKERRQ(ierr);
   }
   ierr = PetscInfo3(c,"ncolors %D, brows %D and bcols %D are used.\n",c->ncolors,c->brows,c->bcols);CHKERRQ(ierr);

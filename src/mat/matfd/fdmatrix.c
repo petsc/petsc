@@ -139,10 +139,12 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"      %D\n",c->columns[i][j]);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer,"    Number of rows %D\n",c->nrows[i]);CHKERRQ(ierr);
-        for (j=0; j<c->nrows[i]; j++) {
-          row  = c->matentry[nz].row;
-          col  = c->matentry[nz++].col;
-          ierr = PetscViewerASCIIPrintf(viewer,"      %D %D \n",row,col);CHKERRQ(ierr);
+        if (c->matentry) {
+          for (j=0; j<c->nrows[i]; j++) {
+            row  = c->matentry[nz].row;
+            col  = c->matentry[nz++].col;
+            ierr = PetscViewerASCIIPrintf(viewer,"      %D %D \n",row,col);CHKERRQ(ierr);
+          }
         }
       }
     }
@@ -648,5 +650,9 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sct
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,sctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
+  if (!coloring->viewed) {
+    ierr = MatFDColoringViewFromOptions(coloring,NULL,"-mat_fd_coloring_view");CHKERRQ(ierr);
+    coloring->viewed = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }

@@ -1135,7 +1135,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
 
     Input Parameter:
 +   dm - the DM object
--   ctype - IS_COLORING_GHOSTED or IS_COLORING_GLOBAL
+-   ctype - IS_COLORING_LOCAL or IS_COLORING_GLOBAL
 
     Output Parameter:
 .   coloring - the coloring

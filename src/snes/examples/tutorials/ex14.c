@@ -141,7 +141,7 @@ int main(int argc,char **argv)
         ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
         ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
       } else {
-        ierr = DMCreateColoring(user.da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
+        ierr = DMCreateColoring(user.da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
         ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
         ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunctionLocal,&user);CHKERRQ(ierr);
       }
