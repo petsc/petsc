@@ -271,8 +271,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   TAO_BQPIP          *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode     ierr;
   PetscInt           its;
-  PetscReal          d1,d2,ksptol,sigma;
-  PetscReal          sigmamu;
+  PetscReal          d1,d2,ksptol,sigmamu;
   PetscReal          dstep,pstep,step=0;
   PetscReal          gap[4];
   TaoConvergedReason reason;
@@ -283,7 +282,6 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   qp->gap            = 10.0;
   qp->rgap           = 1.0;
   qp->mu             = 1.0;
-  qp->sigma          = 1.0;
   qp->dinfeas        = 1.0;
   qp->psteplength    = 0.0;
   qp->dsteplength    = 0.0;
@@ -292,7 +290,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
      - Remove fixed variables and treat them correctly
      - Use index sets for the infinite versus finite bounds
      - Update remaining code for fixed and free variables
-     - Check for inf and nan in objective function value
+     - Fix inexact solves for predictor and corrector
   */
 
   /* Tighten infinite bounds, things break when we don't do this
@@ -308,12 +306,12 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   /* Evaluate gradient and Hessian at zero to get the correct values
      without contaminating them with numerical artifacts.
   */
-
   ierr = VecSet(qp->Work,0);CHKERRQ(ierr);
   ierr = TaoComputeObjectiveAndGradient(tao,qp->Work,&qp->d,qp->C);CHKERRQ(ierr);
   ierr = TaoComputeHessian(tao,qp->Work,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
   ierr = MatGetDiagonal(tao->hessian,qp->HDiag);CHKERRQ(ierr);
 
+  /* Initialize starting point and residuals */
   ierr = QPIPSetInitialPoint(qp,tao);CHKERRQ(ierr);
   ierr = QPIPComputeResidual(qp,tao);CHKERRQ(ierr);
 
@@ -333,24 +331,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
     ierr = QPIPComputeNormFromCentralPath(qp,&d1);CHKERRQ(ierr);
 
-    if (tao->niter > 0 && (qp->rnorm>5*qp->mu || d1*d1>qp->m*qp->mu*qp->mu)) {
-      sigma=1.0;sigmamu=qp->mu;
-      sigma=0.0;sigmamu=0;
-    } else {
-      sigma=0.0;sigmamu=0;
-    }
-    ierr = VecSet(qp->DZ,sigmamu);CHKERRQ(ierr);
-    ierr = VecSet(qp->DS,sigmamu);CHKERRQ(ierr);
-
-    if (sigmamu !=0){
-      ierr = VecPointwiseDivide(qp->DZ,qp->DZ,qp->G);CHKERRQ(ierr);
-      ierr = VecPointwiseDivide(qp->DS,qp->DS,qp->T);CHKERRQ(ierr);
-      ierr = VecCopy(qp->DZ,qp->RHS2);CHKERRQ(ierr);
-      ierr = VecAXPY(qp->RHS2,1.0,qp->DS);CHKERRQ(ierr);
-    } else {
-      ierr = VecZeroEntries(qp->RHS2);CHKERRQ(ierr);
-    }
-
+    ierr = VecSet(qp->DZ,0.0);CHKERRQ(ierr);
+    ierr = VecSet(qp->DS,0.0);CHKERRQ(ierr);
 
     /*
        Compute the Primal Infeasiblitiy RHS and the
@@ -364,12 +346,13 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = VecAXPY(qp->DiagAxpy,1.0,qp->TSwork);CHKERRQ(ierr);
     ierr = VecPointwiseMult(qp->TSwork,qp->TSwork,qp->R5);CHKERRQ(ierr);
     ierr = VecAXPY(qp->RHS,-1.0,qp->TSwork);CHKERRQ(ierr);
-    ierr = VecAXPY(qp->RHS2,1.0,qp->RHS);CHKERRQ(ierr);
 
     /*  Determine the solving tolerance */
     ksptol = qp->mu/10.0;
     ksptol = PetscMin(ksptol,0.001);
+    ierr   = KSPSetTolerances(tao->ksp,ksptol,1e-30,1e30,PetscMax(10,qp->n));CHKERRQ(ierr);
 
+    /* Shift the diagonals of the Hessian matrix */
     ierr = MatDiagonalSet(tao->hessian,qp->DiagAxpy,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -380,11 +363,10 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     tao->ksp_its+=its;
     tao->ksp_tot_its+=its;
 
-    ierr = VecScale(qp->DiagAxpy,-1.0);CHKERRQ(ierr);
-    ierr = MatDiagonalSet(tao->hessian,qp->DiagAxpy,ADD_VALUES);CHKERRQ(ierr);
+    /* Restore the true diagonal of the Hessian matrix */
+    ierr = MatDiagonalSet(tao->hessian,qp->HDiag,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecScale(qp->DiagAxpy,-1.0);CHKERRQ(ierr);
     ierr = QPIPComputeStepDirection(qp,tao);CHKERRQ(ierr);
     ierr = QPIPStepLength(qp);CHKERRQ(ierr);
 
@@ -401,7 +383,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     qp->rnorm=(qp->dinfeas+qp->psteplength*qp->pinfeas)/(qp->m+qp->n);
     pstep = qp->psteplength;
     step = PetscMin(qp->psteplength,qp->dsteplength);
-    sigmamu= (pstep*pstep*(gap[0]+gap[1]) + (1 - pstep + pstep*sigma)*qp->gap)/qp->m;
+    sigmamu=(pstep*pstep*(gap[0]+gap[1]) + (1 - pstep)*qp->gap)/qp->m;
 
     if (qp->predcorr && step < 0.9) {
       if (sigmamu < qp->mu) {
@@ -431,6 +413,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
       ierr = MatDiagonalSet(tao->hessian,qp->DiagAxpy,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+      /* Solve using the previous tolerances that were set */
       ierr = KSPSolve(tao->ksp,qp->RHS2,tao->stepdirection);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
@@ -590,7 +574,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   /* Initialize pointers and variables */
   qp->n        = 0;
   qp->m        = 0;
-  qp->ksp_tol  = 0.1;
 
   qp->predcorr = 1;
   tao->data    = (void*)qp;

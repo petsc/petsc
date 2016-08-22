@@ -10,7 +10,6 @@
 typedef struct {
   /* Parameters */
   PetscInt predcorr;
-  PetscReal ksp_tol;
 
   /* Problem variables, vectors and index sets */
   PetscInt n;   /* Dimension of the Problem */
@@ -24,9 +23,7 @@ typedef struct {
   PetscReal gap;
   PetscReal rgap;
   PetscReal mu;
-  PetscReal sigma;
   PetscReal pathnorm;
-  PetscReal pre_sigma;
   PetscReal psteplength;
   PetscReal dsteplength;
   PetscReal rnorm;
