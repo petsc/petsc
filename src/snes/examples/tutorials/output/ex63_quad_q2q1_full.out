@@ -1,7 +1,7 @@
 DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
-  0 SNES Function norm 17.8197 
-    0 KSP Residual norm 17.8197 
+  0 SNES Function norm 18.1358 
+    0 KSP Residual norm 18.1358 
     1 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 1
   1 SNES Function norm < 1.e-11
@@ -150,7 +150,7 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 577 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 5.19e-11 [9.56e-13, 5.19e-11]
+L_2 Error: 5.26e-11 [8.34e-13, 5.26e-11]
 Timestep: 0 Np: 144
 Timestep: 1 Np: 144
 Timestep: 2 Np: 144

@@ -1,5 +1,5 @@
 0 SNES Function norm 6.3332 
-  1 SNES Function norm 1.190e-10 
+  1 SNES Function norm 2.148e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 3 MPI processes
   type: newtonls
@@ -32,35 +32,35 @@ SNES Object: 3 MPI processes
       total: nonzeros=237, allocated nonzeros=237
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-        using I-node (on process 0) routines: found 1 nodes, limit used is 5
+        not using I-node (on process 0) routines
 Number of SNES iterations = 1
-L_2 Error: 0.54 [0.115, 0.527]
+L_2 Error: 1.03 [0.1, 1.02]
 Solution
 Vec Object: 3 MPI processes
   type: mpi
 Process [0]
--3.
--1.5
 Process [1]
+3.
 0.5
 0.
 0.
-0.625
--0.125
-3.
-Process [2]
-0.
 1.5
-3.
--1.5
-1.5
-0.
-0.125
-0.125
--1.5
 0.625
 0.875
 -3.
+Process [2]
+0.
+1.5
+-1.5
+-3.
+-1.5
+0.
+0.125
+0.125
+-1.5
+0.625
+-0.125
+3.
 1.125
 0.125
 1.5

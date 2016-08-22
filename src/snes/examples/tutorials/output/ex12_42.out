@@ -88,6 +88,8 @@ SNES Object: 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 1 MPI processes
         type: svd
+          SVD: All singular values smaller than 1e-12 treated as zero
+          SVD: Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
@@ -120,6 +122,8 @@ SNES Object: 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 1 MPI processes
         type: svd
+          SVD: All singular values smaller than 1e-12 treated as zero
+          SVD: Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
@@ -153,6 +157,8 @@ SNES Object: 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_2_) 1 MPI processes
         type: svd
+          SVD: All singular values smaller than 1e-12 treated as zero
+          SVD: Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij

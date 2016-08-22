@@ -827,16 +827,15 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[2];
   PetscFV         fv;
   PetscDS         prob;
-  PetscInt        order;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, "velocity_", -1, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, "velocity_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, "porosity_", order, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, "porosity_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "porosity");CHKERRQ(ierr);
 
   ierr = PetscFVCreate(PetscObjectComm((PetscObject) dm), &fv);CHKERRQ(ierr);
