@@ -185,9 +185,9 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
           The principle of TSIRM algorithm  is to build an outer iteration over a Krylov method, called inner solver, and to frequently store the current residual
           computed by the given Krylov method in a matrix of residuals S. After a few outer iterations, a least-squares minimization step is applied on the matrix 
           composed by the saved residuals, in order to compute a better solution and to make new iterations if required. The GMRES method , or any of its variants,
-          can potentially be used as inner solver. The minimization step consists in solving the least-squares problem min||b-ASα|| to find α which minimizes the
+          can potentially be used as inner solver. The minimization step consists in solving the least-squares problem min||b-ASa|| to find 'a' which minimizes the
           residuals (b-AS). The minimization step is performed using two solvers of linear least-squares problems: CGLS  or LSQR. A new solution x with 
-          a minimal residual is computed with x=Sα.
+          a minimal residual is computed with x=Sa.
 
    References:
 . 1 R. Couturier, L. Ziane Khodja, and C. Guyeux. TSIRM: A Two-Stage Iteration with least-squares Residual Minimization algorithm to solve large sparse linear systems. In PDSEC 2015, 16th IEEE Int. Workshop on Parallel and Distributed Scientific and Engineering Computing (in conjunction with IPDPS 2015), Hyderabad, India, 2015.

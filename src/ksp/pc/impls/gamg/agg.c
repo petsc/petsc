@@ -280,7 +280,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
-  Mat_SeqAIJ     *matA_1, *matB_1=0, *matA_2, *matB_2=0;
+  Mat_SeqAIJ     *matA_1, *matB_1=0;
   MPI_Comm       comm;
   PetscInt       lid,*ii,*idx,ix,Iend,my0,kk,n,j;
   Mat_MPIAIJ     *mpimat_2 = 0, *mpimat_1=0;
@@ -312,8 +312,6 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     mpimat_1 = (Mat_MPIAIJ*)Gmat_1->data;
     matA_1   = (Mat_SeqAIJ*)mpimat_1->A->data;
     matB_1   = (Mat_SeqAIJ*)mpimat_1->B->data;
-    matA_2   = (Mat_SeqAIJ*)mpimat_2->A->data;
-    matB_2   = (Mat_SeqAIJ*)mpimat_2->B->data;
 
     /* force compressed row storage for B matrix in AuxMat */
     ierr = MatCheckCompressedRow(mpimat_1->B,matB_1->nonzerorowcnt,&matB_1->compressedrow,matB_1->i,Gmat_1->rmap->n,-1.0);CHKERRQ(ierr);
@@ -329,14 +327,10 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     ierr = PetscObjectTypeCompare((PetscObject)Gmat_1,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
     if (!isAIJ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA_1        = (Mat_SeqAIJ*)Gmat_1->data;
-    matA_2        = (Mat_SeqAIJ*)Gmat_2->data;
     lid_cprowID_1 = NULL;
   }
   if (nloc>0) {
-    if (!(matA_1 && !matA_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_1 && !matA_1->compressedrow.use)");
     if (!(!matB_1 || matB_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_1==0 || matB_1->compressedrow.use)");
-    if (!(matA_2 && !matA_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_2 && !matA_2->compressedrow.use)");
-    if (!(!matB_2 || matB_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_2==0 || matB_2->compressedrow.use)");
   }
   /* get state of locals and selected gid for deleted */
   ierr = PetscMalloc2(nloc, &lid_state,nloc, &lid_parent_gid);CHKERRQ(ierr);
@@ -943,8 +937,9 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   MatCoarsen     crs;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscReal      rr;
+  PetscReal      hashfact;
   PetscInt       iSwapIndex;
+  PetscRandom    random;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_AGG,0,0,0,0);CHKERRQ(ierr);
@@ -966,10 +961,11 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   for (Ii = 0; Ii < nloc; Ii++) {
     permute[Ii]   = Ii;
   }
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat1, &Istart, &Iend);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
-    ierr = PetscRandomGetValueReal(pc_gamg->random,&rr);CHKERRQ(ierr);
-    iSwapIndex = (PetscInt) (rr*nloc);
+    ierr = PetscRandomGetValueReal(random,&hashfact);CHKERRQ(ierr);
+    iSwapIndex = (PetscInt) (hashfact*nloc)%nloc;
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
       PetscInt iTemp = permute[iSwapIndex];
       permute[iSwapIndex]   = permute[Ii];
@@ -978,7 +974,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
     }
   }
   ierr = PetscFree(bIndexSet);CHKERRQ(ierr);
-
+  ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
@@ -1189,6 +1185,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   Vec            bb, xx;
   PC             epc;
   PetscReal      alpha, emax, emin;
+  PetscRandom    random;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
@@ -1198,7 +1195,9 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   if (0 < pc_gamg_agg->nsmooths) {
     ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
     ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
-    ierr = VecSetRandom(bb,pc_gamg->random);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
+    ierr = VecSetRandom(bb,random);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
 
     ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
     ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);

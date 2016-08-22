@@ -17,20 +17,25 @@ int main(int argc,char **args)
   PetscInt       i,m,n,nnz;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscScalar    *VAL,zero=0.0;
+  PetscScalar    *val,zero=0.0;
   FILE           *file;
   PetscViewer    view;
-  int            *I,*J,*rownz;
+  int            *row,*col,*rownz;
+  PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
-#else
+  ierr = PetscFinalize();
+  return 0;
+#endif
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"Uniprocessor Example only\n");
+  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Uniprocessor Example only\n");
 
   /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate input file with -fin option");
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
   /* process header with comments */
@@ -42,14 +47,14 @@ int main(int argc,char **args)
   ierr = PetscPrintf (PETSC_COMM_SELF,"m = %d, n = %d, nnz = %d\n",m,n,nnz);
 
   /* reseve memory for matrices */
-  ierr = PetscMalloc4(nnz,&I,nnz,&J,nnz,&VAL,m,&rownz);CHKERRQ(ierr);
+  ierr = PetscMalloc4(nnz,&row,nnz,&col,nnz,&val,m,&rownz);CHKERRQ(ierr);
   for (i=0; i<m; i++) rownz[i] = 1; /* add 0.0 to diagonal entries */
 
   for (i=0; i<nnz; i++) {
-    ierr = fscanf(file,"%d %d %le\n",&I[i],&J[i],(double*)&VAL[i]);
+    ierr = fscanf(file,"%d %d %le\n",&row[i],&col[i],(double*)&val[i]);
     if (ierr == EOF) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"i=%d, reach EOF\n",i);
-    I[i]--; J[i]--;    /* adjust from 1-based to 0-based */
-    rownz[J[i]]++;
+    row[i]--; col[i]--;    /* adjust from 1-based to 0-based */
+    rownz[col[i]]++;
   }
   fclose(file);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Read file completes.\n");CHKERRQ(ierr);
@@ -60,29 +65,30 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(A,1,0,rownz);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   /* Add zero to diagonals, in case the matrix missing diagonals */
   for (i=0; i<m; i++){
     ierr = MatSetValues(A,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
   }
   for (i=0; i<nnz; i++) {
-    ierr = MatSetValues(A,1,&J[i],1,&I[i],&VAL[i],INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&col[i],1,&row[i],&val[i],INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Assemble SBAIJ matrix completes.\n");CHKERRQ(ierr);
 
-  /* Write out matrix in AIJ format */
-  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-  ierr = MatView(A,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  /* Write the entire matrix in AIJ format to a file */
+  ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Write the entire matrix in AIJ format to file %s\n",fileout);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
+    ierr = MatView(A,view);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  }
 
-  ierr = PetscFree4(I,J,VAL,rownz);CHKERRQ(ierr);
+  ierr = PetscFree4(row,col,val,rownz);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-#endif
   return 0;
 }
 

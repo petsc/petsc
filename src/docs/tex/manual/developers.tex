@@ -150,7 +150,7 @@ to be directed to \trl{petsc-maint@mcs.anl.gov}.
 \item Apologize for the problem when it is appropriate (but not otherwise).
 \item Thank the person for their patience if it is more than six hours since the report came in.
 \item If the person drops the \trl{petsc-maint} or \trl{petsc-users} from the reply list, add it back in.
-\item Often, it pays to not ask too many questions or give to many suggestions in the same email. The user often only responds to the first of them.
+\item Often, it pays to not ask too many questions or give too many suggestions in the same email. The user often only responds to the first of them.
 \end{tightitemize}
 
 \chapter{Style Guide}\label{chapter:styleguide}
@@ -188,7 +188,7 @@ We use several conventions:
       \lstinline{multtranspose()}.
 \item Each application usable function begins with the name of the class object, followed by any subclass name,
   for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
-\item Functions that PETSc provides as defaults for user provideable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
+\item Functions that PETSc provides as defaults for user providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
 \item Options database keys are lower case, have an underscore between words, and match the function name associated with the option without the word ``set'' or ``get''.
 For example, \trl{-ksp_gmres_restart}.
 \item \lstinline{XXXTypes} (for example \lstinline{KSPType}) do not have an underscore in them, unless they refer to another package that uses an underscore, for example \lstinline{MATSOLVERSUPERLU_DIST}.
@@ -285,7 +285,7 @@ See item \ref{styleitem:bracenextline} for an exception.
 \item \label{styleitem:bracenextline} In function declarations, the opening brace should be on the {\em next} line, not on the same line as the function name and arguments. 
   This is an exception to item \ref{styleitem:bracesameline}.
 \item Do not leave chunks of commented-out code in the source files.
-\item Do not use C++-style comments (\lstinline{\\ Comment}). Use only C-style comments (\lstinline{\* Comment *\}).
+\item Do not use C++-style comments (\lstinline{// Comment}). Use only C-style comments (\lstinline{/* Comment */}).
 \item Do not include a space after a \lstinline{(} or before a \lstinline{)}. Do not write
 \begin{lstlisting}
 ierr = PetscMalloc1( 10,&a );CHKERRQ(ierr); /* Incorrect */
@@ -312,7 +312,7 @@ ierr = func(a,22.0);CHKERRQ(ierr);
 \begin{enumerate}
 \item Array and pointer arguments where the array values are not changed should be labeled as \lstinline{const} arguments.
 \item Scalar values passed to functions should {\em never} be labeled as \lstinline{const}.
-\item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should actually be protyped as as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} caste in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
+\item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should actually be prototyped as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} caste in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
 \item Do not use the \lstinline{register} directive.
 \item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
   call \lstinline{PetscLogFlops()} directly when needed.
@@ -470,7 +470,7 @@ generally not used in source code. Rather it has:
   \item \lstinline{PetscMPIInt}
   \item \lstinline{PetscBLASInt}
   \item \lstinline{PetscBool}
-  \item \lstinline{PetscBT} - bit storate of logical true and false
+  \item \lstinline{PetscBT} - bit storage of logical true and false
 \end{tightitemize}
 \lstinline{PetscInt} can be set using \trl{./configure} to be either \trl{int} (32 bit, the default) or \trl{long long}
 (64 bit, with \trl{configure --with-64-bit-indices}) to allow indexing into very large arrays. 
@@ -535,11 +535,12 @@ of arguments.
 The error handling function \lstinline{PetscError()} calls the ``current'' error handler
 with the code
 \begin{lstlisting}
-PetscErrorCode PetscError(MPI_Comm,int line,const char *func,const char* file,
-                          const char *dir,error code, error type,
+PetscErrorCode PetscError(MPI_Comm,int line,const char *func,const char *file,
+                          const char *dir,error code,error type,
                           const char *mess)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (!eh) ierr = PetscTraceBackErrorHandler(line,func,file,dir,error code,
                                              error type,mess,0);
@@ -553,8 +554,8 @@ The variable \lstinline{eh} is the current error handler context and is defined 
 \begin{lstlisting}
 typedef struct _EH* EH;
 struct _EH {
-  PetscErrorCode handler(MPI_Comm,int,const char*,const char*,const char *,
-                         PetscErrorCode,PetscErrorType,const char*,void *);
+  PetscErrorCode handler(MPI_Comm,int,const char*,const char*,const char*,
+                         PetscErrorCode,PetscErrorType,const char*,void*);
   void           *ctx;
   EH             previous;
 };
@@ -747,22 +748,22 @@ defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private
 
 \begin{lstlisting}[caption=Function table common to all PETSc compatible classes]
 typedef struct { 
-  PetscErrorCode (*getcomm)(PetscObject,MPI_Comm *);
+  PetscErrorCode (*getcomm)(PetscObject,MPI_Comm*);
   PetscErrorCode (*view)(PetscObject,Viewer);
   PetscErrorCode (*destroy)(PetscObject);
-  PetscErrorCode (*query)(PetscObject,const char *,PetscObject *);
+  PetscErrorCode (*query)(PetscObject,const char*,PetscObject*);
   PetscErrorCode (*compose)(PetscObject,const char*,PetscObject);
-  PetscErrorCode (*composefunction)(PetscObject,const char *,void(*)(void));
-  PetscErrorCode (*queryfunction)(PetscObject,const char *,void (**)(void));
+  PetscErrorCode (*composefunction)(PetscObject,const char*,void(*)(void));
+  PetscErrorCode (*queryfunction)(PetscObject,const char*,void (**)(void));
 } PetscOps;
 \end{lstlisting}
 \begin{lstlisting}[caption=Data structure header common to all PETSc compatible classes]
 struct _p_<class> {
   PetscClassId     classid;                                  
   PetscOps         *bops;                                   
-  <class>Ops   *ops;                                    
+  <class>Ops       *ops;                                    
   MPI_Comm         comm;                                    
-  PetscLogDouble  flops,time,mem;                          
+  PetscLogDouble   flops,time,mem;                          
   int              id;                                      
   int              refct;                                   
   int              tag;                                     
@@ -783,7 +784,7 @@ contains the function pointers for the operations specific to that class.
 For example, the PETSc vector class object operations in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/vecimple.h.html}{\trl{include/petsc/private/vecimpl.h}} include the following:
 
 \begin{lstlisting}[caption=Function table common to all PETSc compatible vector objects (truncated)]
-typedef struct _VecOps *VecOps;
+typedef struct _VecOps* VecOps;
 struct _VecOps {
   PetscErrorCode (*duplicate)(Vec,Vec*); /* get single vector */
   PetscErrorCode (*duplicatevecs)(Vec,PetscInt,Vec**); /* get array of vectors */
@@ -805,21 +806,21 @@ struct _VecOps {
 \end{lstlisting}
 \begin{lstlisting}[caption= Data structure header common to all PETSc vector classes]
 struct _p_Vec {
-  PetscClassId           classid;                                  
-  PetscOps               *bops;                                   
-  VecOps                 *ops;                                    
+  PetscClassId           classid;
+  PetscOps               *bops;
+  VecOps                 *ops;
   MPI_Comm               comm;
-  PetscLogDouble         flops,time,mem;                          
-  int                    id;                                      
-  int                    refct;                                   
-  int                    tag;                                     
-  DLList                 qlist;                                   
-  OList                  olist;                                   
-  char                   *type_name;                              
-  PetscObject            parent;                                  
-  char*                  name;                                    
-  char                   *prefix;                                 
-  void**                 fortran_func_pointers;       
+  PetscLogDouble         flops,time,mem;
+  int                    id;
+  int                    refct;
+  int                    tag;
+  DLList                 qlist;
+  OList                  olist;
+  char                   *type_name;
+  PetscObject            parent;
+  char                   *name;
+  char                   *prefix;
+  void                   **fortran_func_pointers;
   void                   *data;     /* implementation-specific data */
   PetscLayout            map;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
@@ -837,7 +838,7 @@ For example,
 \begin{lstlisting}
 ierr = PetscClassIdRegister("index set",&IS_CLASSID);CHKERRQ(ierr);
 \end{lstlisting}
-One can verify that an object is valid of a particular class with \lstinline{PetscvalidHeaderSpecific}, for example
+One can verify that an object is valid of a particular class with \lstinline{PetscValidHeaderSpecific}, for example
 \begin{lstlisting}
 PetscValidHeaderSpecific(x,VEC_CLASSID,1);
 \end{lstlisting}
@@ -855,7 +856,7 @@ Several routines are provided for manipulating data within the header.
 These include the specific functions in the PETSc common function table.
 
 \begin{tightitemize}
-\item \lstinline{getcomm(PetscObject,MPI_Comm *)} obtains the MPI communicator associated
+\item \lstinline{getcomm(PetscObject,MPI_Comm*)} obtains the MPI communicator associated
       with this object.
 
 \item \lstinline{view(PetscObject,Viewer)} allows one to store or visualize the data inside
@@ -869,7 +870,7 @@ These include the specific functions in the PETSc common function table.
       If the object has any other objects composed with it then they are each sent a
       \lstinline{destroy()}, i.e. the \lstinline{destroy()} function is called on them also.
 
-\item \lstinline{compose(PetscObject,const char *name, PetscObject)} associates the second object with
+\item \lstinline{compose(PetscObject,const char *name,PetscObject)} associates the second object with
       the first object and increases the reference count of the second object. If an
       object with the
       same name was previously composed, that object is dereferenced and replaced with
@@ -879,8 +880,8 @@ These include the specific functions in the PETSc common function table.
       it, and that object is removed from the first object); i.e. this is a way to
       remove, by name, an object that was previously composed.
 
-\item \lstinline{query(PetscObject,const char *name, PetscObject *)} retrieves an object that was
-      previously composed with the first object. Retreives a null if no object with
+\item \lstinline{query(PetscObject,const char *name,PetscObject*)} retrieves an object that was
+      previously composed with the first object. Retrieves a null if no object with
       that name was previously composed.
 
 \item \lstinline{composefunction(PetscObject,const char *name,const char *fname,void *func)} associates a function
@@ -895,7 +896,7 @@ These include the specific functions in the PETSc common function table.
       For example, \lstinline{fname} may be \trl{libpetscksp:PCCreate_LU} or
       \trl{http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate_LU}.
 
-\item \lstinline{queryfunction(PetscObject,const char *name,void **func)} retreives a function pointer that
+\item \lstinline{queryfunction(PetscObject,const char *name,void **func)} retrieves a function pointer that
       was associated with the object. If dynamic libraries are used, the function is loaded
       into memory at this time (if it has not been previously loaded), not when the
       \lstinline{composefunction()} routine was called.
@@ -903,7 +904,7 @@ These include the specific functions in the PETSc common function table.
 \end{tightitemize}
 
 Since the object composition allows one to {\em only} compose PETSc objects
-with PETSc objects rather than any arbitrary pointer, PETsc provides
+with PETSc objects rather than any arbitrary pointer, PETSc provides
 the convenience object \lstinline{PetscContainer}, created with the
 routine \lstinline{PetscContainerCreate(MPI_Comm,PetscContainer*)}
 to allow one to wrap any kind of data into a PETSc object that can then be
@@ -921,7 +922,7 @@ not have to ``reinvent the wheel.''
 \subsection{Compose and Query}
 In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{\trl{src/sys/objects/olist.c}}, PETSc defines a C \lstinline{struct}
 \begin{lstlisting}
-  typedef struct _PetscObjectList *PetscObjectList;
+  typedef struct _PetscObjectList* PetscObjectList;
   struct _PetscObjectList {
       char             name[128];
       PetscObject      obj;
@@ -931,10 +932,10 @@ In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{\tr
 from which linked lists of composed objects may be constructed. The routines
 to manipulate these elementary objects are
 \begin{lstlisting}
-int PetscObjectListAdd(PetscObjectList *fl,const char *name,PetscObject obj );
-int PetscObjectListDestroy(PetscObjectList fl );
-int PetscObjectListFind(PetscObjectList fl, const char *name, PetscObject *obj)
-int PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl);
+int PetscObjectListAdd(PetscObjectList *fl,const char *name,PetscObject obj);
+int PetscObjectListDestroy(PetscObjectList fl);
+int PetscObjectListFind(PetscObjectList fl,const char *name,PetscObject *obj)
+int PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl);
 \end{lstlisting}
 The function \lstinline{PetscObjectListAdd()} will create the initial PetscObjectList if the argument
 \trl{fl} points to a null.
@@ -980,7 +981,7 @@ Each PETSc object contains a \lstinline{PetscFunctionList} object.
 The \lstinline{composefunction()} and \lstinline{queryfunction()} are given by
 
 \begin{lstlisting}
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char *name, void *ptr)
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char *name,void *ptr)
 {
   PetscErrorCode ierr;
 
@@ -1090,9 +1091,9 @@ of techniques for blocking, including
    storing additional information about adjacent rows with identical
    nonzero structure (so called I-nodes); this I-node information is
    used in the key computational routines to improve performance
-    (the default for the \lstinline{MATSEQAIJ} and \lstinline{MATMPIAIJ} formats);
+    (the default for the \lstinline{MATSEQAIJ} and \lstinline{MATMPIAIJ} formats); and
 \item storing the matrices using a fixed (problem dependent) block size
-  (via the \lstinline{MATSEQBAIJ} and \lstinline{MATMPIBAIJ} formats); and
+  (via the \lstinline{MATSEQBAIJ} and \lstinline{MATMPIBAIJ} formats);
 \end{itemize}
 
 The advantage of the first approach is that it is a minimal change
@@ -1176,7 +1177,7 @@ and column indices begin at zero.
 The routine for creating a sequential block AIJ matrix with \trl{m}
 rows, \trl{n} columns, and a block size of \trl{nb} is
 \begin{lstlisting}
-ierr = MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz, Mat *A)
+ierr = MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz,Mat *A)
 \end{lstlisting}
 The arguments \lstinline{nz} and \lstinline{nnz} can be used to preallocate matrix
 memory by indicating the number of {\em block} nonzeros per row.  For good
@@ -1196,7 +1197,7 @@ Parallel block AIJ matrices with block size {\t nb} can be created with
 the command \lstinline{MatCreateBAIJ()}
 \begin{lstlisting}
 ierr = MatCreateBAIJ(MPIComm comm,int nb,int m,int n,int M,int N,int d_nz,
-                     int *d_nnz, int o_nz,int *o_nnz,Mat *A);
+                     int *d_nnz,int o_nz,int *o_nnz,Mat *A);
 \end{lstlisting}
 \lstinline{A} is the newly created matrix, while the arguments \lstinline{m}, \lstinline{n},
 \lstinline{M}, and \lstinline{N}, indicate the number of local rows and columns and

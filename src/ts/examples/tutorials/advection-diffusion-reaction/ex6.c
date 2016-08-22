@@ -196,7 +196,7 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 
 /* --------------------------------------------------------------------- */
 /*
- Use Lax–Friedrichs method to evaluate F(u,t) = du/dt + a *  du/dx
+ Use Lax-Friedrichs method to evaluate F(u,t) = du/dt + a *  du/dx
 
  See https://en.wikipedia.org/wiki/Lax%E2%80%93Friedrichs_method
  */

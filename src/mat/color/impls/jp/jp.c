@@ -514,8 +514,8 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
    boundary vertices at each stage that may be assigned colors independently.
 
    References:
-.  1. - M. Jones and P. Plassmann, “A parallel graph coloring heuristic,” SIAM Journal on Scientific Computing, vol. 14, no. 3,
-   pp. 654–669, 1993.
+.  1. - M. Jones and P. Plassmann, "A parallel graph coloring heuristic," SIAM Journal on Scientific Computing, vol. 14, no. 3,
+   pp. 654-669, 1993.
 
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType()
 M*/

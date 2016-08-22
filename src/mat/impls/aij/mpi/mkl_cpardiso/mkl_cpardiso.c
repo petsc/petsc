@@ -708,7 +708,10 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
   Options Database:
 .   -mat_mkl_cpardiso_<icntl> <ival>
 
-   Level: beginner
+   Level: Intermediate
+
+   Notes: This routine cannot be used if you are solving the linear system with TS, SNES, or KSP, only if you directly call MatGetFactor() so use the options 
+          database approach when working with TS, SNES, or KSP.
 
    References:
 .      Mkl_Pardiso Users' Guide

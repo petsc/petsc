@@ -2953,7 +2953,7 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 .   rf - routine for evaluating the integrand function
 .   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
 .   drdpf - function that computes the gradients of the r's with respect to p, NULL if not a function of p
-.   fwd － flag indicating whether to evaluate cost integral in the forward run or the adjoint run
+.   fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
 -   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
     Calling sequence of rf:

@@ -5095,12 +5095,14 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
     Output Parameter:
 .   side - the preconditioning side, where side is one of
 .vb
-      PC_LEFT - left preconditioning (default)
-      PC_RIGHT - right preconditioning
+      PC_LEFT - left preconditioning
+      PC_RIGHT - right preconditioning (default for most nonlinear solvers)
 .ve
 
     Options Database Keys:
 .   -snes_pc_side <right,left>
+
+    Notes: SNESNRICHARDSON and SNESNCG only support left preconditioning.
 
     Level: intermediate
 
@@ -5130,8 +5132,8 @@ PetscErrorCode  SNESSetNPCSide(SNES snes,PCSide side)
     Output Parameter:
 .   side - the preconditioning side, where side is one of
 .vb
-      PC_LEFT - left preconditioning (default)
-      PC_RIGHT - right preconditioning
+      PC_LEFT - left preconditioning
+      PC_RIGHT - right preconditioning (default for most nonlinear solvers)
 .ve
 
     Level: intermediate

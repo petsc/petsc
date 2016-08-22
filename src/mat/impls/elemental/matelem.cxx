@@ -361,7 +361,7 @@ PetscErrorCode MatElementalHerk_Elemental(El::UpperOrLower uplo,El::Orientation 
 #define __FUNCT__ "MatElementalHerk"
 /*@
   MatElementalHerk - Hermitian rank-K update: 
-    updates C:= αAA^H + βC or C:= αA^HA + βC, depending upon whether orientation is set to NORMAL or ADJOINT, respectively. Only the triangle of C specified by the uplo parameter is modified.
+    updates C:= aAA^H + bC or C:= aA^HA + bC, depending upon whether orientation is set to NORMAL or ADJOINT, respectively. Only the triangle of C specified by the uplo parameter is modified.
 
    Logically Collective on Mat
 
@@ -395,7 +395,7 @@ PetscErrorCode MatElementalSyrk_Elemental(El::UpperOrLower uplo,El::Orientation 
 #define __FUNCT__ "MatElementalSyrk"
 /*@
   MatElementalSyrk - Symmetric rank-K update: 
-    updates C:= αAA^T + βC or C:= αA^TA + βC, depending upon whether orientation is set to NORMAL or TRANSPOSE, respectively. Only the triangle of C specified by the uplo parameter is modified.
+    updates C:= aAA^T + bC or C:= aA^TA + bC, depending upon whether orientation is set to NORMAL or TRANSPOSE, respectively. Only the triangle of C specified by the uplo parameter is modified.
 
    Logically Collective on Mat
 
@@ -429,7 +429,7 @@ PetscErrorCode MatElementalHer2k_Elemental(El::UpperOrLower uplo,El::Orientation
 #define __FUNCT__ "MatElementalHer2k"
 /*@
   MatElementalHer2k - Hermitian rank-2K update: 
-    updates C:= α(AB^H + BA^H)+βC or C:= α(A^HB + B^HA)+βC αAA^H + βC, depending upon whether orientation is set to NORMAL or ADJOINT, respectively. Only the triangle of C specified by the uplo parameter is modified.
+    updates C:= a(AB^H + BA^H)+bC or C:= a(A^HB + B^HA)+bC aAA^H + bC, depending upon whether orientation is set to NORMAL or ADJOINT, respectively. Only the triangle of C specified by the uplo parameter is modified.
 
    Logically Collective on Mat
 
@@ -463,7 +463,7 @@ PetscErrorCode MatElementalSyr2k_Elemental(El::UpperOrLower uplo,El::Orientation
 #define __FUNCT__ "MatElementalSyr2k"
 /*@
   MatElementalSyr2k - Symmetric rank-2K update: 
-    updates C:= α(AB^T + BA^T)+βC or C:= α(A^TB + B^TA)+βC, depending upon whether orientation is set to NORMAL or TRANSPOSE, respectively. Only the triangle of C specified by the uplo parameter is modified.
+    updates C:= a(AB^T + BA^T)+bC or C:= a(A^TB + B^TA)+bC, depending upon whether orientation is set to NORMAL or TRANSPOSE, respectively. Only the triangle of C specified by the uplo parameter is modified.
 
    Logically Collective on Mat
 

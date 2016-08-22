@@ -156,6 +156,12 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       ierr            = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+    } else {
+      ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
+      if (err == MAT_FACTOR_NUMERIC_ZEROPIVOT) {
+        ierr = MatFactorClearError(((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+        pc->failedreason = PC_NOERROR;
+      }
     }
     ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
     if (err) { /* FactorSymbolic() fails */

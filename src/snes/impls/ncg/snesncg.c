@@ -471,6 +471,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
           gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
           chooses the initial search direction as F(x) for the initial guess x.
 
+          Only supports left non-linear preconditioning.
+
    References:
 .  1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
