@@ -792,6 +792,10 @@ ex202: ex202.o chkopts
 ex203: ex203.o chkopts
 	-${CLINKER} -o ex203 ex203.o ${PETSC_MAT_LIB}
 	${RM} ex203.o
+	
+ex204: ex204.o chkopts
+	-${CLINKER} -o ex204 ex204.o ${PETSC_MAT_LIB}
+	${RM} ex204.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
@@ -2661,6 +2665,18 @@ runex203:
 	-@${MPIEXEC} -n 1 ./ex203 -malloc_dump >> ex203.tmp 2>&1; \
 	   ${DIFF} output/ex203.out ex203.tmp || printf "${PWD}\nPossible problem with ex203, diffs above\n=========================================\n"; \
 	   ${RM} -f ex203.tmp
+
+runex204:
+	-@${MPIEXEC} -n 1 ./ex204 > ex204.tmp 2>&1; \
+	   if (${DIFF} output/ex204.out ex204.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex204, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex204.tmp
+
+runex204_2:
+	-@${MPIEXEC} -n 2 ./ex204 > ex204.tmp 2>&1; \
+	   if (${DIFF} output/ex204.out ex204.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex204_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex204.tmp	 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex8.PETSc runex8 ex8.rm \
