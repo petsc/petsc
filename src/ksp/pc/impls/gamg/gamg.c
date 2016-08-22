@@ -379,7 +379,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       IS       findices;
       PetscInt Istart,Iend;
       Mat      Pnew;
-      
+
       ierr = MatGetOwnershipRange(Pold, &Istart, &Iend);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
       ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET15],0,0,0,0);CHKERRQ(ierr);
@@ -709,7 +709,6 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
   if (pc_gamg->ops->destroy) {
     ierr = (*pc_gamg->ops->destroy)(pc);CHKERRQ(ierr);
   }
-  ierr = PetscRandomDestroy(&pc_gamg->random);CHKERRQ(ierr);
   ierr = PetscFree(pc_gamg->ops);CHKERRQ(ierr);
   ierr = PetscFree(pc_gamg->gamg_type_name);CHKERRQ(ierr);
   ierr = PetscFree(pc_gamg);CHKERRQ(ierr);
@@ -1224,8 +1223,6 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
   }
   ierr = PCGetOptionsPrefix(pc, &pcpre);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix,sizeof(prefix),"%spc_gamg_",pcpre ? pcpre : "");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)pc_gamg->random,prefix);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(pc_gamg->random);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1326,8 +1323,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->Nlevels          = GAMG_MAXLEVELS;
   pc_gamg->current_level    = 0; /* don't need to init really */
   pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;
-
-  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)pc),&pc_gamg->random);CHKERRQ(ierr);
 
   /* PCSetUp_GAMG assumes that the type has been set, so set it to the default now */
   ierr = PCGAMGSetType(pc,PCGAMGAGG);CHKERRQ(ierr);

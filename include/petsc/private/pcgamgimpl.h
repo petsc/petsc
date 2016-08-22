@@ -42,7 +42,6 @@ typedef struct gamg_TAG {
   struct _PCGAMGOps *ops;
   char *gamg_type_name;
 
-  PetscRandom  random;   /* used to generate any random numbers needed by GAMG */
   void *subctx;
 } PC_GAMG;
 

@@ -1,22 +1,33 @@
-	[0]main 300/100 eqs in vector
-    0 KSP Residual norm 63.9254 
-    1 KSP Residual norm 0.853664 
-    2 KSP Residual norm 0.0425841 
-    3 KSP Residual norm 0.0030487 
-    4 KSP Residual norm 0.000209718 
-    5 KSP Residual norm 1.7114e-05 
-    6 KSP Residual norm 8.86355e-07 
-    7 KSP Residual norm 7.23304e-08 
-  Linear solve converged due to CONVERGED_RTOL iterations 7
-    0 KSP Residual norm 0.000639256 
-    1 KSP Residual norm 8.517e-06 
-    2 KSP Residual norm 4.2434e-07 
-    3 KSP Residual norm 3.03788e-08 
-    4 KSP Residual norm 2.10445e-09 
-    5 KSP Residual norm 1.722e-10 
-    6 KSP Residual norm < 1.e-11
-    7 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 7
-    0 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 0
-[0]main emax=9.9932E-01
+	[0]main 1944 equations in vector, 648 vertices
+	[0]main 192 local equations
+    0 KSP Residual norm 1310.72 
+    1 KSP Residual norm 300.426 
+    2 KSP Residual norm 141.46 
+    3 KSP Residual norm 9.83553 
+    4 KSP Residual norm 1.34403 
+    5 KSP Residual norm 0.623664 
+    6 KSP Residual norm 0.415168 
+    7 KSP Residual norm 0.302962 
+    8 KSP Residual norm 0.0721403 
+    9 KSP Residual norm 0.0119596 
+   10 KSP Residual norm 0.00395636 
+   11 KSP Residual norm 0.00209275 
+   12 KSP Residual norm 0.00014175 
+   13 KSP Residual norm 8.22754e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 13
+    0 KSP Residual norm 8.22748e-06 
+    1 KSP Residual norm 1.09019e-06 
+    2 KSP Residual norm 2.38483e-07 
+    3 KSP Residual norm 1.363e-07 
+    4 KSP Residual norm 3.50868e-08 
+    5 KSP Residual norm 4.69623e-09 
+    6 KSP Residual norm 1.5578e-09 
+    7 KSP Residual norm 7.478e-10 
+    8 KSP Residual norm 9.395e-11 
+    9 KSP Residual norm 6.725e-11 
+   10 KSP Residual norm 3.548e-11 
+   11 KSP Residual norm < 1.e-11
+   12 KSP Residual norm < 1.e-11
+   13 KSP Residual norm < 1.e-11
+   14 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_RTOL iterations 14
