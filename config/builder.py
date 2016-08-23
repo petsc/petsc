@@ -49,6 +49,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'num' : 'gmsh_3', 'numProcs': 3, 'args': '-filename %(meshes)s/square.msh -interpolate 1 -dm_view'},
                                                                  {'num' : 'gmsh_4', 'numProcs': 3, 'args': '-filename %(meshes)s/square_bin.msh -interpolate 1 -dm_view'},
                                                                  {'num' : 'gmsh_5', 'numProcs': 1, 'args': '-filename %(meshes)s/square_quad.msh -interpolate 1 -dm_view'},
+                                                                 {'num' : 'gmsh_6', 'numProcs': 1, 'args': '-filename %(meshes)s/square_bin_physnames.msh -interpolate 1 -dm_view'},
                                                                  # Fluent mesh reader tests
                                                                  {'num' : 'fluent_0', 'numProcs': 1, 'args': '-filename %(meshes)s/square.cas -interpolate 1 -dm_view'},
                                                                  {'num' : 'fluent_1', 'numProcs': 3, 'args': '-filename %(meshes)s/square.cas -interpolate 1 -dm_view'},
