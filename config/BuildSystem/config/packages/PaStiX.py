@@ -10,6 +10,7 @@ class Configure(config.package.Package):
     self.functions        = ['pastix']
     self.includes         = ['pastix.h']
     self.downloaddirname  = 'pastix'
+    self.precisions       = ['double']
     self.fc               = 1
     self.hastests         = 1
     self.hastestsdatafiles= 1

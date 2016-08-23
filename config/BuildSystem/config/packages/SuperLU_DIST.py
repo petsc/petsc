@@ -16,6 +16,7 @@ class Configure(config.package.CMakePackage):
     self.hastests         = 1
     self.hastestsdatafiles= 1
     self.requirec99flag   = 1 # SuperLU_Dist uses C99 features
+    self.precisions       = ['double']
     return
 
   def setupHelp(self, help):

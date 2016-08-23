@@ -9,10 +9,11 @@ class Configure(config.package.GNUPackage):
     self.downloaddirname   = 'moab'
     # Check for moab::Core and includes/libraries to verify build
     self.functions         = ['Core']
-    self.functionsCxx     = [1, 'namespace moab {class Core {public: Core();};}','moab::Core *mb = new moab::Core()']
+    self.functionsCxx      = [1, 'namespace moab {class Core {public: Core();};}','moab::Core *mb = new moab::Core()']
     self.includes          = ['moab/Core.hpp']
     self.liblist           = [['libiMesh.a', 'libMOAB.a'],['libMOAB.a']]
     self.cxx               = 1
+    self.precisions        = ['single','double']
     self.hastests          = 1
     return
 

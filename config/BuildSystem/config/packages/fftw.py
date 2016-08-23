@@ -4,12 +4,13 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     # host locally as fftw.org url can expire after new release.
-    self.download  = ['http://www.fftw.org/fftw-3.3.3.tar.gz',
-                      'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fftw-3.3.3.tar.gz']
-    self.functions = ['fftw_malloc']
-    self.includes  = ['fftw3-mpi.h']
-    self.liblist   = [['libfftw3_mpi.a','libfftw3.a']]
-    self.pkgname   = 'fftw3'
+    self.download   = ['http://www.fftw.org/fftw-3.3.3.tar.gz',
+                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fftw-3.3.3.tar.gz']
+    self.functions  = ['fftw_malloc']
+    self.includes   = ['fftw3-mpi.h']
+    self.liblist    = [['libfftw3_mpi.a','libfftw3.a']]
+    self.pkgname    = 'fftw3'
+    self.precisions = ['double']
     return
 
   def setupDependencies(self, framework):

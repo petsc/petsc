@@ -1,6 +1,5 @@
 
 #requirespackage  'PETSC_HAVE_PARMS'
-#requiresprecision double
 
 
 ALL: lib

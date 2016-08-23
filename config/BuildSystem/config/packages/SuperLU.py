@@ -18,6 +18,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows= 1
     self.hastests         = 1
     self.hastestsdatafiles= 1
+    self.precisions       = ['single','double']
     return
 
   def setupDependencies(self, framework):

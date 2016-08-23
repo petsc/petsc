@@ -8,6 +8,7 @@ class Configure(config.package.Package):
     self.includes  = ['parms.h']
     self.liblist   = [['libparms.a']]
     #self.license   = 'http://www-users.cs.umn.edu/~saad/software/pARMS'
+    self.precisions = ['double']
     return
 
   def setupDependencies(self, framework):
