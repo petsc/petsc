@@ -8,86 +8,6 @@
 static const char *DType_Table[64] = {  "preconditioned", "unpreconditioned"};
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPNASHSetRadius"
-/*@
-    KSPNASHSetRadius - Sets the radius of the trust region.
-
-    Logically Collective on KSP
-
-    Input Parameters:
-+   ksp    - the iterative context
--   radius - the trust region radius (Infinity is the default)
-
-    Options Database Key:
-.   -ksp_nash_radius <r>
-
-    Level: advanced
-
-.keywords: KSP, NASH, set, trust region radius
-@*/
-PetscErrorCode  KSPNASHSetRadius(KSP ksp, PetscReal radius)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (radius < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
-  PetscValidLogicalCollectiveReal(ksp,radius,2);
-  ierr = PetscTryMethod(ksp,"KSPNASHSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPNASHGetNormD"
-/*@
-    KSPNASHGetNormD - Got norm of the direction.
-
-    Collective on KSP
-
-    Input Parameters:
-+   ksp    - the iterative context
--   norm_d - the norm of the direction
-
-    Level: advanced
-
-.keywords: KSP, NASH, get, norm direction
-@*/
-PetscErrorCode  KSPNASHGetNormD(KSP ksp, PetscReal *norm_d)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPNASHGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPNASHGetObjFcn"
-/*@
-    KSPNASHGetObjFcn - Get objective function value.
-
-    Collective on KSP
-
-    Input Parameters:
-+   ksp   - the iterative context
--   o_fcn - the objective function value
-
-    Level: advanced
-
-.keywords: KSP, NASH, get, objective function
-@*/
-PetscErrorCode  KSPNASHGetObjFcn(KSP ksp, PetscReal *o_fcn)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPNASHGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_NASH"
 static PetscErrorCode KSPSolve_NASH(KSP ksp)
 {
@@ -608,9 +528,9 @@ static PetscErrorCode KSPDestroy_NASH(KSP ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHSetRadius_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetNormD_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetObjFcn_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -621,8 +541,8 @@ static PetscErrorCode KSPDestroy_NASH(KSP ksp)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPNASHSetRadius_NASH"
-static PetscErrorCode  KSPNASHSetRadius_NASH(KSP ksp, PetscReal radius)
+#define __FUNCT__ "KSPCGSetRadius_NASH"
+static PetscErrorCode  KSPCGSetRadius_NASH(KSP ksp, PetscReal radius)
 {
   KSP_NASH *cg = (KSP_NASH*)ksp->data;
 
@@ -632,8 +552,8 @@ static PetscErrorCode  KSPNASHSetRadius_NASH(KSP ksp, PetscReal radius)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPNASHGetNormD_NASH"
-static PetscErrorCode  KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_d)
+#define __FUNCT__ "KSPCGGetNormD_NASH"
+static PetscErrorCode  KSPCGGetNormD_NASH(KSP ksp, PetscReal *norm_d)
 {
   KSP_NASH *cg = (KSP_NASH*)ksp->data;
 
@@ -643,8 +563,8 @@ static PetscErrorCode  KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_d)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPNASHGetObjFcn_NASH"
-static PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
+#define __FUNCT__ "KSPCGGetObjFcn_NASH"
+static PetscErrorCode  KSPCGGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
 {
   KSP_NASH *cg = (KSP_NASH*)ksp->data;
 
@@ -663,7 +583,7 @@ static PetscErrorCode KSPSetFromOptions_NASH(PetscOptionItems *PetscOptionsObjec
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP NASH options");CHKERRQ(ierr);
 
-  ierr = PetscOptionsReal("-ksp_nash_radius", "Trust Region Radius", "KSPNASHSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_nash_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsEList("-ksp_nash_dtype", "Norm used for direction", "", DType_Table, NASH_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL);CHKERRQ(ierr);
 
@@ -707,7 +627,7 @@ $  other KSP converged/diverged reasons
   Notes:
   The preconditioner supplied should be symmetric and positive definite.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPNASHSetRadius(), KSPNASHGetNormD(), KSPNASHGetObjFcn()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn()
 M*/
 
 #undef __FUNCT__
@@ -740,8 +660,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHSetRadius_C",KSPNASHSetRadius_NASH);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetNormD_C",KSPNASHGetNormD_NASH);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetObjFcn_C",KSPNASHGetObjFcn_NASH);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",KSPCGSetRadius_NASH);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",KSPCGGetNormD_NASH);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",KSPCGGetObjFcn_NASH);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

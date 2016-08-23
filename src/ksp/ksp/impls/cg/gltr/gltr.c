@@ -9,86 +9,6 @@
 static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPGLTRSetRadius"
-/*@
-    KSPGLTRSetRadius - Sets the radius of the trust region.
-
-    Logically Collective on KSP
-
-    Input Parameters:
-+   ksp    - the iterative context
--   radius - the trust region radius (Infinity is the default)
-
-    Options Database Key:
-.   -ksp_gltr_radius <r>
-
-    Level: advanced
-
-.keywords: KSP, GLTR, set, trust region radius
-@*/
-PetscErrorCode  KSPGLTRSetRadius(KSP ksp, PetscReal radius)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (radius < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
-  PetscValidLogicalCollectiveReal(ksp,radius,2);
-  ierr = PetscTryMethod(ksp,"KSPGLTRSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetNormD"
-/*@
-    KSPGLTRGetNormD - Get norm of the direction.
-
-    Collective
-
-    Input Parameters:
-+   ksp    - the iterative context
--   norm_d - the norm of the direction
-
-    Level: advanced
-
-.keywords: KSP, GLTR, get, norm direction
-@*/
-PetscErrorCode  KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPGLTRGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetObjFcn"
-/*@
-    KSPGLTRGetObjFcn - Get objective function value.
-
-    Note Collective
-
-    Input Parameters:
-+   ksp   - the iterative context
--   o_fcn - the objective function value
-
-    Level: advanced
-
-.keywords: KSP, GLTR, get, objective function
-@*/
-PetscErrorCode  KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPGLTRGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetMinEig"
 /*@
     KSPGLTRGetMinEig - Get minimum eigenvalue.
@@ -1353,9 +1273,9 @@ static PetscErrorCode KSPDestroy_GLTR(KSP ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRSetRadius_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetNormD_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetObjFcn_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",NULL);CHKERRQ(ierr);
 
@@ -1367,8 +1287,8 @@ static PetscErrorCode KSPDestroy_GLTR(KSP ksp)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPGLTRSetRadius_GLTR"
-static PetscErrorCode  KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radius)
+#define __FUNCT__ "KSPCGSetRadius_GLTR"
+static PetscErrorCode  KSPCGSetRadius_GLTR(KSP ksp, PetscReal radius)
 {
   KSP_GLTR *cg = (KSP_GLTR*)ksp->data;
 
@@ -1378,8 +1298,8 @@ static PetscErrorCode  KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radius)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetNormD_GLTR"
-static PetscErrorCode  KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
+#define __FUNCT__ "KSPCGGetNormD_GLTR"
+static PetscErrorCode  KSPCGGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
 {
   KSP_GLTR *cg = (KSP_GLTR*)ksp->data;
 
@@ -1389,8 +1309,8 @@ static PetscErrorCode  KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetObjFcn_GLTR"
-static PetscErrorCode  KSPGLTRGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
+#define __FUNCT__ "KSPCGGetObjFcn_GLTR"
+static PetscErrorCode  KSPCGGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
 {
   KSP_GLTR *cg = (KSP_GLTR*)ksp->data;
 
@@ -1431,7 +1351,7 @@ static PetscErrorCode KSPSetFromOptions_GLTR(PetscOptionItems *PetscOptionsObjec
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP GLTR options");CHKERRQ(ierr);
 
-  ierr = PetscOptionsReal("-ksp_gltr_radius", "Trust Region Radius", "KSPGLTRSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_gltr_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-ksp_gltr_init_pert", "Initial perturbation", "", cg->init_pert, &cg->init_pert, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_gltr_eigen_tol", "Eigenvalue tolerance", "", cg->eigen_tol, &cg->eigen_tol, NULL);CHKERRQ(ierr);
@@ -1482,7 +1402,7 @@ $  other KSP converged/diverged reasons
 
    Level: developer
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGLTRSetRadius(), KSPGLTRGetNormD(), KSPGLTRGetObjFcn(), KSPGLTRGetMinEig(), KSPGLTRGetLambda()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn(), KSPGLTRGetMinEig(), KSPGLTRGetLambda()
 M*/
 
 #undef __FUNCT__
@@ -1525,9 +1445,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRSetRadius_C",KSPGLTRSetRadius_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetNormD_C", KSPGLTRGetNormD_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetObjFcn_C",KSPGLTRGetObjFcn_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",KSPCGSetRadius_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C", KSPCGGetNormD_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",KSPCGGetObjFcn_GLTR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",KSPGLTRGetMinEig_GLTR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",KSPGLTRGetLambda_GLTR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
