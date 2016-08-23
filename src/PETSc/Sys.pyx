@@ -165,6 +165,10 @@ cdef class Sys:
         CHKERR( PetscPopErrorHandler() )
 
     @classmethod
+    def popSignalHandler(cls):
+        CHKERR( PetscPopSignalHandler() )
+
+    @classmethod
     def infoAllow(cls, flag):
         cdef PetscBool tval = PETSC_FALSE
         if flag: tval = PETSC_TRUE
