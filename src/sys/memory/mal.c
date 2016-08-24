@@ -78,7 +78,14 @@ PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char f
 #define __FUNCT__ "PetscReallocAlign"
 PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const char file[], void **result)
 {
-  if (!mem) {*result = NULL; return 0;}
+  PetscErrorCode ierr;
+
+  if (!mem) {
+    ierr = PetscFreeAlign(*result, line, func, file);
+    if (ierr) return ierr;
+    *result = NULL;
+    return 0;
+  }
 #if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   {
     /*
@@ -92,7 +99,7 @@ PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const 
   }
 #endif
 
-#if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
+#if (defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) || defined(PETSC_HAVE_MEMALIGN)
   *result = realloc(*result, mem);
 #else
   {
@@ -112,6 +119,27 @@ PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const 
   }
 #endif
   if (!*result) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
+#if defined(PETSC_HAVE_MEMALIGN)
+  /* There are no standard guarantees that realloc() maintains the alignment of memalign(), so I think we have to
+   * realloc and, if the alignment is wrong, malloc/copy/free. */
+  if (((size_t) (*result)) % PETSC_MEMALIGN) {
+    void *newResult;
+
+    newResult = memalign(PETSC_MEMALIGN,mem);
+    if (!newResult) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
+    ierr = PetscMemcpy(newResult,*result,mem);
+    if (ierr) return ierr;
+#if defined(PETSC_HAVE_FREE_RETURN_INT)
+    {
+      int err = free(*result);
+      if (err) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
+    }
+#else
+    free(*result);
+#endif
+    *result = newResult;
+  }
+#endif
   return 0;
 }
 
