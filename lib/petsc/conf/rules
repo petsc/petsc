@@ -979,3 +979,5 @@ uncrustify:
 
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 
+# To leave executables in place, you can uncomment this line
+#RM = echo
