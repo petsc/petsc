@@ -238,7 +238,6 @@ PETSC_INTERN PetscErrorCode MatEqual_SeqAIJ(Mat,Mat,PetscBool*);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat,MatFDColoring,PetscInt);
-PETSC_INTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 PETSC_INTERN PetscErrorCode MatLoad_SeqAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 

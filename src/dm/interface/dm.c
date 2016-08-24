@@ -6412,3 +6412,53 @@ PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/matimpl.h> /* Needed because of coloring->ctype below */
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringApply_AIJDM"
+/*
+    Converts the input vector to a ghosted vector and then calls the standard coloring code.
+    This has be a different function because it requires DM which is not defined in the Mat library
+*/
+PetscErrorCode  MatFDColoringApply_AIJDM(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (coloring->ctype == IS_COLORING_LOCAL) {
+    Vec x1local;
+    DM  dm;
+    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    if (!dm) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_INCOMP,"IS_COLORING_LOCAL requires a DM");
+    ierr = DMGetLocalVector(dm,&x1local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
+    x1   = x1local;
+  }
+  ierr = MatFDColoringApply_AIJ(J,coloring,x1,sctx);CHKERRQ(ierr);
+  if (coloring->ctype == IS_COLORING_LOCAL) {
+    DM  dm;
+    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm,&x1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringUseDM"
+/*@
+    MatFDColoringUseDM - allows a MatFDColoring object to use the DM associated with the matrix to use a IS_COLORING_LOCAL coloring
+
+    Input Parameter:
+.    coloring - the MatFDColoring object
+
+    Developer Notes: this routine exists because the PETSc Mat library does not know about the DM objects
+
+.seealso: MatFDColoring, MatFDColoringCreate(), ISColoringType
+@*/
+PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
+{
+  PetscFunctionBegin;
+  coloring->ops->fdcoloringapply = MatFDColoringApply_AIJDM;
+  PetscFunctionReturn(0);
+}

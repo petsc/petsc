@@ -157,8 +157,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void
   PetscFunctionReturn(0);
 }
 
-#include <petscdm.h>
-
+/* this is declared PETSC_EXTERN because it is used by MatFDColoringUseDM() which is in the DM library */
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_AIJ"
 PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
@@ -179,17 +178,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   const PetscInt    ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
 
   PetscFunctionBegin;
-  if (ctype == IS_COLORING_LOCAL) {
-    Vec x1local;
-    DM  dm;
-    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
-    if (!dm) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_INCOMP,"IS_COLORING_LOCAL requires a DM");
-    ierr = DMGetLocalVector(dm,&x1local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
-    x1   = x1local;
-  }
-
+  if ((ctype == IS_COLORING_LOCAL) && (J->ops->fdcoloringapply == MatFDColoringApply_AIJ)) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_SUP,"Must call MatColoringUseDM() with IS_COLORING_LOCAL");
   /* (1) Set w1 = F(x1) */
   if (!coloring->fset) {
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
@@ -370,11 +359,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
     ierr = VecRestoreArray(vscale,&vscale_array);CHKERRQ(ierr);
   }
   coloring->currentcolor = -1;
-  if (ctype == IS_COLORING_LOCAL) {
-    DM  dm;
-    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm,&x1);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

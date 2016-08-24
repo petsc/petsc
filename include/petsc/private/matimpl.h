@@ -1582,6 +1582,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSortIntWithMatScalarArray(PetscInt n,Pet
 #endif
 }
 
+/* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
+PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
+
 PETSC_EXTERN PetscLogEvent MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 PETSC_EXTERN PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
 PETSC_EXTERN PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
