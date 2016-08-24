@@ -955,7 +955,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
+  PetscValidPointer(dm, 7);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   PetscValidLogicalCollectiveInt(*dm,dim,2);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
