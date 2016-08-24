@@ -45,7 +45,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   c->m       = mat->rmap->N/bs;
   c->rstart  = 0;
   c->ncolors = nis;
-  c->ctype   = IS_COLORING_LOCAL;
+  c->ctype   = iscoloring->ctype;
   PetscFunctionReturn(0);
 }
 

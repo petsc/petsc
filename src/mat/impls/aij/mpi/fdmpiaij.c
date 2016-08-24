@@ -172,7 +172,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   PetscReal         epsilon=coloring->error_rel,umin=coloring->umin,unorm;
   Vec               w1=coloring->w1,w2=coloring->w2,w3,vscale=coloring->vscale;
   void              *fctx=coloring->fctx;
-  PetscInt          ctype=coloring->ctype,nxloc,nrows_k;
+  ISColoringType    ctype=coloring->ctype;
+  PetscInt          nxloc,nrows_k;
   MatEntry          *Jentry=coloring->matentry;
   MatEntry2         *Jentry2=coloring->matentry2;
   const PetscInt    ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
@@ -182,6 +183,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
     Vec x1local;
     DM  dm;
     ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    if (!dm) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_INCOMP,"IS_COLORING_LOCAL requires a DM");
     ierr = DMGetLocalVector(dm,&x1local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
