@@ -155,7 +155,7 @@
 #endif
 #define PetscRealPart(a) a
 #define PetscConj(a) a
-#define PetscImaginaryPart(a) a
+#define PetscImaginaryPart(a) 0.0
 #endif
 
 #if defined (PETSC_USE_REAL_SINGLE)
