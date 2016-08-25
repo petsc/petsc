@@ -53,7 +53,8 @@ runchwirut2_3:
 
 
 
-TESTEXAMPLES_C             = chwirut1.PETSc runchwirut1 chwirut1.rm chwirut2.PETSc runchwirut2 chwirut.rm
+TESTEXAMPLES_C             = chwirut1.PETSc runchwirut1 chwirut1.rm
+# 			     chwirut2.PETSc runchwirut2 chwirut2.rm
 TESTEXAMPLES_C_X_MPIUNI    = chwirut1.PETSc runchwirut1 chwirut1.rm
 
 
