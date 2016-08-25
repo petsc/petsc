@@ -178,7 +178,7 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetscalar_(PetscOptions *options,CHA
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
   CHKFORTRANNULLOBJECTDEREFERENCE(options);
-  *ierr = PetscOptionsGetReal(*options,c1,c2,dvalue,&flag);
+  *ierr = PetscOptionsGetScalar(*options,c1,c2,dvalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
