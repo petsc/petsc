@@ -1130,7 +1130,6 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCBDDCGraphResetCSR(graph);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&graph->l2gmap);CHKERRQ(ierr);
   ierr = PetscFree(graph->subset_ncc);CHKERRQ(ierr);
   ierr = PetscFree(graph->subset_ref_node);CHKERRQ(ierr);

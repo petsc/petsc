@@ -36,11 +36,12 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"BDDC options");CHKERRQ(ierr);
   /* Verbose debugging */
+  ierr = PetscOptionsInt("-pc_bddc_check_level","Verbose output for PCBDDC (intended for debug)","none",pcbddc->dbg_flag,&pcbddc->dbg_flag,NULL);CHKERRQ(ierr);
+  /* Approximate solvers */
   ierr = PetscOptionsBool("-pc_bddc_dirichlet_approximate","Inform PCBDDC that we are using approximate Dirichlet solvers","none",pcbddc->NullSpace_corr[0],&pcbddc->NullSpace_corr[0],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_dirichlet_approximate_scale","Inform PCBDDC that we need to scale the Dirichlet solve","none",pcbddc->NullSpace_corr[1],&pcbddc->NullSpace_corr[1],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_neumann_approximate","Inform PCBDDC that we are using approximate Neumann solvers","none",pcbddc->NullSpace_corr[2],&pcbddc->NullSpace_corr[2],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_neumann_approximate_scale","Inform PCBDDC that we need to scale the Neumann solve","none",pcbddc->NullSpace_corr[3],&pcbddc->NullSpace_corr[3],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_bddc_check_level","Verbose output for PCBDDC (intended for debug)","none",pcbddc->dbg_flag,&pcbddc->dbg_flag,NULL);CHKERRQ(ierr);
   /* Primal space customization */
   ierr = PetscOptionsBool("-pc_bddc_use_local_mat_graph","Use or not adjacency graph of local mat for interface analysis","none",pcbddc->use_local_adj,&pcbddc->use_local_adj,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_vertices","Use or not corner dofs in coarse space","none",pcbddc->use_vertices,&pcbddc->use_vertices,NULL);CHKERRQ(ierr);
@@ -206,7 +207,59 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetDiscreteGradient_BDDC"
+static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt order, PetscBool conforming)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)G);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->discretegradient);CHKERRQ(ierr);
+  pcbddc->discretegradient = G;
+  pcbddc->nedorder         = order > 0 ? order : -order;
+  pcbddc->conforming       = conforming;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetDiscreteGradient"
+/*@
+ PCBDDCSetDiscreteGradient - Sets the discrete gradient
+
+   Collective on PC
+
+   Input Parameters:
++  pc         - the preconditioning context
+.  G          - the discrete gradient matrix (should be in AIJ format)
+.  order      - the order of the Nedelec space (1 for the lowest order)
+-  conforming - whether the mesh is conforming or not
+
+   Level: advanced
+
+   Notes: The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
+          For higher order discretizations, the dofs on the element edges should be consecutively numbered.
+          For variable order spaces, order should be zero.
+          The discrete gradient matrix is modified by PCBDDC.
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscBool conforming)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(G,MAT_CLASSID,2);
+  PetscCheckSameComm(pc,1,G,2);
+  PetscValidLogicalCollectiveInt(pc,order,3);
+  PetscValidLogicalCollectiveBool(pc,conforming,4);
+  ierr = PetscTryMethod(pc,"PCBDDCSetDiscreteGradient_C",(PC,Mat,PetscInt,PetscBool),(pc,G,order,conforming));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDivergenceMat_BDDC"
 static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool trans, IS vl2l)
@@ -1503,6 +1556,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
   }
 
+  if (pcbddc->discretegradient) {
+    ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
+  }
+
   if (pcbddc->user_ChangeOfBasisMatrix) {
     /* use_change_of_basis flag is used to automatically compute a change of basis from constraints */
     pcbddc->use_change_of_basis = PETSC_FALSE;
@@ -2064,6 +2121,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   /* free data created by PCIS */
   ierr = PCISDestroy(pc);CHKERRQ(ierr);
   /* remove functions */
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDiscreteGradient_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDivergenceMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
@@ -2590,6 +2648,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pc->ops->postsolve           = PCPostSolve_BDDC;
 
   /* composing function */
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDiscreteGradient_C",PCBDDCSetDiscreteGradient_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDivergenceMat_C",PCBDDCSetDivergenceMat_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",PCBDDCSetChangeOfBasisMat_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",PCBDDCSetPrimalVerticesLocalIS_BDDC);CHKERRQ(ierr);

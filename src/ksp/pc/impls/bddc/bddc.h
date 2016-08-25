@@ -119,6 +119,11 @@ typedef struct {
   PetscBool divudotp_trans;
   IS        divudotp_vl2l;
 
+  /* nedelec */
+  Mat       discretegradient;
+  PetscInt  nedorder;
+  PetscBool conforming;
+
   /* local disconnected subdomains */
   PetscBool detect_disconnected;
   PetscInt  n_local_subs;
