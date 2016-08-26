@@ -1764,6 +1764,14 @@ PetscErrorCode MatMissingDiagonal_MPISBAIJ(Mat A,PetscBool  *missing,PetscInt *d
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetDiagonalBlock_MPISBAIJ"
+PetscErrorCode  MatGetDiagonalBlock_MPISBAIJ(Mat A,Mat *a)
+{
+  PetscFunctionBegin;
+  *a = ((Mat_MPISBAIJ*)A->data)->A;
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
@@ -1798,7 +1806,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                /* 29*/ MatSetUp_MPISBAIJ,
                                        0,
                                        0,
-                                       0,
+                                       MatGetDiagonalBlock_MPISBAIJ,
                                        0,
                                /* 34*/ MatDuplicate_MPISBAIJ,
                                        0,
@@ -1912,15 +1920,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        0,
                                 /*144*/MatCreateMPIMatConcatenateSeqMat_MPISBAIJ
 };
-
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonalBlock_MPISBAIJ"
-PetscErrorCode  MatGetDiagonalBlock_MPISBAIJ(Mat A,Mat *a)
-{
-  PetscFunctionBegin;
-  *a = ((Mat_MPISBAIJ*)A->data)->A;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJ"
@@ -2126,7 +2125,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",MatMPISBAIJSetPreallocation_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocationCSR_C",MatMPISBAIJSetPreallocationCSR_MPISBAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)

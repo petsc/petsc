@@ -192,26 +192,15 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
 @*/
 PetscErrorCode MatGetDiagonalBlock(Mat A,Mat *a)
 {
-  PetscErrorCode ierr,(*f)(Mat,Mat*);
-  PetscMPIInt    size;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(a,3);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,a);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else if (size == 1) {
-    *a = A;
-  } else {
-    MatType mattype;
-    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix type %s does not support getting diagonal block",mattype);
-  }
+  if (!A->ops->getdiagonalblock) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not coded for this matrix type");
+  ierr = (*A->ops->getdiagonalblock)(A,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

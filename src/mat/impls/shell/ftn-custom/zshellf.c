@@ -28,8 +28,8 @@ enum FortranMatOperation {
   FORTRAN_MATOP_DESTROY = 12,
   FORTRAN_MATOP_VIEW = 13,
   FORTRAN_MATOP_GET_VECS = 14,
-
-  FORTRAN_MATOP_SIZE = 15
+  FORTRAN_MATOP_GET_DIAGONAL_BLOCK = 15,
+  FORTRAN_MATOP_SIZE = 16
 };
 
 /*
@@ -167,6 +167,13 @@ static PetscErrorCode ourgetvecs(Mat mat, Vec *l, Vec *r)
   return ierr;
 }
 
+static PetscErrorCode ourgetdiagonalblock(Mat mat, Mat *l)
+{
+  PetscErrorCode ierr = 0;
+  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*, Mat*, PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL_BLOCK]))(&mat, l, &ierr);
+  return ierr;
+}
+
 PETSC_EXTERN void PETSC_STDCALL matshellsetoperation_(Mat *mat, MatOperation *op, PetscErrorCode (PETSC_STDCALL *f)(Mat*, Vec*, Vec*, PetscErrorCode*), PetscErrorCode *ierr)
 {
   MPI_Comm comm;
@@ -234,6 +241,10 @@ PETSC_EXTERN void PETSC_STDCALL matshellsetoperation_(Mat *mat, MatOperation *op
   case MATOP_GET_VECS:
     *ierr = MatShellSetOperation(*mat, *op, (PetscVoidFunction) ourgetvecs);
     ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_GET_VECS] = (PetscVoidFunction) f;
+    break;
+  case MATOP_GET_DIAGONAL_BLOCK:
+    *ierr = MatShellSetOperation(*mat, *op, (PetscVoidFunction) ourgetdiagonalblock);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_GET_DIAGONAL_BLOCK] = (PetscVoidFunction) f;
     break;
   default:
     PetscError(comm, __LINE__, "MatShellSetOperation_Fortran", __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Cannot set that matrix operation");

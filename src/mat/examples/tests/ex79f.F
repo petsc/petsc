@@ -68,6 +68,9 @@
 
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
+      call MatGetDiagonalBlock(A,Ad,ierr)
+      call MatView(Ad,PETSC_VIEWER_STDOUT_WORLD,ierr)
+
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call MatDestroy(A,ierr)
       call PetscViewerDestroy(v,ierr)

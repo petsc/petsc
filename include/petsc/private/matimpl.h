@@ -67,7 +67,7 @@ struct _MatOps {
   PetscErrorCode (*setup)(Mat);
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
-  PetscErrorCode (*placeholder_32)(Mat);
+  PetscErrorCode (*getdiagonalblock)(Mat,Mat*);
   PetscErrorCode (*placeholder_33)(Mat);
   /*34*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
