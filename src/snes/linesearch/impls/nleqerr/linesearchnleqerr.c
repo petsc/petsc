@@ -262,7 +262,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   ierr = VecNorm(X, NORM_2, &xnorm);CHKERRQ(ierr);
   ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
   ierr = SNESLineSearchSetLambda(linesearch, lambda);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetNorms(linesearch, xnorm, fnorm, ynorm);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetNorms(linesearch, xnorm, fnorm, (ynorm < 0 ? PETSC_INFINITY : ynorm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
