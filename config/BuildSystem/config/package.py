@@ -63,7 +63,7 @@ class Package(config.base.Configure):
                                # during the configuration/installation process such as sowing, make etc should be marked as 0
     self.parallelMake     = 1  # 1 indicates the package supports make -j np option
 
-    self.double           = 0   # 1 means requires double precision
+    self.precisions       = ['single','double','__float128']; # Floating point precision package works with
     self.complex          = 1   # 0 means cannot use complex
     self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
@@ -771,8 +771,8 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
       if self.download and self.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
-      if self.double and not self.defaultPrecision.lower() == 'double':
-        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
+      if not self.defaultPrecision.lower() in self.precisions:
+        raise RuntimeError('Cannot use '+self.name+' with '+self.defaultPrecision.lower()+', it is not coded for this capability')
       if not self.complex and self.defaultScalarType.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:

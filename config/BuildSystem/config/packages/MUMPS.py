@@ -14,6 +14,7 @@ class Configure(config.package.Package):
     self.includes         = ['dmumps_c.h']
     #
     # Mumps does NOT work with 64 bit integers without a huge number of hacks we ain't making
+    self.precisions       = ['single','double']
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     self.downloadonWindows= 1
     self.hastests         = 1
