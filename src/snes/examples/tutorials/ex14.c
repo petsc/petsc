@@ -58,7 +58,9 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
+extern PetscErrorCode FormFunctionLocal(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
@@ -71,7 +73,7 @@ int main(int argc,char **argv)
   AppCtx         user;                         /* user-defined work context */
   PetscInt       its;                          /* iterations for convergence */
   MatFDColoring  matfdcoloring = NULL;
-  PetscBool      matrix_free = PETSC_FALSE,coloring = PETSC_FALSE, coloring_ds = PETSC_FALSE;
+  PetscBool      matrix_free = PETSC_FALSE,coloring = PETSC_FALSE, coloring_ds = PETSC_FALSE,local_coloring = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
 
@@ -128,14 +130,22 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-fdcoloring",&coloring,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-fdcoloring_ds",&coloring_ds,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-fdcoloring_local",&local_coloring,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     ierr = DMSetMatType(user.da,MATAIJ);CHKERRQ(ierr);
     ierr = DMCreateMatrix(user.da,&J);CHKERRQ(ierr);
     if (coloring) {
       ISColoring iscoloring;
-      ierr = DMCreateColoring(user.da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
+      if (!local_coloring) {
+        ierr = DMCreateColoring(user.da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
+        ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+        ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
+      } else {
+        ierr = DMCreateColoring(user.da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
+        ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+        ierr = MatFDColoringUseDM(J,matfdcoloring);CHKERRQ(ierr);
+        ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunctionLocal,&user);CHKERRQ(ierr);
+      }
       if (coloring_ds) {
         ierr = MatFDColoringSetType(matfdcoloring,MATMFFD_DS);CHKERRQ(ierr);
       }
@@ -262,31 +272,29 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "FormFunction"
+#define __FUNCT__ "FormFunctionLocal"
 /*
-   FormFunction - Evaluates nonlinear function, F(x).
+   FormFunctionLocal - Evaluates nonlinear function, F(x) on a ghosted patch
 
    Input Parameters:
 .  snes - the SNES context
-.  X - input vector
+.  localX - input vector, this contains the ghosted region needed 
 .  ptr - optional user-defined context, as set by SNESSetFunction()
 
    Output Parameter:
-.  F - function vector
+.  F - function vector, this does not contain a ghosted region
  */
-PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunctionLocal(SNES snes,Vec localX,Vec F,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
   PetscReal      two = 2.0,lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
   PetscScalar    u_north,u_south,u_east,u_west,u_up,u_down,u,u_xx,u_yy,u_zz,***x,***f;
-  Vec            localX;
   DM             da;
 
   PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   lambda  = user->param;
@@ -297,15 +305,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   hxhzdhy = hx*hz/hy;
   hyhzdhx = hy*hz/hx;
   hxhydhz = hx*hy/hz;
-
-  /*
-     Scatter ghost points to local vector,using the 2-step process
-        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
-  */
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
@@ -348,8 +347,44 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = DMDAVecRestoreArrayRead(da,localX,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
+/*
+   FormFunction - Evaluates nonlinear function, F(x) on the entire domain
+
+   Input Parameters:
+.  snes - the SNES context
+.  X - input vector
+.  ptr - optional user-defined context, as set by SNESSetFunction()
+
+   Output Parameter:
+.  F - function vector
+ */
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
+{
+  PetscErrorCode ierr;
+  Vec            localX;
+  DM             da;
+
+  PetscFunctionBeginUser;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+
+  /*
+     Scatter ghost points to local vector,using the 2-step process
+        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
+  */
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+
+  ierr = FormFunctionLocal(snes,localX,F,ptr);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

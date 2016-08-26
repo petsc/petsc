@@ -150,12 +150,12 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (ctype == IS_COLORING_GHOSTED) {
+  if (ctype == IS_COLORING_LOCAL) {
     if (size == 1) {
       ctype = IS_COLORING_GLOBAL;
     } else if (dim > 1) {
       if ((m==1 && bx == DM_BOUNDARY_PERIODIC) || (n==1 && by == DM_BOUNDARY_PERIODIC) || (p==1 && bz == DM_BOUNDARY_PERIODIC)) {
-        SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"IS_COLORING_GHOSTED cannot be used for periodic boundary condition having both ends of the domain  on the same process");
+        SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"IS_COLORING_LOCAL cannot be used for periodic boundary condition having both ends of the domain  on the same process");
       }
     }
   }
@@ -246,7 +246,7 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
         ierr    = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,PETSC_OWN_POINTER,&dd->localcoloring);CHKERRQ(ierr);
       }
       *coloring = dd->localcoloring;
-    } else if (ctype == IS_COLORING_GHOSTED) {
+    } else if (ctype == IS_COLORING_LOCAL) {
       if (!dd->ghostedcoloring) {
         ierr = PetscMalloc1(nc*gnx*gny,&colors);CHKERRQ(ierr);
         ii   = 0;
@@ -262,7 +262,7 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
         ierr    = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,PETSC_OWN_POINTER,&dd->ghostedcoloring);CHKERRQ(ierr);
         /* PetscIntView(ncolors,(PetscInt*)colors,0); */
 
-        ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+        ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_LOCAL);CHKERRQ(ierr);
       }
       *coloring = dd->ghostedcoloring;
     } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
@@ -323,7 +323,7 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColori
       ierr    = ISColoringCreate(comm,ncolors,nc*nx*ny*nz,colors,PETSC_OWN_POINTER,&dd->localcoloring);CHKERRQ(ierr);
     }
     *coloring = dd->localcoloring;
-  } else if (ctype == IS_COLORING_GHOSTED) {
+  } else if (ctype == IS_COLORING_LOCAL) {
     if (!dd->ghostedcoloring) {
       ierr = PetscMalloc1(nc*gnx*gny*gnz,&colors);CHKERRQ(ierr);
       ii   = 0;
@@ -339,7 +339,7 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColori
       }
       ncolors = nc + nc*(col-1 + col*(col-1)+ col*col*(col-1));
       ierr    = ISColoringCreate(comm,ncolors,nc*gnx*gny*gnz,colors,PETSC_OWN_POINTER,&dd->ghostedcoloring);CHKERRQ(ierr);
-      ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_LOCAL);CHKERRQ(ierr);
     }
     *coloring = dd->ghostedcoloring;
   } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
@@ -407,7 +407,7 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
       ierr = ISColoringCreate(comm,ncolors,nc*nx,colors,PETSC_OWN_POINTER,&dd->localcoloring);CHKERRQ(ierr);
     }
     *coloring = dd->localcoloring;
-  } else if (ctype == IS_COLORING_GHOSTED) {
+  } else if (ctype == IS_COLORING_LOCAL) {
     if (!dd->ghostedcoloring) {
       ierr = PetscMalloc1(nc*gnx,&colors);CHKERRQ(ierr);
       i1   = 0;
@@ -419,7 +419,7 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
       }
       ncolors = nc + nc*(col-1);
       ierr    = ISColoringCreate(comm,ncolors,nc*gnx,colors,PETSC_OWN_POINTER,&dd->ghostedcoloring);CHKERRQ(ierr);
-      ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_LOCAL);CHKERRQ(ierr);
     }
     *coloring = dd->ghostedcoloring;
   } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
@@ -469,7 +469,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
       ierr    = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,PETSC_OWN_POINTER,&dd->localcoloring);CHKERRQ(ierr);
     }
     *coloring = dd->localcoloring;
-  } else if (ctype == IS_COLORING_GHOSTED) {
+  } else if (ctype == IS_COLORING_LOCAL) {
     if (!dd->ghostedcoloring) {
       ierr = PetscMalloc1(nc*gnx*gny,&colors);CHKERRQ(ierr);
       ii = 0;
@@ -482,7 +482,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
       }
       ncolors = 5*nc;
       ierr    = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,PETSC_OWN_POINTER,&dd->ghostedcoloring);CHKERRQ(ierr);
-      ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_LOCAL);CHKERRQ(ierr);
     }
     *coloring = dd->ghostedcoloring;
   } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);

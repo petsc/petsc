@@ -618,6 +618,11 @@ runex14_3_ds:
 	   if (${DIFF} output/ex14_3_ds.out ex14_3.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex14_3_ds, diffs above\n=========================================\n"; fi; \
         ${RM} -f ex14_3.tmp
+runex14_4:
+	-@${MPIEXEC} -n 4 ./ex14 -fdcoloring_local -fdcoloring -ksp_monitor_short -da_refine 1 > ex14_4.tmp 2>&1; \
+	   if (${DIFF} output/ex14_4.out ex14_4.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex14_4, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex14_4.tmp
 runex15:
 	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype NEWTON > ex15_1.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15_1.tmp || printf "${PWD}\nPossible problem with ex15_1, diffs above\n=========================================\n"; \
@@ -1287,7 +1292,7 @@ TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_5_nasm  \
                                  ex5.rm \
-                                 ex14.PETSc runex14 runex14_2 runex14_3 runex14_3_ds ex14.rm \
+                                 ex14.PETSc runex14 runex14_2 runex14_3 runex14_3_ds runex14_4 ex14.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
                                  ex35.PETSc runex35_3 runex35_4 runex35_5 runex35_6 runex35_8 ex35.rm \

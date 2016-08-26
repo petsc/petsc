@@ -101,6 +101,7 @@
       <h4>Configure/Build:</h4>
       <h4>IS:</h4>
       <ul>
+        <li>Changed IS_COLORING_GHOSTED to IS_COLORING_LOCAL to match convention.</li>
         <li>Added ISRenumber to renumber an IS into a contiguous set.</li>
       </ul>
       <h4>PetscDraw:</h4>
@@ -111,22 +112,21 @@
       <h4>Mat:</h4>
       <h4>PC:</h4>
       <ul>
-        <li>Removed PCBDDCSetNullSpace. Local nullspace information should now be attached to the subdomain matrix via MatSetNullSpace().</li>
-        <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators() for the specification of the type of multipliers.</li>
         <li>Added PCMGSetNumberSmooth()</li>
         <li>PCMGSetGalerkin() and -pc_mg_galerkin now take PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE as arguments instead of PetscBool<\li>
+        <li>Removed PCBDDCSetNullSpace. Local nullspace information should now be attached to the subdomain matrix via MatSetNullSpace.</li>
+        <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators for the specification of the type of multipliers.</li>
       </ul>
       <h4>KSP:</h4>
       <ul>
-        <li>Added KSPFETIDP, a linear system solver based on the FETI-DP method.
+        <li>Added KSPFETIDP, a linear system solver based on the FETI-DP method.</li>
       </ul>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <ul>
         <li>Changed TSGL to TSGLLE.</li>
-        <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinaryRead.m and PetscBinaryIO.py can read these in automatically.<\li>
-        <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinarRead.m can read these in automatically but PetscBinaryIO.py has not been updated to read in REAL_FILE_CLASSID objects yet commit 450a797fa5ea0c6be96436f8b33aaf4169bbbcaa</li>
+        <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinaryRead.m and PetscBinaryIO.py can read these in automatically.</li>
       </ul>
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>

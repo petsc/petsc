@@ -45,7 +45,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   c->m       = mat->rmap->N/bs;
   c->rstart  = 0;
   c->ncolors = nis;
-  c->ctype   = IS_COLORING_GHOSTED;
+  c->ctype   = iscoloring->ctype;
   PetscFunctionReturn(0);
 }
 
@@ -67,7 +67,7 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
   PetscFunctionBegin;
   if (brows < 1 || brows > mbs) brows = mbs;
   ierr = PetscMalloc2(bcols+1,&color_start,bcols,&row_start);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nis,&nrows_new);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nis,&nrows_new);CHKERRQ(ierr);
   ierr = PetscMalloc1(bcols*mat->rmap->n,&c->dy);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)c,bcols*mat->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
 

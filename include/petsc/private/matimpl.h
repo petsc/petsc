@@ -525,9 +525,10 @@ struct  _p_MatFDColoring{
   Vec            vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
   const char     *htype;           /* "wp" or "ds" */
-  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
+  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_LOCAL */
   PetscInt       brows,bcols;      /* number of block rows or columns for speedup inserting the dense matrix into sparse Jacobian */
   PetscBool      setupcalled;      /* true if setup has been called */
+  PetscBool      viewed;           /* true if the -mat_fd_coloring_view has been triggered already */
   void           (*ftn_func_pointer)(void),*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };
 
@@ -560,7 +561,7 @@ struct  _p_MatTransposeColoring{
   PetscInt       *ncolumns;        /* number of local columns for a color */
   PetscInt       *nrows;           /* number of local rows for each color */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
-  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
+  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_LOCAL */
 
   PetscInt       *colorforrow,*colorforcol;  /* pointer to rows and columns */
   PetscInt       *rows;                      /* lists the local rows for each color (using the local row numbering) */
@@ -1580,6 +1581,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSortIntWithMatScalarArray(PetscInt n,Pet
   }
 #endif
 }
+
+/* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
+PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 
 PETSC_EXTERN PetscLogEvent MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 PETSC_EXTERN PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
