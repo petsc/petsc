@@ -1131,7 +1131,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
     PetscObject  obj;
     PetscClassId id;
 
-    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
     else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
@@ -1410,7 +1410,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
     PetscClassId    id;
 
     ierr = PetscDSGetBoundary(prob, bd, &isEssential, NULL, &bdLabel, &field, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
-    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetBdDiscretization(prob, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if ((id != PETSCFE_CLASSID) || isEssential) continue;
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
