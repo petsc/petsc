@@ -1424,6 +1424,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
         if (dep == dim-1) ++numFaces;
       }
       ierr = PetscMalloc3(numFaces*totDimBd,&u,numFaces,&cgeom,numFaces*totDimBd,&elemVec);CHKERRQ(ierr);
+      ierr = PetscMemzero(elemVec, numFaces*totDimBd * sizeof(PetscScalar));CHKERRQ(ierr);
       if (locX_t) {ierr = PetscMalloc1(numFaces*totDimBd,&u_t);CHKERRQ(ierr);}
       for (p = 0, f = 0; p < numPoints; ++p) {
         const PetscInt point = points[p];
@@ -1446,7 +1447,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
         }
         ++f;
       }
-      for (f = 0; f < Nf; ++f) {
+      {
         PetscFE         fe;
         PetscQuadrature q;
         PetscInt        numQuadPoints, Nb;
@@ -1455,7 +1456,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
         /* Remainder */
         PetscInt        Nr, offset;
 
-        ierr = PetscDSGetBdDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+        ierr = PetscDSGetBdDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
         ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
         ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
@@ -1467,8 +1468,8 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
         Ne        = numChunks*numBatches*batchSize;
         Nr        = numFaces % (numBatches*batchSize);
         offset    = numFaces - Nr;
-        ierr = PetscFEIntegrateBdResidual(fe, prob, f, Ne, cgeom, u, u_t, NULL, NULL, t, elemVec);CHKERRQ(ierr);
-        ierr = PetscFEIntegrateBdResidual(fe, prob, f, Nr, &cgeom[offset], &u[offset*totDimBd], u_t ? &u_t[offset*totDimBd] : NULL, NULL, NULL, t, &elemVec[offset*totDimBd]);CHKERRQ(ierr);
+        ierr = PetscFEIntegrateBdResidual(fe, prob, field, Ne, cgeom, u, u_t, NULL, NULL, t, elemVec);CHKERRQ(ierr);
+        ierr = PetscFEIntegrateBdResidual(fe, prob, field, Nr, &cgeom[offset], &u[offset*totDimBd], u_t ? &u_t[offset*totDimBd] : NULL, NULL, NULL, t, &elemVec[offset*totDimBd]);CHKERRQ(ierr);
       }
       for (p = 0, f = 0; p < numPoints; ++p) {
         const PetscInt point = points[p];
@@ -2269,7 +2270,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
         ++f;
       }
       ierr = PetscMemzero(elemMat, numFaces*totDimBd*totDimBd * sizeof(PetscScalar));CHKERRQ(ierr);
-      for (fieldI = 0; fieldI < Nf; ++fieldI) {
+      {
         PetscFE  fe;
         PetscInt numQuadPoints, Nb;
         /* Conforming batches */
@@ -2277,7 +2278,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
         /* Remainder */
         PetscInt Nr, offset;
 
-        ierr = PetscDSGetBdDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
+        ierr = PetscDSGetBdDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
         ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
         ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
@@ -2290,8 +2291,8 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
         Nr        = numFaces % (numBatches*batchSize);
         offset    = numFaces - Nr;
         for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
-          ierr = PetscFEIntegrateBdJacobian(fe, prob, fieldI, fieldJ, Ne, cgeom, u, u_t, NULL, NULL, t, X_tShift, elemMat);CHKERRQ(ierr);
-          ierr = PetscFEIntegrateBdJacobian(fe, prob, fieldI, fieldJ, Nr, &cgeom[offset], &u[offset*totDimBd], u_t ? &u_t[offset*totDimBd] : NULL, NULL, NULL, t, X_tShift, &elemMat[offset*totDimBd*totDimBd]);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateBdJacobian(fe, prob, field, fieldJ, Ne, cgeom, u, u_t, NULL, NULL, t, X_tShift, elemMat);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateBdJacobian(fe, prob, field, fieldJ, Nr, &cgeom[offset], &u[offset*totDimBd], u_t ? &u_t[offset*totDimBd] : NULL, NULL, NULL, t, X_tShift, &elemMat[offset*totDimBd*totDimBd]);CHKERRQ(ierr);
         }
       }
       for (p = 0, f = 0; p < numPoints; ++p) {
