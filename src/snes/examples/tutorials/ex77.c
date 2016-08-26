@@ -268,22 +268,6 @@ void f1_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (d = 0; d < dim; ++d) f1[d] = 0.0;
 }
 
-void f0_bd_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
-{
-  f0[0] = 0.0;
-}
-void f1_bd_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[])
-{
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = 0.0;
-}
-
 void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -517,7 +501,6 @@ PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
   ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu_3d, NULL,  NULL);CHKERRQ(ierr);
 
   ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
-  ierr = PetscDSSetBdResidual(prob, 1, f0_bd_p, f1_bd_p);CHKERRQ(ierr);
   ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
 
   ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, Ncomp, components, (void (*)()) coordinates, Nfid, fid, user);CHKERRQ(ierr);
