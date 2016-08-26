@@ -49,13 +49,13 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
   for (i = 0; i < max_its; i++) {
 
-    /* compute the norm at the midpoint */
     ierr = VecCopy(X, W);CHKERRQ(ierr);
     ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
     if (linesearch->ops->viproject) {
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
     if (!objective) {
+      /* compute the norm at the midpoint */
       ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
       if (linesearch->ops->vinorm) {
         fnrm_mid = gnorm;
@@ -64,7 +64,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
         ierr = VecNorm(F,NORM_2,&fnrm_mid);CHKERRQ(ierr);
       }
 
-      /* compute the norm at lambda */
+      /* compute the norm at the new endpoit */
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
       if (linesearch->ops->viproject) {
@@ -85,51 +85,30 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
       ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
       ierr = SNESComputeObjective(snes,W,&fnrm_mid);CHKERRQ(ierr);
 
-      /* compute the objective at the midpoint */
+      /* compute the objective at the new endpoint */
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
       ierr = SNESComputeObjective(snes,W,&fnrm);CHKERRQ(ierr);
     }
-    /* this gives us the derivatives at the endpoints -- compute them from here
-
-     a = x - a0
-
-     p_0(x) = (x / dA - 1)(2x / dA - 1)
-     p_1(x) = 4(x / dA)(1 - x / dA)
-     p_2(x) = (x / dA)(2x / dA - 1)
-
-     dp_0[0] / dx = 3 / dA
-     dp_1[0] / dx = -4 / dA
-     dp_2[0] / dx = 1 / dA
-
-     dp_0[dA] / dx = -1 / dA
-     dp_1[dA] / dx = 4 / dA
-     dp_2[dA] / dx = -3 / dA
-
-     d^2p_0[0] / dx^2 =  4 / dA^2
-     d^2p_1[0] / dx^2 = -8 / dA^2
-     d^2p_2[0] / dx^2 =  4 / dA^2
-     */
 
     delLambda   = lambda - lambda_old;
+    /* compute f'() at the end points using second order one sided differencing */
     delFnrm     = (3.*fnrm - 4.*fnrm_mid + 1.*fnrm_old) / delLambda;
     delFnrm_old = (-3.*fnrm_old + 4.*fnrm_mid -1.*fnrm) / delLambda;
+    /* compute f''() at the midpoint using centered differencing */
     del2Fnrm    = (delFnrm - delFnrm_old) / delLambda;
 
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       if (!objective) {
-        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",
-                                      (double)lambda, (double)lambda_mid, (double)lambda_old, (double)PetscSqrtReal(fnrm), (double)PetscSqrtReal(fnrm_mid), (double)PetscSqrtReal(fnrm_old));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",(double)lambda, (double)lambda_mid, (double)lambda_old, (double)PetscSqrtReal(fnrm), (double)PetscSqrtReal(fnrm_mid), (double)PetscSqrtReal(fnrm_old));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], obj = [%g, %g, %g]\n",
-                                      (double)lambda, (double)lambda_mid, (double)lambda_old, (double)fnrm, (double)fnrm_mid, (double)fnrm_old);CHKERRQ(ierr);
-
+        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], obj = [%g, %g, %g]\n",(double)lambda, (double)lambda_mid, (double)lambda_old, (double)fnrm, (double)fnrm_mid, (double)fnrm_old);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
 
-    /* compute the search direction -- always go downhill */
+    /* compute the secant (Newton) update -- always go downhill */
     if (del2Fnrm > 0.) lambda_update = lambda - delFnrm / del2Fnrm;
     else lambda_update = lambda + delFnrm / del2Fnrm;
 
@@ -139,7 +118,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
     if (lambda_update > maxstep) break;
 
-    /* compute the new state of the line search */
+    /* update the endpoints and the midpoint of the bracketed secant region */
     lambda_old = lambda;
     lambda     = lambda_update;
     fnrm_old   = fnrm;
@@ -182,12 +161,14 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_L2"
 /*MC
-   SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function if it is provided with SNESSetObjective().
+   SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function, if it is provided with SNESSetObjective().
 
-   The function norm is evaluated at points in [0, damping] to construct
-   a polynomial fitting.  This fitting is used to construct a new lambda
-   based upon secant descent.  The process is repeated on the new
-   interval, [lambda, lambda_old], max_it - 1 times.
+   Attempts to solve min_lambda f(x + lambda y) using the secant method with the initial bracketing of lambda between [0,damping]. Differences of f()
+   are used to approximate the first and second derivative of f() with respect to lambda, f'() and f''(). The secant method is run for maxit iterations.
+
+   When an objective function is provided f(w) is the objective function otherwise f(w) = ||F(w)||^2. x is the current step and y is the search direction.
+
+   This has no checks on whether the secant method is actually converging.
 
    Options Database Keys:
 +  -snes_linesearch_max_it <maxit> - maximum number of iterations, default is 1
@@ -197,9 +178,11 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
    Level: advanced
 
+   Developer Notes: A better name for this method might be SNESLINESEARCHSECANT, L2 is not descriptive
+
 .keywords: SNES, nonlinear, line search, norm, secant
 
-.seealso: SNESLineSearchBT, SNESLineSearchCP, SNESLineSearch
+.seealso: SNESLINESEARCHBT, SNESLINESEARCHCP, SNESLineSearch, SNESLineSearchCreate(), SNESLineSearchSetType()
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
 {
