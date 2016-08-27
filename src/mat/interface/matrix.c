@@ -2816,7 +2816,7 @@ PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetInfo_External"
 /*
-   This is used by external packages where it is not easy to get the info from the actual 
+   This is used by external packages where it is not easy to get the info from the actual
    matrix factorization.
 */
 PetscErrorCode MatGetInfo_External(Mat A,MatInfoType flag,MatInfo *info)
@@ -4309,7 +4309,7 @@ PetscErrorCode MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType f
       SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate a solver package. Perhaps you must ./configure with --download-<package>");
     }
   }
-  
+
   if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
   if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
@@ -10143,8 +10143,8 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
    The submat always implements MatSetValuesLocal().  If isrow and iscol have the same block size, then
    MatSetValuesBlockedLocal() will also be implemented.
 
-   The mat must have had a ISLocalToGlobalMapping provided to it with MatSetLocalToGlobalMapping(). Note that 
-   matrices obtained with DMCreateMat() generally already have the local to global mapping provided.   
+   The mat must have had a ISLocalToGlobalMapping provided to it with MatSetLocalToGlobalMapping(). Note that
+   matrices obtained with DMCreateMat() generally already have the local to global mapping provided.
 
 .seealso: MatRestoreLocalSubMatrix(), MatCreateLocalRef(), MatSetLocalToGlobalMapping()
 @*/
@@ -10159,7 +10159,7 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
   PetscCheckSameComm(isrow,2,iscol,3);
   PetscValidPointer(submat,4);
   if (!mat->rmap->mapping) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
-                                 
+
   if (mat->ops->getlocalsubmatrix) {
     ierr = (*mat->ops->getlocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);
   } else {

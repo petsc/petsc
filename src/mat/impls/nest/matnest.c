@@ -540,6 +540,26 @@ static PetscErrorCode MatShift_Nest(Mat A,PetscScalar a)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDiagonalSet_Nest"
+static PetscErrorCode MatDiagonalSet_Nest(Mat A,Vec D,InsertMode is)
+{
+  Mat_Nest       *bA = (Mat_Nest*)A->data;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<bA->nr; i++) {
+    Vec bv;
+    ierr = VecGetSubVector(D,bA->isglobal.row[i],&bv);CHKERRQ(ierr);
+    if (bA->m[i][i]) {
+      ierr = MatDiagonalSet(bA->m[i][i],bv,is);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreSubVector(D,bA->isglobal.row[i],&bv);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateVecs_Nest"
 static PetscErrorCode MatCreateVecs_Nest(Mat A,Vec *right,Vec *left)
 {
@@ -1591,6 +1611,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->diagonalscale         = MatDiagonalScale_Nest;
   A->ops->scale                 = MatScale_Nest;
   A->ops->shift                 = MatShift_Nest;
+  A->ops->diagonalset           = MatDiagonalSet_Nest;
 
   A->spptr        = 0;
   A->assembled    = PETSC_FALSE;
