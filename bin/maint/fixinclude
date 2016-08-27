@@ -4,13 +4,14 @@
 #
 #
 filename=$1
-ROOT=$2
-PETSC_DIR=$3
+PETSC_DIR=$2
 #
-# remove any ../ from the ROOT that are also in the filename
 #
-root=`echo $filename | sed 's?/include/[a-zA-A]*.h??g'`
-TROOT=`echo $ROOT | sed "s?$root??g"`
+root=`dirname $filename`
+cd $root
+p=`pwd`
+ROOT=`echo $p |sed s?${PETSC_DIR}??g | sed s?/[A-Za-z]*?../?g | sed s?..//??g`
+echo $filename $PETSC_DIR $root $p $ROOT >> /Users/barrysmith/joe
 
 while [ 1 -ne 0 ]; do
   read -r line 
@@ -27,15 +28,14 @@ while [ 1 -ne 0 ]; do
     includename=`echo $line | sed -e 's?<a name="line[0-9]*">[ 0-9]*: </a><font color="#A020F0">??g' -e 's?#include [ ]*&lt;\([a-z./]*\)&gt;[a-zA-Z0-9/<>#*"=. ]*?\1?g'  ` 
     linenumber=`echo $line | sed 's?\(<a name="line[0-9]*">[ 0-9]*: </a>\)[.# =0-9><"a-z/A-Z:*&;]*?\1?g'`
     if [ -f "$includename" ] ; then
+      echo Found $includename >> /Users/barrysmith/joe
       echo "${linenumber} #include <A href=\"${includename}.html\">&lt;${includename}&gt;</A>"  
-    elif [ -f "${ROOT}/include/${includename}" ] ; then
-      if [ "$TROOT" = "" ] ; then
-        echo "${linenumber} #include <A href=\"${includename}.html\">&lt;${includename}&gt;</A>"
-      else 
-        echo "${linenumber} #include <A href=\"${ROOT}/include/${includename}.html\">&lt;${includename}&gt;</A>"
-      fi
+    elif [ -f "${ROOT}include/${includename}" ] ; then
+      echo Found ${ROOT}include/$includename >> /Users/barrysmith/joe
+      echo "${linenumber} #include <A href=\"${ROOT}include/${includename}.html\">&lt;${includename}&gt;</A>"
     elif [ -f "${ROOT}/${includename}" ] ; then
-      echo "${linenumber} #include <A href=\"${ROOT}/${includename}.html\">&lt;${includename}&gt;</A>"
+      echo Found ${ROOT}$includename >> /Users/barrysmith/joe
+      echo "${linenumber} #include <A href=\"${ROOT}${includename}.html\">&lt;${includename}&gt;</A>"
     else
       /bin/echo  "$line"
     fi
