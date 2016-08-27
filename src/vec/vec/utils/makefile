@@ -1,7 +1,7 @@
 
 ALL: lib
 
-CFLAGS   = ${PNETCDF_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = vinv.c vscat.c vpscat.c vecio.c comb.c vecstash.c vecmpitoseq.c vecs.c vsection.c projection.c
 SOURCEF  =

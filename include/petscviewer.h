@@ -25,7 +25,6 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERDRAW         "draw"
 #define PETSCVIEWERVU           "vu"
 #define PETSCVIEWERMATHEMATICA  "mathematica"
-#define PETSCVIEWERNETCDF       "netcdf"
 #define PETSCVIEWERHDF5         "hdf5"
 #define PETSCVIEWERVTK          "vtk"
 #define PETSCVIEWERMATLAB       "matlab"
@@ -202,9 +201,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerSiloClearName(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer, char **);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer, const char []);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer);
-
-PETSC_EXTERN PetscErrorCode PetscViewerNetcdfOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerNetcdfGetID(PetscViewer, int *);
 
 typedef enum {PETSC_VTK_POINT_FIELD, PETSC_VTK_POINT_VECTOR_FIELD, PETSC_VTK_CELL_FIELD, PETSC_VTK_CELL_VECTOR_FIELD} PetscViewerVTKFieldType;
 PETSC_EXTERN PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType,PetscObject);

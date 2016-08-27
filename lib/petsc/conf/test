@@ -104,7 +104,6 @@ testexamples_SCALAPACK:
 testexamples_CMAKE:
 testexamples_AFTERIMAGE:
 testexamples_OPENMP:
-testexamples_NETCDF:
 testexamples_EXODUSII:
 
 buildexamples_C:
