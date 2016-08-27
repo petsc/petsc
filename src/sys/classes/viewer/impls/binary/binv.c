@@ -1418,6 +1418,16 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PETSCVIEWERBINARY - A viewer that saves to binary files
+
+
+.seealso:  PetscViewerBinaryOpen(), PETSC_VIEWER_STDOUT_(),PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_STDOUT_WORLD, PetscViewerCreate(), PetscViewerASCIIOpen(),
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB, PETSCVIEWERDRAW,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Binary"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)

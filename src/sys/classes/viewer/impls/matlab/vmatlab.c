@@ -2,40 +2,6 @@
 #include <petsc/private/viewerimpl.h>
 #include <mat.h>
 
-/*MC
-   PETSCVIEWERMATLAB - A viewer that saves the variables into a MATLAB .mat file that may be read into MATLAB
-       with load('filename').
-
-   Level: intermediate
-
-       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSCVIEWERBINARY and
-             ${PETSC_DIR}/share/petsc/matlab/PetscBinaryRead.m to read matrices into MATLAB).
-
-             For parallel vectors obtained with DMCreateGlobalVector() or DMGetGlobalVector() the vectors are saved to
-             the .mat file in natural ordering. You can use DMView() to save the DMDA information to the .mat file
-             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the MATLAB
-             vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
-
-$             In your PETSc C/C++ code (assuming a two dimensional DMDA with one degree of freedom per node)
-$                PetscObjectSetName((PetscObject)x,"x");
-$                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
-$                PetscObjectSetName((PetscObject)da,"da");
-$                DMView(x,PETSC_VIEWER_MATLAB_WORLD);
-$             Then from MATLAB
-$                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
-$                xnew = zeros(da.n,da.m);
-$                xnew(:) = x;    % reshape one dimensional vector back to two dimensions
-
-              If you wish to put the same variable into the .mat file several times you need to give it a new
-              name before each call to view.
-
-              Use PetscViewerMatlabPutArray() to just put an array of doubles into the .mat file
-
-.seealso:  PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF(), PETSC_VIEWER_MATLAB_WORLD(),PetscViewerCreate(),
-           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY,
-           PETSC_ASCII_VIEWER, PetscViewerFileSetName(), PetscViewerFileSetMode()
-
-M*/
 
 typedef struct {
   MATFile       *ep;
@@ -176,6 +142,40 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PETSCVIEWERMATLAB - A viewer that saves the variables into a MATLAB .mat file that may be read into MATLAB
+       with load('filename').
+
+   Level: intermediate
+
+       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSCVIEWERBINARY and
+             ${PETSC_DIR}/share/petsc/matlab/PetscBinaryRead.m to read matrices into MATLAB).
+
+             For parallel vectors obtained with DMCreateGlobalVector() or DMGetGlobalVector() the vectors are saved to
+             the .mat file in natural ordering. You can use DMView() to save the DMDA information to the .mat file
+             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the MATLAB
+             vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
+
+$             In your PETSc C/C++ code (assuming a two dimensional DMDA with one degree of freedom per node)
+$                PetscObjectSetName((PetscObject)x,"x");
+$                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
+$                PetscObjectSetName((PetscObject)da,"da");
+$                DMView(x,PETSC_VIEWER_MATLAB_WORLD);
+$             Then from MATLAB
+$                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
+$                xnew = zeros(da.n,da.m);
+$                xnew(:) = x;    % reshape one dimensional vector back to two dimensions
+
+              If you wish to put the same variable into the .mat file several times you need to give it a new
+              name before each call to view.
+
+              Use PetscViewerMatlabPutArray() to just put an array of doubles into the .mat file
+
+.seealso:  PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF, PETSC_VIEWER_MATLAB_WORLD,PetscViewerCreate(),
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY, PETSCVIEWERASCII, PETSCVIEWERDRAW,
+           PETSC_VIEWER_STDOUT_(), PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat
+
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Matlab"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)

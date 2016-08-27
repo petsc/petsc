@@ -160,6 +160,17 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PETSCVIEWERVTK - A viewer that writes to an VTK file
+
+
+.seealso:  PetscViewerVTKOpen(), PetscViewerHDF5Open(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
+           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_VTK"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
