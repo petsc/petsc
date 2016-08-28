@@ -1404,8 +1404,7 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 {
   MatPartitioning mpart;
   const char      *prefix;
-  PetscErrorCode  (*f)(Mat,Mat*);
-  PetscMPIInt     size;
+  void            (*f)(void);
   PetscInt        i,j,rstart,rend,bs;
   PetscBool       isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
   Mat             Ad     = NULL, adj;
@@ -1424,12 +1423,9 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   if (rstart/bs*bs != rstart || rend/bs*bs != rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%D,%D) for matrix block size %D",rstart,rend,bs);
 
   /* Get diagonal block from matrix if possible */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
+  ierr = MatShellGetOperation(A,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
   if (f) {
     ierr = MatGetDiagonalBlock(A,&Ad);CHKERRQ(ierr);
-  } else if (size == 1) {
-    Ad = A;
   }
   if (Ad) {
     ierr = PetscObjectTypeCompare((PetscObject)Ad,MATSEQBAIJ,&isbaij);CHKERRQ(ierr);

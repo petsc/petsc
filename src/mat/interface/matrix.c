@@ -199,7 +199,14 @@ PetscErrorCode MatGetDiagonalBlock(Mat A,Mat *a)
   PetscValidType(A,1);
   PetscValidPointer(a,3);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!A->ops->getdiagonalblock) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not coded for this matrix type");
+  if (!A->ops->getdiagonalblock) {
+    PetscMPIInt size;
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+    if (size == 1) {
+      *a = A;
+      PetscFunctionReturn(0);
+    } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not coded for this matrix type");
+  }
   ierr = (*A->ops->getdiagonalblock)(A,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

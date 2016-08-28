@@ -15,7 +15,8 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   Mat            mat  = pc->mat,pmat = pc->pmat;
-  PetscErrorCode ierr,(*f)(Mat,Mat*);
+  PetscErrorCode ierr;
+  void           (*f)(void);
   PetscInt       N,M,start,i,sum,end;
   PetscInt       bs,i_start=-1,i_end=-1;
   PetscMPIInt    rank,size;
@@ -110,7 +111,7 @@ end_1:
   /* -------------------------
       Determines mat and pmat
   ---------------------------*/
-  ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
+  ierr = MatShellGetOperation(pc->mat,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
   if (!f && size == 1) {
     mat  = pc->mat;
     pmat = pc->pmat;
