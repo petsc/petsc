@@ -29,6 +29,7 @@ struct _PCBDDCGraph {
   IS                     dirdofs;
   IS                     dirdofsB;
   PetscInt               commsizelimit;
+  PetscInt               maxcount;
   /* data for connected components */
   PetscInt               ncc;
   PetscInt               *cptr;

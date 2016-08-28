@@ -1414,7 +1414,7 @@ PetscErrorCode MatDetectDisconnectedComponents(Mat A, PetscBool filter, PetscInt
   ierr = ISLocalToGlobalMappingCreateIS(is_dummy,&l2gmap_dummy);CHKERRQ(ierr);
   ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
   ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
-  ierr = PCBDDCGraphInit(graph,l2gmap_dummy,n);CHKERRQ(ierr);
+  ierr = PCBDDCGraphInit(graph,l2gmap_dummy,n,PETSC_MAX_INT);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&l2gmap_dummy);CHKERRQ(ierr);
   if (xadj_filtered) {
     graph->xadj = xadj_filtered;
@@ -5614,7 +5614,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   /* Init local Graph struct */
   ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalToGlobalMapping(pc->pmat,&map,NULL);CHKERRQ(ierr);
-  ierr = PCBDDCGraphInit(pcbddc->mat_graph,map,N);CHKERRQ(ierr);
+  ierr = PCBDDCGraphInit(pcbddc->mat_graph,map,N,pcbddc->graphmaxcount);CHKERRQ(ierr);
 
   /* Check validity of the csr graph passed in by the user */
   if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
@@ -7459,7 +7459,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
     ierr = ISRestoreIndices(verticesIS,(const PetscInt**)&idxs);CHKERRQ(ierr);
     ierr = PCBDDCGraphRestoreCandidatesIS(pcbddc->mat_graph,NULL,NULL,NULL,NULL,&verticesIS);CHKERRQ(ierr);
     ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
-    ierr = PCBDDCGraphInit(graph,pcbddc->mat_graph->l2gmap,pcbddc->mat_graph->nvtxs_global);CHKERRQ(ierr);
+    ierr = PCBDDCGraphInit(graph,pcbddc->mat_graph->l2gmap,pcbddc->mat_graph->nvtxs_global,pcbddc->graphmaxcount);CHKERRQ(ierr);
     ierr = PCBDDCGraphSetUp(graph,pcbddc->mat_graph->custom_minimal_size,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticescomm);CHKERRQ(ierr);
     ierr = ISDestroy(&verticescomm);CHKERRQ(ierr);
     ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);

@@ -85,6 +85,7 @@ typedef struct {
   PetscBool           recompute_topography;
   PetscBool           graphanalyzed;
   PCBDDCGraph         mat_graph;
+  PetscInt            graphmaxcount;
   MatNullSpace        onearnullspace;
   PetscObjectState    *onearnullvecs_state;
   PetscBool           NullSpace_corr[4];

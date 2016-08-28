@@ -78,6 +78,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Local BDDC graph for subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of vertices %d\n",graph->nvtxs);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Custom minimal size %d\n",graph->custom_minimal_size);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Max count %d\n",graph->maxcount);CHKERRQ(ierr);
   if (verbosity_level > 2) {
     for (i=0;i<graph->nvtxs;i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d:\n",i);CHKERRQ(ierr);
@@ -200,31 +201,28 @@ PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_fac
 PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
 {
   IS             *ISForFaces,*ISForEdges,ISForVertices;
-  PetscInt       i,nfc,nec,nvc,*idx;
+  PetscInt       i,nfc,nec,nvc,*idx,*mark;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCalloc1(graph->ncc,&mark);CHKERRQ(ierr);
   /* loop on ccs to evalute number of faces, edges and vertices */
   nfc = 0;
   nec = 0;
   nvc = 0;
   for (i=0;i<graph->ncc;i++) {
     PetscInt repdof = graph->queue[graph->cptr[i]];
-    if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[repdof] == 1 && graph->special_dof[repdof] != PCBDDCGRAPH_NEUMANN_MARK) {
+    if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size && graph->count[repdof] < graph->maxcount) {
+      if (!graph->twodim && graph->count[repdof] == 1 && graph->special_dof[repdof] != PCBDDCGRAPH_NEUMANN_MARK) {
         nfc++;
-      } else { /* note that nec will be zero in 2d */
+        mark[i] = 2;
+      } else {
         nec++;
+        mark[i] = 1;
       }
     } else {
       nvc += graph->cptr[i+1]-graph->cptr[i];
     }
-  }
-
-  /* check if we are in 2D or 3D */
-  if (graph->twodim) { /* we are in a 2D case -> edges are shared by 2 subregions and faces don't exist */
-    nec = nfc;
-    nfc = 0;
   }
 
   /* allocate IS arrays for faces, edges. Vertices need a single index set. */
@@ -254,32 +252,24 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   nec = 0;
   for (i=0;i<graph->ncc;i++) {
     PetscInt repdof = graph->queue[graph->cptr[i]];
-    if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[repdof] == 1 && graph->special_dof[repdof] != PCBDDCGRAPH_NEUMANN_MARK) {
-        if (graph->twodim) {
-          if (EdgesIS) {
-            ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForEdges[nec]);CHKERRQ(ierr);
-          }
-          nec++;
-        } else {
-          if (FacesIS) {
-            ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForFaces[nfc]);CHKERRQ(ierr);
-          }
-          nfc++;
-        }
-      } else {
-        if (EdgesIS) {
-          ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForEdges[nec]);CHKERRQ(ierr);
-        }
-        nec++;
+    if (mark[i] == 2) {
+      if (FacesIS) {
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForFaces[nfc]);CHKERRQ(ierr);
       }
+      nfc++;
+    } else if (mark[i] == 1) {
+      if (EdgesIS) {
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForEdges[nec]);CHKERRQ(ierr);
+      }
+      nec++;
     }
   }
+
   /* index set for vertices */
   if (VerticesIS) {
     nvc = 0;
     for (i=0;i<graph->ncc;i++) {
-      if (graph->cptr[i+1]-graph->cptr[i] <= graph->custom_minimal_size) {
+      if (!mark[i]) {
         PetscInt j;
 
         for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
@@ -292,11 +282,13 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
     ierr = PetscSortInt(nvc,idx);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,nvc,idx,PETSC_OWN_POINTER,&ISForVertices);CHKERRQ(ierr);
   }
+  ierr = PetscFree(mark);CHKERRQ(ierr);
+
   /* get back info */
-  if (n_faces) *n_faces = nfc;
-  if (FacesIS) *FacesIS = ISForFaces;
-  if (n_edges) *n_edges = nec;
-  if (EdgesIS) *EdgesIS = ISForEdges;
+  if (n_faces)       *n_faces = nfc;
+  if (FacesIS)       *FacesIS = ISForFaces;
+  if (n_edges)       *n_edges = nec;
+  if (EdgesIS)       *EdgesIS = ISForEdges;
   if (VerticesIS) *VerticesIS = ISForVertices;
   PetscFunctionReturn(0);
 }
@@ -1156,19 +1148,20 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   if (graph->n_local_subs) {
     ierr = PetscFree(graph->local_subs);CHKERRQ(ierr);
   }
-  graph->has_dirichlet = PETSC_FALSE;
-  graph->nvtxs = 0;
-  graph->nvtxs_global = 0;
-  graph->n_subsets = 0;
+  graph->has_dirichlet       = PETSC_FALSE;
+  graph->nvtxs               = 0;
+  graph->nvtxs_global        = 0;
+  graph->n_subsets           = 0;
   graph->custom_minimal_size = 1;
-  graph->n_local_subs = 0;
-  graph->setupcalled = PETSC_FALSE;
+  graph->n_local_subs        = 0;
+  graph->maxcount            = PETSC_MAX_INT;
+  graph->setupcalled         = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphInit"
-PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap, PetscInt N)
+PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap, PetscInt N, PetscInt maxcount)
 {
   PetscInt       n;
   PetscErrorCode ierr;
@@ -1177,6 +1170,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   PetscValidPointer(graph,1);
   PetscValidHeaderSpecific(l2gmap,IS_LTOGM_CLASSID,2);
   PetscValidLogicalCollectiveInt(l2gmap,N,3);
+  PetscValidLogicalCollectiveInt(l2gmap,maxcount,4);
   /* raise an error if already allocated */
   if (graph->nvtxs_global) SETERRQ(PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
   /* set number of vertices */
@@ -1207,6 +1201,8 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   graph->subset_ref_node = 0;
   /* default flag for csr */
   graph->freecsr = PETSC_FALSE;
+  /* maxcount for cc */
+  graph->maxcount = maxcount;
   PetscFunctionReturn(0);
 }
 
