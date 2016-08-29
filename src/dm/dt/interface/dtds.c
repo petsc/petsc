@@ -387,8 +387,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   ierr = PetscDSDestroyStructs_Static(prob);CHKERRQ(ierr);
   ierr = PetscMalloc4(NfNew, &tmpd, NfNew, &tmpdbd, NfNew, &tmpi, NfNew*2, &tmpa);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpdbd[f] = prob->discBd[f]; tmpi[f] = prob->implicit[f]; for (i = 0; i < 2; ++i) tmpa[f*2+i] = prob->adjacency[f*2+i];}
-  for (f = Nf; f < NfNew; ++f) {ierr = PetscContainerCreate(PetscObjectComm((PetscObject) prob), (PetscContainer *) &tmpd[f]);CHKERRQ(ierr);
-    tmpdbd[f] = NULL; tmpi[f] = PETSC_TRUE; tmpa[f*2+0] = PETSC_FALSE; tmpa[f*2+1] = PETSC_TRUE;}
+  for (f = Nf; f < NfNew; ++f) {tmpd[f] = NULL, tmpdbd[f] = NULL; tmpi[f] = PETSC_TRUE; tmpa[f*2+0] = PETSC_FALSE; tmpa[f*2+1] = PETSC_TRUE;}
   ierr = PetscFree4(prob->disc, prob->discBd, prob->implicit, prob->adjacency);CHKERRQ(ierr);
   prob->Nf        = NfNew;
   prob->disc      = tmpd;
