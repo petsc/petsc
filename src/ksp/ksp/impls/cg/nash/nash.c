@@ -14,7 +14,7 @@ static PetscErrorCode KSPCGSolve_NASH(KSP ksp)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "NASH is not available for complex systems");
 #else
-  KSPCG_NASH       *cg = (KSPCG_NASH*)ksp->data;
+  KSPCG_NASH     *cg = (KSPCG_NASH*)ksp->data;
   PetscErrorCode ierr;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
@@ -508,11 +508,11 @@ static PetscErrorCode KSPCGSetUp_NASH(KSP ksp)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
   /***************************************************************************/
   /* Set work vectors needed by conjugate gradient method and allocate       */
   /***************************************************************************/
 
+  PetscFunctionBegin;
   ierr = KSPSetWorkVecs(ksp,3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -578,10 +578,10 @@ static PetscErrorCode  KSPCGGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
 static PetscErrorCode KSPCGSetFromOptions_NASH(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
-  KSPCG_NASH       *cg = (KSPCG_NASH*)ksp->data;
+  KSPCG_NASH     *cg = (KSPCG_NASH*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"KSP CG NASH options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSPCG NASH options");CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 
@@ -635,7 +635,7 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCGCreate_NASH(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSPCG_NASH       *cg;
+  KSPCG_NASH     *cg;
 
   PetscFunctionBegin;
   ierr       = PetscNewLog(ksp,&cg);CHKERRQ(ierr);

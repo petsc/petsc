@@ -614,8 +614,8 @@ PETSC_EXTERN PetscErrorCode KSPCGSetRadius(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPCGGetNormD(KSP,PetscReal *);
 PETSC_EXTERN PetscErrorCode KSPCGGetObjFcn(KSP,PetscReal *);
 
-PETSC_EXTERN PetscErrorCode KSPGLTRGetMinEig(KSP,PetscReal *);
-PETSC_EXTERN PetscErrorCode KSPGLTRGetLambda(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPCGGLTRGetMinEig(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPCGGLTRGetLambda(KSP,PetscReal *);
 
 PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP,const char[]);
 
