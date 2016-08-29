@@ -1146,7 +1146,6 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatIsTranspose_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
@@ -2590,7 +2589,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /*29*/ MatSetUp_MPIAIJ,
                                        0,
                                        0,
-                                       0,
+                                       MatGetDiagonalBlock_MPIAIJ,
                                        0,
                                 /*34*/ MatDuplicate_MPIAIJ,
                                        0,
@@ -5059,7 +5058,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetUseScalableIncreaseOverlap_C",MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocationCSR_C",MatMPIAIJSetPreallocationCSR_MPIAIJ);CHKERRQ(ierr);

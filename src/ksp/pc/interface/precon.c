@@ -22,8 +22,8 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (pc->pmat) {
-    PetscErrorCode (*f)(Mat,MatReuse,Mat*);
-    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
+    void (*f)(void);
+    ierr = MatShellGetOperation(pc->pmat,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
     if (size == 1) {
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1);CHKERRQ(ierr);
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2);CHKERRQ(ierr);

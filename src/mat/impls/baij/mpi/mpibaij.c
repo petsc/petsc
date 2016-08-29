@@ -1381,7 +1381,6 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIBAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",NULL);CHKERRQ(ierr);
@@ -2680,6 +2679,15 @@ PetscErrorCode MatMissingDiagonal_MPIBAIJ(Mat A,PetscBool  *missing,PetscInt *d)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetDiagonalBlock_MPIBAIJ"
+PetscErrorCode  MatGetDiagonalBlock_MPIBAIJ(Mat A,Mat *a)
+{
+  PetscFunctionBegin;
+  *a = ((Mat_MPIBAIJ*)A->data)->A;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        MatGetRow_MPIBAIJ,
@@ -2713,7 +2721,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                 /*29*/ MatSetUp_MPIBAIJ,
                                        0,
                                        0,
-                                       0,
+                                       MatGetDiagonalBlock_MPIBAIJ,
                                        0,
                                 /*34*/ MatDuplicate_MPIBAIJ,
                                        0,
@@ -2828,14 +2836,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                 /*144*/MatCreateMPIMatConcatenateSeqMat_MPIBAIJ
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonalBlock_MPIBAIJ"
-PetscErrorCode  MatGetDiagonalBlock_MPIBAIJ(Mat A,Mat *a)
-{
-  PetscFunctionBegin;
-  *a = ((Mat_MPIBAIJ*)A->data)->A;
-  PetscFunctionReturn(0);
-}
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType,MatReuse,Mat*);
 
@@ -3169,7 +3169,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_mpisbaij_C",MatConvert_MPIBAIJ_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",MatMPIBAIJSetPreallocation_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocationCSR_C",MatMPIBAIJSetPreallocationCSR_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C",MatDiagonalScaleLocal_MPIBAIJ);CHKERRQ(ierr);
