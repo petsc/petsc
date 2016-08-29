@@ -358,6 +358,7 @@ int main(int argc,char ** argv)
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
     networkdm = distnetworkdm;
   }
+  ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
   if (!rank) {
