@@ -2,24 +2,22 @@ static char help[] = "Tests the use of MatTranspose_Nest\n";
 
 #include <petscmat.h>
 
-#define nr  (2)
-#define nc  (3)
-
 #undef __FUNCT__
-#define __FUNCT__ "main"
-int main(int argc,char **args)
+#define __FUNCT__ "TestInitialMatrix"
+PetscErrorCode TestInitialMatrix(void)
 {
-  const PetscInt      arow[nr*nc] = { 2, 2, 2, 3, 3, 3 };
-  const PetscInt      acol[nr*nc] = { 3, 2, 4, 3, 2, 4 };
-  Mat                 A,Atranspose;
-  Mat                 subs[nr*nc], **block;
-  Vec                 x,y,Ax,ATy;
-  PetscInt            i,j;
-  PetscScalar         dot1,dot2;
-  PetscRandom         rctx;
-  PetscErrorCode      ierr;
+  const PetscInt  nr = 2,nc = 3;
+  const PetscInt  arow[2*3] = { 2,2,2,3,3,3 };
+  const PetscInt  acol[2*3] = { 3,2,4,3,2,4 };
+  Mat             A,Atranspose;
+  Mat             subs[2*3], **block;
+  Vec             x,y,Ax,ATy;
+  PetscInt        i,j;
+  PetscScalar     dot1,dot2;
+  PetscRandom     rctx;
+  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   for (i=0; i<(nr * nc); i++) {
@@ -73,6 +71,62 @@ int main(int argc,char **args)
   ierr = VecDestroy(&Ax);CHKERRQ(ierr);
   ierr = VecDestroy(&ATy);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TestReuseMatrix"
+PetscErrorCode TestReuseMatrix(void)
+{
+  const PetscInt  n = 2;
+  Mat             A;
+  Mat             subs[2*2],**block;
+  PetscInt        i,j;
+  PetscRandom     rctx;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+  for (i=0; i<(n * n); i++) {
+    ierr = MatCreateSeqDense(PETSC_COMM_WORLD,n,n,NULL,&subs[i]);CHKERRQ(ierr);
+  }
+  ierr = MatCreateNest(PETSC_COMM_WORLD,n,NULL,n,NULL,subs,&A);CHKERRQ(ierr);
+  ierr = MatSetRandom(A,rctx);CHKERRQ(ierr);
+
+  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatNestGetSubMats(A, NULL, NULL, &block);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    for (j=0; j<n; j++) {
+      ierr = MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatNestGetSubMats(A, NULL, NULL, &block);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    for (j=0; j<n; j++) {
+      ierr = MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+  }
+
+  for (i=0; i<(n * n); i++) {
+    ierr = MatDestroy(&subs[i]);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **args)
+{
+  PetscErrorCode      ierr;
+
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  ierr = TestInitialMatrix();CHKERRQ(ierr);
+  ierr = TestReuseMatrix();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

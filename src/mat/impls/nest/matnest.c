@@ -163,6 +163,14 @@ static PetscErrorCode MatTranspose_Nest(Mat A,MatReuse reuse,Mat *B)
     ierr = PetscCalloc1(nr * nc,&subs);CHKERRQ(ierr);
     ierr = PetscMalloc2(nr,&is_row,nc,&is_col);CHKERRQ(ierr);
     ierr = MatNestGetISs(A,is_row,is_col);CHKERRQ(ierr);
+    if (reuse == MAT_REUSE_MATRIX) {
+      for (i=0; i<nr; i++) {
+        for (j=0; j<nc; j++) {
+          subs[i + nr * j] = bA->m[i][j];
+        }
+      }
+    }
+
     ierr = MatCreateNest(PetscObjectComm((PetscObject)A),nc,is_col,nr,is_row,subs,&C);CHKERRQ(ierr);
     ierr = PetscFree(subs);CHKERRQ(ierr);
     ierr = PetscFree(is_row);CHKERRQ(ierr);
