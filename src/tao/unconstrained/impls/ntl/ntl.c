@@ -133,17 +133,17 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   /* Modify the linear solver to a conjugate gradient method */
   switch(tl->ksp_type) {
   case NTL_KSP_NASH:
-    ierr = KSPSetType(tao->ksp, KSPNASH);CHKERRQ(ierr);
+    ierr = KSPSetType(tao->ksp, KSPCGNASH);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   case NTL_KSP_STCG:
-    ierr = KSPSetType(tao->ksp, KSPSTCG);CHKERRQ(ierr);
+    ierr = KSPSetType(tao->ksp, KSPCGSTCG);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   default:
-    ierr = KSPSetType(tao->ksp, KSPGLTR);CHKERRQ(ierr);
+    ierr = KSPSetType(tao->ksp, KSPCGGLTR);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
   }
@@ -339,28 +339,12 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     }
     ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
     /* Solve the Newton system of equations */
-    if (NTL_KSP_NASH == tl->ksp_type) {
-      ierr = KSPNASHSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-      ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-      tao->ksp_its+=its;
-      tao->ksp_tot_its+=its;
-      ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-    } else if (NTL_KSP_STCG == tl->ksp_type) {
-      ierr = KSPSTCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-      ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-      tao->ksp_its+=its;
-      tao->ksp_tot_its+=its;
-      ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-    } else { /* NTL_KSP_GLTR */
-      ierr = KSPGLTRSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-      ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-      tao->ksp_its+=its;
-      tao->ksp_tot_its+=its;
-      ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-    }
+    ierr = KSPCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+    tao->ksp_its+=its;
+    tao->ksp_tot_its+=its;
+    ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
     if (0.0 == tao->trust) {
       /* Radius was uninitialized; use the norm of the direction */
@@ -379,29 +363,12 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
         tao->trust = PetscMax(tao->trust, tl->min_radius);
         tao->trust = PetscMin(tao->trust, tl->max_radius);
 
-        if (NTL_KSP_NASH == tl->ksp_type) {
-          ierr = KSPNASHSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-          ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-          tao->ksp_its+=its;
-          tao->ksp_tot_its+=its;
-          ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-        } else if (NTL_KSP_STCG == tl->ksp_type) {
-          ierr = KSPSTCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-          ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-          tao->ksp_its+=its;
-          tao->ksp_tot_its+=its;
-          ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-        } else { /* NTL_KSP_GLTR */
-          ierr = KSPGLTRSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-          ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-          tao->ksp_its+=its;
-          tao->ksp_tot_its+=its;
-          ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-        }
-
+        ierr = KSPCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
+        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+        tao->ksp_its+=its;
+        tao->ksp_tot_its+=its;
+        ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
         if (norm_d == 0.0) SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
       }
@@ -428,14 +395,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     tr_reject = 0;
     if (NTL_UPDATE_REDUCTION == tl->update_type) {
       /* Get predicted reduction */
-      if (NTL_KSP_NASH == tl->ksp_type) {
-        ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      } else if (NTL_KSP_STCG == tl->ksp_type) {
-        ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      } else { /* gltr */
-        ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      }
-
+      ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
       if (prered >= 0.0) {
         /* The predicted reduction has the wrong sign.  This cannot
            happen in infinite precision arithmetic.  Step should
@@ -487,14 +447,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
       }
     } else {
       /* Get predicted reduction */
-      if (NTL_KSP_NASH == tl->ksp_type) {
-        ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      } else if (NTL_KSP_STCG == tl->ksp_type) {
-        ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      } else { /* gltr */
-        ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      }
-
+      ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
       if (prered >= 0.0) {
         /* The predicted reduction has the wrong sign.  This cannot
            happen in infinite precision arithmetic.  Step should
@@ -1045,7 +998,4 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
 

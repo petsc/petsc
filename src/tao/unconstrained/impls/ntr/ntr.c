@@ -61,8 +61,8 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec xin, Vec xout);
    definite matrix (the preconditioner).  Here g is the gradient and H
    is the Hessian matrix.
 
-   Note:  TaoSolve_NTR MUST use the iterative solver KSPNASH, KSPSTCG,
-          or KSPGLTR.  Thus, we set KSPNASH, KSPSTCG, or KSPGLTR in this
+   Note:  TaoSolve_NTR MUST use the iterative solver KSPCGNASH, KSPCGSTCG,
+          or KSPCGGLTR.  Thus, we set KSPCGNASH, KSPCGSTCG, or KSPCGGLTR in this
           routine regardless of what the user may have previously specified.
 */
 #undef __FUNCT__
@@ -125,17 +125,17 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
   switch(tr->ksp_type) {
   case NTR_KSP_NASH:
-    ierr = KSPSetType(tao->ksp, KSPNASH);CHKERRQ(ierr);
+    ierr = KSPSetType(tao->ksp, KSPCGNASH);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   case NTR_KSP_STCG:
-    ierr = KSPSetType(tao->ksp, KSPSTCG);CHKERRQ(ierr);
+    ierr = KSPSetType(tao->ksp, KSPCGSTCG);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   default:
-    ierr = KSPSetType(tao->ksp, KSPGLTR);CHKERRQ(ierr);
+    ierr = KSPSetType(tao->ksp, KSPCGGLTR);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
   }
@@ -344,28 +344,12 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
 
       /* Solve the trust region subproblem */
-      if (NTR_KSP_NASH == tr->ksp_type) {
-        ierr = KSPNASHSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-        tao->ksp_its+=its;
-        tao->ksp_tot_its+=its;
-        ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-      } else if (NTR_KSP_STCG == tr->ksp_type) {
-        ierr = KSPSTCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-        tao->ksp_its+=its;
-        tao->ksp_tot_its+=its;
-        ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-      } else { /* NTR_KSP_GLTR */
-        ierr = KSPGLTRSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-        tao->ksp_its+=its;
-        tao->ksp_tot_its+=its;
-        ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-      }
+      ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
+      ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+      tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
+      ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
       if (0.0 == tao->trust) {
         /* Radius was uninitialized; use the norm of the direction */
@@ -385,28 +369,12 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
           tao->trust = PetscMax(tao->trust, tr->min_radius);
           tao->trust = PetscMin(tao->trust, tr->max_radius);
 
-          if (NTR_KSP_NASH == tr->ksp_type) {
-            ierr = KSPNASHSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-            ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-            ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-            tao->ksp_its+=its;
-            tao->ksp_tot_its+=its;
-            ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-          } else if (NTR_KSP_STCG == tr->ksp_type) {
-            ierr = KSPSTCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-            ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-            ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-            tao->ksp_its+=its;
-            tao->ksp_tot_its+=its;
-            ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-          } else { /* NTR_KSP_GLTR */
-            ierr = KSPGLTRSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-            ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-            ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-            tao->ksp_its+=its;
-            tao->ksp_tot_its+=its;
-            ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-          }
+          ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
+          ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+          tao->ksp_its+=its;
+          tao->ksp_tot_its+=its;
+          ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
           if (norm_d == 0.0) SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
         }
@@ -432,14 +400,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
       if (NTR_UPDATE_REDUCTION == tr->update_type) {
         /* Get predicted reduction */
-        if (NTR_KSP_NASH == tr->ksp_type) {
-          ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        } else if (NTR_KSP_STCG == tr->ksp_type) {
-          ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        } else { /* gltr */
-          ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        }
-
+        ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
         if (prered >= 0.0) {
           /* The predicted reduction has the wrong sign.  This cannot
              happen in infinite precision arithmetic.  Step should
@@ -496,14 +457,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       }
       else {
         /* Get predicted reduction */
-        if (NTR_KSP_NASH == tr->ksp_type) {
-          ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        } else if (NTR_KSP_STCG == tr->ksp_type) {
-          ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        } else { /* gltr */
-          ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        }
-
+        ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
         if (prered >= 0.0) {
           /* The predicted reduction has the wrong sign.  This cannot
              happen in infinite precision arithmetic.  Step should
