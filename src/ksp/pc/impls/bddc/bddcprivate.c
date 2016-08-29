@@ -107,7 +107,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 {
   PC_BDDC                *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS                 *matis = (Mat_IS*)pc->pmat->data;
-  Mat                    G,T,conn,lG,lGt,lGis,lGall,lGw;
+  Mat                    G,T,conn,lG,lGt,lGis,lGall,lGe;
   MatNullSpace           nnsp;
   Vec                    tvec,*quads;
   PetscSF                sfv;
@@ -115,13 +115,12 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   MPI_Comm               comm;
   IS                     lned,primals;
   IS                     *eedges,*extrows,*extcols;
-  PetscBT                btv,bte,btb,btvcand,iwork;
+  PetscBT                btv,bte,btvc,btb,btvcand,btvi;
   PetscScalar            *vals,*work;
   PetscReal              *rwork;
   const PetscInt         *idxs,*ii,*jj,*iit,*jjt;
   PetscInt               ne,nv,Ne,Nv,Le,Lv,order;
   PetscInt               n_neigh,*neigh,*n_shared,**shared;
-  PetscInt               *interior;
   PetscInt               i,j,extmem,cum,maxsize,rst,nee,nquads=2;
   PetscInt               *extrow,*extrowcum,*marks,*emarks,*vmarks,*gidxs;
   PetscInt               *sfvleaves,*sfvroots;
@@ -216,7 +215,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = MatDestroy(&lGis);CHKERRQ(ierr);
 
   /* Analyze the edge-nodes connections (duplicate lG) */
-  ierr = MatDuplicate(lG,MAT_COPY_VALUES,&lGw);CHKERRQ(ierr);
+  ierr = MatDuplicate(lG,MAT_COPY_VALUES,&lGe);CHKERRQ(ierr);
+  ierr = MatSetOption(lGe,MAT_KEEP_NONZERO_PATTERN,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscBTCreate(nv,&btv);CHKERRQ(ierr);
   ierr = PetscBTCreate(ne,&bte);CHKERRQ(ierr);
   ierr = PetscBTCreate(ne,&btb);CHKERRQ(ierr);
@@ -253,7 +253,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
   ierr = ISLocalToGlobalMappingRestoreInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
   cum  = 0;
-  ierr = MatGetRowIJ(lGw,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   for (i=0;i<ne;i++) {
     if (!marks[i] || (marks[i] == 1 && !PetscBTLookup(btb,i))) { /* eliminate rows corresponding to edge dofs belonging to coarse faces */
       marks[cum++] = i;
@@ -265,18 +265,16 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       }
     }
   }
-  ierr = MatRestoreRowIJ(lGw,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
-  ierr = MatSetOption(lGw,MAT_KEEP_NONZERO_PATTERN,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatZeroRows(lGw,cum,marks,0.,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  ierr = MatZeroRows(lGe,cum,marks,0.,NULL,NULL);CHKERRQ(ierr);
   /* identify splitpoints and corner candidates: TODO variable order */
-  ierr = MatTranspose(lGw,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
+  ierr = MatTranspose(lGe,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
   if (print) {
-    ierr = PetscObjectSetName((PetscObject)lGw,"work_lG");CHKERRQ(ierr);
-    ierr = MatView(lGw,NULL);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)lGt,"work_lGt");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)lGe,"edgerestr_lG");CHKERRQ(ierr);
+    ierr = MatView(lGe,NULL);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)lGt,"edgerestr_lGt");CHKERRQ(ierr);
     ierr = MatView(lGt,NULL);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&lGw);CHKERRQ(ierr);
   ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   for (i=0;i<nv;i++) {
 #if defined(PETSC_USE_DEBUG)
@@ -301,33 +299,21 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   /* Get the local G^T explicitly */
   ierr = MatTranspose(lG,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
+  ierr = MatSetOption(lGt,MAT_KEEP_NONZERO_PATTERN,PETSC_FALSE);CHKERRQ(ierr);
   if (print) {
     ierr = PetscObjectSetName((PetscObject)lGt,"initial_lGt");CHKERRQ(ierr);
     ierr = MatView(lGt,NULL);CHKERRQ(ierr);
   }
 
-  /* Eliminate interior nodal dofs */
+  /* Mark interior nodal dofs */
   ierr = ISLocalToGlobalMappingGetInfo(vl2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  ierr = PetscBTCreate(nv,&iwork);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nv,&interior);CHKERRQ(ierr);
+  ierr = PetscBTCreate(nv,&btvi);CHKERRQ(ierr);
   for (i=1;i<n_neigh;i++) {
     for (j=0;j<n_shared[i];j++) {
-      ierr = PetscBTSet(iwork,shared[i][j]);CHKERRQ(ierr);
+      ierr = PetscBTSet(btvi,shared[i][j]);CHKERRQ(ierr);
     }
   }
   ierr = ISLocalToGlobalMappingRestoreInfo(vl2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  for (i=0,cum=0;i<nv;i++) if (!PetscBTLookup(iwork,i)) interior[cum++] = i;
-  ierr = MatSetOption(lGt,MAT_KEEP_NONZERO_PATTERN,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatZeroRows(lGt,cum,interior,0.,NULL,NULL);CHKERRQ(ierr);
-  if (print) {
-    IS tbz;
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,cum,interior,PETSC_COPY_VALUES,&tbz);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)tbz,"interior_nodal_dofs");CHKERRQ(ierr);
-    ierr = ISView(tbz,NULL);CHKERRQ(ierr);
-    ierr = ISDestroy(&tbz);CHKERRQ(ierr);
-  }
-  ierr = PetscBTDestroy(&iwork);CHKERRQ(ierr);
-  ierr = PetscFree(interior);CHKERRQ(ierr);
 
   /* communicate corners and splitpoints */
   ierr = PetscMalloc1(nv,&vmarks);CHKERRQ(ierr);
@@ -354,24 +340,25 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = PetscSFBcastBegin(sfv,MPIU_INT,sfvroots,sfvleaves);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sfv,MPIU_INT,sfvroots,sfvleaves);CHKERRQ(ierr);
 
-  /* Zero rows of lGt corresponding to identified corners (if any)
-     TODO: this can be merged with the previous zerorows call */
+  /* Zero rows of lGt corresponding to identified corners
+     and interior nodal dofs */
   cum = 0;
   for (i=0;i<nv;i++) {
     if (sfvleaves[i]) {
       vmarks[cum++] = i;
       ierr = PetscBTSet(btv,i);CHKERRQ(ierr);
     }
+    if (!PetscBTLookup(btvi,i)) vmarks[cum++] = i;
   }
+  ierr = PetscBTDestroy(&btvi);CHKERRQ(ierr);
   if (print) {
     IS tbz;
 
     ierr = ISCreateGeneral(PETSC_COMM_SELF,cum,vmarks,PETSC_COPY_VALUES,&tbz);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)tbz,"corners_to_be_zeroed");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)tbz,"corners_to_be_zeroed_with_interior");CHKERRQ(ierr);
     ierr = ISView(tbz,NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&tbz);CHKERRQ(ierr);
   }
-  ierr = MatSetOption(lGt,MAT_KEEP_NONZERO_PATTERN,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatZeroRows(lGt,cum,vmarks,0.,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscFree(vmarks);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfv);CHKERRQ(ierr);
@@ -394,8 +381,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
   ierr = ISCreateGeneral(comm,cum,marks,PETSC_COPY_VALUES,&primals);CHKERRQ(ierr);
   if (print) {
-   ierr = PetscObjectSetName((PetscObject)primals,"prescribed_primal_dofs");CHKERRQ(ierr);
-   ierr = ISView(primals,NULL);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)primals,"prescribed_primal_dofs");CHKERRQ(ierr);
+    ierr = ISView(primals,NULL);CHKERRQ(ierr);
   }
   ierr = PetscBTDestroy(&bte);CHKERRQ(ierr);
   ierr = PCBDDCSetPrimalVerticesLocalIS(pc,primals);CHKERRQ(ierr);
@@ -433,8 +420,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   for (i=0;i<cum;i++) marks[idxs[i]] = nee+1;
   ierr = ISRestoreIndices(primals,&idxs);CHKERRQ(ierr);
   if (print) {
-   ierr = PetscObjectSetName((PetscObject)primals,"obtained_primal_dofs");CHKERRQ(ierr);
-   ierr = ISView(primals,NULL);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)primals,"obtained_primal_dofs");CHKERRQ(ierr);
+    ierr = ISView(primals,NULL);CHKERRQ(ierr);
   }
 
   /* Find coarse edge endpoints */
@@ -525,6 +512,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       eerr = PETSC_TRUE;
     }
   }
+  /* if (eerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected SIZE OF EDGE > EXTCOL FIRST PASS"); */
   ierr = MPIU_Allreduce(&eerr,&done,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
   if (done) {
     PetscInt *newprimals;
@@ -541,6 +529,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
         ierr = ISGetLocalSize(eedges[i],&size);CHKERRQ(ierr);
         ierr = ISGetIndices(eedges[i],&idxs);CHKERRQ(ierr);
         for (j=0;j<size;j++) {
+          /* newprimals[cum++] = idxs[j]; */
           PetscInt k,ee = idxs[j];
           for (k=ii[ee];k<ii[ee+1];k++) {
             /* set all candidates located on the edge as corners */
@@ -627,6 +616,32 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = PetscFree(emarks);CHKERRQ(ierr);
   /* an error should not occur at this point */
   if (eerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected SIZE OF EDGE > EXTCOL SECOND PASS");
+
+  /* Check the number of endpoints */
+  /* TODO: add case for circular edge */
+  ierr = PetscBTCreate(nv,&btvc);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  for (i=0;i<nee;i++) {
+    PetscInt size, found = 0;
+
+    ierr = PetscBTMemzero(nv,btvc);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(eedges[i],&size);CHKERRQ(ierr);
+    ierr = ISGetIndices(eedges[i],&idxs);CHKERRQ(ierr);
+    for (j=0;j<size;j++) {
+      PetscInt k,ee = idxs[j];
+      for (k=ii[ee];k<ii[ee+1];k++) {
+        PetscInt vv = jj[k];
+        if (PetscBTLookup(btv,vv) && !PetscBTLookupSet(btvc,vv)) {
+          found++;
+        }
+      }
+    }
+    ierr = ISRestoreIndices(eedges[i],&idxs);CHKERRQ(ierr);
+    if (found != 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d corners for edge %d\n",found,i);
+  }
+  ierr = MatRestoreRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&btvc);CHKERRQ(ierr);
+  ierr = MatDestroy(&lGe);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   /* Inspects columns of lG (rows of lGt) and make sure the change of basis will
@@ -5146,6 +5161,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (qr_needed) {
       /* space to store Q */
       ierr = PetscMalloc1(max_size_of_constraint*max_size_of_constraint,&qr_basis);CHKERRQ(ierr);
+      /* array to store scaling factors for reflectors */
+      ierr = PetscMalloc1(max_constraints,&qr_tau);CHKERRQ(ierr);
       /* first we issue queries for optimal work */
       ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_M);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(max_constraints,&Blas_N);CHKERRQ(ierr);
@@ -5165,8 +5182,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to UNGQR Lapack routine %d",(int)lierr);
       ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lgqr_work_t),&lgqr_work);CHKERRQ(ierr);
       ierr = PetscMalloc1((PetscInt)PetscRealPart(lgqr_work_t),&gqr_work);CHKERRQ(ierr);
-      /* array to store scaling factors for reflectors */
-      ierr = PetscMalloc1(max_constraints,&qr_tau);CHKERRQ(ierr);
       /* array to store rhs and solution of triangular solver */
       ierr = PetscMalloc1(max_constraints*max_constraints,&trs_rhs);CHKERRQ(ierr);
       /* allocating workspace for check */
