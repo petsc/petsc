@@ -314,7 +314,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
 
     if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
     /* MPI requires calling Fortran mpi_init() if main program is Fortran */
-#if defined(PETSC_HAVE_MPIUNI) && defined(MPIUNI_AVOID_MPI_NAMESPACE)
+#if defined(PETSC_HAVE_MPIUNI) && !defined(MPIUNI_FORTRAN_BINDING)
     mierr = MPI_Init((int*)0, (char***)0);
 #else
     mpi_init_(&mierr);
