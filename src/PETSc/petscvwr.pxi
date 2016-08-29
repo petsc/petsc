@@ -8,7 +8,6 @@ cdef extern from * nogil:
     PetscViewerType PETSCVIEWERDRAW
     PetscViewerType PETSCVIEWERVU
     PetscViewerType PETSCVIEWERMATHEMATICA
-    PetscViewerType PETSCVIEWERNETCDF
     PetscViewerType PETSCVIEWERHDF5
     PetscViewerType PETSCVIEWERVTK
     PetscViewerType PETSCVIEWERMATLAB

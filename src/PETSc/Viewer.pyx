@@ -9,7 +9,6 @@ class ViewerType(object):
     VU          = S_(PETSCVIEWERVU)
     MATHEMATICA = S_(PETSCVIEWERMATHEMATICA)
     HDF5        = S_(PETSCVIEWERHDF5)
-    NETCDF      = S_(PETSCVIEWERNETCDF)
     VTK         = S_(PETSCVIEWERVTK)
     MATLAB      = S_(PETSCVIEWERMATLAB)
     SAWS        = S_(PETSCVIEWERSAWS)
@@ -170,19 +169,6 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
         CHKERR( PetscViewerSetType(self.vwr, PETSCVIEWERHDF5) )
-        CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
-        CHKERR( PetscViewerFileSetName(self.vwr, cname) )
-        return self
-
-    def createNetCDF(self, name, mode=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char *cname = NULL
-        name = str2bytes(name, &cname)
-        cdef PetscFileMode cmode = filemode(mode)
-        cdef PetscViewer newvwr = NULL
-        CHKERR( PetscViewerCreate(ccomm, &newvwr) )
-        PetscCLEAR(self.obj); self.vwr = newvwr
-        CHKERR( PetscViewerSetType(self.vwr, PETSCVIEWERNETCDF) )
         CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         return self
