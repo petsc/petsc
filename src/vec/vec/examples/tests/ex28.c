@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(y,NORM_2,&result3a);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1,&result4a);CHKERRQ(ierr);
 
-  if (PetscRealPart(result1) != PetscRealPart(result1a) || PetscRealPart(result2) != PetscRealPart(result2a)) {
+  if (result1 != result1a || result2 != result2a) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",(double)PetscRealPart(result1),(double)PetscRealPart(result2));CHKERRQ(ierr);
   }
   if (result3 != result3a || result4 != result4a) {
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_MAX,&result3a);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1,&result4a);CHKERRQ(ierr);
 
-  if (PetscRealPart(result1) != PetscRealPart(result1a) || PetscRealPart(result2) != PetscRealPart(result2a)) {
+  if (result1 != result1a || result2 != result2a) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",(double)PetscRealPart(result1),(double)PetscRealPart(result2));CHKERRQ(ierr);
   }
   if (result3 != result3a || result4 != result4a) {
