@@ -494,12 +494,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "SetupProblem"
 PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
 {
-  const PetscInt Ncomp = dim;
-  const PetscInt components[] = {0,1,2};
-  const PetscInt Nfid = 1;
-  const PetscInt fid[] = {1}; /* The fixed faces */
-  const PetscInt Npid = 1;
-  const PetscInt pid[] = {2}; /* The faces with pressure loading */
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -512,8 +506,8 @@ PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
   ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
   ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, Ncomp, components, (void (*)()) coordinates, Nfid, fid, user);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "pressure", "Faces", 0, Ncomp, components, NULL, Npid, pid, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, 0, NULL, (void (*)()) coordinates, 0, NULL, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "pressure", "Faces", 0, 0, NULL, NULL, 0, NULL, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -575,8 +569,8 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
   ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd[0]);CHKERRQ(ierr);
   ierr = PetscDSSetBdDiscretization(prob, 1, (PetscObject) feBd[1]);CHKERRQ(ierr);
-  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   ierr = SetupProblem(prob, dim, user);CHKERRQ(ierr);
+  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux[0]);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(probAux, 1, (PetscObject) feAux[1]);CHKERRQ(ierr);
