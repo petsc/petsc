@@ -22,13 +22,7 @@
 #define ISGlobalToLocalMappingType PetscEnum
 #define ISColoringType PetscEnum
 
-#if PETSC_IS_COLOR_VALUE_TYPE_SIZE == 1
-#define ISColoringValue integer1
-#elif PETSC_IS_COLOR_VALUE_TYPE_SIZE == 2
-#define ISColoringValue integer2
-#else
-#error "Unknown size for IS_COLOR_VALUE_TYPE"
-#endif
+#define ISColoringValue PETSC_IS_COLOR_VALUE_TYPE_F
 
 #define ISGENERAL 'general'
 #define ISSTRIDE 'stride'
