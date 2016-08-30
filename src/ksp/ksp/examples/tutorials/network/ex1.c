@@ -3,8 +3,8 @@ static char help[] = "This example demostrates the use of DMNetwork interface fo
 
 
 /* T
-   Concepts: DMNetwork
-   Concepts: KSP
+  Concepts: DMNetwork
+  Concepts: KSP
 */
 
 #include <petscdmnetwork.h>
@@ -12,20 +12,20 @@ static char help[] = "This example demostrates the use of DMNetwork interface fo
 
 
 /* 
-   Structures containing physical data of circuit.
-   Note that no topology is defined 
+  Structures containing physical data of circuit.
+  Note that no topology is defined 
 */
 
 typedef struct {
-    PetscInt    id; /* node id */
-    PetscScalar inj; /* current injection (A) */
-    PetscBool   gr; /* grounded ? */
+  PetscInt    id; /* node id */
+  PetscScalar inj; /* current injection (A) */
+  PetscBool   gr; /* grounded ? */
 } Node;
 
 typedef struct {
-    PetscInt    id;  /* branch id */
-    PetscScalar r;   /* resistance (ohms) */
-    PetscScalar bat; /* battery (V) */
+  PetscInt    id;  /* branch id */
+  PetscScalar r;   /* resistance (ohms) */
+  PetscScalar bat; /* battery (V) */
 } Branch;
 
 /* 
@@ -35,29 +35,30 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "read_data"
-void read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
+PetscErrorCode read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
 {
-  PetscInt    nnode, nbranch, i;
-  Branch      *branch;
-  Node        *node;
-  int         *edgelist;
+  PetscErrorCode    ierr;
+  PetscInt          nnode, nbranch, i;
+  Branch            *branch;
+  Node              *node;
+  int               *edgelist;
 
   nnode   = 4;
   nbranch = 6;
 
-  node   = calloc(nnode, sizeof(Node));
-  branch = calloc(nbranch, sizeof(Branch));
+  ierr = PetscCalloc1(nnode*sizeof(Node),&node);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nbranch*sizeof(Branch),&branch);CHKERRQ(ierr);
 
   for (i = 0; i < nnode; i++) {
-      node[i].id  = i;
-      node[i].inj = 0;
-      node[i].gr = PETSC_FALSE;
+    node[i].id  = i;
+    node[i].inj = 0;
+    node[i].gr = PETSC_FALSE;
   }
 
   for (i = 0; i < nbranch; i++) {
-      branch[i].id  = i;
-      branch[i].r   = 1.0;
-      branch[i].bat = 0;
+    branch[i].id  = i;
+    branch[i].r   = 1.0;
+    branch[i].bat = 0;
   }
 
   /*
@@ -79,37 +80,37 @@ void read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch,int **ped
       edgelist[2*i + 1] = to node
   */
 
-  edgelist = calloc(2*nbranch, sizeof(int));
+  ierr = PetscCalloc1(2*nbranch*sizeof(int), &edgelist);CHKERRQ(ierr);
 
   for (i = 0; i < nbranch; i++) {
-      switch (i) {
-          case 0:
-            edgelist[2*i]     = 0;
-            edgelist[2*i + 1] = 1;
-            break;
-          case 1:
-            edgelist[2*i]     = 0;
-            edgelist[2*i + 1] = 2;
-            break;
-          case 2:
-            edgelist[2*i]     = 1;
-            edgelist[2*i + 1] = 2;
-            break;
-          case 3:
-            edgelist[2*i]     = 0;
-            edgelist[2*i + 1] = 3;
-            break;
-          case 4:
-            edgelist[2*i]     = 1;
-            edgelist[2*i + 1] = 3;
-            break;
-          case 5:
-            edgelist[2*i]     = 2;
-            edgelist[2*i + 1] = 3;
-            break;
-          default:
-            break;
-      }
+    switch (i) {
+      case 0:
+        edgelist[2*i]     = 0;
+        edgelist[2*i + 1] = 1;
+        break;
+      case 1:
+        edgelist[2*i]     = 0;
+        edgelist[2*i + 1] = 2;
+        break;
+      case 2:
+        edgelist[2*i]     = 1;
+        edgelist[2*i + 1] = 2;
+        break;
+      case 3:
+        edgelist[2*i]     = 0;
+        edgelist[2*i + 1] = 3;
+        break;
+      case 4:
+        edgelist[2*i]     = 1;
+        edgelist[2*i + 1] = 3;
+        break;
+      case 5:
+        edgelist[2*i]     = 2;
+        edgelist[2*i + 1] = 3;
+        break;
+      default:
+        break;
+    }
   }
 
   /* assign pointers */
@@ -118,6 +119,8 @@ void read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch,int **ped
   *pedgelist = edgelist;
   *pbranch   = branch;
   *pnode     = node;
+  
+  PetscFunctionReturn(0);
 }
 
 
@@ -268,7 +271,7 @@ int main(int argc,char ** argv)
 
   /* "read" data only for processor 0 */
   if (!rank) {
-    read_data(&nnode, &nbranch, &node, &branch, &edgelist);
+    ierr = read_data(&nnode, &nbranch, &node, &branch, &edgelist);CHKERRQ(ierr);
   }
 
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
@@ -313,9 +316,9 @@ int main(int argc,char ** argv)
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
   if (!rank) {
-    free(edgelist);
-    free(node);
-    free(branch);
+    PetscFree(edgelist);CHKERRQ(ierr);
+    PetscFree(node);CHKERRQ(ierr);
+    PetscFree(branch);CHKERRQ(ierr);
   }
 
 
