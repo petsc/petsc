@@ -648,8 +648,8 @@ $  other KSP converged/diverged reasons
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPCGCreate_STCG"
-PETSC_EXTERN PetscErrorCode KSPCGCreate_STCG(KSP ksp)
+#define __FUNCT__ "KSPCreate_CGSTCG"
+PETSC_EXTERN PetscErrorCode KSPCreate_CGSTCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSPCG_STCG     *cg;

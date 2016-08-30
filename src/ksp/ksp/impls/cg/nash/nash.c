@@ -631,8 +631,8 @@ $  other KSP converged/diverged reasons
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPCGCreate_NASH"
-PETSC_EXTERN PetscErrorCode KSPCGCreate_NASH(KSP ksp)
+#define __FUNCT__ "KSPCreate_CGNASH"
+PETSC_EXTERN PetscErrorCode KSPCreate_CGNASH(KSP ksp)
 {
   PetscErrorCode ierr;
   KSPCG_NASH     *cg;
