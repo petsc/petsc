@@ -1321,7 +1321,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   tao->njac         = 0;
   tao->nconstraints = 0;
   tao->ksp_its      = 0;
-  tao->ksp_tot_its      = 0;
+  tao->ksp_tot_its  = 0;
   tao->reason       = TAO_CONTINUE_ITERATING;
   tao->residual     = 0.0;
   tao->cnorm        = 0.0;
