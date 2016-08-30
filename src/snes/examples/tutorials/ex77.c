@@ -154,17 +154,18 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal mu = a[0], p = u[Ncomp], kappa = 3.0;
-  PetscReal       cofu_x[Ncomp*dim], detu_x;
+  const PetscReal mu = a[0], kappa = 3.0;
+  PetscReal       cofu_x[Ncomp*dim], detu_x, p = u[Ncomp];
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
+  p += kappa * (detu_x - 1.0);
 
   /* f1 is the first Piola-Kirchhoff tensor */
-  PetscInt        comp, d;
+  PetscInt comp, d;
   for (comp = 0; comp < Ncomp; ++comp) {
     for (d = 0; d < dim; ++d) {
-      f1[comp*dim+d] = mu * u_x[comp*dim+d] + cofu_x[comp*dim+d] * (p + kappa * (detu_x - 1.0));
+      f1[comp*dim+d] = mu * u_x[comp*dim+d] + p * cofu_x[comp*dim+d];
     }
   }
 }
@@ -175,11 +176,14 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal mu = a[0], p = u[Ncomp], kappa = 3.0;
-  PetscReal       cofu_x[Ncomp*dim], detu_x;
+  const PetscReal mu = a[0], kappa = 3.0;
+  PetscReal       cofu_x[Ncomp*dim], detu_x, pp, pm, p = u[Ncomp];
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
+  p += kappa * (detu_x - 1.0);
+  pp = p/detu_x + kappa;
+  pm = p/detu_x;
 
   /* g3 is the first elasticity tensor, i.e. A_i^I_j^J = S^{IJ} g_{ij} + C^{KILJ} F^k_K F^l_L g_{kj} g_{li} */
   PetscInt compI, compJ, compK, d1, d2, d3;
@@ -187,12 +191,7 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     for (compJ = 0; compJ < Ncomp; ++compJ) {
       for (d1 = 0; d1 < dim; ++d1) {
         for (d2 = 0; d2 < dim; ++d2) {
-          for (compK = 0; compK < Ncomp; ++compK) {
-            for (d3 = 0; d3 < dim; ++d3) {
-              g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += (p + kappa * (detu_x - 1.0)) * epsilon3D[(compI*Ncomp+compJ)*Ncomp+compK] * epsilon3D[(d1*dim+d2)*dim+d3] * u_x[compK*dim+d3];
-            }
-          }
-          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += kappa * cofu_x[compI*dim+d1] * cofu_x[compJ*dim+d2] + delta3D[compI*Ncomp+compJ] * delta3D[d1*dim+d2] * mu;
+          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += pp * cofu_x[compI*dim+d1] * cofu_x[compJ*dim+d2] - pm * cofu_x[compI*dim+d2] * cofu_x[compJ*dim+d1] + delta3D[compI*Ncomp+compJ] * delta3D[d1*dim+d2] * mu;
         }
       }
     }
