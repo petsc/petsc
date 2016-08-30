@@ -124,4 +124,4 @@ typedef struct {
   PetscInt update_type;         /* Trust-region update method */
 } TAO_NTL;
 
-#endif /* ifndef __TAO_NTL_H */
+#endif /* if !defined(__TAO_NTL_H) */
