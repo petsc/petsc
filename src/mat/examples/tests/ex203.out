@@ -1,0 +1,33 @@
+Vec Object: 1 MPI processes
+  type: seq
+44.
+49.
+Vec Object: 1 MPI processes
+  type: seq
+11.
+13.
+Vec Object: 1 MPI processes
+  type: seq
+462.
+546.
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Object is in wrong state
+[0]PETSC ERROR: Operation not supported on scaled matrix
+[0]PETSC ERROR: See http://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.
+[0]PETSC ERROR: Petsc Development GIT revision: v3.7.2-1252-g07fdd99  GIT Date: 2016-08-12 12:59:14 -0500
+[0]PETSC ERROR: ./ex203 on a arch-linux2-c-debug named archlinux by yorick Tue Aug 30 22:50:05 2016
+[0]PETSC ERROR: Configure options 
+[0]PETSC ERROR: #1 MatDiagonalSet_Shell() line 365 in /mnt/data/code/projects/petsc/src/mat/impls/shell/shell.c
+[0]PETSC ERROR: #2 MatDiagonalSet() line 252 in /mnt/data/code/projects/petsc/src/mat/utils/axpy.c
+[0]PETSC ERROR: #3 main() line 99 in /mnt/data/code/projects/petsc/src/mat/examples/tests/ex203.c
+[0]PETSC ERROR: PETSc Option Table entries:
+[0]PETSC ERROR: -malloc_dump
+[0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD 
+with errorcode 73.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
