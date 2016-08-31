@@ -16,3 +16,8 @@ runex1:
 	   else printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_1.tmp
 
+runex1_2:
+	-@${MPIEXEC} -n 2 ./ex1 -ksp_monitor > ex1_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1_2.tmp

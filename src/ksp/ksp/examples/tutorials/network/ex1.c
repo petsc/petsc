@@ -10,6 +10,33 @@ static char help[] = "This example demostrates the use of DMNetwork interface fo
 #include <petscdmnetwork.h>
 #include <petscksp.h>
 
+/* The topology looks like:
+ 
+            (1)
+            /|\
+           / | \
+          /  |  \
+         R   R   V
+        /    |b4  \
+    b1 /    (4)    \ b2
+      /    /   \    R
+     /   R       R   \         
+    /  /           \  \
+   / / b5        b6  \ \
+  //                   \\
+(2)--------- R -------- (3)
+             b3
+
+
+  Nodes: (1), ... (4)
+  Branches: b1, ... b6
+  Resistances: R
+  Voltage source: V
+
+  Additionally, there is a current source from (2) to (1).
+   
+*/
+
 
 /* 
   Structures containing physical data of circuit.
