@@ -3271,6 +3271,38 @@ PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscI
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetPostEvaluate"
+/*@C
+  TSSetPostEvaluate - Sets the general-purpose function
+  called once at the end of each step evaluation.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+. PetscErrorCode func(TS ts);
+
+  Level: intermediate
+
+  Note:
+  This is called after the next step solution is evaluated allowing to modify it, if need be. The solution can be obtained
+  with TSGetSolution(), the time step with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
+
+.keywords: TS, timestep
+.seealso: TSSetPreStage(), TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
+@*/
+PetscErrorCode  TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ts->postevaluate = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSPreStage"
 /*@
   TSPreStage - Runs the user-defined pre-stage function set using TSSetPreStage()
@@ -3333,6 +3365,37 @@ PetscErrorCode  TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->poststage) {
     PetscStackCallStandard((*ts->poststage),(ts,stagetime,stageindex,Y));
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSPostEvaluate"
+/*@
+  TSPostEvaluate - Runs the user-defined post-evaluate function set using TSSetPostEvaluate()
+
+  Collective on TS
+
+  Input Parameters:
+. ts          - The TS context obtained from TSCreate()
+
+  Notes:
+  TSPostEvaluate() is typically used within time stepping implementations,
+  most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, timestep
+.seealso: TSSetPostEvaluate(), TSSetPreStep(), TSPreStep(), TSPostStep()
+@*/
+PetscErrorCode  TSPostEvaluate(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->postevaluate) {
+    PetscStackCallStandard((*ts->postevaluate),(ts));
   }
   PetscFunctionReturn(0);
 }

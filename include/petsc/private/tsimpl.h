@@ -101,6 +101,7 @@ struct _p_TS {
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
+  PetscErrorCode (*postevaluate)(TS);
   PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*functiondomainerror)(TS,PetscReal,Vec,PetscBool*);
 
