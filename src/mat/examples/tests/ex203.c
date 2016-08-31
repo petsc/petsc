@@ -35,6 +35,15 @@ static PetscErrorCode MatDiagonalSet_User(Mat A,Vec D,InsertMode is)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ErrorHandler"
+PetscErrorCode ErrorHandler(MPI_Comm comm,int line,const char *func,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+{
+  PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_SELF,"[ERROR] %s: %s\n",func,mess);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
@@ -79,12 +88,14 @@ int main(int argc,char **args)
   }
 
   /* NOTE: This test case will fail */
+  ierr = PetscPushErrorHandler(ErrorHandler, NULL);CHKERRQ(ierr);
   ierr = MatScale(S,42);CHKERRQ(ierr);
   ierr = MatGetDiagonal(S,Y);CHKERRQ(ierr);
   ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDiagonalSet(S,X,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatGetDiagonal(S,Y);CHKERRQ(ierr);
   ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPopErrorHandler();CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
