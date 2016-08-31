@@ -124,11 +124,11 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
   ierr=VecDuplicate(tao->solution,&gpcg->PG);CHKERRQ(ierr);
   /*
     if (gpcg->ksp_type == GPCG_KSP_NASH) {
-        ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
+        ierr = KSPSetType(tao->ksp,KSPCGNASH);CHKERRQ(ierr);
       } else if (gpcg->ksp_type == GPCG_KSP_STCG) {
-        ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
+        ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
       } else {
-        ierr = KSPSetType(tao->ksp,KSPGLTR);CHKERRQ(ierr);
+        ierr = KSPSetType(tao->ksp,KSPCGGLTR);CHKERRQ(ierr);
       }
       if (tao->ksp->ops->setfromoptions) {
         (*tao->ksp->ops->setfromoptions)(tao->ksp);
@@ -378,7 +378,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPCGNASH);CHKERRQ(ierr);
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG);CHKERRQ(ierr);

@@ -169,7 +169,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     while (1) {
 
       /* Approximately solve the reduced linear system */
-      ierr = KSPSTCGSetRadius(tao->ksp,delta);CHKERRQ(ierr);
+      ierr = KSPCGSetRadius(tao->ksp,delta);CHKERRQ(ierr);
 
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
@@ -398,7 +398,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

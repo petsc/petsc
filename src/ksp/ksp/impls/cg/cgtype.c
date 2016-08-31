@@ -76,7 +76,80 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPCGSetRadius"
+/*@
+    KSPCGSetRadius - Sets the radius of the trust region.
 
+    Logically Collective on KSP
 
+    Input Parameters:
++   ksp    - the iterative context
+-   radius - the trust region radius (Infinity is the default)
 
+    Level: advanced
+
+.keywords: KSP, NASH, STCG, GLTR, set, trust region radius
+@*/
+PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  if (radius < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
+  PetscValidLogicalCollectiveReal(ksp,radius,2);
+  ierr = PetscTryMethod(ksp,"KSPCGSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPCGGetNormD"
+/*@
+    KSPCGGetNormD - Got norm of the direction.
+
+    Collective on KSP
+
+    Input Parameters:
++   ksp    - the iterative context
+-   norm_d - the norm of the direction
+
+    Level: advanced
+
+.keywords: KSP, NASH, STCG, GLTR, get, norm direction
+@*/
+PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  ierr = PetscUseMethod(ksp,"KSPCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPCGGetObjFcn"
+/*@
+    KSPCGGetObjFcn - Get objective function value.
+
+    Collective on KSP
+
+    Input Parameters:
++   ksp   - the iterative context
+-   o_fcn - the objective function value
+
+    Level: advanced
+
+.keywords: KSP, NASH, STCG, GLTR, get, objective function
+@*/
+PetscErrorCode  KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  ierr = PetscUseMethod(ksp,"KSPCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 

@@ -1,12 +1,7 @@
 #include <../src/tao/matrix/lmvmmat.h>
-#include <../src/tao/unconstrained/impls/ntl/ntl.h>
+#include <../src/tao/unconstrained/impls/ntl/ntlimpl.h>
 
 #include <petscksp.h>
-
-#define NTL_KSP_NASH    0
-#define NTL_KSP_STCG    1
-#define NTL_KSP_GLTR    2
-#define NTL_KSP_TYPES   3
 
 #define NTL_PC_NONE     0
 #define NTL_PC_AHESS    1
@@ -27,15 +22,13 @@
 #define NTL_UPDATE_INTERPOLATION  1
 #define NTL_UPDATE_TYPES          2
 
-static const char *NTL_KSP[64] = {"nash", "stcg", "gltr"};
+static const char *NTL_PC[64] = {"none","ahess","bfgs","petsc"};
 
-static const char *NTL_PC[64] = {"none", "ahess", "bfgs", "petsc"};
+static const char *BFGS_SCALE[64] = {"ahess","bfgs"};
 
-static const char *BFGS_SCALE[64] = {"ahess", "bfgs"};
+static const char *NTL_INIT[64] = {"constant","direction","interpolation"};
 
-static const char *NTL_INIT[64] = {"constant", "direction", "interpolation"};
-
-static const char *NTL_UPDATE[64] = {"reduction", "interpolation"};
+static const char *NTL_UPDATE[64] = {"reduction","interpolation"};
 
 /* Routine for BFGS preconditioner */
 
@@ -70,8 +63,10 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 static PetscErrorCode TaoSolve_NTL(Tao tao)
 {
   TAO_NTL                      *tl = (TAO_NTL *)tao->data;
-  PC                           pc;
+  KSPType                      ksp_type;
+  PetscBool                    is_nash,is_stcg,is_gltr;
   KSPConvergedReason           ksp_reason;
+  PC                           pc;
   TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
 
@@ -100,10 +95,16 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by ntl algorithm\n");CHKERRQ(ierr);
   }
 
-  /* Initialize trust-region radius */
-  tao->trust = tao->trust0;
+  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGNASH,&is_nash);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGSTCG,&is_stcg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGGLTR,&is_gltr);CHKERRQ(ierr);
+  if (!is_nash && !is_stcg && !is_gltr) {
+    SETERRQ(PETSC_COMM_SELF,1,"TAO_NTR requires nash, stcg, or gltr for the KSP");
+  }
 
-  /* Modify the radius if it is too large or small */
+  /* Initialize the radius and modify if it is too large or small */
+  tao->trust = tao->trust0;
   tao->trust = PetscMax(tao->trust, tl->min_radius);
   tao->trust = PetscMin(tao->trust, tl->max_radius);
 
@@ -128,24 +129,6 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     if (!tl->Diag) {
       ierr = VecDuplicate(tao->solution, &tl->Diag);CHKERRQ(ierr);
     }
-  }
-
-  /* Modify the linear solver to a conjugate gradient method */
-  switch(tl->ksp_type) {
-  case NTL_KSP_NASH:
-    ierr = KSPSetType(tao->ksp, KSPNASH);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-    break;
-
-  case NTL_KSP_STCG:
-    ierr = KSPSetType(tao->ksp, KSPSTCG);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-    break;
-
-  default:
-    ierr = KSPSetType(tao->ksp, KSPGLTR);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-    break;
   }
 
   /* Modify the preconditioner to use the bfgs approximation */
@@ -175,8 +158,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     break;
   }
 
-  /* Initialize trust-region radius.  The initialization is only performed
-     when we are using Steihaug-Toint or the Generalized Lanczos method. */
+  /* Initialize trust-region radius */
   switch(tl->init_type) {
   case NTL_INIT_CONSTANT:
     /* Use the initial radius specified */
@@ -339,28 +321,12 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     }
     ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
     /* Solve the Newton system of equations */
-    if (NTL_KSP_NASH == tl->ksp_type) {
-      ierr = KSPNASHSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-      ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-      tao->ksp_its+=its;
-      tao->ksp_tot_its+=its;
-      ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-    } else if (NTL_KSP_STCG == tl->ksp_type) {
-      ierr = KSPSTCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-      ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-      tao->ksp_its+=its;
-      tao->ksp_tot_its+=its;
-      ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-    } else { /* NTL_KSP_GLTR */
-      ierr = KSPGLTRSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-      ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-      tao->ksp_its+=its;
-      tao->ksp_tot_its+=its;
-      ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-    }
+    ierr = KSPCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+    tao->ksp_its+=its;
+    tao->ksp_tot_its+=its;
+    ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
     if (0.0 == tao->trust) {
       /* Radius was uninitialized; use the norm of the direction */
@@ -379,29 +345,12 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
         tao->trust = PetscMax(tao->trust, tl->min_radius);
         tao->trust = PetscMin(tao->trust, tl->max_radius);
 
-        if (NTL_KSP_NASH == tl->ksp_type) {
-          ierr = KSPNASHSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-          ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-          tao->ksp_its+=its;
-          tao->ksp_tot_its+=its;
-          ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-        } else if (NTL_KSP_STCG == tl->ksp_type) {
-          ierr = KSPSTCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-          ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-          tao->ksp_its+=its;
-          tao->ksp_tot_its+=its;
-          ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-        } else { /* NTL_KSP_GLTR */
-          ierr = KSPGLTRSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
-          ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-          tao->ksp_its+=its;
-          tao->ksp_tot_its+=its;
-          ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-        }
-
+        ierr = KSPCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
+        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+        tao->ksp_its+=its;
+        tao->ksp_tot_its+=its;
+        ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
         if (norm_d == 0.0) SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
       }
@@ -428,14 +377,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     tr_reject = 0;
     if (NTL_UPDATE_REDUCTION == tl->update_type) {
       /* Get predicted reduction */
-      if (NTL_KSP_NASH == tl->ksp_type) {
-        ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      } else if (NTL_KSP_STCG == tl->ksp_type) {
-        ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      } else { /* gltr */
-        ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      }
-
+      ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
       if (prered >= 0.0) {
         /* The predicted reduction has the wrong sign.  This cannot
            happen in infinite precision arithmetic.  Step should
@@ -487,14 +429,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
       }
     } else {
       /* Get predicted reduction */
-      if (NTL_KSP_NASH == tl->ksp_type) {
-        ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      } else if (NTL_KSP_STCG == tl->ksp_type) {
-        ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      } else { /* gltr */
-        ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      }
-
+      ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
       if (prered >= 0.0) {
         /* The predicted reduction has the wrong sign.  This cannot
            happen in infinite precision arithmetic.  Step should
@@ -839,7 +774,6 @@ static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton trust region with line search method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_ntl_ksp_type", "ksp type", "", NTL_KSP, NTL_KSP_TYPES, NTL_KSP[tl->ksp_type], &tl->ksp_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntl_pc_type", "pc type", "", NTL_PC, NTL_PC_TYPES, NTL_PC[tl->pc_type], &tl->pc_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntl_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[tl->bfgs_scale_type], &tl->bfgs_scale_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntl_init_type", "radius initialization type", "", NTL_INIT, NTL_INIT_TYPES, NTL_INIT[tl->init_type], &tl->init_type,NULL);CHKERRQ(ierr);
@@ -923,8 +857,7 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
             min_d  .5 dT Hk d + gkT d,  s.t.   ||d|| < Delta_k
 
   Options Database Keys:
-+ -tao_ntl_ksp_type - "nash","stcg","gltr"
-. -tao_ntl_pc_type - "none","ahess","bfgs","petsc"
++ -tao_ntl_pc_type - "none","ahess","bfgs","petsc"
 . -tao_ntl_bfgs_scale_type - type of scaling with bfgs pc, "ahess" or "bfgs"
 . -tao_ntl_init_type - "constant","direction","interpolation"
 . -tao_ntl_update_type - "reduction","interpolation"
@@ -1031,7 +964,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   tl->max_radius = 1.0e10;
   tl->epsilon = 1.0e-6;
 
-  tl->ksp_type        = NTL_KSP_STCG;
   tl->pc_type         = NTL_PC_BFGS;
   tl->bfgs_scale_type = BFGS_SCALE_AHESS;
   tl->init_type       = NTL_INIT_INTERPOLATION;
@@ -1041,11 +973,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch, tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
 
