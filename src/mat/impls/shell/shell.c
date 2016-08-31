@@ -229,6 +229,56 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCopy_Shell"
+PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
+{
+  Mat_Shell       *shellA,*shellB;
+  PetscBool       flg;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATSHELL,&flg);CHKERRQ(ierr);
+  if(!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_NOTSAMETYPE,"Output matrix must be a MATSHELL");
+
+  shellA = (Mat_Shell*)A->data;
+  shellB = (Mat_Shell*)B->data;
+  if (shellA->usingscaled) {
+    ierr = MatShellUseScaledMethods(B);CHKERRQ(ierr);
+
+    shellB->vscale = shellA->vscale;
+    shellB->vshift = shellA->vshift;
+    if (shellA->dshift_owned) {
+      if (!shellB->dshift_owned) {
+        ierr = VecDuplicate(shellA->dshift_owned,&shellB->dshift_owned);CHKERRQ(ierr);
+      }
+      ierr = VecCopy(shellA->dshift_owned,shellB->dshift_owned);CHKERRQ(ierr);
+      shellB->dshift = shellB->dshift_owned;
+    } else {
+      shellB->dshift = NULL;
+    }
+    if (shellA->left_owned) {
+      if (!shellB->left_owned) {
+        ierr = VecDuplicate(shellA->left_owned,&shellB->left_owned);CHKERRQ(ierr);
+      }
+      ierr = VecCopy(shellA->left_owned,shellB->left_owned);CHKERRQ(ierr);
+      shellB->left = shellB->left_owned;
+    } else {
+      shellB->left = NULL;
+    }
+    if (shellA->right_owned) {
+      if (!shellB->right_owned) {
+        ierr = VecDuplicate(shellA->right_owned,&shellB->right_owned);CHKERRQ(ierr);
+      }
+      ierr = VecCopy(shellA->right_owned,shellB->right_owned);CHKERRQ(ierr);
+      shellB->right = shellB->right_owned;
+    } else {
+      shellB->right = NULL;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_Shell"
 PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 {
@@ -501,7 +551,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                        0,
-                                       0,
+                                       MatCopy_Shell,
                                 /*44*/ 0,
                                        MatScale_Shell,
                                        MatShift_Shell,
