@@ -102,9 +102,14 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,W2);CHKERRQ(ierr);
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(A,X,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(A,W1);CHKERRQ(ierr);
-  ierr = VecView(W1,viewer);CHKERRQ(ierr);
+  /* MATSHELL does not support MatDiagonalSet after MatScale */
+  if (strncmp(mattypename, "shell", 5)) {
+    ierr = MatDiagonalSet(A,X,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(A,W1);CHKERRQ(ierr);
+    ierr = VecView(W1,viewer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer,"MatDiagonalSet not tested on MATSHELL\n");CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&E);CHKERRQ(ierr);
   ierr = VecDestroy(&W1);CHKERRQ(ierr);
   ierr = VecDestroy(&W2);CHKERRQ(ierr);

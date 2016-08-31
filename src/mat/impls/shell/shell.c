@@ -12,6 +12,7 @@ typedef struct {
   PetscErrorCode (*mult)(Mat,Vec,Vec);
   PetscErrorCode (*multtranspose)(Mat,Vec,Vec);
   PetscErrorCode (*getdiagonal)(Mat,Vec);
+  PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
 
   PetscScalar vscale,vshift;
   Vec         dshift;
@@ -353,6 +354,24 @@ PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDiagonalSet_Shell"
+PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
+{
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (shell->vscale != 1.0 || shell->left || shell->right) {
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE, "Operation not supported on scaled matrix");
+  }
+
+  if (shell->diagonalset) { ierr = (*shell->diagonalset)(A,D,ins);CHKERRQ(ierr); }
+  shell->vshift = 0.0;
+  if (shell->dshift) { ierr = VecZeroEntries(shell->dshift);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatScale_Shell"
 PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
 {
@@ -486,7 +505,7 @@ static struct _MatOps MatOps_Values = {0,
                                 /*44*/ 0,
                                        MatScale_Shell,
                                        MatShift_Shell,
-                                       0,
+                                       MatDiagonalSet_Shell,
                                        0,
                                 /*49*/ 0,
                                        0,
@@ -793,6 +812,15 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
       Mat_Shell *shell = (Mat_Shell*)mat->data;
       shell->destroy = (PetscErrorCode (*)(Mat))f;
     } else mat->ops->destroy = (PetscErrorCode (*)(Mat))f;
+    break;
+  case MATOP_DIAGONAL_SET:
+    ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+    if (flg) {
+      Mat_Shell *shell = (Mat_Shell*)mat->data;
+      shell->diagonalset = (PetscErrorCode (*)(Mat,Vec,InsertMode))f;
+    } else {
+      mat->ops->diagonalset = (PetscErrorCode (*)(Mat,Vec,InsertMode))f;
+    }
     break;
   case MATOP_VIEW:
     mat->ops->view = (PetscErrorCode (*)(Mat,PetscViewer))f;
