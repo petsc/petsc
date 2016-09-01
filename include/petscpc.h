@@ -137,6 +137,9 @@ PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCFactorSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCFactorGetLevels(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFactorSetDropTolerance(PC,PetscReal,PetscReal,PetscInt);
+PETSC_EXTERN PetscErrorCode PCFactorGetZeroPivot(PC,PetscReal*);
+PETSC_EXTERN PetscErrorCode PCFactorGetShiftAmount(PC,PetscReal*);
+PETSC_EXTERN PetscErrorCode PCFactorGetShiftType(PC,MatFactorShiftType*);
 
 PETSC_EXTERN PetscErrorCode PCASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCASMSetTotalSubdomains(PC,PetscInt,IS[],IS[]);

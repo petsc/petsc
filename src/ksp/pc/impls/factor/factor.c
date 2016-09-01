@@ -160,6 +160,90 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCFactorGetZeroPivot"
+/*@
+   PCFactorGetZeroPivot - Gets the tolerance used to define a zero privot
+
+   Not Collective
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  pivot - the tolerance
+
+   Level: intermediate
+
+
+.seealso: PCFactorSetZeroPivot()
+@*/
+PetscErrorCode  PCFactorGetZeroPivot(PC pc,PetscReal *pivot)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetZeroPivot_C",(PC,PetscReal*),(pc,pivot));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetShiftAmount"
+/*@
+   PCFactorGetShiftAmount - Gets the tolerance used to define a zero privot
+
+   Not Collective
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  shift - how much to shift the diagonal entry
+
+   Level: intermediate
+
+
+.seealso: PCFactorSetShiftAmount(), PCFactorSetShiftType(), PCFactorGetShiftType()
+@*/
+PetscErrorCode  PCFactorGetShiftAmount(PC pc,PetscReal *shift)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetShiftAmount_C",(PC,PetscReal*),(pc,shift));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetShiftType"
+/*@
+   PCFactorGetShiftType - Gets the type of shift, if any, done when a zero pivot is detected
+
+   Not Collective
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  type - one of MAT_SHIFT_NONE, MAT_SHIFT_NONZERO,  MAT_SHIFT_POSITIVE_DEFINITE, or MAT_SHIFT_INBLOCKS
+
+   Level: intermediate
+
+
+.seealso: PCFactorSetShiftType(), MatFactorShiftType, PCFactorSetShiftAmount(), PCFactorGetShiftAmount()
+@*/
+PetscErrorCode  PCFactorGetShiftType(PC pc,MatFactorShiftType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetShiftType_C",(PC,MatFactorShiftType*),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorGetLevels"
 /*@
    PCFactorGetLevels - Gets the number of levels of fill to use.
