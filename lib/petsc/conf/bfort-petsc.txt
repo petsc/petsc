@@ -48,6 +48,7 @@ native PetscReal
 native PetscBool
 native PetscSizeT
 native MatStructure
+native PCFailedReason
 native KSPConvergedReason
 native SNESConvergedReason
 native SNESLineSearchReason
