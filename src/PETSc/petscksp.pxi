@@ -4,13 +4,13 @@ cdef extern from * nogil:
     PetscKSPType KSPRICHARDSON
     PetscKSPType KSPCHEBYSHEV
     PetscKSPType KSPCG
-    PetscKSPType   KSPGROPPCG
-    PetscKSPType   KSPPIPECG
-    PetscKSPType   KSPPIPECGRR
+    PetscKSPType KSPGROPPCG
+    PetscKSPType KSPPIPECG
+    PetscKSPType KSPPIPECGRR
     PetscKSPType   KSPCGNE
-    PetscKSPType   KSPNASH
-    PetscKSPType   KSPSTCG
-    PetscKSPType   KSPGLTR
+    PetscKSPType   KSPCGNASH
+    PetscKSPType   KSPCGSTCG
+    PetscKSPType   KSPCGGLTR
     PetscKSPType KSPFCG
     PetscKSPType KSPPIPEFCG
     PetscKSPType KSPGMRES
@@ -41,6 +41,7 @@ cdef extern from * nogil:
     PetscKSPType KSPPIPEGCR
     PetscKSPType KSPTSIRM
     PetscKSPType KSPCGLS
+    PetscKSPType KSPFETIDP
 
     ctypedef enum PetscKSPNormType "KSPNormType":
         KSP_NORM_DEFAULT

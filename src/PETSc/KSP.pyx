@@ -8,9 +8,9 @@ class KSPType(object):
     PIPECG     = S_(KSPPIPECG)
     PIPECGRR   = S_(KSPPIPECGRR)
     CGNE       = S_(KSPCGNE)
-    NASH       = S_(KSPNASH)
-    STCG       = S_(KSPSTCG)
-    GLTR       = S_(KSPGLTR)
+    CGNASH     = S_(KSPCGNASH)
+    CGSTCG     = S_(KSPCGSTCG)
+    CGGLTR     = S_(KSPCGGLTR)
     FCG        = S_(KSPFCG)
     PIPEFCG    = S_(KSPPIPEFCG)
     GMRES      = S_(KSPGMRES)
@@ -41,6 +41,7 @@ class KSPType(object):
     PIPEGCR    = S_(KSPPIPEGCR)
     TSIRM      = S_(KSPTSIRM)
     CGLS       = S_(KSPCGLS)
+    FETIDP     = S_(KSPFETIDP)
 
 class KSPNormType(object):
     # native
