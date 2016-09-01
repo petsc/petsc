@@ -17,8 +17,11 @@ typedef struct {
 PETSC_INTERN PetscErrorCode PCFactorGetMatrix_Factor(PC,Mat*);
 
 PETSC_INTERN PetscErrorCode PCFactorSetZeroPivot_Factor(PC,PetscReal);
+PETSC_INTERN PetscErrorCode PCFactorGetZeroPivot_Factor(PC,PetscReal*);
 PETSC_INTERN PetscErrorCode PCFactorSetShiftType_Factor(PC,MatFactorShiftType);
+PETSC_INTERN PetscErrorCode PCFactorGetShiftType_Factor(PC,MatFactorShiftType*);
 PETSC_INTERN PetscErrorCode PCFactorSetShiftAmount_Factor(PC,PetscReal);
+PETSC_INTERN PetscErrorCode PCFactorGetShiftAmount_Factor(PC,PetscReal*);
 PETSC_INTERN PetscErrorCode PCFactorSetDropTolerance_Factor(PC,PetscReal,PetscReal,PetscInt);
 PETSC_INTERN PetscErrorCode PCFactorSetFill_Factor(PC,PetscReal);
 PETSC_INTERN PetscErrorCode PCFactorSetMatOrderingType_Factor(PC,MatOrderingType);
