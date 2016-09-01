@@ -10,6 +10,7 @@ configure_options = [
   'CXXFLAGS=-DMPICH_SKIP_MPICXX -MT -GR -EHsc',
   '--with-mpiexec=mpiexec --localonly',
   'DATAFILESPATH=c:/cygwin/home/sbalay/datafiles',
+  '--with-shared-libraries=0',
   ]
 
 if __name__ == '__main__':
