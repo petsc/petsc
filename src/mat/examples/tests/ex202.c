@@ -13,12 +13,14 @@ PetscErrorCode TestInitialMatrix(void)
   Mat             subs[2*3], **block;
   Vec             x,y,Ax,ATy;
   PetscInt        i,j;
-  PetscScalar     dot1,dot2;
+  PetscScalar     dot1,dot2,zero = 0.0, one = 1.0;
   PetscRandom     rctx;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+  /* Force the random numbers to have imaginary part 0 so printed results are the same for --with-scalar-type=real or --with-scalar-type=complex */
+  ierr = PetscRandomSetInterval(rctx,zero,one);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   for (i=0; i<(nr * nc); i++) {
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,arow[i],acol[i],NULL,&subs[i]);CHKERRQ(ierr);
@@ -57,8 +59,8 @@ PetscErrorCode TestInitialMatrix(void)
     ierr = MatMult(Atranspose, y, ATy);CHKERRQ(ierr);
     ierr = VecDot(ATy, x, &dot2);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "<Ax, y> = %g\n", dot1);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "<x, A^Ty> = %g\n", dot2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "<Ax, y> = %g\n", (double)PetscRealPart(dot1));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "<x, A^Ty> = %g\n",(double)PetscRealPart(dot2));CHKERRQ(ierr);
   }
 
   for (i=0; i<(nr * nc); i++) {
@@ -84,9 +86,11 @@ PetscErrorCode TestReuseMatrix(void)
   PetscInt        i,j;
   PetscRandom     rctx;
   PetscErrorCode  ierr;
+  PetscScalar     zero = 0.0, one = 1.0;
 
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomSetInterval(rctx,zero,one);CHKERRQ(ierr);  
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   for (i=0; i<(n * n); i++) {
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,n,n,NULL,&subs[i]);CHKERRQ(ierr);
