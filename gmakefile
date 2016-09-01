@@ -86,6 +86,11 @@ else
   cc_name := CC
 endif
 
+# implies shared libraries with MS compilers
+ifeq ($(SL_LINKER_FUNCTION),-LD)
+CCPPFLAGS+=-Dpetsc_EXPORTS
+endif
+
 PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
 PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
 PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
@@ -96,9 +101,20 @@ langs := c cu cxx F
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 
+define SHARED_RECIPE_DLL
+  @$(RM) $@ dllcmd.${PETSC_ARCH}
+  @cygpath -w $^ > dllcmd.${PETSC_ARCH}
+  $(call quiet,CLINKER) $(sl_linker_args) -o $@ @dllcmd.${PETSC_ARCH} $(PETSC_EXTERNAL_LIB_BASIC)
+  @$(RM) dllcmd.${PETSC_ARCH}
+endef
+
+define SHARED_RECIPE_DEFAULT
+  $(call quiet,CLINKER) $(sl_linker_args) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+endef
+
 # with-single-library=1 (default)
 $(libpetsc_libname) : $(srcs.o) | $$(@D)/.DIR
-	$(call quiet,CLINKER) $(sl_linker_args) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+	$(if $(findstring -LD,$(SL_LINKER_FUNCTION)),$(SHARED_RECIPE_DLL),$(SHARED_RECIPE_DEFAULT))
 ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
