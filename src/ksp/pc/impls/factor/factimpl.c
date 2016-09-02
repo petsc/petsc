@@ -147,7 +147,7 @@ PetscErrorCode  PCFactorGetShiftType_Factor(PC pc,MatFactorShiftType *type)
   PC_Factor      *ilu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  *type = (MatFactorShiftType) ilu->info.shifttype;
+  *type = (MatFactorShiftType) (int) ilu->info.shifttype;
   PetscFunctionReturn(0);
 }
 
