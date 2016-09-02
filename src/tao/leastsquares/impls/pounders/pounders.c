@@ -7,6 +7,7 @@ static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat H, Mat Hpre, void *ctx)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "pounders_fg"
 static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *ctx)
@@ -28,6 +29,7 @@ static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void 
   ierr = VecAXPY(g, 1.0, mfqP->subb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "pounders_feval"
 static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
@@ -73,7 +75,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
 
   PetscFunctionBegin;
-  if (! mfqP->usegqt) {
+  if (!mfqP->usegqt) {
     PetscReal maxval;
     PetscInt  i,j;
 
@@ -128,7 +130,20 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"initial guess > upper bound in subproblem");
 
+    MatView(mfqP->subH, PETSC_VIEWER_STDOUT_WORLD);
+    VecView(mfqP->subb, PETSC_VIEWER_STDOUT_WORLD);
+    VecView(mfqP->subxl, PETSC_VIEWER_STDOUT_WORLD);
+    VecView(mfqP->subxu, PETSC_VIEWER_STDOUT_WORLD);
+    VecView(mfqP->subx, PETSC_VIEWER_STDOUT_WORLD);
+
     ierr = TaoSolve(mfqP->subtao);CHKERRQ(ierr);
+
+    MatView(mfqP->subH, PETSC_VIEWER_STDOUT_WORLD);
+    VecView(mfqP->subb, PETSC_VIEWER_STDOUT_WORLD);
+    VecView(mfqP->subxl, PETSC_VIEWER_STDOUT_WORLD);
+    VecView(mfqP->subxu, PETSC_VIEWER_STDOUT_WORLD);
+    VecView(mfqP->subx, PETSC_VIEWER_STDOUT_WORLD);
+
     ierr = TaoGetSolutionStatus(mfqP->subtao,NULL,qmin,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
     /* test bounds post-solution*/
@@ -164,6 +179,8 @@ static PetscErrorCode pounders_update_res(Tao tao)
   PetscReal zero=0.0,one=1.0,wii,factor;
   PetscErrorCode ierr;
   PetscFunctionBegin;
+
+  TaoView(mfqP->subtao, PETSC_VIEWER_STDOUT_WORLD);
 
   for (i=0;i<mfqP->n;i++) {
     mfqP->Gres[i]=0;
@@ -245,9 +262,9 @@ static PetscErrorCode pounders_update_res(Tao tao)
       }
     }
   }
-
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "phi2eval"
 PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi)
