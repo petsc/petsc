@@ -173,8 +173,7 @@ static PetscErrorCode MatTranspose_Nest(Mat A,MatReuse reuse,Mat *B)
 
     ierr = MatCreateNest(PetscObjectComm((PetscObject)A),nc,is_col,nr,is_row,subs,&C);CHKERRQ(ierr);
     ierr = PetscFree(subs);CHKERRQ(ierr);
-    ierr = PetscFree(is_row);CHKERRQ(ierr);
-    ierr = PetscFree(is_col);CHKERRQ(ierr);
+    ierr = PetscFree2(is_row,is_col);CHKERRQ(ierr);
   } else {
     C = *B;
   }
