@@ -2,6 +2,50 @@
 #include <../src/ksp/pc/impls/factor/factor.h>  /*I "petscpc.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "PCFactorSetReuseOrdering_Factor"
+static PetscErrorCode PCFactorSetReuseOrdering_Factor(PC pc,PetscBool flag)
+{
+  PC_Factor *lu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  lu->reuseordering = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorSetReuseFill_Factor"
+static PetscErrorCode PCFactorSetReuseFill_Factor(PC pc,PetscBool flag)
+{
+  PC_Factor *lu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  lu->reusefill = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorSetUseInPlace_Factor"
+static PetscErrorCode  PCFactorSetUseInPlace_Factor(PC pc,PetscBool flg)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  dir->inplace = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetUseInPlace_Factor"
+static PetscErrorCode  PCFactorGetUseInPlace_Factor(PC pc,PetscBool *flg)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *flg = dir->inplace;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUpMatSolverPackage"
 /*@
     PCFactorSetUpMatSolverPackage - Can be called after KSPSetOperators() or PCSetOperators(), causes MatGetFactor() to be called so then one may
@@ -710,5 +754,43 @@ PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool flag)
   PetscValidHeaderSpecific(pc,PC_CLASSID,2);
   PetscValidLogicalCollectiveBool(pc,flag,2);
   ierr = PetscTryMethod(pc,"PCFactorSetReuseFill_C",(PC,PetscBool),(pc,flag));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorInitialize"
+PetscErrorCode PCFactorInitialize(PC pc)
+{
+  PetscErrorCode ierr;
+  PC_Factor       *fact = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  ierr                       = MatFactorInfoInitialize(&fact->info);CHKERRQ(ierr);
+  fact->info.shifttype       = (PetscReal)MAT_SHIFT_NONE;
+  fact->info.shiftamount     = 100.0*PETSC_MACHINE_EPSILON;
+  fact->info.zeropivot       = 100.0*PETSC_MACHINE_EPSILON;
+  fact->info.pivotinblocks   = 1.0;
+  pc->ops->getfactoredmatrix = PCFactorGetMatrix_Factor;
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetZeroPivot_C",PCFactorGetZeroPivot_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftType_C",PCFactorGetShiftType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftAmount_C",PCFactorGetShiftAmount_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverPackage_C",PCFactorSetUpMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetLevels_C",PCFactorGetLevels_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetAllowDiagonalFill_C",PCFactorSetAllowDiagonalFill_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetAllowDiagonalFill_C",PCFactorGetAllowDiagonalFill_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetPivotInBlocks_C",PCFactorSetPivotInBlocks_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",PCFactorSetUseInPlace_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",PCFactorGetUseInPlace_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",PCFactorSetReuseOrdering_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",PCFactorSetReuseFill_Factor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

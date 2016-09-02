@@ -21,7 +21,7 @@ KSP Object: 1 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
   type: ilu
-    ILU: out-of-place factorization
+    out-of-place factorization
     0 levels of fill
     tolerance for zero pivot 2.22045e-14
     matrix ordering: natural

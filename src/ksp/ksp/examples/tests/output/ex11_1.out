@@ -45,13 +45,13 @@
     0 KSP Residual norm 18874.5 
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    1 KSP Residual norm 5980.59 
+    1 KSP Residual norm 5980.6 
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 34
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     2 KSP Residual norm 4874.25 
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    3 KSP Residual norm 735.445 
+    3 KSP Residual norm 735.443 
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     4 KSP Residual norm 186.933 
@@ -63,11 +63,11 @@
     6 KSP Residual norm 4.93617 
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 33
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
-    7 KSP Residual norm 0.721077 
+    7 KSP Residual norm 0.721076 
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 31
     Linear fc_fieldsplit_pressure_lsc_ solve converged due to CONVERGED_RTOL iterations 30
     8 KSP Residual norm 0.104728 
-  3 KSP Residual norm 2.074e-10 
+  3 KSP Residual norm 2.075e-10 
 KSP Object: (fc_) 1 MPI processes
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -94,6 +94,7 @@ PC Object: (fc_) 1 MPI processes
       PC Object: (fc_fieldsplit_velocity_) 1 MPI processes
         type: cholesky
           Cholesky: out-of-place factorization
+          out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 4.40672
@@ -131,6 +132,7 @@ PC Object: (fc_) 1 MPI processes
             using PRECONDITIONED norm type for convergence test
           PC Object: (fc_fieldsplit_pressure_lsc_) 1 MPI processes
             type: icc
+              out-of-place factorization
               0 levels of fill
               tolerance for zero pivot 2.22045e-14
               using Manteuffel shift [POSITIVE_DEFINITE]
@@ -182,6 +184,7 @@ PC Object: (fc_) 1 MPI processes
               PC Object: (fc_fieldsplit_velocity_) 1 MPI processes
                 type: cholesky
                   Cholesky: out-of-place factorization
+                  out-of-place factorization
                   tolerance for zero pivot 2.22045e-14
                   matrix ordering: nd
                   factor fill ratio given 5., needed 4.40672
@@ -233,7 +236,7 @@ PC Object: (fc_) 1 MPI processes
   Min(p)  = -6.039639 [loc=844]
   Max(p)  = 4.836615 [loc=16]
   Norm(p) = 94.125988 
-  Sum(p)  = 0.000000 
+  Sum(p)  = -0.000000 
 -- Full vector values --
   Min(u,p)  = -6.039639 [loc=2890]
   Max(u,p)  = 4.836615 [loc=2062]

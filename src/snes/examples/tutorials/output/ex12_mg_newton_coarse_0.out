@@ -67,7 +67,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 1 MPI processes
         type: lu
-          LU: out-of-place factorization
+          out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
           matrix ordering: nd
@@ -99,7 +99,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI processes
         type: ilu
-          ILU: out-of-place factorization
+          out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
           matrix ordering: natural
@@ -132,7 +132,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (mg_levels_2_) 1 MPI processes
         type: ilu
-          ILU: out-of-place factorization
+          out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
           matrix ordering: natural
@@ -165,7 +165,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (mg_levels_3_) 1 MPI processes
         type: ilu
-          ILU: out-of-place factorization
+          out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
           matrix ordering: natural
