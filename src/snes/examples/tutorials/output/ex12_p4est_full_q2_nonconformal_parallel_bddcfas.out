@@ -1,15 +1,15 @@
-  0 SNES Function norm 17.6346 
-    0 SNES Function norm 17.6346 
-    1 SNES Function norm 9.68992e-06 
-      0 SNES Function norm 8.15491e-06 
-      1 SNES Function norm 2.434e-11 
-        0 SNES Function norm 1.976e-11 
-        1 SNES Function norm < 1.e-11
-      0 SNES Function norm 1.843e-11 
+0 SNES Function norm 18.4477 
+    0 SNES Function norm 18.4477 
+    1 SNES Function norm 1.38178e-06 
+      0 SNES Function norm 1.25163e-06 
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 8.62367e-06 
-    1 SNES Function norm 1.223e-11 
-  1 SNES Function norm 1.223e-11 
+        0 SNES Function norm < 1.e-11
+        1 SNES Function norm < 1.e-11
+      0 SNES Function norm < 1.e-11
+      1 SNES Function norm < 1.e-11
+    0 SNES Function norm 1.35277e-06 
+    1 SNES Function norm < 1.e-11
+  1 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 7 MPI processes
   type: fas
@@ -20,7 +20,7 @@ SNES Object: 7 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-      total number of linear solver iterations=7
+      total number of linear solver iterations=4
       total number of function evaluations=1
       SNESLineSearch Object: (fas_coarse_) 7 MPI processes
         type: basic
@@ -69,12 +69,48 @@ SNES Object: 7 MPI processes
               total: nonzeros=460, allocated nonzeros=606
               total number of mallocs used during MatSetValues calls =0
                 not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=32, cols=32
+              total: nonzeros=336, allocated nonzeros=427
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=36, cols=36
+              total: nonzeros=392, allocated nonzeros=528
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=34, cols=34
+              total: nonzeros=332, allocated nonzeros=466
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=53, cols=53
+              total: nonzeros=647, allocated nonzeros=795
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=32, cols=32
+              total: nonzeros=336, allocated nonzeros=420
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=40, cols=40
+              total: nonzeros=476, allocated nonzeros=638
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
   Down solver (pre-smoother) on level 1 -------------------------------
     SNES Object: (fas_levels_1_) 7 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=7
+      total number of linear solver iterations=6
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_1_) 7 MPI processes
@@ -122,8 +158,44 @@ SNES Object: 7 MPI processes
           rows=513, cols=513
             Mat Object: (is_) 1 MPI processes
               type: seqaij
-              rows=96, cols=96
-              total: nonzeros=1308, allocated nonzeros=1607
+              rows=98, cols=98
+              total: nonzeros=1332, allocated nonzeros=1647
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=87, cols=87
+              total: nonzeros=1119, allocated nonzeros=1302
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=92, cols=92
+              total: nonzeros=1128, allocated nonzeros=1408
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=80, cols=80
+              total: nonzeros=896, allocated nonzeros=1144
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=75, cols=75
+              total: nonzeros=967, allocated nonzeros=1253
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=84, cols=84
+              total: nonzeros=1092, allocated nonzeros=1274
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=92, cols=92
+              total: nonzeros=1244, allocated nonzeros=1504
               total number of mallocs used during MatSetValues calls =0
                 not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -132,7 +204,7 @@ SNES Object: 7 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=8
+      total number of linear solver iterations=6
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_2_) 7 MPI processes
@@ -177,11 +249,47 @@ SNES Object: 7 MPI processes
         linear system matrix = precond matrix:
         Mat Object: 7 MPI processes
           type: is
-          rows=1495, cols=1495
+          rows=1507, cols=1507
             Mat Object: (is_) 1 MPI processes
               type: seqaij
-              rows=246, cols=246
-              total: nonzeros=3624, allocated nonzeros=4092
+              rows=248, cols=248
+              total: nonzeros=3648, allocated nonzeros=4135
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=235, cols=235
+              total: nonzeros=3311, allocated nonzeros=3699
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=250, cols=250
+              total: nonzeros=3356, allocated nonzeros=3922
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=232, cols=232
+              total: nonzeros=3040, allocated nonzeros=3460
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=249, cols=249
+              total: nonzeros=3559, allocated nonzeros=3937
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=239, cols=239
+              total: nonzeros=3329, allocated nonzeros=3877
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+            Mat Object: (is_) 1 MPI processes
+              type: seqaij
+              rows=234, cols=234
+              total: nonzeros=3388, allocated nonzeros=3814
               total number of mallocs used during MatSetValues calls =0
                 not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -195,113 +303,5 @@ SNES Object: 7 MPI processes
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=1
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=32, cols=32
-              total: nonzeros=336, allocated nonzeros=427
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=87, cols=87
-              total: nonzeros=1119, allocated nonzeros=1302
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=235, cols=235
-              total: nonzeros=3311, allocated nonzeros=3699
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=36, cols=36
-              total: nonzeros=392, allocated nonzeros=528
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=92, cols=92
-              total: nonzeros=1128, allocated nonzeros=1419
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=250, cols=250
-              total: nonzeros=3356, allocated nonzeros=3934
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=38, cols=38
-              total: nonzeros=392, allocated nonzeros=564
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=82, cols=82
-              total: nonzeros=960, allocated nonzeros=1229
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=240, cols=240
-              total: nonzeros=3216, allocated nonzeros=3706
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=52, cols=52
-              total: nonzeros=608, allocated nonzeros=764
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=78, cols=78
-              total: nonzeros=964, allocated nonzeros=1288
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=238, cols=238
-              total: nonzeros=3464, allocated nonzeros=3848
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=32, cols=32
-              total: nonzeros=336, allocated nonzeros=420
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=83, cols=83
-              total: nonzeros=1063, allocated nonzeros=1216
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=228, cols=228
-              total: nonzeros=3088, allocated nonzeros=3536
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=38, cols=38
-              total: nonzeros=460, allocated nonzeros=606
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=90, cols=90
-              total: nonzeros=1260, allocated nonzeros=1489
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-            Mat Object: (is_) 1 MPI processes
-              type: seqaij
-              rows=238, cols=238
-              total: nonzeros=3436, allocated nonzeros=3905
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
 Number of SNES iterations = 1
 L_2 Error: < 1.0e-11

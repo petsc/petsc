@@ -326,10 +326,10 @@ int main(int argc,char **args)
     PetscDS         prob;
     DM              cdm = dm;
 
-    ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, 2, &fe);CHKERRQ(ierr); /* elasticity */
+    ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DEFAULT, &fe);CHKERRQ(ierr); /* elasticity */
     ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
-    ierr = PetscFECreateDefault(dm, dim-1, dim, PETSC_FALSE, NULL, -1, &feBd);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) feBd, "bc");CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(dm, dim-1, dim, PETSC_FALSE, NULL, PETSC_DEFAULT, &feBd);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) feBd, "deformation");CHKERRQ(ierr);
     /* FEM prob */
     ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);

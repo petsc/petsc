@@ -6363,7 +6363,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   DM              K;
   PetscSpace      P;
   PetscDualSpace  Q;
-  PetscInt        order;
+  PetscInt        order, quadPointsPerEdge;
   PetscBool       tensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
   PetscErrorCode  ierr;
 
@@ -6398,8 +6398,13 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   /* Create quadrature (with specified order if given) */
-  if (isSimplex) {ierr = PetscDTGaussJacobiQuadrature(dim, PetscMax(qorder > 0 ? qorder : order, 1), -1.0, 1.0, &q);CHKERRQ(ierr);}
-  else           {ierr = PetscDTGaussTensorQuadrature(dim, PetscMax(qorder > 0 ? qorder : order, 1), -1.0, 1.0, &q);CHKERRQ(ierr);}
+  qorder = qorder > 0 ? qorder : order;
+  ierr = PetscObjectOptionsBegin((PetscObject)*fem);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscfe_default_quadrature_order","Quadrature order is one less than quadture points per edge","PetscFECreateDefault",qorder,&qorder,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  quadPointsPerEdge = PetscMax(qorder + 1,1);
+  if (isSimplex) {ierr = PetscDTGaussJacobiQuadrature(dim, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);}
+  else           {ierr = PetscDTGaussTensorQuadrature(dim, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);}
   ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   PetscFunctionReturn(0);

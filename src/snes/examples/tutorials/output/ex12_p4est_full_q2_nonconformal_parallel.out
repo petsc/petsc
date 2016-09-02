@@ -1,15 +1,15 @@
-0 SNES Function norm 17.9891 
-    0 SNES Function norm 17.9891 
-    1 SNES Function norm 0.00013876 
-      0 SNES Function norm 0.00015405 
-      1 SNES Function norm 9.468e-10 
-        0 SNES Function norm 1.01741e-09 
+0 SNES Function norm 18.4477 
+    0 SNES Function norm 18.4477 
+    1 SNES Function norm 0.00014065 
+      0 SNES Function norm 0.000157282 
+      1 SNES Function norm 1.16149e-09 
+        0 SNES Function norm 1.32819e-09 
         1 SNES Function norm < 1.e-11
-      0 SNES Function norm 7.203e-10 
+      0 SNES Function norm 9.070e-10 
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.000336632 
-    1 SNES Function norm 2.76824e-09 
-  1 SNES Function norm 2.76824e-09 
+    0 SNES Function norm 0.00035994 
+    1 SNES Function norm 3.13678e-09 
+  1 SNES Function norm 3.13678e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 7 MPI processes
   type: fas
@@ -20,7 +20,7 @@ SNES Object: 7 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-      total number of linear solver iterations=34
+      total number of linear solver iterations=36
       total number of function evaluations=1
       SNESLineSearch Object: (fas_coarse_) 7 MPI processes
         type: basic
@@ -78,7 +78,7 @@ SNES Object: 7 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=82
+      total number of linear solver iterations=80
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_2_) 7 MPI processes
@@ -115,4 +115,4 @@ SNES Object: 7 MPI processes
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=1
 Number of SNES iterations = 1
-L_2 Error: 3.89236e-10
+L_2 Error: 5.16939e-10

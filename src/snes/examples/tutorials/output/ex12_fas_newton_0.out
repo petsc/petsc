@@ -1,31 +1,31 @@
-0 SNES Function norm 95.269 
-    0 SNES Function norm 95.269 
-    1 SNES Function norm 27.7484 
-      0 SNES Function norm 7.70084 
-      1 SNES Function norm 1.52809 
-      2 SNES Function norm 0.107828 
-      3 SNES Function norm 0.0006364 
-      4 SNES Function norm 2.24612e-08 
-    0 SNES Function norm 27.9113 
-    1 SNES Function norm 7.8398 
-  1 SNES Function norm 7.8398 
-    0 SNES Function norm 7.8398 
-    1 SNES Function norm 1.63598 
-      0 SNES Function norm 0.168874 
-      1 SNES Function norm 0.00166841 
-      2 SNES Function norm 1.64592e-07 
+0 SNES Function norm 95.2794 
+    0 SNES Function norm 95.2794 
+    1 SNES Function norm 27.7545 
+      0 SNES Function norm 7.72252 
+      1 SNES Function norm 1.53615 
+      2 SNES Function norm 0.109054 
+      3 SNES Function norm 0.000651896 
+      4 SNES Function norm 2.36055e-08 
+    0 SNES Function norm 27.9148 
+    1 SNES Function norm 7.84699 
+  1 SNES Function norm 7.84699 
+    0 SNES Function norm 7.84699 
+    1 SNES Function norm 1.64247 
+      0 SNES Function norm 0.168478 
+      1 SNES Function norm 0.00165933 
+      2 SNES Function norm 1.62594e-07 
       3 SNES Function norm < 1.e-11
-    0 SNES Function norm 1.69046 
-    1 SNES Function norm 0.162185 
-  2 SNES Function norm 0.162185 
-    0 SNES Function norm 0.162185 
-    1 SNES Function norm 0.00243368 
-      0 SNES Function norm 0.000406884 
-      1 SNES Function norm 9.59209e-09 
+    0 SNES Function norm 1.69667 
+    1 SNES Function norm 0.163849 
+  2 SNES Function norm 0.163849 
+    0 SNES Function norm 0.163849 
+    1 SNES Function norm 0.00249421 
+      0 SNES Function norm 0.000417676 
+      1 SNES Function norm 1.00749e-08 
       2 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.00258768 
-    1 SNES Function norm 5.35729e-07 
-  3 SNES Function norm 5.35729e-07 
+    0 SNES Function norm 0.00265254 
+    1 SNES Function norm 5.66326e-07 
+  3 SNES Function norm 5.66326e-07 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 SNES Object: 1 MPI processes
   type: fas
@@ -53,6 +53,8 @@ SNES Object: 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 1 MPI processes
         type: svd
+          SVD: All singular values smaller than 1e-12 treated as zero
+          SVD: Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
@@ -85,6 +87,8 @@ SNES Object: 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 1 MPI processes
         type: svd
+          SVD: All singular values smaller than 1e-12 treated as zero
+          SVD: Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
@@ -104,4 +108,4 @@ SNES Object: 1 MPI processes
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=1
 Number of SNES iterations = 3
-L_2 Error: 0.0252141
+L_2 Error: 0.0199796
