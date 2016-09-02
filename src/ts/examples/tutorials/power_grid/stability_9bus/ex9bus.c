@@ -492,10 +492,10 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
     VR    = xgen[idx+8];
 
     /* Generator differential equations */
-    fgen[idx]   = (Eqp + (Xd[i] - Xdp[i])*Id - Efd)/Td0p[i];
-    fgen[idx+1] = (Edp - (Xq[i] - Xqp[i])*Iq)/Tq0p[i];
-    fgen[idx+2] = -w + w_s;
-    fgen[idx+3] = (-TM[i] + Edp*Id + Eqp*Iq + (Xqp[i] - Xdp[i])*Id*Iq + D[i]*(w - w_s))/M[i];
+    fgen[idx]   = (-Eqp - (Xd[i] - Xdp[i])*Id + Efd)/Td0p[i];
+    fgen[idx+1] = (-Edp + (Xq[i] - Xqp[i])*Iq)/Tq0p[i];
+    fgen[idx+2] = w - w_s;
+    fgen[idx+3] = (TM[i] - Edp*Id - Eqp*Iq - (Xqp[i] - Xdp[i])*Id*Iq - D[i]*(w - w_s))/M[i];
 
     Vr = xnet[2*gbus[i]]; /* Real part of generator terminal voltage */
     Vi = xnet[2*gbus[i]+1]; /* Imaginary part of the generator terminal voltage */
@@ -523,11 +523,11 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
     SE = k1[i]*PetscExpScalar(k2[i]*Efd);
 
     /* Exciter differential equations */
-    fgen[idx+6] = (KE[i]*Efd + SE - VR)/TE[i];
-    fgen[idx+7] = (RF - KF[i]*Efd/TF[i])/TF[i];
+    fgen[idx+6] = (-KE[i]*Efd - SE + VR)/TE[i];
+    fgen[idx+7] = (-RF + KF[i]*Efd/TF[i])/TF[i];
     if(VRatmax[i]) fgen[idx+8] = VR - VRMAX[i];
     else if(VRatmin[i]) fgen[idx+8] = VRMIN[i] - VR;
-    else fgen[idx+8] = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i];
+    else fgen[idx+8] = (-VR + KA[i]*RF - KA[i]*KF[i]*Efd/TF[i] + KA[i]*(Vref[i] - Vm))/TA[i];
 
     idx = idx + 9;
   }
@@ -578,7 +578,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t, Vec X, Vec F, void *ctx)
   PetscFunctionReturn(0);
 }
 
-/* \dot{x} - f(x,y)
+/* f(x,y) - \dot{x}
      g(x,y) = 0
  */
 #undef __FUNCT__
@@ -595,13 +595,13 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
-    f[9*i]   += xdot[9*i];
-    f[9*i+1] += xdot[9*i+1];
-    f[9*i+2] += xdot[9*i+2];
-    f[9*i+3] += xdot[9*i+3];
-    f[9*i+6] += xdot[9*i+6];
-    f[9*i+7] += xdot[9*i+7];
-    f[9*i+8] += xdot[9*i+8];
+    f[9*i]   -= xdot[9*i];
+    f[9*i+1] -= xdot[9*i+1];
+    f[9*i+2] -= xdot[9*i+2];
+    f[9*i+3] -= xdot[9*i+3];
+    f[9*i+6] -= xdot[9*i+6];
+    f[9*i+7] -= xdot[9*i+7];
+    f[9*i+8] -= xdot[9*i+8];
   }
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
@@ -715,7 +715,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 }
 
 /*
-   J = [-df_dx, -df_dy
+   J = [df_dx, df_dy
         dg_dx, dg_dy]
 */
 #undef __FUNCT__
@@ -766,29 +766,29 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     Iq    = xgen[idx+5];
     Efd   = xgen[idx+6];
 
-    /*    fgen[idx]   = (Eqp + (Xd[i] - Xdp[i])*Id - Efd)/Td0p[i]; */
+    /*    fgen[idx]   = (-Eqp - (Xd[i] - Xdp[i])*Id + Efd)/Td0p[i]; */
     row[0] = idx;
     col[0] = idx;           col[1] = idx+4;          col[2] = idx+6;
-    val[0] = 1/ Td0p[i]; val[1] = (Xd[i] - Xdp[i])/ Td0p[i]; val[2] = -1/Td0p[i];
+    val[0] = -1/ Td0p[i]; val[1] = -(Xd[i] - Xdp[i])/ Td0p[i]; val[2] = 1/Td0p[i];
 
     ierr = MatSetValues(J,1,row,3,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
-    /*    fgen[idx+1] = (Edp - (Xq[i] - Xqp[i])*Iq)/Tq0p[i]; */
+    /*    fgen[idx+1] = (-Edp + (Xq[i] - Xqp[i])*Iq)/Tq0p[i]; */
     row[0] = idx + 1;
     col[0] = idx + 1;       col[1] = idx+5;
-    val[0] = 1/Tq0p[i]; val[1] = -(Xq[i] - Xqp[i])/Tq0p[i];
+    val[0] = -1/Tq0p[i]; val[1] = (Xq[i] - Xqp[i])/Tq0p[i];
     ierr   = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
-    /*    fgen[idx+2] = - w + w_s; */
+    /*    fgen[idx+2] = w - w_s; */
     row[0] = idx + 2;
     col[0] = idx + 2; col[1] = idx + 3;
-    val[0] = 0;       val[1] = -1;
+    val[0] = 0;       val[1] = 1;
     ierr   = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
-    /*    fgen[idx+3] = (-TM[i] + Edp*Id + Eqp*Iq + (Xqp[i] - Xdp[i])*Id*Iq + D[i]*(w - w_s))/M[i]; */
+    /*    fgen[idx+3] = (TM[i] - Edp*Id - Eqp*Iq - (Xqp[i] - Xdp[i])*Id*Iq - D[i]*(w - w_s))/M[i]; */
     row[0] = idx + 3;
     col[0] = idx; col[1] = idx + 1; col[2] = idx + 3;       col[3] = idx + 4;                  col[4] = idx + 5;
-    val[0] = Iq/M[i];  val[1] = Id/M[i];      val[2] = D[i]/M[i]; val[3] = (Edp + (Xqp[i]-Xdp[i])*Iq)/M[i]; val[4] = (Eqp + (Xqp[i] - Xdp[i])*Id)/M[i];
+    val[0] = -Iq/M[i];  val[1] = -Id/M[i];      val[2] = -D[i]/M[i]; val[3] = (-Edp - (Xqp[i]-Xdp[i])*Iq)/M[i]; val[4] = (-Eqp - (Xqp[i] - Xdp[i])*Id)/M[i];
     ierr   = MatSetValues(J,1,row,5,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
     Vr   = xnet[2*gbus[i]]; /* Real part of generator terminal voltage */
@@ -842,25 +842,25 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
 
     Vm = PetscSqrtScalar(Vd*Vd + Vq*Vq);
 
-    /*    fgen[idx+6] = (KE[i]*Efd + SE - VR)/TE[i]; */
+    /*    fgen[idx+6] = (-KE[i]*Efd - SE + VR)/TE[i]; */
     /*    SE  = k1[i]*PetscExpScalar(k2[i]*Efd); */
 
     dSE_dEfd = k1[i]*k2[i]*PetscExpScalar(k2[i]*Efd);
 
     row[0] = idx + 6;
     col[0] = idx + 6;                     col[1] = idx + 8;
-    val[0] = (KE[i] + dSE_dEfd)/TE[i];  val[1] = -1/TE[i];
+    val[0] = (-KE[i] - dSE_dEfd)/TE[i];  val[1] = 1/TE[i];
     ierr   = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
     /* Exciter differential equations */
 
-    /*    fgen[idx+7] = (RF - KF[i]*Efd/TF[i])/TF[i]; */
+    /*    fgen[idx+7] = (-RF + KF[i]*Efd/TF[i])/TF[i]; */
     row[0] = idx + 7;
     col[0] = idx + 6;       col[1] = idx + 7;
-    val[0] = (-KF[i]/TF[i])/TF[i];  val[1] = 1/TF[i];
+    val[0] = (KF[i]/TF[i])/TF[i];  val[1] = -1/TF[i];
     ierr   = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
-    /*    fgen[idx+8] = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i]; */
+    /*    fgen[idx+8] = (-VR + KA[i]*RF - KA[i]*KF[i]*Efd/TF[i] + KA[i]*(Vref[i] - Vm))/TA[i]; */
     /* Vm = (Vd^2 + Vq^2)^0.5; */
 
     row[0] = idx + 8;
@@ -876,9 +876,9 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
       dVm_dVi    = dVm_dVd*dVd_dVi + dVm_dVq*dVq_dVi;
       row[0]     = idx + 8;
       col[0]     = idx + 6;           col[1] = idx + 7; col[2] = idx + 8;
-      val[0]     = (KA[i]*KF[i]/TF[i])/TA[i]; val[1] = -KA[i]/TA[i];  val[2] = 1/TA[i];
+      val[0]     = -(KA[i]*KF[i]/TF[i])/TA[i]; val[1] = KA[i]/TA[i];  val[2] = -1/TA[i];
       col[3]     = net_start + 2*gbus[i]; col[4] = net_start + 2*gbus[i]+1;
-      val[3]     = KA[i]*dVm_dVr/TA[i];         val[4] = KA[i]*dVm_dVi/TA[i];
+      val[3]     = -KA[i]*dVm_dVr/TA[i];         val[4] = -KA[i]*dVm_dVi/TA[i];
       ierr       = MatSetValues(J,1,row,5,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
 
@@ -999,7 +999,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 }
 
 /*
-   J = [a*I-df_dx, -df_dy
+   J = [df_dx-aI, df_dy
         dg_dx, dg_dy]
 */
 
@@ -1013,6 +1013,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat 
 
   PetscFunctionBegin;
   user->t = t;
+  atmp *= -1;
 
   ierr = RHSJacobian(ts,t,X,A,B,user);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
