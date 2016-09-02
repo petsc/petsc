@@ -1,7 +1,8 @@
--ts_type cn
+#-ts_type cn
 #-ts_arkimex_type 2e
+-ts_adapt_type none
 -ts_exact_final_time MATCHSTEP
--ts_theta_endpoint
+#-ts_theta_endpoint
 #-ts_monitor
 #-snes_type ls
 -snes_linesearch_type basic
