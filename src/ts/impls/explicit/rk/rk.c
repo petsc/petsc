@@ -478,6 +478,7 @@ static PetscErrorCode TSRollBack_RK(TS ts)
   }
   for (j=0; j<s; j++) w[j] = -h*b[j];
   ierr = VecMAXPY(ts->vec_sol,s,w,YdotRHS);CHKERRQ(ierr);
+  ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
