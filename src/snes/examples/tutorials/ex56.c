@@ -173,16 +173,18 @@ int main(int argc,char **args)
   PetscLogStage  stage[7];
   PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
   Vec            xx,bb;
-  PetscInt       iter,i,ne=2,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[5];
+  PetscInt       iter,i,ne=2,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7];
   DM             dm,distdm,newdm;
   PetscBool      flg;
   char           convType[256];
-  PetscReal      Lx,cnorm[5];
-  const char * const options[5] = {"-ex56_dm_refine 0",
+  PetscReal      Lx,cnorm[7];
+  const char * const options[7] = {"-ex56_dm_refine 0",
                                    "-ex56_dm_refine 1",
                                    "-ex56_dm_refine 2",
                                    "-ex56_dm_refine 3",
-                                   "-ex56_dm_refine 4"};
+                                   "-ex56_dm_refine 4",
+                                   "-ex56_dm_refine 5",
+                                   "-ex56_dm_refine 6"};
   PetscFunctionBeginUser;
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
@@ -198,7 +200,7 @@ int main(int argc,char **args)
     Lx = 1.; /* or ne for rod */
     max_conv_its = 3;
     ierr = PetscOptionsInt("-max_conv_its","Number of iterations in convergence study","",max_conv_its,&max_conv_its,NULL);CHKERRQ(ierr);
-    if (max_conv_its<=0 || max_conv_its>5) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
+    if (max_conv_its<=0 || max_conv_its>7) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
     ierr = PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);

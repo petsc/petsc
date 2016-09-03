@@ -41,22 +41,22 @@ Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
     0 KSP Residual norm 1712.52 
     1 KSP Residual norm 397.624 
     2 KSP Residual norm 163.975 
-    3 KSP Residual norm 90.4088 
-    4 KSP Residual norm 42.8299 
-    5 KSP Residual norm 15.9056 
-    6 KSP Residual norm 5.38316 
-    7 KSP Residual norm 1.94115 
-    8 KSP Residual norm 0.867063 
-    9 KSP Residual norm 0.474749 
-   10 KSP Residual norm 0.233479 
-   11 KSP Residual norm 0.0942552 
-   12 KSP Residual norm 0.0372791 
-   13 KSP Residual norm 0.0143292 
-   14 KSP Residual norm 0.00516308 
-   15 KSP Residual norm 0.00197682 
-   16 KSP Residual norm 0.000863967 
+    3 KSP Residual norm 90.4085 
+    4 KSP Residual norm 42.8298 
+    5 KSP Residual norm 15.9055 
+    6 KSP Residual norm 5.38312 
+    7 KSP Residual norm 1.94113 
+    8 KSP Residual norm 0.867055 
+    9 KSP Residual norm 0.474744 
+   10 KSP Residual norm 0.233475 
+   11 KSP Residual norm 0.0942533 
+   12 KSP Residual norm 0.0372783 
+   13 KSP Residual norm 0.0143289 
+   14 KSP Residual norm 0.00516297 
+   15 KSP Residual norm 0.00197678 
+   16 KSP Residual norm 0.000863951 
   Linear solve converged due to CONVERGED_RTOL iterations 16
-  1 SNES Function norm 4.56443e-07 
+  1 SNES Function norm 4.56433e-07 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 [0]main 1) N=1944/300, max displacement = 164.461, diff = 3.16303
 [0]main 2) N=13872/1944, max displacement = 167.223, diff = 2.76254
