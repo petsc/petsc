@@ -701,11 +701,11 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
 
-    PetscViewerASCIIPrintf(viewer,"Matrix object: \n");
-    PetscViewerASCIIPushTab(viewer);    /* push0 */
-    PetscViewerASCIIPrintf(viewer, "type=nest, rows=%d, cols=%d \n",bA->nr,bA->nc);
+    ierr = PetscViewerASCIIPrintf(viewer,"Matrix object: \n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "type=nest, rows=%D, cols=%D \n",bA->nr,bA->nc);CHKERRQ(ierr);
 
-    PetscViewerASCIIPrintf(viewer,"MatNest structure: \n");
+    ierr = PetscViewerASCIIPrintf(viewer,"MatNest structure: \n");CHKERRQ(ierr);
     for (i=0; i<bA->nr; i++) {
       for (j=0; j<bA->nc; j++) {
         MatType   type;
@@ -714,7 +714,7 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
         PetscBool isNest = PETSC_FALSE;
 
         if (!bA->m[i][j]) {
-          PetscViewerASCIIPrintf(viewer, "(%D,%D) : NULL \n",i,j);
+          CHKERRQ(ierr);PetscViewerASCIIPrintf(viewer, "(%D,%D) : NULL \n",i,j);CHKERRQ(ierr);
           continue;
         }
         ierr = MatGetSize(bA->m[i][j],&NR,&NC);CHKERRQ(ierr);
@@ -732,7 +732,7 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
         }
       }
     }
-    PetscViewerASCIIPopTab(viewer);    /* pop0 */
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);    /* pop0 */
   }
   PetscFunctionReturn(0);
 }
