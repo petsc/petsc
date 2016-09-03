@@ -14,7 +14,7 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneg,PetscInt *nzero,Petsc
 
   PetscFunctionBegin;
   if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for bs: %D >1 yet",bs);
-  if (F->errortype==MAT_FACTOR_NUMERIC_ZEROPIVOT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatFactor fails with numeric zeropivot");
+  if (F->factorerrortype==MAT_FACTOR_NUMERIC_ZEROPIVOT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatFactor fails with numeric zeropivot");
 
   nneg_tmp = 0; npos_tmp = 0;
   for (i=0; i<mbs; i++) {
@@ -683,7 +683,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
     ierr = PetscMemcpy(diag,dk,bs2*sizeof(MatScalar));CHKERRQ(ierr);
 
     ierr = PetscKernel_A_gets_inverse_A(bs,diag,pivots,work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
@@ -814,7 +814,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
     ierr = PetscMemcpy(diag,dk,bs2*sizeof(MatScalar));CHKERRQ(ierr);
 
     ierr = PetscKernel_A_gets_inverse_A(bs,diag,pivots,work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
@@ -992,7 +992,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
     diag = ba+k*4;
     ierr = PetscMemcpy(diag,dk,4*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
@@ -1133,7 +1133,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
     diag = ba+k*4;
     ierr = PetscMemcpy(diag,dk,4*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

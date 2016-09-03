@@ -1540,7 +1540,7 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
 
   ierr = VecDestroy(&bb1);CHKERRQ(ierr);
 
-  matin->errortype = mat->A->errortype;
+  matin->factorerrortype = mat->A->factorerrortype;
   PetscFunctionReturn(0);
 }
 
@@ -2445,7 +2445,7 @@ PetscErrorCode  MatInvertBlockDiagonal_MPIAIJ(Mat A,const PetscScalar **values)
 
   PetscFunctionBegin;
   ierr = MatInvertBlockDiagonal(a->A,values);CHKERRQ(ierr);
-  A->errortype = a->A->errortype;
+  A->factorerrortype = a->A->factorerrortype;
   PetscFunctionReturn(0);
 }
 

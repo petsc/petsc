@@ -403,7 +403,9 @@ struct _p_Mat {
   PetscReal              checksymmetrytol;
   Mat_Redundant          *redundant;        /* used by MatCreateRedundantMatrix() */
   PetscBool              erroriffailure;    /* Generate an error if detected (for example a zero pivot) instead of returning */
-  MatFactorError         errortype;         /* type of error */
+  MatFactorError         factorerrortype;               /* type of error in factorization */
+  PetscReal              factorerror_zeropivot_value;   /* If numerical zero pivot was detected this is the computed value */
+  PetscInt               factorerror_zeropivot_row;     /* Row where zero pivot was detected */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
@@ -671,7 +673,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const Mat
   if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     if (!mat->erroriffailure) {
       ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
-      fact->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      fact->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      fact->factorerror_zeropivot_value = PetscAbsScalar(sctx->pv);
+      fact->factorerror_zeropivot_row   = row;
     } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);

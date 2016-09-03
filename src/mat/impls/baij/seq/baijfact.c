@@ -102,7 +102,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *inf
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
    
     ierr = PetscKernel_A_gets_inverse_A_2(pv,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) B->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
@@ -218,7 +218,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const Ma
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
    
     ierr = PetscKernel_A_gets_inverse_A_2(pv,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) B->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
     /*
@@ -324,7 +324,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B,Mat A,const MatFactorI
     /* invert diagonal block */
     w    = ba + 4*diag_offset[i];
     ierr = PetscKernel_A_gets_inverse_A_2(w,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -420,7 +420,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C,Mat A,
     /* invert diagonal block */
     w = ba + 4*diag_offset[i];
     ierr = PetscKernel_A_gets_inverse_A_2(w,shift, allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -1738,7 +1738,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     batmp = ba + bs2*bdiag[i];
 
     ierr  = PetscKernel_A_gets_inverse_A(bs,batmp,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) B->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) B->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   } /* for (i=0; i<mbs; i++) */
   ierr = PetscFree3(v_work,multiplier,v_pivots);CHKERRQ(ierr);
 
