@@ -2597,6 +2597,7 @@ PETSC_EXTERN PetscErrorCode PetscGetProgramName(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscSetProgramName(const char[]);
 PETSC_EXTERN PetscErrorCode PetscGetDate(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscGetVersion(char[], size_t);
+PETSC_EXTERN PetscErrorCode PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode PetscSortInt(PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
