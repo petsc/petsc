@@ -251,7 +251,6 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   nfc = 0;
   nec = 0;
   for (i=0;i<graph->ncc;i++) {
-    PetscInt repdof = graph->queue[graph->cptr[i]];
     if (mark[i] == 2) {
       if (FacesIS) {
         ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_USE_POINTER,&ISForFaces[nfc]);CHKERRQ(ierr);
