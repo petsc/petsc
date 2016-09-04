@@ -990,7 +990,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
       ierr = PetscKernel_A_gets_inverse_A_4(w,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else {
       ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
@@ -1437,7 +1437,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
       ierr = PetscKernel_A_gets_inverse_A_4(w,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else {
       ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
@@ -1884,7 +1884,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
       ierr = PetscKernel_A_gets_inverse_A_4(w,shift,allowzeropivot,,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else {
       ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
