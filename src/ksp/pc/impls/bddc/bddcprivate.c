@@ -159,7 +159,6 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = MatGetLocalSize(G,&Le,&Lv);CHKERRQ(ierr);
 
   /* Sanity checks */
-  if (!order) SETERRQ(comm,PETSC_ERR_SUP,"Variable order not yet implemented");
   if (!order && !conforming) SETERRQ(comm,PETSC_ERR_SUP,"Variable order and non-conforming spaces are not supported at the same time");
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
   if (!ismpiaij) SETERRQ1(comm,PETSC_ERR_SUP,"Cannot generate Nedelec support with discrete gradient of type %s. Please use MPIAIJ",((PetscObject)G)->type_name);
@@ -254,17 +253,28 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = ISLocalToGlobalMappingRestoreInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
   cum  = 0;
   ierr = MatGetRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(lGe,&vals);CHKERRQ(ierr);
   for (i=0;i<ne;i++) {
-    if (!marks[i] || (marks[i] == 1 && !PetscBTLookup(btb,i))) { /* eliminate rows corresponding to edge dofs belonging to coarse faces */
+    /* eliminate rows corresponding to edge dofs belonging to coarse faces */
+    if (!marks[i] || (marks[i] == 1 && !PetscBTLookup(btb,i))) {
       marks[cum++] = i;
-    } else if (!conforming && ii[i+1]-ii[i] != order + 1) { /* set badly connected edge dofs as primal */
+      continue;
+    }
+    /* set badly connected edge dofs as primal */
+    if (!conforming && ii[i+1]-ii[i] != order + 1) {
       marks[cum++] = i;
       ierr = PetscBTSet(bte,i);CHKERRQ(ierr);
       for (j=ii[i];j<ii[i+1];j++) {
         ierr = PetscBTSet(btv,jj[j]);CHKERRQ(ierr);
       }
     }
+    /* We assume the order on the element edge is ii[i+1]-ii[i]-1 */
+    if (!order && ii[i+1] != ii[i]) {
+      PetscScalar val = 1./(ii[i+1]-ii[i]-1);
+      for (j=ii[i];j<ii[i+1];j++) vals[j] = val;
+    }
   }
+  ierr = MatSeqAIJRestoreArray(lGe,&vals);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = MatZeroRows(lGe,cum,marks,0.,NULL,NULL);CHKERRQ(ierr);
   /* identify splitpoints and corner candidates: TODO variable order */
@@ -276,14 +286,24 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     ierr = MatView(lGt,NULL);CHKERRQ(ierr);
   }
   ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(lGt,&vals);CHKERRQ(ierr);
   for (i=0;i<nv;i++) {
+    PetscInt ord = order, test = ii[i+1]-ii[i];
+    if (!order) {
+      PetscReal vorder = 0.;
+
+      for (j=ii[i];j<ii[i+1];j++) vorder += PetscRealPart(vals[j]);
+      test = PetscFloorReal(vorder+10.*PETSC_SQRT_MACHINE_EPSILON);
+      if (vorder-test > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected value for vorder: %g (%d)",vorder,test);
+      ord  = 1;
+    }
 #if defined(PETSC_USE_DEBUG)
-    if ((ii[i+1]-ii[i])%order) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of edge dofs %d connected with nodal dof %d with order %d",ii[i+1]-ii[i],i,order);
+    if (test%ord) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of edge dofs %d connected with nodal dof %d with order %d",test,i,ord);
 #endif
-    if (ii[i+1]-ii[i] >= 3*order) { /* splitpoints */
+    if (test >= 3*ord) { /* splitpoints */
       if (print) PetscPrintf(PETSC_COMM_SELF,"SPLITPOINT %d\n",i);
       ierr = PetscBTSet(btv,i);CHKERRQ(ierr);
-    } else if (ii[i+1]-ii[i] == order) {
+    } else if (test == ord) {
       if (order == 1) {
         if (print) PetscPrintf(PETSC_COMM_SELF,"ENDPOINT %d\n",i);
         ierr = PetscBTSet(btv,i);CHKERRQ(ierr);
@@ -293,6 +313,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       }
     }
   }
+  ierr = MatSeqAIJRestoreArray(lGt,&vals);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = MatDestroy(&lGt);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&btb);CHKERRQ(ierr);
