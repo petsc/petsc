@@ -979,6 +979,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       } else {
         ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
       }
+      ierr = MatSetErrorIfFailure(A,PETSC_TRUE);CHKERRQ(ierr);
+
       /* subsets ordered last */
       ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,n_I,1,&is_schur);CHKERRQ(ierr);
       ierr = MatFactorSetSchurIS(F,is_schur);CHKERRQ(ierr);
