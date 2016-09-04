@@ -242,7 +242,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 
    Notes: The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
           For higher order discretizations, the dofs on the element edges should be consecutively numbered.
-          For variable order spaces, order should be zero.
+          For variable order spaces, order should be set to zero.
           The discrete gradient matrix is modified by PCBDDC.
 
 .seealso: PCBDDC
