@@ -413,8 +413,9 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)lG,"econn_");CHKERRQ(ierr);
   ierr = MatMatMultSymbolic(lG,lGt,PETSC_DEFAULT,&conn);CHKERRQ(ierr);
   ierr = MatGetRowIJ(conn,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
-  ierr = PCBDDCSetLocalAdjacencyGraph(pc,ne,ii,jj,PETSC_USE_POINTER);CHKERRQ(ierr);
-
+  if (done && i && ii && jj) { /* when lG is empty, don't pass pointers */
+    ierr = PCBDDCSetLocalAdjacencyGraph(pc,ne,ii,jj,PETSC_USE_POINTER);CHKERRQ(ierr);
+  }
   /* Analyze interface for edge dofs */
   ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
   if (print) { ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,5,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); }
