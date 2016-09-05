@@ -10,6 +10,7 @@
 ! -----------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petscsysdef.h>
       use petscsys
       implicit none
 
@@ -24,19 +25,22 @@
 !     We can now change the communicator universe for PETSc
 
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
-      call MPI_Comm_split(MPI_COMM_WORLD,mod(rank,2),0,                 &
-     &     PETSC_COMM_WORLD,ierr)
+      call MPI_Comm_split(MPI_COMM_WORLD,mod(rank,2),0,PETSC_COMM_WORLD,ierr)
 
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         return
+      endif
 
 !     The following MPI calls return the number of processes being used
 !     and the rank of this process in the group.
 
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRQ(ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRQ(ierr)
 
 
 !     Here we would like to print only one message that represents all

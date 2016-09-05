@@ -16,7 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c ex9.c \
                 ex56.c ex58.c ex59.c \
                 ex62.c ex70.c ex77.c\
                 ex47cu.cu
-EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex40f90.F90 ex74f.F90
+EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex40f90.F90
 EXAMPLESCH	 =
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
@@ -233,9 +233,6 @@ ex70: ex70.o  chkopts
 ex73f90t: ex73f90t.o  chkopts
 	-${FLINKER} -o ex73f90t ex73f90t.o ${PETSC_SNES_LIB}
 	${RM} ex73f90t.o
-ex74f: ex74f.o  chkopts
-	-${FLINKER} -o ex74f ex74f.o ${PETSC_SNES_LIB}
-#	${RM} ex74f.o
 ex77: ex77.o  chkopts
 	-${CLINKER} -o ex77 ex77.o ${PETSC_SNES_LIB}
 	${RM} ex77.o

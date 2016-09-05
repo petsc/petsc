@@ -34,8 +34,7 @@ contains
   !
   ! The standard Forward Euler time-stepping method.
   !
-  recursive subroutine forw_euler(t,dt,ib1,ibn,jb1,jbn,kb1,kbn,&
-                                     imax,jmax,kmax,neq,y,dfdt)
+  recursive subroutine forw_euler(t,dt,ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,neq,y,dfdt)
     PetscReal, intent(in) :: t,dt
     PetscInt, intent(in) :: ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,neq
     PetscReal, dimension(neq,ib1:ibn,jb1:jbn,kb1:kbn), intent(inout) :: y
@@ -77,7 +76,7 @@ contains
     PetscReal, intent(inout), dimension(:,1-stw:,1-stw:,1-stw:) :: f
     PetscErrorCode                                                :: ierr
     !
-    call DMDAVecGetArrayF90(da,vec,array,ierr) 
+    call DMDAVecGetArrayF90(da,vec,array,ierr);CHKERRQ(ierr); 
     call transform_petsc_us(array,f,stw)
   end subroutine petsc_to_local
   subroutine transform_petsc_us(array,f,stw)
@@ -100,7 +99,7 @@ contains
     PetscReal,intent(inout),dimension(:,1-stw:,1-stw:,1-stw:)  :: f
     PetscErrorCode                                        :: ierr
     call transform_us_petsc(array,f,stw)
-    call DMDAVecRestoreArrayF90(da,vec,array,ierr)
+    call DMDAVecRestoreArrayF90(da,vec,array,ierr);CHKERRQ(ierr); 
   end subroutine local_to_petsc
   subroutine transform_us_petsc(array,f,stw)
     !Note: this assumed shape-array is what does the "coordinate transformation"

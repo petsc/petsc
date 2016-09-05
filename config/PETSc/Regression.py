@@ -60,6 +60,8 @@ class Configure(config.base.Configure):
           jobs.append('Fortran_NotSingle')
         if self.compilers.fortranIsF90:
           rjobs.append('F90')
+          if self.libraryOptions.useThreadSafety:
+            jobs.append('F90_Threadsafety')
           if not self.scalartypes.precision == 'single':
             jobs.append('F90_NotSingle')
           if self.scalartypes.scalartype.lower() == 'complex':
