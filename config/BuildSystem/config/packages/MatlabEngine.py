@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.PACKAGE      = 'MATLAB_ENGINE'
     self.package      = 'matlab-engine'
-    self.complex      = 0
     self.precisions   = ['double']
     self.hastests     = 1
     return
