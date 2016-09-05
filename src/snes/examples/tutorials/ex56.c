@@ -1,9 +1,10 @@
 static char help[] = "3D, tri-linear quadrilateral (Q1), displacement finite element formulation\n\
 of linear elasticity.  E=1.0, nu=1/3.\n\
 Unit cube domain with Dirichlet boundary condition at x=0.\n\
-Load of [1, 2, 3] at x=1. (not a true uniform load).\n\
-  -ne <size>      : number of (square) quadrilateral elements in each dimension\n\
-  -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
+Load of [1, -z, y] at x=1.\n\
+  -cells <n1,n2,n3> : number of cells in each dimension\n               \
+  -alpha <v>        : scaling of material coeficient in embedded sphere\n\
+  -lx <v>           : Domain length in x (-.5-.5)^2 in y & z\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
@@ -21,9 +22,9 @@ void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                 PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 {
-  f0[0] = 1; /* x direction pull */
-  f0[1] = -x[2]*1; /* add a twist around x-axis */
-  f0[2] =  x[1]*1;
+  f0[0] = 1;     /* x direction pull */
+  f0[1] = -x[2]; /* add a twist around x-axis */
+  f0[2] =  x[1];
 }
 
 #undef __FUNCT__
@@ -173,11 +174,11 @@ int main(int argc,char **args)
   PetscLogStage  stage[7];
   PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
   Vec            xx,bb;
-  PetscInt       iter,i,ne=2,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7];
+  PetscInt       iter,i,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7];
   DM             dm,distdm,newdm;
   PetscBool      flg;
   char           convType[256];
-  PetscReal      Lx,cnorm[7];
+  PetscReal      Lx,mdisp[7],err[7];
   const char * const options[7] = {"-ex56_dm_refine 0",
                                    "-ex56_dm_refine 1",
                                    "-ex56_dm_refine 2",
@@ -193,10 +194,9 @@ int main(int argc,char **args)
   /* options */
   ierr = PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsInt("-ne","number of elements in each direction","",ne,&ne,&flg);CHKERRQ(ierr);
-    if (flg) {
-      for (i=0; i<dim; i++) cells[i] = ne; /* this can be generalized */
-    }
+    i = 3;
+    ierr = PetscOptionsIntArray("-cells", "Number of (flux tube) processor in each dimension", "ex56.c", cells, &i, NULL);CHKERRQ(ierr);
+
     Lx = 1.; /* or ne for rod */
     max_conv_its = 3;
     ierr = PetscOptionsInt("-max_conv_its","Number of iterations in convergence study","",max_conv_its,&max_conv_its,NULL);CHKERRQ(ierr);
@@ -400,7 +400,7 @@ int main(int argc,char **args)
     ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
     ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = VecNorm(xx,NORM_INFINITY,&cnorm[iter]);CHKERRQ(ierr);
+    ierr = VecNorm(xx,NORM_INFINITY,&mdisp[iter]);CHKERRQ(ierr);
     ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
     {
       PetscViewer       viewer = NULL;
@@ -414,7 +414,6 @@ int main(int argc,char **args)
       }
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
-    /* DMView(dm,PETSC_VIEWER_STDOUT_WORLD); */
     /* Free work space */
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     ierr = SNESDestroy(&snes);CHKERRQ(ierr);
@@ -423,8 +422,12 @@ int main(int argc,char **args)
     ierr = MatDestroy(&Amat);CHKERRQ(ierr);
   }
 
+  err[0] = mdisp[0] - 171.058;
   for (iter=1 ; iter<max_conv_its ; iter++) {
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d) N=%D/%D, max displacement = %g, diff = %g\n",rank,__FUNCT__,iter,local_sizes[iter],local_sizes[iter-1],cnorm[iter],cnorm[iter]-cnorm[iter-1]);
+    err[iter] = mdisp[iter] - 171.058; /* error with what I think is the exact solution */
+    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d) N=%D/%D, max displacement = %g, disp diff = %g, rate = %g\n",
+                rank,__FUNCT__,iter,local_sizes[iter],local_sizes[iter-1],mdisp[iter],
+                mdisp[iter]-mdisp[iter-1],log(err[iter-1]/err[iter])/log(2.));
   }
 
   ierr = PetscFinalize();
