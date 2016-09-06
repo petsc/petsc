@@ -39,6 +39,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
     delta = 2.0 / (gnorm*gnorm);
   }
   ierr = MatLMVMSetDelta(blmP->M,delta);CHKERRQ(ierr);
+  ierr = MatLMVMReset(blmP->M);CHKERRQ(ierr);
 
   /* Set counter for gradient/reset steps */
   blmP->grad = 0;
