@@ -1504,7 +1504,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC builds its own KSP for the Dirichlet problem */
-  /* split work */
   if (pc->setupcalled) {
     if (pc->flag == SAME_NONZERO_PATTERN) {
       computetopography = PETSC_FALSE;
@@ -1557,7 +1556,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
   }
 
-  if (pcbddc->discretegradient) {
+  if (pcbddc->recompute_topography && pcbddc->discretegradient) {
     ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
   }
 
