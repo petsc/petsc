@@ -1222,8 +1222,6 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   /* zeroes workspace for values of ncc */
   graph->subset_ncc = 0;
   graph->subset_ref_node = 0;
-  /* default flag for csr */
-  graph->freecsr = PETSC_FALSE;
   /* maxcount for cc */
   graph->maxcount = maxcount;
   PetscFunctionReturn(0);
