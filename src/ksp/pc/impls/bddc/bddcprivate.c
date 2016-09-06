@@ -108,7 +108,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 {
   PC_BDDC                *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS                 *matis = (Mat_IS*)pc->pmat->data;
-  Mat                    G,T,conn,lG,lGt,lGis,lGall,lGe;
+  Mat                    G,T,conn,lG,lGt,lGis,lGall,lGe,lGinit;
   MatNullSpace           nnsp;
   Vec                    tvec,*quads;
   PetscSF                sfv;
@@ -258,6 +258,9 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   /* Destroy temporary G created in MATIS format */
   ierr = MatDestroy(&lGis);CHKERRQ(ierr);
 
+  /* Save lG */
+  ierr = MatDuplicate(lG,MAT_COPY_VALUES,&lGinit);CHKERRQ(ierr);
+
   /* Analyze the edge-nodes connections (duplicate lG) */
   ierr = MatDuplicate(lG,MAT_COPY_VALUES,&lGe);CHKERRQ(ierr);
   ierr = MatSetOption(lGe,MAT_KEEP_NONZERO_PATTERN,PETSC_FALSE);CHKERRQ(ierr);
@@ -391,6 +394,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     ierr = PetscObjectSetName((PetscObject)lGt,"edgerestr_lGt");CHKERRQ(ierr);
     ierr = MatView(lGt,NULL);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&lGe);CHKERRQ(ierr);
   ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArray(lGt,&vals);CHKERRQ(ierr);
   for (i=0;i<nv;i++) {
@@ -421,15 +425,11 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
   ierr = MatSeqAIJRestoreArray(lGt,&vals);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
-  ierr = MatDestroy(&lGt);CHKERRQ(ierr);
 
   /* Get the local G^T explicitly */
+  ierr = MatDestroy(&lGt);CHKERRQ(ierr);
   ierr = MatTranspose(lG,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
   ierr = MatSetOption(lGt,MAT_KEEP_NONZERO_PATTERN,PETSC_FALSE);CHKERRQ(ierr);
-  if (print) {
-    ierr = PetscObjectSetName((PetscObject)lGt,"initial_lGt");CHKERRQ(ierr);
-    ierr = MatView(lGt,NULL);CHKERRQ(ierr);
-  }
 
   /* Mark interior nodal dofs */
   ierr = ISLocalToGlobalMappingGetInfo(vl2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
@@ -685,9 +685,14 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   for (i=0;i<cum;i++) marks[idxs[i]] = 0;
   ierr = ISRestoreIndices(primals,&idxs);CHKERRQ(ierr);
 
+  /* Now use the initial lG */
+  ierr = MatDestroy(&lG);CHKERRQ(ierr);
+  ierr = MatDestroy(&lGt);CHKERRQ(ierr);
+  lG   = lGinit;
+  ierr = MatTranspose(lG,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
+
   /* Compute extended cols indices */
-  ierr = MatGetRowIJ(lG ,0,PETSC_FALSE,PETSC_FALSE,&i, &ii, &jj,&done);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&iit,&jjt,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(lG,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = MatSeqAIJGetMaxRowNonzeros(lG,&i);CHKERRQ(ierr);
   i   *= maxsize;
   ierr = PetscMalloc1(nee,&extcols);CHKERRQ(ierr);
@@ -732,6 +737,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     ierr = ISGetIndices(primals,&idxs);CHKERRQ(ierr);
     ierr = PetscMemcpy(newprimals,idxs,cum*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = ISRestoreIndices(primals,&idxs);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&iit,&jjt,&done);CHKERRQ(ierr);
     for (i=0;i<nee;i++) {
       if (emarks[i]) {
         PetscInt size,mark = i+1;
@@ -764,6 +770,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       }
       ierr = ISDestroy(&extcols[i]);CHKERRQ(ierr);
     }
+    ierr = MatRestoreRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&iit,&jjt,&done);CHKERRQ(ierr);
     ierr = PetscSortRemoveDupsInt(&cum,newprimals);CHKERRQ(ierr);
     if (fl2g) {
       ierr = ISLocalToGlobalMappingApply(fl2g,cum,newprimals,newprimals);CHKERRQ(ierr);
@@ -838,8 +845,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       }
     }
   }
-  ierr = MatRestoreRowIJ( lG,0,PETSC_FALSE,PETSC_FALSE,&i, &ii, &jj,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&iit,&jjt,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(lG,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = PetscFree2(extrow,gidxs);CHKERRQ(ierr);
   ierr = PetscFree(emarks);CHKERRQ(ierr);
   /* an error should not occur at this point */
@@ -848,7 +854,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   /* Check the number of endpoints */
   /* TODO: fix case for circular edge */
   ierr = PetscBTCreate(nv,&btvc);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(lG,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   for (i=0;i<nee;i++) {
     PetscInt size, found = 0;
 
@@ -867,9 +873,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     ierr = ISRestoreIndices(eedges[i],&idxs);CHKERRQ(ierr);
     if (found != 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d corners for edge %d\n",found,i);
   }
-  ierr = MatRestoreRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(lG,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&btvc);CHKERRQ(ierr);
-  ierr = MatDestroy(&lGe);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   /* Inspects columns of lG (rows of lGt) and make sure the change of basis will
