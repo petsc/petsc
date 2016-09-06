@@ -254,7 +254,7 @@ if __name__ == "__main__":
 	    if value == '\\begin{lstlisting}':
                 lstlisting_bracket = lstlisting_bracket + 1;
             # \href cannot be used in many places in Latex
-            if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{'] and vbracket == 0 and lstlisting_bracket == 0:
+            if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0 and lstlisting_bracket == 0:
 		bracket = bracket + 1;
             #We keep track of whether we are inside an inline listing
             elif value in ['\\lstinline{'] and vbracket == 0 and lstlisting_bracket == 0:
