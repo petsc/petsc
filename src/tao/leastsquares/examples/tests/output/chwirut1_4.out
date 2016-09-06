@@ -17,29 +17,32 @@ iter =  14, Function value 2399.58, Residual: 878.384
 iter =  15, Function value 2399.58, Residual: 109.212 
 iter =  16, Function value 2393.48, Residual: 2512.22 
 iter =  17, Function value 2393.48, Residual: 30174.3 
-iter =  18, Function value 2385.4, Residual: 68546.4 
-iter =  19, Function value 2385.4, Residual: 632.425 
-iter =  20, Function value 2385.4, Residual: 38.2466 
-iter =  21, Function value 2384.53, Residual: 1.72989 
-iter =  22, Function value 2384.48, Residual: 2.32618 
-iter =  23, Function value 2384.48, Residual: 0.107823 
-iter =  24, Function value 2384.48, Residual: 0.223896 
-iter =  25, Function value 2384.48, Residual: 0.0153182 
-iter =  26, Function value 2384.48, Residual: 0.000352007 
-iter =  27, Function value 2384.48, Residual: 0.0166609 
-iter =  28, Function value 2384.48, Residual: 0.00413766 
-iter =  29, Function value 2384.48, Residual: 0.000142646 
-iter =  30, Function value 2384.48, Residual: 1.75299e-05 
+iter =  18, Function value 2393.48, Residual: 62.58 
+iter =  19, Function value 2389.27, Residual: 4.81353 
+iter =  20, Function value 2388.88, Residual: 2.98761 
+iter =  21, Function value 2387.63, Residual: 173.262 
+iter =  22, Function value 2387.49, Residual: 106.422 
+iter =  23, Function value 2385.83, Residual: 48.717 
+iter =  24, Function value 2385.83, Residual: 28.5816 
+iter =  25, Function value 2385.01, Residual: 6.59117 
+iter =  26, Function value 2384.62, Residual: 27.5459 
+iter =  27, Function value 2384.62, Residual: 2.82669 
+iter =  28, Function value 2384.54, Residual: 0.330741 
+iter =  29, Function value 2384.48, Residual: 2.25051 
+iter =  30, Function value 2384.48, Residual: 0.128487 
+iter =  31, Function value 2384.48, Residual: 0.00431697 
+iter =  32, Function value 2384.48, Residual: 0.00036398 
+iter =  33, Function value 2384.48, Residual: 1.26353e-05 
 Tao Object: 1 MPI processes
   type: pounders
       initial delta: 0.1
-      final delta: 0.00078125
-      model points: 5
-      subproblem solver: tron
-      total subproblem iterations: 62
+      final delta: 0.00625
+      model points: 6
+      subproblem solver: blmvm
+      total subproblem iterations: 407
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.75299e-05
+  Residual in Function/Gradient:=1.26353e-05
   Objective value=2384.48
-  total number of iterations=30,                          (max: 100)
-  total number of function evaluations=33,                  max: 4000
+  total number of iterations=33,                          (max: 100)
+  total number of function evaluations=36,                  max: 4000
   Solution converged:    ||g(X)||/|f(X)| <= grtol
