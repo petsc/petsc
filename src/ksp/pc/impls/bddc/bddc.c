@@ -211,7 +211,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDiscreteGradient_BDDC"
-static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt order, PetscBool conforming)
+static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool conforming)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;
@@ -222,6 +222,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   pcbddc->discretegradient = G;
   pcbddc->nedorder         = order > 0 ? order : -order;
   pcbddc->conforming       = conforming;
+  pcbddc->nedfield         = field;
   PetscFunctionReturn(0);
 }
 
@@ -236,18 +237,18 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 +  pc         - the preconditioning context
 .  G          - the discrete gradient matrix (should be in AIJ format)
 .  order      - the order of the Nedelec space (1 for the lowest order)
+.  field      - the field id of the Nedelec dofs (not used if the fields have not been specified)
 -  conforming - whether the mesh is conforming or not
 
    Level: advanced
 
    Notes: The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
-          For higher order discretizations, the dofs on the element edges should be consecutively numbered.
-          For variable order spaces, order should be set to zero.
+          For variable order spaces, the order should be set to zero.
           The discrete gradient matrix is modified by PCBDDC.
 
-.seealso: PCBDDC
+.seealso: PCBDDC,PCBDDCSetDofsSplitting(),PCBDDCSetDofsSplittingLocal()
 @*/
-PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscBool conforming)
+PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool conforming)
 {
   PetscErrorCode ierr;
 
@@ -257,7 +258,7 @@ PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscBool
   PetscCheckSameComm(pc,1,G,2);
   PetscValidLogicalCollectiveInt(pc,order,3);
   PetscValidLogicalCollectiveBool(pc,conforming,4);
-  ierr = PetscTryMethod(pc,"PCBDDCSetDiscreteGradient_C",(PC,Mat,PetscInt,PetscBool),(pc,G,order,conforming));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCBDDCSetDiscreteGradient_C",(PC,Mat,PetscInt,PetscInt,PetscBool),(pc,G,order,field,conforming));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
