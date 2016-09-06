@@ -552,24 +552,27 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[2], feBd[2], feAux;
   PetscQuadrature q;
   PetscDS         prob, probAux;
-  PetscInt        order;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, dim, simplex, "def_", -1, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, dim, simplex, "def_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "deformation");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "pres_", order, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) feAux, "elasticityMaterial");CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
+
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim-1, dim, simplex, "bd_def_", order, &feBd[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim-1, dim, simplex, "bd_def_", PETSC_DEFAULT, &feBd[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feBd[0], "deformation");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim-1, 1, simplex, "bd_pres_", order, &feBd[1]);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(feBd[0], &q);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim-1, 1, simplex, "bd_pres_", PETSC_DEFAULT, &feBd[1]);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(feBd[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feBd[1], "pressure");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", order, &feAux);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feAux, "elasticityMaterial");CHKERRQ(ierr);
 
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);

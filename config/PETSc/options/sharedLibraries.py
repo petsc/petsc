@@ -74,6 +74,9 @@ class Configure(config.base.Configure):
         self.addMakeRule('shared_arch','shared_darwin')
         self.addMakeMacro('SONAME_FUNCTION', '$(1).$(2).dylib')
         self.addMakeMacro('SL_LINKER_FUNCTION', '-dynamiclib -install_name $(call SONAME_FUNCTION,$(1),$(2)) -compatibility_version $(2) -current_version $(3) -single_module -multiply_defined suppress -undefined dynamic_lookup')
+      elif self.setCompilers.CC.find('win32fe') >=0:
+        self.addMakeMacro('SONAME_FUNCTION', '$(1).dll')
+        self.addMakeMacro('SL_LINKER_FUNCTION', '-LD')
       else:
         # TODO: check that -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} can be passed (might fail on Intel)
         # TODO: check whether to use -qmkshrobj or -shared (maybe we can just use self.setCompilers.sharedLibraryFlags)

@@ -1,6 +1,7 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
+#undef I /* Very old CGNS stupidly uses I as a variable, which fails when using complex. Curse you idiot package managers */
 #if defined(PETSC_HAVE_CGNS)
 #include <cgnslib.h>
 #include <cgns_io.h>

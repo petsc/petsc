@@ -144,7 +144,7 @@ matlabbin:
 #
 check: test
 test:
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
+	-@${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
 	-@if [ "${PETSC_WITH_BATCH}" = "" ]; then \
           printf "=========================================\n"; \
           printf "Now to evaluate the computer systems you plan use - do:\n"; \

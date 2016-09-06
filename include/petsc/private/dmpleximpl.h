@@ -385,7 +385,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt
     ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(dm->defaultGlobalSection, point, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(dm->defaultGlobalSection, point, &cdof);CHKERRQ(ierr);
-    *end = *start + dof-cdof;
+    *end = *start + dof - cdof + (dof < 0 ? 1 : 0);
   }
 #else
   {
@@ -393,7 +393,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt
     const PetscInt     dof  = s->atlasDof[point - s->pStart];
     const PetscInt     cdof = s->bc ? s->bc->atlasDof[point - s->bc->pStart] : 0;
     *start = s->atlasOff[point - s->pStart];
-    *end   = *start + dof-cdof;
+    *end   = *start + dof - cdof + (dof < 0 ? 1 : 0);
   }
 #endif
   PetscFunctionReturn(0);

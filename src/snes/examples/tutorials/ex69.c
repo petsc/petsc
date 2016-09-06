@@ -3273,17 +3273,17 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscQuadrature q;
   PetscDS         prob, probAux = NULL;
   Parameter      *ctx;
-  PetscInt        numAux = user->solType == SOLKX ? 3 : 5, order, comp, f;
+  PetscInt        numAux = user->solType == SOLKX ? 3 : 5, comp, f;
   const char     *auxFieldNames[5];
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create discretization of solution fields */
-  ierr = PetscFECreateDefault(dm, dim, dim, user->simplex, "vel_", -1, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, dim, user->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, "pres_", order, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Create discretization of auxiliary fields */
   ierr = PetscMalloc1(numAux, &feAux);CHKERRQ(ierr);

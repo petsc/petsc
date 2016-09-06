@@ -253,7 +253,7 @@ alltest:
 	-@date
 	-@for i in ${TEST_RUNS} ; do \
           echo "******* Testing: ${TESTMODE}_$$i *******"; \
-	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" PRINT_PROGRESS=${ALLTESTS_PRINT_PROGRESS} tree ; \
+	  ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" PRINT_PROGRESS=${ALLTESTS_PRINT_PROGRESS} tree ; \
 	  if [ ${ALLTESTS_PRINT_PROGRESS}foo = dotfoo ] ; then printf "\n"; fi; \
 	done
 	-@date

@@ -27,7 +27,7 @@ Process [2]
 1.125
 0.
 0.5
-L_2 Error: 0.0833333
+L_2 Error: 0.0655506
 Residual:
 Vec Object: 1 MPI processes
   type: seq

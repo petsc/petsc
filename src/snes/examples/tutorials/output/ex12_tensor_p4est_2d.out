@@ -50,7 +50,7 @@ Vec Object: potential 1 MPI processes
 0.78125
 0.828125
 0.90625
-L_2 Error: 0.0078125
+L_2 Error: 0.00520833
 Initial Residual
 Vec Object: 1 MPI processes
   type: seq

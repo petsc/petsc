@@ -155,4 +155,4 @@ SNES Object: 1 MPI processes
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=1
 Number of SNES iterations = 1
-L_2 Error: 0.00173611
+L_2 Error: 0.00131794
