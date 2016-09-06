@@ -1048,9 +1048,6 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
   ierr = PetscFree(quads);CHKERRQ(ierr);
 
-  /* tell PCBDDC the topography has been analyzed */
-  pcbddc->recompute_topography = PETSC_FALSE;
-
   /* set change of basis */
   ierr = PCBDDCSetChangeOfBasisMat(pc,T,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatDestroy(&T);CHKERRQ(ierr);
@@ -2765,7 +2762,6 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   ierr = ISDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
   ierr = PCBDDCGraphResetCSR(pcbddc->mat_graph);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
-  pcbddc->graphanalyzed = PETSC_FALSE;
   for (i=0;i<pcbddc->n_local_subs;i++) {
     ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
   }
@@ -2773,6 +2769,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   if (pcbddc->sub_schurs) {
     ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
   }
+  pcbddc->graphanalyzed = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -5862,7 +5859,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PetscInt               ierr,i,N;
 
   PetscFunctionBegin;
-  if (pcbddc->graphanalyzed && !pcbddc->recompute_topography) PetscFunctionReturn(0);
+  if (pcbddc->graphanalyzed) PetscFunctionReturn(0);
   /* Reset previously computed graph */
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   /* Init local Graph struct */
@@ -6896,7 +6893,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 
   /* compute dofs splitting and neumann boundaries for coarse dofs */
-  if (multilevel_allowed && (pcbddc->n_ISForDofsLocal || pcbddc->NeumannBoundariesLocal)) { /* protects from unneded computations */
+  if (multilevel_allowed && !coarse_reuse && (pcbddc->n_ISForDofsLocal || pcbddc->NeumannBoundariesLocal)) { /* protects from unneded computations */
     PetscInt               *tidxs,*tidxs2,nout,tsize,i;
     const PetscInt         *idxs;
     ISLocalToGlobalMapping tmap;

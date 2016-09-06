@@ -1486,15 +1486,16 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 */
 PetscErrorCode PCSetUp_BDDC(PC pc)
 {
-  PetscErrorCode ierr;
-  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  Mat_IS*        matis;
-  MatNullSpace   nearnullspace;
-  IS             zerodiag = NULL;
-  PetscInt       nrows,ncols;
-  PetscBool      computetopography,computesolvers,computesubschurs;
-  PetscBool      computeconstraintsmatrix;
-  PetscBool      new_nearnullspace_provided,ismatis;
+  PC_BDDC*        pcbddc = (PC_BDDC*)pc->data;
+  PCBDDCSubSchurs sub_schurs;
+  Mat_IS*         matis;
+  MatNullSpace    nearnullspace;
+  IS              zerodiag = NULL;
+  PetscInt        nrows,ncols;
+  PetscBool       computesubschurs;
+  PetscBool       computeconstraintsmatrix;
+  PetscBool       new_nearnullspace_provided,ismatis;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis);CHKERRQ(ierr);
@@ -1505,22 +1506,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC builds its own KSP for the Dirichlet problem */
-  if (pc->setupcalled) {
-    if (pc->flag == SAME_NONZERO_PATTERN) {
-      computetopography = PETSC_FALSE;
-      computesolvers = PETSC_TRUE;
-    } else { /* DIFFERENT_NONZERO_PATTERN */
-      computetopography = PETSC_TRUE;
-      computesolvers = PETSC_TRUE;
-    }
-  } else {
-    computetopography = PETSC_TRUE;
-    computesolvers = PETSC_TRUE;
-  }
-  if (pcbddc->recompute_topography) {
-    computetopography = PETSC_TRUE;
-  }
-  pcbddc->recompute_topography = computetopography;
+  if (pc->setupcalled && pc->flag != SAME_NONZERO_PATTERN) pcbddc->recompute_topography = PETSC_TRUE;
   computeconstraintsmatrix = PETSC_FALSE;
 
   /* check parameters' compatibility */
@@ -1552,15 +1538,15 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
 
-  /* compute topology info in local ordering */
+  /* process topology information */
   if (pcbddc->recompute_topography) {
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
+    if (pcbddc->discretegradient) {
+      ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
+    }
   }
 
-  if (pcbddc->recompute_topography && pcbddc->discretegradient) {
-    ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
-  }
-
+  /* change basis if requested by the user */
   if (pcbddc->user_ChangeOfBasisMatrix) {
     /* use_change_of_basis flag is used to automatically compute a change of basis from constraints */
     pcbddc->use_change_of_basis = PETSC_FALSE;
@@ -1571,13 +1557,18 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     pcbddc->local_mat = matis->A;
   }
 
-  /* detect local disconnected subdomains if requested and not done before */
-  if (pcbddc->detect_disconnected && !pcbddc->n_local_subs) {
+  /* detect local disconnected subdomains if requested */
+  if (pcbddc->detect_disconnected && pcbddc->recompute_topography) {
+    PetscInt i;
+    for (i=0;i<pcbddc->n_local_subs;i++) {
+      ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
     ierr = MatDetectDisconnectedComponents(pcbddc->local_mat,PETSC_FALSE,&pcbddc->n_local_subs,&pcbddc->local_subs);CHKERRQ(ierr);
   }
 
   /*
-     Compute change of basis on local pressures (aka zerodiag dofs)
+     Compute change of basis on local pressures (aka zerodiag dofs) with the benign trick
      This should come earlier then PCISSetUp for extracting the correct subdomain matrices
   */
   ierr = PCBDDCBenignShellMat(pc,PETSC_TRUE);CHKERRQ(ierr);
@@ -1601,7 +1592,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     }
   }
 
-  /* propagate relevant information */
+  /* propagate relevant information -> TODO remove*/
 #if !defined(PETSC_USE_COMPLEX) /* workaround for reals */
   if (matis->A->symmetric_set) {
     ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,matis->A->symmetric);CHKERRQ(ierr);
@@ -1626,7 +1617,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* Analyze interface */
-  if (computetopography) {
+  if (pcbddc->recompute_topography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
     computeconstraintsmatrix = PETSC_TRUE;
     if (pcbddc->adaptive_selection && !pcbddc->use_deluxe_scaling && !pcbddc->mat_graph->twodim) {
@@ -1653,32 +1644,30 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
-  if (computesolvers) {
-    PCBDDCSubSchurs sub_schurs;
+  if (computesubschurs && pcbddc->recompute_topography) {
+    ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
+  }
+  /* SetUp Scaling operator (scaling matrices could be needed in SubSchursSetUp)*/
+  if (!pcbddc->use_deluxe_scaling) {
+    ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
+  }
 
-    if (computesubschurs && computetopography) {
-      ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
+  /* finish setup solvers and do adaptive selection of constraints */
+  sub_schurs = pcbddc->sub_schurs;
+  if (sub_schurs && sub_schurs->schur_explicit) {
+    if (computesubschurs) {
+      ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
     }
-    /* SetUp Scaling operator (scaling matrices could be needed in SubSchursSetUp)*/
-    if (!pcbddc->use_deluxe_scaling) {
-      ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
+    ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+  } else {
+    ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+    if (computesubschurs) {
+      ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
     }
-    sub_schurs = pcbddc->sub_schurs;
-    if (sub_schurs && sub_schurs->schur_explicit) {
-      if (computesubschurs) {
-        ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
-      }
-      ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
-    } else {
-      ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
-      if (computesubschurs) {
-        ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
-      }
-    }
-    if (pcbddc->adaptive_selection) {
-      ierr = PCBDDCAdaptiveSelection(pc);CHKERRQ(ierr);
-      computeconstraintsmatrix = PETSC_TRUE;
-    }
+  }
+  if (pcbddc->adaptive_selection) {
+    ierr = PCBDDCAdaptiveSelection(pc);CHKERRQ(ierr);
+    computeconstraintsmatrix = PETSC_TRUE;
   }
 
   /* infer if NullSpace object attached to Mat via MatSetNearNullSpace has changed */
@@ -1725,37 +1714,36 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCSetUpLocalWorkVectors(pc);CHKERRQ(ierr);
   }
 
-  if (computesolvers || pcbddc->new_primal_space) {
-    if (pcbddc->use_change_of_basis) {
-      PC_IS *pcis = (PC_IS*)(pc->data);
+  if (pcbddc->use_change_of_basis) {
+    PC_IS *pcis = (PC_IS*)(pc->data);
 
-      ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
-      if (pcbddc->benign_change) {
-        ierr = MatDestroy(&pcbddc->benign_B0);CHKERRQ(ierr);
-        /* pop B0 from pcbddc->local_mat */
-        ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
-      }
-      /* get submatrices */
-      ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
-      ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
-      ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
-      /* set flag in pcis to not reuse submatrices during PCISCreate */
-      pcis->reusesubmatrices = PETSC_FALSE;
-    } else if (!pcbddc->user_ChangeOfBasisMatrix && !pcbddc->benign_change) {
-      ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
-      pcbddc->local_mat = matis->A;
+    ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
+    if (pcbddc->benign_change) {
+      ierr = MatDestroy(&pcbddc->benign_B0);CHKERRQ(ierr);
+      /* pop B0 from pcbddc->local_mat */
+      ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
-    /* SetUp coarse and local Neumann solvers */
-    ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
-    /* SetUp Scaling operator */
-    if (pcbddc->use_deluxe_scaling) {
-      ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
-    }
+    /* get submatrices */
+    ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
+    /* set flag in pcis to not reuse submatrices during PCISCreate */
+    pcis->reusesubmatrices = PETSC_FALSE;
+  } else if (!pcbddc->user_ChangeOfBasisMatrix && !pcbddc->benign_change) {
+    ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
+    pcbddc->local_mat = matis->A;
   }
+  /* SetUp coarse and local Neumann solvers */
+  ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
+  /* SetUp Scaling operator */
+  if (pcbddc->use_deluxe_scaling) {
+    ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
+  }
+
   /* mark topography as done */
   pcbddc->recompute_topography = PETSC_FALSE;
 
@@ -2550,7 +2538,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->local_primal_ref_mult      = 0;
   pcbddc->n_vertices                 = 0;
   pcbddc->primal_indices_local_idxs  = 0;
-  pcbddc->recompute_topography       = PETSC_FALSE;
+  pcbddc->recompute_topography       = PETSC_TRUE;
   pcbddc->coarse_size                = -1;
   pcbddc->new_primal_space           = PETSC_FALSE;
   pcbddc->new_primal_space_local     = PETSC_FALSE;
