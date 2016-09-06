@@ -36,7 +36,7 @@ Tao Object: 1 MPI processes
       final delta: 0.00078125
       model points: 5
       subproblem solver: tron
-      total subproblem iterations: 112
+      total subproblem iterations: 62
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=1.75299e-05
   Objective value=2384.48
