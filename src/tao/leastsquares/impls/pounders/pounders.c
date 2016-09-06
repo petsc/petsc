@@ -98,7 +98,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = MatAssemblyEnd(mfqP->subH,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = TaoResetStatistics(mfqP->subtao);CHKERRQ(ierr);
-    ierr = TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr);
+    /* ierr = TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr); */
     /* enforce bound constraints -- experimental */
     if (tao->XU && tao->XL) {
       ierr = VecCopy(tao->XU,mfqP->subxu);CHKERRQ(ierr);
@@ -130,20 +130,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"initial guess > upper bound in subproblem");
 
-    MatView(mfqP->subH, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(mfqP->subb, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(mfqP->subxl, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(mfqP->subxu, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(mfqP->subx, PETSC_VIEWER_STDOUT_WORLD);
-
     ierr = TaoSolve(mfqP->subtao);CHKERRQ(ierr);
-
-    MatView(mfqP->subH, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(mfqP->subb, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(mfqP->subxl, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(mfqP->subxu, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(mfqP->subx, PETSC_VIEWER_STDOUT_WORLD);
-
     ierr = TaoGetSolutionStatus(mfqP->subtao,NULL,qmin,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
     /* test bounds post-solution*/
@@ -179,8 +166,6 @@ static PetscErrorCode pounders_update_res(Tao tao)
   PetscReal zero=0.0,one=1.0,wii,factor;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-
-  TaoView(mfqP->subtao, PETSC_VIEWER_STDOUT_WORLD);
 
   for (i=0;i<mfqP->n;i++) {
     mfqP->Gres[i]=0;
@@ -1134,7 +1119,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subndel);CHKERRQ(ierr);
     ierr = TaoCreate(PETSC_COMM_SELF,&mfqP->subtao);CHKERRQ(ierr);
-    ierr = TaoSetType(mfqP->subtao,TAOBLMVM);CHKERRQ(ierr);
+    ierr = TaoSetType(mfqP->subtao,TAOTRON);CHKERRQ(ierr);
     ierr = TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_");CHKERRQ(ierr);
     ierr = TaoSetInitialVector(mfqP->subtao,mfqP->subx);CHKERRQ(ierr);
     ierr = TaoSetObjectiveAndGradientRoutine(mfqP->subtao,pounders_fg,(void*)mfqP);CHKERRQ(ierr);
