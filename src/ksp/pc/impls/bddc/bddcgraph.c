@@ -558,12 +558,24 @@ PETSC_STATIC_INLINE PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph grap
   if (havecsr && !havesubs) {
     for (i=-n_prev;i<0;i++) {
       PetscInt start_dof = queue_tip[i];
-      for (j=xadj[start_dof];j<xadj[start_dof+1];j++) {
-        PetscInt dof = adjncy[j];
-        if (!PetscBTLookup(touched,dof) && graph->subset[dof] == pid) {
-          ierr = PetscBTSet(touched,dof);CHKERRQ(ierr);
-          queue_tip[n] = dof;
-          n++;
+      /* we assume that if a dof has a size 1 adjacency list and the corresponding entry is negative, it is connected to all dofs */
+      if (xadj[start_dof+1]-xadj[start_dof] == 1 && adjncy[xadj[start_dof]] < 0) {
+        for (j=0;j<graph->subset_size[pid-1];j++) { /* pid \in [1,graph->n_subsets] */
+          PetscInt dof = graph->subset_idxs[pid-1][j];
+          if (!PetscBTLookup(touched,dof) && graph->subset[dof] == pid) {
+            ierr = PetscBTSet(touched,dof);CHKERRQ(ierr);
+            queue_tip[n] = dof;
+            n++;
+          }
+        }
+      } else {
+        for (j=xadj[start_dof];j<xadj[start_dof+1];j++) {
+          PetscInt dof = adjncy[j];
+          if (!PetscBTLookup(touched,dof) && graph->subset[dof] == pid) {
+            ierr = PetscBTSet(touched,dof);CHKERRQ(ierr);
+            queue_tip[n] = dof;
+            n++;
+          }
         }
       }
     }
@@ -571,12 +583,24 @@ PETSC_STATIC_INLINE PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph grap
     PetscInt sid = graph->local_subs[queue_tip[-n_prev]];
     for (i=-n_prev;i<0;i++) {
       PetscInt start_dof = queue_tip[i];
-      for (j=xadj[start_dof];j<xadj[start_dof+1];j++) {
-        PetscInt dof = adjncy[j];
-        if (!PetscBTLookup(touched,dof) && graph->subset[dof] == pid && graph->local_subs[dof] == sid) {
-          ierr = PetscBTSet(touched,dof);CHKERRQ(ierr);
-          queue_tip[n] = dof;
-          n++;
+      /* we assume that if a dof has a size 1 adjacency list and the corresponding entry is negative, it is connected to all dofs belonging to the local sub */
+      if (xadj[start_dof+1]-xadj[start_dof] == 1 && adjncy[xadj[start_dof]] < 0) {
+        for (j=0;j<graph->subset_size[pid-1];j++) { /* pid \in [1,graph->n_subsets] */
+          PetscInt dof = graph->subset_idxs[pid-1][j];
+          if (!PetscBTLookup(touched,dof) && graph->subset[dof] == pid && graph->local_subs[dof] == sid) {
+            ierr = PetscBTSet(touched,dof);CHKERRQ(ierr);
+            queue_tip[n] = dof;
+            n++;
+          }
+        }
+      } else {
+        for (j=xadj[start_dof];j<xadj[start_dof+1];j++) {
+          PetscInt dof = adjncy[j];
+          if (!PetscBTLookup(touched,dof) && graph->subset[dof] == pid && graph->local_subs[dof] == sid) {
+            ierr = PetscBTSet(touched,dof);CHKERRQ(ierr);
+            queue_tip[n] = dof;
+            n++;
+          }
         }
       }
     }

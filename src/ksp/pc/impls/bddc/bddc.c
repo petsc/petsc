@@ -1025,19 +1025,19 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetLocalAdjacencyGraph"
 /*@
- PCBDDCSetLocalAdjacencyGraph - Set adjacency structure (CSR graph) of the local matrix
+ PCBDDCSetLocalAdjacencyGraph - Set adjacency structure (CSR graph) of the local degrees of freedom.
 
    Not collective
 
    Input Parameters:
-+  pc - the preconditioning context
-.  nvtxs - number of local vertices of the graph (i.e., the size of the local problem)
-.  xadj, adjncy - the CSR graph
--  copymode - either PETSC_COPY_VALUES or PETSC_OWN_POINTER.
++  pc - the preconditioning context.
+.  nvtxs - number of local vertices of the graph (i.e., the number of local dofs).
+.  xadj, adjncy - the connectivity of the dofs in CSR format.
+-  copymode - supported modes are PETSC_COPY_VALUES, PETSC_USE_POINTER or PETSC_OWN_POINTER.
 
    Level: intermediate
 
-   Notes:
+   Notes: A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
 
 .seealso: PCBDDC,PetscCopyMode
 @*/
