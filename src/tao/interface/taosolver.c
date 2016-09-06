@@ -116,15 +116,14 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 #if defined(PETSC_USE_REAL_SINGLE)
   tao->gatol       = 1e-5;
   tao->grtol       = 1e-5;
-  tao->steptol     = 1e-6;
 #else
   tao->gatol       = 1e-8;
   tao->grtol       = 1e-8;
-  tao->steptol     = 1e-12;
 #endif
   tao->crtol       = 0.0;
   tao->catol       = 0.0;
   tao->gttol       = 0.0;
+  tao->steptol     = 0.0;
   tao->trust0      = PETSC_INFINITY;
   tao->fmin        = PETSC_NINFINITY;
   tao->hist_malloc = PETSC_FALSE;
