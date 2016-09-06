@@ -3290,7 +3290,9 @@ PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscI
   Note:
   Semantically, TSSetPostEvaluate() differs from TSSetPostStep() since the function it sets is called before event-handling 
   thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, TSPostStep() 
-  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
+  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step 
+  solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step 
+  with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
 
 .keywords: TS, timestep
 .seealso: TSSetPreStage(), TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
