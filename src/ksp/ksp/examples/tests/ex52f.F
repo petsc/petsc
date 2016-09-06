@@ -45,7 +45,7 @@
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
       call VecCreate(PETSC_COMM_WORLD,b,ierr)
-      call VecSetSizes(b,2,2,ierr)
+      call VecSetSizes(b,m,m,ierr)
       call VecSetType(b,VECSEQ,ierr)
 
 ! Set up solution
@@ -63,7 +63,7 @@
       call MatFactorGetError(F,ferr,ierr)
       call MatFactorGetErrorZeroPivot(F,pivot,row,ierr)
       write(6,101) ferr,pivot,row
- 101  format('MatFactorError ',i4,' Pivot value ',e10.4,' row ',i4)
+ 101  format('MatFactorError ',i4,' Pivot value ',e12.4,' row ',i4)
 
 ! Cleanup
       call KSPDestroy(ksp,ierr)
