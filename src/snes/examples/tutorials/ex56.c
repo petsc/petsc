@@ -332,10 +332,10 @@ int main(int argc,char **args)
       PetscDS         prob;
       DM              cdm = dm;
 
-      ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, 3, &fe);CHKERRQ(ierr); /* elasticity */
+      ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DEFAULT, &fe);CHKERRQ(ierr); /* elasticity */
       ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
-      ierr = PetscFECreateDefault(dm, dim-1, dim, PETSC_FALSE, NULL, 3, &feBd);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) feBd, "bc");CHKERRQ(ierr);
+      ierr = PetscFECreateDefault(dm, dim-1, dim, PETSC_FALSE, NULL, PETSC_DEFAULT, &feBd);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) feBd, "deformation");CHKERRQ(ierr);
       /* FEM prob */
       ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
       ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
@@ -422,9 +422,9 @@ int main(int argc,char **args)
     ierr = MatDestroy(&Amat);CHKERRQ(ierr);
   }
 
-  err[0] = mdisp[0] - 171.058;
+  err[0] = mdisp[0] - 171.038;
   for (iter=1 ; iter<max_conv_its ; iter++) {
-    err[iter] = mdisp[iter] - 171.058; /* error with what I think is the exact solution */
+    err[iter] = mdisp[iter] - 171.038; /* error with what I think is the exact solution */
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d) N=%D/%D, max displacement = %g, disp diff = %g, rate = %g\n",
                 rank,__FUNCT__,iter,local_sizes[iter],local_sizes[iter-1],mdisp[iter],
                 mdisp[iter]-mdisp[iter-1],log(err[iter-1]/err[iter])/log(2.));
