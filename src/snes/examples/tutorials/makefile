@@ -1233,7 +1233,7 @@ runex56_hypre:
 runex56_ml:
 	-@${MPIEXEC} -n 4 ./ex56 -cells 2,2,1 -max_conv_its 3 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_poly_tensor -petscspace_order 2 -ksp_type cg -ksp_monitor_short  -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type simple -use_mat_nearnullspace  > ex.tmp 2>&1;	\
          ${DIFF} output/ex56_ml.out ex.tmp || printf "${PWD}\nPossible problem with ex56_ml.out, diffs above\n=========================================\n"; \
-        ${RM} -f ex.tmp
+         ${RM} -f ex.tmp
 
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonrsls -pc_type mg -ksp_monitor_short -pc_mg_galerkin pmat -da_refine 5   -snes_vi_monitor -pc_mg_type full  -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
