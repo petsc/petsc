@@ -80,6 +80,7 @@ PetscErrorCode PCBDDCComputeNedelecChangeEdge(Mat lG, IS edge, IS extrow, IS ext
 
   PetscFunctionBegin;
   ierr = ISGetSize(edge,&esize);CHKERRQ(ierr);
+  if (!esize) PetscFunctionReturn(0);
   ierr = ISGetSize(extrow,&rsize);CHKERRQ(ierr);
   ierr = ISGetSize(extcol,&csize);CHKERRQ(ierr);
 
