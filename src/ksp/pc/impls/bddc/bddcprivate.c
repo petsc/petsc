@@ -652,7 +652,6 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
         if (PetscBTLookup(btv,jj[k])) {
           if (print) PetscPrintf(PETSC_COMM_SELF,"      corner found (already set) %d\n",jj[k]);
         } else if (PetscBTLookup(btvcand,jj[k])) { /* is it ok? */
-          if (print) PetscPrintf(PETSC_COMM_SELF,"      candidate? %d\n",(PetscBool)(PetscBTLookup(btvcand,jj[k])));
           PetscInt  k2;
           PetscBool corner = PETSC_FALSE;
           for (k2 = iit[jj[k]];k2 < iit[jj[k]+1];k2++) {
