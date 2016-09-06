@@ -11,6 +11,7 @@ Vec Object: 1 MPI processes
   type: seq
 2.96782e+08
 1.41731e+09
+MatDiagonalSet not tested on MATSHELL
 Matrix of type: seqaij
 Mat Object: 1 MPI processes
   type: seqdense
@@ -24,6 +25,10 @@ Vec Object: 1 MPI processes
   type: seq
 2.96782e+08
 1.41731e+09
+Vec Object: 1 MPI processes
+  type: seq
+11.
+13.
 Matrix of type: nest
 Mat Object: 1 MPI processes
   type: seqdense
@@ -37,3 +42,7 @@ Vec Object: 1 MPI processes
   type: seq
 2.96782e+08
 1.41731e+09
+Vec Object: 1 MPI processes
+  type: seq
+11.
+13.
