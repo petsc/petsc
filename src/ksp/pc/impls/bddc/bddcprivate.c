@@ -311,27 +311,62 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   /* need to remove coarse faces' dofs to ensure the
      proper detection of coarse edges' endpoints */
   ierr = PetscCalloc1(ne,&marks);CHKERRQ(ierr);
+  ierr = PetscBTCreate(ne,&btee);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  for (i=1;i<n_neigh;i++) {
-    PetscInt j;
-    for (j=0;j<n_shared[i];j++) marks[shared[i][j]]++;
-  }
+  for (i=1;i<n_neigh;i++)
+    for (j=0;j<n_shared[i];j++)
+      marks[shared[i][j]]++;
   ierr = ISLocalToGlobalMappingRestoreInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  cum  = 0;
+  for (i=0;i<ne;i++) {
+    if (marks[i] > 1 || (marks[i] == 1 && PetscBTLookup(btb,i))) {
+      ierr = PetscBTSet(btee,i);CHKERRQ(ierr);
+    }
+  }
+
+  if (!conforming) {
+    ierr = MatTranspose(lGe,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&iit,&jjt,&done);CHKERRQ(ierr);
+  }
   ierr = MatGetRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArray(lGe,&vals);CHKERRQ(ierr);
+  cum  = 0;
   for (i=0;i<ne;i++) {
     /* eliminate rows corresponding to edge dofs belonging to coarse faces */
-    if (!marks[i] || (marks[i] == 1 && !PetscBTLookup(btb,i))) {
+    if (!PetscBTLookup(btee,i)) {
       marks[cum++] = i;
       continue;
     }
     /* set badly connected edge dofs as primal */
-    if (!conforming && ii[i+1]-ii[i] != order + 1) {
-      marks[cum++] = i;
-      ierr = PetscBTSet(bte,i);CHKERRQ(ierr);
-      for (j=ii[i];j<ii[i+1];j++) {
-        ierr = PetscBTSet(btv,jj[j]);CHKERRQ(ierr);
+    if (!conforming) {
+      if (ii[i+1]-ii[i] != order + 1) { /* every row of G on the coarse edge should list order+1 nodal dofs */
+        marks[cum++] = i;
+        ierr = PetscBTSet(bte,i);CHKERRQ(ierr);
+        for (j=ii[i];j<ii[i+1];j++) {
+          ierr = PetscBTSet(btv,jj[j]);CHKERRQ(ierr);
+        }
+      } else {
+        /* every edge dofs should be connected trough a certain number of nodal dofs
+           to other edge dofs belonging to coarse edges
+           - at most 2 endpoints
+           - order-1 interior nodal dofs
+           - no undefined nodal dofs (nconn < order)
+        */
+        PetscInt ends = 0,ints = 0, undef = 0;
+        for (j=ii[i];j<ii[i+1];j++) {
+          PetscInt v = jj[j],k;
+          PetscInt nconn = iit[v+1]-iit[v];
+          for (k=iit[v];k<iit[v+1];k++) if (!PetscBTLookup(btee,jjt[k])) nconn--;
+          if (nconn > order) ends++;
+          else if (nconn == order) ints++;
+          else undef++;
+        }
+        if (undef || ends > 2 || ints != order -1) {
+          marks[cum++] = i;
+          ierr = PetscBTSet(bte,i);CHKERRQ(ierr);
+          for (j=ii[i];j<ii[i+1];j++) {
+            ierr = PetscBTSet(btv,jj[j]);CHKERRQ(ierr);
+          }
+        }
       }
     }
     /* We assume the order on the element edge is ii[i+1]-ii[i]-1 */
@@ -340,8 +375,13 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       for (j=ii[i];j<ii[i+1];j++) vals[j] = val;
     }
   }
+  ierr = PetscBTDestroy(&btee);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArray(lGe,&vals);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(lGe,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
+  if (!conforming) {
+    ierr = MatRestoreRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&iit,&jjt,&done);CHKERRQ(ierr);
+    ierr = MatDestroy(&lGt);CHKERRQ(ierr);
+  }
   ierr = MatZeroRows(lGe,cum,marks,0.,NULL,NULL);CHKERRQ(ierr);
   /* identify splitpoints and corner candidates: TODO variable order */
   ierr = MatTranspose(lGe,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
