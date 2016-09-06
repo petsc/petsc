@@ -3288,8 +3288,9 @@ PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscI
   Level: intermediate
 
   Note:
-  This is called after the next step solution is evaluated allowing to modify it, if need be. The solution can be obtained
-  with TSGetSolution(), the time step with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
+  Semantically, TSSetPostEvaluate() differs from TSSetPostStep() since the function it sets is called before event-handling 
+  thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, TSPostStep() 
+  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
 
 .keywords: TS, timestep
 .seealso: TSSetPreStage(), TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
@@ -3415,10 +3416,15 @@ PetscErrorCode  TSPostEvaluate(TS ts)
   Calling sequence of func:
 $ func (TS ts);
 
+  Notes:
+  The function set by TSSetPostStep() is called after each successful step. The solution vector X
+  obtained by TSGetSolution() may be different than that computed at the step end if the event handler
+  locates an event and TSPostEvent() modifies it. Use TSSetPostEvaluate() if an unmodified solution is needed instead.
+
   Level: intermediate
 
 .keywords: TS, timestep
-.seealso: TSSetPreStep(), TSSetPreStage(), TSGetTimeStep(), TSGetTimeStepNumber(), TSGetTime()
+.seealso: TSSetPreStep(), TSSetPreStage(), TSSetPostEvaluate(), TSGetTimeStep(), TSGetTimeStepNumber(), TSGetTime()
 @*/
 PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 {
