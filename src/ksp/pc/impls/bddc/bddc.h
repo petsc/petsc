@@ -124,6 +124,7 @@ typedef struct {
   Mat       discretegradient;
   PetscInt  nedorder;
   PetscBool conforming;
+  PetscInt  nedfield;
 
   /* local disconnected subdomains */
   PetscBool detect_disconnected;
