@@ -301,6 +301,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   /* Calculate sizes */
   ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
   prob->totDim = prob->totDimBd = prob->totComp = 0;
+  ierr = PetscMalloc2(Nf,&prob->Nc,Nf,&prob->Nb);CHKERRQ(ierr);
   ierr = PetscCalloc4(Nf+1,&prob->off,Nf+1,&prob->offDer,Nf+1,&prob->offBd,Nf+1,&prob->offDerBd);CHKERRQ(ierr);
   ierr = PetscMalloc4(Nf,&prob->basis,Nf,&prob->basisDer,Nf,&prob->basisBd,Nf,&prob->basisDerBd);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
@@ -327,6 +328,8 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
       ierr = PetscFVGetDefaultTabulation(fv, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+    prob->Nc[f]       = Nc;
+    prob->Nb[f]       = Nb;
     prob->off[f+1]    = Nc     + prob->off[f];
     prob->offDer[f+1] = Nc*dim + prob->offDer[f];
     if (q) {ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
@@ -359,6 +362,7 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFree2(prob->Nc,prob->Nb);CHKERRQ(ierr);
   ierr = PetscFree4(prob->off,prob->offDer,prob->offBd,prob->offDerBd);CHKERRQ(ierr);
   ierr = PetscFree4(prob->basis,prob->basisDer,prob->basisBd,prob->basisDerBd);CHKERRQ(ierr);
   ierr = PetscFree5(prob->u,prob->u_t,prob->u_x,prob->x,prob->refSpaceDer);CHKERRQ(ierr);
@@ -2171,7 +2175,6 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
 @*/
 PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
 {
-  PetscClassId   id;
   PetscInt       Nb, Nc;
   PetscErrorCode ierr;
 
@@ -2179,20 +2182,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(size, 3);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  *size = 0;
-  ierr = PetscObjectGetClassId(prob->disc[f], &id);CHKERRQ(ierr);
-  if (id == PETSCFE_CLASSID)      {
-    PetscFE fe = (PetscFE) prob->disc[f];
-
-    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-  } else if (id == PETSCFV_CLASSID) {
-    PetscFV fv = (PetscFV) prob->disc[f];
-
-    Nb   = 1;
-    ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
-  *size = Nb*Nc;
+  *size = prob->Nc[f] * prob->Nb[f];
   PetscFunctionReturn(0);
 }
 
@@ -2271,6 +2261,64 @@ PetscErrorCode PetscDSGetBdFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDSGetDimensions"
+/*@
+  PetscDSGetDimensions - Returns the size of the approximation space for each field on an evaluation point 
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dimensions - The number of dimensions
+
+  Level: beginner
+
+.seealso: PetscDSGetComponentOffsets(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
+  PetscValidPointer(dimensions, 2);
+  *dimensions = prob->Nb;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetComponents"
+/*@
+  PetscDSGetComponents - Returns the number of components for each field on an evaluation point
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. components - The number of components
+
+  Level: beginner
+
+.seealso: PetscDSGetComponentOffsets(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
+  PetscValidPointer(components, 2);
+  *components = prob->Nc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDSGetComponentOffset"
 /*@
   PetscDSGetComponentOffset - Returns the offset of the given field on an evaluation point
@@ -2297,14 +2345,7 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(off, 3);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  *off = 0;
-  for (g = 0; g < f; ++g) {
-    PetscFE  fe = (PetscFE) prob->disc[g];
-    PetscInt Nc;
-
-    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-    *off += Nc;
-  }
+  *off = prob->off[f];
   PetscFunctionReturn(0);
 }
 

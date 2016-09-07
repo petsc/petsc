@@ -54,6 +54,8 @@ struct _p_PetscDS {
   PetscInt     totDim, totDimBd;       /* Total system dimension */
   PetscInt     totComp;                /* Total field components */
   /* Work space */
+  PetscInt    *Nc;                     /* Number of components for each field */
+  PetscInt    *Nb;                     /* Number of basis functions for each field */
   PetscInt    *off,       *offBd;      /* Offsets for each field */
   PetscInt    *offDer,    *offDerBd;   /* Derivative offsets for each field */
   PetscReal  **basis,    **basisBd;    /* Default basis tabulation for each field */
