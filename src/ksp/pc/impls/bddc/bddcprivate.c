@@ -2773,7 +2773,8 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   if (pcbddc->sub_schurs) {
     ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
   }
-  pcbddc->graphanalyzed = PETSC_FALSE;
+  pcbddc->graphanalyzed        = PETSC_FALSE;
+  pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -5863,61 +5864,63 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PetscInt               ierr,i,N;
 
   PetscFunctionBegin;
-  if (pcbddc->graphanalyzed) PetscFunctionReturn(0);
-  /* Reset previously computed graph */
-  ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
-  /* Init local Graph struct */
-  ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalToGlobalMapping(pc->pmat,&map,NULL);CHKERRQ(ierr);
-  ierr = PCBDDCGraphInit(pcbddc->mat_graph,map,N,pcbddc->graphmaxcount);CHKERRQ(ierr);
+  if (pcbddc->recompute_topography) {
+    /* Reset previously computed graph */
+    ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
+    /* Init local Graph struct */
+    ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalToGlobalMapping(pc->pmat,&map,NULL);CHKERRQ(ierr);
+    ierr = PCBDDCGraphInit(pcbddc->mat_graph,map,N,pcbddc->graphmaxcount);CHKERRQ(ierr);
 
-  /* Check validity of the csr graph passed in by the user */
-  if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
+    /* Check validity of the csr graph passed in by the user */
+    if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
 
-  /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
-  if ( (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) && pcbddc->use_local_adj) {
-    PetscInt  *xadj,*adjncy;
-    PetscInt  nvtxs;
-    PetscBool flg_row=PETSC_FALSE;
+    /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
+    if ( (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) && pcbddc->use_local_adj) {
+      PetscInt  *xadj,*adjncy;
+      PetscInt  nvtxs;
+      PetscBool flg_row=PETSC_FALSE;
 
-    ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-    if (flg_row) {
-      ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
-      pcbddc->computed_rowadj = PETSC_TRUE;
+      ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
+      if (flg_row) {
+        ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
+        pcbddc->computed_rowadj = PETSC_TRUE;
+      }
+      ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
     }
-    ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-  }
-  if (pcbddc->dbg_flag) {
-    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-  }
-
-  /* Setup of Graph */
-  pcbddc->mat_graph->commsizelimit = 0; /* don't use the COMM_SELF variant of the graph */
-  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,pcbddc->vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
-
-  /* attach info on disconnected subdomains if present */
-  if (pcbddc->n_local_subs) {
-    PetscInt *local_subs;
-
-    ierr = PetscMalloc1(N,&local_subs);CHKERRQ(ierr);
-    for (i=0;i<pcbddc->n_local_subs;i++) {
-      const PetscInt *idxs;
-      PetscInt       nl,j;
-
-      ierr = ISGetLocalSize(pcbddc->local_subs[i],&nl);CHKERRQ(ierr);
-      ierr = ISGetIndices(pcbddc->local_subs[i],&idxs);CHKERRQ(ierr);
-      for (j=0;j<nl;j++) local_subs[idxs[j]] = i;
-      ierr = ISRestoreIndices(pcbddc->local_subs[i],&idxs);CHKERRQ(ierr);
+    if (pcbddc->dbg_flag) {
+      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
-    pcbddc->mat_graph->n_local_subs = pcbddc->n_local_subs;
-    pcbddc->mat_graph->local_subs = local_subs;
+
+    /* Setup of Graph */
+    pcbddc->mat_graph->commsizelimit = 0; /* don't use the COMM_SELF variant of the graph */
+    ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,pcbddc->vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
+
+    /* attach info on disconnected subdomains if present */
+    if (pcbddc->n_local_subs) {
+      PetscInt *local_subs;
+
+      ierr = PetscMalloc1(N,&local_subs);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->n_local_subs;i++) {
+        const PetscInt *idxs;
+        PetscInt       nl,j;
+
+        ierr = ISGetLocalSize(pcbddc->local_subs[i],&nl);CHKERRQ(ierr);
+        ierr = ISGetIndices(pcbddc->local_subs[i],&idxs);CHKERRQ(ierr);
+        for (j=0;j<nl;j++) local_subs[idxs[j]] = i;
+        ierr = ISRestoreIndices(pcbddc->local_subs[i],&idxs);CHKERRQ(ierr);
+      }
+      pcbddc->mat_graph->n_local_subs = pcbddc->n_local_subs;
+      pcbddc->mat_graph->local_subs = local_subs;
+    }
+    pcbddc->graphanalyzed = PETSC_FALSE;
   }
 
-  /* Graph's connected components analysis */
-  ierr = PCBDDCGraphComputeConnectedComponents(pcbddc->mat_graph);CHKERRQ(ierr);
-
-  /* set flag indicating analysis has been done */
-  pcbddc->graphanalyzed = PETSC_TRUE;
+  if (pcbddc->graphanalyzed) {
+    /* Graph's connected components analysis */
+    ierr = PCBDDCGraphComputeConnectedComponents(pcbddc->mat_graph);CHKERRQ(ierr);
+    pcbddc->graphanalyzed = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
