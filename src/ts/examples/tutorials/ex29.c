@@ -39,7 +39,7 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
 {
   Vec            c,cc,ccl;
   PetscErrorCode ierr;
-  Mat            I;
+  Mat            J;
   Vec            vscale;
   DM             cdm,cdmc;
 
@@ -55,11 +55,11 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
   ierr = DMGetNamedGlobalVector(cdmc,"coefficient",&cc);CHKERRQ(ierr);
   ierr = DMGetNamedLocalVector(cdmc,"coefficient",&ccl);CHKERRQ(ierr);
 
-  ierr = DMCreateInterpolation(cdmc,cdm,&I,&vscale);CHKERRQ(ierr);
-  ierr = MatRestrict(I,c,cc);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(cdmc,cdm,&J,&vscale);CHKERRQ(ierr);
+  ierr = MatRestrict(J,c,cc);CHKERRQ(ierr);
   ierr = VecPointwiseMult(cc,vscale,cc);CHKERRQ(ierr);
 
-  ierr = MatDestroy(&I);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&vscale);CHKERRQ(ierr);
 
   ierr = DMGlobalToLocalBegin(cdmc,cc,INSERT_VALUES,ccl);CHKERRQ(ierr);
@@ -104,6 +104,9 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm,DM subdm,void *ctx)
   ierr = VecScatterDestroy(iscat);CHKERRQ(ierr);
   ierr = VecScatterDestroy(oscat);CHKERRQ(ierr);
   ierr = VecScatterDestroy(gscat);CHKERRQ(ierr);
+  ierr = PetscFree(iscat);CHKERRQ(ierr);
+  ierr = PetscFree(oscat);CHKERRQ(ierr);
+  ierr = PetscFree(gscat);CHKERRQ(ierr);
 
   ierr = DMRestoreNamedGlobalVector(cdm,"coefficient",&c);CHKERRQ(ierr);
   ierr = DMRestoreNamedLocalVector(csubdm,"coefficient",&cc);CHKERRQ(ierr);
@@ -185,8 +188,7 @@ PetscErrorCode FormInitialGuess(DM da,void *ctx,Vec X)
   PetscReal      x0,x1;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
@@ -214,8 +216,7 @@ PetscErrorCode FormDiffusionCoefficient(DM da,void *ctx,Vec X)
   PetscReal      x1,x0;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /*
   ierr = VecSetRandom(X,NULL);
