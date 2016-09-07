@@ -3123,10 +3123,12 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   ierr = PetscFree((*fem)->numDof);CHKERRQ(ierr);
   ierr = PetscFree((*fem)->invV);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->B, &(*fem)->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);
+  ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->Bf, &(*fem)->Df, NULL /*&(*fem)->Hf*/);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->F, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&(*fem)->basisSpace);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&(*fem)->dualSpace);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fem)->quadrature);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&(*fem)->faceQuadrature);CHKERRQ(ierr);
 
   if ((*fem)->ops->destroy) {ierr = (*(*fem)->ops->destroy)(*fem);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(fem);CHKERRQ(ierr);
@@ -3171,7 +3173,11 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   f->B             = NULL;
   f->D             = NULL;
   f->H             = NULL;
+  f->Bf            = NULL;
+  f->Df            = NULL;
+  f->Hf            = NULL;
   ierr = PetscMemzero(&f->quadrature, sizeof(PetscQuadrature));CHKERRQ(ierr);
+  ierr = PetscMemzero(&f->faceQuadrature, sizeof(PetscQuadrature));CHKERRQ(ierr);
   f->blockSize     = 0;
   f->numBlocks     = 1;
   f->batchSize     = 0;
@@ -3435,7 +3441,7 @@ PetscErrorCode PetscFESetDualSpace(PetscFE fem, PetscDualSpace sp)
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetQuadrature"
 /*@
-  PetscFEGetQuadrature - Returns the PetscQuadreture used to calculate inner products
+  PetscFEGetQuadrature - Returns the PetscQuadrature used to calculate inner products
 
   Not collective
 
@@ -3461,7 +3467,7 @@ PetscErrorCode PetscFEGetQuadrature(PetscFE fem, PetscQuadrature *q)
 #undef __FUNCT__
 #define __FUNCT__ "PetscFESetQuadrature"
 /*@
-  PetscFESetQuadrature - Sets the PetscQuadreture used to calculate inner products
+  PetscFESetQuadrature - Sets the PetscQuadrature used to calculate inner products
 
   Not collective
 
@@ -3482,6 +3488,60 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
   ierr = PetscFERestoreTabulation(fem, 0, NULL, &fem->B, &fem->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&fem->quadrature);CHKERRQ(ierr);
   fem->quadrature = q;
+  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetFaceQuadrature"
+/*@
+  PetscFEGetFaceQuadrature - Returns the PetscQuadrature used to calculate inner products on faces
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. q - The PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
+PetscErrorCode PetscFEGetFaceQuadrature(PetscFE fem, PetscQuadrature *q)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidPointer(q, 2);
+  *q = fem->faceQuadrature;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFESetFaceQuadrature"
+/*@
+  PetscFESetFaceQuadrature - Sets the PetscQuadrature used to calculate inner products on faces
+
+  Not collective
+
+  Input Parameters:
++ fem - The PetscFE object
+- q - The PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
+PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  ierr = PetscFERestoreTabulation(fem, 0, NULL, &fem->Bf, &fem->Df, NULL /*&(*fem)->Hf*/);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&fem->faceQuadrature);CHKERRQ(ierr);
+  fem->faceQuadrature = q;
   ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3535,7 +3595,49 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetFaceTabulation"
-PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **F)
+PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal **Df, PetscReal **Hf)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (Bf) PetscValidPointer(Bf, 2);
+  if (Df) PetscValidPointer(Df, 3);
+  if (Hf) PetscValidPointer(Hf, 4);
+  if (!fem->Bf) {
+    PetscFECellGeom  cgeom;
+    PetscQuadrature  fq;
+    PetscDualSpace   sp;
+    DM               dm;
+    const PetscInt  *faces;
+    PetscInt         dim, numFaces, f, npoints, q;
+    const PetscReal *points, *weights;
+    PetscReal       *facePoints;
+    
+    ierr = PetscFEGetDualSpace(fem, &sp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, 0, &numFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, 0, &faces);CHKERRQ(ierr);
+    ierr = PetscFEGetFaceQuadrature(fem, &fq);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(fq, NULL, &npoints, &points, &weights);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numFaces*npoints*dim, &facePoints);CHKERRQ(ierr);
+    for (f = 0; f < numFaces; ++f) {
+      ierr = DMPlexComputeCellGeometryFEM(dm, faces[f], NULL, cgeom.v0, cgeom.J, NULL, &cgeom.detJ);CHKERRQ(ierr);
+      for (q = 0; q < npoints; ++q) CoordinatesRefToReal(dim, dim-1, cgeom.v0, cgeom.J, &points[q*(dim-1)], &facePoints[(f*npoints+q)*dim]);
+    }
+    ierr = PetscFEGetTabulation(fem, numFaces*npoints, facePoints, &fem->Bf, &fem->Df, NULL/*&fem->Hf*/);CHKERRQ(ierr);
+    ierr = PetscFree(facePoints);CHKERRQ(ierr);
+  }
+  if (Bf) *Bf = fem->Bf;
+  if (Df) *Df = fem->Df;
+  if (Hf) *Hf = fem->Hf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetFaceCentroidTabulation"
+PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE fem, PetscReal **F)
 {
   PetscErrorCode   ierr;
 

@@ -102,15 +102,17 @@ struct _PetscFEOps {
 
 struct _p_PetscFE {
   PETSCHEADER(struct _PetscFEOps);
-  void           *data;          /* Implementation object */
-  PetscSpace      basisSpace;    /* The basis space P */
-  PetscDualSpace  dualSpace;     /* The dual space P' */
-  PetscInt        numComponents; /* The number of field components */
-  PetscQuadrature quadrature;    /* Suitable quadrature on K */
-  PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
-  PetscReal      *invV;          /* Change of basis matrix, from prime to nodal basis set */
-  PetscReal      *B, *D, *H;     /* Tabulation of basis and derivatives at quadrature points */
-  PetscReal      *F;             /* Tabulation of basis at face centroids */
+  void           *data;                  /* Implementation object */
+  PetscSpace      basisSpace;            /* The basis space P */
+  PetscDualSpace  dualSpace;             /* The dual space P' */
+  PetscInt        numComponents;         /* The number of field components */
+  PetscQuadrature quadrature;            /* Suitable quadrature on K */
+  PetscQuadrature faceQuadrature;        /* Suitable face quadrature on \partial K */
+  PetscInt       *numDof;                /* The number of dof on mesh points of each depth */
+  PetscReal      *invV;                  /* Change of basis matrix, from prime to nodal basis set */
+  PetscReal      *B,  *D,  *H;           /* Tabulation of basis and derivatives at quadrature points */
+  PetscReal      *Bf, *Df, *Hf;          /* Tabulation of basis and derivatives at quadrature points on each face */
+  PetscReal      *F;                     /* Tabulation of basis at face centroids */
   PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
   PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
 };
@@ -271,7 +273,7 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFaceFields(PetscDS prob, PetscInt fie
   ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-  ierr = PetscFEGetFaceTabulation(fe, &faceBasis);CHKERRQ(ierr);
+  ierr = PetscFEGetFaceCentroidTabulation(fe, &faceBasis);CHKERRQ(ierr);
   for (c = 0; c < Nc; ++c) {u[c] = 0.0;}
   for (b = 0; b < Nb; ++b) {
     for (c = 0; c < Nc; ++c) {
