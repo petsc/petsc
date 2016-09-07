@@ -166,7 +166,6 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   const PetscInt    *cone;
   PetscScalar       *barr;
   PetscInt          lofst, lofst_to, lofst_fr;
-  PetscInt          gofst, gofst_to, gofst_fr;
   PetscInt          compoffset, key;
   PetscInt          row[2],col[6];
   PetscScalar       val[6];
@@ -204,11 +203,8 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   for (e = 0; e < eEnd; e++) {
     ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&key,&compoffset);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,e,&lofst);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableGlobalOffset(networkdm,e,&gofst);CHKERRQ(ierr);
     
     ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableGlobalOffset(networkdm,cone[0],&gofst_fr);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableGlobalOffset(networkdm,cone[1],&gofst_to);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,cone[0],&lofst_fr);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,cone[1],&lofst_to);CHKERRQ(ierr);
 
@@ -216,30 +212,30 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 
     barr[lofst] = branch->bat;
 
-    row[0] = gofst;
-    col[0] = gofst;     val[0] =  1;
-    col[1] = gofst_to;  val[1] =  1;
-    col[2] = gofst_fr;  val[2] = -1;
-    ierr = MatSetValues(A,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
+    row[0] = lofst;
+    col[0] = lofst;     val[0] =  1;
+    col[1] = lofst_to;  val[1] =  1;
+    col[2] = lofst_fr;  val[2] = -1;
+    ierr = MatSetValuesLocal(A,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /* from node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,lofst_fr,0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[0],0,&key,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
     if (!node->gr) {
-      row[0] = gofst_fr;
-      col[0] = gofst;   val[0] =  1;
-      ierr = MatSetValues(A,1,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+      row[0] = lofst_fr;
+      col[0] = lofst;   val[0] =  1;
+      ierr = MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
 
     /* to node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,lofst_to,0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[1],0,&key,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
     
     if (!node->gr) {
-      row[0] = gofst_to;
-      col[0] = gofst;   val[0] =  -1;
-      ierr = MatSetValues(A,1,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+      row[0] = lofst_to;
+      col[0] = lofst;   val[0] =  -1;
+      ierr = MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -249,13 +245,12 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     if (!ghost) {
       ierr = DMNetworkGetComponentTypeOffset(networkdm,v,0,&key,&compoffset);CHKERRQ(ierr);
       ierr = DMNetworkGetVariableOffset(networkdm,v,&lofst);CHKERRQ(ierr);
-      ierr = DMNetworkGetVariableGlobalOffset(networkdm,v,&gofst);CHKERRQ(ierr);
       node = (Node*)(arr + compoffset);
 
       if (node->gr) {
-        row[0] = gofst;
-        col[0] = gofst;   val[0] =  1;
-        ierr = MatSetValues(A,1,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+        row[0] = lofst;
+        col[0] = lofst;   val[0] =  1;
+        ierr = MatSetValuesLocal(A,1,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       } else {
         barr[lofst] -= node->inj;
       }
@@ -361,7 +356,6 @@ int main(int argc,char ** argv)
   ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
-
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
