@@ -23,7 +23,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
                 ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c ex199.c ex200.c \
-                ex202.c ex203.c ex204.c
+                ex202.c ex203.c ex205.c
 
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F ex201f.F
 
@@ -793,9 +793,9 @@ ex203: ex203.o chkopts
 	-${CLINKER} -o ex203 ex203.o ${PETSC_MAT_LIB}
 	${RM} ex203.o
 
-ex204: ex204.o chkopts
-	-${CLINKER} -o ex204 ex204.o ${PETSC_MAT_LIB}
-	${RM} ex204.o
+ex205: ex205.o chkopts
+	-${CLINKER} -o ex205 ex205.o ${PETSC_MAT_LIB}
+	${RM} ex205.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
@@ -2666,10 +2666,10 @@ runex203:
 	   ${DIFF} output/ex203.out ex203.tmp || printf "${PWD}\nPossible problem with ex203, diffs above\n=========================================\n"; \
 	   ${RM} -f ex203.tmp
 
-runex204:
-	  -@${MPIEXEC} -n 1 ./ex204 -malloc_dump > ex204.tmp 2>&1; \
-	   ${DIFF} output/ex204.out ex204.tmp || printf "${PWD}\nPossible problem with ex204, diffs above\n=========================================\n"; \
-	   ${RM} -f ex204.tmp
+runex205:
+	  -@${MPIEXEC} -n 1 ./ex205 -malloc_dump > ex205.tmp 2>&1; \
+	   ${DIFF} output/ex205.out ex205.tmp || printf "${PWD}\nPossible problem with ex205, diffs above\n=========================================\n"; \
+	   ${RM} -f ex205.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex8.PETSc runex8 ex8.rm \
@@ -2718,7 +2718,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  ex56.rm ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm ex76.PETSc runex76 \
                                  runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm \
                                  ex96.PETSc runex96 ex96.rm ex95.PETSc runex95 runex95_2 ex95.rm ex200.PETSc runex200 ex200.rm \
-                                 ex202.PETSc runex202 ex202.rm ex203.PETSc runex203 ex203.rm ex204.PETSc runex204 ex204.rm
+                                 ex202.PETSc runex202 ex202.rm ex203.PETSc runex203 ex203.rm ex205.PETSc runex205 ex205.rm
 
 TESTEXAMPLES_C_INFO            = ex182.PETSc runex182 runex182_2 runex182_3 runex182_4 runex182_5 runex182_6 ex182.rm
 TESTEXAMPLES_C_X	       =

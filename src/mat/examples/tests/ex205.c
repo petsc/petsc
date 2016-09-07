@@ -21,6 +21,39 @@ static PetscErrorCode MatMult_User(Mat A,Vec X,Vec Y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCopy_User"
+static PetscErrorCode MatCopy_User(Mat A,Mat B,MatStructure str)
+{
+  User           userA,userB;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&userA);CHKERRQ(ierr);
+  if (userA) {
+    ierr = PetscNew(&userB);CHKERRQ(ierr);
+    ierr = MatDuplicate(userA->A,MAT_COPY_VALUES,&userB->A);CHKERRQ(ierr);
+    ierr = MatShellSetContext(B, userB);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_User"
+static PetscErrorCode MatDestroy_User(Mat A)
+{
+  User           user;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A, &user);CHKERRQ(ierr);
+  if (user) {
+    ierr = MatDestroy(&user->A);CHKERRQ(ierr);
+    ierr = PetscFree(user);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
@@ -29,19 +62,17 @@ int main(int argc,char **args)
   PetscScalar       avals[] = {2,3,5,7};
   Mat               S1,S2;
   Vec               X,Y;
-  User              user1,user2;
+  User              user;
   PetscErrorCode    ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscNew(&user1);CHKERRQ(ierr);
-  ierr = PetscNew(&user2);CHKERRQ(ierr);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&user1->A);CHKERRQ(ierr);
-  ierr = MatSetUp(user1->A);CHKERRQ(ierr);
-  ierr = MatSetValues(user1->A,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(user1->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user1->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatDuplicate(user1->A,MAT_COPY_VALUES,&user2->A);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&user->A);CHKERRQ(ierr);
+  ierr = MatSetUp(user->A);CHKERRQ(ierr);
+  ierr = MatSetValues(user->A,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(user->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(user->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,2,&X);CHKERRQ(ierr);
   ierr = VecSetValues(X,2,inds,xvals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
@@ -51,12 +82,16 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
 
-  ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user1,&S1);CHKERRQ(ierr);
+  ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S1);CHKERRQ(ierr);
   ierr = MatSetUp(S1);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S1,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
-  ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user2,&S2);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S1,MATOP_COPY,(void (*)(void))MatCopy_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S1,MATOP_DESTROY,(void (*)(void))MatDestroy_User);CHKERRQ(ierr);
+  ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,NULL,&S2);CHKERRQ(ierr);
   ierr = MatSetUp(S2);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S2,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S2,MATOP_COPY,(void (*)(void))MatCopy_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S2,MATOP_DESTROY,(void (*)(void))MatDestroy_User);CHKERRQ(ierr);
 
   ierr = MatScale(S1,31);CHKERRQ(ierr);
   ierr = MatShift(S1,37);CHKERRQ(ierr);
@@ -67,14 +102,10 @@ int main(int argc,char **args)
   ierr = MatMult(S2,X,Y);CHKERRQ(ierr);
   ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatDestroy(&user1->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&user2->A);CHKERRQ(ierr);
   ierr = MatDestroy(&S1);CHKERRQ(ierr);
   ierr = MatDestroy(&S2);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
-  ierr = PetscFree(user1);CHKERRQ(ierr);
-  ierr = PetscFree(user2);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
