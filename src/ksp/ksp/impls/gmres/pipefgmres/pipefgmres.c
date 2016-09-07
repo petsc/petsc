@@ -4,6 +4,21 @@
 
 #include <../src/ksp/ksp/impls/gmres/pipefgmres/pipefgmresimpl.h>       /*I  "petscksp.h"  I*/
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@article{SSM2016,\n"
+  "  author = {P. Sanan and S.M. Schnepp and D.A. May},\n"
+  "  title = {Pipelined, Flexible Krylov Subspace Methods},\n"
+  "  journal = {SIAM Journal on Scientific Computing},\n"
+  "  volume = {38},\n"
+  "  number = {5},\n"
+  "  pages = {C441-C470},\n"
+  "  year = {2016},\n"
+  "  doi = {10.1137/15M1049130},\n"
+  "  URL = {http://dx.doi.org/10.1137/15M1049130},\n"
+  "  eprint = {http://dx.doi.org/10.1137/15M1049130}\n"
+  "}\n";
+
 #define PIPEFGMRES_DELTA_DIRECTIONS 10
 #define PIPEFGMRES_DEFAULT_MAXK     30
 
@@ -363,6 +378,8 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
   PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   if (ksp->calc_sings && !pipefgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   ierr     = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;

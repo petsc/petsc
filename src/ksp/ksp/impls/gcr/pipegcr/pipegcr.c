@@ -5,6 +5,21 @@
 #include "petscsys.h"
 #include <../src/ksp/ksp/impls/gcr/pipegcr/pipegcrimpl.h>       /*I  "petscksp.h"  I*/
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@article{SSM2016,\n"
+  "  author = {P. Sanan and S.M. Schnepp and D.A. May},\n"
+  "  title = {Pipelined, Flexible Krylov Subspace Methods},\n"
+  "  journal = {SIAM Journal on Scientific Computing},\n"
+  "  volume = {38},\n"
+  "  number = {5},\n"
+  "  pages = {C441-C470},\n"
+  "  year = {2016},\n"
+  "  doi = {10.1137/15M1049130},\n"
+  "  URL = {http://dx.doi.org/10.1137/15M1049130},\n"
+  "  eprint = {http://dx.doi.org/10.1137/15M1049130}\n"
+  "}\n";
+
 #define KSPPIPEGCR_DEFAULT_MMAX 15
 #define KSPPIPEGCR_DEFAULT_NPREALLOC 5
 #define KSPPIPEGCR_DEFAULT_VECB 5
@@ -274,6 +289,8 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
   PetscBool      issym;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
   x = ksp->vec_sol;
   b = ksp->vec_rhs;
