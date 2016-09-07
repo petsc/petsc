@@ -2636,7 +2636,9 @@ PetscErrorCode MatInvertBlockDiagonal_MPIBAIJ(Mat A,const PetscScalar **values)
 
   PetscFunctionBegin;
   ierr = MatInvertBlockDiagonal(a->A,values);CHKERRQ(ierr);
-  A->errortype = a->A->errortype;
+  A->factorerrortype             = a->A->factorerrortype;
+  A->factorerror_zeropivot_value = a->A->factorerror_zeropivot_value;
+  A->factorerror_zeropivot_row   = a->A->factorerror_zeropivot_row;
   PetscFunctionReturn(0);
 }
 

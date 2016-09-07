@@ -82,34 +82,34 @@ SNES Object: 6 MPI processes
       PC Object: (mg_coarse_) 6 MPI processes
         type: redundant
           Redundant preconditioner: First (color=0) of 6 PCs follows
-        KSP Object: (mg_coarse_redundant_) 1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object: (mg_coarse_redundant_) 1 MPI processes
-          type: lu
-            LU: out-of-place factorization
-            tolerance for zero pivot 2.22045e-14
-            using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
-            matrix ordering: nd
-            factor fill ratio given 5., needed 1.41667
-              Factored matrix follows:
-                Mat Object: 1 MPI processes
-                  type: seqaij
-                  rows=64, cols=64, bs=2
-                  package used to perform factorization: petsc
-                  total: nonzeros=3264, allocated nonzeros=3264
-                  total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 16 nodes, limit used is 5
-          linear system matrix = precond matrix:
-          Mat Object: 1 MPI processes
-            type: seqaij
-            rows=64, cols=64, bs=2
-            total: nonzeros=2304, allocated nonzeros=2304
-            total number of mallocs used during MatSetValues calls =0
-              using I-node routines: found 16 nodes, limit used is 5
+          KSP Object: (mg_coarse_redundant_) 1 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (mg_coarse_redundant_) 1 MPI processes
+            type: lu
+              out-of-place factorization
+              tolerance for zero pivot 2.22045e-14
+              using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+              matrix ordering: nd
+              factor fill ratio given 5., needed 1.41667
+                Factored matrix follows:
+                  Mat Object: 1 MPI processes
+                    type: seqaij
+                    rows=64, cols=64, bs=2
+                    package used to perform factorization: petsc
+                    total: nonzeros=3264, allocated nonzeros=3264
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node routines: found 16 nodes, limit used is 5
+            linear system matrix = precond matrix:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=64, cols=64, bs=2
+              total: nonzeros=2304, allocated nonzeros=2304
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 16 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 6 MPI processes
           type: mpiaij
@@ -139,6 +139,7 @@ SNES Object: 6 MPI processes
         PC Object: (mg_levels_1_sub_) 1 MPI processes
           type: cholesky
             Cholesky: out-of-place factorization
+            out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: natural
             factor fill ratio given 5., needed 1.32237
@@ -186,6 +187,7 @@ SNES Object: 6 MPI processes
           using NONE norm type for convergence test
         PC Object: (mg_levels_2_sub_) 1 MPI processes
           type: icc
+            out-of-place factorization
             0 levels of fill
             tolerance for zero pivot 2.22045e-14
             using Manteuffel shift [POSITIVE_DEFINITE]
@@ -235,6 +237,7 @@ SNES Object: 6 MPI processes
           using NONE norm type for convergence test
         PC Object: (mg_levels_3_sub_) 1 MPI processes
           type: icc
+            out-of-place factorization
             0 levels of fill
             tolerance for zero pivot 2.22045e-14
             using Manteuffel shift [POSITIVE_DEFINITE]

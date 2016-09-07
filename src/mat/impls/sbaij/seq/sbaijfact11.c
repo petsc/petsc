@@ -308,7 +308,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
     d    = ba+k*49;
     ierr = PetscMemcpy(d,dk,49*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_7(d,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

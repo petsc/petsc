@@ -328,6 +328,14 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    if (factor->inplace) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  in-place factorization\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  out-of-place factorization\n");CHKERRQ(ierr);
+    }
+
+    if (factor->reusefill)     {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (factor->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing reordering from past factorization\n");CHKERRQ(ierr);}
     if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC) {
       if (factor->info.dt > 0) {
         ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance %g\n",(double)factor->info.dt);CHKERRQ(ierr);

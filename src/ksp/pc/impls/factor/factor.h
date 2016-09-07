@@ -12,8 +12,13 @@ typedef struct {
   MatOrderingType  ordering;          /* matrix reordering */
   MatSolverPackage solvertype;
   MatFactorType    factortype;
+  PetscReal        actualfill;
+  PetscBool        inplace;            /* flag indicating in-place factorization */
+  PetscBool        reuseordering;      /* reuses previous reordering computed */
+  PetscBool        reusefill;          /* reuse fill from previous LU */
 } PC_Factor;
 
+PETSC_INTERN PetscErrorCode PCFactorInitialize(PC);
 PETSC_INTERN PetscErrorCode PCFactorGetMatrix_Factor(PC,Mat*);
 
 PETSC_INTERN PetscErrorCode PCFactorSetZeroPivot_Factor(PC,PetscReal);

@@ -45,14 +45,14 @@ PC Object:
     using PRECONDITIONED norm type for convergence test
   PC Object:(sub_)
     type: ilu
-      ILU: 0 levels of fill
-      ILU: factor fill ratio allocated 1
-      ILU: tolerance for zero pivot 1e-12
-      ILU: using diagonal shift to prevent zero pivot [NONZERO]
-      ILU: using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+      0 levels of fill
+      factor fill ratio allocated 1
+      tolerance for zero pivot 1e-12
+      using diagonal shift to prevent zero pivot [NONZERO]
+      using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
            out-of-place factorization
            matrix ordering: natural
-      ILU: factor fill ratio needed 1
+      factor fill ratio needed 1
            Factored matrix follows
           Mat Object:
             type: seqaij

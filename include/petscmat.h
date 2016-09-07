@@ -991,6 +991,7 @@ typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_
 
 PETSC_EXTERN PetscErrorCode MatFactorGetError(Mat,MatFactorError*);
 PETSC_EXTERN PetscErrorCode MatFactorClearError(Mat);
+PETSC_EXTERN PetscErrorCode MatFactorGetErrorZeroPivot(Mat,PetscReal*,PetscInt*);
 
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
