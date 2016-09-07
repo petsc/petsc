@@ -2926,7 +2926,7 @@ PETSC_EXTERN PetscSegBuffer PetscCitationsList;
    Level: intermediate
 
      Options Database:
-.     -citations [filenmae]   - print out the bibtex entries for the given computation
+.     -citations [filename]   - print out the bibtex entries for the given computation
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *set)
 {

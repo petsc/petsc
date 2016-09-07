@@ -4,6 +4,21 @@
 
 #include <../src/ksp/ksp/impls/fcg/pipefcg/pipefcgimpl.h>       /*I  "petscksp.h"  I*/
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@article{SSM2016,\n"
+  "  author = {P. Sanan and S.M. Schnepp and D.A. May},\n"
+  "  title = {Pipelined, Flexible Krylov Subspace Methods},\n"
+  "  journal = {SIAM Journal on Scientific Computing},\n"
+  "  volume = {38},\n"
+  "  number = {5},\n"
+  "  pages = {C441-C470},\n"
+  "  year = {2016},\n"
+  "  doi = {10.1137/15M1049130},\n"
+  "  URL = {http://dx.doi.org/10.1137/15M1049130},\n"
+  "  eprint = {http://dx.doi.org/10.1137/15M1049130}\n"
+  "}\n";
+
 #define KSPPIPEFCG_DEFAULT_MMAX 15
 #define KSPPIPEFCG_DEFAULT_NPREALLOC 5
 #define KSPPIPEFCG_DEFAULT_VECB 5
@@ -280,6 +295,8 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
 #define VecXDot(x,y,a)         (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDot       (x,y,a)   : VecTDot       (x,y,a))
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   pipefcg       = (KSP_PIPEFCG*)ksp->data;
   X             = ksp->vec_sol;
   B             = ksp->vec_rhs;
