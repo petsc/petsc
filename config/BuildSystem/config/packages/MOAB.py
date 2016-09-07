@@ -4,8 +4,8 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     # To track MOAB.git, update gitcommit to 'git describe --always' or 'git rev-parse HEAD'
-    self.gitcommit         = '70d39f94e9854a78ea7daeddb6f25832c17c7783' # HEAD of MOAB/petsc branch: Apr 24, 2016
-    self.download          = ['https://bitbucket.org/fathomteam/moab.git','http://ftp.mcs.anl.gov/pub/fathom/moab-70d39f94e9854a78ea7daeddb6f25832c17c7783.tar.gz']
+    self.gitcommit         = '712d944e4d11750e2648220d0093e7ea8d0f5a99' # HEAD of MOAB/petsc branch: Sep 3, 2016
+    self.download          = ['https://bitbucket.org/fathomteam/moab.git','http://ftp.mcs.anl.gov/pub/fathom/moab-4.9.2.tar.gz']
     self.downloaddirnames  = ['moab']
     # Check for moab::Core and includes/libraries to verify build
     self.functions         = ['Core']
