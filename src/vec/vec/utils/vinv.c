@@ -1481,7 +1481,7 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
   VecLocked(v,1);
 
   if (v->ops->shift) {
-    ierr = (*v->ops->shift)(v);CHKERRQ(ierr);
+    ierr = (*v->ops->shift)(v,shift);CHKERRQ(ierr);
   } else {
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = VecGetArray(v,&x);CHKERRQ(ierr);

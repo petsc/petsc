@@ -6,6 +6,8 @@ class Configure(config.package.GNUPackage):
     config.package.Package.__init__(self, framework)
     self.download     = ['http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.12/src/hdf5-1.8.12.tar.gz',
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.12.tar.gz']
+# David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
+#   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
