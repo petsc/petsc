@@ -595,7 +595,6 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   if (print) { ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,5,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); }
 
   /* Get coarse edges in the edge space */
-  pcbddc->mat_graph->twodim = PETSC_FALSE;
   ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,NULL,NULL,&nee,&alleedges,&allprimals);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(conn,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
 
@@ -4775,7 +4774,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* Get index sets for faces, edges and vertices from graph */
     ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);CHKERRQ(ierr);
     /* print some info */
-    if (pcbddc->dbg_flag && !pcbddc->sub_schurs) {
+    if (pcbddc->dbg_flag && (!pcbddc->sub_schurs || pcbddc->sub_schurs_rebuild)) {
       PetscInt nv;
 
       ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -7721,7 +7720,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
     graph = pcbddc->mat_graph;
   }
   /* print some info */
-  if (pcbddc->dbg_flag) {
+  if (pcbddc->dbg_flag && !pcbddc->sub_schurs_rebuild) {
     IS       vertices;
     PetscInt nv,nedges,nfaces;
     ierr = PCBDDCGraphASCIIView(graph,pcbddc->dbg_flag,pcbddc->dbg_viewer);CHKERRQ(ierr);
