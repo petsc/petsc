@@ -1,4 +1,4 @@
-static char help[] = "This example demostrates the use of DMNetwork interface for solving a simple  electric circuit. \n\
+static char help[] = "This example demonstrates the use of DMNetwork interface for solving a simple electric circuit. \n\
                       The example can be found in p.150 of 'Strang, Gilbert. Computational Science and Engineering. Wellesley, MA'.\n\n";
 
 
@@ -11,7 +11,7 @@ static char help[] = "This example demostrates the use of DMNetwork interface fo
 #include <petscksp.h>
 
 /* The topology looks like:
- 
+
             (1)
             /|\
            / | \
@@ -20,7 +20,7 @@ static char help[] = "This example demostrates the use of DMNetwork interface fo
         /    |b4  \
     b1 /    (4)    \ b2
       /    /   \    R
-     /   R       R   \         
+     /   R       R   \
     /  /           \  \
    / / b5        b6  \ \
   //                   \\
@@ -28,15 +28,13 @@ static char help[] = "This example demostrates the use of DMNetwork interface fo
              b3
 
 
-  Nodes: (1), ... (4)
-  Branches: b1, ... b6
-  Resistances: R
+  Nodes:          (1), ... (4)
+  Branches:       b1, ... b6
+  Resistances:    R
   Voltage source: V
 
   Additionally, there is a current source from (2) to (1).
-   
 */
-
 
 /* 
   Structures containing physical data of circuit.
@@ -70,11 +68,11 @@ PetscErrorCode read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch
   Node              *node;
   int               *edgelist;
 
+  PetscFunctionBeginUser;
   nnode   = 4;
   nbranch = 6;
 
-  ierr = PetscCalloc1(nnode*sizeof(Node),&node);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nbranch*sizeof(Branch),&branch);CHKERRQ(ierr);
+  ierr = PetscCalloc2(nnode,&node,nbranch,&branch);CHKERRQ(ierr);
 
   for (i = 0; i < nnode; i++) {
     node[i].id  = i;
@@ -93,20 +91,17 @@ PetscErrorCode read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch
     From node 0 to 1 there exists a current source of 4.0 A
     Node 3 is grounded, hence the voltage is 0.
   */
-
   branch[1].bat = 12.0;
   node[0].inj   = -4.0;
   node[1].inj   =  4.0;
   node[3].gr    =  PETSC_TRUE;
-
-  
-  /* 
+ 
+  /*
     edgelist is an array of len = 2*nbranch. that defines the
     topology of the network. For branch i we would have that:
       edgelist[2*i] = from node
       edgelist[2*i + 1] = to node
   */
-
   ierr = PetscCalloc1(2*nbranch*sizeof(int), &edgelist);CHKERRQ(ierr);
 
   for (i = 0; i < nbranch; i++) {
@@ -146,10 +141,8 @@ PetscErrorCode read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch
   *pedgelist = edgelist;
   *pbranch   = branch;
   *pnode     = node;
-  
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "FormOperator"
@@ -159,17 +152,11 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   Vec               localb;
   Branch            *branch;
   Node              *node;
-  PetscInt          e;
-  PetscInt          v,vStart,vEnd;
-  PetscInt          eStart, eEnd;
+  PetscInt          e,v,vStart,vEnd,eStart, eEnd;
+  PetscInt          lofst,lofst_to,lofst_fr,compoffset,row[2],col[6];
   PetscBool         ghost;
   const PetscInt    *cone;
-  PetscScalar       *barr;
-  PetscInt          lofst, lofst_to, lofst_fr;
-  PetscInt          compoffset, key;
-  PetscInt          row[2],col[6];
-  PetscScalar       val[6];
-  
+  PetscScalar       *barr,val[6];
   DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
@@ -179,31 +166,27 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
 
   ierr = VecGetArray(localb,&barr);CHKERRQ(ierr);
-  
-  /* 
+
+  /*
     The component data array stores the information which we had in the
-    node and branch data structures. We access the correct element  with 
+    node and branch data structures. We access the correct element  with
     a variable offset that the DMNetwork provides.
   */
-  
   ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
 
-
-  /* 
+  /*
     We can define the current as a "edge characteristic" and the voltage
     and the voltage as a "vertex characteristic". With that, we can iterate
     the list of edges and vertices, query the associated voltages and currents
     and use them to write the Kirchoff equations.
   */
 
-
   /* Branch equations: i/r + uj - ui = battery */
-  
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   for (e = 0; e < eEnd; e++) {
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,NULL,&compoffset);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,e,&lofst);CHKERRQ(ierr);
-    
+
     ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,cone[0],&lofst_fr);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,cone[1],&lofst_to);CHKERRQ(ierr);
@@ -219,7 +202,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     ierr = MatSetValuesLocal(A,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /* from node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[0],0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[0],0,NULL,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
     if (!node->gr) {
@@ -229,9 +212,9 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     }
 
     /* to node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[1],0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[1],0,NULL,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
-    
+
     if (!node->gr) {
       row[0] = lofst_to;
       col[0] = lofst;   val[0] =  -1;
@@ -243,7 +226,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      ierr = DMNetworkGetComponentTypeOffset(networkdm,v,0,&key,&compoffset);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponentTypeOffset(networkdm,v,0,NULL,&compoffset);CHKERRQ(ierr);
       ierr = DMNetworkGetVariableOffset(networkdm,v,&lofst);CHKERRQ(ierr);
       node = (Node*)(arr + compoffset);
 
@@ -265,8 +248,6 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  
   PetscFunctionReturn(0);
 }
 
@@ -275,15 +256,13 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 int main(int argc,char ** argv)
 {
   PetscErrorCode    ierr;
-  PetscInt          i, nnode = 0, nbranch = 0;
-  PetscInt          eStart, eEnd, vStart, vEnd;
+  PetscInt          i, nnode = 0, nbranch = 0, eStart, eEnd, vStart, vEnd;
   PetscMPIInt       size, rank;
   DM                networkdm;
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist;
-  int               componentkey[2];
+  int               *edgelist,componentkey[2];
   Node              *node;
   Branch            *branch;
 
@@ -297,10 +276,8 @@ int main(int argc,char ** argv)
   }
 
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
-
   ierr = DMNetworkRegisterComponent(networkdm,"nstr",sizeof(Node),&componentkey[0]);CHKERRQ(ierr);
   ierr = DMNetworkRegisterComponent(networkdm,"bsrt",sizeof(Branch),&componentkey[1]);CHKERRQ(ierr);
-
 
   /* Set number of nodes/edges */
   ierr = DMNetworkSetSizes(networkdm,nnode,nbranch,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -308,7 +285,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkSetEdgeList(networkdm,edgelist);CHKERRQ(ierr);
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
-    
+
   /* Add network components: physical parameters of nodes and branches*/
   if (!rank) {
     ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
@@ -338,29 +315,30 @@ int main(int argc,char ** argv)
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
   if (!rank) {
-    PetscFree(edgelist);CHKERRQ(ierr);
-    PetscFree(node);CHKERRQ(ierr);
-    PetscFree(branch);CHKERRQ(ierr);
+    ierr = PetscFree(edgelist);CHKERRQ(ierr);
+    ierr = PetscFree2(node,branch);CHKERRQ(ierr);
   }
 
-
+  /* Create vectors and matrix */
   ierr = DMCreateGlobalVector(networkdm,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-
   ierr = DMCreateMatrix(networkdm,&A);CHKERRQ(ierr);
-  
+
   /* Assembly system of equations */
   ierr = FormOperator(networkdm,A,b);CHKERRQ(ierr);
 
+  /* Solve linear system: A x = b */
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
+
+  /* Free work space */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
