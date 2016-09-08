@@ -1572,7 +1572,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursInit"
-PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B, PCBDDCGraph graph, ISLocalToGlobalMapping BtoNmap)
+PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B, PCBDDCGraph graph, ISLocalToGlobalMapping BtoNmap, PetscBool copycc)
 {
   IS              *faces,*edges,*all_cc,vertices;
   PetscInt        i,n_faces,n_edges,n_all_cc;
@@ -1594,12 +1594,20 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B,
   ierr = PetscBTCreate(n_all_cc,&sub_schurs->is_edge);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_all_cc,&all_cc);CHKERRQ(ierr);
   for (i=0;i<n_faces;i++) {
-    ierr = PetscObjectReference((PetscObject)faces[i]);CHKERRQ(ierr);
-    all_cc[i] = faces[i];
+    if (copycc) {
+      ierr = ISDuplicate(faces[i],&all_cc[i]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject)faces[i]);CHKERRQ(ierr);
+      all_cc[i] = faces[i];
+    }
   }
   for (i=0;i<n_edges;i++) {
-    ierr = PetscObjectReference((PetscObject)edges[i]);CHKERRQ(ierr);
-    all_cc[n_faces+i] = edges[i];
+    if (copycc) {
+      ierr = ISDuplicate(edges[i],&all_cc[n_faces+i]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject)edges[i]);CHKERRQ(ierr);
+      all_cc[n_faces+i] = edges[i];
+    }
     ierr = PetscBTSet(sub_schurs->is_edge,n_faces+i);CHKERRQ(ierr);
   }
   ierr = PetscObjectReference((PetscObject)vertices);CHKERRQ(ierr);
