@@ -243,7 +243,7 @@ PetscErrorCode FormDiffusionCoefficient(DM da,void *ctx,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormIFunctionLocal"
-PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **x,Field **xt,Field **f,void *ctx)
+PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,Field **xt,Field **f,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
