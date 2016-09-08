@@ -75,7 +75,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   fp = fopen(filename,"r");
   /* Reading data */
   for (i=0;i<line_counter;i++) {
-    fgets(line,MAXLINE,fp);
+    (void)fgets(line,MAXLINE,fp);
 
     if ((i >= bus_start_line) && (i < bus_end_line)) {
       double gl,bl,vm,va,basekV;

@@ -55,10 +55,10 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  write(fd,&classid,sizeof(int));
-  write(fd,&m,sizeof(int));
-  write(fd,&n,sizeof(int));
-  write(fd,&nz,sizeof(int));
+  (void)write(fd,&classid,sizeof(int));
+  (void)write(fd,&m,sizeof(int));
+  (void)write(fd,&n,sizeof(int));
+  (void)write(fd,&nz,sizeof(int));
 
   /*
      transpose the matrix, since it is stored by rows on the disk
@@ -73,7 +73,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
       vals[i+m*j] = a[j+i*n];
     }
   }
-  write(fd,vals,m*n*sizeof(double));
+  (void)write(fd,vals,m*n*sizeof(double));
   free(vals);
 
 }
@@ -93,9 +93,9 @@ void Store1DArray(int m,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  write(fd,&classid,sizeof(int));
-  write(fd,&m,sizeof(int));
-  write(fd,a,m*sizeof(double));
+  (void)write(fd,&classid,sizeof(int));
+  (void)write(fd,&m,sizeof(int));
+  (void)write(fd,a,m*sizeof(double));
 }
 
 

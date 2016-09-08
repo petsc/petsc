@@ -33,8 +33,8 @@ int main(int argc,char **args)
 
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
-  fscanf(file,"  NUNKNS =%d  NCOEFF =%d\n",&n,&nnz);
-  fscanf(file,"  JA POINTER IN SLAPSV\n");
+  (void)fscanf(file,"  NUNKNS =%d  NCOEFF =%d\n",&n,&nnz);
+  (void)fscanf(file,"  JA POINTER IN SLAPSV\n");
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
@@ -42,26 +42,26 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(n+1,&col);CHKERRQ(ierr);
-  for (i=0; i<n+1; i++) fscanf(file,"     I=%d%d\n",&j,&col[i]);
-  fscanf(file,"  EOD JA\n");
+  for (i=0; i<n+1; i++) (void)fscanf(file,"     I=%d%d\n",&j,&col[i]);
+  (void)fscanf(file,"  EOD JA\n");
 
   ierr = PetscMalloc1(nnz,&val);CHKERRQ(ierr);
   ierr = PetscMalloc1(nnz,&row);CHKERRQ(ierr);
-  fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
+  (void)fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
   for (i=0; i<nnz; i++) {
-    fscanf(file,"    %d%d%le\n",&j,&row[i],(double*)&val[i]);
+    (void)fscanf(file,"    %d%d%le\n",&j,&row[i],(double*)&val[i]);
     row[i]--;
   }
-  fscanf(file,"  EOD IA\n");
+  (void)fscanf(file,"  EOD IA\n");
 
   ierr = PetscMalloc1(n,&bval);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&brow);CHKERRQ(ierr);
-  fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
+  (void)fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
   for (i=0; i<n; i++) {
-    fscanf(file,"      %d%le%d\n",&j,(double*)(bval+i),&j);
+    (void)fscanf(file,"      %d%le%d\n",&j,(double*)(bval+i),&j);
     brow[i] = i;
   }
-  fscanf(file,"  EOD RESIDUAL");
+  (void)fscanf(file,"  EOD RESIDUAL");
   fclose(file);
 
   m     = n/size+1;

@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
   /* process header with comments */
-  do fgets(buf,PETSC_MAX_PATH_LEN-1,file);
+  do (void)fgets(buf,PETSC_MAX_PATH_LEN-1,file);
   while (buf[0] == '%');
 
   /* The first non-comment line has the matrix dimensions */

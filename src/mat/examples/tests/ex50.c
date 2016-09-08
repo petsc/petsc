@@ -33,7 +33,7 @@ int main(int argc,char **args)
 
   ierr = PetscFixFilename(filein,finname);CHKERRQ(ierr);
   if (!(file = fopen(finname,"r"))) SETERRQ(PETSC_COMM_SELF,1,"cannot open input file\n");
-  fscanf(file,"%d\n",&n);
+  (void)fscanf(file,"%d\n",&n);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
   for (row=0; row<n; row++) {
-    fscanf(file,"row %d:",&rowin);
+    (void)fscanf(file,"row %d:",&rowin);
     if (rowin != row) SETERRQ(PETSC_COMM_SELF,1,"Bad file");
     while (fscanf(file," %d %le",&col,(double*)&val)) {
       ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
   for (row=0; row<n; row++) {
-    fscanf(file," ii= %d %le",&col,(double*)(array+row));
+    (void)fscanf(file," ii= %d %le",&col,(double*)(array+row));
   }
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);
 

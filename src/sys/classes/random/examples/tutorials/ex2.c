@@ -157,7 +157,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
     ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);
     for (i=0;i<num;i++) {
       double vv,tt;
-      fscanf(fd,"%s%lf%lf",temp,&vv,&tt);
+      (void)fscanf(fd,"%s%lf%lf",temp,&vv,&tt);
       v[i] = vv;
       t[i] = tt;
     }

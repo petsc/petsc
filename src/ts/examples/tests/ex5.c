@@ -502,44 +502,44 @@ void readinput(struct in *put)
 
   ifp = fopen("ex5_control.txt", "r");
 
-  for (i=0; i<110; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<110; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->Ts = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->Td = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->Ta = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->Tc = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->fr = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->wnd = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->pwt = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->wndDir = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->time = tmp;
 
-  for (i=0; i<63; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<63; i++) (void)fscanf(ifp, "%c", &x);
+  (void)fscanf(ifp, "%lf", &tmp);
   put->init = tmp;
 
 }
