@@ -5913,7 +5913,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     pcbddc->graphanalyzed = PETSC_FALSE;
   }
 
-  if (pcbddc->graphanalyzed) {
+  if (!pcbddc->graphanalyzed) {
     /* Graph's connected components analysis */
     ierr = PCBDDCGraphComputeConnectedComponents(pcbddc->mat_graph);CHKERRQ(ierr);
     pcbddc->graphanalyzed = PETSC_TRUE;
