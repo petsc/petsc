@@ -1066,7 +1066,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal n)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetType"
-/*@
+/*@C
    PCGAMGSetType - Set solution method
 
    Collective on PC
@@ -1096,7 +1096,7 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGetType"
-/*@
+/*@C
    PCGAMGGetType - Get solution method
 
    Collective on PC
