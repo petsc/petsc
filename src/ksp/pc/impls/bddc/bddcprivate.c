@@ -26,7 +26,7 @@ PetscErrorCode MatDense_OrthogonalComplement(Mat A, PetscInt lw, PetscScalar *wo
   /* workspace */
   if (!work) {
     ulw  = PetscMax(PetscMax(1,5*PetscMin(nr,nc)),3*PetscMin(nr,nc)+PetscMax(nr,nc));
-    ierr = PetscMalloc1(ulw,&uwork);
+    ierr = PetscMalloc1(ulw,&uwork);CHKERRQ(ierr);
   } else {
     ulw   = lw;
     uwork = work;
@@ -1314,11 +1314,7 @@ PetscErrorCode PCBDDCBenignRemoveInterior(PC pc,Vec r,Vec z)
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   if (pcbddc->ChangeOfBasisMatrix) {
-    Vec swap;
-
-    swap = r;
-    r = pcbddc->work_change;
-    pcbddc->work_change = swap;
+    pcbddc->work_change = r;
     ierr = VecCopy(z,pcbddc->work_change);CHKERRQ(ierr);
     ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcbddc->work_change,z);CHKERRQ(ierr);
   }
@@ -3362,7 +3358,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         PetscScalar      *marr,*sums;
 
         ierr = PetscMalloc1(n_vertices,&sums);CHKERRQ(ierr);
-        ierr = MatDenseGetArray(S_VVt,&marr);
+        ierr = MatDenseGetArray(S_VVt,&marr);CHKERRQ(ierr);
         for (i=0;i<reuse_solver->benign_n;i++) {
           const PetscScalar *vals;
           const PetscInt    *idxs,*idxs_zero;
@@ -3387,7 +3383,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
           ierr = ISRestoreIndices(reuse_solver->benign_zerodiag_subs[i],&idxs_zero);CHKERRQ(ierr);
         }
         ierr = PetscFree(sums);CHKERRQ(ierr);
-        ierr = MatDenseRestoreArray(S_VVt,&marr);
+        ierr = MatDenseRestoreArray(S_VVt,&marr);CHKERRQ(ierr);
         ierr = MatDestroy(&A_RV_bcorr);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&A_RRmA_RV);CHKERRQ(ierr);
@@ -3891,6 +3887,7 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
         is_perm_c = is_perm_r;
       } else {
         PetscInt *idxs_c,i;
+        if (!idxs_perm_c) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Permutation array not present");
         ierr = PetscMalloc1(csize,&idxs_c);CHKERRQ(ierr);
         for (i=0;i<csize;i++) {
           idxs_c[idxs_perm_c[i]] = i;
@@ -6854,7 +6851,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   coarse_mat_is = NULL;
   multilevel_allowed = PETSC_FALSE;
   multilevel_requested = PETSC_FALSE;
-  full_restr = PETSC_TRUE;
   pcbddc->coarse_eqs_per_proc = PetscMin(PetscMax(pcbddc->coarse_size,1),pcbddc->coarse_eqs_per_proc);
   if (pcbddc->current_level < pcbddc->max_levels) multilevel_requested = PETSC_TRUE;
   if (multilevel_requested) {
@@ -7016,7 +7012,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
   if (coarse_mat_is || coarse_mat) {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)coarse_mat_is),&size);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)coarse_mat_is),&size);CHKERRQ(ierr);
     if (!multilevel_allowed) {
       ierr = MatISGetMPIXAIJ(coarse_mat_is,coarse_mat_reuse,&coarse_mat);CHKERRQ(ierr);
     } else {

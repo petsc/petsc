@@ -1366,7 +1366,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       /* store the original rhs if not done earlier */
       if (save_rhs) {
         ierr = VecSwap(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
-        save_rhs = PETSC_FALSE;
       }
       if (pcbddc->rhs_change) {
         ierr = MatMultAdd(pc->mat,pcbddc->benign_vec,rhs,rhs);CHKERRQ(ierr);
@@ -1914,11 +1913,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   }
 
   if (pcbddc->ChangeOfBasisMatrix) {
-    Vec swap;
-
-    swap = r;
-    r = pcbddc->work_change;
-    pcbddc->work_change = swap;
+    pcbddc->work_change = r;
     ierr = VecCopy(z,pcbddc->work_change);CHKERRQ(ierr);
     ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcbddc->work_change,z);CHKERRQ(ierr);
   }
@@ -2072,11 +2067,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
     ierr = PCBDDCBenignGetOrSetP0(pc,z,PETSC_FALSE);CHKERRQ(ierr);
   }
   if (pcbddc->ChangeOfBasisMatrix) {
-    Vec swap;
-
-    swap = r;
-    r = pcbddc->work_change;
-    pcbddc->work_change = swap;
+    pcbddc->work_change = r;
     ierr = VecCopy(z,pcbddc->work_change);CHKERRQ(ierr);
     ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcbddc->work_change,z);CHKERRQ(ierr);
   }

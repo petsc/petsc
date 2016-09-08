@@ -383,7 +383,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       }
       for (j=cum_recv_counts[i];j<cum_recv_counts[i+1];j++){
          if (recv_buffer[j] > 1) {
-          ierr = PetscBTSet(subset_cc_adapt,i);
+          ierr = PetscBTSet(subset_cc_adapt,i);CHKERRQ(ierr);
           break;
         }
       }
