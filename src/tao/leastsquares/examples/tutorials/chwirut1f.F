@@ -113,11 +113,6 @@
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'
       endif
-!  TaoView() prints ierr about the TAO solver; the option
-!      -tao_view
-!  can alternatively be used to activate this at runtime.
-      call TaoView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
-
 
 !  Free TAO data structures
       call TaoDestroy(tao,ierr)
