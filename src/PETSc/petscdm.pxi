@@ -107,6 +107,8 @@ cdef extern from * nogil:
     int DMShellSetGlobalVector(PetscDM,PetscVec)
     int DMShellSetLocalVector(PetscDM,PetscVec)
 
+    int DMKSPSetComputeOperators(PetscDM,PetscKSPComputeOpsFunction,void*)
+
 # --------------------------------------------------------------------
 
 cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \

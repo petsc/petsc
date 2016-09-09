@@ -414,6 +414,13 @@ cdef class DM(Object):
     createLocalVector = createLocalVec
     getMatrix = createMatrix = createMat
 
+    def setKSPComputeOperators(self, operators, args=None, kargs=None):
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
+        context = (operators, args, kargs)
+        self.set_attr('__operators__', context)
+        CHKERR( DMKSPSetComputeOperators(self.dm, KSP_ComputeOps, <void*>context) )
+
 # --------------------------------------------------------------------
 
 del DMType
