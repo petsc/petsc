@@ -930,12 +930,14 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('CANNOT_START_DEBUGGER',1)
       (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir, log = self.log)
       self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
+      (petscdir,error,status) = self.executeShellCommand('cygpath -m '+self.petscdir.dir, log = self.log)
+      self.addMakeMacro('wPETSC_DIR',petscdir)
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
       self.addDefine('DIR', '"'+self.petscdir.dir+'"')
-
+      self.addMakeMacro('wPETSC_DIR',self.petscdir.dir)
     return
 
 #-----------------------------------------------------------------------------------------------------
